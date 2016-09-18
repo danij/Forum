@@ -13,3 +13,16 @@ Backend software for providing a discussion forum.
 
 * 4 SPACES for indent
 * JAVA style but with brackets on new line for C++
+
+## Building
+
+    mkdir build
+    cd build
+    cmake ../
+    make
+
+## Running Tests
+
+After build, from the build folder:
+
+    ./test/ForumServiceTests/ForumServiceTests
