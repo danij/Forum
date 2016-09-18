@@ -12,6 +12,7 @@ Backend software for providing a discussion forum.
 ## Coding Style
 
 * 4 SPACES for indent
+* Max 120 characters/line
 * camelCase
 * Brackets on new line (C++)
 
@@ -27,3 +28,4 @@ Backend software for providing a discussion forum.
 After build, from the build folder:
 
     ./test/ForumServiceTests/ForumServiceTests
+
