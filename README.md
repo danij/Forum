@@ -12,5 +12,4 @@ Backend software for providing a discussion forum.
 ## Coding Style
 
 * 4 SPACES for indent
-* camelCase
-* Brackets on new line (C++)
+* JAVA style but with brackets on new line for C++
