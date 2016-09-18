@@ -8,11 +8,11 @@ The request handler will write JSON to the output stream.
 
 Example handler
 
-   void Commands::version(const std::vector<std::string>& parameters, std::ostream& output)
-   {
-       Json::JsonWriter writer(output);
-       writer
-           << Json::objStart
-               << Json::propertySafeName("version", VERSION)
-           << Json::objEnd;
-   }
+    void Commands::version(const std::vector<std::string>& parameters, std::ostream& output)
+    {
+        Json::JsonWriter writer(output);
+        writer
+            << Json::objStart
+                << Json::propertySafeName("version", VERSION)
+            << Json::objEnd;
+    }
