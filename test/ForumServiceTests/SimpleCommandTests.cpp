@@ -5,6 +5,6 @@
 
 BOOST_AUTO_TEST_CASE( Version_is_successfully_returned )
 {
-    auto versionString = handlerToString(Forum::Commands::version);
+    auto versionString = Forum::Helpers::handlerToString(Forum::Commands::version);
     BOOST_REQUIRE_EQUAL(versionString, std::string("{\"version\":\"") + Forum::VERSION + "\"}");
 }
