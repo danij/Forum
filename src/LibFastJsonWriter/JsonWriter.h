@@ -66,6 +66,10 @@ namespace Json
 
         JsonWriter& operator<<(unsigned int value);
 
+        JsonWriter& operator<<(long value);
+
+        JsonWriter& operator<<(unsigned long value);
+
         JsonWriter& operator<<(long long value);
 
         JsonWriter& operator<<(unsigned long long value);

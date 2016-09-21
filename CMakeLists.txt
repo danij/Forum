@@ -5,6 +5,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
 add_subdirectory(src/LibFastJsonWriter)
 add_subdirectory(src/LibForumCommandHandlers)
+add_subdirectory(src/LibForumRepository)
 add_subdirectory(test/ForumServiceTests)
 
 #set(SOURCE_FILES main.cpp)

@@ -4,12 +4,14 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include "CommandsCommon.h"
+#include "MemoryRepository.h"
 
 using namespace Forum::Commands;
+using namespace Forum::Repository;
 
 std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
 {
-    return std::make_shared<CommandHandler>();
+    return std::make_shared<CommandHandler>(std::make_shared<MemoryRepository>());
 }
 
 std::string Forum::Helpers::handlerToString(CommandHandlerRef handler, Command command,

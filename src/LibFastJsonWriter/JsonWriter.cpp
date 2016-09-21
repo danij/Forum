@@ -148,6 +148,20 @@ JsonWriter& JsonWriter::operator<<(unsigned int value)
    return *this;
 }
 
+JsonWriter& JsonWriter::operator<<(long value)
+{
+   addCommaIfNeeded();
+   *_stream << value;
+   return *this;
+}
+
+JsonWriter& JsonWriter::operator<<(unsigned long value)
+{
+   addCommaIfNeeded();
+   *_stream << value;
+   return *this;
+}
+
 JsonWriter& JsonWriter::operator<<(long long value)
 {
    addCommaIfNeeded();

@@ -3,10 +3,17 @@
 #include "Version.h"
 
 using namespace Forum::Commands;
+using namespace Forum::Repository;
 
-CommandHandler::CommandHandler()
+#define setHandler(command, function) \
+    handlers_[command] = std::bind(&CommandHandler::function, this, std::placeholders::_1, std::placeholders::_2);
+
+
+CommandHandler::CommandHandler(ReadRepositoryConstRef readRepository)
+        : readRepository_(readRepository)
 {
-    handlers_[SHOW_VERSION] = std::bind(&CommandHandler::version, this, std::placeholders::_1, std::placeholders::_2);
+    setHandler(SHOW_VERSION, version);
+    setHandler(COUNT_USERS, countUsers);
 }
 
 void CommandHandler::handle(Command command, const std::vector<std::string>& parameters, std::ostream& output)
@@ -24,4 +31,9 @@ void CommandHandler::version(const std::vector<std::string>& parameters, std::os
         << Json::objStart
             << Json::propertySafeName("version", VERSION)
         << Json::objEnd;
+}
+
+void CommandHandler::countUsers(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    readRepository_->getUserCount(output);
 }
