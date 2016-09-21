@@ -3,8 +3,8 @@ project(LibForumCommandHandlers)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
-set(SOURCE_FILES VersionHandler.cpp)
-set(HEADER_FILES CommandHandlers.h ../Version.h)
+set(SOURCE_FILES CommandHandler.cpp)
+set(HEADER_FILES CommandHandler.h ../Version.h)
 
 include_directories(../. ../LibFastJsonWriter)
 
