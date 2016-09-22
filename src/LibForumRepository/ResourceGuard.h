@@ -18,7 +18,7 @@ namespace Forum
 
             inline void read(std::function<void(const T&)> action) const
             {
-                std::unique_lock<decltype(mutex_)> lock(mutex_);
+                std::shared_lock<decltype(mutex_)> lock(mutex_);
                 action(*resource_);
             }
 
@@ -30,7 +30,7 @@ namespace Forum
 
         private:
             std::shared_ptr<T> resource_;
-            mutable std::mutex mutex_;
+            mutable std::shared_timed_mutex mutex_;
         };
     }
 }
