@@ -9,7 +9,8 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost REQUIRED)
 
 set(SOURCE_FILES MemoryRepository.cpp)
-set(HEADER_FILES ../Version.h Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h)
+set(HEADER_FILES ../Version.h Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h
+        ConstCollectionAdapter.h)
 
 include_directories(../. ../LibFastJsonWriter ${Boost_INCLUDE_DIRS})
 

@@ -14,7 +14,7 @@ void MemoryRepository::getUserCount(std::ostream& output) const
     std::size_t count;
     collection_.read([&](const EntityCollection& collection)
                      {
-                         count = collection.users_.size();
+                         count = collection.usersById().size();
                      });
     writeSingleValueSafeName(output, "count", count);
 }
