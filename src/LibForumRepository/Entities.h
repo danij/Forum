@@ -15,12 +15,6 @@ namespace Forum
 {
     namespace Entities
     {
-        template <typename T>
-        inline const std::shared_ptr<const T> transformIterator(const std::shared_ptr<T>& value)
-        {
-            return value;
-        }
-
         typedef boost::uuids::uuid IdType;
 
         struct Identifiable
