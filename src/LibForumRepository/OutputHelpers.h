@@ -27,5 +27,10 @@ namespace Forum
                     << Json::propertySafeName(name, value)
                 << Json::objEnd;
         }
+
+        inline void writeStatusCode(std::ostream& output, Forum::Repository::StatusCode code)
+        {
+            writeSingleValueSafeName(output, "status", int(code));
+        }
     }
 }

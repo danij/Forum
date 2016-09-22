@@ -11,7 +11,8 @@ using namespace Forum::Repository;
 
 std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
 {
-    return std::make_shared<CommandHandler>(std::make_shared<MemoryRepository>());
+    auto memoryRepository = std::make_shared<MemoryRepository>();
+    return std::make_shared<CommandHandler>(memoryRepository, memoryRepository);
 }
 
 std::string Forum::Helpers::handlerToString(CommandHandlerRef handler, Command command,

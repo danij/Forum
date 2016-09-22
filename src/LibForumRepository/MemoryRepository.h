@@ -10,12 +10,14 @@ namespace Forum
 {
     namespace Repository
     {
-        class MemoryRepository final : public IReadRepository, private boost::noncopyable
+        class MemoryRepository final : public IReadRepository, public IWriteRepository, private boost::noncopyable
         {
         public:
             MemoryRepository();
 
             virtual void getUserCount(std::ostream& output) const override;
+
+            virtual StatusCode addNewUser(const std::string& name, std::ostream& output) override;
 
         private:
             Forum::Helpers::ResourceGuard<Forum::Entities::EntityCollection> collection_;

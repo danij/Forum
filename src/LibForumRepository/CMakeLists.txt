@@ -10,7 +10,7 @@ find_package(Boost REQUIRED)
 
 set(SOURCE_FILES MemoryRepository.cpp)
 set(HEADER_FILES ../Version.h Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h
-        ConstCollectionAdapter.h)
+        ConstCollectionAdapter.h StringHelpers.h)
 
 include_directories(../. ../LibFastJsonWriter ${Boost_INCLUDE_DIRS})
 
