@@ -48,8 +48,8 @@ namespace Forum
 
             typedef boost::multi_index_container<UserRef, UserCollectionIndices> UserCollection;
 
-            inline UserCollection& users() { return users_; }
-            inline auto usersById() const { return Helpers::toConst(users_.get<UserCollectionById>()); }
+            inline auto& users()           { return users_; }
+            inline auto  usersById() const { return Helpers::toConst(users_.get<UserCollectionById>()); }
 
         private:
             UserCollection users_;
