@@ -43,8 +43,7 @@ namespace Forum
 
             struct UserCollectionIndices : boost::multi_index::indexed_by<
                 boost::multi_index::hashed_unique<boost::multi_index::tag<UserCollectionById>,
-                        const boost::multi_index::const_mem_fun<
-                        Identifiable, const IdType&, &User::id>>
+                        const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &User::id>>
                 > {};
 
             typedef boost::multi_index_container<UserRef, UserCollectionIndices> UserCollection;
