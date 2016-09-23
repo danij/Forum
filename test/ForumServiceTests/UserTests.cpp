@@ -107,3 +107,22 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_a_longer_name_fails )
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { username });
     assertStatusCodeEqual(StatusCode::VALUE_TOO_LONG, returnObject);
 }
+
+BOOST_AUTO_TEST_CASE( Creating_a_user_with_unicode_name_of_valid_length_succeds )
+{
+    auto oldConfig = getGlobalConfig();
+    auto configReset = createDisposer([&](){ setGlobalConfig(*oldConfig); });
+
+    auto configWithShorterName = Forum::Configuration::Config(*oldConfig);
+    configWithShorterName.user.maxNameLength = 3;
+
+    setGlobalConfig(configWithShorterName);
+
+    //test a simple text that can also be represented as ASCII
+    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "AAA" });
+    assertStatusCodeEqual(StatusCode::OK, returnObject);
+
+    //test a 3 characters text that requires multiple bytes for representation using UTF-8
+    returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "早上好" });
+    assertStatusCodeEqual(StatusCode::OK, returnObject);
+}

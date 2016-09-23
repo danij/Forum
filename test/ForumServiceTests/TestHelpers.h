@@ -18,5 +18,24 @@ namespace Forum
         {
             assertStatusCodeEqual(expected, Forum::Repository::StatusCode(obj.template get<uint32_t>("status")));
         }
+
+        /**
+         * Provides a means to execute code at the end of a test case even if it fails or an exception is thrown
+         */
+        template <typename TAction>
+        struct Disposer
+        {
+            Disposer (TAction action) : action_(action) {}
+            ~Disposer() { action_(); }
+
+        private:
+            TAction action_;
+        };
+
+        template <typename TAction>
+        inline auto createDisposer(TAction action)
+        {
+            return Disposer<TAction>(action);
+        }
     }
 }

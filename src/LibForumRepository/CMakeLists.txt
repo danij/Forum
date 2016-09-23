@@ -4,7 +4,7 @@ project(LibForumRepository CXX)
 set(Boost_USE_STATIC_LIBS    ON)
 set(Boost_USE_MULTITHREADED  ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost REQUIRED COMPONENTS locale regex)
+find_package(Boost REQUIRED COMPONENTS locale regex thread system)
 find_package(ICU)
 
 set(SOURCE_FILES MemoryRepository.cpp)

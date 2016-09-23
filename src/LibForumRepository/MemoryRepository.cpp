@@ -1,3 +1,4 @@
+#include <boost/locale.hpp>
 #include <boost/regex/icu.hpp>
 
 #include "MemoryRepository.h"
@@ -37,7 +38,7 @@ StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& o
     }
     auto config = Configuration::getGlobalConfig();
 
-    if (name.size() > config->user.maxNameLength)
+    if (countUTF8Characters(name) > config->user.maxNameLength)
     {
         return StatusCode::VALUE_TOO_LONG;
     }
