@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_a_longer_name_fails )
     assertStatusCodeEqual(StatusCode::VALUE_TOO_LONG, returnObject);
 }
 
-BOOST_AUTO_TEST_CASE( Creating_a_user_with_unicode_name_of_valid_length_succeds )
+BOOST_AUTO_TEST_CASE( Creating_a_user_with_unicode_name_of_valid_length_succeeds )
 {
     auto oldConfig = getGlobalConfig();
     auto configReset = createDisposer([&](){ setGlobalConfig(*oldConfig); });
