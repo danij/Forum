@@ -32,7 +32,14 @@ StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& o
     {
         return StatusCode::INVALID_PARAMETERS;
     }
-    if ( ! boost::u32regex_match(name, validUserNameRegex, boost::match_flag_type::format_all))
+    try
+    {
+        if ( ! boost::u32regex_match(name, validUserNameRegex, boost::match_flag_type::format_all))
+        {
+            return StatusCode::INVALID_PARAMETERS;
+        }
+    }
+    catch(...)
     {
         return StatusCode::INVALID_PARAMETERS;
     }

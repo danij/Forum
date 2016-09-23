@@ -126,3 +126,10 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_unicode_name_of_valid_length_succeds 
     returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "早上好" });
     assertStatusCodeEqual(StatusCode::OK, returnObject);
 }
+
+BOOST_AUTO_TEST_CASE( Creating_a_user_with_a_name_that_contains_invalid_characters_fails_with_appropriate_message)
+{
+    auto config = getGlobalConfig();
+    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "\xFF\xFF" });
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
+}
