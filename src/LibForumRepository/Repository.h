@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -18,12 +19,14 @@ namespace Forum
 
         typedef std::shared_ptr<const IReadRepository> ReadRepositoryConstRef;
 
-        enum class StatusCode
+        enum StatusCode : uint32_t
         {
-            OUTPUT_ALREADY_WRITTEN = -1,
             OK = 0,
             INVALID_PARAMETERS,
+            OUTPUT_ALREADY_WRITTEN = 0x10000000
         };
+
+        inline bool statusCodeNotWritten(StatusCode value) { return (value & StatusCode::OUTPUT_ALREADY_WRITTEN) == 0; }
 
         class IWriteRepository
         {

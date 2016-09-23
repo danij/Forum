@@ -52,7 +52,7 @@ void CommandHandler::addNewUser(const std::vector<std::string>& parameters, std:
     {
         code = writeRepository_->addNewUser(parameters[0], output);
     }
-    if (code >= StatusCode::OK)
+    if (statusCodeNotWritten(code))
     {
         writeStatusCode(output, code);
     }
