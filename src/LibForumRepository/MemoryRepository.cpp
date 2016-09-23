@@ -1,3 +1,5 @@
+#include <boost/regex/icu.hpp>
+
 #include "MemoryRepository.h"
 #include "OutputHelpers.h"
 #include "StringHelpers.h"
@@ -20,12 +22,17 @@ void MemoryRepository::getUserCount(std::ostream& output) const
     writeSingleValueSafeName(output, "count", count);
 }
 
+const auto validUserNameRegex = boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$");
+
 StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
 {
-    if (stringNullOrEmpty(name))
+    if (name.empty())
     {
         return StatusCode::INVALID_PARAMETERS;
     }
-
+    if ( ! boost::u32regex_match(name, validUserNameRegex, boost::match_flag_type::format_all))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
     return StatusCode::OK;
 }

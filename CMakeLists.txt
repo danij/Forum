@@ -3,6 +3,8 @@ project(Forum CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
+SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
+
 add_subdirectory(src/LibFastJsonWriter)
 add_subdirectory(src/LibForumCommandHandlers)
 add_subdirectory(src/LibForumRepository)
