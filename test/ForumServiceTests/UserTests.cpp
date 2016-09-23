@@ -4,7 +4,9 @@
 #include "TestHelpers.h"
 #include "Version.h"
 #include "CommandsCommon.h"
+#include "Configuration.h"
 
+using namespace Forum::Configuration;
 using namespace Forum::Helpers;
 using Forum::Repository::StatusCode;
 
@@ -96,4 +98,12 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_accented_letters_in_the_name_succeeds
 {
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "FȭǬ" });
     assertStatusCodeEqual(StatusCode::OK, returnObject);
+}
+
+BOOST_AUTO_TEST_CASE( Creating_a_user_with_a_longer_name_fails )
+{
+    auto config = getGlobalConfig();
+    std::string username(config->user.maxNameLength + 1, 'a');
+    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { username });
+    assertStatusCodeEqual(StatusCode::VALUE_TOO_LONG, returnObject);
 }

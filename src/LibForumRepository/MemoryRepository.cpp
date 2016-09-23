@@ -3,6 +3,7 @@
 #include "MemoryRepository.h"
 #include "OutputHelpers.h"
 #include "StringHelpers.h"
+#include "Configuration.h"
 
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
@@ -34,5 +35,12 @@ StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& o
     {
         return StatusCode::INVALID_PARAMETERS;
     }
+    auto config = Configuration::getGlobalConfig();
+
+    if (name.size() > config->user.maxNameLength)
+    {
+        return StatusCode::VALUE_TOO_LONG;
+    }
+
     return StatusCode::OK;
 }

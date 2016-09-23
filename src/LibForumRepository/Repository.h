@@ -23,6 +23,7 @@ namespace Forum
         {
             OK = 0,
             INVALID_PARAMETERS,
+            VALUE_TOO_LONG,
             OUTPUT_ALREADY_WRITTEN = 0x10000000
         };
 

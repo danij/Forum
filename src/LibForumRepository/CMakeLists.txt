@@ -9,7 +9,7 @@ find_package(ICU)
 
 set(SOURCE_FILES MemoryRepository.cpp)
 set(HEADER_FILES ../Version.h Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h
-        ConstCollectionAdapter.h StringHelpers.h)
+        ConstCollectionAdapter.h StringHelpers.h Configuration.h Configuration.cpp)
 
 include_directories(../. ../LibFastJsonWriter ${Boost_INCLUDE_DIRS})
 
