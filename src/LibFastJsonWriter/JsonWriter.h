@@ -84,6 +84,12 @@ namespace Json
         return writer;
     }
 
+    template <typename T>
+    inline JsonWriter& operator<<(JsonWriter& writer, const T* value)
+    {
+        return value ? (writer << *value) : writer.null();
+    }
+
     inline JsonWriter& operator<<(JsonWriter& writer, bool value)
     {
         writer.addCommaIfNeeded();
