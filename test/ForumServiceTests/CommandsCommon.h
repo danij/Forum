@@ -21,7 +21,7 @@ namespace Forum
                                                  Forum::Commands::Command command);
 
         template<typename T, typename It>
-        inline void fillPropertyFromCollection(boost::property_tree::ptree collection, const char* name,
+        inline void fillPropertyFromCollection(const boost::property_tree::ptree& collection, const char* name,
                                                It iterator, const T& defaultValue)
         {
             for (auto& pair : collection)
