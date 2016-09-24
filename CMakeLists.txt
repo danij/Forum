@@ -7,6 +7,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++14 -Wall -O4")
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 
 add_subdirectory(src/LibFastJsonWriter)
+add_subdirectory(src/LibForumContext)
 add_subdirectory(src/LibForumCommandHandlers)
 add_subdirectory(src/LibForumRepository)
 add_subdirectory(test/ForumServiceTests)

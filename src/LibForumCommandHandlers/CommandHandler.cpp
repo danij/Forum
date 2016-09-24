@@ -11,8 +11,9 @@ using namespace Forum::Repository;
     handlers_[command] = std::bind(&CommandHandler::function, this, std::placeholders::_1, std::placeholders::_2);
 
 
-CommandHandler::CommandHandler(ReadRepositoryConstRef readRepository, WriteRepositoryRef writeRepository)
-        : readRepository_(readRepository), writeRepository_(writeRepository)
+CommandHandler::CommandHandler(ReadRepositoryConstRef readRepository, WriteRepositoryRef writeRepository,
+                               MetricsRepositoryRef metricsRepository)
+        : readRepository_(readRepository), writeRepository_(writeRepository), metricsRepository_(metricsRepository)
 {
     setHandler(SHOW_VERSION, version);
     setHandler(COUNT_USERS, countUsers);
@@ -30,11 +31,7 @@ void CommandHandler::handle(Command command, const std::vector<std::string>& par
 
 void CommandHandler::version(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    Json::JsonWriter writer(output);
-    writer
-        << Json::objStart
-            << Json::propertySafeName("version", VERSION)
-        << Json::objEnd;
+    metricsRepository_->getVersion(output);
 }
 
 void CommandHandler::countUsers(const std::vector<std::string>& parameters, std::ostream& output)

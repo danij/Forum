@@ -40,5 +40,16 @@ namespace Forum
         };
 
         typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;
+
+
+        class IMetricsRepository
+        {
+        public:
+            virtual ~IMetricsRepository() = default;
+
+            virtual void getVersion(std::ostream& output) = 0;
+        };
+
+        typedef std::shared_ptr<IMetricsRepository> MetricsRepositoryRef;
     }
 }

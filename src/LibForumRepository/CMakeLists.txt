@@ -8,10 +8,10 @@ find_package(Boost REQUIRED COMPONENTS locale regex thread system)
 find_package(ICU)
 
 set(SOURCE_FILES MemoryRepository.cpp RandomGenerator.cpp EntitySerialization.cpp StringHelpers.cpp)
-set(HEADER_FILES ../Version.h Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h
-        ConstCollectionAdapter.h StringHelpers.h Configuration.h Configuration.cpp RandomGenerator.h
+set(HEADER_FILES Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h
+        ConstCollectionAdapter.h StringHelpers.h RandomGenerator.h
         EntitySerialization.h)
 
-include_directories(../. ../LibFastJsonWriter ${Boost_INCLUDE_DIRS})
+include_directories(../. ../LibFastJsonWriter ../LibForumContext ${Boost_INCLUDE_DIRS})
 
 add_library(libForumRepository STATIC ${SOURCE_FILES} ${HEADER_FILES})

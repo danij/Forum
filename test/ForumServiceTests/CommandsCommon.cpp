@@ -5,6 +5,7 @@
 
 #include "CommandsCommon.h"
 #include "MemoryRepository.h"
+#include "MetricsRepository.h"
 
 using namespace Forum::Commands;
 using namespace Forum::Repository;
@@ -12,7 +13,8 @@ using namespace Forum::Repository;
 std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
 {
     auto memoryRepository = std::make_shared<MemoryRepository>();
-    return std::make_shared<CommandHandler>(memoryRepository, memoryRepository);
+    auto metricsRepository = std::make_shared<MetricsRepository>();
+    return std::make_shared<CommandHandler>(memoryRepository, memoryRepository, metricsRepository);
 }
 
 std::string Forum::Helpers::handlerToString(CommandHandlerRef handler, Command command,

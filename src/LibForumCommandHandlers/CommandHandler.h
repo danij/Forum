@@ -25,7 +25,8 @@ namespace Forum
         {
         public:
             CommandHandler(Forum::Repository::ReadRepositoryConstRef readRepository,
-                           Forum::Repository::WriteRepositoryRef writeRepository);
+                           Forum::Repository::WriteRepositoryRef writeRepository,
+                           Forum::Repository::MetricsRepositoryRef metricsRepository);
             void handle(Command command, const std::vector<std::string>& parameters, std::ostream& output);
 
         private:
@@ -37,6 +38,7 @@ namespace Forum
             std::function<void(const std::vector<std::string>&, std::ostream&)> handlers_[int(LAST_COMMAND)];
             Forum::Repository::ReadRepositoryConstRef readRepository_;
             Forum::Repository::WriteRepositoryRef writeRepository_;
+            Forum::Repository::MetricsRepositoryRef metricsRepository_;
         };
 
         typedef std::shared_ptr<CommandHandler> CommandHandlerRef;
