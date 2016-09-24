@@ -16,6 +16,7 @@ namespace Forum
             MemoryRepository();
 
             virtual void getUserCount(std::ostream& output) const override;
+            virtual void getUsers(std::ostream& output) const override;
 
             virtual StatusCode addNewUser(const std::string& name, std::ostream& output) override;
 

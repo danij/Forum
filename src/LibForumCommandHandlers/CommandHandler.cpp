@@ -17,6 +17,7 @@ CommandHandler::CommandHandler(ReadRepositoryConstRef readRepository, WriteRepos
     setHandler(SHOW_VERSION, version);
     setHandler(COUNT_USERS, countUsers);
     setHandler(ADD_USER, addNewUser);
+    setHandler(GET_USERS, getUsers);
 }
 
 void CommandHandler::handle(Command command, const std::vector<std::string>& parameters, std::ostream& output)
@@ -56,4 +57,9 @@ void CommandHandler::addNewUser(const std::vector<std::string>& parameters, std:
     {
         writeStatusCode(output, code);
     }
+}
+
+void CommandHandler::getUsers(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    readRepository_->getUsers(output);
 }

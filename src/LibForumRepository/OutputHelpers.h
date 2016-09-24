@@ -32,5 +32,15 @@ namespace Forum
         {
             writeSingleValueSafeName(output, "status", int(code));
         }
+
+        template <typename TValue>
+        inline void writeSingleObjectSafeName(std::ostream& output, const char* name, const TValue& value)
+        {
+            Json::JsonWriter writer(output);
+            writer
+                << Json::objStart
+                    << Json::propertySafeName(name, value)
+                << Json::objEnd;
+        }
     }
 }

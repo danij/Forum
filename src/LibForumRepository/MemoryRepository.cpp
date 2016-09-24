@@ -1,10 +1,12 @@
 #include <boost/locale.hpp>
 #include <boost/regex/icu.hpp>
 
+#include "Configuration.h"
+#include "EntitySerialization.h"
 #include "MemoryRepository.h"
 #include "OutputHelpers.h"
+#include "RandomGenerator.h"
 #include "StringHelpers.h"
-#include "Configuration.h"
 
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
@@ -22,6 +24,15 @@ void MemoryRepository::getUserCount(std::ostream& output) const
                          count = collection.usersById().size();
                      });
     writeSingleValueSafeName(output, "count", count);
+}
+
+void MemoryRepository::getUsers(std::ostream& output) const
+{
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& users = collection.usersById();
+                         writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
+                     });
 }
 
 const auto validUserNameRegex = boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$");
@@ -49,6 +60,15 @@ StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& o
     {
         return StatusCode::VALUE_TOO_LONG;
     }
+
+    auto user = std::make_shared<User>();
+    user->id() = generateUUID();
+    user->name() = name;
+
+    collection_.write([&user](EntityCollection& collection)
+                      {
+                          collection.users().insert(user);
+                      });
 
     return StatusCode::OK;
 }

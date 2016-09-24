@@ -1,4 +1,6 @@
 #include <boost/test/unit_test.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 #include "CommandHandler.h"
 #include "TestHelpers.h"
@@ -129,7 +131,20 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_unicode_name_of_valid_length_succeeds
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_a_name_that_contains_invalid_characters_fails_with_appropriate_message)
 {
-    auto config = getGlobalConfig();
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "\xFF\xFF" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
+}
+
+BOOST_AUTO_TEST_CASE( A_user_that_was_created_can_be_retrieved )
+{
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_USER, { "User1" });
+    assertStatusCodeEqual(StatusCode::OK, returnObject);
+
+    returnObject = handlerToObj(handler, Forum::Commands::GET_USERS);
+    const auto& usersCollection = returnObject.get_child("users");
+    const auto& user1 = (*usersCollection.begin()).second;
+
+    BOOST_REQUIRE_NE(boost::uuids::to_string(boost::uuids::uuid()), user1.get<std::string>("id"));
+    BOOST_REQUIRE_EQUAL(std::string("User1"), user1.get<std::string>("name"));
 }

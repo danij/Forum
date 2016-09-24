@@ -15,6 +15,7 @@ namespace Forum
             virtual ~IReadRepository() = default;
 
             virtual void getUserCount(std::ostream& output) const = 0;
+            virtual void getUsers(std::ostream& output) const = 0;
         };
 
         typedef std::shared_ptr<const IReadRepository> ReadRepositoryConstRef;
