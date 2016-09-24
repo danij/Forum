@@ -17,19 +17,19 @@ namespace Forum
             inline auto begin() const { return cbegin(); };
             inline auto end() const { return cend(); };
 
-            inline static const T* getPointer(const std::shared_ptr<T>& ptr)
+            inline static const T& getReference(const std::shared_ptr<T>& ptr)
             {
-                return ptr.get();
+                return *ptr;
             }
 
             inline auto cbegin() const
             {
-                return boost::make_transform_iterator(collection_.cbegin(), getPointer);
+                return boost::make_transform_iterator(collection_.cbegin(), getReference);
             };
 
             inline auto cend() const
             {
-                return boost::make_transform_iterator(collection_.cend(), getPointer);
+                return boost::make_transform_iterator(collection_.cend(), getReference);
             };
 
         private:
