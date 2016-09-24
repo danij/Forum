@@ -8,8 +8,7 @@ static std::shared_ptr<const Forum::Configuration::Config> currentConfig =
 
 std::shared_ptr<const Forum::Configuration::Config> Forum::Configuration::getGlobalConfig()
 {
-    auto result = std::atomic_load(&currentConfig);
-    return result;
+    return std::atomic_load(&currentConfig);
 }
 
 void Forum::Configuration::setGlobalConfig(const Forum::Configuration::Config& value)
