@@ -10,8 +10,8 @@ namespace Forum
 {
     namespace Helpers
     {
-        const boost::locale::generator localeGenerator;
-        const auto en_US_UTF8Locale = localeGenerator("en_US.UTF-8");
+        extern const boost::locale::generator localeGenerator;
+        extern const std::locale en_US_UTF8Locale;
 
         template <typename T>
         inline auto getUTF8CharactersIterator(T begin, T end)
