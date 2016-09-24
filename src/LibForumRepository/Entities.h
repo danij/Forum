@@ -11,6 +11,7 @@
 #include <boost/uuid/uuid.hpp>
 
 #include "ConstCollectionAdapter.h"
+#include "StringHelpers.h"
 
 namespace Forum
 {
@@ -47,7 +48,8 @@ namespace Forum
                 boost::multi_index::hashed_unique<boost::multi_index::tag<UserCollectionById>,
                         const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &User::id>>,
                 boost::multi_index::ranked_unique<boost::multi_index::tag<UserCollectionByName>,
-                        const boost::multi_index::const_mem_fun<User, const std::string&, &User::name>>
+                        const boost::multi_index::const_mem_fun<User, const std::string&, &User::name>,
+                                Forum::Helpers::StringAccentAndCaseInsensitiveLess>
                 > {};
 
             typedef boost::multi_index_container<UserRef, UserCollectionIndices> UserCollection;

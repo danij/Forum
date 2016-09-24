@@ -30,5 +30,10 @@ namespace Forum
             auto iterator = getUTF8CharactersIterator(value);
             return std::distance(iterator.begin(), iterator.end());
         }
+
+        struct StringAccentAndCaseInsensitiveLess
+        {
+            bool operator()(const std::string& lhs, const std::string& rhs) const;
+        };
     }
 }
