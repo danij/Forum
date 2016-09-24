@@ -1,3 +1,5 @@
+#include <vector>
+
 #include <boost/test/unit_test.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -147,4 +149,24 @@ BOOST_AUTO_TEST_CASE( A_user_that_was_created_can_be_retrieved )
 
     BOOST_REQUIRE_NE(boost::uuids::to_string(boost::uuids::uuid()), user1.get<std::string>("id"));
     BOOST_REQUIRE_EQUAL(std::string("User1"), user1.get<std::string>("name"));
+}
+
+BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_name )
+{
+    auto handler = createCommandHandler();
+    std::vector<std::string> names = { "Abc", "Ghi", "Def" };
+
+    for (auto& name : names)
+    {
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { name }));
+    }
+
+    std::vector<std::string> retrievedNames;
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+                               "name", std::back_inserter(retrievedNames), std::string());
+
+    BOOST_REQUIRE_EQUAL(names.size(), retrievedNames.size());
+    BOOST_REQUIRE_EQUAL("Abc", retrievedNames[0]);
+    BOOST_REQUIRE_EQUAL("Def", retrievedNames[1]);
+    BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[2]);
 }

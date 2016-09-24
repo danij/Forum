@@ -30,7 +30,7 @@ void MemoryRepository::getUsers(std::ostream& output) const
 {
     collection_.read([&](const EntityCollection& collection)
                      {
-                         const auto& users = collection.usersById();
+                         const auto& users = collection.usersByName();
                          writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
                      });
 }

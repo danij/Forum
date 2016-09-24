@@ -19,5 +19,15 @@ namespace Forum
                                                  const std::vector<std::string>& parameters);
         boost::property_tree::ptree handlerToObj(Forum::Commands::CommandHandlerRef handler,
                                                  Forum::Commands::Command command);
+
+        template<typename T, typename It>
+        inline void fillPropertyFromCollection(boost::property_tree::ptree collection, const char* name,
+                                               It iterator, const T& defaultValue)
+        {
+            for (auto& pair : collection)
+            {
+                *iterator++ = pair.second.get(name, defaultValue);
+            }
+        };
     }
 }
