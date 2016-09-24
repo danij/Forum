@@ -137,18 +137,27 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_a_name_that_contains_invalid_characte
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
-BOOST_AUTO_TEST_CASE( A_user_that_was_created_can_be_retrieved )
+static const auto emptyIdString = boost::uuids::to_string(boost::uuids::uuid());
+
+BOOST_AUTO_TEST_CASE( A_user_that_was_created_can_be_retrieved_and_has_a_distinct_id )
 {
     auto handler = createCommandHandler();
-    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_USER, { "User1" });
-    assertStatusCodeEqual(StatusCode::OK, returnObject);
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "User1" }));
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "User2" }));
 
-    returnObject = handlerToObj(handler, Forum::Commands::GET_USERS);
-    const auto& usersCollection = returnObject.get_child("users");
-    const auto& user1 = (*usersCollection.begin()).second;
+    std::vector<std::string> retrievedIds;
+    std::vector<std::string> retrievedNames;
 
-    BOOST_REQUIRE_NE(boost::uuids::to_string(boost::uuids::uuid()), user1.get<std::string>("id"));
-    BOOST_REQUIRE_EQUAL(std::string("User1"), user1.get<std::string>("name"));
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+                               "id", std::back_inserter(retrievedIds), std::string());
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+                               "name", std::back_inserter(retrievedNames), std::string());
+
+    BOOST_REQUIRE_NE(emptyIdString, retrievedIds[0]);
+    BOOST_REQUIRE_NE(emptyIdString, retrievedIds[1]);
+    BOOST_REQUIRE_NE(retrievedIds[0], retrievedIds[1]);
+    BOOST_REQUIRE_EQUAL("User1", retrievedNames[0]);
+    BOOST_REQUIRE_EQUAL("User2", retrievedNames[1]);
 }
 
 BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_name )
