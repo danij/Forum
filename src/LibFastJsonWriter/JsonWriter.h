@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <functional>
-#include <iosfwd>
+#include <iostream>
 #include <stack>
 #include <string>
 
@@ -31,8 +31,6 @@ namespace Json
         explicit JsonWriter(std::ostream& stream);
 
         JsonWriter(const JsonWriter&) = delete;
-
-        JsonWriter(JsonWriter&& other);
 
         virtual ~JsonWriter();
 
@@ -56,36 +54,16 @@ namespace Json
 
         JsonWriter& newPropertyWithSafeName(const std::string& name);
 
-        JsonWriter& operator<<(bool value);
-
-        JsonWriter& operator<<(short value);
-
-        JsonWriter& operator<<(unsigned short value);
-
-        JsonWriter& operator<<(int value);
-
-        JsonWriter& operator<<(unsigned int value);
-
-        JsonWriter& operator<<(long value);
-
-        JsonWriter& operator<<(unsigned long value);
-
-        JsonWriter& operator<<(long long value);
-
-        JsonWriter& operator<<(unsigned long long value);
-
-        JsonWriter& operator<<(float value);
-
-        JsonWriter& operator<<(double value);
-
-        JsonWriter& operator<<(const std::string& value);
-
-        JsonWriter& operator<<(const char* value);
-
     protected:
-        void addCommaIfNeeded();
 
+        void addCommaIfNeeded();
         void writeEscapedString(const char* value, size_t length = 0);
+
+        template<typename T>
+        friend JsonWriter& operator<<(JsonWriter& writer, const T& value);
+        friend JsonWriter& operator<<(JsonWriter& writer, bool value);
+        friend JsonWriter& operator<<(JsonWriter& writer, const char* value);
+        friend JsonWriter& operator<<(JsonWriter& writer, const std::string& value);
 
         struct State
         {
@@ -94,9 +72,38 @@ namespace Json
             bool propertyNameAdded;
         };
 
-        std::ostream* _stream;
+        std::ostream& _stream;
         std::stack<State> _state;
     };
+
+    template <typename T>
+    inline JsonWriter& operator<<(JsonWriter& writer, const T& value)
+    {
+        writer.addCommaIfNeeded();
+        writer._stream << value;
+        return writer;
+    }
+
+    inline JsonWriter& operator<<(JsonWriter& writer, bool value)
+    {
+        writer.addCommaIfNeeded();
+        writer._stream << (value ? "true" : "false");
+        return writer;
+    }
+
+    inline JsonWriter& operator<<(JsonWriter& writer, const char* value)
+    {
+        writer.addCommaIfNeeded();
+        writer.writeEscapedString(value);
+        return writer;
+    }
+
+    inline JsonWriter& operator<<(JsonWriter& writer, const std::string& value)
+    {
+        writer.addCommaIfNeeded();
+        writer.writeEscapedString(value.c_str(), value.length());
+        return writer;
+    }
 
     inline JsonWriter& operator<<(JsonWriter& writer, JsonWriter& (* manipulator)(JsonWriter&))
     {
@@ -139,7 +146,7 @@ namespace Json
         writer.startArray();
         while (begin != end)
         {
-            writer << *begin;
+            operator<<(writer, *begin);
             ++begin;
         }
         writer.endArray();

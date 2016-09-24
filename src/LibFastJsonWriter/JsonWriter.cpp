@@ -26,16 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 using namespace Json;
 
-JsonWriter::JsonWriter(ostream& stream) : _stream(&stream)
+JsonWriter::JsonWriter(ostream& stream) : _stream(stream)
 {
    _state.push({ false, false, false });
-}
-
-JsonWriter::JsonWriter(JsonWriter && other)
-{
-   _state = move(other._state);
-   _stream = other._stream;
-   other._stream = nullptr;
 }
 
 JsonWriter::~JsonWriter()
@@ -45,21 +38,21 @@ JsonWriter::~JsonWriter()
 JsonWriter& JsonWriter::null()
 {
    addCommaIfNeeded();
-   *_stream << "null";
+   _stream << "null";
    return *this;
 }
 
 JsonWriter& JsonWriter::startArray()
 {
    addCommaIfNeeded();
-   *_stream << '[';
+   _stream << '[';
    _state.push({ true, false, false });
    return *this;
 }
 
 JsonWriter& JsonWriter::endArray()
 {
-   *_stream << ']';
+   _stream << ']';
    _state.pop();
    return *this;
 }
@@ -67,14 +60,14 @@ JsonWriter& JsonWriter::endArray()
 JsonWriter& JsonWriter::startObject()
 {
    addCommaIfNeeded();
-   *_stream << '{';
+   _stream << '{';
    _state.push({ true, false, false });
    return *this;
 }
 
 JsonWriter& JsonWriter::endObject()
 {
-   *_stream << '}';
+   _stream << '}';
    _state.pop();
    return *this;
 }
@@ -83,7 +76,7 @@ JsonWriter& JsonWriter::newProperty(const char* name)
 {
    addCommaIfNeeded();
    writeEscapedString(name);
-   *_stream << ':';
+   _stream << ':';
    _state.top().propertyNameAdded = true;
    return *this;
 }
@@ -92,7 +85,7 @@ JsonWriter& JsonWriter::newProperty(const string& name)
 {
    addCommaIfNeeded();
    writeEscapedString(name.c_str(), name.length());
-   *_stream << ':';
+   _stream << ':';
    _state.top().propertyNameAdded = true;
    return *this;
 }
@@ -100,7 +93,7 @@ JsonWriter& JsonWriter::newProperty(const string& name)
 JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name)
 {
    addCommaIfNeeded();
-   *_stream << '"' << name << "\":";
+   _stream << '"' << name << "\":";
    _state.top().propertyNameAdded = true;
    return *this;
 }
@@ -108,99 +101,8 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name)
 JsonWriter& JsonWriter::newPropertyWithSafeName(const string& name)
 {
    addCommaIfNeeded();
-   *_stream << '"' << name << "\":";
+   _stream << '"' << name << "\":";
    _state.top().propertyNameAdded = true;
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(bool value)
-{
-   addCommaIfNeeded();
-   *_stream << (value ? "true" : "false");
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(short value)
-{
-   addCommaIfNeeded();
-   *_stream << value;
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(unsigned short value)
-{
-   addCommaIfNeeded();
-   *_stream << value;
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(int value)
-{
-   addCommaIfNeeded();
-   *_stream << value;
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(unsigned int value)
-{
-   addCommaIfNeeded();
-   *_stream << value;
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(long value)
-{
-   addCommaIfNeeded();
-   *_stream << value;
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(unsigned long value)
-{
-   addCommaIfNeeded();
-   *_stream << value;
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(long long value)
-{
-   addCommaIfNeeded();
-   *_stream << value;
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(unsigned long long value)
-{
-   addCommaIfNeeded();
-   *_stream << value;
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(float value)
-{
-   addCommaIfNeeded();
-   *_stream << value;
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(double value)
-{
-   addCommaIfNeeded();
-   *_stream << value;
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(const char* value)
-{
-   addCommaIfNeeded();
-   writeEscapedString(value);
-   return *this;
-}
-
-JsonWriter& JsonWriter::operator<<(const string& value)
-{
-   addCommaIfNeeded();
-   writeEscapedString(value.c_str(), value.length());
    return *this;
 }
 
@@ -217,7 +119,7 @@ void JsonWriter::addCommaIfNeeded()
          }
          else
          {
-            *_stream << ',';
+            _stream << ',';
          }
       }
       else
@@ -252,7 +154,7 @@ void JsonWriter::writeEscapedString(const char* value, size_t length)
       length = strlen(value);
    }
 
-   *_stream << '"';
+   _stream << '"';
    if (length > 0)
    {
       const int toEscapeLength = sizeof(toEscape) / sizeof(toEscape[0]);
@@ -307,7 +209,7 @@ void JsonWriter::writeEscapedString(const char* value, size_t length)
          }
       }
 
-      *_stream << buffer;
+      _stream << buffer;
    }
-   *_stream << '"';
+   _stream << '"';
 }
