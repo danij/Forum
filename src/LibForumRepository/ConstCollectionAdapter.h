@@ -32,6 +32,12 @@ namespace Forum
                 return boost::make_transform_iterator(collection_.cend(), getPointer);
             };
 
+            template <typename TSearchType>
+            inline auto find(const TSearchType& value)
+            {
+                return boost::make_transform_iterator(collection_.find(value), getPointer);
+            }
+
         private:
             const TCollection& collection_;
         };

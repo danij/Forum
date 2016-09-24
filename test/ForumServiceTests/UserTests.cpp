@@ -179,3 +179,18 @@ BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_name )
     BOOST_REQUIRE_EQUAL("Def", retrievedNames[1]);
     BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[2]);
 }
+
+BOOST_AUTO_TEST_CASE( Adding_multiple_users_with_same_name_fails )
+{
+    auto handler = createCommandHandler();
+
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" }));
+    assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" }));
+
+    std::vector<std::string> retrievedNames;
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+                               "name", std::back_inserter(retrievedNames), std::string());
+
+    BOOST_REQUIRE_EQUAL(1, retrievedNames.size());
+    BOOST_REQUIRE_EQUAL("Abc", retrievedNames[0]);
+}

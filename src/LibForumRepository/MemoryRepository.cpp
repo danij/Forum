@@ -65,10 +65,17 @@ StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& o
     user->id() = generateUUID();
     user->name() = name;
 
-    collection_.write([&user](EntityCollection& collection)
+    auto statusCode = StatusCode::OK;
+    collection_.write([&](EntityCollection& collection)
                       {
+                          auto byName = collection.usersByName();
+                          if (byName.find(name) != byName.end())
+                          {
+                              statusCode = StatusCode::ALREADY_EXISTS;
+                              return;
+                          }
                           collection.users().insert(user);
                       });
 
-    return StatusCode::OK;
+    return statusCode;
 }
