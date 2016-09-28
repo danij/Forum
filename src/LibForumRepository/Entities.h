@@ -9,7 +9,8 @@ namespace Forum
 {
     namespace Entities
     {
-        typedef boost::uuids::uuid IdType;
+        //Using a string for representing the id to prevent constant conversions between string <-> uuid
+        typedef std::string IdType;
 
         struct Identifiable
         {

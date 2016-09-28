@@ -1,6 +1,3 @@
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-
 #include "CommandHandler.h"
 #include "JsonWriter.h"
 #include "OutputHelpers.h"
@@ -88,7 +85,7 @@ void CommandHandler::changeUserName(const std::vector<std::string>& parameters, 
     }
     else
     {
-        code = writeRepository_->changeUserName(boost::lexical_cast<IdType>(parameters[0]), parameters[1], output);
+        code = writeRepository_->changeUserName(parameters[0], parameters[1], output);
     }
     if (statusCodeNotWritten(code))
     {

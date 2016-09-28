@@ -90,7 +90,7 @@ StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& o
     }
 
     auto user = std::make_shared<User>();
-    user->id() = generateUUID();
+    user->id() = generateUUIDString();
     user->name() = name;
 
     auto statusCode = StatusCode::OK;

@@ -1,5 +1,3 @@
-#include <boost/uuid/uuid_io.hpp>
-
 #include "EntitySerialization.h"
 
 using namespace Forum::Entities;
@@ -9,7 +7,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const Forum::Entities::User& us
 {
     writer
         << objStart
-            << propertySafeName("id", boost::uuids::to_string(user.id()))
+            << propertySafeName("id", user.id())
             << propertySafeName("name", user.name())
         << objEnd;
     return writer;
