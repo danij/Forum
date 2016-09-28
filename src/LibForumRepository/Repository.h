@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 
+#include "Entities.h"
+
 namespace Forum
 {
     namespace Repository
@@ -16,6 +18,7 @@ namespace Forum
 
             virtual void getUserCount(std::ostream& output) const = 0;
             virtual void getUsers(std::ostream& output) const = 0;
+            virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
         };
 
         typedef std::shared_ptr<const IReadRepository> ReadRepositoryConstRef;
@@ -26,6 +29,7 @@ namespace Forum
             INVALID_PARAMETERS,
             VALUE_TOO_LONG,
             ALREADY_EXISTS,
+            NOT_FOUND,
             OUTPUT_ALREADY_WRITTEN = 0x10000000
         };
 
@@ -37,6 +41,8 @@ namespace Forum
             virtual ~IWriteRepository() = default;
 
             virtual StatusCode addNewUser(const std::string& name, std::ostream& output) = 0;
+            virtual StatusCode changeUserName(const Forum::Entities::IdType& id, const std::string& newName,
+                                              std::ostream& output) = 0;
         };
 
         typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;

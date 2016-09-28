@@ -1,9 +1,13 @@
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
+
 #include "CommandHandler.h"
 #include "JsonWriter.h"
 #include "OutputHelpers.h"
 #include "Version.h"
 
 using namespace Forum::Commands;
+using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
@@ -19,6 +23,8 @@ CommandHandler::CommandHandler(ReadRepositoryConstRef readRepository, WriteRepos
     setHandler(COUNT_USERS, countUsers);
     setHandler(ADD_USER, addNewUser);
     setHandler(GET_USERS, getUsers);
+    setHandler(GET_USER_BY_NAME, getUserByName);
+    setHandler(CHANGE_USER_NAME, changeUserName);
 }
 
 void CommandHandler::handle(Command command, const std::vector<std::string>& parameters, std::ostream& output)
@@ -59,4 +65,33 @@ void CommandHandler::addNewUser(const std::vector<std::string>& parameters, std:
 void CommandHandler::getUsers(const std::vector<std::string>& parameters, std::ostream& output)
 {
     readRepository_->getUsers(output);
+}
+
+void CommandHandler::getUserByName(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if (parameters.empty())
+    {
+        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
+    }
+    else
+    {
+        readRepository_->getUserByName(parameters[0], output);
+    }
+}
+
+void CommandHandler::changeUserName(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    StatusCode code;
+    if (parameters.size() != 2)
+    {
+        code = StatusCode::INVALID_PARAMETERS;
+    }
+    else
+    {
+        code = writeRepository_->changeUserName(boost::lexical_cast<IdType>(parameters[0]), parameters[1], output);
+    }
+    if (statusCodeNotWritten(code))
+    {
+        writeStatusCode(output, code);
+    }
 }

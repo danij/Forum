@@ -18,8 +18,11 @@ namespace Forum
 
             virtual void getUserCount(std::ostream& output) const override;
             virtual void getUsers(std::ostream& output) const override;
+            virtual void getUserByName(const std::string& name, std::ostream& output) const override;
 
             virtual StatusCode addNewUser(const std::string& name, std::ostream& output) override;
+            virtual StatusCode changeUserName(const Forum::Entities::IdType& id, const std::string& newName,
+                                              std::ostream& output) override;
 
         private:
             Forum::Helpers::ResourceGuard<Forum::Entities::EntityCollection> collection_;

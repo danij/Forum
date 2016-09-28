@@ -17,10 +17,12 @@ namespace Forum
             UserConfig user;
         };
 
+        typedef std::shared_ptr<const Config> ConfigConstRef;
+
         /**
          * Returns a thread-safe reference to an immutable configuration structure
          */
-        std::shared_ptr<const Config> getGlobalConfig();
+        ConfigConstRef getGlobalConfig();
 
         /**
          * Replaces the current configuration structure in a thread-safe manner.

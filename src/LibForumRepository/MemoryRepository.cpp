@@ -8,6 +8,7 @@
 #include "RandomGenerator.h"
 #include "StringHelpers.h"
 
+using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
@@ -35,9 +36,26 @@ void MemoryRepository::getUsers(std::ostream& output) const
                      });
 }
 
+void MemoryRepository::getUserByName(const std::string& name, std::ostream& output) const
+{
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& index = collection.usersByName();
+                         auto it = index.find(name);
+                         if (it == index.end())
+                         {
+                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                         }
+                         else
+                         {
+                             writeSingleObjectSafeName(output, "user", **it);
+                         }
+                     });
+}
+
 const auto validUserNameRegex = boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$");
 
-StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
+static StatusCode validateUserName(const std::string& name, const ConfigConstRef& config)
 {
     if (name.empty())
     {
@@ -54,11 +72,21 @@ StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& o
     {
         return StatusCode::INVALID_PARAMETERS;
     }
-    auto config = Configuration::getGlobalConfig();
 
     if (countUTF8Characters(name) > config->user.maxNameLength)
     {
         return StatusCode::VALUE_TOO_LONG;
+    }
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
+{
+    auto validationCode = validateUserName(name, Configuration::getGlobalConfig());
+    if (validationCode != StatusCode::OK)
+    {
+        return validationCode;
     }
 
     auto user = std::make_shared<User>();
@@ -75,6 +103,33 @@ StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& o
                               return;
                           }
                           collection.users().insert(user);
+                      });
+
+    return statusCode;
+}
+
+StatusCode MemoryRepository::changeUserName(const IdType& id, const std::string& newName, std::ostream& output)
+{
+    auto validationCode = validateUserName(newName, Configuration::getGlobalConfig());
+    if (validationCode != StatusCode::OK)
+    {
+        return validationCode;
+    }
+
+    auto statusCode = StatusCode::OK;
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto index = collection.usersById();
+                          auto it = index.find(id);
+                          if (it == index.end())
+                          {
+                              statusCode = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          collection.modifyUser((*it)->id(), [&newName](User& user)
+                          {
+                              user.name() = newName;
+                          });
                       });
 
     return statusCode;

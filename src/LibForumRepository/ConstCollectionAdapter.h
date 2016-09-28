@@ -33,7 +33,7 @@ namespace Forum
             };
 
             template <typename TSearchType>
-            inline auto find(const TSearchType& value)
+            inline auto find(const TSearchType& value) const
             {
                 return boost::make_transform_iterator(collection_.find(value), getPointer);
             }

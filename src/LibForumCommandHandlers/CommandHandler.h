@@ -18,6 +18,8 @@ namespace Forum
             COUNT_USERS,
             ADD_USER,
             GET_USERS,
+            GET_USER_BY_NAME,
+            CHANGE_USER_NAME,
             LAST_COMMAND
         };
 
@@ -31,9 +33,12 @@ namespace Forum
 
         private:
             void version(const std::vector<std::string>& parameters, std::ostream& output);
+
             void countUsers(const std::vector<std::string>& parameters, std::ostream& output);
             void addNewUser(const std::vector<std::string>& parameters, std::ostream& output);
             void getUsers(const std::vector<std::string>& parameters, std::ostream& output);
+            void getUserByName(const std::vector<std::string>& parameters, std::ostream& output);
+            void changeUserName(const std::vector<std::string>& parameters, std::ostream& output);
 
             std::function<void(const std::vector<std::string>&, std::ostream&)> handlers_[int(LAST_COMMAND)];
             Forum::Repository::ReadRepositoryConstRef readRepository_;

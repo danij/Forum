@@ -224,3 +224,84 @@ BOOST_AUTO_TEST_CASE( Adding_multiple_users_with_same_name_but_different_accents
     BOOST_REQUIRE_EQUAL(1, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("HélĹǬ", retrievedNames[0]);
 }
+
+BOOST_AUTO_TEST_CASE( Missing_users_retrieved_by_name_returns_not_found )
+{
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Ghi" }));
+}
+
+BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name )
+{
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" }));
+
+    auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
+    auto userId = user.get<std::string>("user.id");
+
+    BOOST_REQUIRE_EQUAL(false, user.get<std::string>("user.id").empty());
+    BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
+}
+
+BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name_case_and_accent_insensitive )
+{
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "HélĹǬ" }));
+
+    auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Hello" });
+    auto userId = user.get<std::string>("user.id");
+
+    BOOST_REQUIRE_EQUAL(false, user.get<std::string>("user.id").empty());
+    BOOST_REQUIRE_EQUAL("HélĹǬ", user.get<std::string>("user.name"));
+}
+
+BOOST_AUTO_TEST_CASE( Modifying_a_user_name_succeds )
+{
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" }));
+
+    auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
+    BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
+    auto userId = user.get<std::string>("user.id");
+
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::CHANGE_USER_NAME, { userId, "Xyz" }));
+    auto modifiedUser = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Xyz" });
+
+    BOOST_REQUIRE_EQUAL("Xyz", modifiedUser.get<std::string>("user.name"));
+    BOOST_REQUIRE_EQUAL(userId, modifiedUser.get<std::string>("user.id"));
+}
+
+BOOST_AUTO_TEST_CASE( Modifying_an_inexistent_user_name_returns_not_found )
+{
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND,
+                          handlerToObj(handler, Forum::Commands::CHANGE_USER_NAME, { "bogus id", "Xyz" }));
+}
+
+BOOST_AUTO_TEST_CASE( Modifying_a_user_name_reorders_users )
+{
+    auto handler = createCommandHandler();
+    std::vector<std::string> names = { "Abc", "Ghi", "Def" };
+
+    for (auto& name : names)
+    {
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { name }));
+    }
+
+    auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
+    BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
+    auto userId = user.get<std::string>("user.id");
+
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::CHANGE_USER_NAME, { userId, "Xyz" }));
+
+    std::vector<std::string> retrievedNames;
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+                               "name", std::back_inserter(retrievedNames), std::string());
+
+    BOOST_REQUIRE_EQUAL(names.size(), retrievedNames.size());
+    BOOST_REQUIRE_EQUAL("Def", retrievedNames[0]);
+    BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[1]);
+    BOOST_REQUIRE_EQUAL("Xyz", retrievedNames[2]);
+}

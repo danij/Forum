@@ -36,6 +36,11 @@ namespace Forum
             inline auto  usersById()   const { return Helpers::toConst(users_.get<UserCollectionById>()); }
             inline auto  usersByName() const { return Helpers::toConst(users_.get<UserCollectionByName>()); }
 
+            /**
+             * Enables a safe modification of a user instance, refreshing all indexes the user in registered in
+             */
+            void modifyUser(const IdType& id, std::function<void(User&)> modifyFunction);
+
         private:
             UserCollection users_;
         };
