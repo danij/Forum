@@ -17,7 +17,7 @@ namespace Forum
 {
     namespace Entities
     {
-        struct EntityCollection
+        struct EntityCollection : private boost::noncopyable
         {
             struct UserCollectionById {};
             struct UserCollectionByName {};
