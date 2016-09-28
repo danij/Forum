@@ -10,7 +10,7 @@ find_package(ICU)
 set(SOURCE_FILES MemoryRepository.cpp RandomGenerator.cpp EntitySerialization.cpp StringHelpers.cpp)
 set(HEADER_FILES Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h
         ConstCollectionAdapter.h StringHelpers.h RandomGenerator.h
-        EntitySerialization.h)
+        EntitySerialization.h EntityCollection.h)
 
 include_directories(../. ../LibFastJsonWriter ../LibForumContext ${Boost_INCLUDE_DIRS})
 

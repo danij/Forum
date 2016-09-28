@@ -3,6 +3,7 @@
 #include <boost/core/noncopyable.hpp>
 
 #include "Entities.h"
+#include "EntityCollection.h"
 #include "Repository.h"
 #include "ResourceGuard.h"
 
