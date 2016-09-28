@@ -53,7 +53,7 @@ void MemoryRepository::getUserByName(const std::string& name, std::ostream& outp
                      });
 }
 
-const auto validUserNameRegex = boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$");
+static const auto validUserNameRegex = boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$");
 
 static StatusCode validateUserName(const std::string& name, const ConfigConstRef& config)
 {
