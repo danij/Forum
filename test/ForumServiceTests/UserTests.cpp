@@ -270,6 +270,18 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_name_succeds )
     BOOST_REQUIRE_EQUAL(userId, modifiedUser.get<std::string>("user.id"));
 }
 
+BOOST_AUTO_TEST_CASE( Modifying_a_user_name_with_an_already_existent_value_fails )
+{
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" }));
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "Def" }));
+
+    auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
+    auto userId = user.get<std::string>("user.id");
+    assertStatusCodeEqual(StatusCode::ALREADY_EXISTS,
+                          handlerToObj(handler, Forum::Commands::CHANGE_USER_NAME, { userId, "Def" }));
+}
+
 BOOST_AUTO_TEST_CASE( Modifying_an_inexistent_user_name_returns_not_found )
 {
     auto handler = createCommandHandler();

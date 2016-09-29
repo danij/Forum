@@ -119,11 +119,17 @@ StatusCode MemoryRepository::changeUserName(const IdType& id, const std::string&
     auto statusCode = StatusCode::OK;
     collection_.write([&](EntityCollection& collection)
                       {
-                          auto index = collection.usersById();
-                          auto it = index.find(id);
-                          if (it == index.end())
+                          auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
                           {
                               statusCode = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
+                          if (indexByName.find(newName) != indexByName.end())
+                          {
+                              statusCode = StatusCode::ALREADY_EXISTS;
                               return;
                           }
                           collection.modifyUser((*it)->id(), [&newName](User& user)
