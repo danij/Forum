@@ -40,6 +40,8 @@ namespace Forum
             void getUserByName(const std::vector<std::string>& parameters, std::ostream& output);
             void changeUserName(const std::vector<std::string>& parameters, std::ostream& output);
 
+            bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);
+
             std::function<void(const std::vector<std::string>&, std::ostream&)> handlers_[int(LAST_COMMAND)];
             Forum::Repository::ReadRepositoryConstRef readRepository_;
             Forum::Repository::WriteRepositoryRef writeRepository_;

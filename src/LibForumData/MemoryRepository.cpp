@@ -86,55 +86,54 @@ static StatusCode validateUserName(const std::string& name, const ConfigConstRef
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
+void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
 {
+    StatusWriter status(output, StatusCode::OK);
     auto validationCode = validateUserName(name, Configuration::getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
-        return validationCode;
+        status = validationCode;
+        return;
     }
 
     auto user = std::make_shared<User>();
     user->id() = generateUUIDString();
     user->name() = name;
 
-    auto statusCode = StatusCode::OK;
     collection_.write([&](EntityCollection& collection)
                       {
                           auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
                           if (indexByName.find(name) != indexByName.end())
                           {
-                              statusCode = StatusCode::ALREADY_EXISTS;
+                              status = StatusCode::ALREADY_EXISTS;
                               return;
                           }
                           collection.users().insert(user);
                       });
-
-    return statusCode;
 }
 
-StatusCode MemoryRepository::changeUserName(const IdType& id, const std::string& newName, std::ostream& output)
+void MemoryRepository::changeUserName(const IdType& id, const std::string& newName, std::ostream& output)
 {
+    StatusWriter status(output, StatusCode::OK);
     auto validationCode = validateUserName(newName, Configuration::getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
-        return validationCode;
+        status = validationCode;
     }
 
-    auto statusCode = StatusCode::OK;
     collection_.write([&](EntityCollection& collection)
                       {
                           auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
                           auto it = indexById.find(id);
                           if (it == indexById.end())
                           {
-                              statusCode = StatusCode::NOT_FOUND;
+                              status = StatusCode::NOT_FOUND;
                               return;
                           }
                           auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
                           if (indexByName.find(newName) != indexByName.end())
                           {
-                              statusCode = StatusCode::ALREADY_EXISTS;
+                              status = StatusCode::ALREADY_EXISTS;
                               return;
                           }
                           collection.modifyUser((*it)->id(), [&newName](User& user)
@@ -142,6 +141,4 @@ StatusCode MemoryRepository::changeUserName(const IdType& id, const std::string&
                               user.name() = newName;
                           });
                       });
-
-    return statusCode;
 }

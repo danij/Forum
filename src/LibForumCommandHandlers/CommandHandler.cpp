@@ -42,21 +42,21 @@ void CommandHandler::countUsers(const std::vector<std::string>& parameters, std:
     readRepository_->getUserCount(output);
 }
 
+bool CommandHandler::checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output,
+                                             size_t number)
+{
+    if (parameters.size() != number)
+    {
+        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
+        return false;
+    }
+    return true;
+}
+
 void CommandHandler::addNewUser(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    StatusCode code;
-    if (parameters.empty())
-    {
-        code = StatusCode::INVALID_PARAMETERS;
-    }
-    else
-    {
-        code = writeRepository_->addNewUser(parameters[0], output);
-    }
-    if (statusCodeNotWritten(code))
-    {
-        writeStatusCode(output, code);
-    }
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    writeRepository_->addNewUser(parameters[0], output);
 }
 
 void CommandHandler::getUsers(const std::vector<std::string>& parameters, std::ostream& output)
@@ -66,29 +66,12 @@ void CommandHandler::getUsers(const std::vector<std::string>& parameters, std::o
 
 void CommandHandler::getUserByName(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    if (parameters.empty())
-    {
-        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
-    }
-    else
-    {
-        readRepository_->getUserByName(parameters[0], output);
-    }
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getUserByName(parameters[0], output);
 }
 
 void CommandHandler::changeUserName(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    StatusCode code;
-    if (parameters.size() != 2)
-    {
-        code = StatusCode::INVALID_PARAMETERS;
-    }
-    else
-    {
-        code = writeRepository_->changeUserName(parameters[0], parameters[1], output);
-    }
-    if (statusCodeNotWritten(code))
-    {
-        writeStatusCode(output, code);
-    }
+    if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+    writeRepository_->changeUserName(parameters[0], parameters[1], output);
 }

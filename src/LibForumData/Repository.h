@@ -30,20 +30,17 @@ namespace Forum
             VALUE_TOO_LONG,
             VALUE_TOO_SHORT,
             ALREADY_EXISTS,
-            NOT_FOUND,
-            OUTPUT_ALREADY_WRITTEN = 0x10000000
+            NOT_FOUND
         };
-
-        inline bool statusCodeNotWritten(StatusCode value) { return (value & StatusCode::OUTPUT_ALREADY_WRITTEN) == 0; }
 
         class IWriteRepository
         {
         public:
             virtual ~IWriteRepository() = default;
 
-            virtual StatusCode addNewUser(const std::string& name, std::ostream& output) = 0;
-            virtual StatusCode changeUserName(const Forum::Entities::IdType& id, const std::string& newName,
-                                              std::ostream& output) = 0;
+            virtual void addNewUser(const std::string& name, std::ostream& output) = 0;
+            virtual void changeUserName(const Forum::Entities::IdType& id, const std::string& newName,
+                                        std::ostream& output) = 0;
         };
 
         typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;
