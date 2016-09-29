@@ -11,9 +11,9 @@ set(SOURCE_FILES main.cpp SimpleCommandTests.cpp CommandsCommon.cpp UserTests.cp
 set(HEADER_FILES TestHelpers.h CommandsCommon.h)
 
 include_directories(../../src ../../src/LibFastJsonWriter ../../src/LibForumContext
-        ../../src/LibForumCommandHandlers ../../src/LibForumRepository ${Boost_INCLUDE_DIRS})
+        ../../src/LibForumCommandHandlers ../../src/LibForumData ${Boost_INCLUDE_DIRS})
 
 add_executable(ForumServiceTests ${SOURCE_FILES} ${HEADER_FILES} ${JSON_HEADER_FILES})
-target_link_libraries(ForumServiceTests libFastJsonWriter libForumContext libForumCommandHandlers libForumRepository
+target_link_libraries(ForumServiceTests libFastJsonWriter libForumContext libForumCommandHandlers libForumData
         ${Boost_LIBRARIES} ${ICU_LIBRARIES} ${ICU_I18N_LIBRARIES} -liconv)
 install (TARGETS ForumServiceTests RUNTIME DESTINATION ${PROJECT_BINARY_DIR})

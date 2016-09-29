@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.3)
-project(LibForumRepository CXX)
+project(LibForumData CXX)
 
 set(Boost_USE_STATIC_LIBS    OFF)
 set(Boost_USE_MULTITHREADED  ON)
@@ -14,4 +14,4 @@ set(HEADER_FILES Entities.h MemoryRepository.h Repository.h ResourceGuard.h Outp
 
 include_directories(../. ../LibFastJsonWriter ../LibForumContext ${Boost_INCLUDE_DIRS})
 
-add_library(libForumRepository STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(libForumData STATIC ${SOURCE_FILES} ${HEADER_FILES})

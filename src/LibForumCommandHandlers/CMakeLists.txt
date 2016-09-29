@@ -9,6 +9,6 @@ find_package(Boost REQUIRED)
 set(SOURCE_FILES CommandHandler.cpp)
 set(HEADER_FILES CommandHandler.h ../Version.h)
 
-include_directories(../. ../LibFastJsonWriter ../LibForumRepository ${Boost_INCLUDE_DIRS})
+include_directories(../. ../LibFastJsonWriter ../LibForumData ${Boost_INCLUDE_DIRS})
 
 add_library(libForumCommandHandlers STATIC ${SOURCE_FILES} ${HEADER_FILES})
