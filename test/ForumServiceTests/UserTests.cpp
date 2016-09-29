@@ -238,7 +238,6 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name )
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" }));
 
     auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
-    auto userId = user.get<std::string>("user.id");
 
     BOOST_REQUIRE_EQUAL(false, user.get<std::string>("user.id").empty());
     BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
@@ -250,7 +249,6 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name_case_and_accent_insensitive
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "HélĹǬ" }));
 
     auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Hello" });
-    auto userId = user.get<std::string>("user.id");
 
     BOOST_REQUIRE_EQUAL(false, user.get<std::string>("user.id").empty());
     BOOST_REQUIRE_EQUAL("HélĹǬ", user.get<std::string>("user.name"));
