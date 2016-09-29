@@ -96,8 +96,8 @@ StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& o
     auto statusCode = StatusCode::OK;
     collection_.write([&](EntityCollection& collection)
                       {
-                          auto byName = collection.usersByName();
-                          if (byName.find(name) != byName.end())
+                          auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
+                          if (indexByName.find(name) != indexByName.end())
                           {
                               statusCode = StatusCode::ALREADY_EXISTS;
                               return;
