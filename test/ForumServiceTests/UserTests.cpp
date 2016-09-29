@@ -323,3 +323,37 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_name_reorders_users )
     BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[1]);
     BOOST_REQUIRE_EQUAL("Xyz", retrievedNames[2]);
 }
+
+BOOST_AUTO_TEST_CASE( Deleting_an_inexistent_user_name_returns_not_found )
+{
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND,
+                          handlerToObj(handler, Forum::Commands::DELETE_USER, { "bogus id" }));
+}
+
+BOOST_AUTO_TEST_CASE( Deleted_users_can_no_longer_be_retrieved )
+{
+    auto handler = createCommandHandler();
+    std::vector<std::string> names = { "Abc", "Ghi", "Def" };
+
+    for (auto& name : names)
+    {
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { name }));
+    }
+
+    auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
+    BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
+    auto userId = user.get<std::string>("user.id");
+
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_USER, { userId }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" }));
+
+    std::vector<std::string> retrievedNames;
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+                               "name", std::back_inserter(retrievedNames), std::string());
+
+    BOOST_REQUIRE_EQUAL(names.size() - 1, retrievedNames.size());
+    BOOST_REQUIRE_EQUAL("Def", retrievedNames[0]);
+    BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[1]);
+}

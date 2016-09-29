@@ -18,3 +18,14 @@ void EntityCollection::modifyUser(const IdType& id, std::function<void(User&)> m
        }
     });
 }
+
+void EntityCollection::deleteUser(const IdType& id)
+{
+    auto& index = users_.get<UserCollectionById>();
+    auto it = index.find(id);
+    if (it == index.end())
+    {
+        return;
+    }
+    users_.erase(it);
+}

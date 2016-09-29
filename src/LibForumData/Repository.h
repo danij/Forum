@@ -41,6 +41,7 @@ namespace Forum
             virtual void addNewUser(const std::string& name, std::ostream& output) = 0;
             virtual void changeUserName(const Forum::Entities::IdType& id, const std::string& newName,
                                         std::ostream& output) = 0;
+            virtual void deleteUser(const Forum::Entities::IdType& id, std::ostream& output) = 0;
         };
 
         typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;

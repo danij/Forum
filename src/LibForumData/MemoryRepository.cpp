@@ -142,3 +142,20 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
                           });
                       });
 }
+
+void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          collection.deleteUser((*it)->id());
+                      });
+}

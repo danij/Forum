@@ -20,6 +20,7 @@ namespace Forum
             GET_USERS,
             GET_USER_BY_NAME,
             CHANGE_USER_NAME,
+            DELETE_USER,
             LAST_COMMAND
         };
 
@@ -39,6 +40,7 @@ namespace Forum
             void getUsers(const std::vector<std::string>& parameters, std::ostream& output);
             void getUserByName(const std::vector<std::string>& parameters, std::ostream& output);
             void changeUserName(const std::vector<std::string>& parameters, std::ostream& output);
+            void deleteUser(const std::vector<std::string>& parameters, std::ostream& output);
 
             bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);
 

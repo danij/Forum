@@ -22,6 +22,7 @@ CommandHandler::CommandHandler(ReadRepositoryConstRef readRepository, WriteRepos
     setHandler(GET_USERS, getUsers);
     setHandler(GET_USER_BY_NAME, getUserByName);
     setHandler(CHANGE_USER_NAME, changeUserName);
+    setHandler(DELETE_USER, deleteUser);
 }
 
 void CommandHandler::handle(Command command, const std::vector<std::string>& parameters, std::ostream& output)
@@ -74,4 +75,10 @@ void CommandHandler::changeUserName(const std::vector<std::string>& parameters, 
 {
     if ( ! checkNumberOfParameters(parameters, output, 2)) return;
     writeRepository_->changeUserName(parameters[0], parameters[1], output);
+}
+
+void CommandHandler::deleteUser(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    writeRepository_->deleteUser(parameters[0], output);
 }

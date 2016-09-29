@@ -23,6 +23,7 @@ namespace Forum
             virtual void addNewUser(const std::string& name, std::ostream& output) override;
             virtual void changeUserName(const Forum::Entities::IdType& id, const std::string& newName,
                                         std::ostream& output) override;
+            virtual void deleteUser(const Forum::Entities::IdType& id, std::ostream& output) override;
 
         private:
             Forum::Helpers::ResourceGuard<Forum::Entities::EntityCollection> collection_;
