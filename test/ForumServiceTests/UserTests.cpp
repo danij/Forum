@@ -104,6 +104,14 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_accented_letters_in_the_name_succeeds
     assertStatusCodeEqual(StatusCode::OK, returnObject);
 }
 
+BOOST_AUTO_TEST_CASE( Creating_a_user_with_a_too_short_name_fails )
+{
+    auto config = getGlobalConfig();
+    std::string username(config->user.minNameLength - 1, 'a');
+    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { username });
+    assertStatusCodeEqual(StatusCode::VALUE_TOO_SHORT, returnObject);
+}
+
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_a_longer_name_fails )
 {
     auto config = getGlobalConfig();

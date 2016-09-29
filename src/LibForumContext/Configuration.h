@@ -9,6 +9,7 @@ namespace Forum
     {
         struct UserConfig
         {
+            uint16_t minNameLength = 3;
             uint16_t maxNameLength = 20;
         };
 

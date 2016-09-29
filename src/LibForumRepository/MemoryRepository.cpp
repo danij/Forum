@@ -73,9 +73,14 @@ static StatusCode validateUserName(const std::string& name, const ConfigConstRef
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    if (countUTF8Characters(name) > config->user.maxNameLength)
+    auto nrCharacters = countUTF8Characters(name);
+    if (nrCharacters > config->user.maxNameLength)
     {
         return StatusCode::VALUE_TOO_LONG;
+    }
+    if (nrCharacters < config->user.minNameLength)
+    {
+        return StatusCode::VALUE_TOO_SHORT;
     }
 
     return StatusCode::OK;
