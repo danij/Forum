@@ -1,9 +1,12 @@
 #pragma once
 
+#include <vector>
+
 #include <boost/core/noncopyable.hpp>
 
 #include "Entities.h"
 #include "EntityCollection.h"
+#include "ObserverCollection.h"
 #include "Repository.h"
 #include "ResourceGuard.h"
 
@@ -16,6 +19,11 @@ namespace Forum
         public:
             MemoryRepository();
 
+            virtual void addObserver(const ReadRepositoryObserverRef& observer) override;
+            virtual void addObserver(const WriteRepositoryObserverRef& observer) override;
+            virtual void removeObserver(const ReadRepositoryObserverRef& observer) override;
+            virtual void removeObserver(const WriteRepositoryObserverRef& observer) override;
+
             virtual void getUserCount(std::ostream& output) const override;
             virtual void getUsers(std::ostream& output) const override;
             virtual void getUserByName(const std::string& name, std::ostream& output) const override;
@@ -26,7 +34,10 @@ namespace Forum
             virtual void deleteUser(const Forum::Entities::IdType& id, std::ostream& output) override;
 
         private:
+            PerformedByType getPerformedBy() const;
+
             Forum::Helpers::ResourceGuard<Forum::Entities::EntityCollection> collection_;
+            mutable ObserverCollection observers_;
         };
     }
 }

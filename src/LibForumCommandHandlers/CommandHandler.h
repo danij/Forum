@@ -27,10 +27,13 @@ namespace Forum
         class CommandHandler : private boost::noncopyable
         {
         public:
-            CommandHandler(Forum::Repository::ReadRepositoryConstRef readRepository,
+            CommandHandler(Forum::Repository::ReadRepositoryRef readRepository,
                            Forum::Repository::WriteRepositoryRef writeRepository,
                            Forum::Repository::MetricsRepositoryRef metricsRepository);
             void handle(Command command, const std::vector<std::string>& parameters, std::ostream& output);
+
+            Forum::Repository::ReadRepositoryRef getReadRepository();
+            Forum::Repository::WriteRepositoryRef getWriteRepository();
 
         private:
             void version(const std::vector<std::string>& parameters, std::ostream& output);
@@ -45,7 +48,7 @@ namespace Forum
             bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);
 
             std::function<void(const std::vector<std::string>&, std::ostream&)> handlers_[int(LAST_COMMAND)];
-            Forum::Repository::ReadRepositoryConstRef readRepository_;
+            Forum::Repository::ReadRepositoryRef readRepository_;
             Forum::Repository::WriteRepositoryRef writeRepository_;
             Forum::Repository::MetricsRepositoryRef metricsRepository_;
         };

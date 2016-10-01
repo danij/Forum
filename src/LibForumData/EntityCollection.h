@@ -49,5 +49,7 @@ namespace Forum
         private:
             UserCollection users_;
         };
+
+        extern const User AnonymousUser;
     }
 }

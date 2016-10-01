@@ -2,6 +2,8 @@
 
 using namespace Forum::Entities;
 
+const User Forum::Entities::AnonymousUser("<anonymous>");
+
 void EntityCollection::modifyUser(const IdType& id, std::function<void(User&)> modifyFunction)
 {
     auto& index = users_.get<UserCollectionById>();

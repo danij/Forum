@@ -4,20 +4,46 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include "CommandsCommon.h"
 #include "CommandHandler.h"
+#include "Configuration.h"
+#include "DelegateObserver.h"
 #include "TestHelpers.h"
 #include "Version.h"
-#include "CommandsCommon.h"
-#include "Configuration.h"
 
 using namespace Forum::Configuration;
+using namespace Forum::Entities;
 using namespace Forum::Helpers;
-using Forum::Repository::StatusCode;
+using namespace Forum::Repository;
 
 BOOST_AUTO_TEST_CASE( User_count_is_initially_zero )
 {
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::COUNT_USERS);
     BOOST_REQUIRE_EQUAL(0, returnObject.get<int>("count"));
+}
+
+BOOST_AUTO_TEST_CASE( Counting_users_invokes_observer )
+{
+    bool observerCalled = false;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->getUserCountAction = [&](auto& _) { observerCalled = true; };
+
+    handlerToObj(handler, Forum::Commands::COUNT_USERS);
+    BOOST_REQUIRE(observerCalled);
+}
+
+BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
+{
+    bool observerCalled = false;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->getUsersAction = [&](auto& _) { observerCalled = true; };
+
+    handlerToObj(handler, Forum::Commands::GET_USERS);
+    BOOST_REQUIRE(observerCalled);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_no_parameters_fails )
@@ -30,6 +56,21 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_empty_name_fails )
 {
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
+}
+
+BOOST_AUTO_TEST_CASE( Creating_a_user_invokes_observer )
+{
+    std::string newUserName;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->addNewUserAction = [&](auto& _, auto& newUser)
+    {
+        newUserName = newUser.name();
+    };
+
+    handlerToObj(handler, Forum::Commands::ADD_USER, { "Foo" });
+    BOOST_REQUIRE_EQUAL("Foo", newUserName);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_only_whitespace_in_the_name_fails )
@@ -251,6 +292,18 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name )
     BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
 }
 
+BOOST_AUTO_TEST_CASE( Retrieving_users_by_name_invokes_observer )
+{
+    std::string nameToBeRetrieved;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->getUsersByNameAction = [&](auto& _, auto& name) { nameToBeRetrieved = name; };
+
+    handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "SampleUser" });
+    BOOST_REQUIRE_EQUAL("SampleUser", nameToBeRetrieved);
+}
+
 BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name_case_and_accent_insensitive )
 {
     auto handler = createCommandHandler();
@@ -324,6 +377,28 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_name_reorders_users )
     BOOST_REQUIRE_EQUAL("Xyz", retrievedNames[2]);
 }
 
+BOOST_AUTO_TEST_CASE( Modifying_a_user_invokes_observer )
+{
+    std::string newName;
+    auto userChange = User::ChangeType::None;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->changeUserAction = [&](auto& _, auto& user, auto change)
+    {
+        newName = user.name();
+        userChange = change;
+    };
+
+    handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" });
+    auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
+    auto userId = user.get<std::string>("user.id");
+
+    handlerToObj(handler, Forum::Commands::CHANGE_USER_NAME, { userId, "Xyz" });
+    BOOST_REQUIRE_EQUAL("Xyz", newName);
+    BOOST_REQUIRE_EQUAL(User::ChangeType::Name, userChange);
+}
+
 BOOST_AUTO_TEST_CASE( Deleting_an_inexistent_user_name_returns_not_found )
 {
     auto handler = createCommandHandler();
@@ -356,4 +431,20 @@ BOOST_AUTO_TEST_CASE( Deleted_users_can_no_longer_be_retrieved )
     BOOST_REQUIRE_EQUAL(names.size() - 1, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("Def", retrievedNames[0]);
     BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[1]);
+}
+
+BOOST_AUTO_TEST_CASE( Deleting_a_user_invokes_observer )
+{
+    std::string deletedUserName;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->deleteUserAction = [&](auto& _, auto& user) { deletedUserName = user.name(); };
+
+    handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" });
+    auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
+    auto userId = user.get<std::string>("user.id");
+
+    handlerToObj(handler, Forum::Commands::DELETE_USER, { userId });
+    BOOST_REQUIRE_EQUAL("Abc", deletedUserName);
 }

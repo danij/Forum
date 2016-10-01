@@ -6,6 +6,7 @@
 #include <string>
 
 #include "Entities.h"
+#include "Observers.h"
 
 namespace Forum
 {
@@ -16,12 +17,15 @@ namespace Forum
         public:
             virtual ~IReadRepository() = default;
 
+            virtual void addObserver(const ReadRepositoryObserverRef& observer) = 0;
+            virtual void removeObserver(const ReadRepositoryObserverRef& observer) = 0;
+
             virtual void getUserCount(std::ostream& output) const = 0;
             virtual void getUsers(std::ostream& output) const = 0;
             virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
         };
 
-        typedef std::shared_ptr<const IReadRepository> ReadRepositoryConstRef;
+        typedef std::shared_ptr<IReadRepository> ReadRepositoryRef;
 
         enum StatusCode : uint32_t
         {
@@ -37,6 +41,9 @@ namespace Forum
         {
         public:
             virtual ~IWriteRepository() = default;
+
+            virtual void addObserver(const WriteRepositoryObserverRef& observer) = 0;
+            virtual void removeObserver(const WriteRepositoryObserverRef& observer) = 0;
 
             virtual void addNewUser(const std::string& name, std::ostream& output) = 0;
             virtual void changeUserName(const Forum::Entities::IdType& id, const std::string& newName,

@@ -21,10 +21,22 @@ namespace Forum
             IdType id_;
         };
 
-        struct User : public Identifiable
+        struct User final : public Identifiable
         {
             inline const std::string& name() const { return name_; }
             inline       std::string& name()       { return name_; }
+
+            enum ChangeType : uint32_t
+            {
+                None = 0,
+                Name
+            };
+
+            User() {}
+            /**
+             * Only used to construct the anonymous user
+             */
+            User(const std::string& name) : name_(name) {}
 
         private:
             std::string name_;

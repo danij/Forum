@@ -12,7 +12,7 @@ using namespace Forum::Repository;
     handlers_[command] = std::bind(&CommandHandler::function, this, std::placeholders::_1, std::placeholders::_2);
 
 
-CommandHandler::CommandHandler(ReadRepositoryConstRef readRepository, WriteRepositoryRef writeRepository,
+CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepositoryRef writeRepository,
                                MetricsRepositoryRef metricsRepository)
         : readRepository_(readRepository), writeRepository_(writeRepository), metricsRepository_(metricsRepository)
 {
@@ -23,6 +23,16 @@ CommandHandler::CommandHandler(ReadRepositoryConstRef readRepository, WriteRepos
     setHandler(GET_USER_BY_NAME, getUserByName);
     setHandler(CHANGE_USER_NAME, changeUserName);
     setHandler(DELETE_USER, deleteUser);
+}
+
+ReadRepositoryRef CommandHandler::getReadRepository()
+{
+    return readRepository_;
+}
+
+WriteRepositoryRef CommandHandler::getWriteRepository()
+{
+    return writeRepository_;
 }
 
 void CommandHandler::handle(Command command, const std::vector<std::string>& parameters, std::ostream& output)

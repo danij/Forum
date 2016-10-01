@@ -17,14 +17,39 @@ MemoryRepository::MemoryRepository() : collection_(std::make_shared<EntityCollec
 {
 }
 
+void MemoryRepository::addObserver(const ReadRepositoryObserverRef& observer)
+{
+    observers_.addObserver(observer);
+}
+
+void MemoryRepository::addObserver(const WriteRepositoryObserverRef& observer)
+{
+    observers_.addObserver(observer);
+}
+
+void MemoryRepository::removeObserver(const ReadRepositoryObserverRef& observer)
+{
+    observers_.removeObserver(observer);
+}
+
+void MemoryRepository::removeObserver(const WriteRepositoryObserverRef& observer)
+{
+    observers_.removeObserver(observer);
+}
+
+inline PerformedByType MemoryRepository::getPerformedBy() const
+{
+    return AnonymousUser;
+}
+
 void MemoryRepository::getUserCount(std::ostream& output) const
 {
-    std::size_t count;
     collection_.read([&](const EntityCollection& collection)
                      {
-                         count = collection.usersById().size();
+                         auto count = collection.usersById().size();
+                         writeSingleValueSafeName(output, "count", count);
                      });
-    writeSingleValueSafeName(output, "count", count);
+    observers_.getUserCount(getPerformedBy());
 }
 
 void MemoryRepository::getUsers(std::ostream& output) const
@@ -34,6 +59,7 @@ void MemoryRepository::getUsers(std::ostream& output) const
                          const auto& users = collection.usersByName();
                          writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
                      });
+    observers_.getUsers(getPerformedBy());
 }
 
 void MemoryRepository::getUserByName(const std::string& name, std::ostream& output) const
@@ -51,6 +77,7 @@ void MemoryRepository::getUserByName(const std::string& name, std::ostream& outp
                              writeSingleObjectSafeName(output, "user", **it);
                          }
                      });
+    observers_.getUserByName(getPerformedBy(), name);
 }
 
 static const auto validUserNameRegex = boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$");
@@ -109,6 +136,7 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
                               return;
                           }
                           collection.users().insert(user);
+                          observers_.addNewUser(getPerformedBy(), *user);
                       });
 }
 
@@ -140,6 +168,7 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
                           {
                               user.name() = newName;
                           });
+                          observers_.changeUser(getPerformedBy(), **it, User::ChangeType::Name);
                       });
 }
 
@@ -156,6 +185,8 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
+                          //make sure the user is not deleted before being passed to the observer
+                          observers_.deleteUser(getPerformedBy(), **it);
                           collection.deleteUser((*it)->id());
                       });
 }
