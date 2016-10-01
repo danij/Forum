@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include <boost/core/noncopyable.hpp>
 
 #include "Entities.h"
