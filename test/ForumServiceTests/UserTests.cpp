@@ -219,6 +219,8 @@ BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_name )
         assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { name }));
     }
 
+    BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
+
     std::vector<std::string> retrievedNames;
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
@@ -324,9 +326,12 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_name_succeds )
     BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
     auto userId = user.get<std::string>("user.id");
 
+    BOOST_REQUIRE_EQUAL(1, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
+
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::CHANGE_USER_NAME, { userId, "Xyz" }));
     auto modifiedUser = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Xyz" });
 
+    BOOST_REQUIRE_EQUAL(1, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
     BOOST_REQUIRE_EQUAL("Xyz", modifiedUser.get<std::string>("user.name"));
     BOOST_REQUIRE_EQUAL(userId, modifiedUser.get<std::string>("user.id"));
 }
@@ -421,12 +426,16 @@ BOOST_AUTO_TEST_CASE( Deleted_users_can_no_longer_be_retrieved )
     BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
     auto userId = user.get<std::string>("user.id");
 
+    BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
+
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_USER, { userId }));
     assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" }));
 
     std::vector<std::string> retrievedNames;
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
+
+    BOOST_REQUIRE_EQUAL(2, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
 
     BOOST_REQUIRE_EQUAL(names.size() - 1, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("Def", retrievedNames[0]);
