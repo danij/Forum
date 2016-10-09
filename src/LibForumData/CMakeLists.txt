@@ -10,8 +10,8 @@ find_package(ICU)
 set(SOURCE_FILES MemoryRepository.cpp RandomGenerator.cpp EntitySerialization.cpp StringHelpers.cpp EntityCollection.cpp ObserverCollection.cpp)
 set(HEADER_FILES Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h
         ConstCollectionAdapter.h StringHelpers.h RandomGenerator.h
-        EntitySerialization.h EntityCollection.h Observers.h ObserverCollection.h)
+        EntitySerialization.h EntityCollection.h Observers.h ObserverCollection.h EntityCommonTypes.h)
 
-include_directories(../. ../LibFastJsonWriter ../LibForumContext ${Boost_INCLUDE_DIRS})
+include_directories(. ../. ../LibFastJsonWriter ../LibForumContext ${Boost_INCLUDE_DIRS})
 
 add_library(libForumData STATIC ${SOURCE_FILES} ${HEADER_FILES})

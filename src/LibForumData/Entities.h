@@ -5,13 +5,12 @@
 
 #include <boost/uuid/uuid.hpp>
 
+#include "EntityCommonTypes.h"
+
 namespace Forum
 {
     namespace Entities
     {
-        //Using a string for representing the id to prevent constant conversions between string <-> uuid
-        typedef std::string IdType;
-
         struct Identifiable
         {
             inline const IdType& id() const { return id_; }
@@ -21,7 +20,16 @@ namespace Forum
             IdType id_;
         };
 
-        struct User final : public Identifiable
+        struct Creatable
+        {
+            inline const Timestamp& created() const { return created_; }
+            inline       Timestamp& created()       { return created_; }
+
+        private:
+            Timestamp created_;
+        };
+
+        struct User final : public Identifiable, public Creatable
         {
             inline const std::string& name() const { return name_; }
             inline       std::string& name()       { return name_; }

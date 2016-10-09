@@ -3,6 +3,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "Repository.h"
+#include "ContextProviderMocks.h"
 
 namespace Forum
 {
@@ -37,5 +38,17 @@ namespace Forum
         {
             return Disposer<TAction>(action);
         }
+
+        struct TimestampChanger
+        {
+            TimestampChanger(Forum::Entities::Timestamp value)
+            {
+                Forum::Context::setCurrentTimeMockForCurrentThread([=]() { return value; });
+            }
+            ~TimestampChanger()
+            {
+                Forum::Context::resetCurrentTimeMock();
+            }
+        };
     }
 }

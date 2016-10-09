@@ -9,6 +9,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const Forum::Entities::User& us
         << objStart
             << propertySafeName("id", user.id())
             << propertySafeName("name", user.name())
+            << propertySafeName("created", user.created())
         << objEnd;
     return writer;
 }

@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
     DisposingDelegateObserver observer(*handler);
     observer->getUsersAction = [&](auto& _) { observerCalled = true; };
 
-    handlerToObj(handler, Forum::Commands::GET_USERS);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME);
     BOOST_REQUIRE(observerCalled);
 }
 
@@ -197,9 +197,9 @@ BOOST_AUTO_TEST_CASE( A_user_that_was_created_can_be_retrieved_and_has_a_distinc
     std::vector<std::string> retrievedIds;
     std::vector<std::string> retrievedNames;
 
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "id", std::back_inserter(retrievedIds), std::string());
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
     BOOST_REQUIRE_NE(emptyIdString, retrievedIds[0]);
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_name )
     BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
 
     std::vector<std::string> retrievedNames;
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
     BOOST_REQUIRE_EQUAL(names.size(), retrievedNames.size());
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE( Adding_multiple_users_with_same_name_fails )
     assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" }));
 
     std::vector<std::string> retrievedNames;
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
     BOOST_REQUIRE_EQUAL(1, retrievedNames.size());
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE( Adding_multiple_users_with_same_name_but_different_case_fa
     assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, handlerToObj(handler, Forum::Commands::ADD_USER, { "ABC" }));
 
     std::vector<std::string> retrievedNames;
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
     BOOST_REQUIRE_EQUAL(1, retrievedNames.size());
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE( Adding_multiple_users_with_same_name_but_different_accents
     assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, handlerToObj(handler, Forum::Commands::ADD_USER, { "Hello" }));
 
     std::vector<std::string> retrievedNames;
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
     BOOST_REQUIRE_EQUAL(1, retrievedNames.size());
@@ -373,7 +373,7 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_name_reorders_users )
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::CHANGE_USER_NAME, { userId, "Xyz" }));
 
     std::vector<std::string> retrievedNames;
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
     BOOST_REQUIRE_EQUAL(names.size(), retrievedNames.size());
@@ -432,7 +432,7 @@ BOOST_AUTO_TEST_CASE( Deleted_users_can_no_longer_be_retrieved )
     assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" }));
 
     std::vector<std::string> retrievedNames;
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
     BOOST_REQUIRE_EQUAL(2, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
@@ -456,4 +456,30 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_invokes_observer )
 
     handlerToObj(handler, Forum::Commands::DELETE_USER, { userId });
     BOOST_REQUIRE_EQUAL("Abc", deletedUserName);
+}
+
+BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_their_creation_date )
+{
+    auto handler = createCommandHandler();
+    auto namesWithCreationDates =
+            {
+                    std::make_pair("Abc", 1000),
+                    std::make_pair("Ghi", 3000),
+                    std::make_pair("Def", 2000),
+            };
+
+    for (auto& pair : namesWithCreationDates)
+    {
+        TimestampChanger changer(pair.second);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { pair.first }));
+    }
+
+    std::vector<std::string> retrievedNames;
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATION_DATE).get_child("users"),
+                               "name", std::back_inserter(retrievedNames), std::string());
+
+    BOOST_REQUIRE_EQUAL(3, retrievedNames.size());
+    BOOST_REQUIRE_EQUAL("Abc", retrievedNames[0]);
+    BOOST_REQUIRE_EQUAL("Def", retrievedNames[1]);
+    BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[2]);
 }

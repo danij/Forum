@@ -2,12 +2,14 @@
 #include <boost/regex/icu.hpp>
 
 #include "Configuration.h"
+#include "ContextProviders.h"
 #include "EntitySerialization.h"
 #include "MemoryRepository.h"
 #include "OutputHelpers.h"
 #include "RandomGenerator.h"
 #include "StringHelpers.h"
 
+using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
@@ -52,11 +54,21 @@ void MemoryRepository::getUserCount(std::ostream& output) const
     observers_.getUserCount(getPerformedBy());
 }
 
-void MemoryRepository::getUsers(std::ostream& output) const
+void MemoryRepository::getUsersByName(std::ostream& output) const
 {
     collection_.read([&](const EntityCollection& collection)
                      {
                          const auto& users = collection.usersByName();
+                         writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
+                     });
+    observers_.getUsers(getPerformedBy());
+}
+
+void MemoryRepository::getUsersByCreationDate(std::ostream& output) const
+{
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& users = collection.usersByCreationDate();
                          writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
                      });
     observers_.getUsers(getPerformedBy());
@@ -126,6 +138,7 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
     auto user = std::make_shared<User>();
     user->id() = generateUUIDString();
     user->name() = name;
+    user->created() = Context::getCurrentTime();
 
     collection_.write([&](EntityCollection& collection)
                       {

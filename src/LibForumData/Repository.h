@@ -21,7 +21,8 @@ namespace Forum
             virtual void removeObserver(const ReadRepositoryObserverRef& observer) = 0;
 
             virtual void getUserCount(std::ostream& output) const = 0;
-            virtual void getUsers(std::ostream& output) const = 0;
+            virtual void getUsersByName(std::ostream& output) const = 0;
+            virtual void getUsersByCreationDate(std::ostream& output) const = 0;
             virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
         };
 

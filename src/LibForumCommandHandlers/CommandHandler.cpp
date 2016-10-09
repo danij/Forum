@@ -19,7 +19,8 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(SHOW_VERSION, version);
     setHandler(COUNT_USERS, countUsers);
     setHandler(ADD_USER, addNewUser);
-    setHandler(GET_USERS, getUsers);
+    setHandler(GET_USERS_BY_NAME, getUsersByName);
+    setHandler(GET_USERS_BY_CREATION_DATE, getUsersByCreationDate);
     setHandler(GET_USER_BY_NAME, getUserByName);
     setHandler(CHANGE_USER_NAME, changeUserName);
     setHandler(DELETE_USER, deleteUser);
@@ -70,9 +71,14 @@ void CommandHandler::addNewUser(const std::vector<std::string>& parameters, std:
     writeRepository_->addNewUser(parameters[0], output);
 }
 
-void CommandHandler::getUsers(const std::vector<std::string>& parameters, std::ostream& output)
+void CommandHandler::getUsersByName(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    readRepository_->getUsers(output);
+    readRepository_->getUsersByName(output);
+}
+
+void CommandHandler::getUsersByCreationDate(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    readRepository_->getUsersByCreationDate(output);
 }
 
 void CommandHandler::getUserByName(const std::vector<std::string>& parameters, std::ostream& output)

@@ -21,20 +21,25 @@ namespace Forum
         {
             struct UserCollectionById {};
             struct UserCollectionByName {};
+            struct UserCollectionByCreated {};
 
             struct UserCollectionIndices : boost::multi_index::indexed_by<
                     boost::multi_index::hashed_unique<boost::multi_index::tag<UserCollectionById>,
-                    const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &User::id>>,
-                                           boost::multi_index::ranked_unique<boost::multi_index::tag<UserCollectionByName>,
-                    const boost::multi_index::const_mem_fun<User, const std::string&, &User::name>,
-                                           Forum::Helpers::StringAccentAndCaseInsensitiveLess>
+                        const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &User::id>>,
+                    boost::multi_index::ranked_unique<boost::multi_index::tag<UserCollectionByName>,
+                        const boost::multi_index::const_mem_fun<User, const std::string&, &User::name>,
+                            Forum::Helpers::StringAccentAndCaseInsensitiveLess>,
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByCreated>,
+                        const boost::multi_index::const_mem_fun<Creatable, const Forum::Entities::Timestamp&,
+                                &User::created>>
                     > {};
 
             typedef boost::multi_index_container<UserRef, UserCollectionIndices> UserCollection;
 
-            inline auto& users()             { return users_; }
-            inline auto  usersById()   const { return Helpers::toConst(users_.get<UserCollectionById>()); }
-            inline auto  usersByName() const { return Helpers::toConst(users_.get<UserCollectionByName>()); }
+            inline auto& users()                     { return users_; }
+            inline auto  usersById()           const { return Helpers::toConst(users_.get<UserCollectionById>()); }
+            inline auto  usersByName()         const { return Helpers::toConst(users_.get<UserCollectionByName>()); }
+            inline auto  usersByCreationDate() const { return Helpers::toConst(users_.get<UserCollectionByCreated>()); }
 
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
