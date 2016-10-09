@@ -151,13 +151,13 @@ void MemoryRepository::getUsersByName(std::ostream& output) const
                      });
 }
 
-void MemoryRepository::getUsersByCreationDate(std::ostream& output) const
+void MemoryRepository::getUsersByCreated(std::ostream& output) const
 {
     auto performedBy = preparePerformedBy(*this);
 
     collection_.read([&](const EntityCollection& collection)
                      {
-                         const auto& users = collection.usersByCreationDate();
+                         const auto& users = collection.usersByCreated();
                          writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
                          observers_.getUsers(performedBy.get(collection));
                      });

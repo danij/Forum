@@ -24,7 +24,7 @@ namespace Forum
 
             virtual void getUserCount(std::ostream& output) const override;
             virtual void getUsersByName(std::ostream& output) const override;
-            virtual void getUsersByCreationDate(std::ostream& output) const override;
+            virtual void getUsersByCreated(std::ostream& output) const override;
             virtual void getUsersByLastSeen(std::ostream& output) const override;
 
             virtual void getUserByName(const std::string& name, std::ostream& output) const override;

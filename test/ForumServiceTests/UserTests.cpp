@@ -475,7 +475,7 @@ BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_their_creation_date )
     }
 
     std::vector<std::string> retrievedNames;
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATION_DATE).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
     BOOST_REQUIRE_EQUAL(3, retrievedNames.size());
