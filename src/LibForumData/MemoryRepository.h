@@ -25,6 +25,8 @@ namespace Forum
             virtual void getUserCount(std::ostream& output) const override;
             virtual void getUsersByName(std::ostream& output) const override;
             virtual void getUsersByCreationDate(std::ostream& output) const override;
+            virtual void getUsersByLastSeen(std::ostream& output) const override;
+
             virtual void getUserByName(const std::string& name, std::ostream& output) const override;
 
             virtual void addNewUser(const std::string& name, std::ostream& output) override;
@@ -33,7 +35,7 @@ namespace Forum
             virtual void deleteUser(const Forum::Entities::IdType& id, std::ostream& output) override;
 
         private:
-            PerformedByType getPerformedBy() const;
+            friend struct PerformedByWithLastSeenUpdateGuard;
 
             Forum::Helpers::ResourceGuard<Forum::Entities::EntityCollection> collection_;
             mutable ObserverCollection observers_;

@@ -50,5 +50,21 @@ namespace Forum
                 Forum::Context::resetCurrentTimeMock();
             }
         };
+
+        struct LoggedInUserChanger
+        {
+            LoggedInUserChanger(Forum::Entities::IdType userId)
+            {
+                oldId_ = Forum::Context::getCurrentUserId();
+                Forum::Context::setCurrentUserId(userId);
+            }
+            ~LoggedInUserChanger()
+            {
+                Forum::Context::setCurrentUserId(oldId_);
+            }
+
+        private:
+            Forum::Entities::IdType oldId_;
+        };
     }
 }

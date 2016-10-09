@@ -23,6 +23,7 @@ namespace Forum
             virtual void getUserCount(std::ostream& output) const = 0;
             virtual void getUsersByName(std::ostream& output) const = 0;
             virtual void getUsersByCreationDate(std::ostream& output) const = 0;
+            virtual void getUsersByLastSeen(std::ostream& output) const = 0;
             virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
         };
 

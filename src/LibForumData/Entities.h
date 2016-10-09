@@ -22,8 +22,10 @@ namespace Forum
 
         struct Creatable
         {
-            inline const Timestamp& created() const { return created_; }
+            inline const Timestamp  created() const { return created_; }
             inline       Timestamp& created()       { return created_; }
+
+            Creatable() : created_(0) {}
 
         private:
             Timestamp created_;
@@ -31,8 +33,10 @@ namespace Forum
 
         struct User final : public Identifiable, public Creatable
         {
-            inline const std::string& name() const { return name_; }
-            inline       std::string& name()       { return name_; }
+            inline const std::string& name()     const { return name_; }
+            inline       std::string& name()           { return name_; }
+            inline const Timestamp    lastSeen() const { return lastSeen_; }
+            inline       Timestamp&   lastSeen()       { return lastSeen_; }
 
             enum ChangeType : uint32_t
             {
@@ -40,14 +44,15 @@ namespace Forum
                 Name
             };
 
-            User() {}
+            User() : lastSeen_(0) {}
             /**
              * Only used to construct the anonymous user
              */
-            User(const std::string& name) : name_(name) {}
+            User(const std::string& name) : name_(name), lastSeen_(0) {}
 
         private:
             std::string name_;
+            Timestamp lastSeen_;
         };
 
         typedef std::shared_ptr<User> UserRef;

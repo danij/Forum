@@ -25,3 +25,15 @@ void Forum::Context::resetCurrentTimeMock()
 {
     getCurrentTimeCallback = getTimeSinceEpoch;
 }
+
+static thread_local Forum::Entities::IdType currentUser = {};
+
+Forum::Entities::IdType Forum::Context::getCurrentUserId()
+{
+    return currentUser;
+}
+
+void Forum::Context::setCurrentUserId(Forum::Entities::IdType value)
+{
+    currentUser = value;
+}

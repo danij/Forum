@@ -22,6 +22,7 @@ namespace Forum
             struct UserCollectionById {};
             struct UserCollectionByName {};
             struct UserCollectionByCreated {};
+            struct UserCollectionByLastSeen {};
 
             struct UserCollectionIndices : boost::multi_index::indexed_by<
                     boost::multi_index::hashed_unique<boost::multi_index::tag<UserCollectionById>,
@@ -30,8 +31,11 @@ namespace Forum
                         const boost::multi_index::const_mem_fun<User, const std::string&, &User::name>,
                             Forum::Helpers::StringAccentAndCaseInsensitiveLess>,
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByCreated>,
-                        const boost::multi_index::const_mem_fun<Creatable, const Forum::Entities::Timestamp&,
-                                &User::created>>
+                        const boost::multi_index::const_mem_fun<Creatable, const Forum::Entities::Timestamp,
+                                &User::created>>,
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByLastSeen>,
+                        const boost::multi_index::const_mem_fun<User, const Forum::Entities::Timestamp,
+                                &User::lastSeen>, std::greater<const Forum::Entities::Timestamp>>
                     > {};
 
             typedef boost::multi_index_container<UserRef, UserCollectionIndices> UserCollection;
@@ -40,6 +44,7 @@ namespace Forum
             inline auto  usersById()           const { return Helpers::toConst(users_.get<UserCollectionById>()); }
             inline auto  usersByName()         const { return Helpers::toConst(users_.get<UserCollectionByName>()); }
             inline auto  usersByCreationDate() const { return Helpers::toConst(users_.get<UserCollectionByCreated>()); }
+            inline auto  usersByLastSeen()     const { return Helpers::toConst(users_.get<UserCollectionByLastSeen>()); }
 
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in

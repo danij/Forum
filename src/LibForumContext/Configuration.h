@@ -11,6 +11,10 @@ namespace Forum
         {
             uint16_t minNameLength = 3;
             uint16_t maxNameLength = 20;
+            /**
+             * Do not update last seen more frequently than this amount (in seconds)
+             */
+            uint32_t lastSeenUpdatePrecision = 5000;
         };
 
         struct Config

@@ -19,6 +19,7 @@ namespace Forum
             ADD_USER,
             GET_USERS_BY_NAME,
             GET_USERS_BY_CREATION_DATE,
+            GET_USERS_BY_LAST_SEEN,
             GET_USER_BY_NAME,
             CHANGE_USER_NAME,
             DELETE_USER,
@@ -43,6 +44,7 @@ namespace Forum
             void addNewUser(const std::vector<std::string>& parameters, std::ostream& output);
             void getUsersByName(const std::vector<std::string>& parameters, std::ostream& output);
             void getUsersByCreationDate(const std::vector<std::string>& parameters, std::ostream& output);
+            void getUsersByLastSeen(const std::vector<std::string>& parameters, std::ostream& output);
             void getUserByName(const std::vector<std::string>& parameters, std::ostream& output);
             void changeUserName(const std::vector<std::string>& parameters, std::ostream& output);
             void deleteUser(const std::vector<std::string>& parameters, std::ostream& output);
