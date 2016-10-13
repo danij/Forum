@@ -41,7 +41,8 @@ void MemoryRepository::removeObserver(const WriteRepositoryObserverRef& observer
 
 /**
  * Retrieves the user that is performing the current action and also performs an update on the last seen if needed
- * The update is performed when the guard is destroyed, to avoid deadlocks
+ * The update is performed on the spot if a write lock is held or
+ * delayed until the lock is destroyed in the case of a read lock, to avoid deadlocks
  * Do not keep references to it outside of MemoryRepository methods
  */
 struct Forum::Repository::PerformedByWithLastSeenUpdateGuard
@@ -91,7 +92,7 @@ struct Forum::Repository::PerformedByWithLastSeenUpdateGuard
 
     /**
      * Get the current user that performs the action and optionally also perform the update of last seen
-     * This method takes advantage that a write lock on the collection is already secured
+     * This method takes advantage if a write lock on the collection is already secured
      */
     PerformedByType getAndUpdate(EntityCollection& collection)
     {
