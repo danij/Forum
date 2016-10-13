@@ -256,6 +256,10 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
                           }
                           collection.users().insert(user);
                           observers_.addNewUser(performedBy.getAndUpdate(collection), *user);
+
+                          status.addExtraSafeName("id", user->id());
+                          status.addExtraSafeName("name", user->name());
+                          status.addExtraSafeName("created", user->created());
                       });
 }
 

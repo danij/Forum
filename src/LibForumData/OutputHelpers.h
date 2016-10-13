@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iosfwd>
+#include <vector>
 
 #include "JsonWriter.h"
 #include "Repository.h"
@@ -31,7 +32,7 @@ namespace Forum
 
         inline void writeStatusCode(std::ostream& output, Forum::Repository::StatusCode code)
         {
-            writeSingleValueSafeName(output, "status", int(code));
+            writeSingleValueSafeName(output, "status", code);
         }
 
         template <typename TValue>
@@ -58,7 +59,17 @@ namespace Forum
 
             inline ~StatusWriter()
             {
-                if (enabled_) writeStatusCode(output_, statusCode_);
+                if ( ! enabled_) return;
+
+                Json::JsonWriter writer(output_);
+
+                writer << Json::objStart;
+                writer << Json::propertySafeName("status", statusCode_);
+                for (auto& extra : extras_)
+                {
+                    extra(writer);
+                }
+                writer << Json::objEnd;
             }
 
             /**
@@ -70,16 +81,29 @@ namespace Forum
                 enabled_ = false;
             }
 
-            StatusWriter& operator=(Forum::Repository::StatusCode newCode)
+            inline StatusWriter& operator=(Forum::Repository::StatusCode newCode)
             {
                 statusCode_ = newCode;
                 return *this;
+            }
+
+            /**
+             * Adds extra information to be written
+             */
+            template <typename T>
+            inline void addExtraSafeName(const std::string& key, const T& value)
+            {
+                extras_.push_back([=](auto& writer)
+                                  {
+                                      writer << Json::propertySafeName(key, value);
+                                  });
             }
 
         private:
             std::ostream& output_;
             Forum::Repository::StatusCode statusCode_;
             bool enabled_;
+            std::vector<std::function<void(Json::JsonWriter&)>> extras_;
         };
     }
 }

@@ -72,6 +72,17 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_invokes_observer )
     BOOST_REQUIRE_EQUAL("Foo", newUserName);
 }
 
+BOOST_AUTO_TEST_CASE( Creating_a_user_returns_the_id_name_and_created )
+{
+    TimestampChanger changer(20000);
+    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "Foo" });
+
+    assertStatusCodeEqual(StatusCode::OK, returnObject);
+    BOOST_REQUIRE_NE("", returnObject.get<std::string>("id"));
+    BOOST_REQUIRE_EQUAL("Foo", returnObject.get<std::string>("name"));
+    BOOST_REQUIRE_EQUAL(20000, returnObject.get<Timestamp>("created"));
+}
+
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_only_whitespace_in_the_name_fails )
 {
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { " \t\r\n" });
