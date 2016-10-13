@@ -14,7 +14,7 @@ namespace Forum
             /**
              * Do not update last seen more frequently than this amount (in seconds)
              */
-            uint32_t lastSeenUpdatePrecision = 5000;
+            uint32_t lastSeenUpdatePrecision = 300;
         };
 
         struct Config
