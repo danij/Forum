@@ -147,8 +147,9 @@ static const char hexDigits[16] = {
 
 #define MAX_STACK_BUFFER 60000
 
-void JsonWriter::writeEscapedString(const char* value, size_t length)
+JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
 {
+   addCommaIfNeeded();
    if (length == 0)
    {
       length = strlen(value);
@@ -212,4 +213,6 @@ void JsonWriter::writeEscapedString(const char* value, size_t length)
       _stream << buffer;
    }
    _stream << '"';
+
+   return *this;
 }

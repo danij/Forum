@@ -523,9 +523,10 @@ BOOST_AUTO_TEST_CASE( Users_without_activity_have_last_seen_empty )
     }
     {
         TimestampChanger changer(20050);//lower then the minimum for updating last seen
-        auto userId = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Def" }).get<std::string>("user.id");
+        auto userId = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, {"Def"}).get<std::string>("user.id");
         LoggedInUserChanger loggedInChanger(userId);
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_USER, { userToDelete }));
+        assertStatusCodeEqual(StatusCode::OK,
+                              handlerToObj(handler, Forum::Commands::DELETE_USER, {(std::string) userToDelete}));
     }
 
     std::vector<Timestamp> retrievedLastSeen;

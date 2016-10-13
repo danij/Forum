@@ -3,6 +3,11 @@
 using namespace Forum::Entities;
 using namespace Json;
 
+JsonWriter& Json::operator<<(JsonWriter& writer, const Forum::Entities::IdType& id)
+{
+    return writer.writeSafeString(id);
+}
+
 JsonWriter& Json::operator<<(JsonWriter& writer, const Forum::Entities::User& user)
 {
     writer

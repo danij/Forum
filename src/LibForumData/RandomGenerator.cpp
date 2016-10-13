@@ -10,7 +10,7 @@ boost::uuids::uuid Forum::Repository::generateUUID()
     return localUUIDGenerator();
 }
 
-std::string Forum::Repository::generateUUIDString()
+Forum::Entities::UuidString Forum::Repository::generateUUIDString()
 {
-    return boost::uuids::to_string(generateUUID());
+    return Forum::Entities::UuidString(generateUUID());
 }

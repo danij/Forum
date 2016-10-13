@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <string>
 
+#include "UuidString.h"
+
 namespace Forum
 {
     namespace Entities
@@ -10,7 +12,7 @@ namespace Forum
         /**
          * Using a string for representing the id to prevent constant conversions between string <-> uuid
          */
-        typedef std::string IdType;
+        typedef UuidString IdType;
 
         /**
          * Representing a timestamp as the number of seconds since the UNIX EPOCH

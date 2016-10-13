@@ -2,13 +2,13 @@
 
 #include <string>
 
-#include <boost/uuid/uuid.hpp>
+#include "UuidString.h"
 
 namespace Forum
 {
     namespace Repository
     {
         boost::uuids::uuid generateUUID();
-        std::string generateUUIDString();
+        Forum::Entities::UuidString generateUUIDString();
     }
 }

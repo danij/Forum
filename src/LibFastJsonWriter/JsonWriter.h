@@ -54,10 +54,18 @@ namespace Json
 
         JsonWriter& newPropertyWithSafeName(const std::string& name);
 
+        template <typename T>
+        inline JsonWriter& writeSafeString(const T& value)
+        {
+            addCommaIfNeeded();
+            _stream << '"' << value << '"';
+            return *this;
+        }
+
     protected:
 
         void addCommaIfNeeded();
-        void writeEscapedString(const char* value, size_t length = 0);
+        JsonWriter& writeEscapedString(const char* value, size_t length = 0);
 
         template<typename T>
         friend JsonWriter& operator<<(JsonWriter& writer, const T& value);
@@ -99,16 +107,12 @@ namespace Json
 
     inline JsonWriter& operator<<(JsonWriter& writer, const char* value)
     {
-        writer.addCommaIfNeeded();
-        writer.writeEscapedString(value);
-        return writer;
+        return writer.writeEscapedString(value);
     }
 
     inline JsonWriter& operator<<(JsonWriter& writer, const std::string& value)
     {
-        writer.addCommaIfNeeded();
-        writer.writeEscapedString(value.c_str(), value.length());
-        return writer;
+        return writer.writeEscapedString(value.c_str(), value.length());
     }
 
     inline JsonWriter& operator<<(JsonWriter& writer, JsonWriter& (* manipulator)(JsonWriter&))
