@@ -17,6 +17,6 @@ namespace Forum
         /**
          * Representing a timestamp as the number of seconds since the UNIX EPOCH
          */
-        typedef uint64_t Timestamp;
+        typedef int_fast64_t Timestamp;
     }
 }
