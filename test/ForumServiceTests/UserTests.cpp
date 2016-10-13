@@ -6,7 +6,6 @@
 
 #include "CommandsCommon.h"
 #include "CommandHandler.h"
-#include "Configuration.h"
 #include "DelegateObserver.h"
 #include "TestHelpers.h"
 #include "Version.h"
@@ -163,13 +162,10 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_a_longer_name_fails )
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_unicode_name_of_valid_length_succeeds )
 {
-    auto oldConfig = getGlobalConfig();
-    auto configReset = createDisposer([&](){ setGlobalConfig(*oldConfig); });
-
-    auto configWithShorterName = Forum::Configuration::Config(*oldConfig);
-    configWithShorterName.user.maxNameLength = 3;
-
-    setGlobalConfig(configWithShorterName);
+    auto configWithShorterName = ConfigChanger([](auto& config)
+                                               {
+                                                   config.user.maxNameLength = 3;
+                                               });
 
     //test a simple text that can also be represented as ASCII
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "AAA" });

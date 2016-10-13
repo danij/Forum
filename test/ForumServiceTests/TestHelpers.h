@@ -2,8 +2,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "Repository.h"
+#include "Configuration.h"
 #include "ContextProviderMocks.h"
+#include "Repository.h"
 
 namespace Forum
 {
@@ -38,6 +39,24 @@ namespace Forum
         {
             return Disposer<TAction>(action);
         }
+
+        struct ConfigChanger
+        {
+            ConfigChanger(std::function<void(Forum::Configuration::Config&)> configChangeAction)
+            {
+                oldConfig_ = *Forum::Configuration::getGlobalConfig();
+
+                Forum::Configuration::Config newConfig(oldConfig_);
+                configChangeAction(newConfig);
+                Forum::Configuration::setGlobalConfig(newConfig);
+            }
+            ~ConfigChanger()
+            {
+                Forum::Configuration::setGlobalConfig(oldConfig_);
+            }
+        private:
+            Forum::Configuration::Config oldConfig_;
+        };
 
         struct TimestampChanger
         {
