@@ -15,30 +15,6 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-MemoryRepository::MemoryRepository() : collection_(std::make_shared<EntityCollection>())
-{
-}
-
-void MemoryRepository::addObserver(const ReadRepositoryObserverRef& observer)
-{
-    observers_.addObserver(observer);
-}
-
-void MemoryRepository::addObserver(const WriteRepositoryObserverRef& observer)
-{
-    observers_.addObserver(observer);
-}
-
-void MemoryRepository::removeObserver(const ReadRepositoryObserverRef& observer)
-{
-    observers_.removeObserver(observer);
-}
-
-void MemoryRepository::removeObserver(const WriteRepositoryObserverRef& observer)
-{
-    observers_.removeObserver(observer);
-}
-
 /**
  * Retrieves the user that is performing the current action and also performs an update on the last seen if needed
  * The update is performed on the spot if a write lock is held or
