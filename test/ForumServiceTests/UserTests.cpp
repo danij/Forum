@@ -5,7 +5,6 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include "CommandsCommon.h"
-#include "CommandHandler.h"
 #include "DelegateObserver.h"
 #include "TestHelpers.h"
 #include "Version.h"
