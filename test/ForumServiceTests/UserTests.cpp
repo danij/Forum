@@ -501,6 +501,26 @@ BOOST_AUTO_TEST_CASE( Users_without_activity_have_last_seen_empty )
         assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { name }));
     }
 
+    std::vector<Timestamp> retrievedLastSeen;
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN).get_child("users"),
+                               "lastSeen", std::back_inserter(retrievedLastSeen), Timestamp());
+
+    BOOST_REQUIRE_EQUAL(names.size(), retrievedLastSeen.size());
+    BOOST_REQUIRE_EQUAL(0, retrievedLastSeen[0]);
+    BOOST_REQUIRE_EQUAL(0, retrievedLastSeen[1]);
+    BOOST_REQUIRE_EQUAL(0, retrievedLastSeen[2]);
+}
+
+BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
+{
+    auto handler = createCommandHandler();
+    std::vector<std::string> names = { "Abc", "Ghi", "Def" };
+
+    for (auto& name : names)
+    {
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { name }));
+    }
+
     //perform an action while "logged in" as each user
     {
         TimestampChanger changer(10000);
@@ -526,7 +546,7 @@ BOOST_AUTO_TEST_CASE( Users_without_activity_have_last_seen_empty )
         auto userId = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, {"Def"}).get<std::string>("user.id");
         LoggedInUserChanger loggedInChanger(userId);
         assertStatusCodeEqual(StatusCode::OK,
-                              handlerToObj(handler, Forum::Commands::DELETE_USER, {(std::string) userToDelete}));
+                              handlerToObj(handler, Forum::Commands::DELETE_USER, { (std::string) userToDelete }));
     }
 
     std::vector<Timestamp> retrievedLastSeen;
