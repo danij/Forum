@@ -17,6 +17,7 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
         : readRepository_(readRepository), writeRepository_(writeRepository), metricsRepository_(metricsRepository)
 {
     setHandler(SHOW_VERSION, version);
+
     setHandler(COUNT_USERS, countUsers);
     setHandler(ADD_USER, addNewUser);
     setHandler(GET_USERS_BY_NAME, getUsersByName);
@@ -25,6 +26,8 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(GET_USER_BY_NAME, getUserByName);
     setHandler(CHANGE_USER_NAME, changeUserName);
     setHandler(DELETE_USER, deleteUser);
+
+    setHandler(COUNT_DISCUSSION_THREADS, countDiscussionThreads);
 }
 
 ReadRepositoryRef CommandHandler::getReadRepository()
@@ -103,4 +106,9 @@ void CommandHandler::deleteUser(const std::vector<std::string>& parameters, std:
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
     writeRepository_->deleteUser(parameters[0], output);
+}
+
+void CommandHandler::countDiscussionThreads(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    readRepository_->getDiscussionThreadCount(output);
 }

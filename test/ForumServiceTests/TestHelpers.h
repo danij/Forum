@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include <boost/test/unit_test.hpp>
 
 #include "Configuration.h"
@@ -10,6 +12,8 @@ namespace Forum
 {
     namespace Helpers
     {
+        extern const std::string emptyIdString;
+
         inline void assertStatusCodeEqual(Forum::Repository::StatusCode expected, Forum::Repository::StatusCode actual)
         {
             BOOST_REQUIRE_EQUAL(expected, actual);

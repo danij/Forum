@@ -1,13 +1,8 @@
 #include <vector>
 
-#include <boost/test/unit_test.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-
 #include "CommandsCommon.h"
 #include "DelegateObserver.h"
 #include "TestHelpers.h"
-#include "Version.h"
 
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -191,8 +186,6 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_a_name_that_contains_invalid_characte
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "\xFF\xFF" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
-
-static const auto emptyIdString = boost::uuids::to_string(boost::uuids::uuid());
 
 BOOST_AUTO_TEST_CASE( A_user_that_was_created_can_be_retrieved_and_has_a_distinct_id )
 {

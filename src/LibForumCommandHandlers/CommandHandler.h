@@ -15,6 +15,7 @@ namespace Forum
         enum Command
         {
             SHOW_VERSION = 0,
+            //users related
             COUNT_USERS,
             ADD_USER,
             GET_USERS_BY_NAME,
@@ -23,10 +24,12 @@ namespace Forum
             GET_USER_BY_NAME,
             CHANGE_USER_NAME,
             DELETE_USER,
+            //discussion thread related
+            COUNT_DISCUSSION_THREADS,
             LAST_COMMAND
         };
 
-        class CommandHandler : private boost::noncopyable
+        class CommandHandler final : private boost::noncopyable
         {
         public:
             CommandHandler(Forum::Repository::ReadRepositoryRef readRepository,
@@ -38,16 +41,20 @@ namespace Forum
             Forum::Repository::WriteRepositoryRef getWriteRepository();
 
         private:
-            void version(const std::vector<std::string>& parameters, std::ostream& output);
+#define DECLARE_COMMAND_HANDLER(name) void name(const std::vector<std::string>& parameters, std::ostream& output);
 
-            void countUsers(const std::vector<std::string>& parameters, std::ostream& output);
-            void addNewUser(const std::vector<std::string>& parameters, std::ostream& output);
-            void getUsersByName(const std::vector<std::string>& parameters, std::ostream& output);
-            void getUsersByCreated(const std::vector<std::string>& parameters, std::ostream& output);
-            void getUsersByLastSeen(const std::vector<std::string>& parameters, std::ostream& output);
-            void getUserByName(const std::vector<std::string>& parameters, std::ostream& output);
-            void changeUserName(const std::vector<std::string>& parameters, std::ostream& output);
-            void deleteUser(const std::vector<std::string>& parameters, std::ostream& output);
+            DECLARE_COMMAND_HANDLER(version);
+
+            DECLARE_COMMAND_HANDLER(countUsers);
+            DECLARE_COMMAND_HANDLER(addNewUser);
+            DECLARE_COMMAND_HANDLER(getUsersByName);
+            DECLARE_COMMAND_HANDLER(getUsersByCreated);
+            DECLARE_COMMAND_HANDLER(getUsersByLastSeen);
+            DECLARE_COMMAND_HANDLER(getUserByName);
+            DECLARE_COMMAND_HANDLER(changeUserName);
+            DECLARE_COMMAND_HANDLER(deleteUser);
+
+            DECLARE_COMMAND_HANDLER(countDiscussionThreads);
 
             bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);
 

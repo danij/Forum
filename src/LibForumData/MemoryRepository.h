@@ -34,11 +34,42 @@ namespace Forum
                                         std::ostream& output) override;
             virtual void deleteUser(const Forum::Entities::IdType& id, std::ostream& output) override;
 
+            virtual void getDiscussionThreadCount(std::ostream& output) const override;
+
         private:
             friend struct PerformedByWithLastSeenUpdateGuard;
 
             Forum::Helpers::ResourceGuard<Forum::Entities::EntityCollection> collection_;
             mutable ObserverCollection observers_;
         };
+
+        /**
+         * Retrieves the user that is performing the current action and also performs an update on the last seen if needed
+         * The update is performed on the spot if a write lock is held or
+         * delayed until the lock is destroyed in the case of a read lock, to avoid deadlocks
+         * Do not keep references to it outside of MemoryRepository methods
+         */
+        struct PerformedByWithLastSeenUpdateGuard final
+        {
+            PerformedByWithLastSeenUpdateGuard(const MemoryRepository& repository);
+            ~PerformedByWithLastSeenUpdateGuard();
+
+            /**
+             * Get the current user that performs the action and optionally schedule the update of last seen
+             */
+            PerformedByType get(const Forum::Entities::EntityCollection& collection);
+
+            /**
+             * Get the current user that performs the action and optionally also perform the update of last seen
+             * This method takes advantage if a write lock on the collection is already secured
+             */
+            PerformedByType getAndUpdate(Forum::Entities::EntityCollection& collection);
+
+        private:
+            MemoryRepository& repository_;
+            std::function<void()> lastSeenUpdate_;
+        };
+
+        PerformedByWithLastSeenUpdateGuard preparePerformedBy(const MemoryRepository& repository);
     }
 }

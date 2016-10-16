@@ -24,6 +24,8 @@ namespace Forum
             std::function<void(PerformedByType performedBy, const Forum::Entities::User& newUser,
                     Forum::Entities::User::ChangeType change)> changeUserAction;
             std::function<void(PerformedByType performedBy, const Forum::Entities::User& newUser)> deleteUserAction;
+
+            std::function<void(PerformedByType performedBy)> getDiscussionThreadCountAction;
         };
 
         class DelegateObserver final : public AbstractReadRepositoryObserver, public AbstractWriteRepositoryObserver,
@@ -55,6 +57,11 @@ namespace Forum
             virtual void deleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) override
             {
                 if (deleteUserAction) deleteUserAction(performedBy, deletedUser);
+            }
+
+            virtual void getDiscussionThreadCount(PerformedByType performedBy) override
+            {
+                if (getDiscussionThreadCountAction) getDiscussionThreadCountAction(performedBy);
             }
         };
 

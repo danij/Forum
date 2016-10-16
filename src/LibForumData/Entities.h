@@ -55,6 +55,12 @@ namespace Forum
             Timestamp lastSeen_;
         };
 
+        struct DiscussionThread final : public Identifiable, public Creatable
+        {
+
+        };
+
         typedef std::shared_ptr<User> UserRef;
+        typedef std::shared_ptr<DiscussionThread> DiscussionThreadRef;
     }
 }

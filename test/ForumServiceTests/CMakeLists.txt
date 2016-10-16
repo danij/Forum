@@ -7,7 +7,8 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost REQUIRED COMPONENTS unit_test_framework locale regex thread system)
 find_package(ICU)
 
-set(SOURCE_FILES main.cpp SimpleCommandTests.cpp CommandsCommon.cpp UserTests.cpp)
+set(SOURCE_FILES main.cpp SimpleCommandTests.cpp CommandsCommon.cpp UserTests.cpp DiscussionThreadTests.cpp
+        TestHelpers.cpp)
 set(HEADER_FILES TestHelpers.h CommandsCommon.h DelegateObserver.h)
 
 include_directories(../../src ../../src/LibFastJsonWriter ../../src/LibForumContext

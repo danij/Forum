@@ -50,14 +50,28 @@ namespace Forum
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
              */
             void modifyUser(const IdType& id, std::function<void(User&)> modifyFunction);
-
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
              */
             void deleteUser(const IdType& id);
 
+
+            struct DiscussionThreadCollectionById {};
+
+            struct DiscussionThreadCollectionIndices : boost::multi_index::indexed_by<
+                    boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionThreadCollectionById>,
+                            const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &User::id>>
+            > {};
+
+            typedef boost::multi_index_container<DiscussionThreadRef, DiscussionThreadCollectionIndices>
+                    DiscussionThreadCollection;
+
+            inline auto& threads()           { return threads_; }
+            inline auto  threadsById() const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionById>()); }
+
         private:
             UserCollection users_;
+            DiscussionThreadCollection threads_;
         };
 
         extern const User AnonymousUser;

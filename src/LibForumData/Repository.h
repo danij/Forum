@@ -25,6 +25,8 @@ namespace Forum
             virtual void getUsersByCreated(std::ostream& output) const = 0;
             virtual void getUsersByLastSeen(std::ostream& output) const = 0;
             virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
+
+            virtual void getDiscussionThreadCount(std::ostream& output) const = 0;
         };
 
         typedef std::shared_ptr<IReadRepository> ReadRepositoryRef;

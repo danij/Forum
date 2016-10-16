@@ -1,4 +1,3 @@
-#include <boost/locale.hpp>
 #include <boost/regex/icu.hpp>
 
 #include "Configuration.h"
@@ -14,94 +13,6 @@ using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
-
-/**
- * Retrieves the user that is performing the current action and also performs an update on the last seen if needed
- * The update is performed on the spot if a write lock is held or
- * delayed until the lock is destroyed in the case of a read lock, to avoid deadlocks
- * Do not keep references to it outside of MemoryRepository methods
- */
-struct Forum::Repository::PerformedByWithLastSeenUpdateGuard
-{
-    PerformedByWithLastSeenUpdateGuard(const MemoryRepository& repository) :
-            repository_(const_cast<MemoryRepository&>(repository))
-    {
-    }
-
-    ~PerformedByWithLastSeenUpdateGuard()
-    {
-        if (lastSeenUpdate_) lastSeenUpdate_();
-    }
-
-    /**
-     * Get the current user that performs the action and optionally schedule the update of last seen
-     */
-    PerformedByType get(const EntityCollection& collection)
-    {
-        const auto& index = collection.usersById();
-        auto it = index.find(Forum::Context::getCurrentUserId());
-        if (it == index.end())
-        {
-            return AnonymousUser;
-        }
-        auto& result = **it;
-
-        auto now = Forum::Context::getCurrentTime();
-
-        if ((result.lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
-        {
-            auto& userId = result.id();
-            auto collection = &(repository_.collection_);
-            lastSeenUpdate_ = [collection, now, userId]()
-            {
-                collection->write([&](EntityCollection& collection)
-                                  {
-                                      collection.modifyUser(userId, [&](User& user)
-                                      {
-                                          user.lastSeen() = now;
-                                      });
-                                  });
-            };
-        }
-        return result;
-    }
-
-    /**
-     * Get the current user that performs the action and optionally also perform the update of last seen
-     * This method takes advantage if a write lock on the collection is already secured
-     */
-    PerformedByType getAndUpdate(EntityCollection& collection)
-    {
-        lastSeenUpdate_ = nullptr;
-        const auto& index = collection.usersById();
-        auto it = index.find(Forum::Context::getCurrentUserId());
-        if (it == index.end())
-        {
-            return AnonymousUser;
-        }
-        auto& result = **it;
-
-        auto now = Forum::Context::getCurrentTime();
-
-        if ((result.lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
-        {
-            collection.modifyUser(result.id(), [&](User& user)
-            {
-                user.lastSeen() = now;
-            });
-        }
-        return result;
-    }
-
-private:
-    MemoryRepository& repository_;
-    std::function<void()> lastSeenUpdate_;
-};
-
-inline PerformedByWithLastSeenUpdateGuard preparePerformedBy(const MemoryRepository& repository)
-{
-    return PerformedByWithLastSeenUpdateGuard(repository);
-}
 
 void MemoryRepository::getUserCount(std::ostream& output) const
 {

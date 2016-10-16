@@ -85,3 +85,10 @@ void ObserverCollection::deleteUser(PerformedByType performedBy, const Forum::En
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : writeObservers_) item->deleteUser(performedBy, deletedUser);
 }
+
+
+void ObserverCollection::getDiscussionThreadCount(const Entities::User& performedBy)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : readObservers_) item->getDiscussionThreadCount(performedBy);
+}

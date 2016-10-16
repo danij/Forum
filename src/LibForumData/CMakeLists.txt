@@ -8,7 +8,8 @@ find_package(Boost REQUIRED COMPONENTS locale regex thread system)
 find_package(ICU)
 
 set(SOURCE_FILES RandomGenerator.cpp EntitySerialization.cpp StringHelpers.cpp EntityCollection.cpp
-        ObserverCollection.cpp UuidString.cpp MemoryRepository-main.cpp MemoryRepository-users.cpp)
+        ObserverCollection.cpp UuidString.cpp MemoryRepository-main.cpp MemoryRepository-users.cpp
+        MemoryRepository-threads.cpp)
 set(HEADER_FILES Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h
         ConstCollectionAdapter.h StringHelpers.h RandomGenerator.h
         EntitySerialization.h EntityCollection.h Observers.h ObserverCollection.h EntityCommonTypes.h UuidString.h)
