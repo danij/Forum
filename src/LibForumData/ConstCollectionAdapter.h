@@ -17,11 +17,6 @@ namespace Forum
             inline auto begin() const { return cbegin(); };
             inline auto end() const { return cend(); };
 
-            inline static const T* getPointer(const std::shared_ptr<T>& ptr)
-            {
-                return ptr ? ptr.get() : nullptr;
-            }
-
             inline auto cbegin() const
             {
                 return boost::make_transform_iterator(collection_.cbegin(), getPointer);
@@ -39,6 +34,12 @@ namespace Forum
             }
 
         private:
+
+            inline static const T* getPointer(const std::shared_ptr<T>& ptr)
+            {
+                return ptr ? ptr.get() : nullptr;
+            }
+
             const TCollection& collection_;
         };
 
