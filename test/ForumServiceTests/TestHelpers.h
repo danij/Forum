@@ -29,7 +29,7 @@ namespace Forum
          * Provides a means to execute code at the end of a test case even if it fails or an exception is thrown
          */
         template <typename TAction>
-        struct Disposer
+        struct Disposer final
         {
             Disposer (TAction action) : action_(action) {}
             ~Disposer() { action_(); }
@@ -44,7 +44,7 @@ namespace Forum
             return Disposer<TAction>(action);
         }
 
-        struct ConfigChanger
+        struct ConfigChanger final
         {
             ConfigChanger(std::function<void(Forum::Configuration::Config&)> configChangeAction)
             {
@@ -62,7 +62,7 @@ namespace Forum
             Forum::Configuration::Config oldConfig_;
         };
 
-        struct TimestampChanger
+        struct TimestampChanger final
         {
             TimestampChanger(Forum::Entities::Timestamp value)
             {
@@ -74,7 +74,7 @@ namespace Forum
             }
         };
 
-        struct LoggedInUserChanger
+        struct LoggedInUserChanger final
         {
             LoggedInUserChanger(Forum::Entities::IdType userId)
             {
