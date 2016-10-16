@@ -9,18 +9,18 @@ namespace Forum
     {
         struct UserConfig
         {
-            uint16_t minNameLength = 3;
-            uint16_t maxNameLength = 20;
+            int_fast16_t minNameLength = 3;
+            int_fast16_t maxNameLength = 20;
             /**
              * Do not update last seen more frequently than this amount (in seconds)
              */
-            uint32_t lastSeenUpdatePrecision = 300;
+            int_fast32_t lastSeenUpdatePrecision = 300;
         };
 
         struct DiscussionThreadConfig
         {
-            uint16_t minNameLength = 3;
-            uint16_t maxNameLength = 128;
+            int_fast16_t minNameLength = 3;
+            int_fast16_t maxNameLength = 128;
         };
 
         struct Config
