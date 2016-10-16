@@ -88,6 +88,12 @@ namespace Forum
             inline auto  threadsByLastUpdated() const
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLastUpdated>()); }
 
+            /**
+             * Enables a safe modification of a discussion thread instance,
+             * refreshing all indexes the thread is registered in
+             */
+            void modifyDiscussionThread(const IdType& id, std::function<void(DiscussionThread&)> modifyFunction);
+
         private:
             UserCollection users_;
             DiscussionThreadCollection threads_;

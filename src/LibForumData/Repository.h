@@ -30,6 +30,7 @@ namespace Forum
             virtual void getDiscussionThreadsByName(std::ostream& output) const = 0;
             virtual void getDiscussionThreadsByCreated(std::ostream& output) const = 0;
             virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const = 0;
+            virtual void getDiscussionThreadById(const Forum::Entities::IdType& id, std::ostream& output) const = 0;
         };
 
         typedef std::shared_ptr<IReadRepository> ReadRepositoryRef;
@@ -56,6 +57,10 @@ namespace Forum
             virtual void changeUserName(const Forum::Entities::IdType& id, const std::string& newName,
                                         std::ostream& output) = 0;
             virtual void deleteUser(const Forum::Entities::IdType& id, std::ostream& output) = 0;
+
+            virtual void addNewDiscussionThread(const std::string& name, std::ostream& output) = 0;
+            virtual void changeDiscussionThreadName(const Forum::Entities::IdType& id, const std::string& newName,
+                                        std::ostream& output) = 0;
         };
 
         typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;

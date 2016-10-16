@@ -62,3 +62,114 @@ void MemoryRepository::getDiscussionThreadsByLastUpdated(std::ostream& output) c
                          observers_.getDiscussionThreads(performedBy.get(collection));
                      });
 }
+
+void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& index = collection.threadsById();
+                         auto it = index.find(id);
+                         if (it == index.end())
+                         {
+                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                         }
+                         else
+                         {
+                             writeSingleObjectSafeName(output, "thread", **it);
+                         }
+                         observers_.getDiscussionThreadById(performedBy.get(collection), id);
+                     });
+}
+
+static const auto validThreadNameRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");
+
+static StatusCode validateDiscussionThreadName(const std::string& name, const ConfigConstRef& config)
+{
+    if (name.empty())
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+    try
+    {
+        if ( ! boost::u32regex_match(name, validThreadNameRegex, boost::match_flag_type::format_all))
+        {
+            return StatusCode::INVALID_PARAMETERS;
+        }
+    }
+    catch(...)
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto nrCharacters = countUTF8Characters(name);
+    if (nrCharacters > config->discussionThread.maxNameLength)
+    {
+        return StatusCode::VALUE_TOO_LONG;
+    }
+    if (nrCharacters < config->discussionThread.minNameLength)
+    {
+        return StatusCode::VALUE_TOO_SHORT;
+    }
+
+    return StatusCode::OK;
+}
+
+void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    auto validationCode = validateDiscussionThreadName(name, Configuration::getGlobalConfig());
+    if (validationCode != StatusCode::OK)
+    {
+        status = validationCode;
+        return;
+    }
+
+    auto thread = std::make_shared<DiscussionThread>();
+    thread->id() = generateUUIDString();
+    thread->name() = name;
+    thread->created() = thread->lastUpdated() = Context::getCurrentTime();
+
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          collection.threads().insert(thread);
+                          observers_.addNewDiscussionThread(performedBy.getAndUpdate(collection), *thread);
+
+                          status.addExtraSafeName("id", thread->id());
+                          status.addExtraSafeName("name", thread->name());
+                          status.addExtraSafeName("created", thread->created());
+                      });
+}
+
+void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::string& newName, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    auto validationCode = validateDiscussionThreadName(newName, Configuration::getGlobalConfig());
+    if (validationCode != StatusCode::OK)
+    {
+        status = validationCode;
+    }
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto& indexById = collection.threads()
+                                  .get<EntityCollection::DiscussionThreadCollectionById>();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          collection.modifyDiscussionThread((*it)->id(), [&newName](DiscussionThread& thread)
+                          {
+                              thread.name() = newName;
+                              thread.lastUpdated() = Context::getCurrentTime();
+                          });
+                          observers_.changeDiscussionThread(performedBy.getAndUpdate(collection), **it,
+                                                            DiscussionThread::ChangeType::Name);
+                      });
+}

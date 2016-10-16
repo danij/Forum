@@ -21,12 +21,19 @@ namespace Forum
             std::function<void(PerformedByType performedBy, const std::string& name)> getUsersByNameAction;
 
             std::function<void(PerformedByType performedBy, const Forum::Entities::User& newUser)> addNewUserAction;
-            std::function<void(PerformedByType performedBy, const Forum::Entities::User& newUser,
+            std::function<void(PerformedByType performedBy, const Forum::Entities::User& user,
                     Forum::Entities::User::ChangeType change)> changeUserAction;
             std::function<void(PerformedByType performedBy, const Forum::Entities::User& newUser)> deleteUserAction;
 
             std::function<void(PerformedByType performedBy)> getDiscussionThreadCountAction;
             std::function<void(PerformedByType performedBy)> getDiscussionThreadsAction;
+            std::function<void(PerformedByType performedBy, const Forum::Entities::IdType& id)>
+                getDiscussionThreadByIdAction;
+
+            std::function<void(PerformedByType performedBy, const Forum::Entities::DiscussionThread& newUser)>
+                addNewDiscussionThreadAction;
+            std::function<void(PerformedByType performedBy, const Forum::Entities::DiscussionThread& thread,
+                    Forum::Entities::DiscussionThread::ChangeType change)> changeDiscussionThreadAction;
         };
 
         class DelegateObserver final : public AbstractReadRepositoryObserver, public AbstractWriteRepositoryObserver,
@@ -50,10 +57,10 @@ namespace Forum
             {
                 if (addNewUserAction) addNewUserAction(performedBy, newUser);
             }
-            virtual void changeUser(PerformedByType performedBy, const Forum::Entities::User& newUser,
+            virtual void changeUser(PerformedByType performedBy, const Forum::Entities::User& user,
                                     Forum::Entities::User::ChangeType change) override
             {
-                if (changeUserAction) changeUserAction(performedBy, newUser, change);
+                if (changeUserAction) changeUserAction(performedBy, user, change);
             }
             virtual void deleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) override
             {
@@ -68,6 +75,23 @@ namespace Forum
             {
                 if (getDiscussionThreadsAction) getDiscussionThreadsAction(performedBy);
             }
+            virtual void getDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) override
+            {
+                if (getDiscussionThreadByIdAction) getDiscussionThreadByIdAction(performedBy, id);
+            }
+
+            virtual void addNewDiscussionThread(PerformedByType performedBy,
+                                                const Forum::Entities::DiscussionThread& newThread) override
+            {
+                if (addNewDiscussionThreadAction) addNewDiscussionThread(performedBy, newThread);
+            }
+            virtual void changeDiscussionThread(PerformedByType performedBy,
+                                                const Forum::Entities::DiscussionThread& thread,
+                                                Forum::Entities::DiscussionThread::ChangeType change) override
+            {
+                if (changeDiscussionThreadAction) changeDiscussionThreadAction(performedBy, thread, change);
+            }
+
         };
 
         struct DisposingDelegateObserver

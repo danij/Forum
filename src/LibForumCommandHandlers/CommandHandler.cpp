@@ -28,9 +28,12 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(DELETE_USER, deleteUser);
 
     setHandler(COUNT_DISCUSSION_THREADS, countDiscussionThreads);
+    setHandler(ADD_DISCUSSION_THREAD, addNewDiscussionThread);
     setHandler(GET_DISCUSSION_THREADS_BY_NAME, getDiscussionThreadsByName);
     setHandler(GET_DISCUSSION_THREADS_BY_CREATED, getDiscussionThreadsByCreated);
     setHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED, getDiscussionThreadsByLastUpdated);
+    setHandler(GET_DISCUSSION_THREAD_BY_ID, getDiscussionThreadById);
+    setHandler(CHANGE_DISCUSSION_THREAD_NAME, changeDiscussionThreadName);
 }
 
 ReadRepositoryRef CommandHandler::getReadRepository()
@@ -129,4 +132,22 @@ void CommandHandler::getDiscussionThreadsByCreated(const std::vector<std::string
 void CommandHandler::getDiscussionThreadsByLastUpdated(const std::vector<std::string>& parameters, std::ostream& output)
 {
     readRepository_->getDiscussionThreadsByLastUpdated(output);
+}
+
+void CommandHandler::addNewDiscussionThread(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    writeRepository_->addNewDiscussionThread(parameters[0], output);
+}
+
+void CommandHandler::getDiscussionThreadById(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getDiscussionThreadById(parameters[0], output);
+}
+
+void CommandHandler::changeDiscussionThreadName(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+    writeRepository_->changeDiscussionThreadName(parameters[0], parameters[1], output);
 }

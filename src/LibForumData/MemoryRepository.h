@@ -38,6 +38,11 @@ namespace Forum
             virtual void getDiscussionThreadsByName(std::ostream& output) const override;
             virtual void getDiscussionThreadsByCreated(std::ostream& output) const override;
             virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const override;
+            virtual void getDiscussionThreadById(const Forum::Entities::IdType& id, std::ostream& output) const override;
+
+            virtual void addNewDiscussionThread(const std::string& name, std::ostream& output) override;
+            virtual void changeDiscussionThreadName(const Forum::Entities::IdType& id, const std::string& newName,
+                                                    std::ostream& output) override;
 
         private:
             friend struct PerformedByWithLastSeenUpdateGuard;

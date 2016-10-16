@@ -25,6 +25,7 @@ namespace Forum
 
             virtual void getDiscussionThreadCount(PerformedByType performedBy) {};
             virtual void getDiscussionThreads(PerformedByType performedBy) {};
+            virtual void getDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) {};
         };
 
         typedef std::shared_ptr<AbstractReadRepositoryObserver> ReadRepositoryObserverRef;
@@ -39,9 +40,16 @@ namespace Forum
             virtual ~AbstractWriteRepositoryObserver() = default;
 
             virtual void addNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) {};
-            virtual void changeUser(PerformedByType performedBy, const Forum::Entities::User& newUser,
+            virtual void changeUser(PerformedByType performedBy, const Forum::Entities::User& user,
                                     Forum::Entities::User::ChangeType change) {};
             virtual void deleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) {};
+
+            virtual void addNewDiscussionThread(PerformedByType performedBy,
+                                                const Forum::Entities::DiscussionThread& newUser) {};
+            virtual void changeDiscussionThread(PerformedByType performedBy,
+                                                const Forum::Entities::DiscussionThread& thread,
+                                                Forum::Entities::DiscussionThread::ChangeType change) {};
+
         };
 
         typedef std::shared_ptr<AbstractWriteRepositoryObserver> WriteRepositoryObserverRef;

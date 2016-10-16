@@ -15,7 +15,7 @@ UuidString::UuidString(boost::uuids::uuid value) : value_(value)
     std::copy(stringValue.begin(), stringValue.end(), characters_.begin());
 }
 
-UuidString::UuidString(const std::string& value)
+UuidString::UuidString(const std::string& value) : value_({})
 {
     std::istringstream stream(value);
     stream >> value_;

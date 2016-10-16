@@ -30,11 +30,17 @@ namespace Forum
             virtual void getUserByName(PerformedByType performedBy, const std::string& name) override;
             virtual void getDiscussionThreadCount(PerformedByType performedBy) override;
             virtual void getDiscussionThreads(PerformedByType performedBy) override;
+            virtual void getDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) override;
 
             virtual void addNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) override;
-            virtual void changeUser(PerformedByType performedBy, const Forum::Entities::User& newUser,
+            virtual void changeUser(PerformedByType performedBy, const Forum::Entities::User& user,
                                     Forum::Entities::User::ChangeType change) override;
             virtual void deleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) override;
+            virtual void addNewDiscussionThread(PerformedByType performedBy,
+                                                const Forum::Entities::DiscussionThread& newUser) override;
+            virtual void changeDiscussionThread(PerformedByType performedBy,
+                                                const Forum::Entities::DiscussionThread& thread,
+                                                Forum::Entities::DiscussionThread::ChangeType change) override;
 
         private:
             std::vector<ReadRepositoryObserverRef> readObservers_;

@@ -17,9 +17,16 @@ namespace Forum
             uint32_t lastSeenUpdatePrecision = 300;
         };
 
+        struct DiscussionThreadConfig
+        {
+            uint16_t minNameLength = 3;
+            uint16_t maxNameLength = 128;
+        };
+
         struct Config
         {
             UserConfig user;
+            DiscussionThreadConfig discussionThread;
         };
 
         typedef std::shared_ptr<const Config> ConfigConstRef;

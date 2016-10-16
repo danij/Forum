@@ -62,6 +62,12 @@ namespace Forum
             inline const Timestamp    lastUpdated() const { return lastUpdated_; }
             inline       Timestamp&   lastUpdated()       { return lastUpdated_; }
 
+            enum ChangeType : uint32_t
+            {
+                None = 0,
+                Name
+            };
+
         private:
             std::string name_;
             Timestamp lastUpdated_;

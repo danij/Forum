@@ -31,3 +31,20 @@ void EntityCollection::deleteUser(const IdType& id)
     }
     users_.erase(it);
 }
+
+void EntityCollection::modifyDiscussionThread(const IdType& id, std::function<void(DiscussionThread&)> modifyFunction)
+{
+    auto& index = threads_.get<DiscussionThreadCollectionById>();
+    auto it = index.find(id);
+    if (it == index.end())
+    {
+        return;
+    }
+    threads_.modify(it, [&modifyFunction](const DiscussionThreadRef& thread)
+    {
+        if (thread)
+        {
+            modifyFunction(*thread);
+        }
+    });
+}
