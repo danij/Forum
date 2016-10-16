@@ -4,43 +4,48 @@ using namespace Forum::Entities;
 
 const User Forum::Entities::AnonymousUser("<anonymous>");
 
-void EntityCollection::modifyUser(const IdType& id, std::function<void(User&)> modifyFunction)
+void EntityCollection::modifyUser(UserCollection::iterator iterator, std::function<void(User&)> modifyFunction)
 {
-    auto& index = users_.get<UserCollectionById>();
-    auto it = index.find(id);
-    if (it == index.end())
+    if (iterator == users_.end())
     {
         return;
     }
-    users_.modify(it, [&modifyFunction](const UserRef& user)
+    users_.modify(iterator, [&modifyFunction](const UserRef& user)
     {
-       if (user)
-       {
-           modifyFunction(*user);
-       }
+        if (user)
+        {
+            modifyFunction(*user);
+        }
     });
+}
+
+void EntityCollection::modifyUser(const IdType& id, std::function<void(User&)> modifyFunction)
+{
+    return modifyUser(users_.get<UserCollectionById>().find(id), modifyFunction);
+}
+
+void EntityCollection::deleteUser(UserCollection::iterator iterator)
+{
+    if (iterator == users_.end())
+    {
+        return;
+    }
+    users_.erase(iterator);
 }
 
 void EntityCollection::deleteUser(const IdType& id)
 {
-    auto& index = users_.get<UserCollectionById>();
-    auto it = index.find(id);
-    if (it == index.end())
-    {
-        return;
-    }
-    users_.erase(it);
+    deleteUser(users_.get<UserCollectionById>().find(id));
 }
 
-void EntityCollection::modifyDiscussionThread(const IdType& id, std::function<void(DiscussionThread&)> modifyFunction)
+void EntityCollection::modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
+                                              std::function<void(DiscussionThread&)> modifyFunction)
 {
-    auto& index = threads_.get<DiscussionThreadCollectionById>();
-    auto it = index.find(id);
-    if (it == index.end())
+    if (iterator == threads_.end())
     {
         return;
     }
-    threads_.modify(it, [&modifyFunction](const DiscussionThreadRef& thread)
+    threads_.modify(iterator, [&modifyFunction](const DiscussionThreadRef& thread)
     {
         if (thread)
         {
@@ -49,13 +54,21 @@ void EntityCollection::modifyDiscussionThread(const IdType& id, std::function<vo
     });
 }
 
-void EntityCollection::deleteDiscussionThread(const IdType& id)
+void EntityCollection::modifyDiscussionThread(const IdType& id, std::function<void(DiscussionThread&)> modifyFunction)
 {
-    auto& index = threads_.get<DiscussionThreadCollectionById>();
-    auto it = index.find(id);
-    if (it == index.end())
+    modifyDiscussionThread(threads_.get<DiscussionThreadCollectionById>().find(id), modifyFunction);
+}
+
+void EntityCollection::deleteDiscussionThread(DiscussionThreadCollection::iterator iterator)
+{
+    if (iterator == threads_.end())
     {
         return;
     }
-    threads_.erase(it);
+    threads_.erase(iterator);
+}
+
+void EntityCollection::deleteDiscussionThread(const IdType& id)
+{
+    deleteDiscussionThread(threads_.get<DiscussionThreadCollectionById>().find(id));
 }

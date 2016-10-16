@@ -175,7 +175,7 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
                               status = StatusCode::ALREADY_EXISTS;
                               return;
                           }
-                          collection.modifyUser((*it)->id(), [&newName](User& user)
+                          collection.modifyUser(it, [&newName](User& user)
                           {
                               user.name() = newName;
                           });
@@ -199,6 +199,6 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
                           }
                           //make sure the user is not deleted before being passed to the observers
                           observers_.onDeleteUser(performedBy.getAndUpdate(collection), **it);
-                          collection.deleteUser((*it)->id());
+                          collection.deleteUser(it);
                       });
 }

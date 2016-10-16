@@ -164,7 +164,7 @@ void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::s
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
-                          collection.modifyDiscussionThread((*it)->id(), [&newName](DiscussionThread& thread)
+                          collection.modifyDiscussionThread(it, [&newName](DiscussionThread& thread)
                           {
                               thread.name() = newName;
                               thread.lastUpdated() = Context::getCurrentTime();
@@ -190,6 +190,6 @@ void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& ou
                           }
                           //make sure the thread is not deleted before being passed to the observers
                           observers_.onDeleteDiscussionThread(performedBy.getAndUpdate(collection), **it);
-                          collection.deleteDiscussionThread((*it)->id());
+                          collection.deleteDiscussionThread(it);
                       });
 }

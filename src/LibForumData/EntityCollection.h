@@ -49,7 +49,15 @@ namespace Forum
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
              */
+            void modifyUser(UserCollection::iterator iterator, std::function<void(User&)> modifyFunction);
+            /**
+             * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
+             */
             void modifyUser(const IdType& id, std::function<void(User&)> modifyFunction);
+            /**
+             * Safely deletes a user instance, removing it from all indexes it is registered in
+             */
+            void deleteUser(UserCollection::iterator iterator);
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
              */
@@ -92,7 +100,17 @@ namespace Forum
              * Enables a safe modification of a discussion thread instance,
              * refreshing all indexes the thread is registered in
              */
+            void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
+                                        std::function<void(DiscussionThread&)> modifyFunction);
+            /**
+             * Enables a safe modification of a discussion thread instance,
+             * refreshing all indexes the thread is registered in
+             */
             void modifyDiscussionThread(const IdType& id, std::function<void(DiscussionThread&)> modifyFunction);
+            /**
+             * Safely deletes a discussion thread instance, removing it from all indexes it is registered in
+             */
+            void deleteDiscussionThread(DiscussionThreadCollection::iterator iterator);
             /**
              * Safely deletes a discussion thread instance, removing it from all indexes it is registered in
              */
