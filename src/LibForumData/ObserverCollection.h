@@ -25,23 +25,23 @@ namespace Forum
             void removeObserver(const ReadRepositoryObserverRef& observer);
             void removeObserver(const WriteRepositoryObserverRef& observer);
 
-            virtual void getUserCount(PerformedByType performedBy) override;
-            virtual void getUsers(PerformedByType performedBy) override;
-            virtual void getUserByName(PerformedByType performedBy, const std::string& name) override;
-            virtual void getDiscussionThreadCount(PerformedByType performedBy) override;
-            virtual void getDiscussionThreads(PerformedByType performedBy) override;
-            virtual void getDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) override;
+            virtual void onGetUserCount(PerformedByType performedBy) override;
+            virtual void onGetUsers(PerformedByType performedBy) override;
+            virtual void onGetUserByName(PerformedByType performedBy, const std::string& name) override;
+            virtual void onGetDiscussionThreadCount(PerformedByType performedBy) override;
+            virtual void onGetDiscussionThreads(PerformedByType performedBy) override;
+            virtual void onGetDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) override;
 
-            virtual void addNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) override;
-            virtual void changeUser(PerformedByType performedBy, const Forum::Entities::User& user,
+            virtual void onAddNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) override;
+            virtual void onChangeUser(PerformedByType performedBy, const Forum::Entities::User& user,
                                     Forum::Entities::User::ChangeType change) override;
-            virtual void deleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) override;
-            virtual void addNewDiscussionThread(PerformedByType performedBy,
+            virtual void onDeleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) override;
+            virtual void onAddNewDiscussionThread(PerformedByType performedBy,
                                                 const Forum::Entities::DiscussionThread& newThread) override;
-            virtual void changeDiscussionThread(PerformedByType performedBy,
+            virtual void onChangeDiscussionThread(PerformedByType performedBy,
                                                 const Forum::Entities::DiscussionThread& thread,
                                                 Forum::Entities::DiscussionThread::ChangeType change) override;
-            virtual void deleteDiscussionThread(PerformedByType performedBy,
+            virtual void onDeleteDiscussionThread(PerformedByType performedBy,
                                                 const Forum::Entities::DiscussionThread& deletedThread) override;
 
         private:

@@ -50,76 +50,76 @@ void ObserverCollection::removeObserver(const WriteRepositoryObserverRef& observ
 }
 
 
-void ObserverCollection::getUserCount(PerformedByType performedBy)
+void ObserverCollection::onGetUserCount(PerformedByType performedBy)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : readObservers_) item->getUserCount(performedBy);
+    for (auto& item : readObservers_) item->onGetUserCount(performedBy);
 }
 
-void ObserverCollection::getUsers(PerformedByType performedBy)
+void ObserverCollection::onGetUsers(PerformedByType performedBy)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : readObservers_) item->getUsers(performedBy);
+    for (auto& item : readObservers_) item->onGetUsers(performedBy);
 }
 
-void ObserverCollection::getUserByName(PerformedByType performedBy, const std::string& name)
+void ObserverCollection::onGetUserByName(PerformedByType performedBy, const std::string& name)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : readObservers_) item->getUserByName(performedBy, name);
+    for (auto& item : readObservers_) item->onGetUserByName(performedBy, name);
 }
 
-void ObserverCollection::addNewUser(PerformedByType performedBy, const User& newUser)
+void ObserverCollection::onAddNewUser(PerformedByType performedBy, const User& newUser)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : writeObservers_) item->addNewUser(performedBy, newUser);
+    for (auto& item : writeObservers_) item->onAddNewUser(performedBy, newUser);
 }
 
-void ObserverCollection::changeUser(PerformedByType performedBy, const User& user, User::ChangeType change)
+void ObserverCollection::onChangeUser(PerformedByType performedBy, const User& user, User::ChangeType change)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : writeObservers_) item->changeUser(performedBy, user, change);
+    for (auto& item : writeObservers_) item->onChangeUser(performedBy, user, change);
 }
 
-void ObserverCollection::deleteUser(PerformedByType performedBy, const User& deletedUser)
+void ObserverCollection::onDeleteUser(PerformedByType performedBy, const User& deletedUser)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : writeObservers_) item->deleteUser(performedBy, deletedUser);
+    for (auto& item : writeObservers_) item->onDeleteUser(performedBy, deletedUser);
 }
 
 
-void ObserverCollection::getDiscussionThreadCount(PerformedByType performedBy)
+void ObserverCollection::onGetDiscussionThreadCount(PerformedByType performedBy)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : readObservers_) item->getDiscussionThreadCount(performedBy);
+    for (auto& item : readObservers_) item->onGetDiscussionThreadCount(performedBy);
 }
 
-void ObserverCollection::getDiscussionThreads(PerformedByType performedBy)
+void ObserverCollection::onGetDiscussionThreads(PerformedByType performedBy)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : readObservers_) item->getDiscussionThreads(performedBy);
+    for (auto& item : readObservers_) item->onGetDiscussionThreads(performedBy);
 }
 
-void ObserverCollection::addNewDiscussionThread(PerformedByType performedBy, const DiscussionThread& newThread)
+void ObserverCollection::onAddNewDiscussionThread(PerformedByType performedBy, const DiscussionThread& newThread)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : writeObservers_) item->addNewDiscussionThread(performedBy, newThread);
+    for (auto& item : writeObservers_) item->onAddNewDiscussionThread(performedBy, newThread);
 }
 
-void ObserverCollection::getDiscussionThreadById(PerformedByType performedBy, const IdType& id)
+void ObserverCollection::onGetDiscussionThreadById(PerformedByType performedBy, const IdType& id)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : readObservers_) item->getDiscussionThreadById(performedBy, id);
+    for (auto& item : readObservers_) item->onGetDiscussionThreadById(performedBy, id);
 }
 
-void ObserverCollection::changeDiscussionThread(PerformedByType performedBy, const DiscussionThread& thread,
+void ObserverCollection::onChangeDiscussionThread(PerformedByType performedBy, const DiscussionThread& thread,
                                                 DiscussionThread::ChangeType change)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : writeObservers_) item->changeDiscussionThread(performedBy, thread, change);
+    for (auto& item : writeObservers_) item->onChangeDiscussionThread(performedBy, thread, change);
 }
 
-void ObserverCollection::deleteDiscussionThread(PerformedByType performedBy, const DiscussionThread& deletedThread)
+void ObserverCollection::onDeleteDiscussionThread(PerformedByType performedBy, const DiscussionThread& deletedThread)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : writeObservers_) item->deleteDiscussionThread(performedBy, deletedThread);
+    for (auto& item : writeObservers_) item->onDeleteDiscussionThread(performedBy, deletedThread);
 }

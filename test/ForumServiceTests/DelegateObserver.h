@@ -39,58 +39,58 @@ namespace Forum
                                        public DelegateObserverDelegates_, private boost::noncopyable
         {
         public:
-            virtual void getUserCount(PerformedByType performedBy) override
+            virtual void onGetUserCount(PerformedByType performedBy) override
             {
                 if (getUserCountAction) getUserCountAction(performedBy);
             }
-            virtual void getUsers(PerformedByType performedBy) override
+            virtual void onGetUsers(PerformedByType performedBy) override
             {
                 if (getUsersAction) getUsersAction(performedBy);
             }
-            virtual void getUserByName(PerformedByType performedBy, const std::string& name) override
+            virtual void onGetUserByName(PerformedByType performedBy, const std::string& name) override
             {
                 if (getUsersByNameAction) getUsersByNameAction(performedBy, name);
             }
 
-            virtual void addNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) override
+            virtual void onAddNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) override
             {
                 if (addNewUserAction) addNewUserAction(performedBy, newUser);
             }
-            virtual void changeUser(PerformedByType performedBy, const Forum::Entities::User& user,
+            virtual void onChangeUser(PerformedByType performedBy, const Forum::Entities::User& user,
                                     Forum::Entities::User::ChangeType change) override
             {
                 if (changeUserAction) changeUserAction(performedBy, user, change);
             }
-            virtual void deleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) override
+            virtual void onDeleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) override
             {
                 if (deleteUserAction) deleteUserAction(performedBy, deletedUser);
             }
 
-            virtual void getDiscussionThreadCount(PerformedByType performedBy) override
+            virtual void onGetDiscussionThreadCount(PerformedByType performedBy) override
             {
                 if (getDiscussionThreadCountAction) getDiscussionThreadCountAction(performedBy);
             }
-            virtual void getDiscussionThreads(PerformedByType performedBy) override
+            virtual void onGetDiscussionThreads(PerformedByType performedBy) override
             {
                 if (getDiscussionThreadsAction) getDiscussionThreadsAction(performedBy);
             }
-            virtual void getDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) override
+            virtual void onGetDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) override
             {
                 if (getDiscussionThreadByIdAction) getDiscussionThreadByIdAction(performedBy, id);
             }
 
-            virtual void addNewDiscussionThread(PerformedByType performedBy,
+            virtual void onAddNewDiscussionThread(PerformedByType performedBy,
                                                 const Forum::Entities::DiscussionThread& newThread) override
             {
-                if (addNewDiscussionThreadAction) addNewDiscussionThread(performedBy, newThread);
+                if (addNewDiscussionThreadAction) addNewDiscussionThreadAction(performedBy, newThread);
             }
-            virtual void changeDiscussionThread(PerformedByType performedBy,
+            virtual void onChangeDiscussionThread(PerformedByType performedBy,
                                                 const Forum::Entities::DiscussionThread& thread,
                                                 Forum::Entities::DiscussionThread::ChangeType change) override
             {
                 if (changeDiscussionThreadAction) changeDiscussionThreadAction(performedBy, thread, change);
             }
-            virtual void deleteDiscussionThread(PerformedByType performedBy,
+            virtual void onDeleteDiscussionThread(PerformedByType performedBy,
                                                 const Forum::Entities::DiscussionThread& deletedThread) override
             {
                 if (deleteDiscussionThreadAction) deleteDiscussionThreadAction(performedBy, deletedThread);

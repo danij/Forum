@@ -19,13 +19,13 @@ namespace Forum
         public:
             virtual ~AbstractReadRepositoryObserver() = default;
 
-            virtual void getUserCount(PerformedByType performedBy) {};
-            virtual void getUsers(PerformedByType performedBy) {};
-            virtual void getUserByName(PerformedByType performedBy, const std::string& name) {};
+            virtual void onGetUserCount(PerformedByType performedBy) {};
+            virtual void onGetUsers(PerformedByType performedBy) {};
+            virtual void onGetUserByName(PerformedByType performedBy, const std::string& name) {};
 
-            virtual void getDiscussionThreadCount(PerformedByType performedBy) {};
-            virtual void getDiscussionThreads(PerformedByType performedBy) {};
-            virtual void getDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) {};
+            virtual void onGetDiscussionThreadCount(PerformedByType performedBy) {};
+            virtual void onGetDiscussionThreads(PerformedByType performedBy) {};
+            virtual void onGetDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) {};
         };
 
         typedef std::shared_ptr<AbstractReadRepositoryObserver> ReadRepositoryObserverRef;
@@ -39,17 +39,17 @@ namespace Forum
         public:
             virtual ~AbstractWriteRepositoryObserver() = default;
 
-            virtual void addNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) {};
-            virtual void changeUser(PerformedByType performedBy, const Forum::Entities::User& user,
-                                    Forum::Entities::User::ChangeType change) {};
-            virtual void deleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) {};
+            virtual void onAddNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) {};
+            virtual void onChangeUser(PerformedByType performedBy, const Forum::Entities::User& user,
+                                      Forum::Entities::User::ChangeType change) {};
+            virtual void onDeleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) {};
 
-            virtual void addNewDiscussionThread(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionThread& newThread) {};
-            virtual void changeDiscussionThread(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionThread& thread,
-                                                Forum::Entities::DiscussionThread::ChangeType change) {};
-            virtual void deleteDiscussionThread(PerformedByType performedBy,
+            virtual void onAddNewDiscussionThread(PerformedByType performedBy,
+                                                  const Forum::Entities::DiscussionThread& newThread) {};
+            virtual void onChangeDiscussionThread(PerformedByType performedBy,
+                                                  const Forum::Entities::DiscussionThread& thread,
+                                                  Forum::Entities::DiscussionThread::ChangeType change) {};
+            virtual void onDeleteDiscussionThread(PerformedByType performedBy,
                                                 const Forum::Entities::DiscussionThread& deletedThread) {};
         };
 

@@ -23,7 +23,7 @@ void MemoryRepository::getUserCount(std::ostream& output) const
                          auto count = collection.usersById().size();
                          writeSingleValueSafeName(output, "count", count);
 
-                         observers_.getUserCount(performedBy.get(collection));
+                         observers_.onGetUserCount(performedBy.get(collection));
                      });
 }
 
@@ -35,7 +35,7 @@ void MemoryRepository::getUsersByName(std::ostream& output) const
                      {
                          const auto& users = collection.usersByName();
                          writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
-                         observers_.getUsers(performedBy.get(collection));
+                         observers_.onGetUsers(performedBy.get(collection));
                      });
 }
 
@@ -47,7 +47,7 @@ void MemoryRepository::getUsersByCreated(std::ostream& output) const
                      {
                          const auto& users = collection.usersByCreated();
                          writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
-                         observers_.getUsers(performedBy.get(collection));
+                         observers_.onGetUsers(performedBy.get(collection));
                      });
 }
 
@@ -59,7 +59,7 @@ void MemoryRepository::getUsersByLastSeen(std::ostream& output) const
                      {
                          const auto& users = collection.usersByLastSeen();
                          writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
-                         observers_.getUsers(performedBy.get(collection));
+                         observers_.onGetUsers(performedBy.get(collection));
                      });
 }
 
@@ -79,7 +79,7 @@ void MemoryRepository::getUserByName(const std::string& name, std::ostream& outp
                          {
                              writeSingleObjectSafeName(output, "user", **it);
                          }
-                         observers_.getUserByName(performedBy.get(collection), name);
+                         observers_.onGetUserByName(performedBy.get(collection), name);
                      });
 }
 
@@ -142,7 +142,7 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
                               return;
                           }
                           collection.users().insert(user);
-                          observers_.addNewUser(performedBy.getAndUpdate(collection), *user);
+                          observers_.onAddNewUser(performedBy.getAndUpdate(collection), *user);
 
                           status.addExtraSafeName("id", user->id());
                           status.addExtraSafeName("name", user->name());
@@ -179,7 +179,7 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
                           {
                               user.name() = newName;
                           });
-                          observers_.changeUser(performedBy.getAndUpdate(collection), **it, User::ChangeType::Name);
+                          observers_.onChangeUser(performedBy.getAndUpdate(collection), **it, User::ChangeType::Name);
                       });
 }
 
@@ -198,7 +198,7 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
                               return;
                           }
                           //make sure the user is not deleted before being passed to the observers
-                          observers_.deleteUser(performedBy.getAndUpdate(collection), **it);
+                          observers_.onDeleteUser(performedBy.getAndUpdate(collection), **it);
                           collection.deleteUser((*it)->id());
                       });
 }

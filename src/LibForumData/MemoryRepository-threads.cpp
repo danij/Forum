@@ -23,7 +23,7 @@ void MemoryRepository::getDiscussionThreadCount(std::ostream& output) const
                          auto count = collection.threadsById().size();
                          writeSingleValueSafeName(output, "count", count);
 
-                         observers_.getDiscussionThreadCount(performedBy.get(collection));
+                         observers_.onGetDiscussionThreadCount(performedBy.get(collection));
                      });
 }
 
@@ -35,7 +35,7 @@ void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
                      {
                          const auto& threads = collection.threadsByName();
                          writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
-                         observers_.getDiscussionThreads(performedBy.get(collection));
+                         observers_.onGetDiscussionThreads(performedBy.get(collection));
                      });
 }
 
@@ -47,7 +47,7 @@ void MemoryRepository::getDiscussionThreadsByCreated(std::ostream& output) const
                      {
                          const auto& threads = collection.threadsByCreated();
                          writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
-                         observers_.getDiscussionThreads(performedBy.get(collection));
+                         observers_.onGetDiscussionThreads(performedBy.get(collection));
                      });
 }
 
@@ -59,7 +59,7 @@ void MemoryRepository::getDiscussionThreadsByLastUpdated(std::ostream& output) c
                      {
                          const auto& threads = collection.threadsByLastUpdated();
                          writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
-                         observers_.getDiscussionThreads(performedBy.get(collection));
+                         observers_.onGetDiscussionThreads(performedBy.get(collection));
                      });
 }
 
@@ -79,7 +79,7 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
                          {
                              writeSingleObjectSafeName(output, "thread", **it);
                          }
-                         observers_.getDiscussionThreadById(performedBy.get(collection), id);
+                         observers_.onGetDiscussionThreadById(performedBy.get(collection), id);
                      });
 }
 
@@ -136,7 +136,7 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
     collection_.write([&](EntityCollection& collection)
                       {
                           collection.threads().insert(thread);
-                          observers_.addNewDiscussionThread(performedBy.getAndUpdate(collection), *thread);
+                          observers_.onAddNewDiscussionThread(performedBy.getAndUpdate(collection), *thread);
 
                           status.addExtraSafeName("id", thread->id());
                           status.addExtraSafeName("name", thread->name());
@@ -169,7 +169,7 @@ void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::s
                               thread.name() = newName;
                               thread.lastUpdated() = Context::getCurrentTime();
                           });
-                          observers_.changeDiscussionThread(performedBy.getAndUpdate(collection), **it,
+                          observers_.onChangeDiscussionThread(performedBy.getAndUpdate(collection), **it,
                                                             DiscussionThread::ChangeType::Name);
                       });
 }
@@ -189,7 +189,7 @@ void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& ou
                               return;
                           }
                           //make sure the thread is not deleted before being passed to the observers
-                          observers_.deleteDiscussionThread(performedBy.getAndUpdate(collection), **it);
+                          observers_.onDeleteDiscussionThread(performedBy.getAndUpdate(collection), **it);
                           collection.deleteDiscussionThread((*it)->id());
                       });
 }
