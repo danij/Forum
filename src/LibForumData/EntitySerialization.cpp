@@ -19,3 +19,15 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const Forum::Entities::User& us
         << objEnd;
     return writer;
 }
+
+JsonWriter& Json::operator<<(JsonWriter& writer, const Forum::Entities::DiscussionThread& thread)
+{
+    writer
+        << objStart
+            << propertySafeName("id", thread.id())
+            << propertySafeName("name", thread.name())
+            << propertySafeName("created", thread.created())
+            << propertySafeName("lastUpdated", thread.lastUpdated())
+        << objEnd;
+    return writer;
+}

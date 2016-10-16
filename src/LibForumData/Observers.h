@@ -24,6 +24,7 @@ namespace Forum
             virtual void getUserByName(PerformedByType performedBy, const std::string& name) {};
 
             virtual void getDiscussionThreadCount(PerformedByType performedBy) {};
+            virtual void getDiscussionThreads(PerformedByType performedBy) {};
         };
 
         typedef std::shared_ptr<AbstractReadRepositoryObserver> ReadRepositoryObserverRef;

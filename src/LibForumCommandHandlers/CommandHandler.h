@@ -26,6 +26,9 @@ namespace Forum
             DELETE_USER,
             //discussion thread related
             COUNT_DISCUSSION_THREADS,
+            GET_DISCUSSION_THREADS_BY_NAME,
+            GET_DISCUSSION_THREADS_BY_CREATED,
+            GET_DISCUSSION_THREADS_BY_LAST_UPDATED,
             LAST_COMMAND
         };
 
@@ -55,6 +58,9 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(deleteUser);
 
             DECLARE_COMMAND_HANDLER(countDiscussionThreads);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByName);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreated);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdated);
 
             bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);
 

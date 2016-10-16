@@ -35,6 +35,9 @@ namespace Forum
             virtual void deleteUser(const Forum::Entities::IdType& id, std::ostream& output) override;
 
             virtual void getDiscussionThreadCount(std::ostream& output) const override;
+            virtual void getDiscussionThreadsByName(std::ostream& output) const override;
+            virtual void getDiscussionThreadsByCreated(std::ostream& output) const override;
+            virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const override;
 
         private:
             friend struct PerformedByWithLastSeenUpdateGuard;

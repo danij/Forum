@@ -29,6 +29,7 @@ namespace Forum
             virtual void getUsers(PerformedByType performedBy) override;
             virtual void getUserByName(PerformedByType performedBy, const std::string& name) override;
             virtual void getDiscussionThreadCount(PerformedByType performedBy) override;
+            virtual void getDiscussionThreads(PerformedByType performedBy) override;
 
             virtual void addNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) override;
             virtual void changeUser(PerformedByType performedBy, const Forum::Entities::User& newUser,

@@ -57,7 +57,14 @@ namespace Forum
 
         struct DiscussionThread final : public Identifiable, public Creatable
         {
+            inline const std::string& name()        const { return name_; }
+            inline       std::string& name()              { return name_; }
+            inline const Timestamp    lastUpdated() const { return lastUpdated_; }
+            inline       Timestamp&   lastUpdated()       { return lastUpdated_; }
 
+        private:
+            std::string name_;
+            Timestamp lastUpdated_;
         };
 
         typedef std::shared_ptr<User> UserRef;

@@ -92,3 +92,9 @@ void ObserverCollection::getDiscussionThreadCount(const Entities::User& performe
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : readObservers_) item->getDiscussionThreadCount(performedBy);
 }
+
+void ObserverCollection::getDiscussionThreads(const Entities::User& performedBy)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : readObservers_) item->getDiscussionThreads(performedBy);
+}

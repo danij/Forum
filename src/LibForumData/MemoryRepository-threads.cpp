@@ -26,3 +26,39 @@ void MemoryRepository::getDiscussionThreadCount(std::ostream& output) const
                          observers_.getDiscussionThreadCount(performedBy.get(collection));
                      });
 }
+
+void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& threads = collection.threadsByName();
+                         writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+                         observers_.getDiscussionThreads(performedBy.get(collection));
+                     });
+}
+
+void MemoryRepository::getDiscussionThreadsByCreated(std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& threads = collection.threadsByCreated();
+                         writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+                         observers_.getDiscussionThreads(performedBy.get(collection));
+                     });
+}
+
+void MemoryRepository::getDiscussionThreadsByLastUpdated(std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& threads = collection.threadsByLastUpdated();
+                         writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+                         observers_.getDiscussionThreads(performedBy.get(collection));
+                     });
+}

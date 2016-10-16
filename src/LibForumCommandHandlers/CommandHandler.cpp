@@ -28,6 +28,9 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(DELETE_USER, deleteUser);
 
     setHandler(COUNT_DISCUSSION_THREADS, countDiscussionThreads);
+    setHandler(GET_DISCUSSION_THREADS_BY_NAME, getDiscussionThreadsByName);
+    setHandler(GET_DISCUSSION_THREADS_BY_CREATED, getDiscussionThreadsByCreated);
+    setHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED, getDiscussionThreadsByLastUpdated);
 }
 
 ReadRepositoryRef CommandHandler::getReadRepository()
@@ -111,4 +114,19 @@ void CommandHandler::deleteUser(const std::vector<std::string>& parameters, std:
 void CommandHandler::countDiscussionThreads(const std::vector<std::string>& parameters, std::ostream& output)
 {
     readRepository_->getDiscussionThreadCount(output);
+}
+
+void CommandHandler::getDiscussionThreadsByName(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    readRepository_->getDiscussionThreadsByName(output);
+}
+
+void CommandHandler::getDiscussionThreadsByCreated(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    readRepository_->getDiscussionThreadsByCreated(output);
+}
+
+void CommandHandler::getDiscussionThreadsByLastUpdated(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    readRepository_->getDiscussionThreadsByLastUpdated(output);
 }
