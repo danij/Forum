@@ -245,6 +245,33 @@ BOOST_AUTO_TEST_CASE( Modifying_a_discussion_thread_invokes_observer )
     BOOST_REQUIRE_EQUAL(DiscussionThread::ChangeType::Name, threadChange);
 }
 
+BOOST_AUTO_TEST_CASE( Multiple_discussion_threads_can_be_share_the_same_name )
+{
+    auto handler = createCommandHandler();
+    std::vector<std::string> names = { "Abc", "abc", "Åbc" };
+
+    Timestamp currentTime = 1000;
+    for (auto& name : names)
+    {
+        TimestampChanger timestampChanger(currentTime);
+        currentTime += 1000;
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { name }));
+    }
+
+    BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_DISCUSSION_THREADS).get<int>("count"));
+
+    auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
+                                              .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(names.size(), threads.size());
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE_EQUAL("abc", threads[1].name);
+    BOOST_REQUIRE_EQUAL("Åbc", threads[2].name);
+    BOOST_REQUIRE_EQUAL(1000, threads[0].created);
+    BOOST_REQUIRE_EQUAL(2000, threads[1].created);
+    BOOST_REQUIRE_EQUAL(3000, threads[2].created);
+}
+
 BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_name )
 {
     auto handler = createCommandHandler();

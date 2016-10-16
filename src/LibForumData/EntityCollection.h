@@ -64,7 +64,7 @@ namespace Forum
             struct DiscussionThreadCollectionIndices : boost::multi_index::indexed_by<
                     boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionThreadCollectionById>,
                             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionThread::id>>,
-                    boost::multi_index::ranked_unique<boost::multi_index::tag<DiscussionThreadCollectionByName>,
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByName>,
                             const boost::multi_index::const_mem_fun<DiscussionThread, const std::string&, &DiscussionThread::name>,
                             Forum::Helpers::StringAccentAndCaseInsensitiveLess>,
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByCreated>,
