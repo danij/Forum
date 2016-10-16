@@ -29,14 +29,17 @@ BOOST_AUTO_TEST_CASE( Counting_users_invokes_observer )
 
 BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
 {
-    bool observerCalled = false;
+    int observerCalledNTimes = 0;
     auto handler = createCommandHandler();
 
     DisposingDelegateObserver observer(*handler);
-    observer->getUsersAction = [&](auto& _) { observerCalled = true; };
+    observer->getUsersAction = [&](auto& _) { observerCalledNTimes += 1; };
 
     handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME);
-    BOOST_REQUIRE(observerCalled);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN);
+
+    BOOST_REQUIRE_EQUAL(3, observerCalledNTimes);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_no_parameters_fails )
