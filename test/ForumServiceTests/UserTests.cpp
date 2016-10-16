@@ -541,7 +541,7 @@ BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
         userToDelete = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Xyz" }).get<std::string>("user.id");
     }
     {
-        TimestampChanger changer(20050);//lower then the minimum for updating last seen
+        TimestampChanger changer(20050);//difference to previous action is lower than the minimum for updating last seen
         auto userId = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Def" }).get<std::string>("user.id");
         LoggedInUserChanger loggedInChanger(userId);
         assertStatusCodeEqual(StatusCode::OK,
