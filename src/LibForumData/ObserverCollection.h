@@ -41,6 +41,8 @@ namespace Forum
             virtual void changeDiscussionThread(PerformedByType performedBy,
                                                 const Forum::Entities::DiscussionThread& thread,
                                                 Forum::Entities::DiscussionThread::ChangeType change) override;
+            virtual void deleteDiscussionThread(PerformedByType performedBy,
+                                                const Forum::Entities::DiscussionThread& deletedThread) override;
 
         private:
             std::vector<ReadRepositoryObserverRef> readObservers_;

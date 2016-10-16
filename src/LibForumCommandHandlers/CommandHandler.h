@@ -32,6 +32,7 @@ namespace Forum
             GET_DISCUSSION_THREADS_BY_LAST_UPDATED,
             GET_DISCUSSION_THREAD_BY_ID,
             CHANGE_DISCUSSION_THREAD_NAME,
+            DELETE_DISCUSSION_THREAD,
             LAST_COMMAND
         };
 
@@ -67,6 +68,7 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdated);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadById);
             DECLARE_COMMAND_HANDLER(changeDiscussionThreadName);
+            DECLARE_COMMAND_HANDLER(deleteDiscussionThread);
 
             bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);
 

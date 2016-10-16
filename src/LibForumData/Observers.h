@@ -49,7 +49,8 @@ namespace Forum
             virtual void changeDiscussionThread(PerformedByType performedBy,
                                                 const Forum::Entities::DiscussionThread& thread,
                                                 Forum::Entities::DiscussionThread::ChangeType change) {};
-
+            virtual void deleteDiscussionThread(PerformedByType performedBy,
+                                                const Forum::Entities::DiscussionThread& deletedThread) {};
         };
 
         typedef std::shared_ptr<AbstractWriteRepositoryObserver> WriteRepositoryObserverRef;

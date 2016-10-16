@@ -93,6 +93,10 @@ namespace Forum
              * refreshing all indexes the thread is registered in
              */
             void modifyDiscussionThread(const IdType& id, std::function<void(DiscussionThread&)> modifyFunction);
+            /**
+             * Safely deletes a discussion thread instance, removing it from all indexes it is registered in
+             */
+            void deleteDiscussionThread(const IdType& id);
 
         private:
             UserCollection users_;

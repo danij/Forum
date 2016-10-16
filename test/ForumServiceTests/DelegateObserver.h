@@ -32,6 +32,7 @@ namespace Forum
             std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&)> addNewDiscussionThreadAction;
             std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&,
                     Forum::Entities::DiscussionThread::ChangeType)> changeDiscussionThreadAction;
+            std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&)> deleteDiscussionThreadAction;
         };
 
         class DelegateObserver final : public AbstractReadRepositoryObserver, public AbstractWriteRepositoryObserver,
@@ -88,6 +89,11 @@ namespace Forum
                                                 Forum::Entities::DiscussionThread::ChangeType change) override
             {
                 if (changeDiscussionThreadAction) changeDiscussionThreadAction(performedBy, thread, change);
+            }
+            virtual void deleteDiscussionThread(PerformedByType performedBy,
+                                                const Forum::Entities::DiscussionThread& deletedThread) override
+            {
+                if (deleteDiscussionThreadAction) deleteDiscussionThreadAction(performedBy, deletedThread);
             }
 
         };

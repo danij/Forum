@@ -43,6 +43,7 @@ namespace Forum
             virtual void addNewDiscussionThread(const std::string& name, std::ostream& output) override;
             virtual void changeDiscussionThreadName(const Forum::Entities::IdType& id, const std::string& newName,
                                                     std::ostream& output) override;
+            virtual void deleteDiscussionThread(const Forum::Entities::IdType& id, std::ostream& output) override;
 
         private:
             friend struct PerformedByWithLastSeenUpdateGuard;

@@ -331,3 +331,57 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_last_updated
     BOOST_REQUIRE_EQUAL(3000, threads[1].created);
     BOOST_REQUIRE_EQUAL(2000, threads[2].created);
 }
+
+BOOST_AUTO_TEST_CASE( Deleting_an_inexistent_discussion_thread_returns_not_found )
+{
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Abc" }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND,
+                          handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD, { "bogus id" }));
+}
+
+BOOST_AUTO_TEST_CASE( Deleted_discussion_threads_can_no_longer_be_retrieved )
+{
+    auto handler = createCommandHandler();
+    std::vector<std::string> names = { "Abc", "Ghi", "Def" };
+    std::vector<std::string> ids;
+
+    for (auto& name : names)
+    {
+        auto result = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { name });
+        assertStatusCodeEqual(StatusCode::OK, result);
+        ids.push_back(result.get<std::string>("id"));
+    }
+
+    BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_DISCUSSION_THREADS).get<int>("count"));
+
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD, { ids[0] }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
+                                                              { ids[0] }));
+
+    BOOST_REQUIRE_EQUAL(2, handlerToObj(handler, Forum::Commands::COUNT_DISCUSSION_THREADS).get<int>("count"));
+
+    auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
+                                              .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(names.size() - 1, threads.size());
+    BOOST_REQUIRE_EQUAL("Def", threads[0].name);
+    BOOST_REQUIRE_EQUAL("Ghi", threads[1].name);
+}
+
+BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_invokes_observer )
+{
+    std::string deletedThreadId;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->deleteDiscussionThreadAction = [&](auto& _, auto& thread)
+    {
+        deletedThreadId = static_cast<std::string>(thread.id());
+    };
+
+    auto threadId = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Abc" }).get<std::string>("id");
+
+    handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD, { threadId });
+    BOOST_REQUIRE_EQUAL(threadId, deletedThreadId);
+}

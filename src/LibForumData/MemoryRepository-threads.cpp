@@ -173,3 +173,23 @@ void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::s
                                                             DiscussionThread::ChangeType::Name);
                       });
 }
+
+void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          //make sure the thread is not deleted before being passed to the observers
+                          observers_.deleteDiscussionThread(performedBy.getAndUpdate(collection), **it);
+                          collection.deleteDiscussionThread((*it)->id());
+                      });
+}

@@ -61,6 +61,7 @@ namespace Forum
             virtual void addNewDiscussionThread(const std::string& name, std::ostream& output) = 0;
             virtual void changeDiscussionThreadName(const Forum::Entities::IdType& id, const std::string& newName,
                                         std::ostream& output) = 0;
+            virtual void deleteDiscussionThread(const Forum::Entities::IdType& id, std::ostream& output) = 0;
         };
 
         typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;

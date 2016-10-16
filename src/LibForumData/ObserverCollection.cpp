@@ -117,3 +117,9 @@ void ObserverCollection::changeDiscussionThread(PerformedByType performedBy, con
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : writeObservers_) item->changeDiscussionThread(performedBy, thread, change);
 }
+
+void ObserverCollection::deleteDiscussionThread(PerformedByType performedBy, const DiscussionThread& deletedThread)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : writeObservers_) item->deleteDiscussionThread(performedBy, deletedThread);
+}
