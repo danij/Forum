@@ -2,6 +2,7 @@
 
 #include "ObserverCollection.h"
 
+using namespace Forum::Entities;
 using namespace Forum::Repository;
 
 template <typename T, typename TCollection>
@@ -67,54 +68,51 @@ void ObserverCollection::getUserByName(PerformedByType performedBy, const std::s
     for (auto& item : readObservers_) item->getUserByName(performedBy, name);
 }
 
-void ObserverCollection::addNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser)
+void ObserverCollection::addNewUser(PerformedByType performedBy, const User& newUser)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : writeObservers_) item->addNewUser(performedBy, newUser);
 }
 
-void ObserverCollection::changeUser(PerformedByType performedBy, const Forum::Entities::User& user,
-                                            Forum::Entities::User::ChangeType change)
+void ObserverCollection::changeUser(PerformedByType performedBy, const User& user, User::ChangeType change)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : writeObservers_) item->changeUser(performedBy, user, change);
 }
 
-void ObserverCollection::deleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser)
+void ObserverCollection::deleteUser(PerformedByType performedBy, const User& deletedUser)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : writeObservers_) item->deleteUser(performedBy, deletedUser);
 }
 
 
-void ObserverCollection::getDiscussionThreadCount(const Entities::User& performedBy)
+void ObserverCollection::getDiscussionThreadCount(PerformedByType performedBy)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : readObservers_) item->getDiscussionThreadCount(performedBy);
 }
 
-void ObserverCollection::getDiscussionThreads(const Entities::User& performedBy)
+void ObserverCollection::getDiscussionThreads(PerformedByType performedBy)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : readObservers_) item->getDiscussionThreads(performedBy);
 }
 
-void ObserverCollection::addNewDiscussionThread(const Entities::User& performedBy,
-                                                const Forum::Entities::DiscussionThread& newThread)
+void ObserverCollection::addNewDiscussionThread(PerformedByType performedBy, const DiscussionThread& newThread)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : writeObservers_) item->addNewDiscussionThread(performedBy, newThread);
 }
 
-void ObserverCollection::getDiscussionThreadById(const Entities::User& performedBy, const Forum::Entities::IdType& id)
+void ObserverCollection::getDiscussionThreadById(PerformedByType performedBy, const IdType& id)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : readObservers_) item->getDiscussionThreadById(performedBy, id);
 }
 
-void ObserverCollection::changeDiscussionThread(const Entities::User& performedBy,
-                                                const Forum::Entities::DiscussionThread& thread,
-                                                Forum::Entities::DiscussionThread::ChangeType change)
+void ObserverCollection::changeDiscussionThread(PerformedByType performedBy, const DiscussionThread& thread,
+                                                DiscussionThread::ChangeType change)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : writeObservers_) item->changeDiscussionThread(performedBy, thread, change);

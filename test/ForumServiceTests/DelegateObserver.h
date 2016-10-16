@@ -16,24 +16,22 @@ namespace Forum
         class DelegateObserverDelegates_
         {
         public:
-            std::function<void(PerformedByType performedBy)> getUserCountAction;
-            std::function<void(PerformedByType performedBy)> getUsersAction;
-            std::function<void(PerformedByType performedBy, const std::string& name)> getUsersByNameAction;
+            std::function<void(PerformedByType)> getUserCountAction;
+            std::function<void(PerformedByType)> getUsersAction;
+            std::function<void(PerformedByType, const std::string&)> getUsersByNameAction;
 
-            std::function<void(PerformedByType performedBy, const Forum::Entities::User& newUser)> addNewUserAction;
-            std::function<void(PerformedByType performedBy, const Forum::Entities::User& user,
-                    Forum::Entities::User::ChangeType change)> changeUserAction;
-            std::function<void(PerformedByType performedBy, const Forum::Entities::User& newUser)> deleteUserAction;
+            std::function<void(PerformedByType, const Forum::Entities::User&)> addNewUserAction;
+            std::function<void(PerformedByType, const Forum::Entities::User&,
+                Forum::Entities::User::ChangeType)> changeUserAction;
+            std::function<void(PerformedByType, const Forum::Entities::User&)> deleteUserAction;
 
-            std::function<void(PerformedByType performedBy)> getDiscussionThreadCountAction;
-            std::function<void(PerformedByType performedBy)> getDiscussionThreadsAction;
-            std::function<void(PerformedByType performedBy, const Forum::Entities::IdType& id)>
-                getDiscussionThreadByIdAction;
+            std::function<void(PerformedByType)> getDiscussionThreadCountAction;
+            std::function<void(PerformedByType)> getDiscussionThreadsAction;
+            std::function<void(PerformedByType, const Forum::Entities::IdType&)> getDiscussionThreadByIdAction;
 
-            std::function<void(PerformedByType performedBy, const Forum::Entities::DiscussionThread& newUser)>
-                addNewDiscussionThreadAction;
-            std::function<void(PerformedByType performedBy, const Forum::Entities::DiscussionThread& thread,
-                    Forum::Entities::DiscussionThread::ChangeType change)> changeDiscussionThreadAction;
+            std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&)> addNewDiscussionThreadAction;
+            std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&,
+                    Forum::Entities::DiscussionThread::ChangeType)> changeDiscussionThreadAction;
         };
 
         class DelegateObserver final : public AbstractReadRepositoryObserver, public AbstractWriteRepositoryObserver,

@@ -37,7 +37,7 @@ namespace Forum
                                     Forum::Entities::User::ChangeType change) override;
             virtual void deleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) override;
             virtual void addNewDiscussionThread(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionThread& newUser) override;
+                                                const Forum::Entities::DiscussionThread& newThread) override;
             virtual void changeDiscussionThread(PerformedByType performedBy,
                                                 const Forum::Entities::DiscussionThread& thread,
                                                 Forum::Entities::DiscussionThread::ChangeType change) override;

@@ -45,7 +45,7 @@ namespace Forum
             virtual void deleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) {};
 
             virtual void addNewDiscussionThread(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionThread& newUser) {};
+                                                const Forum::Entities::DiscussionThread& newThread) {};
             virtual void changeDiscussionThread(PerformedByType performedBy,
                                                 const Forum::Entities::DiscussionThread& thread,
                                                 Forum::Entities::DiscussionThread::ChangeType change) {};
