@@ -14,6 +14,7 @@ Backend software for providing a discussion forum.
 * 4 SPACES for indent
 * JAVA style but with brackets on new line for C++
 * Max 120 characters/line
+* Space inside an initializer list (e.g. { 1, 2, 3 } instead of {1, 2, 3})
 
 ## Building
 
