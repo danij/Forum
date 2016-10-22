@@ -22,3 +22,5 @@ UuidString::UuidString(const std::string& value) : value_({})
     auto stringValue = boost::uuids::to_string(value_);
     std::copy(stringValue.begin(), stringValue.end(), characters_.begin());
 }
+
+const UuidString UuidString::empty = {};

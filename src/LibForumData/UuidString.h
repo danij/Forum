@@ -59,6 +59,8 @@ namespace Forum
                 return std::string(characters_.data(), MaxCharacters);
             }
 
+            static const UuidString empty;
+
         private:
             boost::uuids::uuid value_;
             CharacterArrayType characters_;

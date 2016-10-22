@@ -26,13 +26,19 @@ struct SerializedDiscussionThread
     }
 };
 
+auto deserializeThread(const boost::property_tree::ptree& tree)
+{
+    SerializedDiscussionThread result;
+    result.populate(tree);
+    return result;
+}
+
 auto deserializeThreads(const boost::property_tree::ptree& collection)
 {
     std::vector<SerializedDiscussionThread> result;
     for (auto& tree : collection)
     {
-        result.push_back({});
-        result.rbegin()->populate(tree.second);
+        result.push_back(deserializeThread(tree.second));
     }
     return result;
 }
@@ -411,4 +417,31 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_invokes_observer )
 
     handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD, { threadId });
     BOOST_REQUIRE_EQUAL(threadId, deletedThreadId);
+}
+
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_creation_and_last_update_dates )
+{
+    auto handler = createCommandHandler();
+
+    {
+        TimestampChanger changer(1000);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Abc" }));
+    }
+    {
+        TimestampChanger changer(2000);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Def" }));
+    }
+
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    auto threads = deserializeThreads(result.get_child("threads"));
+
+    BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE_EQUAL(1000, threads[0].created);
+    BOOST_REQUIRE_EQUAL(1000, threads[0].lastUpdated);
+
+    BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
+    BOOST_REQUIRE_EQUAL("Def", threads[1].name);
+    BOOST_REQUIRE_EQUAL(2000, threads[1].created);
+    BOOST_REQUIRE_EQUAL(2000, threads[1].lastUpdated);
 }

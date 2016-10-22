@@ -25,6 +25,11 @@ namespace Forum
             assertStatusCodeEqual(expected, Forum::Repository::StatusCode(obj.template get<uint32_t>("status")));
         }
 
+        inline bool isIdEmpty(const std::string& id)
+        {
+            return Forum::Entities::UuidString(id) == Forum::Entities::UuidString::empty;
+        }
+
         /**
          * Provides a means to execute code at the end of a test case even if it fails or an exception is thrown
          */
