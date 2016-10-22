@@ -135,8 +135,10 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
 
     collection_.write([&](EntityCollection& collection)
                       {
+                          thread->createdBy() = performedBy.getAndUpdate(collection);
                           collection.threads().insert(thread);
-                          observers_.onAddNewDiscussionThread(performedBy.getAndUpdate(collection), *thread);
+
+                          observers_.onAddNewDiscussionThread(*thread->createdBy(), *thread);
 
                           status.addExtraSafeName("id", thread->id());
                           status.addExtraSafeName("name", thread->name());
@@ -169,7 +171,7 @@ void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::s
                               thread.name() = newName;
                               thread.lastUpdated() = Context::getCurrentTime();
                           });
-                          observers_.onChangeDiscussionThread(performedBy.getAndUpdate(collection), **it,
+                          observers_.onChangeDiscussionThread(*performedBy.getAndUpdate(collection), **it,
                                                             DiscussionThread::ChangeType::Name);
                       });
 }
@@ -189,7 +191,7 @@ void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& ou
                               return;
                           }
                           //make sure the thread is not deleted before being passed to the observers
-                          observers_.onDeleteDiscussionThread(performedBy.getAndUpdate(collection), **it);
+                          observers_.onDeleteDiscussionThread(*performedBy.getAndUpdate(collection), **it);
                           collection.deleteDiscussionThread(it);
                       });
 }

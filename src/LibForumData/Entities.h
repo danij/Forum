@@ -55,12 +55,16 @@ namespace Forum
             Timestamp lastSeen_;
         };
 
+        typedef std::shared_ptr<User> UserRef;
+
         struct DiscussionThread final : public Identifiable, public Creatable
         {
             inline const std::string& name()        const { return name_; }
             inline       std::string& name()              { return name_; }
             inline const Timestamp    lastUpdated() const { return lastUpdated_; }
             inline       Timestamp&   lastUpdated()       { return lastUpdated_; }
+            inline const User&        createdBy()   const { return *createdBy_; }
+            inline       UserRef&     createdBy()         { return createdBy_; }
 
             enum ChangeType : uint32_t
             {
@@ -71,9 +75,9 @@ namespace Forum
         private:
             std::string name_;
             Timestamp lastUpdated_;
+            UserRef createdBy_;
         };
 
-        typedef std::shared_ptr<User> UserRef;
         typedef std::shared_ptr<DiscussionThread> DiscussionThreadRef;
     }
 }

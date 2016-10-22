@@ -142,7 +142,7 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
                               return;
                           }
                           collection.users().insert(user);
-                          observers_.onAddNewUser(performedBy.getAndUpdate(collection), *user);
+                          observers_.onAddNewUser(*performedBy.getAndUpdate(collection), *user);
 
                           status.addExtraSafeName("id", user->id());
                           status.addExtraSafeName("name", user->name());
@@ -179,7 +179,7 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
                           {
                               user.name() = newName;
                           });
-                          observers_.onChangeUser(performedBy.getAndUpdate(collection), **it, User::ChangeType::Name);
+                          observers_.onChangeUser(*performedBy.getAndUpdate(collection), **it, User::ChangeType::Name);
                       });
 }
 
@@ -198,7 +198,7 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
                               return;
                           }
                           //make sure the user is not deleted before being passed to the observers
-                          observers_.onDeleteUser(performedBy.getAndUpdate(collection), **it);
+                          observers_.onDeleteUser(*performedBy.getAndUpdate(collection), **it);
                           collection.deleteUser(it);
                       });
 }

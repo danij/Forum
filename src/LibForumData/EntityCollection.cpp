@@ -2,7 +2,7 @@
 
 using namespace Forum::Entities;
 
-const User Forum::Entities::AnonymousUser("<anonymous>");
+const UserRef Forum::Entities::AnonymousUser = std::make_shared<User>("<anonymous>");
 
 void EntityCollection::modifyUser(UserCollection::iterator iterator, std::function<void(User&)> modifyFunction)
 {

@@ -121,6 +121,6 @@ namespace Forum
             DiscussionThreadCollection threads_;
         };
 
-        extern const User AnonymousUser;
+        extern const UserRef AnonymousUser;
     }
 }

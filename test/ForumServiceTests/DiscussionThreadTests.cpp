@@ -1,4 +1,5 @@
 #include <vector>
+#include <LibForumData/EntityCollection.h>
 
 #include "CommandsCommon.h"
 #include "DelegateObserver.h"
@@ -10,12 +11,24 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
+/**
+ * Stores only the information that is sent out about a user referenced in a discussion thread
+ */
+struct SerializedDiscussionThreadUser
+{
+    std::string id;
+    std::string name;
+    Timestamp created = 0;
+    Timestamp lastSeen = 0;
+};
+
 struct SerializedDiscussionThread
 {
     std::string id;
     std::string name;
     Timestamp created = 0;
     Timestamp lastUpdated = 0;
+    SerializedDiscussionThreadUser createdBy;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -23,6 +36,11 @@ struct SerializedDiscussionThread
         name = tree.get<std::string>("name");
         created = tree.get<Timestamp>("created");
         lastUpdated = tree.get<Timestamp>("lastUpdated");
+
+        createdBy.id = tree.get<std::string>("createdBy.id");
+        createdBy.name = tree.get<std::string>("createdBy.name");
+        createdBy.created = tree.get<Timestamp>("createdBy.created");
+        createdBy.lastSeen = tree.get<Timestamp>("createdBy.lastSeen");
     }
 };
 
@@ -444,4 +462,45 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_creation_and_last_up
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
     BOOST_REQUIRE_EQUAL(2000, threads[1].created);
     BOOST_REQUIRE_EQUAL(2000, threads[1].lastUpdated);
+}
+
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_user_that_created_it )
+{
+    auto handler = createCommandHandler();
+
+    auto user1 = createUserAndGetId(handler, "User1");
+    auto user2 = createUserAndGetId(handler, "User2");
+
+    {
+        TimestampChanger changer(1000);
+        LoggedInUserChanger userChanger(user2);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Abc" }));
+    }
+    {
+        TimestampChanger changer(2000);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Def" }));
+    }
+    {
+        TimestampChanger changer(3000);
+        LoggedInUserChanger userChanger(user1);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Ghi" }));
+    }
+
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    auto threads = deserializeThreads(result.get_child("threads"));
+
+    BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE( ! isIdEmpty(threads[0].createdBy.id));
+    BOOST_REQUIRE_EQUAL("User2", threads[0].createdBy.name);
+
+    BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
+    BOOST_REQUIRE_EQUAL("Def", threads[1].name);
+    BOOST_REQUIRE(isIdEmpty(threads[1].createdBy.id));
+    BOOST_REQUIRE_EQUAL(AnonymousUser->name(), threads[1].createdBy.name);
+
+    BOOST_REQUIRE( ! isIdEmpty(threads[2].id));
+    BOOST_REQUIRE_EQUAL("Ghi", threads[2].name);
+    BOOST_REQUIRE( ! isIdEmpty(threads[2].createdBy.id));
+    BOOST_REQUIRE_EQUAL("User1", threads[2].createdBy.name);
 }

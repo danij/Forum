@@ -53,7 +53,7 @@ PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& 
     auto it = index.find(Forum::Context::getCurrentUserId());
     if (it == index.end())
     {
-        return AnonymousUser;
+        return *AnonymousUser;
     }
     auto& result = **it;
 
@@ -77,22 +77,22 @@ PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& 
     return result;
 }
 
-PerformedByType PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& collection)
+UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& collection)
 {
     lastSeenUpdate_ = nullptr;
-    const auto& index = collection.usersById();
+    const auto& index = collection.users().get<EntityCollection::UserCollectionById>();
     auto it = index.find(Forum::Context::getCurrentUserId());
     if (it == index.end())
     {
         return AnonymousUser;
     }
-    auto& result = **it;
+    auto& result = *it;
 
     auto now = Forum::Context::getCurrentTime();
 
-    if ((result.lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
+    if ((result->lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
     {
-        collection.modifyUser(result.id(), [&](User& user)
+        collection.modifyUser(result->id(), [&](User& user)
         {
             user.lastSeen() = now;
         });

@@ -72,7 +72,7 @@ namespace Forum
              * Get the current user that performs the action and optionally also perform the update of last seen
              * This method takes advantage if a write lock on the collection is already secured
              */
-            PerformedByType getAndUpdate(Forum::Entities::EntityCollection& collection);
+            Forum::Entities::UserRef getAndUpdate(Forum::Entities::EntityCollection& collection);
 
         private:
             MemoryRepository& repository_;
