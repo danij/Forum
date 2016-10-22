@@ -46,7 +46,7 @@ namespace Forum
         template<typename TCollection>
         auto toConst(const TCollection& collection)
         {
-            return ConstCollectionAdapter<typename std::remove_pointer<decltype(collection.cbegin()->get())>::type,
+            return ConstCollectionAdapter<typename std::remove_pointer<typename TCollection::value_type::element_type>::type,
                     TCollection>(collection);
         };
     }

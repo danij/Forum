@@ -135,10 +135,11 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
 
     collection_.write([&](EntityCollection& collection)
                       {
-                          thread->createdBy() = performedBy.getAndUpdate(collection);
+                          const auto& createdBy = performedBy.getAndUpdate(collection);
+                          thread->createdBy() = createdBy;
                           collection.threads().insert(thread);
 
-                          observers_.onAddNewDiscussionThread(*thread->createdBy(), *thread);
+                          observers_.onAddNewDiscussionThread(*createdBy, *thread);
 
                           status.addExtraSafeName("id", thread->id());
                           status.addExtraSafeName("name", thread->name());

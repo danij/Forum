@@ -2,7 +2,6 @@
 
 #include <boost/core/noncopyable.hpp>
 
-#include "Entities.h"
 #include "EntityCollection.h"
 #include "ObserverCollection.h"
 #include "Repository.h"
