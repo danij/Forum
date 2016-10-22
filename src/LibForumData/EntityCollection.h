@@ -7,7 +7,6 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/ranked_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
-#include <boost/uuid/uuid.hpp>
 
 #include "ConstCollectionAdapter.h"
 #include "Entities.h"
