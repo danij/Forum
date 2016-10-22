@@ -3,4 +3,3 @@
 
 #include "TestHelpers.h"
 
-const std::string Forum::Helpers::emptyIdString = boost::uuids::to_string(boost::uuids::uuid());

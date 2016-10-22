@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_returns_the_id_name_and_created )
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "Foo" });
 
     assertStatusCodeEqual(StatusCode::OK, returnObject);
-    BOOST_REQUIRE_NE("", returnObject.get<std::string>("id"));
+    BOOST_REQUIRE( ! isIdEmpty(returnObject.get<std::string>("id")));
     BOOST_REQUIRE_EQUAL("Foo", returnObject.get<std::string>("name"));
     BOOST_REQUIRE_EQUAL(20000, returnObject.get<Timestamp>("created"));
 }
@@ -204,8 +204,8 @@ BOOST_AUTO_TEST_CASE( A_user_that_was_created_can_be_retrieved_and_has_a_distinc
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
-    BOOST_REQUIRE_NE(emptyIdString, retrievedIds[0]);
-    BOOST_REQUIRE_NE(emptyIdString, retrievedIds[1]);
+    BOOST_REQUIRE( ! isIdEmpty(retrievedIds[0]));
+    BOOST_REQUIRE( ! isIdEmpty(retrievedIds[1]));
     BOOST_REQUIRE_NE(retrievedIds[0], retrievedIds[1]);
     BOOST_REQUIRE_EQUAL("User1", retrievedNames[0]);
     BOOST_REQUIRE_EQUAL("User2", retrievedNames[1]);
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name )
 
     auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
 
-    BOOST_REQUIRE_EQUAL(false, user.get<std::string>("user.id").empty());
+    BOOST_REQUIRE( ! isIdEmpty(user.get<std::string>("user.id")));
     BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
 }
 
@@ -315,7 +315,7 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name_case_and_accent_insensitive
 
     auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Hello" });
 
-    BOOST_REQUIRE_EQUAL(false, user.get<std::string>("user.id").empty());
+    BOOST_REQUIRE( ! isIdEmpty(user.get<std::string>("user.id")));
     BOOST_REQUIRE_EQUAL("HélĹǬ", user.get<std::string>("user.name"));
 }
 

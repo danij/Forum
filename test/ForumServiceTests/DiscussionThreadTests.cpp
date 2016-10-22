@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_returns_the_id_name_and_creat
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { "Foo" });
 
     assertStatusCodeEqual(StatusCode::OK, returnObject);
-    BOOST_REQUIRE_NE("", returnObject.get<std::string>("id"));
+    BOOST_REQUIRE( ! isIdEmpty(returnObject.get<std::string>("id")));
     BOOST_REQUIRE_EQUAL("Foo", returnObject.get<std::string>("name"));
     BOOST_REQUIRE_EQUAL(20000, returnObject.get<Timestamp>("created"));
 }
@@ -164,8 +164,8 @@ BOOST_AUTO_TEST_CASE( A_discussion_thread_that_was_created_can_be_retrieved_and_
     auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
                                               .get_child("threads"));
 
-    BOOST_REQUIRE_NE(emptyIdString, threads[0].id);
-    BOOST_REQUIRE_NE(emptyIdString, threads[1].id);
+    BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
+    BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
     BOOST_REQUIRE_NE(threads[0].id, threads[1].id);
     BOOST_REQUIRE_EQUAL("Thread1", threads[0].name);
     BOOST_REQUIRE_EQUAL("Thread2", threads[1].name);
