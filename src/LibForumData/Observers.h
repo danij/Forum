@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "Entities.h"
+#include "TypeHelpers.h"
 
 namespace Forum
 {
@@ -17,7 +18,7 @@ namespace Forum
         class AbstractReadRepositoryObserver
         {
         public:
-            virtual ~AbstractReadRepositoryObserver() = default;
+            DECLARE_INTERFACE_MANDATORY(AbstractReadRepositoryObserver);
 
             virtual void onGetUserCount(PerformedByType performedBy) {};
             virtual void onGetUsers(PerformedByType performedBy) {};
@@ -37,7 +38,7 @@ namespace Forum
         class AbstractWriteRepositoryObserver
         {
         public:
-            virtual ~AbstractWriteRepositoryObserver() = default;
+            DECLARE_INTERFACE_MANDATORY(AbstractWriteRepositoryObserver);
 
             virtual void onAddNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) {};
             virtual void onChangeUser(PerformedByType performedBy, const Forum::Entities::User& user,

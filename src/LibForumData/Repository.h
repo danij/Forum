@@ -7,6 +7,7 @@
 
 #include "Entities.h"
 #include "Observers.h"
+#include "TypeHelpers.h"
 
 namespace Forum
 {
@@ -15,7 +16,7 @@ namespace Forum
         class IReadRepository
         {
         public:
-            virtual ~IReadRepository() = default;
+            DECLARE_INTERFACE_MANDATORY(IReadRepository);
 
             virtual void addObserver(const ReadRepositoryObserverRef& observer) = 0;
             virtual void removeObserver(const ReadRepositoryObserverRef& observer) = 0;
@@ -48,7 +49,7 @@ namespace Forum
         class IWriteRepository
         {
         public:
-            virtual ~IWriteRepository() = default;
+            DECLARE_INTERFACE_MANDATORY(IWriteRepository);
 
             virtual void addObserver(const WriteRepositoryObserverRef& observer) = 0;
             virtual void removeObserver(const WriteRepositoryObserverRef& observer) = 0;
@@ -70,7 +71,7 @@ namespace Forum
         class IMetricsRepository
         {
         public:
-            virtual ~IMetricsRepository() = default;
+            DECLARE_INTERFACE_MANDATORY(IMetricsRepository);
 
             virtual void getVersion(std::ostream& output) = 0;
         };
