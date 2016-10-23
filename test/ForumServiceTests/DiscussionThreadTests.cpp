@@ -504,3 +504,93 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_user_that_created_it
     BOOST_REQUIRE( ! isIdEmpty(threads[2].createdBy.id));
     BOOST_REQUIRE_EQUAL("User1", threads[2].createdBy.name);
 }
+
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_does_not_show_other_topics_of_creating_user )
+{
+    auto handler = createCommandHandler();
+
+    auto user1 = createUserAndGetId(handler, "User1");
+    std::string thread1Id;
+
+    {
+        TimestampChanger changer(1000);
+        LoggedInUserChanger userChanger(user1);
+        thread1Id = static_cast<std::string>(createDiscussionThreadAndGetId(handler, "Abc"));
+    }
+    {
+        TimestampChanger changer(2000);
+        LoggedInUserChanger userChanger(user1);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Def" }));
+    }
+
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    auto resultThreads = result.get_child("threads");
+    auto threads = deserializeThreads(resultThreads);
+
+    BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE( ! isIdEmpty(threads[0].createdBy.id));
+    BOOST_REQUIRE_EQUAL("User1", threads[0].createdBy.name);
+
+    BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
+    BOOST_REQUIRE_EQUAL("Def", threads[1].name);
+    BOOST_REQUIRE( ! isIdEmpty(threads[1].createdBy.id));
+    BOOST_REQUIRE_EQUAL("User1", threads[1].createdBy.name);
+
+    for (auto& item : resultThreads)
+    {
+        auto createdBy = item.second.get_child("createdBy");
+        BOOST_REQUIRE( ! treeContains(createdBy, "threads"));
+    }
+
+    auto thread1 = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
+    auto thread1CreatedBy = thread1.get_child("thread.createdBy");
+    BOOST_REQUIRE( ! treeContains(thread1CreatedBy, "threads"));
+}
+
+BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_discussion_threads_created_by_that_user )
+{
+    auto handler = createCommandHandler();
+
+    auto user1 = createUserAndGetId(handler, "User1");
+    auto user2 = createUserAndGetId(handler, "User2");
+
+    {
+        LoggedInUserChanger changer(user1);
+        createDiscussionThreadAndGetId(handler, "Abc");
+        createDiscussionThreadAndGetId(handler, "Def");
+        createDiscussionThreadAndGetId(handler, "Ghi");
+    }
+
+    {
+        LoggedInUserChanger changer(user2);
+        createDiscussionThreadAndGetId(handler, "Abc2");
+        createDiscussionThreadAndGetId(handler, "Def2");
+    }
+
+    auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
+                                              .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(5, threads.size());
+    BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
+    BOOST_REQUIRE_EQUAL("Abc2", threads[1].name);
+    BOOST_REQUIRE( ! isIdEmpty(threads[2].id));
+    BOOST_REQUIRE_EQUAL("Def", threads[2].name);
+    BOOST_REQUIRE( ! isIdEmpty(threads[3].id));
+    BOOST_REQUIRE_EQUAL("Def2", threads[3].name);
+    BOOST_REQUIRE( ! isIdEmpty(threads[4].id));
+    BOOST_REQUIRE_EQUAL("Ghi", threads[4].name);
+
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_USER, { user1 }));
+
+    threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
+                                              .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
+    BOOST_REQUIRE_EQUAL("Abc2", threads[0].name);
+    BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
+    BOOST_REQUIRE_EQUAL("Def2", threads[1].name);
+}

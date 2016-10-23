@@ -18,7 +18,8 @@ namespace Forum
         public:
             std::function<void(PerformedByType)> getUserCountAction;
             std::function<void(PerformedByType)> getUsersAction;
-            std::function<void(PerformedByType, const std::string&)> getUsersByNameAction;
+            std::function<void(PerformedByType, const Forum::Entities::IdType&)> getUserByIdAction;
+            std::function<void(PerformedByType, const std::string&)> getUserByNameAction;
 
             std::function<void(PerformedByType, const Forum::Entities::User&)> addNewUserAction;
             std::function<void(PerformedByType, const Forum::Entities::User&,
@@ -28,6 +29,7 @@ namespace Forum
             std::function<void(PerformedByType)> getDiscussionThreadCountAction;
             std::function<void(PerformedByType)> getDiscussionThreadsAction;
             std::function<void(PerformedByType, const Forum::Entities::IdType&)> getDiscussionThreadByIdAction;
+            std::function<void(PerformedByType, const Forum::Entities::User&)> getDiscussionThreadsOfUserAction;
 
             std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&)> addNewDiscussionThreadAction;
             std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&,
@@ -47,9 +49,13 @@ namespace Forum
             {
                 if (getUsersAction) getUsersAction(performedBy);
             }
+            virtual void onGetUserById(PerformedByType performedBy, const Forum::Entities::IdType& id) override
+            {
+                if (getUserByIdAction) getUserByIdAction(performedBy, id);
+            }
             virtual void onGetUserByName(PerformedByType performedBy, const std::string& name) override
             {
-                if (getUsersByNameAction) getUsersByNameAction(performedBy, name);
+                if (getUserByNameAction) getUserByNameAction(performedBy, name);
             }
 
             virtual void onAddNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) override
@@ -57,7 +63,7 @@ namespace Forum
                 if (addNewUserAction) addNewUserAction(performedBy, newUser);
             }
             virtual void onChangeUser(PerformedByType performedBy, const Forum::Entities::User& user,
-                                    Forum::Entities::User::ChangeType change) override
+                                      Forum::Entities::User::ChangeType change) override
             {
                 if (changeUserAction) changeUserAction(performedBy, user, change);
             }
@@ -74,9 +80,15 @@ namespace Forum
             {
                 if (getDiscussionThreadsAction) getDiscussionThreadsAction(performedBy);
             }
-            virtual void onGetDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) override
+            virtual void onGetDiscussionThreadById(PerformedByType performedBy,
+                                                   const Forum::Entities::IdType& id) override
             {
                 if (getDiscussionThreadByIdAction) getDiscussionThreadByIdAction(performedBy, id);
+            }
+            virtual void onGetDiscussionThreadsOfUser(PerformedByType performedBy,
+                                                      const Forum::Entities::User& user) override
+            {
+                if (getDiscussionThreadsOfUserAction) getDiscussionThreadsOfUserAction(performedBy, user);
             }
 
             virtual void onAddNewDiscussionThread(PerformedByType performedBy,
@@ -85,13 +97,13 @@ namespace Forum
                 if (addNewDiscussionThreadAction) addNewDiscussionThreadAction(performedBy, newThread);
             }
             virtual void onChangeDiscussionThread(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionThread& thread,
-                                                Forum::Entities::DiscussionThread::ChangeType change) override
+                                                  const Forum::Entities::DiscussionThread& thread,
+                                                  Forum::Entities::DiscussionThread::ChangeType change) override
             {
                 if (changeDiscussionThreadAction) changeDiscussionThreadAction(performedBy, thread, change);
             }
             virtual void onDeleteDiscussionThread(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionThread& deletedThread) override
+                                                  const Forum::Entities::DiscussionThread& deletedThread) override
             {
                 if (deleteDiscussionThreadAction) deleteDiscussionThreadAction(performedBy, deletedThread);
             }

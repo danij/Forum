@@ -6,6 +6,7 @@
 #include "MemoryRepository.h"
 #include "OutputHelpers.h"
 #include "RandomGenerator.h"
+#include "StateHelpers.h"
 #include "StringHelpers.h"
 
 using namespace Forum;
@@ -83,6 +84,70 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
                      });
 }
 
+void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& indexById = collection.usersById();
+                         auto it = indexById.find(id);
+                         if (it == indexById.end())
+                         {
+                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             return;
+                         }
+
+                         const auto& threads = (*it)->threadsByName();
+                         BoolTemporaryChanger settingsChanger(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+                         observers_.onGetDiscussionThreadsOfUser(performedBy.get(collection), **it);
+                     });
+}
+
+void MemoryRepository::getDiscussionThreadsOfUserByCreated(const IdType& id, std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& indexById = collection.usersById();
+                         auto it = indexById.find(id);
+                         if (it == indexById.end())
+                         {
+                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             return;
+                         }
+
+                         const auto& threads = (*it)->threadsByCreated();
+                         BoolTemporaryChanger settingsChanger(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+                         observers_.onGetDiscussionThreadsOfUser(performedBy.get(collection), **it);
+                     });
+}
+
+void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(const IdType& id, std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& indexById = collection.usersById();
+                         auto it = indexById.find(id);
+                         if (it == indexById.end())
+                         {
+                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             return;
+                         }
+
+                         const auto& threads = (*it)->threadsByLastUpdated();
+                         BoolTemporaryChanger settingsChanger(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+                         observers_.onGetDiscussionThreadsOfUser(performedBy.get(collection), **it);
+                     });
+}
+
+
 static const auto validThreadNameRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");
 
 static StatusCode validateDiscussionThreadName(const std::string& name, const ConfigConstRef& config)
@@ -138,6 +203,7 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
                           const auto& createdBy = performedBy.getAndUpdate(collection);
                           thread->createdBy() = createdBy;
                           collection.threads().insert(thread);
+                          createdBy->threads().insert(thread);
 
                           observers_.onAddNewDiscussionThread(*createdBy, *thread);
 

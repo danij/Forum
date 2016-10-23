@@ -15,15 +15,18 @@ namespace Forum
         enum Command
         {
             SHOW_VERSION = 0,
+
             //users related
             COUNT_USERS,
             ADD_USER,
             GET_USERS_BY_NAME,
             GET_USERS_BY_CREATED,
             GET_USERS_BY_LAST_SEEN,
+            GET_USER_BY_ID,
             GET_USER_BY_NAME,
             CHANGE_USER_NAME,
             DELETE_USER,
+
             //discussion thread related
             COUNT_DISCUSSION_THREADS,
             ADD_DISCUSSION_THREAD,
@@ -33,6 +36,12 @@ namespace Forum
             GET_DISCUSSION_THREAD_BY_ID,
             CHANGE_DISCUSSION_THREAD_NAME,
             DELETE_DISCUSSION_THREAD,
+
+            //mixed user-discussion thread
+            GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
+            GET_DISCUSSION_THREADS_OF_USER_BY_CREATED,
+            GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
+
             LAST_COMMAND
         };
 
@@ -57,6 +66,7 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(getUsersByName);
             DECLARE_COMMAND_HANDLER(getUsersByCreated);
             DECLARE_COMMAND_HANDLER(getUsersByLastSeen);
+            DECLARE_COMMAND_HANDLER(getUserById);
             DECLARE_COMMAND_HANDLER(getUserByName);
             DECLARE_COMMAND_HANDLER(changeUserName);
             DECLARE_COMMAND_HANDLER(deleteUser);
@@ -69,6 +79,10 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(getDiscussionThreadById);
             DECLARE_COMMAND_HANDLER(changeDiscussionThreadName);
             DECLARE_COMMAND_HANDLER(deleteDiscussionThread);
+
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByName);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreated);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByLastUpdated);
 
             bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);
 

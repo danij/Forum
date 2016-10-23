@@ -9,3 +9,16 @@ namespace Json
     Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::User& user);
     Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::DiscussionThread& thread);
 }
+
+namespace Forum
+{
+    namespace Entities
+    {
+        struct SerializationSettings
+        {
+            bool hideDiscussionThreadCreatedBy = false;
+        };
+
+        extern thread_local SerializationSettings serializationSettings;
+    }
+}

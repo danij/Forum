@@ -1,6 +1,8 @@
 #include "EntityCollection.h"
+#include "StateHelpers.h"
 
 using namespace Forum::Entities;
+using namespace Forum::Helpers;
 
 const UserRef Forum::Entities::AnonymousUser = std::make_shared<User>("<anonymous>");
 
@@ -24,11 +26,18 @@ void EntityCollection::modifyUser(const IdType& id, std::function<void(User&)> m
     return modifyUser(users_.get<UserCollectionById>().find(id), modifyFunction);
 }
 
+static thread_local bool alsoDeleteThreadsFromUser = true;
+
 void EntityCollection::deleteUser(UserCollection::iterator iterator)
 {
     if (iterator == users_.end())
     {
         return;
+    }
+    BoolTemporaryChanger changer(alsoDeleteThreadsFromUser, false);
+    for (auto& thread : (*iterator)->threads())
+    {
+        static_cast<DiscussionThreadCollectionBase*>(this)->deleteDiscussionThread(thread->id());
     }
     users_.erase(iterator);
 }
@@ -38,8 +47,8 @@ void EntityCollection::deleteUser(const IdType& id)
     deleteUser(users_.get<UserCollectionById>().find(id));
 }
 
-void EntityCollection::modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-                                              std::function<void(DiscussionThread&)> modifyFunction)
+void DiscussionThreadCollectionBase::modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
+                                                            std::function<void(DiscussionThread&)> modifyFunction)
 {
     if (iterator == threads_.end())
     {
@@ -54,12 +63,37 @@ void EntityCollection::modifyDiscussionThread(DiscussionThreadCollection::iterat
     });
 }
 
-void EntityCollection::modifyDiscussionThread(const IdType& id, std::function<void(DiscussionThread&)> modifyFunction)
+void EntityCollection::modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
+                                              std::function<void(DiscussionThread&)> modifyFunction)
+{
+    if (iterator == threads_.end())
+    {
+        return;
+    }
+    threads_.modify(iterator, [&modifyFunction](const DiscussionThreadRef& thread)
+    {
+        if (thread)
+        {
+            auto user = thread->createdBy().lock();
+            if (user && user->id())
+            {
+                user->modifyDiscussionThread(thread->id(), modifyFunction);
+            }
+            else
+            {
+                modifyFunction(*thread);
+            }
+        }
+    });
+}
+
+void DiscussionThreadCollectionBase::modifyDiscussionThread(const IdType& id,
+                                                            std::function<void(DiscussionThread&)> modifyFunction)
 {
     modifyDiscussionThread(threads_.get<DiscussionThreadCollectionById>().find(id), modifyFunction);
 }
 
-void EntityCollection::deleteDiscussionThread(DiscussionThreadCollection::iterator iterator)
+void DiscussionThreadCollectionBase::deleteDiscussionThread(DiscussionThreadCollection::iterator iterator)
 {
     if (iterator == threads_.end())
     {
@@ -68,7 +102,24 @@ void EntityCollection::deleteDiscussionThread(DiscussionThreadCollection::iterat
     threads_.erase(iterator);
 }
 
-void EntityCollection::deleteDiscussionThread(const IdType& id)
+void EntityCollection::deleteDiscussionThread(DiscussionThreadCollection::iterator iterator)
+{
+    if (iterator == threads_.end())
+    {
+        return;
+    }
+    if (alsoDeleteThreadsFromUser)
+    {
+        auto user = (*iterator)->createdBy().lock();
+        if (user && user->id())
+        {
+            user->deleteDiscussionThread((*iterator)->id());
+        }
+    }
+    threads_.erase(iterator);
+}
+
+void DiscussionThreadCollectionBase::deleteDiscussionThread(const IdType& id)
 {
     deleteDiscussionThread(threads_.get<DiscussionThreadCollectionById>().find(id));
 }

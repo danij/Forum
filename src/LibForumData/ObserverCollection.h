@@ -27,10 +27,14 @@ namespace Forum
 
             virtual void onGetUserCount(PerformedByType performedBy) override;
             virtual void onGetUsers(PerformedByType performedBy) override;
+            virtual void onGetUserById(PerformedByType performedBy, const Forum::Entities::IdType& id) override;
             virtual void onGetUserByName(PerformedByType performedBy, const std::string& name) override;
             virtual void onGetDiscussionThreadCount(PerformedByType performedBy) override;
             virtual void onGetDiscussionThreads(PerformedByType performedBy) override;
-            virtual void onGetDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) override;
+            virtual void onGetDiscussionThreadById(PerformedByType performedBy,
+                                                   const Forum::Entities::IdType& id) override;
+            virtual void onGetDiscussionThreadsOfUser(PerformedByType performedBy,
+                                                      const Forum::Entities::User& user) override;
 
             virtual void onAddNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) override;
             virtual void onChangeUser(PerformedByType performedBy, const Forum::Entities::User& user,

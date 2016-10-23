@@ -62,6 +62,12 @@ void ObserverCollection::onGetUsers(PerformedByType performedBy)
     for (auto& item : readObservers_) item->onGetUsers(performedBy);
 }
 
+void ObserverCollection::onGetUserById(PerformedByType performedBy, const IdType& id)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : readObservers_) item->onGetUserById(performedBy, id);
+}
+
 void ObserverCollection::onGetUserByName(PerformedByType performedBy, const std::string& name)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
@@ -97,6 +103,12 @@ void ObserverCollection::onGetDiscussionThreads(PerformedByType performedBy)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : readObservers_) item->onGetDiscussionThreads(performedBy);
+}
+
+void ObserverCollection::onGetDiscussionThreadsOfUser(PerformedByType performedBy, const User& user)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : readObservers_) item->onGetDiscussionThreadsOfUser(performedBy, user);
 }
 
 void ObserverCollection::onAddNewDiscussionThread(PerformedByType performedBy, const DiscussionThread& newThread)

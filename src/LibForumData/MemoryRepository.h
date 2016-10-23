@@ -26,6 +26,7 @@ namespace Forum
             virtual void getUsersByCreated(std::ostream& output) const override;
             virtual void getUsersByLastSeen(std::ostream& output) const override;
 
+            virtual void getUserById(const Forum::Entities::IdType& id, std::ostream& output) const override;
             virtual void getUserByName(const std::string& name, std::ostream& output) const override;
 
             virtual void addNewUser(const std::string& name, std::ostream& output) override;
@@ -38,6 +39,13 @@ namespace Forum
             virtual void getDiscussionThreadsByCreated(std::ostream& output) const override;
             virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const override;
             virtual void getDiscussionThreadById(const Forum::Entities::IdType& id, std::ostream& output) const override;
+
+            virtual void getDiscussionThreadsOfUserByName(const Forum::Entities::IdType& id,
+                                                          std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfUserByCreated(const Forum::Entities::IdType& id,
+                                                             std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfUserByLastUpdated(const Forum::Entities::IdType& id,
+                                                                 std::ostream& output) const override;
 
             virtual void addNewDiscussionThread(const std::string& name, std::ostream& output) override;
             virtual void changeDiscussionThreadName(const Forum::Entities::IdType& id, const std::string& newName,

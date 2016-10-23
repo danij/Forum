@@ -63,6 +63,26 @@ void MemoryRepository::getUsersByLastSeen(std::ostream& output) const
                      });
 }
 
+void MemoryRepository::getUserById(const IdType& id, std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& index = collection.usersById();
+                         auto it = index.find(id);
+                         if (it == index.end())
+                         {
+                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                         }
+                         else
+                         {
+                             writeSingleObjectSafeName(output, "user", **it);
+                         }
+                         observers_.onGetUserById(performedBy.get(collection), id);
+                     });
+}
+
 void MemoryRepository::getUserByName(const std::string& name, std::ostream& output) const
 {
     auto performedBy = preparePerformedBy(*this);

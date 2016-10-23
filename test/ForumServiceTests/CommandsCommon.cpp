@@ -45,8 +45,14 @@ boost::property_tree::ptree Forum::Helpers::handlerToObj(CommandHandlerRef handl
     return handlerToObj(handler, command, {});
 }
 
-Forum::Entities::IdType Forum::Helpers::createUserAndGetId(CommandHandlerRef handler, const std::string& name)
+std::string Forum::Helpers::createUserAndGetId(CommandHandlerRef handler, const std::string& name)
 {
     auto result = handlerToObj(handler, Command::ADD_USER, { name });
+    return result.get<std::string>("id");
+}
+
+std::string Forum::Helpers::createDiscussionThreadAndGetId(CommandHandlerRef handler, const std::string& name)
+{
+    auto result = handlerToObj(handler, Command::ADD_DISCUSSION_THREAD, { name });
     return result.get<std::string>("id");
 }

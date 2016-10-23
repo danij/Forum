@@ -55,7 +55,7 @@ namespace Forum
              * Enables a safe modification of a discussion thread instance,
              * refreshing all indexes the thread is registered in
              */
-            void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
+            virtual void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
                                         std::function<void(DiscussionThread&)> modifyFunction);
             /**
              * Enables a safe modification of a discussion thread instance,
@@ -65,7 +65,7 @@ namespace Forum
             /**
              * Safely deletes a discussion thread instance, removing it from all indexes it is registered in
              */
-            void deleteDiscussionThread(DiscussionThreadCollection::iterator iterator);
+            virtual void deleteDiscussionThread(DiscussionThreadCollection::iterator iterator);
             /**
              * Safely deletes a discussion thread instance, removing it from all indexes it is registered in
              */

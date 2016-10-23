@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include <boost/property_tree/ptree.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include "Configuration.h"
@@ -27,6 +28,10 @@ namespace Forum
         {
             return Forum::Entities::UuidString(id) == Forum::Entities::UuidString::empty;
         }
+
+        extern Forum::Entities::IdType sampleValidId;
+
+        bool treeContains(const boost::property_tree::ptree& tree, const std::string& key);
 
         /**
          * Provides a means to execute code at the end of a test case even if it fails or an exception is thrown

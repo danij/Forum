@@ -23,6 +23,7 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(GET_USERS_BY_NAME, getUsersByName);
     setHandler(GET_USERS_BY_CREATED, getUsersByCreated);
     setHandler(GET_USERS_BY_LAST_SEEN, getUsersByLastSeen);
+    setHandler(GET_USER_BY_ID, getUserById);
     setHandler(GET_USER_BY_NAME, getUserByName);
     setHandler(CHANGE_USER_NAME, changeUserName);
     setHandler(DELETE_USER, deleteUser);
@@ -35,6 +36,10 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(GET_DISCUSSION_THREAD_BY_ID, getDiscussionThreadById);
     setHandler(CHANGE_DISCUSSION_THREAD_NAME, changeDiscussionThreadName);
     setHandler(DELETE_DISCUSSION_THREAD, deleteDiscussionThread);
+
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME, getDiscussionThreadsOfUserByName);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, getDiscussionThreadsOfUserByCreated);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, getDiscussionThreadsOfUserByLastUpdated);
 }
 
 ReadRepositoryRef CommandHandler::getReadRepository()
@@ -95,6 +100,12 @@ void CommandHandler::getUsersByCreated(const std::vector<std::string>& parameter
 void CommandHandler::getUsersByLastSeen(const std::vector<std::string>& parameters, std::ostream& output)
 {
     readRepository_->getUsersByLastSeen(output);
+}
+
+void CommandHandler::getUserById(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getUserById(parameters[0], output);
 }
 
 void CommandHandler::getUserByName(const std::vector<std::string>& parameters, std::ostream& output)
@@ -159,3 +170,22 @@ void CommandHandler::deleteDiscussionThread(const std::vector<std::string>& para
     writeRepository_->deleteDiscussionThread(parameters[0], output);
 }
 
+void CommandHandler::getDiscussionThreadsOfUserByName(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getDiscussionThreadsOfUserByName(parameters[0], output);
+}
+
+void CommandHandler::getDiscussionThreadsOfUserByCreated(const std::vector<std::string>& parameters,
+                                                         std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getDiscussionThreadsOfUserByCreated(parameters[0], output);
+}
+
+void CommandHandler::getDiscussionThreadsOfUserByLastUpdated(const std::vector<std::string>& parameters,
+                                                             std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getDiscussionThreadsOfUserByLastUpdated(parameters[0], output);
+}

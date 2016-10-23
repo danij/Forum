@@ -25,6 +25,7 @@ namespace Forum
             virtual void getUsersByName(std::ostream& output) const = 0;
             virtual void getUsersByCreated(std::ostream& output) const = 0;
             virtual void getUsersByLastSeen(std::ostream& output) const = 0;
+            virtual void getUserById(const Forum::Entities::IdType& id, std::ostream& output) const = 0;
             virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
 
             virtual void getDiscussionThreadCount(std::ostream& output) const = 0;
@@ -32,6 +33,12 @@ namespace Forum
             virtual void getDiscussionThreadsByCreated(std::ostream& output) const = 0;
             virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const = 0;
             virtual void getDiscussionThreadById(const Forum::Entities::IdType& id, std::ostream& output) const = 0;
+
+            virtual void getDiscussionThreadsOfUserByName(const Forum::Entities::IdType& id, std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsOfUserByCreated(const Forum::Entities::IdType& id,
+                                                             std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsOfUserByLastUpdated(const Forum::Entities::IdType& id,
+                                                                 std::ostream& output) const = 0;
         };
 
         typedef std::shared_ptr<IReadRepository> ReadRepositoryRef;

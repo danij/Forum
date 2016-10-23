@@ -22,11 +22,13 @@ namespace Forum
 
             virtual void onGetUserCount(PerformedByType performedBy) {};
             virtual void onGetUsers(PerformedByType performedBy) {};
+            virtual void onGetUserById(PerformedByType performedBy, const Forum::Entities::IdType& id) {};
             virtual void onGetUserByName(PerformedByType performedBy, const std::string& name) {};
 
             virtual void onGetDiscussionThreadCount(PerformedByType performedBy) {};
             virtual void onGetDiscussionThreads(PerformedByType performedBy) {};
             virtual void onGetDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) {};
+            virtual void onGetDiscussionThreadsOfUser(PerformedByType performedBy, const Forum::Entities::User& user) {};
         };
 
         typedef std::shared_ptr<AbstractReadRepositoryObserver> ReadRepositoryObserverRef;

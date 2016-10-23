@@ -59,6 +59,11 @@ namespace Forum
                 return std::string(characters_.data(), MaxCharacters);
             }
 
+            inline operator bool() const
+            {
+                return *this != empty;
+            }
+
             static const UuidString empty;
 
         private:

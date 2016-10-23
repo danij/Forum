@@ -20,7 +20,8 @@ namespace Forum
         boost::property_tree::ptree handlerToObj(Forum::Commands::CommandHandlerRef handler,
                                                  Forum::Commands::Command command);
 
-        Forum::Entities::IdType createUserAndGetId(Forum::Commands::CommandHandlerRef handler, const std::string& name);
+        std::string createUserAndGetId(Forum::Commands::CommandHandlerRef handler, const std::string& name);
+        std::string createDiscussionThreadAndGetId(Forum::Commands::CommandHandlerRef handler, const std::string& name);
 
         template<typename T, typename It>
         inline void fillPropertyFromCollection(const boost::property_tree::ptree& collection, const char* name,
