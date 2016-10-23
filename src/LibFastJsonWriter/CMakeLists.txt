@@ -3,4 +3,4 @@ project(LibFastJsonWriter CXX)
 
 set(SOURCE_FILES JsonWriter.cpp)
 set(HEADER_FILES JsonWriter.h)
-add_library(libFastJsonWriter STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(FastJsonWriter STATIC ${SOURCE_FILES} ${HEADER_FILES})

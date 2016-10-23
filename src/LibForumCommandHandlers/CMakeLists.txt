@@ -11,4 +11,4 @@ set(HEADER_FILES CommandHandler.h ../Version.h)
 
 include_directories(../. ../LibFastJsonWriter ../LibForumData ${Boost_INCLUDE_DIRS})
 
-add_library(libForumCommandHandlers STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(ForumCommandHandlers STATIC ${SOURCE_FILES} ${HEADER_FILES})
