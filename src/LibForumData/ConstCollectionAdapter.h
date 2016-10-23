@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+
 #include <boost/iterator/transform_iterator.hpp>
 
 namespace Forum
@@ -37,7 +39,12 @@ namespace Forum
 
             inline static const T* getPointer(const std::shared_ptr<T>& ptr)
             {
-                return ptr ? ptr.get() : nullptr;
+                if ( ! ptr)
+                {
+                    assert("Collections should not contain empty shared pointers");
+                    return nullptr;
+                }
+                return ptr.get();
             }
 
             const TCollection& collection_;
