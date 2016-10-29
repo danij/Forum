@@ -26,6 +26,9 @@ void EntityCollection::modifyUser(const IdType& id, std::function<void(User&)> m
     return modifyUser(users_.get<UserCollectionById>().find(id), modifyFunction);
 }
 
+/**
+ * Used to prevent the individual removal of threads from a user's created threads collection when deleting a user
+ */
 static thread_local bool alsoDeleteThreadsFromUser = true;
 
 void EntityCollection::deleteUser(UserCollection::iterator iterator)
