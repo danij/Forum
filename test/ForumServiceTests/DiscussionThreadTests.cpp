@@ -29,6 +29,7 @@ struct SerializedDiscussionThread
     Timestamp created = 0;
     Timestamp lastUpdated = 0;
     SerializedDiscussionThreadUser createdBy;
+    int64_t visited = 0;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -36,6 +37,7 @@ struct SerializedDiscussionThread
         name = tree.get<std::string>("name");
         created = tree.get<Timestamp>("created");
         lastUpdated = tree.get<Timestamp>("lastUpdated");
+        visited = tree.get<int64_t>("visited");
 
         createdBy.id = tree.get<std::string>("createdBy.id");
         createdBy.name = tree.get<std::string>("createdBy.name");
@@ -593,4 +595,62 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_discussion_threads_created_by_
     BOOST_REQUIRE_EQUAL("Abc2", threads[0].name);
     BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
     BOOST_REQUIRE_EQUAL("Def2", threads[1].name);
+}
+
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_increments_the_visited_counter_only_when_individual_threads_are_accessed )
+{
+    auto handler = createCommandHandler();
+
+    auto user1 = createUserAndGetId(handler, "User1");
+    auto user2 = createUserAndGetId(handler, "User2");
+    std::string thread1Id, thread2Id;
+
+    {
+        TimestampChanger changer(1000);
+        LoggedInUserChanger userChanger(user1);
+        thread1Id = createDiscussionThreadAndGetId(handler, "Abc");
+    }
+    {
+        TimestampChanger changer(2000);
+        LoggedInUserChanger userChanger(user2);
+        thread2Id = createDiscussionThreadAndGetId(handler, "Def");
+    }
+
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    auto threads = deserializeThreads(result.get_child("threads"));
+
+    BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE_EQUAL(0, threads[0].visited);
+
+    BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
+    BOOST_REQUIRE_EQUAL("Def", threads[1].name);
+    BOOST_REQUIRE_EQUAL(0, threads[1].visited);
+
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
+    {
+        LoggedInUserChanger userChanger(user1);
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME);
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id });
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
+    }
+    {
+        LoggedInUserChanger userChanger(user2);
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_LAST_UPDATED);
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id });
+    }
+
+    result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    threads = deserializeThreads(result.get_child("threads"));
+
+    BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE_EQUAL(4, threads[0].visited);
+
+    BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
+    BOOST_REQUIRE_EQUAL("Def", threads[1].name);
+    BOOST_REQUIRE_EQUAL(2, threads[1].visited);
 }

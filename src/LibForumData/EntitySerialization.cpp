@@ -35,6 +35,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const Forum::Entities::Discussi
         writer << propertySafeName("createdBy", thread.createdBy());
     }
     writer  << propertySafeName("lastUpdated", thread.lastUpdated())
+            << propertySafeName("visited", thread.visited().load())
         << objEnd;
     return writer;
 }
