@@ -191,17 +191,17 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
         return;
     }
 
-    auto thread = std::make_shared<DiscussionThread>();
-    thread->id() = generateUUIDString();
-    thread->name() = name;
-    thread->created() = thread->lastUpdated() = Context::getCurrentTime();
-
     auto performedBy = preparePerformedBy(*this);
 
     collection_.write([&](EntityCollection& collection)
                       {
                           const auto& createdBy = performedBy.getAndUpdate(collection);
-                          thread->createdBy() = createdBy;
+
+                          auto thread = std::make_shared<DiscussionThread>(*createdBy);
+                          thread->id() = generateUUIDString();
+                          thread->name() = name;
+                          thread->created() = thread->lastUpdated() = Context::getCurrentTime();
+
                           collection.threads().insert(thread);
                           createdBy->threads().insert(thread);
 

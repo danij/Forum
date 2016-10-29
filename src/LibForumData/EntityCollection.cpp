@@ -40,6 +40,8 @@ void EntityCollection::deleteUser(UserCollection::iterator iterator)
     BoolTemporaryChanger changer(alsoDeleteThreadsFromUser, false);
     for (auto& thread : (*iterator)->threads())
     {
+        //Each discussion thread holds a reference to the user that created it
+        //As such, delete the discussion thread before deleting the user
         static_cast<DiscussionThreadCollectionBase*>(this)->deleteDiscussionThread(thread->id());
     }
     users_.erase(iterator);
@@ -77,10 +79,10 @@ void EntityCollection::modifyDiscussionThread(DiscussionThreadCollection::iterat
     {
         if (thread)
         {
-            auto user = thread->createdBy().lock();
-            if (user && user->id())
+            auto& user = thread->createdBy();
+            if (user.id())
             {
-                user->modifyDiscussionThread(thread->id(), modifyFunction);
+                user.modifyDiscussionThread(thread->id(), modifyFunction);
             }
             else
             {
@@ -113,10 +115,11 @@ void EntityCollection::deleteDiscussionThread(DiscussionThreadCollection::iterat
     }
     if (alsoDeleteThreadsFromUser)
     {
-        auto user = (*iterator)->createdBy().lock();
-        if (user && user->id())
+        auto& user = (*iterator)->createdBy();
+
+        if (user.id())
         {
-            user->deleteDiscussionThread((*iterator)->id());
+            user.deleteDiscussionThread((*iterator)->id());
         }
     }
     threads_.erase(iterator);
