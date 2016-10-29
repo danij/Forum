@@ -17,4 +17,5 @@ include_directories(../../src ../../src/LibFastJsonWriter ../../src/LibForumCont
 add_executable(ForumServiceTests ${SOURCE_FILES} ${HEADER_FILES} ${JSON_HEADER_FILES})
 target_link_libraries(ForumServiceTests FastJsonWriter ForumContext ForumCommandHandlers ForumData
         ${Boost_LIBRARIES} ${ICU_LIBRARIES} ${ICU_I18N_LIBRARIES} -liconv)
-install (TARGETS ForumServiceTests RUNTIME DESTINATION ${PROJECT_BINARY_DIR})
+
+add_test(NAME Service_Tests COMMAND ForumServiceTests)

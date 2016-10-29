@@ -25,6 +25,4 @@ Backend software for providing a discussion forum.
 
 ## Running Tests
 
-After build, from the build folder:
-
-    ./test/ForumServiceTests/ForumServiceTests
+    ctest --verbose
