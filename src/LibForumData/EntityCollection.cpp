@@ -6,7 +6,8 @@ using namespace Forum::Helpers;
 
 const UserRef Forum::Entities::AnonymousUser = std::make_shared<User>("<anonymous>");
 
-void EntityCollection::modifyUser(UserCollection::iterator iterator, const std::function<void(User&)>& modifyFunction)
+void UserCollectionBase::modifyUser(UserCollection::iterator iterator,
+                                    const std::function<void(User&)>& modifyFunction)
 {
     if (iterator == users_.end())
     {
@@ -21,7 +22,7 @@ void EntityCollection::modifyUser(UserCollection::iterator iterator, const std::
     });
 }
 
-void EntityCollection::modifyUser(const IdType& id, const std::function<void(User&)>& modifyFunction)
+void UserCollectionBase::modifyUser(const IdType& id, const std::function<void(User&)>& modifyFunction)
 {
     return modifyUser(users_.get<UserCollectionById>().find(id), modifyFunction);
 }
@@ -38,6 +39,15 @@ static thread_local bool alsoDeleteMessagesFromUser = true;
  * Used to prevent the individual removal of message from a thread's created messages collection when deleting a thread
  */
 static thread_local bool alsoDeleteMessagesFromThread = true;
+
+void UserCollectionBase::deleteUser(UserCollection::iterator iterator)
+{
+    if (iterator == users_.end())
+    {
+        return;
+    }
+    users_.erase(iterator);
+}
 
 void EntityCollection::deleteUser(UserCollection::iterator iterator)
 {
@@ -66,7 +76,7 @@ void EntityCollection::deleteUser(UserCollection::iterator iterator)
     users_.erase(iterator);
 }
 
-void EntityCollection::deleteUser(const IdType& id)
+void UserCollectionBase::deleteUser(const IdType& id)
 {
     deleteUser(users_.get<UserCollectionById>().find(id));
 }
