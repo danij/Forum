@@ -43,11 +43,11 @@ namespace Forum
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
              */
-            void modifyUser(UserCollection::iterator iterator, std::function<void(User&)> modifyFunction);
+            void modifyUser(UserCollection::iterator iterator, const std::function<void(User&)>& modifyFunction);
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
              */
-            void modifyUser(const IdType& id, std::function<void(User&)> modifyFunction);
+            void modifyUser(const IdType& id, const std::function<void(User&)>& modifyFunction);
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
              */
@@ -62,7 +62,7 @@ namespace Forum
              * also taking other collections in which the thread might be registered into account
              */
             virtual void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-                                                std::function<void(DiscussionThread&)> modifyFunction) override;
+                                                const std::function<void(DiscussionThread&)>& modifyFunction) override;
             /**
              * Safely deletes a discussion thread instance,
              * also taking other collections in which the thread might be registered into account
@@ -74,7 +74,7 @@ namespace Forum
              * refreshing all indexes the message is registered in
              */
             virtual void modifyDiscussionMessage(DiscussionMessageCollection::iterator iterator,
-                                                 std::function<void(DiscussionMessage&)> modifyFunction) override;
+                                                 const std::function<void(DiscussionMessage&)>& modifyFunction) override;
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */
