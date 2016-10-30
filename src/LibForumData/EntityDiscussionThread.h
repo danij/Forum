@@ -4,9 +4,6 @@
 #include <memory>
 
 #include <boost/noncopyable.hpp>
-#include <boost/multi_index/hashed_index.hpp>
-#include <boost/multi_index/ranked_index.hpp>
-#include <boost/multi_index/mem_fun.hpp>
 
 #include "EntityCommonTypes.h"
 #include "StringHelpers.h"
