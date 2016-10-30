@@ -4,13 +4,14 @@
 #include <memory>
 
 #include "EntityDiscussionThreadCollectionBase.h"
+#include "EntityDiscussionMessageCollectionBase.h"
 #include "Entities.h"
 
 namespace Forum
 {
     namespace Entities
     {
-        struct EntityCollection : public DiscussionThreadCollectionBase
+        struct EntityCollection : public DiscussionThreadCollectionBase, public DiscussionMessageCollectionBase
         {
             struct UserCollectionById {};
             struct UserCollectionByName {};
@@ -68,6 +69,16 @@ namespace Forum
              */
             virtual void deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
 
+            /**
+             * Enables a safe modification of a discussion message instance,
+             * refreshing all indexes the message is registered in
+             */
+            virtual void modifyDiscussionMessage(DiscussionMessageCollection::iterator iterator,
+                                                 std::function<void(DiscussionMessage&)> modifyFunction) override;
+            /**
+             * Safely deletes a discussion message instance, removing it from all indexes it is registered in
+             */
+            virtual void deleteDiscussionMessage(DiscussionMessageCollection::iterator iterator) override;
 
         private:
             UserCollection users_;

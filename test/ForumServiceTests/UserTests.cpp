@@ -47,19 +47,19 @@ auto deserializeUserThreads(const boost::property_tree::ptree& collection)
 
 BOOST_AUTO_TEST_CASE( User_count_is_initially_zero )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::COUNT_USERS);
-    BOOST_REQUIRE_EQUAL(0, returnObject.get<int>("count"));
+    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::COUNT_ENTITIES);
+    BOOST_REQUIRE_EQUAL(0, returnObject.get<int>("count.users"));
 }
 
-BOOST_AUTO_TEST_CASE( Counting_users_invokes_observer )
+BOOST_AUTO_TEST_CASE( Counting_entities_invokes_observer )
 {
     bool observerCalled = false;
     auto handler = createCommandHandler();
 
     DisposingDelegateObserver observer(*handler);
-    observer->getUserCountAction = [&](auto& _) { observerCalled = true; };
+    observer->getEntitiesCountAction = [&](auto& _) { observerCalled = true; };
 
-    handlerToObj(handler, Forum::Commands::COUNT_USERS);
+    handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
     BOOST_REQUIRE(observerCalled);
 }
 
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_name )
         assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { name }));
     }
 
-    BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
+    BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.users"));
 
     std::vector<std::string> retrievedNames;
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
@@ -387,12 +387,12 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_name_succeds )
     BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
     auto userId = user.get<std::string>("user.id");
 
-    BOOST_REQUIRE_EQUAL(1, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
+    BOOST_REQUIRE_EQUAL(1, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.users"));
 
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::CHANGE_USER_NAME, { userId, "Xyz" }));
     auto modifiedUser = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Xyz" });
 
-    BOOST_REQUIRE_EQUAL(1, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
+    BOOST_REQUIRE_EQUAL(1, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.users"));
     BOOST_REQUIRE_EQUAL("Xyz", modifiedUser.get<std::string>("user.name"));
     BOOST_REQUIRE_EQUAL(userId, modifiedUser.get<std::string>("user.id"));
 }
@@ -465,12 +465,18 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_invokes_observer )
     BOOST_REQUIRE_EQUAL(User::ChangeType::Name, userChange);
 }
 
+BOOST_AUTO_TEST_CASE( Deleting_a_user_name_with_an_invalid_id_returns_invalid_parameters )
+{
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::DELETE_USER, { "bogus id" }));
+}
+
 BOOST_AUTO_TEST_CASE( Deleting_an_inexistent_user_name_returns_not_found )
 {
     auto handler = createCommandHandler();
-    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" }));
     assertStatusCodeEqual(StatusCode::NOT_FOUND,
-                          handlerToObj(handler, Forum::Commands::DELETE_USER, { "bogus id" }));
+                          handlerToObj(handler, Forum::Commands::DELETE_USER, { sampleValidIdString }));
 }
 
 BOOST_AUTO_TEST_CASE( Deleted_users_can_no_longer_be_retrieved )
@@ -487,7 +493,7 @@ BOOST_AUTO_TEST_CASE( Deleted_users_can_no_longer_be_retrieved )
     BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
     auto userId = user.get<std::string>("user.id");
 
-    BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
+    BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.users"));
 
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_USER, { userId }));
     assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" }));
@@ -496,7 +502,7 @@ BOOST_AUTO_TEST_CASE( Deleted_users_can_no_longer_be_retrieved )
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
-    BOOST_REQUIRE_EQUAL(2, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
+    BOOST_REQUIRE_EQUAL(2, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.users"));
 
     BOOST_REQUIRE_EQUAL(names.size() - 1, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("Def", retrievedNames[0]);
@@ -580,7 +586,7 @@ BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
         TimestampChanger changer(10000);
         auto userId = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" }).get<std::string>("user.id");
         LoggedInUserChanger loggedInChanger(userId);
-        BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_USERS).get<int>("count"));
+        BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.users"));
     }
     {
         TimestampChanger changer(30000);
@@ -948,4 +954,35 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_threads_are_no_longer_retrieved_when_re
     BOOST_REQUIRE_EQUAL(1, user2Threads.size());
     BOOST_REQUIRE( ! isIdEmpty(user2Threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc2", user2Threads[0].name);
+}
+
+BOOST_AUTO_TEST_CASE( Retrieving_a_user_includes_count_of_discussion_messages_created_by_user )
+{
+    auto handler = createCommandHandler();
+
+    auto user1 = createUserAndGetId(handler, "User1");
+    auto user2 = createUserAndGetId(handler, "User2");
+
+    {
+        LoggedInUserChanger changer(user1);
+        auto thread1Id = createDiscussionThreadAndGetId(handler, "Abc");
+        auto thread2Id = createDiscussionThreadAndGetId(handler, "Def");
+
+        createDiscussionMessageAndGetId(handler, thread1Id, "aaaaaaaaaaa");
+        createDiscussionMessageAndGetId(handler, thread1Id, "aaaaaaaaaaa");
+        createDiscussionMessageAndGetId(handler, thread1Id, "bbbbbbbbbbb");
+        createDiscussionMessageAndGetId(handler, thread2Id, "aaaaaaaaaaa");
+    }
+
+    {
+        LoggedInUserChanger changer(user2);
+        auto threadId = createDiscussionThreadAndGetId(handler, "Abc2");
+        createDiscussionMessageAndGetId(handler, threadId, "aaaaaaaaaaa");
+    }
+
+    auto user1Result = handlerToObj(handler, Forum::Commands::GET_USER_BY_ID, { user1 });
+    auto user2Result = handlerToObj(handler, Forum::Commands::GET_USER_BY_ID, { user2 });
+
+    BOOST_REQUIRE_EQUAL(4, user1Result.get<int>("user.messageCount"));
+    BOOST_REQUIRE_EQUAL(1, user2Result.get<int>("user.messageCount"));
 }

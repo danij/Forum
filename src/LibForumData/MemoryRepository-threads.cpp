@@ -15,19 +15,6 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-void MemoryRepository::getDiscussionThreadCount(std::ostream& output) const
-{
-    auto performedBy = preparePerformedBy(*this);
-
-    collection_.read([&](const EntityCollection& collection)
-                     {
-                         auto count = collection.threadsById().size();
-                         writeSingleValueSafeName(output, "count", count);
-
-                         observers_.onGetDiscussionThreadCount(performedBy.get(collection));
-                     });
-}
-
 void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
 {
     auto performedBy = preparePerformedBy(*this);
@@ -35,6 +22,8 @@ void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
     collection_.read([&](const EntityCollection& collection)
                      {
                          const auto& threads = collection.threadsByName();
+                         BoolTemporaryChanger changer(serializationSettings.hideDiscussionThreadMessages, true);
+
                          writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
                          observers_.onGetDiscussionThreads(performedBy.get(collection));
                      });
@@ -47,6 +36,8 @@ void MemoryRepository::getDiscussionThreadsByCreated(std::ostream& output) const
     collection_.read([&](const EntityCollection& collection)
                      {
                          const auto& threads = collection.threadsByCreated();
+                         BoolTemporaryChanger changer(serializationSettings.hideDiscussionThreadMessages, true);
+
                          writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
                          observers_.onGetDiscussionThreads(performedBy.get(collection));
                      });
@@ -59,6 +50,8 @@ void MemoryRepository::getDiscussionThreadsByLastUpdated(std::ostream& output) c
     collection_.read([&](const EntityCollection& collection)
                      {
                          const auto& threads = collection.threadsByLastUpdated();
+                         BoolTemporaryChanger changer(serializationSettings.hideDiscussionThreadMessages, true);
+
                          writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
                          observers_.onGetDiscussionThreads(performedBy.get(collection));
                      });
@@ -100,7 +93,8 @@ void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::o
                          }
 
                          const auto& threads = (*it)->threadsByName();
-                         BoolTemporaryChanger settingsChanger(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
                          writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
                          observers_.onGetDiscussionThreadsOfUser(performedBy.get(collection), **it);
                      });
@@ -121,7 +115,8 @@ void MemoryRepository::getDiscussionThreadsOfUserByCreated(const IdType& id, std
                          }
 
                          const auto& threads = (*it)->threadsByCreated();
-                         BoolTemporaryChanger settingsChanger(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
                          writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
                          observers_.onGetDiscussionThreadsOfUser(performedBy.get(collection), **it);
                      });
@@ -142,14 +137,16 @@ void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(const IdType& id,
                          }
 
                          const auto& threads = (*it)->threadsByLastUpdated();
-                         BoolTemporaryChanger settingsChanger(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
                          writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
                          observers_.onGetDiscussionThreadsOfUser(performedBy.get(collection), **it);
                      });
 }
 
 
-static const auto validThreadNameRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");
+static const auto validDiscussionThreadNameRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");
+static const auto validDiscussionMessageContentRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");
 
 static StatusCode validateDiscussionThreadName(const std::string& name, const ConfigConstRef& config)
 {
@@ -159,7 +156,7 @@ static StatusCode validateDiscussionThreadName(const std::string& name, const Co
     }
     try
     {
-        if ( ! boost::u32regex_match(name, validThreadNameRegex, boost::match_flag_type::format_all))
+        if ( ! boost::u32regex_match(name, validDiscussionThreadNameRegex, boost::match_flag_type::format_all))
         {
             return StatusCode::INVALID_PARAMETERS;
         }
@@ -175,6 +172,37 @@ static StatusCode validateDiscussionThreadName(const std::string& name, const Co
         return StatusCode::VALUE_TOO_LONG;
     }
     if (nrCharacters < config->discussionThread.minNameLength)
+    {
+        return StatusCode::VALUE_TOO_SHORT;
+    }
+
+    return StatusCode::OK;
+}
+
+static StatusCode validateDiscussionMessageContent(const std::string& content, const ConfigConstRef& config)
+{
+    if (content.empty())
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+    try
+    {
+        if ( ! boost::u32regex_match(content, validDiscussionMessageContentRegex, boost::match_flag_type::format_all))
+        {
+            return StatusCode::INVALID_PARAMETERS;
+        }
+    }
+    catch(...)
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto nrCharacters = countUTF8Characters(content);
+    if (nrCharacters > config->discussionMessage.maxContentLength)
+    {
+        return StatusCode::VALUE_TOO_LONG;
+    }
+    if (nrCharacters < config->discussionMessage.minContentLength)
     {
         return StatusCode::VALUE_TOO_SHORT;
     }
@@ -249,6 +277,12 @@ void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& ou
     StatusWriter status(output, StatusCode::OK);
     auto performedBy = preparePerformedBy(*this);
 
+    if ( ! id)
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
+
     collection_.write([&](EntityCollection& collection)
                       {
                           auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
@@ -261,5 +295,79 @@ void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& ou
                           //make sure the thread is not deleted before being passed to the observers
                           observers_.onDeleteDiscussionThread(*performedBy.getAndUpdate(collection), **it);
                           collection.deleteDiscussionThread(it);
+                      });
+}
+
+void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, const std::string& content,
+                                                       std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! threadId)
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
+
+    auto validationCode = validateDiscussionMessageContent(content, Configuration::getGlobalConfig());
+    if (validationCode != StatusCode::OK)
+    {
+        status = validationCode;
+        return;
+    }
+
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto& threadIndex = collection.threads();
+                          auto threadIt = threadIndex.find(threadId);
+                          if (threadIt == threadIndex.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          auto& thread = *threadIt;
+
+                          const auto& createdBy = performedBy.getAndUpdate(collection);
+
+                          auto message = std::make_shared<DiscussionMessage>(*createdBy, *thread);
+                          message->id() = generateUUIDString();
+                          message->content() = content;
+                          message->created() = Context::getCurrentTime();
+
+                          collection.messages().insert(message);
+                          thread->messages().insert(message);
+                          createdBy->messages().insert(message);
+
+                          observers_.onAddNewDiscussionMessage(*createdBy, *message);
+
+                          status.addExtraSafeName("id", message->id());
+                          status.addExtraSafeName("parentId", thread->id());
+                          status.addExtraSafeName("created", message->created());
+                      });
+}
+
+void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! id)
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
+
+    auto performedBy = preparePerformedBy(*this);
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto& indexById = collection.messages().get<EntityCollection::DiscussionMessageCollectionById>();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          //make sure the message is not deleted before being passed to the observers
+                          observers_.onDeleteDiscussionMessage(*performedBy.getAndUpdate(collection), **it);
+                          collection.deleteDiscussionMessage(it);
                       });
 }

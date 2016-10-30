@@ -29,7 +29,9 @@ namespace Forum
             return Forum::Entities::UuidString(id) == Forum::Entities::UuidString::empty;
         }
 
-        extern Forum::Entities::IdType sampleValidId;
+        extern const std::string sampleValidIdString;
+        extern const Forum::Entities::IdType sampleValidId;
+        extern const std::string sampleMessageContent;
 
         bool treeContains(const boost::property_tree::ptree& tree, const std::string& key);
 

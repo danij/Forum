@@ -17,8 +17,8 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
         : readRepository_(readRepository), writeRepository_(writeRepository), metricsRepository_(metricsRepository)
 {
     setHandler(SHOW_VERSION, version);
+    setHandler(COUNT_ENTITIES, countEntities);
 
-    setHandler(COUNT_USERS, countUsers);
     setHandler(ADD_USER, addNewUser);
     setHandler(GET_USERS_BY_NAME, getUsersByName);
     setHandler(GET_USERS_BY_CREATED, getUsersByCreated);
@@ -28,7 +28,6 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(CHANGE_USER_NAME, changeUserName);
     setHandler(DELETE_USER, deleteUser);
 
-    setHandler(COUNT_DISCUSSION_THREADS, countDiscussionThreads);
     setHandler(ADD_DISCUSSION_THREAD, addNewDiscussionThread);
     setHandler(GET_DISCUSSION_THREADS_BY_NAME, getDiscussionThreadsByName);
     setHandler(GET_DISCUSSION_THREADS_BY_CREATED, getDiscussionThreadsByCreated);
@@ -40,6 +39,9 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME, getDiscussionThreadsOfUserByName);
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, getDiscussionThreadsOfUserByCreated);
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, getDiscussionThreadsOfUserByLastUpdated);
+
+    setHandler(ADD_DISCUSSION_THREAD_MESSAGE, addNewDiscussionThreadMessage);
+    setHandler(DELETE_DISCUSSION_THREAD_MESSAGE, deleteDiscussionThreadMessage);
 }
 
 ReadRepositoryRef CommandHandler::getReadRepository()
@@ -65,9 +67,9 @@ void CommandHandler::version(const std::vector<std::string>& parameters, std::os
     metricsRepository_->getVersion(output);
 }
 
-void CommandHandler::countUsers(const std::vector<std::string>& parameters, std::ostream& output)
+void CommandHandler::countEntities(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    readRepository_->getUserCount(output);
+    readRepository_->getEntitiesCount(output);
 }
 
 bool CommandHandler::checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output,
@@ -124,11 +126,6 @@ void CommandHandler::deleteUser(const std::vector<std::string>& parameters, std:
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
     writeRepository_->deleteUser(parameters[0], output);
-}
-
-void CommandHandler::countDiscussionThreads(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    readRepository_->getDiscussionThreadCount(output);
 }
 
 void CommandHandler::getDiscussionThreadsByName(const std::vector<std::string>& parameters, std::ostream& output)
@@ -188,4 +185,16 @@ void CommandHandler::getDiscussionThreadsOfUserByLastUpdated(const std::vector<s
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
     readRepository_->getDiscussionThreadsOfUserByLastUpdated(parameters[0], output);
+}
+
+void CommandHandler::addNewDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+    writeRepository_->addNewDiscussionMessageInThread(parameters[0], parameters[1], output);
+}
+
+void CommandHandler::deleteDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    writeRepository_->deleteDiscussionMessage(parameters[0], output);
 }

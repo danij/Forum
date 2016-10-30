@@ -20,7 +20,8 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(AbstractReadRepositoryObserver);
 
-            virtual void onGetUserCount(PerformedByType performedBy) {};
+            virtual void onGetEntitiesCount(PerformedByType performedBy) {};
+
             virtual void onGetUsers(PerformedByType performedBy) {};
             virtual void onGetUserById(PerformedByType performedBy, const Forum::Entities::IdType& id) {};
             virtual void onGetUserByName(PerformedByType performedBy, const std::string& name) {};
@@ -53,7 +54,12 @@ namespace Forum
                                                   const Forum::Entities::DiscussionThread& thread,
                                                   Forum::Entities::DiscussionThread::ChangeType change) {};
             virtual void onDeleteDiscussionThread(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionThread& deletedThread) {};
+                                                  const Forum::Entities::DiscussionThread& deletedThread) {};
+
+            virtual void onAddNewDiscussionMessage(PerformedByType performedBy,
+                                                   const Forum::Entities::DiscussionMessage& newMessage) {};
+            virtual void onDeleteDiscussionMessage(PerformedByType performedBy,
+                                                   const Forum::Entities::DiscussionMessage& deletedMessage) {};
         };
 
         typedef std::shared_ptr<AbstractWriteRepositoryObserver> WriteRepositoryObserverRef;

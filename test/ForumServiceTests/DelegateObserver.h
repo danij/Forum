@@ -16,7 +16,8 @@ namespace Forum
         class DelegateObserverDelegates_
         {
         public:
-            std::function<void(PerformedByType)> getUserCountAction;
+            std::function<void(PerformedByType)> getEntitiesCountAction;
+
             std::function<void(PerformedByType)> getUsersAction;
             std::function<void(PerformedByType, const Forum::Entities::IdType&)> getUserByIdAction;
             std::function<void(PerformedByType, const std::string&)> getUserByNameAction;
@@ -26,7 +27,6 @@ namespace Forum
                 Forum::Entities::User::ChangeType)> changeUserAction;
             std::function<void(PerformedByType, const Forum::Entities::User&)> deleteUserAction;
 
-            std::function<void(PerformedByType)> getDiscussionThreadCountAction;
             std::function<void(PerformedByType)> getDiscussionThreadsAction;
             std::function<void(PerformedByType, const Forum::Entities::IdType&)> getDiscussionThreadByIdAction;
             std::function<void(PerformedByType, const Forum::Entities::User&)> getDiscussionThreadsOfUserAction;
@@ -35,16 +35,22 @@ namespace Forum
             std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&,
                     Forum::Entities::DiscussionThread::ChangeType)> changeDiscussionThreadAction;
             std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&)> deleteDiscussionThreadAction;
+
+            std::function<void(PerformedByType, const Forum::Entities::DiscussionMessage&)>
+                addNewDiscussionMessageAction;
+            std::function<void(PerformedByType, const Forum::Entities::DiscussionMessage&)>
+                deleteDiscussionMessageAction;
         };
 
         class DelegateObserver final : public AbstractReadRepositoryObserver, public AbstractWriteRepositoryObserver,
                                        public DelegateObserverDelegates_, private boost::noncopyable
         {
         public:
-            virtual void onGetUserCount(PerformedByType performedBy) override
+            virtual void onGetEntitiesCount(PerformedByType performedBy) override
             {
-                if (getUserCountAction) getUserCountAction(performedBy);
+                if (getEntitiesCountAction) getEntitiesCountAction(performedBy);
             }
+
             virtual void onGetUsers(PerformedByType performedBy) override
             {
                 if (getUsersAction) getUsersAction(performedBy);
@@ -72,10 +78,6 @@ namespace Forum
                 if (deleteUserAction) deleteUserAction(performedBy, deletedUser);
             }
 
-            virtual void onGetDiscussionThreadCount(PerformedByType performedBy) override
-            {
-                if (getDiscussionThreadCountAction) getDiscussionThreadCountAction(performedBy);
-            }
             virtual void onGetDiscussionThreads(PerformedByType performedBy) override
             {
                 if (getDiscussionThreadsAction) getDiscussionThreadsAction(performedBy);
@@ -106,6 +108,17 @@ namespace Forum
                                                   const Forum::Entities::DiscussionThread& deletedThread) override
             {
                 if (deleteDiscussionThreadAction) deleteDiscussionThreadAction(performedBy, deletedThread);
+            }
+
+            virtual void onAddNewDiscussionMessage(PerformedByType performedBy,
+                                                const Forum::Entities::DiscussionMessage& newMessage) override
+            {
+                if (addNewDiscussionMessageAction) addNewDiscussionMessageAction(performedBy, newMessage);
+            }
+            virtual void onDeleteDiscussionMessage(PerformedByType performedBy,
+                                                  const Forum::Entities::DiscussionMessage& deletedMessage) override
+            {
+                if (deleteDiscussionMessageAction) deleteDiscussionMessageAction(performedBy, deletedMessage);
             }
 
         };

@@ -15,9 +15,9 @@ namespace Forum
         enum Command
         {
             SHOW_VERSION = 0,
+            COUNT_ENTITIES,
 
             //users related
-            COUNT_USERS,
             ADD_USER,
             GET_USERS_BY_NAME,
             GET_USERS_BY_CREATED,
@@ -28,7 +28,6 @@ namespace Forum
             DELETE_USER,
 
             //discussion thread related
-            COUNT_DISCUSSION_THREADS,
             ADD_DISCUSSION_THREAD,
             GET_DISCUSSION_THREADS_BY_NAME,
             GET_DISCUSSION_THREADS_BY_CREATED,
@@ -36,6 +35,9 @@ namespace Forum
             GET_DISCUSSION_THREAD_BY_ID,
             CHANGE_DISCUSSION_THREAD_NAME,
             DELETE_DISCUSSION_THREAD,
+
+            ADD_DISCUSSION_THREAD_MESSAGE,
+            DELETE_DISCUSSION_THREAD_MESSAGE,
 
             //mixed user-discussion thread
             GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
@@ -60,8 +62,8 @@ namespace Forum
 #define DECLARE_COMMAND_HANDLER(name) void name(const std::vector<std::string>& parameters, std::ostream& output);
 
             DECLARE_COMMAND_HANDLER(version);
+            DECLARE_COMMAND_HANDLER(countEntities);
 
-            DECLARE_COMMAND_HANDLER(countUsers);
             DECLARE_COMMAND_HANDLER(addNewUser);
             DECLARE_COMMAND_HANDLER(getUsersByName);
             DECLARE_COMMAND_HANDLER(getUsersByCreated);
@@ -71,7 +73,6 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(changeUserName);
             DECLARE_COMMAND_HANDLER(deleteUser);
 
-            DECLARE_COMMAND_HANDLER(countDiscussionThreads);
             DECLARE_COMMAND_HANDLER(addNewDiscussionThread);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByName);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreated);
@@ -79,6 +80,9 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(getDiscussionThreadById);
             DECLARE_COMMAND_HANDLER(changeDiscussionThreadName);
             DECLARE_COMMAND_HANDLER(deleteDiscussionThread);
+
+            DECLARE_COMMAND_HANDLER(addNewDiscussionThreadMessage);
+            DECLARE_COMMAND_HANDLER(deleteDiscussionThreadMessage);
 
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByName);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreated);

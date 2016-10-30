@@ -6,13 +6,15 @@
 #include <boost/noncopyable.hpp>
 
 #include "EntityDiscussionThreadCollectionBase.h"
+#include "EntityDiscussionMessageCollectionBase.h"
 #include "EntityCommonTypes.h"
 
 namespace Forum
 {
     namespace Entities
     {
-        struct User final : public Identifiable, public Creatable, public DiscussionThreadCollectionBase
+        struct User final : public Identifiable, public Creatable,
+                            public DiscussionThreadCollectionBase, public DiscussionMessageCollectionBase
         {
             inline const std::string& name()     const { return name_; }
             inline       std::string& name()           { return name_; }

@@ -21,7 +21,8 @@ namespace Forum
             virtual void removeObserver(const ReadRepositoryObserverRef& observer) override;
             virtual void removeObserver(const WriteRepositoryObserverRef& observer) override;
 
-            virtual void getUserCount(std::ostream& output) const override;
+            virtual void getEntitiesCount(std::ostream& output) const override;
+
             virtual void getUsersByName(std::ostream& output) const override;
             virtual void getUsersByCreated(std::ostream& output) const override;
             virtual void getUsersByLastSeen(std::ostream& output) const override;
@@ -34,7 +35,6 @@ namespace Forum
                                         std::ostream& output) override;
             virtual void deleteUser(const Forum::Entities::IdType& id, std::ostream& output) override;
 
-            virtual void getDiscussionThreadCount(std::ostream& output) const override;
             virtual void getDiscussionThreadsByName(std::ostream& output) const override;
             virtual void getDiscussionThreadsByCreated(std::ostream& output) const override;
             virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const override;
@@ -51,6 +51,10 @@ namespace Forum
             virtual void changeDiscussionThreadName(const Forum::Entities::IdType& id, const std::string& newName,
                                                     std::ostream& output) override;
             virtual void deleteDiscussionThread(const Forum::Entities::IdType& id, std::ostream& output) override;
+
+            virtual void addNewDiscussionMessageInThread(const Forum::Entities::IdType& threadId,
+                                                         const std::string& content, std::ostream& output) override;
+            virtual void deleteDiscussionMessage(const Forum::Entities::IdType& id, std::ostream& output) override;
 
         private:
             friend struct PerformedByWithLastSeenUpdateGuard;

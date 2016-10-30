@@ -18,6 +18,10 @@ namespace Forum
 {
     namespace Entities
     {
+        /**
+         * Base class for storing a collection of discussion threads
+         * Using multiple inheritance instead of composition in order to allow easier customization of modify/delete behavior
+         */
         struct DiscussionThreadCollectionBase : private boost::noncopyable
         {
             DECLARE_INTERFACE_MANDATORY_NO_COPY(DiscussionThreadCollectionBase);

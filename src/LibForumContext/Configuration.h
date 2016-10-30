@@ -23,10 +23,17 @@ namespace Forum
             int_fast16_t maxNameLength = 128;
         };
 
+        struct DiscussionMessageConfig
+        {
+            int_fast32_t minContentLength = 10;
+            int_fast32_t maxContentLength = 65535;
+        };
+
         struct Config
         {
             UserConfig user;
             DiscussionThreadConfig discussionThread;
+            DiscussionMessageConfig discussionMessage;
         };
 
         typedef std::shared_ptr<const Config> ConfigConstRef;

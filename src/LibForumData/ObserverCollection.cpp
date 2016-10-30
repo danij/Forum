@@ -50,10 +50,10 @@ void ObserverCollection::removeObserver(const WriteRepositoryObserverRef& observ
 }
 
 
-void ObserverCollection::onGetUserCount(PerformedByType performedBy)
+void ObserverCollection::onGetEntitiesCount(PerformedByType performedBy)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : readObservers_) item->onGetUserCount(performedBy);
+    for (auto& item : readObservers_) item->onGetEntitiesCount(performedBy);
 }
 
 void ObserverCollection::onGetUsers(PerformedByType performedBy)
@@ -134,4 +134,16 @@ void ObserverCollection::onDeleteDiscussionThread(PerformedByType performedBy, c
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : writeObservers_) item->onDeleteDiscussionThread(performedBy, deletedThread);
+}
+
+void ObserverCollection::onAddNewDiscussionMessage(PerformedByType performedBy, const DiscussionMessage& newMessage)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : writeObservers_) item->onAddNewDiscussionMessage(performedBy, newMessage);
+}
+
+void ObserverCollection::onDeleteDiscussionMessage(PerformedByType performedBy, const DiscussionMessage& deletedMessage)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : writeObservers_) item->onDeleteDiscussionMessage(performedBy, deletedMessage);
 }

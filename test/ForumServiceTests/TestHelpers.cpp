@@ -15,5 +15,7 @@ bool Forum::Helpers::treeContains(const boost::property_tree::ptree& tree, const
     return false;
 }
 
-Forum::Entities::IdType Forum::Helpers::sampleValidId =
-        Forum::Entities::UuidString("00000000-0000-0000-0000-000000000001");
+const std::string Forum::Helpers::sampleValidIdString = "00000000-0000-0000-0000-000000000001";
+const Forum::Entities::IdType Forum::Helpers::sampleValidId = sampleValidIdString;
+
+const std::string Forum::Helpers::sampleMessageContent = "abcdefghijklmnopqrstuvwxyz";

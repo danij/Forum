@@ -5,8 +5,11 @@
 
 namespace Json
 {
+    Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::EntitiesCount& thread);
+
     Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::IdType& id);
     Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::User& user);
+    Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::DiscussionMessage& thread);
     Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::DiscussionThread& thread);
 }
 
@@ -17,6 +20,7 @@ namespace Forum
         struct SerializationSettings
         {
             bool hideDiscussionThreadCreatedBy = false;
+            bool hideDiscussionThreadMessages = false;
         };
 
         extern thread_local SerializationSettings serializationSettings;

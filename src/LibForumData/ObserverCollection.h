@@ -25,7 +25,8 @@ namespace Forum
             void removeObserver(const ReadRepositoryObserverRef& observer);
             void removeObserver(const WriteRepositoryObserverRef& observer);
 
-            virtual void onGetUserCount(PerformedByType performedBy) override;
+            virtual void onGetEntitiesCount(PerformedByType performedBy) override;
+
             virtual void onGetUsers(PerformedByType performedBy) override;
             virtual void onGetUserById(PerformedByType performedBy, const Forum::Entities::IdType& id) override;
             virtual void onGetUserByName(PerformedByType performedBy, const std::string& name) override;
@@ -41,12 +42,16 @@ namespace Forum
                                     Forum::Entities::User::ChangeType change) override;
             virtual void onDeleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) override;
             virtual void onAddNewDiscussionThread(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionThread& newThread) override;
+                                                  const Forum::Entities::DiscussionThread& newThread) override;
             virtual void onChangeDiscussionThread(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionThread& thread,
-                                                Forum::Entities::DiscussionThread::ChangeType change) override;
+                                                  const Forum::Entities::DiscussionThread& thread,
+                                                  Forum::Entities::DiscussionThread::ChangeType change) override;
             virtual void onDeleteDiscussionThread(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionThread& deletedThread) override;
+                                                  const Forum::Entities::DiscussionThread& deletedThread) override;
+            virtual void onAddNewDiscussionMessage(PerformedByType performedBy,
+                                                   const Forum::Entities::DiscussionMessage& newMessage) override;
+            virtual void onDeleteDiscussionMessage(PerformedByType performedBy,
+                                                   const Forum::Entities::DiscussionMessage& deletedMessage) override;
 
         private:
             std::vector<ReadRepositoryObserverRef> readObservers_;

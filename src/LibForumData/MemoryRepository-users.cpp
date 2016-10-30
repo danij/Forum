@@ -14,19 +14,6 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-void MemoryRepository::getUserCount(std::ostream& output) const
-{
-    auto performedBy = preparePerformedBy(*this);
-
-    collection_.read([&](const EntityCollection& collection)
-                     {
-                         auto count = collection.usersById().size();
-                         writeSingleValueSafeName(output, "count", count);
-
-                         observers_.onGetUserCount(performedBy.get(collection));
-                     });
-}
-
 void MemoryRepository::getUsersByName(std::ostream& output) const
 {
     auto performedBy = preparePerformedBy(*this);
@@ -206,6 +193,12 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
 void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
+    if ( ! id)
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
+
     auto performedBy = preparePerformedBy(*this);
 
     collection_.write([&](EntityCollection& collection)

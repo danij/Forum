@@ -1,10 +1,13 @@
 #include "Configuration.h"
 #include "ContextProviders.h"
+#include "EntitySerialization.h"
 #include "MemoryRepository.h"
+#include "OutputHelpers.h"
 
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
+using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
 MemoryRepository::MemoryRepository() : collection_(std::make_shared<EntityCollection>())
@@ -30,6 +33,25 @@ void MemoryRepository::removeObserver(const WriteRepositoryObserverRef& observer
 {
     observers_.removeObserver(observer);
 }
+
+
+void MemoryRepository::getEntitiesCount(std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         EntitiesCount count;
+                         count.nrOfUsers = collection.usersById().size();
+                         count.nrOfDiscussionThreads = collection.threadsById().size();
+                         count.nrOfDiscussionMessages = collection.messagesById().size();
+
+                         writeSingleValueSafeName(output, "count", count);
+
+                         observers_.onGetEntitiesCount(performedBy.get(collection));
+                     });
+}
+
 
 /**
  * Retrieves the user that is performing the current action and also performs an update on the last seen if needed

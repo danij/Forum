@@ -13,7 +13,8 @@ set(SOURCE_FILES RandomGenerator.cpp EntitySerialization.cpp StringHelpers.cpp E
 set(HEADER_FILES Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h
         ConstCollectionAdapter.h StringHelpers.h RandomGenerator.h
         EntitySerialization.h EntityCollection.h Observers.h ObserverCollection.h EntityCommonTypes.h UuidString.h
-        TypeHelpers.h EntityDiscussionThreadCollectionBase.h EntityDiscussionThread.h EntityUser.h StateHelpers.h)
+        TypeHelpers.h EntityDiscussionThreadCollectionBase.h EntityDiscussionThread.h EntityUser.h StateHelpers.h
+        EntityDiscussionMessage.h EntityDiscussionMessageCollectionBase.h)
 
 include_directories(. ../. ../LibFastJsonWriter ../LibForumContext ${Boost_INCLUDE_DIRS})
 

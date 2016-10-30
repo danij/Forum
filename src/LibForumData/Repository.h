@@ -21,14 +21,14 @@ namespace Forum
             virtual void addObserver(const ReadRepositoryObserverRef& observer) = 0;
             virtual void removeObserver(const ReadRepositoryObserverRef& observer) = 0;
 
-            virtual void getUserCount(std::ostream& output) const = 0;
+            virtual void getEntitiesCount(std::ostream& output) const = 0;
+
             virtual void getUsersByName(std::ostream& output) const = 0;
             virtual void getUsersByCreated(std::ostream& output) const = 0;
             virtual void getUsersByLastSeen(std::ostream& output) const = 0;
             virtual void getUserById(const Forum::Entities::IdType& id, std::ostream& output) const = 0;
             virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
 
-            virtual void getDiscussionThreadCount(std::ostream& output) const = 0;
             virtual void getDiscussionThreadsByName(std::ostream& output) const = 0;
             virtual void getDiscussionThreadsByCreated(std::ostream& output) const = 0;
             virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const = 0;
@@ -70,6 +70,10 @@ namespace Forum
             virtual void changeDiscussionThreadName(const Forum::Entities::IdType& id, const std::string& newName,
                                         std::ostream& output) = 0;
             virtual void deleteDiscussionThread(const Forum::Entities::IdType& id, std::ostream& output) = 0;
+
+            virtual void addNewDiscussionMessageInThread(const Forum::Entities::IdType& threadId,
+                                                         const std::string& content, std::ostream& output) = 0;
+            virtual void deleteDiscussionMessage(const Forum::Entities::IdType& id, std::ostream& output) = 0;
         };
 
         typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;

@@ -6,6 +6,7 @@
 #include <boost/noncopyable.hpp>
 
 #include "EntityCommonTypes.h"
+#include "EntityDiscussionMessageCollectionBase.h"
 #include "StringHelpers.h"
 
 namespace Forum
@@ -14,7 +15,7 @@ namespace Forum
     {
         struct User;
 
-        struct DiscussionThread final : public Identifiable, public Creatable, private boost::noncopyable
+        struct DiscussionThread final : public Identifiable, public Creatable, public DiscussionMessageCollectionBase
         {
             inline const std::string&        name()        const { return name_; }
             inline       std::string&        name()              { return name_; }
