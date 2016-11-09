@@ -34,3 +34,6 @@
 # IDE Folders
 .idea
 .vs
+
+#Temporary Files
+*.swp
