@@ -160,14 +160,13 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
    {
       const int toEscapeLength = sizeof(toEscape) / sizeof(toEscape[0]);
       const int bufferMultiplier = 6;//in the worst case, something like \u005C is needed for each character
-      char stackBuffer[MAX_STACK_BUFFER] = { 0 };
+      char stackBuffer[MAX_STACK_BUFFER];
       char* buffer = stackBuffer;
       unique_ptr<char> toDelete;
 
       if ((length * bufferMultiplier) >= MAX_STACK_BUFFER)
       {
          toDelete.reset(buffer = new char[length * bufferMultiplier + 1]);
-         memset(buffer, 0, (length * bufferMultiplier + 1) * sizeof(char));
       }
 
       int dstIndex = 0;
@@ -210,7 +209,7 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
          }
       }
 
-      _stream << buffer;
+      _stream.write(buffer, dstIndex);
    }
    _stream << '"';
 
