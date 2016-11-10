@@ -135,10 +135,11 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_invokes_observer )
     observer->getDiscussionThreadsAction = [&](auto& _) { observerCalledNTimes += 1; };
 
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME);
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING);
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_LAST_UPDATED);
 
-    BOOST_REQUIRE_EQUAL(3, observerCalledNTimes);
+    BOOST_REQUIRE_EQUAL(4, observerCalledNTimes);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_no_parameters_fails )
@@ -364,7 +365,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_name )
     BOOST_REQUIRE_EQUAL("Ghi", threads[2].name);
 }
 
-BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_creation_date )
+BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_creation_date_ascending )
 {
     auto handler = createCommandHandler();
     std::vector<std::string> names = { "Abc", "Ghi", "Def" };
@@ -379,8 +380,8 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_creation_dat
 
     BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.discussionThreads"));
 
-    auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED)
-                                              .get_child("threads"));
+    auto threads = deserializeThreads(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING).get_child("threads"));
 
     BOOST_REQUIRE_EQUAL(names.size(), threads.size());
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
@@ -389,6 +390,33 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_creation_dat
     BOOST_REQUIRE_EQUAL(1000, threads[0].created);
     BOOST_REQUIRE_EQUAL(2000, threads[1].created);
     BOOST_REQUIRE_EQUAL(3000, threads[2].created);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_creation_date_descending )
+{
+    auto handler = createCommandHandler();
+    std::vector<std::string> names = { "Abc", "Ghi", "Def" };
+
+    Timestamp currentTime = 1000;
+    for (auto& name : names)
+    {
+        TimestampChanger timestampChanger(currentTime);
+        currentTime += 1000;
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { name }));
+    }
+
+    BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.discussionThreads"));
+
+    auto threads = deserializeThreads(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING).get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(names.size(), threads.size());
+    BOOST_REQUIRE_EQUAL("Def", threads[0].name);
+    BOOST_REQUIRE_EQUAL("Ghi", threads[1].name);
+    BOOST_REQUIRE_EQUAL("Abc", threads[2].name);
+    BOOST_REQUIRE_EQUAL(3000, threads[0].created);
+    BOOST_REQUIRE_EQUAL(2000, threads[1].created);
+    BOOST_REQUIRE_EQUAL(1000, threads[2].created);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_last_updated )
@@ -503,7 +531,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_creation_and_last_up
         assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Def" }));
     }
 
-    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING);
     auto threads = deserializeThreads(result.get_child("threads"));
 
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
@@ -517,7 +545,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_creation_and_last_up
     BOOST_REQUIRE_EQUAL(2000, threads[1].lastUpdated);
 }
 
-BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_user_that_created_it )
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_each_user_that_created_them )
 {
     auto handler = createCommandHandler();
 
@@ -539,7 +567,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_user_that_created_it
         assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Ghi" }));
     }
 
-    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING);
     auto threads = deserializeThreads(result.get_child("threads"));
 
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
@@ -576,7 +604,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_does_not_show_other_topics_o
         assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Def" }));
     }
 
-    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING);
     auto resultThreads = result.get_child("threads");
     auto threads = deserializeThreads(resultThreads);
 
@@ -667,7 +695,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_increments_the_visited_count
         thread2Id = createDiscussionThreadAndGetId(handler, "Def");
     }
 
-    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING);
     auto threads = deserializeThreads(result.get_child("threads"));
 
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
@@ -688,13 +716,14 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_increments_the_visited_count
     }
     {
         LoggedInUserChanger userChanger(user2);
-        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING);
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING);
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_LAST_UPDATED);
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id });
     }
 
-    result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING);
     threads = deserializeThreads(result.get_child("threads"));
 
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
@@ -921,7 +950,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_does_not_show_messages )
         assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Def" }));
     }
 
-    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED);
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING);
     auto resultThreads = result.get_child("threads");
     auto threads = deserializeThreads(resultThreads);
 

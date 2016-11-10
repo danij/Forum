@@ -30,7 +30,8 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
 
     setHandler(ADD_DISCUSSION_THREAD, addNewDiscussionThread);
     setHandler(GET_DISCUSSION_THREADS_BY_NAME, getDiscussionThreadsByName);
-    setHandler(GET_DISCUSSION_THREADS_BY_CREATED, getDiscussionThreadsByCreated);
+    setHandler(GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING, getDiscussionThreadsByCreatedAscending);
+    setHandler(GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING, getDiscussionThreadsByCreatedDescending);
     setHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED, getDiscussionThreadsByLastUpdated);
     setHandler(GET_DISCUSSION_THREAD_BY_ID, getDiscussionThreadById);
     setHandler(CHANGE_DISCUSSION_THREAD_NAME, changeDiscussionThreadName);
@@ -133,9 +134,16 @@ void CommandHandler::getDiscussionThreadsByName(const std::vector<std::string>& 
     readRepository_->getDiscussionThreadsByName(output);
 }
 
-void CommandHandler::getDiscussionThreadsByCreated(const std::vector<std::string>& parameters, std::ostream& output)
+void CommandHandler::getDiscussionThreadsByCreatedAscending(const std::vector<std::string>& parameters,
+                                                            std::ostream& output)
 {
-    readRepository_->getDiscussionThreadsByCreated(output);
+    readRepository_->getDiscussionThreadsByCreatedAscending(output);
+}
+
+void CommandHandler::getDiscussionThreadsByCreatedDescending(const std::vector<std::string>& parameters,
+                                                             std::ostream& output)
+{
+    readRepository_->getDiscussionThreadsByCreatedDescending(output);
 }
 
 void CommandHandler::getDiscussionThreadsByLastUpdated(const std::vector<std::string>& parameters, std::ostream& output)

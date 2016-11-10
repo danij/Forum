@@ -30,7 +30,8 @@ namespace Forum
             //discussion thread related
             ADD_DISCUSSION_THREAD,
             GET_DISCUSSION_THREADS_BY_NAME,
-            GET_DISCUSSION_THREADS_BY_CREATED,
+            GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING,
+            GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING,
             GET_DISCUSSION_THREADS_BY_LAST_UPDATED,
             GET_DISCUSSION_THREAD_BY_ID,
             CHANGE_DISCUSSION_THREAD_NAME,
@@ -75,7 +76,8 @@ namespace Forum
 
             DECLARE_COMMAND_HANDLER(addNewDiscussionThread);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByName);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreated);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreatedAscending);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreatedDescending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdated);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadById);
             DECLARE_COMMAND_HANDLER(changeDiscussionThreadName);

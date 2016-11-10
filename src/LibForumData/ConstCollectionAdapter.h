@@ -18,6 +18,8 @@ namespace Forum
 
             inline auto begin() const { return cbegin(); };
             inline auto end() const { return cend(); };
+            inline auto rbegin() const { return crbegin(); };
+            inline auto rend() const { return crend(); };
 
             inline auto cbegin() const
             {
@@ -27,6 +29,16 @@ namespace Forum
             inline auto cend() const
             {
                 return boost::make_transform_iterator(collection_.cend(), getPointer);
+            };
+
+            inline auto crbegin() const
+            {
+                return boost::make_transform_iterator(collection_.crbegin(), getPointer);
+            };
+
+            inline auto crend() const
+            {
+                return boost::make_transform_iterator(collection_.crend(), getPointer);
             };
 
             template <typename TSearchType>

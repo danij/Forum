@@ -30,7 +30,8 @@ namespace Forum
             virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
 
             virtual void getDiscussionThreadsByName(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsByCreated(std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsByCreatedAscending(std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsByCreatedDescending(std::ostream& output) const = 0;
             virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const = 0;
             virtual void getDiscussionThreadById(const Forum::Entities::IdType& id, std::ostream& output) const = 0;
 

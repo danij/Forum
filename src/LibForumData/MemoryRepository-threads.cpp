@@ -29,7 +29,7 @@ void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
                      });
 }
 
-void MemoryRepository::getDiscussionThreadsByCreated(std::ostream& output) const
+void MemoryRepository::getDiscussionThreadsByCreated(bool ascending, std::ostream& output) const
 {
     auto performedBy = preparePerformedBy(*this);
 
@@ -38,9 +38,28 @@ void MemoryRepository::getDiscussionThreadsByCreated(std::ostream& output) const
                          const auto& threads = collection.threadsByCreated();
                          BoolTemporaryChanger changer(serializationSettings.hideDiscussionThreadMessages, true);
 
-                         writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+                         if (ascending)
+                         {
+                             writeSingleObjectSafeName(output, "threads",
+                                                       Json::enumerate(threads.begin(), threads.end()));
+                         }
+                         else
+                         {
+                             writeSingleObjectSafeName(output, "threads",
+                                                       Json::enumerate(threads.rbegin(), threads.rend()));
+                         }
                          observers_.onGetDiscussionThreads(performedBy.get(collection));
                      });
+}
+
+void MemoryRepository::getDiscussionThreadsByCreatedAscending(std::ostream& output) const
+{
+    getDiscussionThreadsByCreated(true, output);
+}
+
+void MemoryRepository::getDiscussionThreadsByCreatedDescending(std::ostream& output) const
+{
+    getDiscussionThreadsByCreated(false, output);
 }
 
 void MemoryRepository::getDiscussionThreadsByLastUpdated(std::ostream& output) const
