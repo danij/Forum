@@ -641,7 +641,10 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_invalid_user_returns_not_
                           handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING,
                                        { "bogusId" }));
     assertStatusCodeEqual(StatusCode::NOT_FOUND,
-                          handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
+                          handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING,
+                                       { "bogusId" }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND,
+                          handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING,
                                        { "bogusId" }));
 }
 
@@ -740,10 +743,27 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByCreated[2].created);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByCreated[2].lastUpdated);
 
-    auto user1ThreadsByLastUpdated = deserializeUserThreads(handlerToObj(handler,
-                                                                         Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
-                                                                         { user1 })
-                                                                    .get_child("threads"));
+    auto user1ThreadsByLastUpdated = deserializeUserThreads(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING, { user1 })
+                .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(3, user1ThreadsByLastUpdated.size());
+    BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[0].id));
+    BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByLastUpdated[0].name);
+    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByLastUpdated[0].created);
+    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByLastUpdated[0].lastUpdated);
+    BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[1].id));
+    BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByLastUpdated[1].name);
+    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByLastUpdated[1].created);
+    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByLastUpdated[1].lastUpdated);
+    BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[2].id));
+    BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByLastUpdated[2].name);
+    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByLastUpdated[2].created);
+    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByLastUpdated[2].lastUpdated);
+
+    user1ThreadsByLastUpdated = deserializeUserThreads(
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING, { user1 })
+            .get_child("threads"));
 
     BOOST_REQUIRE_EQUAL(3, user1ThreadsByLastUpdated.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[0].id));
@@ -802,10 +822,23 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(1000, user2ThreadsByCreated[1].created);
     BOOST_REQUIRE_EQUAL(3000, user2ThreadsByCreated[1].lastUpdated);
 
-    auto user2ThreadsByLastUpdated = deserializeUserThreads(handlerToObj(handler,
-                                                                         Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
-                                                                         { user2 })
-                                                                    .get_child("threads"));
+    auto user2ThreadsByLastUpdated = deserializeUserThreads(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING, { user2 })
+                .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(2, user2ThreadsByLastUpdated.size());
+    BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByLastUpdated[0].id));
+    BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByLastUpdated[0].name);
+    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByLastUpdated[0].created);
+    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByLastUpdated[0].lastUpdated);
+    BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByLastUpdated[1].id));
+    BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByLastUpdated[1].name);
+    BOOST_REQUIRE_EQUAL(1000, user2ThreadsByLastUpdated[1].created);
+    BOOST_REQUIRE_EQUAL(3000, user2ThreadsByLastUpdated[1].lastUpdated);
+
+    user2ThreadsByLastUpdated = deserializeUserThreads(
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING, { user2 })
+            .get_child("threads"));
 
     BOOST_REQUIRE_EQUAL(2, user2ThreadsByLastUpdated.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByLastUpdated[0].id));
@@ -841,7 +874,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_user_does_not_show_creati
                     Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
                     Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING,
                     Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING,
-                    Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED
+                    Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING,
+                    Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING
             };
     for (auto command : commands)
     {
@@ -877,7 +911,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_user_does_not_include_mes
                     Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
                     Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING,
                     Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING,
-                    Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED
+                    Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING,
+                    Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING
             };
     for (auto command : commands)
     {
@@ -903,9 +938,10 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_user_invokes_observer )
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME, { user1 });
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING, { user1 });
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING, { user1 });
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, { user1 });
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING, { user1 });
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING, { user1 });
 
-    BOOST_REQUIRE_EQUAL(4, methodCalledNrTimes);
+    BOOST_REQUIRE_EQUAL(5, methodCalledNrTimes);
 }
 
 BOOST_AUTO_TEST_CASE( Retrieving_a_user_includes_count_of_discussion_threads_created_by_user )

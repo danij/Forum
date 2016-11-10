@@ -41,7 +41,10 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME, getDiscussionThreadsOfUserByName);
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING, getDiscussionThreadsOfUserByCreatedAscending);
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING, getDiscussionThreadsOfUserByCreatedDescending);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, getDiscussionThreadsOfUserByLastUpdated);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING,
+               getDiscussionThreadsOfUserByLastUpdatedAscending);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING,
+               getDiscussionThreadsOfUserByLastUpdatedDescending);
 
     setHandler(ADD_DISCUSSION_THREAD_MESSAGE, addNewDiscussionThreadMessage);
     setHandler(DELETE_DISCUSSION_THREAD_MESSAGE, deleteDiscussionThreadMessage);
@@ -204,11 +207,18 @@ void CommandHandler::getDiscussionThreadsOfUserByCreatedDescending(const std::ve
     readRepository_->getDiscussionThreadsOfUserByCreatedDescending(parameters[0], output);
 }
 
-void CommandHandler::getDiscussionThreadsOfUserByLastUpdated(const std::vector<std::string>& parameters,
-                                                             std::ostream& output)
+void CommandHandler::getDiscussionThreadsOfUserByLastUpdatedAscending(const std::vector<std::string>& parameters,
+                                                                      std::ostream& output)
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    readRepository_->getDiscussionThreadsOfUserByLastUpdated(parameters[0], output);
+    readRepository_->getDiscussionThreadsOfUserByLastUpdatedAscending(parameters[0], output);
+}
+
+void CommandHandler::getDiscussionThreadsOfUserByLastUpdatedDescending(const std::vector<std::string>& parameters,
+                                                                       std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getDiscussionThreadsOfUserByLastUpdatedDescending(parameters[0], output);
 }
 
 void CommandHandler::addNewDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)

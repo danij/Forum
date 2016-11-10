@@ -179,7 +179,8 @@ void MemoryRepository::getDiscussionThreadsOfUserByCreatedDescending(const IdTyp
     getDiscussionThreadsOfUserByCreated(false, id, output);
 }
 
-void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(const IdType& id, std::ostream& output) const
+void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(bool ascending, const IdType& id,
+                                                               std::ostream& output) const
 {
     auto performedBy = preparePerformedBy(*this);
 
@@ -196,11 +197,28 @@ void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(const IdType& id,
                          const auto& threads = (*it)->threadsByLastUpdated();
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
-                         writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+                         if (ascending)
+                         {
+                             writeSingleObjectSafeName(output, "threads",
+                                                       Json::enumerate(threads.begin(), threads.end()));
+                         } else
+                         {
+                             writeSingleObjectSafeName(output, "threads",
+                                                       Json::enumerate(threads.rbegin(), threads.rend()));
+                         }
                          observers_.onGetDiscussionThreadsOfUser(performedBy.get(collection), **it);
                      });
 }
 
+void MemoryRepository::getDiscussionThreadsOfUserByLastUpdatedAscending(const IdType& id, std::ostream& output) const
+{
+    getDiscussionThreadsOfUserByLastUpdated(true, id, output);
+}
+
+void MemoryRepository::getDiscussionThreadsOfUserByLastUpdatedDescending(const IdType& id, std::ostream& output) const
+{
+    getDiscussionThreadsOfUserByLastUpdated(false, id, output);
+}
 
 static const auto validDiscussionThreadNameRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");
 static const auto validDiscussionMessageContentRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");

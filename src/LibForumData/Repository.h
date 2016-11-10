@@ -42,8 +42,10 @@ namespace Forum
                                                                       std::ostream& output) const = 0;
             virtual void getDiscussionThreadsOfUserByCreatedDescending(const Forum::Entities::IdType& id,
                                                                        std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfUserByLastUpdated(const Forum::Entities::IdType& id,
-                                                                 std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsOfUserByLastUpdatedAscending(const Forum::Entities::IdType& id,
+                                                                          std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsOfUserByLastUpdatedDescending(const Forum::Entities::IdType& id,
+                                                                           std::ostream& output) const = 0;
         };
 
         typedef std::shared_ptr<IReadRepository> ReadRepositoryRef;
