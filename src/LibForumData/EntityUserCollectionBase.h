@@ -33,7 +33,7 @@ namespace Forum
                             &User::created>>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByLastSeen>,
                     const boost::multi_index::const_mem_fun<User, const Forum::Entities::Timestamp,
-                            &User::lastSeen>, std::greater<const Forum::Entities::Timestamp>>
+                            &User::lastSeen>>
             > {};
 
             typedef boost::multi_index_container<UserRef, UserCollectionIndices> UserCollection;

@@ -26,7 +26,8 @@ namespace Forum
             virtual void getUsersByName(std::ostream& output) const override;
             virtual void getUsersByCreatedAscending(std::ostream& output) const override;
             virtual void getUsersByCreatedDescending(std::ostream& output) const override;
-            virtual void getUsersByLastSeen(std::ostream& output) const override;
+            virtual void getUsersByLastSeenAscending(std::ostream& output) const override;
+            virtual void getUsersByLastSeenDescending(std::ostream& output) const override;
 
             virtual void getUserById(const Forum::Entities::IdType& id, std::ostream& output) const override;
             virtual void getUserByName(const std::string& name, std::ostream& output) const override;
@@ -67,6 +68,7 @@ namespace Forum
             friend struct PerformedByWithLastSeenUpdateGuard;
 
             void getUsersByCreated(bool ascending, std::ostream& output) const;
+            void getUsersByLastSeen(bool ascending, std::ostream& output) const;
 
             void getDiscussionThreadsByCreated(bool ascending, std::ostream& output) const;
             void getDiscussionThreadsByLastUpdated(bool ascending, std::ostream& output) const;

@@ -22,7 +22,8 @@ namespace Forum
             GET_USERS_BY_NAME,
             GET_USERS_BY_CREATED_ASCENDING,
             GET_USERS_BY_CREATED_DESCENDING,
-            GET_USERS_BY_LAST_SEEN,
+            GET_USERS_BY_LAST_SEEN_ASCENDING,
+            GET_USERS_BY_LAST_SEEN_DESCENDING,
             GET_USER_BY_ID,
             GET_USER_BY_NAME,
             CHANGE_USER_NAME,
@@ -73,7 +74,8 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(getUsersByName);
             DECLARE_COMMAND_HANDLER(getUsersByCreatedAscending);
             DECLARE_COMMAND_HANDLER(getUsersByCreatedDescending);
-            DECLARE_COMMAND_HANDLER(getUsersByLastSeen);
+            DECLARE_COMMAND_HANDLER(getUsersByLastSeenAscending);
+            DECLARE_COMMAND_HANDLER(getUsersByLastSeenDescending);
             DECLARE_COMMAND_HANDLER(getUserById);
             DECLARE_COMMAND_HANDLER(getUserByName);
             DECLARE_COMMAND_HANDLER(changeUserName);

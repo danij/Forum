@@ -74,9 +74,10 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
     handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME);
     handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED_ASCENDING);
     handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED_DESCENDING);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN_ASCENDING);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN_DESCENDING);
 
-    BOOST_REQUIRE_EQUAL(4, observerCalledNTimes);
+    BOOST_REQUIRE_EQUAL(5, observerCalledNTimes);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_no_parameters_fails )
@@ -572,7 +573,7 @@ BOOST_AUTO_TEST_CASE( Users_without_activity_have_last_seen_empty )
     }
 
     std::vector<Timestamp> retrievedLastSeen;
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN_ASCENDING).get_child("users"),
                                "lastSeen", std::back_inserter(retrievedLastSeen), Timestamp());
 
     BOOST_REQUIRE_EQUAL(names.size(), retrievedLastSeen.size());
@@ -620,7 +621,16 @@ BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
     }
 
     std::vector<Timestamp> retrievedLastSeen;
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN_ASCENDING).get_child("users"),
+                               "lastSeen", std::back_inserter(retrievedLastSeen), Timestamp());
+
+    BOOST_REQUIRE_EQUAL(names.size(), retrievedLastSeen.size());
+    BOOST_REQUIRE_EQUAL(10000, retrievedLastSeen[0]);
+    BOOST_REQUIRE_EQUAL(20000, retrievedLastSeen[1]);
+    BOOST_REQUIRE_EQUAL(30000, retrievedLastSeen[2]);
+
+    retrievedLastSeen.clear();
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN_DESCENDING).get_child("users"),
                                "lastSeen", std::back_inserter(retrievedLastSeen), Timestamp());
 
     BOOST_REQUIRE_EQUAL(names.size(), retrievedLastSeen.size());
@@ -629,7 +639,7 @@ BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
     BOOST_REQUIRE_EQUAL(10000, retrievedLastSeen[2]);
 
     std::vector<std::string> retrievedNames;
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN_DESCENDING).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
     BOOST_REQUIRE_EQUAL(names.size(), retrievedNames.size());
