@@ -20,7 +20,8 @@ namespace Forum
             //users related
             ADD_USER,
             GET_USERS_BY_NAME,
-            GET_USERS_BY_CREATED,
+            GET_USERS_BY_CREATED_ASCENDING,
+            GET_USERS_BY_CREATED_DESCENDING,
             GET_USERS_BY_LAST_SEEN,
             GET_USER_BY_ID,
             GET_USER_BY_NAME,
@@ -70,7 +71,8 @@ namespace Forum
 
             DECLARE_COMMAND_HANDLER(addNewUser);
             DECLARE_COMMAND_HANDLER(getUsersByName);
-            DECLARE_COMMAND_HANDLER(getUsersByCreated);
+            DECLARE_COMMAND_HANDLER(getUsersByCreatedAscending);
+            DECLARE_COMMAND_HANDLER(getUsersByCreatedDescending);
             DECLARE_COMMAND_HANDLER(getUsersByLastSeen);
             DECLARE_COMMAND_HANDLER(getUserById);
             DECLARE_COMMAND_HANDLER(getUserByName);

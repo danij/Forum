@@ -21,7 +21,8 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
 
     setHandler(ADD_USER, addNewUser);
     setHandler(GET_USERS_BY_NAME, getUsersByName);
-    setHandler(GET_USERS_BY_CREATED, getUsersByCreated);
+    setHandler(GET_USERS_BY_CREATED_ASCENDING, getUsersByCreatedAscending);
+    setHandler(GET_USERS_BY_CREATED_DESCENDING, getUsersByCreatedDescending);
     setHandler(GET_USERS_BY_LAST_SEEN, getUsersByLastSeen);
     setHandler(GET_USER_BY_ID, getUserById);
     setHandler(GET_USER_BY_NAME, getUserByName);
@@ -100,9 +101,14 @@ void CommandHandler::getUsersByName(const std::vector<std::string>& parameters, 
     readRepository_->getUsersByName(output);
 }
 
-void CommandHandler::getUsersByCreated(const std::vector<std::string>& parameters, std::ostream& output)
+void CommandHandler::getUsersByCreatedAscending(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    readRepository_->getUsersByCreated(output);
+    readRepository_->getUsersByCreatedAscending(output);
+}
+
+void CommandHandler::getUsersByCreatedDescending(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    readRepository_->getUsersByCreatedDescending(output);
 }
 
 void CommandHandler::getUsersByLastSeen(const std::vector<std::string>& parameters, std::ostream& output)

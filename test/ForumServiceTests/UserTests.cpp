@@ -72,10 +72,11 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
     observer->getUsersAction = [&](auto& _) { observerCalledNTimes += 1; };
 
     handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED_ASCENDING);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED_DESCENDING);
     handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN);
 
-    BOOST_REQUIRE_EQUAL(3, observerCalledNTimes);
+    BOOST_REQUIRE_EQUAL(4, observerCalledNTimes);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_no_parameters_fails )
@@ -525,7 +526,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_invokes_observer )
     BOOST_REQUIRE_EQUAL("Abc", deletedUserName);
 }
 
-BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_their_creation_date )
+BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_their_creation_date_in_ascending_and_descending_order )
 {
     auto handler = createCommandHandler();
     auto namesWithCreationDates =
@@ -542,13 +543,22 @@ BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_their_creation_date )
     }
 
     std::vector<std::string> retrievedNames;
-    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED).get_child("users"),
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED_ASCENDING).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
     BOOST_REQUIRE_EQUAL(3, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("Abc", retrievedNames[0]);
     BOOST_REQUIRE_EQUAL("Def", retrievedNames[1]);
     BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[2]);
+
+    retrievedNames.clear();
+    fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED_DESCENDING).get_child("users"),
+                               "name", std::back_inserter(retrievedNames), std::string());
+
+    BOOST_REQUIRE_EQUAL(3, retrievedNames.size());
+    BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[0]);
+    BOOST_REQUIRE_EQUAL("Def", retrievedNames[1]);
+    BOOST_REQUIRE_EQUAL("Abc", retrievedNames[2]);
 }
 
 BOOST_AUTO_TEST_CASE( Users_without_activity_have_last_seen_empty )

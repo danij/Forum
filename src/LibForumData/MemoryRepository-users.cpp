@@ -26,16 +26,33 @@ void MemoryRepository::getUsersByName(std::ostream& output) const
                      });
 }
 
-void MemoryRepository::getUsersByCreated(std::ostream& output) const
+void MemoryRepository::getUsersByCreated(bool ascending, std::ostream& output) const
 {
     auto performedBy = preparePerformedBy(*this);
 
     collection_.read([&](const EntityCollection& collection)
                      {
                          const auto& users = collection.usersByCreated();
-                         writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
+                         if (ascending)
+                         {
+                             writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
+                         }
+                         else
+                         {
+                             writeSingleObjectSafeName(output, "users", Json::enumerate(users.rbegin(), users.rend()));
+                         }
                          observers_.onGetUsers(performedBy.get(collection));
                      });
+}
+
+void MemoryRepository::getUsersByCreatedAscending(std::ostream& output) const
+{
+    getUsersByCreated(true, output);
+}
+
+void MemoryRepository::getUsersByCreatedDescending(std::ostream& output) const
+{
+    getUsersByCreated(false, output);
 }
 
 void MemoryRepository::getUsersByLastSeen(std::ostream& output) const

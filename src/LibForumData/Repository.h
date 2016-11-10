@@ -24,7 +24,8 @@ namespace Forum
             virtual void getEntitiesCount(std::ostream& output) const = 0;
 
             virtual void getUsersByName(std::ostream& output) const = 0;
-            virtual void getUsersByCreated(std::ostream& output) const = 0;
+            virtual void getUsersByCreatedAscending(std::ostream& output) const = 0;
+            virtual void getUsersByCreatedDescending(std::ostream& output) const = 0;
             virtual void getUsersByLastSeen(std::ostream& output) const = 0;
             virtual void getUserById(const Forum::Entities::IdType& id, std::ostream& output) const = 0;
             virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
