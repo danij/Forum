@@ -32,7 +32,8 @@ namespace Forum
             GET_DISCUSSION_THREADS_BY_NAME,
             GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING,
             GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING,
-            GET_DISCUSSION_THREADS_BY_LAST_UPDATED,
+            GET_DISCUSSION_THREADS_BY_LAST_UPDATED_ASCENDING,
+            GET_DISCUSSION_THREADS_BY_LAST_UPDATED_DESCENDING,
             GET_DISCUSSION_THREAD_BY_ID,
             CHANGE_DISCUSSION_THREAD_NAME,
             DELETE_DISCUSSION_THREAD,
@@ -78,7 +79,8 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByName);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreatedAscending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreatedDescending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdated);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdatedAscending);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdatedDescending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadById);
             DECLARE_COMMAND_HANDLER(changeDiscussionThreadName);
             DECLARE_COMMAND_HANDLER(deleteDiscussionThread);

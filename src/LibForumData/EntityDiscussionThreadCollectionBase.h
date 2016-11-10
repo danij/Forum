@@ -42,7 +42,7 @@ namespace Forum
                                     &DiscussionThread::created>>,
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLastUpdated>,
                             const boost::multi_index::const_mem_fun<DiscussionThread, const Forum::Entities::Timestamp,
-                                    &DiscussionThread::lastUpdated>, std::greater<const Forum::Entities::Timestamp>>
+                                    &DiscussionThread::lastUpdated>>
             > {};
 
             typedef boost::multi_index_container<DiscussionThreadRef, DiscussionThreadCollectionIndices>
