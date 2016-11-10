@@ -43,7 +43,8 @@ namespace Forum
 
             //mixed user-discussion thread
             GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
-            GET_DISCUSSION_THREADS_OF_USER_BY_CREATED,
+            GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING,
+            GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING,
             GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
 
             LAST_COMMAND
@@ -89,7 +90,8 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(deleteDiscussionThreadMessage);
 
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByName);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreated);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreatedAscending);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreatedDescending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByLastUpdated);
 
             bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);

@@ -44,8 +44,10 @@ namespace Forum
 
             virtual void getDiscussionThreadsOfUserByName(const Forum::Entities::IdType& id,
                                                           std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByCreated(const Forum::Entities::IdType& id,
-                                                             std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfUserByCreatedAscending(const Forum::Entities::IdType& id,
+                                                                      std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfUserByCreatedDescending(const Forum::Entities::IdType& id,
+                                                                       std::ostream& output) const override;
             virtual void getDiscussionThreadsOfUserByLastUpdated(const Forum::Entities::IdType& id,
                                                                  std::ostream& output) const override;
 
@@ -63,6 +65,9 @@ namespace Forum
 
             void getDiscussionThreadsByCreated(bool ascending, std::ostream& output) const;
             void getDiscussionThreadsByLastUpdated(bool ascending, std::ostream& output) const;
+
+            void getDiscussionThreadsOfUserByCreated(bool ascending, const Forum::Entities::IdType& id,
+                                                     std::ostream& output) const;
 
             Forum::Helpers::ResourceGuard<Forum::Entities::EntityCollection> collection_;
             mutable ObserverCollection observers_;

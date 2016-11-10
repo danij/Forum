@@ -138,7 +138,7 @@ void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::o
                      });
 }
 
-void MemoryRepository::getDiscussionThreadsOfUserByCreated(const IdType& id, std::ostream& output) const
+void MemoryRepository::getDiscussionThreadsOfUserByCreated(bool ascending, const IdType& id, std::ostream& output) const
 {
     auto performedBy = preparePerformedBy(*this);
 
@@ -155,9 +155,28 @@ void MemoryRepository::getDiscussionThreadsOfUserByCreated(const IdType& id, std
                          const auto& threads = (*it)->threadsByCreated();
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
-                         writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+                         if (ascending)
+                         {
+                             writeSingleObjectSafeName(output, "threads",
+                                                       Json::enumerate(threads.begin(), threads.end()));
+                         }
+                         else
+                         {
+                             writeSingleObjectSafeName(output, "threads",
+                                                       Json::enumerate(threads.rbegin(), threads.rend()));
+                         }
                          observers_.onGetDiscussionThreadsOfUser(performedBy.get(collection), **it);
                      });
+}
+
+void MemoryRepository::getDiscussionThreadsOfUserByCreatedAscending(const IdType& id, std::ostream& output) const
+{
+    getDiscussionThreadsOfUserByCreated(true, id, output);
+}
+
+void MemoryRepository::getDiscussionThreadsOfUserByCreatedDescending(const IdType& id, std::ostream& output) const
+{
+    getDiscussionThreadsOfUserByCreated(false, id, output);
 }
 
 void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(const IdType& id, std::ostream& output) const

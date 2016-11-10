@@ -39,7 +39,8 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(DELETE_DISCUSSION_THREAD, deleteDiscussionThread);
 
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME, getDiscussionThreadsOfUserByName);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, getDiscussionThreadsOfUserByCreated);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING, getDiscussionThreadsOfUserByCreatedAscending);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING, getDiscussionThreadsOfUserByCreatedDescending);
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, getDiscussionThreadsOfUserByLastUpdated);
 
     setHandler(ADD_DISCUSSION_THREAD_MESSAGE, addNewDiscussionThreadMessage);
@@ -189,11 +190,18 @@ void CommandHandler::getDiscussionThreadsOfUserByName(const std::vector<std::str
     readRepository_->getDiscussionThreadsOfUserByName(parameters[0], output);
 }
 
-void CommandHandler::getDiscussionThreadsOfUserByCreated(const std::vector<std::string>& parameters,
-                                                         std::ostream& output)
+void CommandHandler::getDiscussionThreadsOfUserByCreatedAscending(const std::vector<std::string>& parameters,
+                                                                  std::ostream& output)
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    readRepository_->getDiscussionThreadsOfUserByCreated(parameters[0], output);
+    readRepository_->getDiscussionThreadsOfUserByCreatedAscending(parameters[0], output);
+}
+
+void CommandHandler::getDiscussionThreadsOfUserByCreatedDescending(const std::vector<std::string>& parameters,
+                                                                   std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getDiscussionThreadsOfUserByCreatedDescending(parameters[0], output);
 }
 
 void CommandHandler::getDiscussionThreadsOfUserByLastUpdated(const std::vector<std::string>& parameters,
