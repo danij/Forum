@@ -18,6 +18,7 @@ struct SerializedUserDiscussionThread
     std::string name;
     Timestamp created = 0;
     Timestamp lastUpdated = 0;
+    int visited = 0;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -25,6 +26,7 @@ struct SerializedUserDiscussionThread
         name = tree.get<std::string>("name");
         created = tree.get<Timestamp>("created");
         lastUpdated = tree.get<Timestamp>("lastUpdated");
+        visited = tree.get<int>("visited");
     }
 };
 
@@ -742,6 +744,8 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
         {
             TimestampChanger timestampChanger(1000);
             user2Thread1 = createDiscussionThreadAndGetId(handler, "Def-User2");
+            //increase visited of user2Thread1
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { user2Thread1 });
         }
         {
             TimestampChanger timestampChanger(2000);
@@ -765,14 +769,17 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByName[0].name);
     BOOST_REQUIRE_EQUAL(2000, user1ThreadsByName[0].created);
     BOOST_REQUIRE_EQUAL(2000, user1ThreadsByName[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByName[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByName[1].id));
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByName[1].name);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByName[1].created);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByName[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByName[1].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByName[2].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByName[2].name);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByName[2].created);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByName[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByName[2].visited);
 
     auto user1ThreadsByCreated = deserializeUserThreads(
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING, { user1 })
@@ -783,14 +790,17 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByCreated[0].name);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByCreated[0].created);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByCreated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByCreated[1].name);
     BOOST_REQUIRE_EQUAL(2000, user1ThreadsByCreated[1].created);
     BOOST_REQUIRE_EQUAL(2000, user1ThreadsByCreated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[1].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[2].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByCreated[2].name);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByCreated[2].created);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByCreated[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[2].visited);
 
     user1ThreadsByCreated = deserializeUserThreads(
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING, { user1 })
@@ -801,14 +811,17 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByCreated[0].name);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByCreated[0].created);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByCreated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByCreated[1].name);
     BOOST_REQUIRE_EQUAL(2000, user1ThreadsByCreated[1].created);
     BOOST_REQUIRE_EQUAL(2000, user1ThreadsByCreated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[1].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[2].id));
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByCreated[2].name);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByCreated[2].created);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByCreated[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[2].visited);
 
     auto user1ThreadsByLastUpdated = deserializeUserThreads(
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING, { user1 })
@@ -819,14 +832,17 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByLastUpdated[0].name);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByLastUpdated[0].created);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByLastUpdated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByLastUpdated[1].name);
     BOOST_REQUIRE_EQUAL(2000, user1ThreadsByLastUpdated[1].created);
     BOOST_REQUIRE_EQUAL(2000, user1ThreadsByLastUpdated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[1].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[2].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByLastUpdated[2].name);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByLastUpdated[2].created);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByLastUpdated[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[2].visited);
 
     user1ThreadsByLastUpdated = deserializeUserThreads(
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING, { user1 })
@@ -837,14 +853,17 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByLastUpdated[0].name);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByLastUpdated[0].created);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByLastUpdated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByLastUpdated[1].name);
     BOOST_REQUIRE_EQUAL(2000, user1ThreadsByLastUpdated[1].created);
     BOOST_REQUIRE_EQUAL(2000, user1ThreadsByLastUpdated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[1].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[2].id));
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByLastUpdated[2].name);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByLastUpdated[2].created);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByLastUpdated[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[2].visited);
 
     auto user2ThreadsByName = deserializeUserThreads(handlerToObj(handler,
                                                                   Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
@@ -856,10 +875,12 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByName[0].name);
     BOOST_REQUIRE_EQUAL(1000, user2ThreadsByName[0].created);
     BOOST_REQUIRE_EQUAL(3000, user2ThreadsByName[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1, user2ThreadsByName[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByName[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByName[1].name);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByName[1].created);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByName[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user2ThreadsByName[1].visited);
 
     auto user2ThreadsByCreated = deserializeUserThreads(
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING, { user2 })
@@ -870,10 +891,12 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByCreated[0].name);
     BOOST_REQUIRE_EQUAL(1000, user2ThreadsByCreated[0].created);
     BOOST_REQUIRE_EQUAL(3000, user2ThreadsByCreated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1, user2ThreadsByCreated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByCreated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByCreated[1].name);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByCreated[1].created);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByCreated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user2ThreadsByCreated[1].visited);
 
     user2ThreadsByCreated = deserializeUserThreads(
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING, { user2 })
@@ -884,10 +907,12 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByCreated[0].name);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByCreated[0].created);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByCreated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user2ThreadsByCreated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByCreated[1].id));
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByCreated[1].name);
     BOOST_REQUIRE_EQUAL(1000, user2ThreadsByCreated[1].created);
     BOOST_REQUIRE_EQUAL(3000, user2ThreadsByCreated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1, user2ThreadsByCreated[1].visited);
 
     auto user2ThreadsByLastUpdated = deserializeUserThreads(
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING, { user2 })
@@ -898,10 +923,12 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByLastUpdated[0].name);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByLastUpdated[0].created);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByLastUpdated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user2ThreadsByLastUpdated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByLastUpdated[1].id));
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByLastUpdated[1].name);
     BOOST_REQUIRE_EQUAL(1000, user2ThreadsByLastUpdated[1].created);
     BOOST_REQUIRE_EQUAL(3000, user2ThreadsByLastUpdated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1, user2ThreadsByLastUpdated[1].visited);
 
     user2ThreadsByLastUpdated = deserializeUserThreads(
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING, { user2 })
@@ -912,10 +939,12 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByLastUpdated[0].name);
     BOOST_REQUIRE_EQUAL(1000, user2ThreadsByLastUpdated[0].created);
     BOOST_REQUIRE_EQUAL(3000, user2ThreadsByLastUpdated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1, user2ThreadsByLastUpdated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByLastUpdated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByLastUpdated[1].name);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByLastUpdated[1].created);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByLastUpdated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user2ThreadsByLastUpdated[1].visited);
 }
 
 BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_user_does_not_show_creating_user )
