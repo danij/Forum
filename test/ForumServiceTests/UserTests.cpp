@@ -1414,3 +1414,87 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_thread_messages_are_no_longer_retrieved
     BOOST_REQUIRE_EQUAL(1000, user1Messages[1].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[1].parentThread.visited);
 }
+
+BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_hides_messages_when_requesting_thread_messages_of_a_user )
+{
+    auto handler = createCommandHandler();
+
+    auto user1 = createUserAndGetId(handler, "User1");
+    std::string thread1Id, thread2Id;
+
+    {
+        LoggedInUserChanger changer(user1);
+        {
+            TimestampChanger timestampChanger(1000);
+            thread1Id = createDiscussionThreadAndGetId(handler, "Abc-User1");
+            createDiscussionMessageAndGetId(handler, thread1Id, "Msg-1-1000-User1");
+        }
+        {
+            TimestampChanger timestampChanger(3000);
+            createDiscussionMessageAndGetId(handler, thread1Id, "Msg-1-3000-User1");
+        }
+        //increase visited of thread1
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
+    }
+    auto user2 = createUserAndGetId(handler, "User2");
+    {
+        LoggedInUserChanger changer(user2);
+        {
+            TimestampChanger timestampChanger(1500);
+            createDiscussionMessageAndGetId(handler, thread1Id, "Msg-1-1500-User2");
+        }
+        {
+            TimestampChanger timestampChanger(2000);
+            thread2Id = createDiscussionThreadAndGetId(handler, "Def-User2");
+            createDiscussionMessageAndGetId(handler, thread2Id, "Msg-2-2000-User2");
+        }
+    }
+    {
+        LoggedInUserChanger changer(user1);
+        TimestampChanger timestampChanger(2500);
+        createDiscussionMessageAndGetId(handler, thread2Id, "Msg-2-2500-User1");
+    }
+
+    auto user1Messages = deserializeUserThreadMessages(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_ASCENDING, { user1 })
+                    .get_child("messages"));
+
+    BOOST_REQUIRE_EQUAL(3, user1Messages.size());
+    BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
+    BOOST_REQUIRE_EQUAL("Msg-1-1000-User1", user1Messages[0].content);
+    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].created);
+    BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[0].parentThread.id);
+    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1, user1Messages[0].parentThread.visited);
+    BOOST_REQUIRE( ! isIdEmpty(user1Messages[1].id));
+    BOOST_REQUIRE_EQUAL("Msg-2-2500-User1", user1Messages[1].content);
+    BOOST_REQUIRE_EQUAL(2500, user1Messages[1].created);
+    BOOST_REQUIRE_EQUAL(thread2Id, user1Messages[1].parentThread.id);
+    BOOST_REQUIRE_EQUAL(2000, user1Messages[1].parentThread.created);
+    BOOST_REQUIRE_EQUAL(2000, user1Messages[1].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1Messages[1].parentThread.visited);
+    BOOST_REQUIRE( ! isIdEmpty(user1Messages[2].id));
+    BOOST_REQUIRE_EQUAL("Msg-1-3000-User1", user1Messages[2].content);
+    BOOST_REQUIRE_EQUAL(3000, user1Messages[2].created);
+    BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[2].parentThread.id);
+    BOOST_REQUIRE_EQUAL(1000, user1Messages[2].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000, user1Messages[2].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1, user1Messages[2].parentThread.visited);
+
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD,
+                                                       { thread1Id }));
+
+    user1Messages = deserializeUserThreadMessages(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_ASCENDING, { user1 })
+                    .get_child("messages"));
+
+    BOOST_REQUIRE_EQUAL(1, user1Messages.size());
+    BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
+    BOOST_REQUIRE_EQUAL("Msg-2-2500-User1", user1Messages[0].content);
+    BOOST_REQUIRE_EQUAL(2500, user1Messages[0].created);
+    BOOST_REQUIRE_EQUAL(thread2Id, user1Messages[0].parentThread.id);
+    BOOST_REQUIRE_EQUAL(2000, user1Messages[0].parentThread.created);
+    BOOST_REQUIRE_EQUAL(2000, user1Messages[0].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(0, user1Messages[0].parentThread.visited);
+}
