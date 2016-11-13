@@ -93,12 +93,6 @@ void ObserverCollection::onDeleteUser(PerformedByType performedBy, const User& d
 }
 
 
-void ObserverCollection::onGetDiscussionThreadCount(PerformedByType performedBy)
-{
-    std::shared_lock<decltype(mutex_)> lock(mutex_);
-    for (auto& item : readObservers_) item->onGetDiscussionThreadCount(performedBy);
-}
-
 void ObserverCollection::onGetDiscussionThreads(PerformedByType performedBy)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
