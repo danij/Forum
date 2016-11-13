@@ -30,6 +30,9 @@ namespace Forum
             virtual void onGetDiscussionThreads(PerformedByType performedBy) {};
             virtual void onGetDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) {};
             virtual void onGetDiscussionThreadsOfUser(PerformedByType performedBy, const Forum::Entities::User& user) {};
+
+            virtual void onGetDiscussionThreadMessagesOfUser(PerformedByType performedBy,
+                                                             const Forum::Entities::User& user) {};
         };
 
         typedef std::shared_ptr<AbstractReadRepositoryObserver> ReadRepositoryObserverRef;

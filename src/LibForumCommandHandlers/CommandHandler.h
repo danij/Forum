@@ -50,6 +50,12 @@ namespace Forum
             GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING,
             GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING,
 
+            GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_NAME,
+            GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_ASCENDING,
+            GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_DESCENDING,
+            GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_LAST_UPDATED_ASCENDING,
+            GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_LAST_UPDATED_DESCENDING,
+
             LAST_COMMAND
         };
 
@@ -99,6 +105,9 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreatedDescending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByLastUpdatedAscending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByLastUpdatedDescending);
+
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadMessagesOfUserByCreatedAscending);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadMessagesOfUserByCreatedDescending);
 
             bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);
 

@@ -21,6 +21,8 @@ namespace Forum
         {
             bool hideDiscussionThreadCreatedBy = false;
             bool hideDiscussionThreadMessages = false;
+            bool hideDiscussionThreadMessageCreatedBy = false;
+            bool hideDiscussionThreadMessageParentThread = false;
         };
 
         extern thread_local SerializationSettings serializationSettings;

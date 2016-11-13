@@ -147,3 +147,9 @@ void ObserverCollection::onDeleteDiscussionMessage(PerformedByType performedBy, 
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : writeObservers_) item->onDeleteDiscussionMessage(performedBy, deletedMessage);
 }
+
+void ObserverCollection::onGetDiscussionThreadMessagesOfUser(PerformedByType performedBy, const User& user)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : readObservers_) item->onGetDiscussionThreadMessagesOfUser(performedBy, user);
+}

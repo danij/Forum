@@ -64,6 +64,11 @@ namespace Forum
                                                          const std::string& content, std::ostream& output) override;
             virtual void deleteDiscussionMessage(const Forum::Entities::IdType& id, std::ostream& output) override;
 
+            virtual void getDiscussionThreadMessagesOfUserByCreatedAscending(const Forum::Entities::IdType& id,
+                                                                             std::ostream& output) const override;
+            virtual void getDiscussionThreadMessagesOfUserByCreatedDescending(const Forum::Entities::IdType& id,
+                                                                              std::ostream& output) const override;
+
         private:
             friend struct PerformedByWithLastSeenUpdateGuard;
 
@@ -77,6 +82,11 @@ namespace Forum
                                                      std::ostream& output) const;
             void getDiscussionThreadsOfUserByLastUpdated(bool ascending, const Forum::Entities::IdType& id,
                                                          std::ostream& output) const;
+
+            void getDiscussionThreadMessagesOfUserByCreated(bool ascending, const Forum::Entities::IdType& id,
+                                                            std::ostream& output) const;
+            void getDiscussionThreadMessagesOfUserByLastUpdated(bool ascending, const Forum::Entities::IdType& id,
+                                                                std::ostream& output) const;
 
             Forum::Helpers::ResourceGuard<Forum::Entities::EntityCollection> collection_;
             mutable ObserverCollection observers_;

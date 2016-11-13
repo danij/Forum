@@ -110,6 +110,7 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
                          else
                          {
                              (*it)->visited().fetch_add(1);
+                             BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageParentThread, true);
                              writeSingleObjectSafeName(output, "thread", **it);
                          }
                          observers_.onGetDiscussionThreadById(performedBy.get(collection), id);

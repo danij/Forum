@@ -988,6 +988,36 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_does_not_show_messages )
     }
 }
 
+BOOST_AUTO_TEST_CASE( Retrieving_a_discussion_thread_also_returns_messages_but_excludes_each_parent_thread )
+{
+    auto handler = createCommandHandler();
+
+    auto user1 = createUserAndGetId(handler, "User1");
+    std::string thread1Id;
+
+    {
+        LoggedInUserChanger changer(user1);
+        TimestampChanger _(1000);
+
+        thread1Id = createDiscussionThreadAndGetId(handler, "Abc");
+        handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "aaaaaaaaaaa" });
+        handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "bbbbbbbbbbb" });
+    }
+
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id }).get_child("thread");
+    auto thread = deserializeThread(result);
+
+    BOOST_REQUIRE( ! isIdEmpty(thread.id));
+    BOOST_REQUIRE_EQUAL("Abc", thread.name);
+    BOOST_REQUIRE( ! isIdEmpty(thread.createdBy.id));
+    BOOST_REQUIRE_EQUAL("User1", thread.createdBy.name);
+
+    for (auto& item : result.get_child("messages"))
+    {
+        BOOST_REQUIRE( ! treeContains(item.second, "parentThread"));
+    }
+}
+
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_with_an_invalid_id_returns_invalid_parameters )
 {
     auto handler = createCommandHandler();

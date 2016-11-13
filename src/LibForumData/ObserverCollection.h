@@ -36,6 +36,8 @@ namespace Forum
                                                    const Forum::Entities::IdType& id) override;
             virtual void onGetDiscussionThreadsOfUser(PerformedByType performedBy,
                                                       const Forum::Entities::User& user) override;
+            virtual void onGetDiscussionThreadMessagesOfUser(PerformedByType performedBy,
+                                                             const Forum::Entities::User& user) override;
 
             virtual void onAddNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) override;
             virtual void onChangeUser(PerformedByType performedBy, const Forum::Entities::User& user,

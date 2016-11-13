@@ -30,6 +30,7 @@ namespace Forum
             std::function<void(PerformedByType)> getDiscussionThreadsAction;
             std::function<void(PerformedByType, const Forum::Entities::IdType&)> getDiscussionThreadByIdAction;
             std::function<void(PerformedByType, const Forum::Entities::User&)> getDiscussionThreadsOfUserAction;
+            std::function<void(PerformedByType, const Forum::Entities::User&)> getDiscussionThreadMessagesOfUserAction;
 
             std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&)> addNewDiscussionThreadAction;
             std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&,
@@ -91,6 +92,11 @@ namespace Forum
                                                       const Forum::Entities::User& user) override
             {
                 if (getDiscussionThreadsOfUserAction) getDiscussionThreadsOfUserAction(performedBy, user);
+            }
+            virtual void onGetDiscussionThreadMessagesOfUser(PerformedByType performedBy,
+                                                      const Forum::Entities::User& user) override
+            {
+                if (getDiscussionThreadMessagesOfUserAction) getDiscussionThreadMessagesOfUserAction(performedBy, user);
             }
 
             virtual void onAddNewDiscussionThread(PerformedByType performedBy,

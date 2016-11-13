@@ -6,6 +6,7 @@
 #include "MemoryRepository.h"
 #include "OutputHelpers.h"
 #include "RandomGenerator.h"
+#include "StateHelpers.h"
 #include "StringHelpers.h"
 
 using namespace Forum;
@@ -248,4 +249,47 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
                           observers_.onDeleteUser(*performedBy.getAndUpdate(collection), **it);
                           collection.deleteUser(it);
                       });
+}
+
+void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(bool ascending, const IdType& id,
+                                                                  std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& indexById = collection.usersById();
+                         auto it = indexById.find(id);
+                         if (it == indexById.end())
+                         {
+                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             return;
+                         }
+
+                         const auto& messages = (*it)->messagesByCreated();
+                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
+                         BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadMessages, true);
+                         if (ascending)
+                         {
+                             writeSingleObjectSafeName(output, "messages",
+                                                       Json::enumerate(messages.begin(), messages.end()));
+                         }
+                         else
+                         {
+                             writeSingleObjectSafeName(output, "messages",
+                                                       Json::enumerate(messages.rbegin(), messages.rend()));
+                         }
+                         observers_.onGetDiscussionThreadMessagesOfUser(performedBy.get(collection), **it);
+                     });
+}
+
+void MemoryRepository::getDiscussionThreadMessagesOfUserByCreatedAscending(const IdType& id, std::ostream& output) const
+{
+    getDiscussionThreadMessagesOfUserByCreated(true, id, output);
+}
+
+void MemoryRepository::getDiscussionThreadMessagesOfUserByCreatedDescending(const IdType& id, std::ostream& output) const
+{
+    getDiscussionThreadMessagesOfUserByCreated(false, id, output);
 }

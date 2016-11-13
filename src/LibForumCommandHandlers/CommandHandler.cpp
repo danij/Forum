@@ -50,6 +50,11 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
 
     setHandler(ADD_DISCUSSION_THREAD_MESSAGE, addNewDiscussionThreadMessage);
     setHandler(DELETE_DISCUSSION_THREAD_MESSAGE, deleteDiscussionThreadMessage);
+
+    setHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_ASCENDING,
+               getDiscussionThreadMessagesOfUserByCreatedAscending);
+    setHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_DESCENDING,
+               getDiscussionThreadMessagesOfUserByCreatedDescending);
 }
 
 ReadRepositoryRef CommandHandler::getReadRepository()
@@ -243,4 +248,18 @@ void CommandHandler::deleteDiscussionThreadMessage(const std::vector<std::string
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
     writeRepository_->deleteDiscussionMessage(parameters[0], output);
+}
+
+void CommandHandler::getDiscussionThreadMessagesOfUserByCreatedAscending(const std::vector<std::string>& parameters,
+                                                                  std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getDiscussionThreadMessagesOfUserByCreatedAscending(parameters[0], output);
+}
+
+void CommandHandler::getDiscussionThreadMessagesOfUserByCreatedDescending(const std::vector<std::string>& parameters,
+                                                                   std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getDiscussionThreadMessagesOfUserByCreatedDescending(parameters[0], output);
 }
