@@ -1482,8 +1482,14 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_hides_messages_when_requestin
     BOOST_REQUIRE_EQUAL(1000, user1Messages[2].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[2].parentThread.visited);
 
+    BOOST_REQUIRE_EQUAL(2, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.discussionThreads"));
+    BOOST_REQUIRE_EQUAL(5, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.discussionMessages"));
+
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD,
                                                        { thread1Id }));
+
+    BOOST_REQUIRE_EQUAL(1, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.discussionThreads"));
+    BOOST_REQUIRE_EQUAL(2, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.discussionMessages"));
 
     user1Messages = deserializeUserThreadMessages(
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_ASCENDING, { user1 })
