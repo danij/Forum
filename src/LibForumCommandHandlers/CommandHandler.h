@@ -36,6 +36,8 @@ namespace Forum
             GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING,
             GET_DISCUSSION_THREADS_BY_LAST_UPDATED_ASCENDING,
             GET_DISCUSSION_THREADS_BY_LAST_UPDATED_DESCENDING,
+            GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_ASCENDING,
+            GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_DESCENDING,
             GET_DISCUSSION_THREAD_BY_ID,
             CHANGE_DISCUSSION_THREAD_NAME,
             DELETE_DISCUSSION_THREAD,
@@ -49,6 +51,8 @@ namespace Forum
             GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING,
             GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING,
             GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING,
+            GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT_ASCENDING,
+            GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT_DESCENDING,
 
             GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_NAME,
             GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_ASCENDING,
@@ -93,6 +97,8 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreatedDescending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdatedAscending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdatedDescending);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByMessageCountAscending);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByMessageCountDescending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadById);
             DECLARE_COMMAND_HANDLER(changeDiscussionThreadName);
             DECLARE_COMMAND_HANDLER(deleteDiscussionThread);
@@ -105,6 +111,8 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreatedDescending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByLastUpdatedAscending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByLastUpdatedDescending);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByMessageCountAscending);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByMessageCountDescending);
 
             DECLARE_COMMAND_HANDLER(getDiscussionThreadMessagesOfUserByCreatedAscending);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadMessagesOfUserByCreatedDescending);

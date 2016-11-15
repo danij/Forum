@@ -36,6 +36,8 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING, getDiscussionThreadsByCreatedDescending);
     setHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED_ASCENDING, getDiscussionThreadsByLastUpdatedAscending);
     setHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED_DESCENDING, getDiscussionThreadsByLastUpdatedDescending);
+    setHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_ASCENDING, getDiscussionThreadsByMessageCountAscending);
+    setHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_DESCENDING, getDiscussionThreadsByMessageCountDescending);
     setHandler(GET_DISCUSSION_THREAD_BY_ID, getDiscussionThreadById);
     setHandler(CHANGE_DISCUSSION_THREAD_NAME, changeDiscussionThreadName);
     setHandler(DELETE_DISCUSSION_THREAD, deleteDiscussionThread);
@@ -47,6 +49,10 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
                getDiscussionThreadsOfUserByLastUpdatedAscending);
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING,
                getDiscussionThreadsOfUserByLastUpdatedDescending);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT_ASCENDING,
+               getDiscussionThreadsOfUserByMessageCountAscending);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT_DESCENDING,
+               getDiscussionThreadsOfUserByMessageCountDescending);
 
     setHandler(ADD_DISCUSSION_THREAD_MESSAGE, addNewDiscussionThreadMessage);
     setHandler(DELETE_DISCUSSION_THREAD_MESSAGE, deleteDiscussionThreadMessage);
@@ -180,6 +186,18 @@ void CommandHandler::getDiscussionThreadsByLastUpdatedDescending(const std::vect
     readRepository_->getDiscussionThreadsByLastUpdatedDescending(output);
 }
 
+void CommandHandler::getDiscussionThreadsByMessageCountAscending(const std::vector<std::string>& parameters,
+                                                                 std::ostream& output)
+{
+    readRepository_->getDiscussionThreadsByMessageCountAscending(output);
+}
+
+void CommandHandler::getDiscussionThreadsByMessageCountDescending(const std::vector<std::string>& parameters,
+                                                                 std::ostream& output)
+{
+    readRepository_->getDiscussionThreadsByMessageCountDescending(output);
+}
+
 void CommandHandler::addNewDiscussionThread(const std::vector<std::string>& parameters, std::ostream& output)
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
@@ -236,6 +254,20 @@ void CommandHandler::getDiscussionThreadsOfUserByLastUpdatedDescending(const std
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
     readRepository_->getDiscussionThreadsOfUserByLastUpdatedDescending(parameters[0], output);
+}
+
+void CommandHandler::getDiscussionThreadsOfUserByMessageCountAscending(const std::vector<std::string>& parameters,
+                                                                      std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getDiscussionThreadsOfUserByMessageCountAscending(parameters[0], output);
+}
+
+void CommandHandler::getDiscussionThreadsOfUserByMessageCountDescending(const std::vector<std::string>& parameters,
+                                                                       std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    readRepository_->getDiscussionThreadsOfUserByMessageCountDescending(parameters[0], output);
 }
 
 void CommandHandler::addNewDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)

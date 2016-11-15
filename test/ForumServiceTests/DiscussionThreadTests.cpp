@@ -1314,3 +1314,60 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_include_total_message_count )
     BOOST_REQUIRE_EQUAL("Def", thread.name);
     BOOST_REQUIRE_EQUAL(1, thread.messageCount);
 }
+
+BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_message_count_ascending_and_descending )
+{
+    auto handler = createCommandHandler();
+
+    std::string user1, user2;
+    {
+        TimestampChanger _(500);
+        user1 = createUserAndGetId(handler, "User1");
+        user2 = createUserAndGetId(handler, "User2");
+    }
+    std::string thread1Id, thread2Id;
+    {
+        TimestampChanger _(1000);
+        LoggedInUserChanger changer(user1);
+        thread1Id = createDiscussionThreadAndGetId(handler, "Abc");
+        thread2Id = createDiscussionThreadAndGetId(handler, "Def");
+    }
+    {
+        LoggedInUserChanger changer(user1);
+        {
+            TimestampChanger _(1000);
+            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "aaaaaaaaaaa" });
+        }
+        {
+            TimestampChanger _(3000);
+            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "ccccccccccc" });
+        }
+    }
+    {
+        LoggedInUserChanger changer(user2);
+        {
+            TimestampChanger _(2000);
+            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread2Id, "bbbbbbbbbbb" });
+        }
+    }
+
+    auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_ASCENDING)
+                                    .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL("Def", threads[0].name);
+    BOOST_REQUIRE_EQUAL(1, threads[0].messageCount);
+
+    BOOST_REQUIRE_EQUAL("Abc", threads[1].name);
+    BOOST_REQUIRE_EQUAL(2, threads[1].messageCount);
+
+    threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_DESCENDING)
+                                    .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE_EQUAL(2, threads[0].messageCount);
+
+    BOOST_REQUIRE_EQUAL("Def", threads[1].name);
+    BOOST_REQUIRE_EQUAL(1, threads[1].messageCount);
+}

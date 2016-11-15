@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include <memory>
+#include <string>
+#include <type_traits>
 
 #include <boost/noncopyable.hpp>
 #include <boost/multi_index_container.hpp>
@@ -30,6 +31,7 @@ namespace Forum
             struct DiscussionThreadCollectionByName {};
             struct DiscussionThreadCollectionByCreated {};
             struct DiscussionThreadCollectionByLastUpdated {};
+            struct DiscussionThreadCollectionByMessageCount {};
 
             struct DiscussionThreadCollectionIndices : boost::multi_index::indexed_by<
                     boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionThreadCollectionById>,
@@ -42,7 +44,11 @@ namespace Forum
                                     &DiscussionThread::created>>,
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLastUpdated>,
                             const boost::multi_index::const_mem_fun<DiscussionThread, const Forum::Entities::Timestamp,
-                                    &DiscussionThread::lastUpdated>>
+                                    &DiscussionThread::lastUpdated>>,
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByMessageCount>,
+                            const boost::multi_index::const_mem_fun<DiscussionMessageCollectionBase,
+                                    unsigned long,
+                                    &DiscussionThread::messageCount>>
             > {};
 
             typedef boost::multi_index_container<DiscussionThreadRef, DiscussionThreadCollectionIndices>
@@ -57,6 +63,8 @@ namespace Forum
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByCreated>()); }
             inline auto  threadsByLastUpdated() const
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLastUpdated>()); }
+            inline auto  threadsByMessageCount() const
+                { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByMessageCount>()); }
 
             /**
              * Enables a safe modification of a discussion thread instance,

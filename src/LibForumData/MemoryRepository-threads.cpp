@@ -95,6 +95,39 @@ void MemoryRepository::getDiscussionThreadsByLastUpdatedDescending(std::ostream&
     getDiscussionThreadsByLastUpdated(false, output);
 }
 
+void MemoryRepository::getDiscussionThreadsByMessageCount(bool ascending, std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& threads = collection.threadsByMessageCount();
+                         BoolTemporaryChanger changer(serializationSettings.hideDiscussionThreadMessages, true);
+
+                         if (ascending)
+                         {
+                             writeSingleObjectSafeName(output, "threads",
+                                                       Json::enumerate(threads.begin(), threads.end()));
+                         }
+                         else
+                         {
+                             writeSingleObjectSafeName(output, "threads",
+                                                       Json::enumerate(threads.rbegin(), threads.rend()));
+                         }
+                         observers_.onGetDiscussionThreads(createObserverContext(performedBy.get(collection)));
+                     });
+}
+
+void MemoryRepository::getDiscussionThreadsByMessageCountAscending(std::ostream& output) const
+{
+    getDiscussionThreadsByMessageCount(true, output);
+}
+
+void MemoryRepository::getDiscussionThreadsByMessageCountDescending(std::ostream& output) const
+{
+    getDiscussionThreadsByMessageCount(false, output);
+}
+
 void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& output) const
 {
     auto performedBy = preparePerformedBy(*this);
@@ -222,6 +255,48 @@ void MemoryRepository::getDiscussionThreadsOfUserByLastUpdatedAscending(const Id
 void MemoryRepository::getDiscussionThreadsOfUserByLastUpdatedDescending(const IdType& id, std::ostream& output) const
 {
     getDiscussionThreadsOfUserByLastUpdated(false, id, output);
+}
+
+void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(bool ascending, const IdType& id,
+                                                                std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy(*this);
+
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         const auto& indexById = collection.usersById();
+                         auto it = indexById.find(id);
+                         if (it == indexById.end())
+                         {
+                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             return;
+                         }
+
+                         const auto& threads = (*it)->threadsByMessageCount();
+                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
+                         if (ascending)
+                         {
+                             writeSingleObjectSafeName(output, "threads",
+                                                       Json::enumerate(threads.begin(), threads.end()));
+                         } else
+                         {
+                             writeSingleObjectSafeName(output, "threads",
+                                                       Json::enumerate(threads.rbegin(), threads.rend()));
+                         }
+                         observers_.onGetDiscussionThreadsOfUser(createObserverContext(performedBy.get(collection)),
+                                                                 **it);
+                     });
+}
+
+void MemoryRepository::getDiscussionThreadsOfUserByMessageCountAscending(const IdType& id, std::ostream& output) const
+{
+    getDiscussionThreadsOfUserByMessageCount(true, id, output);
+}
+
+void MemoryRepository::getDiscussionThreadsOfUserByMessageCountDescending(const IdType& id, std::ostream& output) const
+{
+    getDiscussionThreadsOfUserByMessageCount(false, id, output);
 }
 
 static const auto validDiscussionThreadNameRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");

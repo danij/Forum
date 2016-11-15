@@ -43,6 +43,8 @@ namespace Forum
             virtual void getDiscussionThreadsByCreatedDescending(std::ostream& output) const override;
             virtual void getDiscussionThreadsByLastUpdatedAscending(std::ostream& output) const override;
             virtual void getDiscussionThreadsByLastUpdatedDescending(std::ostream& output) const override;
+            virtual void getDiscussionThreadsByMessageCountAscending(std::ostream& output) const override;
+            virtual void getDiscussionThreadsByMessageCountDescending(std::ostream& output) const override;
             virtual void getDiscussionThreadById(const Forum::Entities::IdType& id, std::ostream& output) const override;
 
             virtual void getDiscussionThreadsOfUserByName(const Forum::Entities::IdType& id,
@@ -55,6 +57,10 @@ namespace Forum
                                                                           std::ostream& output) const override;
             virtual void getDiscussionThreadsOfUserByLastUpdatedDescending(const Forum::Entities::IdType& id,
                                                                            std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfUserByMessageCountAscending(const Forum::Entities::IdType& id,
+                                                                           std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfUserByMessageCountDescending(const Forum::Entities::IdType& id,
+                                                                            std::ostream& output) const override;
 
             virtual void addNewDiscussionThread(const std::string& name, std::ostream& output) override;
             virtual void changeDiscussionThreadName(const Forum::Entities::IdType& id, const std::string& newName,
@@ -78,11 +84,14 @@ namespace Forum
 
             void getDiscussionThreadsByCreated(bool ascending, std::ostream& output) const;
             void getDiscussionThreadsByLastUpdated(bool ascending, std::ostream& output) const;
+            void getDiscussionThreadsByMessageCount(bool ascending, std::ostream& output) const;
 
             void getDiscussionThreadsOfUserByCreated(bool ascending, const Forum::Entities::IdType& id,
                                                      std::ostream& output) const;
             void getDiscussionThreadsOfUserByLastUpdated(bool ascending, const Forum::Entities::IdType& id,
                                                          std::ostream& output) const;
+            void getDiscussionThreadsOfUserByMessageCount(bool ascending, const Forum::Entities::IdType& id,
+                                                          std::ostream& output) const;
 
             void getDiscussionThreadMessagesOfUserByCreated(bool ascending, const Forum::Entities::IdType& id,
                                                             std::ostream& output) const;
