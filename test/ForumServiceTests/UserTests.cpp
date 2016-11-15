@@ -1,7 +1,6 @@
 #include <vector>
 
 #include "CommandsCommon.h"
-#include "DelegateObserver.h"
 #include "TestHelpers.h"
 
 using namespace Forum::Configuration;
@@ -100,35 +99,6 @@ BOOST_AUTO_TEST_CASE( User_count_is_initially_zero )
     BOOST_REQUIRE_EQUAL(0, returnObject.get<int>("count.users"));
 }
 
-BOOST_AUTO_TEST_CASE( Counting_entities_invokes_observer )
-{
-    bool observerCalled = false;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->getEntitiesCountAction = [&](auto& _) { observerCalled = true; };
-
-    handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
-    BOOST_REQUIRE(observerCalled);
-}
-
-BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
-{
-    int observerCalledNTimes = 0;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->getUsersAction = [&](auto& _) { observerCalledNTimes += 1; };
-
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED_ASCENDING);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED_DESCENDING);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN_ASCENDING);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN_DESCENDING);
-
-    BOOST_REQUIRE_EQUAL(5, observerCalledNTimes);
-}
-
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_no_parameters_fails )
 {
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER);
@@ -139,21 +109,6 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_empty_name_fails )
 {
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
-}
-
-BOOST_AUTO_TEST_CASE( Creating_a_user_invokes_observer )
-{
-    std::string newUserName;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->addNewUserAction = [&](auto& _, auto& newUser)
-    {
-        newUserName = newUser.name();
-    };
-
-    handlerToObj(handler, Forum::Commands::ADD_USER, { "Foo" });
-    BOOST_REQUIRE_EQUAL("Foo", newUserName);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_returns_the_id_name_and_created )
@@ -383,18 +338,6 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_id )
     BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
 }
 
-BOOST_AUTO_TEST_CASE( Retrieving_users_by_id_invokes_observer )
-{
-    IdType idToBeRetrieved;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->getUserByIdAction = [&](auto& _, auto& id) { idToBeRetrieved = id; };
-
-    handlerToObj(handler, Forum::Commands::GET_USER_BY_ID, { static_cast<std::string>(sampleValidId) });
-    BOOST_REQUIRE_EQUAL(sampleValidId, idToBeRetrieved);
-}
-
 BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name )
 {
     auto handler = createCommandHandler();
@@ -404,18 +347,6 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name )
 
     BOOST_REQUIRE( ! isIdEmpty(user.get<std::string>("user.id")));
     BOOST_REQUIRE_EQUAL("Abc", user.get<std::string>("user.name"));
-}
-
-BOOST_AUTO_TEST_CASE( Retrieving_users_by_name_invokes_observer )
-{
-    std::string nameToBeRetrieved;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->getUserByNameAction = [&](auto& _, auto& name) { nameToBeRetrieved = name; };
-
-    handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "SampleUser" });
-    BOOST_REQUIRE_EQUAL("SampleUser", nameToBeRetrieved);
 }
 
 BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name_case_and_accent_insensitive )
@@ -494,28 +425,6 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_name_reorders_users )
     BOOST_REQUIRE_EQUAL("Xyz", retrievedNames[2]);
 }
 
-BOOST_AUTO_TEST_CASE( Modifying_a_user_invokes_observer )
-{
-    std::string newName;
-    auto userChange = User::ChangeType::None;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->changeUserAction = [&](auto& _, auto& user, auto change)
-    {
-        newName = user.name();
-        userChange = change;
-    };
-
-    handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" });
-    auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
-    auto userId = user.get<std::string>("user.id");
-
-    handlerToObj(handler, Forum::Commands::CHANGE_USER_NAME, { userId, "Xyz" });
-    BOOST_REQUIRE_EQUAL("Xyz", newName);
-    BOOST_REQUIRE_EQUAL(User::ChangeType::Name, userChange);
-}
-
 BOOST_AUTO_TEST_CASE( Deleting_a_user_name_with_an_invalid_id_returns_invalid_parameters )
 {
     auto handler = createCommandHandler();
@@ -558,22 +467,6 @@ BOOST_AUTO_TEST_CASE( Deleted_users_can_no_longer_be_retrieved )
     BOOST_REQUIRE_EQUAL(names.size() - 1, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("Def", retrievedNames[0]);
     BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[1]);
-}
-
-BOOST_AUTO_TEST_CASE( Deleting_a_user_invokes_observer )
-{
-    std::string deletedUserName;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->deleteUserAction = [&](auto& _, auto& user) { deletedUserName = user.name(); };
-
-    handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" });
-    auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
-    auto userId = user.get<std::string>("user.id");
-
-    handlerToObj(handler, Forum::Commands::DELETE_USER, { userId });
-    BOOST_REQUIRE_EQUAL("Abc", deletedUserName);
 }
 
 BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_their_creation_date_in_ascending_and_descending_order )
@@ -1021,25 +914,6 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_user_does_not_include_mes
     }
 }
 
-BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_user_invokes_observer )
-{
-    int methodCalledNrTimes = 0;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->getDiscussionThreadsOfUserAction = [&](auto& _, auto& __) { methodCalledNrTimes += 1; };
-
-    auto user1 = createUserAndGetId(handler, "User1");
-
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME, { user1 });
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING, { user1 });
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING, { user1 });
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING, { user1 });
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING, { user1 });
-
-    BOOST_REQUIRE_EQUAL(5, methodCalledNrTimes);
-}
-
 BOOST_AUTO_TEST_CASE( Retrieving_a_user_includes_count_of_discussion_threads_created_by_user )
 {
     auto handler = createCommandHandler();
@@ -1334,22 +1208,6 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_thread_messages_of_user_does_not_sho
             BOOST_REQUIRE( ! treeContains(item.second, "createdBy"));
         }
     }
-}
-
-BOOST_AUTO_TEST_CASE( Retrieving_discussion_thread_messages_of_user_invokes_observer )
-{
-    int methodCalledNrTimes = 0;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->getDiscussionThreadMessagesOfUserAction = [&](auto& _, auto& __) { methodCalledNrTimes += 1; };
-
-    auto user1 = createUserAndGetId(handler, "User1");
-
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_ASCENDING, { user1 });
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_DESCENDING, { user1 });
-
-    BOOST_REQUIRE_EQUAL(2, methodCalledNrTimes);
 }
 
 BOOST_AUTO_TEST_CASE( Deleted_discussion_thread_messages_are_no_longer_retrieved_when_requesting_thread_messages_of_a_user )

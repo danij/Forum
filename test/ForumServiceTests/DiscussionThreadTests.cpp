@@ -1,7 +1,6 @@
 #include <vector>
 
 #include "CommandsCommon.h"
-#include "DelegateObserver.h"
 #include "EntityCollection.h"
 #include "RandomGenerator.h"
 #include "TestHelpers.h"
@@ -144,23 +143,6 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_count_is_initially_zero )
     BOOST_REQUIRE_EQUAL(0, returnObject.get<int>("count.discussionThreads"));
 }
 
-BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_invokes_observer )
-{
-    int observerCalledNTimes = 0;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->getDiscussionThreadsAction = [&](auto& _) { observerCalledNTimes += 1; };
-
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME);
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING);
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING);
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_LAST_UPDATED_ASCENDING);
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_LAST_UPDATED_DESCENDING);
-
-    BOOST_REQUIRE_EQUAL(5, observerCalledNTimes);
-}
-
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_no_parameters_fails )
 {
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD);
@@ -273,19 +255,6 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_by_id )
     BOOST_REQUIRE_EQUAL("Def", thread.name);
 }
 
-BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_by_id_invokes_observer )
-{
-    std::string idOfThread;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->getDiscussionThreadByIdAction = [&](auto& _, auto& id) { idOfThread = static_cast<std::string>(id); };
-
-    auto idToSearch = static_cast<std::string>(generateUUIDString());
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { idToSearch });
-    BOOST_REQUIRE_EQUAL(idToSearch, idOfThread);
-}
-
 BOOST_AUTO_TEST_CASE( Modifying_a_discussion_thread_name_succeds )
 {
     auto handler = createCommandHandler();
@@ -314,26 +283,6 @@ BOOST_AUTO_TEST_CASE( Modifying_a_inexistent_discussion_thread_name_returns_not_
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Abc" }));
     assertStatusCodeEqual(StatusCode::NOT_FOUND,
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_NAME, { "bogus id", "Xyz" }));
-}
-
-BOOST_AUTO_TEST_CASE( Modifying_a_discussion_thread_invokes_observer )
-{
-    std::string newName;
-    auto threadChange = DiscussionThread::ChangeType::None;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->changeDiscussionThreadAction = [&](auto& _, auto& thread, auto change)
-    {
-        newName = thread.name();
-        threadChange = change;
-    };
-
-    auto threadId = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Abc" }).get<std::string>("id");
-
-    handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_NAME, { threadId, "Xyz" });
-    BOOST_REQUIRE_EQUAL("Xyz", newName);
-    BOOST_REQUIRE_EQUAL(DiscussionThread::ChangeType::Name, threadChange);
 }
 
 BOOST_AUTO_TEST_CASE( Multiple_discussion_threads_can_be_share_the_same_name )
@@ -534,23 +483,6 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_threads_can_no_longer_be_retrieved )
     BOOST_REQUIRE_EQUAL(names.size() - 1, threads.size());
     BOOST_REQUIRE_EQUAL("Def", threads[0].name);
     BOOST_REQUIRE_EQUAL("Ghi", threads[1].name);
-}
-
-BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_invokes_observer )
-{
-    std::string deletedThreadId;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->deleteDiscussionThreadAction = [&](auto& _, auto& thread)
-    {
-        deletedThreadId = static_cast<std::string>(thread.id());
-    };
-
-    auto threadId = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Abc" }).get<std::string>("id");
-
-    handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD, { threadId });
-    BOOST_REQUIRE_EQUAL(threadId, deletedThreadId);
 }
 
 BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_creation_and_last_update_dates )
@@ -1055,24 +987,6 @@ BOOST_AUTO_TEST_CASE( Deleting_an_inexistent_discussion_message_returns_not_foun
                                                               { sampleValidIdString }));
 }
 
-BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_invokes_observer )
-{
-    std::string deletedMessageId;
-    auto handler = createCommandHandler();
-
-    DisposingDelegateObserver observer(*handler);
-    observer->deleteDiscussionMessageAction = [&](auto& _, auto& message)
-    {
-        deletedMessageId = static_cast<std::string>(message.id());
-    };
-
-    auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
-    auto messageId = createDiscussionMessageAndGetId(handler, threadId, "aaaaaaaaaaa");
-
-    handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD_MESSAGE, { messageId });
-    BOOST_REQUIRE_EQUAL(messageId, deletedMessageId);
-}
-
 BOOST_AUTO_TEST_CASE( Deleted_discussion_messages_no_longer_retrieved )
 {
     auto handler = createCommandHandler();
@@ -1327,7 +1241,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_include_info_about_latest_message )
     BOOST_REQUIRE_EQUAL(3000, thread.latestMessage.createdBy.lastSeen);
     BOOST_REQUIRE_EQUAL(2, thread.latestMessage.createdBy.threadCount);
     BOOST_REQUIRE_EQUAL(2, thread.latestMessage.createdBy.messageCount);
-    
+
     thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
                                       .get_child("thread"));
 
