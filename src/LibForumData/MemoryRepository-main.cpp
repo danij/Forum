@@ -48,7 +48,7 @@ void MemoryRepository::getEntitiesCount(std::ostream& output) const
 
                          writeSingleValueSafeName(output, "count", count);
 
-                         observers_.onGetEntitiesCount(performedBy.get(collection));
+                         observers_.onGetEntitiesCount(createObserverContext(performedBy.get(collection)));
                      });
 }
 
