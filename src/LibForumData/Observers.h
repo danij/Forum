@@ -14,8 +14,10 @@ namespace Forum
         struct ObserverContext_
         {
             PerformedByType performedBy;
+            Forum::Entities::Timestamp timestamp;
 
-            ObserverContext_(PerformedByType performedBy) : performedBy(performedBy)
+            ObserverContext_(PerformedByType performedBy, Forum::Entities::Timestamp timestamp) :
+                    performedBy(performedBy), timestamp(timestamp)
             {
             }
         };

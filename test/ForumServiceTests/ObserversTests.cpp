@@ -233,3 +233,19 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_invokes_observer )
     handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD_MESSAGE, { messageId });
     BOOST_REQUIRE_EQUAL(messageId, deletedMessageId);
 }
+
+BOOST_AUTO_TEST_CASE( Observer_context_includes_timestamp_of_action )
+{
+    auto handler = createCommandHandler();
+    const Timestamp timestamp = 1000;
+    Timestamp timestampFromContext = 0;
+
+    DisposingDelegateObserver observer(*handler);
+    observer->getEntitiesCountAction = [&](auto& context) { timestampFromContext = context.timestamp; };
+
+    {
+        TimestampChanger _(timestamp);
+        handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
+    }
+    BOOST_REQUIRE_EQUAL(timestamp, timestampFromContext);
+}

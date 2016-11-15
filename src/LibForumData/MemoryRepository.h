@@ -2,6 +2,7 @@
 
 #include <boost/core/noncopyable.hpp>
 
+#include "ContextProviders.h"
 #include "EntityCollection.h"
 #include "ObserverCollection.h"
 #include "Repository.h"
@@ -123,7 +124,7 @@ namespace Forum
 
         inline ObserverContext_ createObserverContext(PerformedByType performedBy)
         {
-            return ObserverContext_(performedBy);
+            return ObserverContext_(performedBy, Forum::Context::getCurrentTime());
         }
     }
 }
