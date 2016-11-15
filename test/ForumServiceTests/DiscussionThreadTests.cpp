@@ -12,14 +12,39 @@ using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
 /**
- * Stores only the information that is sent out about a user referenced in a discussion message
+ * Stores only the information that is sent out about a user referenced in a discussion thread or message
  */
-struct SerializedDiscussionMessageUser
+struct SerializedDiscussionThreadOrMessageUser
 {
     std::string id;
     std::string name;
     Timestamp created = 0;
     Timestamp lastSeen = 0;
+    int threadCount = 0;
+    int messageCount = 0;
+
+    void populate(const boost::property_tree::ptree& tree)
+    {
+        id = tree.get<std::string>("id");
+        name = tree.get<std::string>("name");
+        created = tree.get<Timestamp>("created");
+        lastSeen = tree.get<Timestamp>("lastSeen");
+        threadCount = tree.get<int>("threadCount");
+        messageCount = tree.get<int>("messageCount");
+    }
+};
+
+struct SerializedLatestDiscussionThreadMessage
+{
+    Timestamp created = 0;
+    SerializedDiscussionThreadOrMessageUser createdBy;
+
+    void populate(const boost::property_tree::ptree& tree)
+    {
+        created = tree.get<Timestamp>("created");
+
+        createdBy.populate(tree.get_child("createdBy"));
+    }
 };
 
 struct SerializedDiscussionMessage
@@ -27,7 +52,7 @@ struct SerializedDiscussionMessage
     std::string id;
     std::string content;
     Timestamp created = 0;
-    SerializedDiscussionMessageUser createdBy;
+    SerializedDiscussionThreadOrMessageUser createdBy;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -35,10 +60,7 @@ struct SerializedDiscussionMessage
         content = tree.get<std::string>("content");
         created = tree.get<Timestamp>("created");
 
-        createdBy.id = tree.get<std::string>("createdBy.id");
-        createdBy.name = tree.get<std::string>("createdBy.name");
-        createdBy.created = tree.get<Timestamp>("createdBy.created");
-        createdBy.lastSeen = tree.get<Timestamp>("createdBy.lastSeen");
+        createdBy.populate(tree.get_child("createdBy"));
     }
 };
 
@@ -59,26 +81,16 @@ auto deserializeMessages(const boost::property_tree::ptree& collection)
     return result;
 }
 
-/**
- * Stores only the information that is sent out about a user referenced in a discussion thread
- */
-struct SerializedDiscussionThreadUser
-{
-    std::string id;
-    std::string name;
-    Timestamp created = 0;
-    Timestamp lastSeen = 0;
-};
-
 struct SerializedDiscussionThread
 {
     std::string id;
     std::string name;
     Timestamp created = 0;
     Timestamp lastUpdated = 0;
-    SerializedDiscussionThreadUser createdBy;
+    SerializedDiscussionThreadOrMessageUser createdBy;
     int64_t visited = 0;
     std::vector<SerializedDiscussionMessage> messages;
+    SerializedLatestDiscussionThreadMessage latestMessage;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -88,11 +100,15 @@ struct SerializedDiscussionThread
         lastUpdated = tree.get<Timestamp>("lastUpdated");
         visited = tree.get<int64_t>("visited");
 
-        createdBy.id = tree.get<std::string>("createdBy.id");
-        createdBy.name = tree.get<std::string>("createdBy.name");
-        createdBy.created = tree.get<Timestamp>("createdBy.created");
-        createdBy.lastSeen = tree.get<Timestamp>("createdBy.lastSeen");
-
+        createdBy.populate(tree.get_child("createdBy"));
+        for (auto& pair : tree)
+        {
+            if (pair.first == "latestMessage")
+            {
+                latestMessage.populate(pair.second);
+            }
+        }
+        
         for (auto& pair : tree)
         {
             if (pair.first == "messages")
@@ -1235,4 +1251,91 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_messages_created_by_that_user 
     BOOST_REQUIRE_EQUAL(3000, thread.messages[1].created);
     BOOST_REQUIRE_EQUAL(user1, thread.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread.messages[1].createdBy.name);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_threads_include_info_about_latest_message )
+{
+    auto handler = createCommandHandler();
+
+    std::string user1, user2;
+    {
+        TimestampChanger _(500);
+        user1 = createUserAndGetId(handler, "User1");
+        user2 = createUserAndGetId(handler, "User2");
+    }
+    std::string thread1Id, thread2Id;
+    {
+        TimestampChanger _(1000);
+        LoggedInUserChanger changer(user1);
+        thread1Id = createDiscussionThreadAndGetId(handler, "Abc");
+        thread2Id = createDiscussionThreadAndGetId(handler, "Def");
+    }
+    {
+        LoggedInUserChanger changer(user1);
+        {
+            TimestampChanger _(1000);
+            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "aaaaaaaaaaa" });
+        }
+        {
+            TimestampChanger _(3000);
+            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "ccccccccccc" });
+        }
+    }
+    {
+        LoggedInUserChanger changer(user2);
+        {
+            TimestampChanger _(2000);
+            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread2Id, "bbbbbbbbbbb" });
+        }
+    }
+
+    auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING)
+                                    .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE_EQUAL(1000, threads[0].created);
+    BOOST_REQUIRE_EQUAL(3000, threads[0].latestMessage.created);
+    BOOST_REQUIRE_EQUAL(user1, threads[0].latestMessage.createdBy.id);
+    BOOST_REQUIRE_EQUAL("User1", threads[0].latestMessage.createdBy.name);
+    BOOST_REQUIRE_EQUAL(500, threads[0].latestMessage.createdBy.created);
+    BOOST_REQUIRE_EQUAL(3000, threads[0].latestMessage.createdBy.lastSeen);
+    BOOST_REQUIRE_EQUAL(2, threads[0].latestMessage.createdBy.threadCount);
+    BOOST_REQUIRE_EQUAL(2, threads[0].latestMessage.createdBy.messageCount);
+
+    BOOST_REQUIRE_EQUAL("Def", threads[1].name);
+    BOOST_REQUIRE_EQUAL(1000, threads[1].created);
+    BOOST_REQUIRE_EQUAL(2000, threads[1].latestMessage.created);
+    BOOST_REQUIRE_EQUAL(user2, threads[1].latestMessage.createdBy.id);
+    BOOST_REQUIRE_EQUAL("User2", threads[1].latestMessage.createdBy.name);
+    BOOST_REQUIRE_EQUAL(500, threads[1].latestMessage.createdBy.created);
+    BOOST_REQUIRE_EQUAL(2000, threads[1].latestMessage.createdBy.lastSeen);
+    BOOST_REQUIRE_EQUAL(0, threads[1].latestMessage.createdBy.threadCount);
+    BOOST_REQUIRE_EQUAL(1, threads[1].latestMessage.createdBy.messageCount);
+
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id })
+                                      .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL("Abc", thread.name);
+    BOOST_REQUIRE_EQUAL(1000, thread.created);
+    BOOST_REQUIRE_EQUAL(3000, thread.latestMessage.created);
+    BOOST_REQUIRE_EQUAL(user1, thread.latestMessage.createdBy.id);
+    BOOST_REQUIRE_EQUAL("User1", thread.latestMessage.createdBy.name);
+    BOOST_REQUIRE_EQUAL(500, thread.latestMessage.createdBy.created);
+    BOOST_REQUIRE_EQUAL(3000, thread.latestMessage.createdBy.lastSeen);
+    BOOST_REQUIRE_EQUAL(2, thread.latestMessage.createdBy.threadCount);
+    BOOST_REQUIRE_EQUAL(2, thread.latestMessage.createdBy.messageCount);
+    
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
+                                      .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL("Def", thread.name);
+    BOOST_REQUIRE_EQUAL(1000, thread.created);
+    BOOST_REQUIRE_EQUAL(2000, thread.latestMessage.created);
+    BOOST_REQUIRE_EQUAL(user2, thread.latestMessage.createdBy.id);
+    BOOST_REQUIRE_EQUAL("User2", thread.latestMessage.createdBy.name);
+    BOOST_REQUIRE_EQUAL(500, thread.latestMessage.createdBy.created);
+    BOOST_REQUIRE_EQUAL(2000, thread.latestMessage.createdBy.lastSeen);
+    BOOST_REQUIRE_EQUAL(0, thread.latestMessage.createdBy.threadCount);
+    BOOST_REQUIRE_EQUAL(1, thread.latestMessage.createdBy.messageCount);
 }

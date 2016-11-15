@@ -68,9 +68,19 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
     {
         writer << propertySafeName("createdBy", thread.createdBy());
     }
+
+    const auto& messagesIndex = thread.messagesByCreated();
+    if (messagesIndex.size())
+    {
+        auto& latestMessage = **messagesIndex.rbegin();
+        writer.newPropertyWithSafeName("latestMessage");
+        writer << objStart
+                    << propertySafeName("created", latestMessage.created())
+                    << propertySafeName("createdBy", latestMessage.createdBy())
+               << objEnd;
+    }
     if ( ! serializationSettings.hideDiscussionThreadMessages)
     {
-        const auto& messagesIndex = thread.messagesByCreated();
         writer << propertySafeName("messages", enumerate(messagesIndex.begin(), messagesIndex.end()));
     }
 
