@@ -89,6 +89,7 @@ struct SerializedDiscussionThread
     Timestamp lastUpdated = 0;
     SerializedDiscussionThreadOrMessageUser createdBy;
     int64_t visited = 0;
+    int64_t messageCount = 0;
     std::vector<SerializedDiscussionMessage> messages;
     SerializedLatestDiscussionThreadMessage latestMessage;
 
@@ -99,6 +100,7 @@ struct SerializedDiscussionThread
         created = tree.get<Timestamp>("created");
         lastUpdated = tree.get<Timestamp>("lastUpdated");
         visited = tree.get<int64_t>("visited");
+        messageCount = tree.get<int64_t>("messageCount");
 
         createdBy.populate(tree.get_child("createdBy"));
         for (auto& pair : tree)
@@ -108,7 +110,7 @@ struct SerializedDiscussionThread
                 latestMessage.populate(pair.second);
             }
         }
-        
+
         for (auto& pair : tree)
         {
             if (pair.first == "messages")
@@ -1338,4 +1340,63 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_include_info_about_latest_message )
     BOOST_REQUIRE_EQUAL(2000, thread.latestMessage.createdBy.lastSeen);
     BOOST_REQUIRE_EQUAL(0, thread.latestMessage.createdBy.threadCount);
     BOOST_REQUIRE_EQUAL(1, thread.latestMessage.createdBy.messageCount);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_threads_include_total_message_count )
+{
+    auto handler = createCommandHandler();
+
+    std::string user1, user2;
+    {
+        TimestampChanger _(500);
+        user1 = createUserAndGetId(handler, "User1");
+        user2 = createUserAndGetId(handler, "User2");
+    }
+    std::string thread1Id, thread2Id;
+    {
+        TimestampChanger _(1000);
+        LoggedInUserChanger changer(user1);
+        thread1Id = createDiscussionThreadAndGetId(handler, "Abc");
+        thread2Id = createDiscussionThreadAndGetId(handler, "Def");
+    }
+    {
+        LoggedInUserChanger changer(user1);
+        {
+            TimestampChanger _(1000);
+            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "aaaaaaaaaaa" });
+        }
+        {
+            TimestampChanger _(3000);
+            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "ccccccccccc" });
+        }
+    }
+    {
+        LoggedInUserChanger changer(user2);
+        {
+            TimestampChanger _(2000);
+            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread2Id, "bbbbbbbbbbb" });
+        }
+    }
+
+    auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING)
+                                    .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE_EQUAL(2, threads[0].messageCount);
+
+    BOOST_REQUIRE_EQUAL("Def", threads[1].name);
+    BOOST_REQUIRE_EQUAL(1, threads[1].messageCount);
+
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id })
+                                      .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL("Abc", thread.name);
+    BOOST_REQUIRE_EQUAL(2, thread.messageCount);
+
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
+                                      .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL("Def", thread.name);
+    BOOST_REQUIRE_EQUAL(1, thread.messageCount);
 }

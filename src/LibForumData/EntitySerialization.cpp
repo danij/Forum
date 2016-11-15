@@ -70,7 +70,11 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
     }
 
     const auto& messagesIndex = thread.messagesByCreated();
-    if (messagesIndex.size())
+    auto messageCount = messagesIndex.size();
+
+    writer  << propertySafeName("messageCount", messageCount);
+
+    if (messageCount)
     {
         auto& latestMessage = **messagesIndex.rbegin();
         writer.newPropertyWithSafeName("latestMessage");
