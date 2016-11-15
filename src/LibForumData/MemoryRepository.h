@@ -86,8 +86,6 @@ namespace Forum
 
             void getDiscussionThreadMessagesOfUserByCreated(bool ascending, const Forum::Entities::IdType& id,
                                                             std::ostream& output) const;
-            void getDiscussionThreadMessagesOfUserByLastUpdated(bool ascending, const Forum::Entities::IdType& id,
-                                                                std::ostream& output) const;
 
             Forum::Helpers::ResourceGuard<Forum::Entities::EntityCollection> collection_;
             mutable ObserverCollection observers_;
