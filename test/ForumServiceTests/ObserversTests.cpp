@@ -234,6 +234,50 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_invokes_observer )
     BOOST_REQUIRE_EQUAL(messageId, deletedMessageId);
 }
 
+BOOST_AUTO_TEST_CASE( Observer_context_includes_user_that_performs_the_action )
+{
+    auto handler = createCommandHandler();
+    std::string user1;
+    std::string userIdFromContext;
+    std::string userNameFromContext;
+
+    DisposingDelegateObserver observer(*handler);
+    observer->getEntitiesCountAction = [&](auto& context)
+    {
+        userIdFromContext = (std::string)context.performedBy.id();
+        userNameFromContext = context.performedBy.name();
+    };
+
+    {
+        user1 = createUserAndGetId(handler, "User1");
+    }
+    {
+        LoggedInUserChanger _(user1);
+        handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
+    }
+    BOOST_REQUIRE_EQUAL(user1, userIdFromContext);
+    BOOST_REQUIRE_EQUAL("User1", userNameFromContext);
+}
+
+BOOST_AUTO_TEST_CASE( Observer_context_performed_by_is_the_anonymous_user )
+{
+    auto handler = createCommandHandler();
+    std::string userIdFromContext;
+    std::string userNameFromContext;
+
+    DisposingDelegateObserver observer(*handler);
+    observer->getEntitiesCountAction = [&](auto& context)
+    {
+        userIdFromContext = (std::string)context.performedBy.id();
+        userNameFromContext = context.performedBy.name();
+    };
+
+    handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
+
+    BOOST_REQUIRE_EQUAL((std::string)UuidString::empty, userIdFromContext);
+    BOOST_REQUIRE_EQUAL("<anonymous>", userNameFromContext);
+}
+
 BOOST_AUTO_TEST_CASE( Observer_context_includes_timestamp_of_action )
 {
     auto handler = createCommandHandler();
