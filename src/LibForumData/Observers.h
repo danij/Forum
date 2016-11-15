@@ -11,6 +11,17 @@ namespace Forum
     {
         typedef const Forum::Entities::User& PerformedByType;
 
+        struct ObserverContext_
+        {
+            PerformedByType performedBy;
+
+            ObserverContext_(PerformedByType performedBy) : performedBy(performedBy)
+            {
+            }
+        };
+
+        typedef const ObserverContext_& ObserverContext;
+
         /**
          * Expanded by classes that want to be notified when a user performs a read action.
          * The class may be called from multiple threads so thread safety needs to be implemented.
@@ -20,17 +31,17 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(AbstractReadRepositoryObserver);
 
-            virtual void onGetEntitiesCount(PerformedByType performedBy) {};
+            virtual void onGetEntitiesCount(ObserverContext context) {};
 
-            virtual void onGetUsers(PerformedByType performedBy) {};
-            virtual void onGetUserById(PerformedByType performedBy, const Forum::Entities::IdType& id) {};
-            virtual void onGetUserByName(PerformedByType performedBy, const std::string& name) {};
+            virtual void onGetUsers(ObserverContext context) {};
+            virtual void onGetUserById(ObserverContext context, const Forum::Entities::IdType& id) {};
+            virtual void onGetUserByName(ObserverContext context, const std::string& name) {};
 
-            virtual void onGetDiscussionThreads(PerformedByType performedBy) {};
-            virtual void onGetDiscussionThreadById(PerformedByType performedBy, const Forum::Entities::IdType& id) {};
-            virtual void onGetDiscussionThreadsOfUser(PerformedByType performedBy, const Forum::Entities::User& user) {};
+            virtual void onGetDiscussionThreads(ObserverContext context) {};
+            virtual void onGetDiscussionThreadById(ObserverContext context, const Forum::Entities::IdType& id) {};
+            virtual void onGetDiscussionThreadsOfUser(ObserverContext context, const Forum::Entities::User& user) {};
 
-            virtual void onGetDiscussionThreadMessagesOfUser(PerformedByType performedBy,
+            virtual void onGetDiscussionThreadMessagesOfUser(ObserverContext context,
                                                              const Forum::Entities::User& user) {};
         };
 
@@ -45,22 +56,22 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(AbstractWriteRepositoryObserver);
 
-            virtual void onAddNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) {};
-            virtual void onChangeUser(PerformedByType performedBy, const Forum::Entities::User& user,
+            virtual void onAddNewUser(ObserverContext context, const Forum::Entities::User& newUser) {};
+            virtual void onChangeUser(ObserverContext context, const Forum::Entities::User& user,
                                       Forum::Entities::User::ChangeType change) {};
-            virtual void onDeleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) {};
+            virtual void onDeleteUser(ObserverContext context, const Forum::Entities::User& deletedUser) {};
 
-            virtual void onAddNewDiscussionThread(PerformedByType performedBy,
+            virtual void onAddNewDiscussionThread(ObserverContext context,
                                                   const Forum::Entities::DiscussionThread& newThread) {};
-            virtual void onChangeDiscussionThread(PerformedByType performedBy,
+            virtual void onChangeDiscussionThread(ObserverContext context,
                                                   const Forum::Entities::DiscussionThread& thread,
                                                   Forum::Entities::DiscussionThread::ChangeType change) {};
-            virtual void onDeleteDiscussionThread(PerformedByType performedBy,
+            virtual void onDeleteDiscussionThread(ObserverContext context,
                                                   const Forum::Entities::DiscussionThread& deletedThread) {};
 
-            virtual void onAddNewDiscussionMessage(PerformedByType performedBy,
+            virtual void onAddNewDiscussionMessage(ObserverContext context,
                                                    const Forum::Entities::DiscussionMessage& newMessage) {};
-            virtual void onDeleteDiscussionMessage(PerformedByType performedBy,
+            virtual void onDeleteDiscussionMessage(ObserverContext context,
                                                    const Forum::Entities::DiscussionMessage& deletedMessage) {};
         };
 

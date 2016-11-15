@@ -23,7 +23,7 @@ void MemoryRepository::getUsersByName(std::ostream& output) const
                      {
                          const auto& users = collection.usersByName();
                          writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
-                         observers_.onGetUsers(performedBy.get(collection));
+                         observers_.onGetUsers(createObserverContext(performedBy.get(collection)));
                      });
 }
 
@@ -42,7 +42,7 @@ void MemoryRepository::getUsersByCreated(bool ascending, std::ostream& output) c
                          {
                              writeSingleObjectSafeName(output, "users", Json::enumerate(users.rbegin(), users.rend()));
                          }
-                         observers_.onGetUsers(performedBy.get(collection));
+                         observers_.onGetUsers(createObserverContext(performedBy.get(collection)));
                      });
 }
 
@@ -71,7 +71,7 @@ void MemoryRepository::getUsersByLastSeen(bool ascending, std::ostream& output) 
                          {
                              writeSingleObjectSafeName(output, "users", Json::enumerate(users.rbegin(), users.rend()));
                          }
-                         observers_.onGetUsers(performedBy.get(collection));
+                         observers_.onGetUsers(createObserverContext(performedBy.get(collection)));
                      });
 }
 
@@ -101,7 +101,7 @@ void MemoryRepository::getUserById(const IdType& id, std::ostream& output) const
                          {
                              writeSingleObjectSafeName(output, "user", **it);
                          }
-                         observers_.onGetUserById(performedBy.get(collection), id);
+                         observers_.onGetUserById(createObserverContext(performedBy.get(collection)), id);
                      });
 }
 
@@ -121,7 +121,7 @@ void MemoryRepository::getUserByName(const std::string& name, std::ostream& outp
                          {
                              writeSingleObjectSafeName(output, "user", **it);
                          }
-                         observers_.onGetUserByName(performedBy.get(collection), name);
+                         observers_.onGetUserByName(createObserverContext(performedBy.get(collection)), name);
                      });
 }
 
@@ -184,7 +184,7 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
                               return;
                           }
                           collection.users().insert(user);
-                          observers_.onAddNewUser(*performedBy.getAndUpdate(collection), *user);
+                          observers_.onAddNewUser(createObserverContext(*performedBy.getAndUpdate(collection)), *user);
 
                           status.addExtraSafeName("id", user->id());
                           status.addExtraSafeName("name", user->name());
@@ -221,7 +221,8 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
                           {
                               user.name() = newName;
                           });
-                          observers_.onChangeUser(*performedBy.getAndUpdate(collection), **it, User::ChangeType::Name);
+                          observers_.onChangeUser(createObserverContext(*performedBy.getAndUpdate(collection)),
+                                                  **it, User::ChangeType::Name);
                       });
 }
 
@@ -246,7 +247,7 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
                               return;
                           }
                           //make sure the user is not deleted before being passed to the observers
-                          observers_.onDeleteUser(*performedBy.getAndUpdate(collection), **it);
+                          observers_.onDeleteUser(createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteUser(it);
                       });
 }
@@ -280,7 +281,8 @@ void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(bool ascending
                              writeSingleObjectSafeName(output, "messages",
                                                        Json::enumerate(messages.rbegin(), messages.rend()));
                          }
-                         observers_.onGetDiscussionThreadMessagesOfUser(performedBy.get(collection), **it);
+                         observers_.onGetDiscussionThreadMessagesOfUser(
+                                 createObserverContext(performedBy.get(collection)), **it);
                      });
 }
 

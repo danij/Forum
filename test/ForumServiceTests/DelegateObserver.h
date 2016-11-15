@@ -16,30 +16,30 @@ namespace Forum
         class DelegateObserverDelegates_
         {
         public:
-            std::function<void(PerformedByType)> getEntitiesCountAction;
+            std::function<void(ObserverContext)> getEntitiesCountAction;
 
-            std::function<void(PerformedByType)> getUsersAction;
-            std::function<void(PerformedByType, const Forum::Entities::IdType&)> getUserByIdAction;
-            std::function<void(PerformedByType, const std::string&)> getUserByNameAction;
+            std::function<void(ObserverContext)> getUsersAction;
+            std::function<void(ObserverContext, const Forum::Entities::IdType&)> getUserByIdAction;
+            std::function<void(ObserverContext, const std::string&)> getUserByNameAction;
 
-            std::function<void(PerformedByType, const Forum::Entities::User&)> addNewUserAction;
-            std::function<void(PerformedByType, const Forum::Entities::User&,
+            std::function<void(ObserverContext, const Forum::Entities::User&)> addNewUserAction;
+            std::function<void(ObserverContext, const Forum::Entities::User&,
                 Forum::Entities::User::ChangeType)> changeUserAction;
-            std::function<void(PerformedByType, const Forum::Entities::User&)> deleteUserAction;
+            std::function<void(ObserverContext, const Forum::Entities::User&)> deleteUserAction;
 
-            std::function<void(PerformedByType)> getDiscussionThreadsAction;
-            std::function<void(PerformedByType, const Forum::Entities::IdType&)> getDiscussionThreadByIdAction;
-            std::function<void(PerformedByType, const Forum::Entities::User&)> getDiscussionThreadsOfUserAction;
-            std::function<void(PerformedByType, const Forum::Entities::User&)> getDiscussionThreadMessagesOfUserAction;
+            std::function<void(ObserverContext)> getDiscussionThreadsAction;
+            std::function<void(ObserverContext, const Forum::Entities::IdType&)> getDiscussionThreadByIdAction;
+            std::function<void(ObserverContext, const Forum::Entities::User&)> getDiscussionThreadsOfUserAction;
+            std::function<void(ObserverContext, const Forum::Entities::User&)> getDiscussionThreadMessagesOfUserAction;
 
-            std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&)> addNewDiscussionThreadAction;
-            std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&,
+            std::function<void(ObserverContext, const Forum::Entities::DiscussionThread&)> addNewDiscussionThreadAction;
+            std::function<void(ObserverContext, const Forum::Entities::DiscussionThread&,
                     Forum::Entities::DiscussionThread::ChangeType)> changeDiscussionThreadAction;
-            std::function<void(PerformedByType, const Forum::Entities::DiscussionThread&)> deleteDiscussionThreadAction;
+            std::function<void(ObserverContext, const Forum::Entities::DiscussionThread&)> deleteDiscussionThreadAction;
 
-            std::function<void(PerformedByType, const Forum::Entities::DiscussionMessage&)>
+            std::function<void(ObserverContext, const Forum::Entities::DiscussionMessage&)>
                 addNewDiscussionMessageAction;
-            std::function<void(PerformedByType, const Forum::Entities::DiscussionMessage&)>
+            std::function<void(ObserverContext, const Forum::Entities::DiscussionMessage&)>
                 deleteDiscussionMessageAction;
         };
 
@@ -47,84 +47,84 @@ namespace Forum
                                        public DelegateObserverDelegates_, private boost::noncopyable
         {
         public:
-            virtual void onGetEntitiesCount(PerformedByType performedBy) override
+            virtual void onGetEntitiesCount(ObserverContext context) override
             {
-                if (getEntitiesCountAction) getEntitiesCountAction(performedBy);
+                if (getEntitiesCountAction) getEntitiesCountAction(context);
             }
 
-            virtual void onGetUsers(PerformedByType performedBy) override
+            virtual void onGetUsers(ObserverContext context) override
             {
-                if (getUsersAction) getUsersAction(performedBy);
+                if (getUsersAction) getUsersAction(context);
             }
-            virtual void onGetUserById(PerformedByType performedBy, const Forum::Entities::IdType& id) override
+            virtual void onGetUserById(ObserverContext context, const Forum::Entities::IdType& id) override
             {
-                if (getUserByIdAction) getUserByIdAction(performedBy, id);
+                if (getUserByIdAction) getUserByIdAction(context, id);
             }
-            virtual void onGetUserByName(PerformedByType performedBy, const std::string& name) override
+            virtual void onGetUserByName(ObserverContext context, const std::string& name) override
             {
-                if (getUserByNameAction) getUserByNameAction(performedBy, name);
+                if (getUserByNameAction) getUserByNameAction(context, name);
             }
 
-            virtual void onAddNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) override
+            virtual void onAddNewUser(ObserverContext context, const Forum::Entities::User& newUser) override
             {
-                if (addNewUserAction) addNewUserAction(performedBy, newUser);
+                if (addNewUserAction) addNewUserAction(context, newUser);
             }
-            virtual void onChangeUser(PerformedByType performedBy, const Forum::Entities::User& user,
+            virtual void onChangeUser(ObserverContext context, const Forum::Entities::User& user,
                                       Forum::Entities::User::ChangeType change) override
             {
-                if (changeUserAction) changeUserAction(performedBy, user, change);
+                if (changeUserAction) changeUserAction(context, user, change);
             }
-            virtual void onDeleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) override
+            virtual void onDeleteUser(ObserverContext context, const Forum::Entities::User& deletedUser) override
             {
-                if (deleteUserAction) deleteUserAction(performedBy, deletedUser);
+                if (deleteUserAction) deleteUserAction(context, deletedUser);
             }
 
-            virtual void onGetDiscussionThreads(PerformedByType performedBy) override
+            virtual void onGetDiscussionThreads(ObserverContext context) override
             {
-                if (getDiscussionThreadsAction) getDiscussionThreadsAction(performedBy);
+                if (getDiscussionThreadsAction) getDiscussionThreadsAction(context);
             }
-            virtual void onGetDiscussionThreadById(PerformedByType performedBy,
+            virtual void onGetDiscussionThreadById(ObserverContext context,
                                                    const Forum::Entities::IdType& id) override
             {
-                if (getDiscussionThreadByIdAction) getDiscussionThreadByIdAction(performedBy, id);
+                if (getDiscussionThreadByIdAction) getDiscussionThreadByIdAction(context, id);
             }
-            virtual void onGetDiscussionThreadsOfUser(PerformedByType performedBy,
+            virtual void onGetDiscussionThreadsOfUser(ObserverContext context,
                                                       const Forum::Entities::User& user) override
             {
-                if (getDiscussionThreadsOfUserAction) getDiscussionThreadsOfUserAction(performedBy, user);
+                if (getDiscussionThreadsOfUserAction) getDiscussionThreadsOfUserAction(context, user);
             }
-            virtual void onGetDiscussionThreadMessagesOfUser(PerformedByType performedBy,
-                                                      const Forum::Entities::User& user) override
+            virtual void onGetDiscussionThreadMessagesOfUser(ObserverContext context,
+                                                             const Forum::Entities::User& user) override
             {
-                if (getDiscussionThreadMessagesOfUserAction) getDiscussionThreadMessagesOfUserAction(performedBy, user);
+                if (getDiscussionThreadMessagesOfUserAction) getDiscussionThreadMessagesOfUserAction(context, user);
             }
 
-            virtual void onAddNewDiscussionThread(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionThread& newThread) override
+            virtual void onAddNewDiscussionThread(ObserverContext context,
+                                                  const Forum::Entities::DiscussionThread& newThread) override
             {
-                if (addNewDiscussionThreadAction) addNewDiscussionThreadAction(performedBy, newThread);
+                if (addNewDiscussionThreadAction) addNewDiscussionThreadAction(context, newThread);
             }
-            virtual void onChangeDiscussionThread(PerformedByType performedBy,
+            virtual void onChangeDiscussionThread(ObserverContext context,
                                                   const Forum::Entities::DiscussionThread& thread,
                                                   Forum::Entities::DiscussionThread::ChangeType change) override
             {
-                if (changeDiscussionThreadAction) changeDiscussionThreadAction(performedBy, thread, change);
+                if (changeDiscussionThreadAction) changeDiscussionThreadAction(context, thread, change);
             }
-            virtual void onDeleteDiscussionThread(PerformedByType performedBy,
+            virtual void onDeleteDiscussionThread(ObserverContext context,
                                                   const Forum::Entities::DiscussionThread& deletedThread) override
             {
-                if (deleteDiscussionThreadAction) deleteDiscussionThreadAction(performedBy, deletedThread);
+                if (deleteDiscussionThreadAction) deleteDiscussionThreadAction(context, deletedThread);
             }
 
-            virtual void onAddNewDiscussionMessage(PerformedByType performedBy,
-                                                const Forum::Entities::DiscussionMessage& newMessage) override
+            virtual void onAddNewDiscussionMessage(ObserverContext context,
+                                                   const Forum::Entities::DiscussionMessage& newMessage) override
             {
-                if (addNewDiscussionMessageAction) addNewDiscussionMessageAction(performedBy, newMessage);
+                if (addNewDiscussionMessageAction) addNewDiscussionMessageAction(context, newMessage);
             }
-            virtual void onDeleteDiscussionMessage(PerformedByType performedBy,
+            virtual void onDeleteDiscussionMessage(ObserverContext context,
                                                   const Forum::Entities::DiscussionMessage& deletedMessage) override
             {
-                if (deleteDiscussionMessageAction) deleteDiscussionMessageAction(performedBy, deletedMessage);
+                if (deleteDiscussionMessageAction) deleteDiscussionMessageAction(context, deletedMessage);
             }
 
         };

@@ -25,7 +25,7 @@ void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
                          BoolTemporaryChanger changer(serializationSettings.hideDiscussionThreadMessages, true);
 
                          writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
-                         observers_.onGetDiscussionThreads(performedBy.get(collection));
+                         observers_.onGetDiscussionThreads(createObserverContext(performedBy.get(collection)));
                      });
 }
 
@@ -48,7 +48,7 @@ void MemoryRepository::getDiscussionThreadsByCreated(bool ascending, std::ostrea
                              writeSingleObjectSafeName(output, "threads",
                                                        Json::enumerate(threads.rbegin(), threads.rend()));
                          }
-                         observers_.onGetDiscussionThreads(performedBy.get(collection));
+                         observers_.onGetDiscussionThreads(createObserverContext(performedBy.get(collection)));
                      });
 }
 
@@ -81,7 +81,7 @@ void MemoryRepository::getDiscussionThreadsByLastUpdated(bool ascending, std::os
                              writeSingleObjectSafeName(output, "threads",
                                                        Json::enumerate(threads.rbegin(), threads.rend()));
                          }
-                         observers_.onGetDiscussionThreads(performedBy.get(collection));
+                         observers_.onGetDiscussionThreads(createObserverContext(performedBy.get(collection)));
                      });
 }
 
@@ -113,7 +113,7 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
                              BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageParentThread, true);
                              writeSingleObjectSafeName(output, "thread", **it);
                          }
-                         observers_.onGetDiscussionThreadById(performedBy.get(collection), id);
+                         observers_.onGetDiscussionThreadById(createObserverContext(performedBy.get(collection)), id);
                      });
 }
 
@@ -135,7 +135,8 @@ void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::o
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
                          writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
-                         observers_.onGetDiscussionThreadsOfUser(performedBy.get(collection), **it);
+                         observers_.onGetDiscussionThreadsOfUser(createObserverContext(performedBy.get(collection)),
+                                                                 **it);
                      });
 }
 
@@ -166,7 +167,8 @@ void MemoryRepository::getDiscussionThreadsOfUserByCreated(bool ascending, const
                              writeSingleObjectSafeName(output, "threads",
                                                        Json::enumerate(threads.rbegin(), threads.rend()));
                          }
-                         observers_.onGetDiscussionThreadsOfUser(performedBy.get(collection), **it);
+                         observers_.onGetDiscussionThreadsOfUser(createObserverContext(performedBy.get(collection)),
+                                                                 **it);
                      });
 }
 
@@ -207,7 +209,8 @@ void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(bool ascending, c
                              writeSingleObjectSafeName(output, "threads",
                                                        Json::enumerate(threads.rbegin(), threads.rend()));
                          }
-                         observers_.onGetDiscussionThreadsOfUser(performedBy.get(collection), **it);
+                         observers_.onGetDiscussionThreadsOfUser(createObserverContext(performedBy.get(collection)),
+                                                                 **it);
                      });
 }
 
@@ -310,7 +313,7 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
                           collection.threads().insert(thread);
                           createdBy->threads().insert(thread);
 
-                          observers_.onAddNewDiscussionThread(*createdBy, *thread);
+                          observers_.onAddNewDiscussionThread(createObserverContext(*createdBy), *thread);
 
                           status.addExtraSafeName("id", thread->id());
                           status.addExtraSafeName("name", thread->name());
@@ -343,8 +346,9 @@ void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::s
                               thread.name() = newName;
                               thread.lastUpdated() = Context::getCurrentTime();
                           });
-                          observers_.onChangeDiscussionThread(*performedBy.getAndUpdate(collection), **it,
-                                                            DiscussionThread::ChangeType::Name);
+                          observers_.onChangeDiscussionThread(
+                                  createObserverContext(*performedBy.getAndUpdate(collection)), **it,
+                                  DiscussionThread::ChangeType::Name);
                       });
 }
 
@@ -369,7 +373,8 @@ void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& ou
                               return;
                           }
                           //make sure the thread is not deleted before being passed to the observers
-                          observers_.onDeleteDiscussionThread(*performedBy.getAndUpdate(collection), **it);
+                          observers_.onDeleteDiscussionThread(
+                                  createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteDiscussionThread(it);
                       });
 }
@@ -415,7 +420,7 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
                           thread->messages().insert(message);
                           createdBy->messages().insert(message);
 
-                          observers_.onAddNewDiscussionMessage(*createdBy, *message);
+                          observers_.onAddNewDiscussionMessage(createObserverContext(*createdBy), *message);
 
                           status.addExtraSafeName("id", message->id());
                           status.addExtraSafeName("parentId", thread->id());
@@ -443,7 +448,8 @@ void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& o
                               return;
                           }
                           //make sure the message is not deleted before being passed to the observers
-                          observers_.onDeleteDiscussionMessage(*performedBy.getAndUpdate(collection), **it);
+                          observers_.onDeleteDiscussionMessage(
+                                  createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteDiscussionMessage(it);
                       });
 }

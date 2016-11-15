@@ -25,33 +25,33 @@ namespace Forum
             void removeObserver(const ReadRepositoryObserverRef& observer);
             void removeObserver(const WriteRepositoryObserverRef& observer);
 
-            virtual void onGetEntitiesCount(PerformedByType performedBy) override;
+            virtual void onGetEntitiesCount(ObserverContext context) override;
 
-            virtual void onGetUsers(PerformedByType performedBy) override;
-            virtual void onGetUserById(PerformedByType performedBy, const Forum::Entities::IdType& id) override;
-            virtual void onGetUserByName(PerformedByType performedBy, const std::string& name) override;
-            virtual void onGetDiscussionThreads(PerformedByType performedBy) override;
-            virtual void onGetDiscussionThreadById(PerformedByType performedBy,
+            virtual void onGetUsers(ObserverContext context) override;
+            virtual void onGetUserById(ObserverContext context, const Forum::Entities::IdType& id) override;
+            virtual void onGetUserByName(ObserverContext context, const std::string& name) override;
+            virtual void onGetDiscussionThreads(ObserverContext context) override;
+            virtual void onGetDiscussionThreadById(ObserverContext context,
                                                    const Forum::Entities::IdType& id) override;
-            virtual void onGetDiscussionThreadsOfUser(PerformedByType performedBy,
+            virtual void onGetDiscussionThreadsOfUser(ObserverContext context,
                                                       const Forum::Entities::User& user) override;
-            virtual void onGetDiscussionThreadMessagesOfUser(PerformedByType performedBy,
+            virtual void onGetDiscussionThreadMessagesOfUser(ObserverContext context,
                                                              const Forum::Entities::User& user) override;
 
-            virtual void onAddNewUser(PerformedByType performedBy, const Forum::Entities::User& newUser) override;
-            virtual void onChangeUser(PerformedByType performedBy, const Forum::Entities::User& user,
+            virtual void onAddNewUser(ObserverContext context, const Forum::Entities::User& newUser) override;
+            virtual void onChangeUser(ObserverContext context, const Forum::Entities::User& user,
                                     Forum::Entities::User::ChangeType change) override;
-            virtual void onDeleteUser(PerformedByType performedBy, const Forum::Entities::User& deletedUser) override;
-            virtual void onAddNewDiscussionThread(PerformedByType performedBy,
+            virtual void onDeleteUser(ObserverContext context, const Forum::Entities::User& deletedUser) override;
+            virtual void onAddNewDiscussionThread(ObserverContext context,
                                                   const Forum::Entities::DiscussionThread& newThread) override;
-            virtual void onChangeDiscussionThread(PerformedByType performedBy,
+            virtual void onChangeDiscussionThread(ObserverContext context,
                                                   const Forum::Entities::DiscussionThread& thread,
                                                   Forum::Entities::DiscussionThread::ChangeType change) override;
-            virtual void onDeleteDiscussionThread(PerformedByType performedBy,
+            virtual void onDeleteDiscussionThread(ObserverContext context,
                                                   const Forum::Entities::DiscussionThread& deletedThread) override;
-            virtual void onAddNewDiscussionMessage(PerformedByType performedBy,
+            virtual void onAddNewDiscussionMessage(ObserverContext context,
                                                    const Forum::Entities::DiscussionMessage& newMessage) override;
-            virtual void onDeleteDiscussionMessage(PerformedByType performedBy,
+            virtual void onDeleteDiscussionMessage(ObserverContext context,
                                                    const Forum::Entities::DiscussionMessage& deletedMessage) override;
 
         private:

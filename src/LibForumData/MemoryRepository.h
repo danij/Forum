@@ -120,5 +120,10 @@ namespace Forum
         };
 
         PerformedByWithLastSeenUpdateGuard preparePerformedBy(const MemoryRepository& repository);
+
+        inline ObserverContext_ createObserverContext(PerformedByType performedBy)
+        {
+            return ObserverContext_(performedBy);
+        }
     }
 }
