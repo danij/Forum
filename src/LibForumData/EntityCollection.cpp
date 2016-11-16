@@ -221,7 +221,11 @@ void EntityCollection::deleteDiscussionMessage(DiscussionMessageCollection::iter
     }
     if (alsoDeleteMessagesFromThread)
     {
-        (*iterator)->parentThread().deleteDiscussionMessage((*iterator)->id());
+        static_cast<DiscussionThreadCollectionBase*>(this)->modifyDiscussionThread((*iterator)->parentThread().id(),
+                                                                                   [&](DiscussionThread& thread)
+        {
+            thread.deleteDiscussionMessage((*iterator)->id());
+        });
     }
     messages_.erase(iterator);
 }

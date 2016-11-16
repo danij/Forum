@@ -41,7 +41,7 @@ namespace Forum
                     DiscussionMessageCollection;
 
             inline auto& messages() { return messages_; }
-            inline auto messageCount() const { return messages_.size(); }
+            inline auto  messageCount() const { return messages_.size(); }
             inline auto  messagesById() const
             { return Helpers::toConst(messages_.get<DiscussionMessageCollectionById>()); }
             inline auto  messagesByCreated() const

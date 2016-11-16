@@ -1410,16 +1410,17 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_of_users_can_be_retrieved_sorted_by_mes
         thread1Id = createDiscussionThreadAndGetId(handler, "Abc");
         thread2Id = createDiscussionThreadAndGetId(handler, "Def");
     }
+    std::vector<std::string> messagesToDelete;
     {
         LoggedInUserChanger changer(user1);
         {
             TimestampChanger _(1000);
-            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "aaaaaaaaaaa" });
+            messagesToDelete.push_back(createDiscussionMessageAndGetId(handler, thread1Id, "aaaaaaaaaaa"));
         }
         {
             TimestampChanger _(3000);
-            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "ccccccccccc" });
-            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread2Id, "ccccccccccc" });
+            messagesToDelete.push_back(createDiscussionMessageAndGetId(handler, thread1Id, "ccccccccccc"));
+            createDiscussionMessageAndGetId(handler, thread2Id, "ccccccccccc");
         }
     }
 
@@ -1430,7 +1431,6 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_of_users_can_be_retrieved_sorted_by_mes
     BOOST_REQUIRE_EQUAL(2, threads.size());
     BOOST_REQUIRE_EQUAL("Def", threads[0].name);
     BOOST_REQUIRE_EQUAL(1, threads[0].messageCount);
-
     BOOST_REQUIRE_EQUAL("Abc", threads[1].name);
     BOOST_REQUIRE_EQUAL(2, threads[1].messageCount);
 
@@ -1441,7 +1441,33 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_of_users_can_be_retrieved_sorted_by_mes
     BOOST_REQUIRE_EQUAL(2, threads.size());
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
     BOOST_REQUIRE_EQUAL(2, threads[0].messageCount);
-
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
     BOOST_REQUIRE_EQUAL(1, threads[1].messageCount);
+
+    for (auto& messageId : messagesToDelete)
+    {
+        assertStatusCodeEqual(StatusCode::OK,
+                              handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD_MESSAGE, { messageId }));
+    }
+
+    threads = deserializeUserThreads(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT_ASCENDING, { user1 })
+                    .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE_EQUAL(0, threads[0].messageCount);
+    BOOST_REQUIRE_EQUAL("Def", threads[1].name);
+    BOOST_REQUIRE_EQUAL(1, threads[1].messageCount);
+
+    threads = deserializeUserThreads(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT_DESCENDING, { user1 })
+                    .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL("Def", threads[0].name);
+    BOOST_REQUIRE_EQUAL(1, threads[0].messageCount);
+    BOOST_REQUIRE_EQUAL("Abc", threads[1].name);
+    BOOST_REQUIRE_EQUAL(0, threads[1].messageCount);
+
 }

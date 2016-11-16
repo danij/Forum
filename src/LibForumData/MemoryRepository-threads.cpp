@@ -482,23 +482,26 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
-                          auto& thread = *threadIt;
 
                           const auto& createdBy = performedBy.getAndUpdate(collection);
 
-                          auto message = std::make_shared<DiscussionMessage>(*createdBy, *thread);
+                          auto message = std::make_shared<DiscussionMessage>(*createdBy, **threadIt);
                           message->id() = generateUUIDString();
                           message->content() = content;
                           message->created() = Context::getCurrentTime();
 
                           collection.messages().insert(message);
-                          thread->messages().insert(message);
+                          collection.modifyDiscussionThread(threadIt, [&message](DiscussionThread& thread)
+                          {
+                              thread.messages().insert(message);
+                          });
+
                           createdBy->messages().insert(message);
 
                           observers_.onAddNewDiscussionMessage(createObserverContext(*createdBy), *message);
 
                           status.addExtraSafeName("id", message->id());
-                          status.addExtraSafeName("parentId", thread->id());
+                          status.addExtraSafeName("parentId", (*threadIt)->id());
                           status.addExtraSafeName("created", message->created());
                       });
 }

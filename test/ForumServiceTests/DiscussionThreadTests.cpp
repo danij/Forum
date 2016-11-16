@@ -1325,12 +1325,13 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_message_coun
         user1 = createUserAndGetId(handler, "User1");
         user2 = createUserAndGetId(handler, "User2");
     }
-    std::string thread1Id, thread2Id;
+    std::string thread1Id, thread2Id, thread3Id;
     {
         TimestampChanger _(1000);
         LoggedInUserChanger changer(user1);
         thread1Id = createDiscussionThreadAndGetId(handler, "Abc");
         thread2Id = createDiscussionThreadAndGetId(handler, "Def");
+        thread3Id = createDiscussionThreadAndGetId(handler, "Ghi");
     }
     {
         LoggedInUserChanger changer(user1);
@@ -1340,34 +1341,68 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_message_coun
         }
         {
             TimestampChanger _(3000);
+            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "bbbbbbbbbbb" });
             handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread1Id, "ccccccccccc" });
+            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread3Id, "ccccccccccc" });
         }
     }
+    std::vector<std::string> messagesToDelete;
     {
         LoggedInUserChanger changer(user2);
         {
             TimestampChanger _(2000);
-            handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { thread2Id, "bbbbbbbbbbb" });
+            messagesToDelete.push_back(createDiscussionMessageAndGetId(handler, thread2Id, "ddddddddddd"));
+            messagesToDelete.push_back(createDiscussionMessageAndGetId(handler, thread2Id, "eeeeeeeeeee"));
         }
     }
 
     auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_ASCENDING)
                                     .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, threads.size());
-    BOOST_REQUIRE_EQUAL("Def", threads[0].name);
+    BOOST_REQUIRE_EQUAL(3, threads.size());
+    BOOST_REQUIRE_EQUAL("Ghi", threads[0].name);
     BOOST_REQUIRE_EQUAL(1, threads[0].messageCount);
-
-    BOOST_REQUIRE_EQUAL("Abc", threads[1].name);
+    BOOST_REQUIRE_EQUAL("Def", threads[1].name);
     BOOST_REQUIRE_EQUAL(2, threads[1].messageCount);
+    BOOST_REQUIRE_EQUAL("Abc", threads[2].name);
+    BOOST_REQUIRE_EQUAL(3, threads[2].messageCount);
 
     threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_DESCENDING)
                                     .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL(3, threads.size());
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
-    BOOST_REQUIRE_EQUAL(2, threads[0].messageCount);
-
+    BOOST_REQUIRE_EQUAL(3, threads[0].messageCount);
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
+    BOOST_REQUIRE_EQUAL(2, threads[1].messageCount);
+    BOOST_REQUIRE_EQUAL("Ghi", threads[2].name);
+    BOOST_REQUIRE_EQUAL(1, threads[2].messageCount);
+
+    for (auto& messageId : messagesToDelete)
+    {
+        assertStatusCodeEqual(StatusCode::OK,
+                              handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD_MESSAGE, {messageId}));
+    }
+
+    threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_ASCENDING)
+                                              .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(3, threads.size());
+    BOOST_REQUIRE_EQUAL("Def", threads[0].name);
+    BOOST_REQUIRE_EQUAL(0, threads[0].messageCount);
+    BOOST_REQUIRE_EQUAL("Ghi", threads[1].name);
     BOOST_REQUIRE_EQUAL(1, threads[1].messageCount);
+    BOOST_REQUIRE_EQUAL("Abc", threads[2].name);
+    BOOST_REQUIRE_EQUAL(3, threads[2].messageCount);
+
+    threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_DESCENDING)
+                                         .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(3, threads.size());
+    BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
+    BOOST_REQUIRE_EQUAL(3, threads[0].messageCount);
+    BOOST_REQUIRE_EQUAL("Ghi", threads[1].name);
+    BOOST_REQUIRE_EQUAL(1, threads[1].messageCount);
+    BOOST_REQUIRE_EQUAL("Def", threads[2].name);
+    BOOST_REQUIRE_EQUAL(0, threads[2].messageCount);
 }
