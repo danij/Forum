@@ -12,7 +12,7 @@ namespace Forum
 {
     namespace Context
     {
-        void setCurrentTimeMockForCurrentThread(std::function<Forum::Entities::Timestamp()> callback);
+        void setCurrentTimeMockForCurrentThread(std::function<Entities::Timestamp()> callback);
         void resetCurrentTimeMock();
     }
 }

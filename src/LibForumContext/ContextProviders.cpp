@@ -3,20 +3,23 @@
 #include "ContextProviders.h"
 #include "ContextProviderMocks.h"
 
-Forum::Entities::Timestamp getTimeSinceEpoch()
+using namespace Forum::Context;
+using namespace Forum::Entities;
+
+Timestamp getTimeSinceEpoch()
 {
     return std::chrono::duration_cast<std::chrono::seconds>(
             std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-static thread_local std::function<Forum::Entities::Timestamp()> getCurrentTimeCallback = getTimeSinceEpoch;
+static thread_local std::function<Timestamp()> getCurrentTimeCallback = getTimeSinceEpoch;
 
-Forum::Entities::Timestamp Forum::Context::getCurrentTime()
+Timestamp Forum::Context::getCurrentTime()
 {
     return getCurrentTimeCallback();
 }
 
-void Forum::Context::setCurrentTimeMockForCurrentThread(std::function<Forum::Entities::Timestamp()> callback)
+void Forum::Context::setCurrentTimeMockForCurrentThread(std::function<Timestamp()> callback)
 {
     getCurrentTimeCallback = callback;
 }
@@ -26,14 +29,14 @@ void Forum::Context::resetCurrentTimeMock()
     getCurrentTimeCallback = getTimeSinceEpoch;
 }
 
-static thread_local Forum::Entities::IdType currentUser = {};
+static thread_local IdType currentUser = {};
 
-Forum::Entities::IdType Forum::Context::getCurrentUserId()
+IdType Forum::Context::getCurrentUserId()
 {
     return currentUser;
 }
 
-void Forum::Context::setCurrentUserId(Forum::Entities::IdType value)
+void Forum::Context::setCurrentUserId(IdType value)
 {
     currentUser = value;
 }

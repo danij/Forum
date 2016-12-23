@@ -63,13 +63,13 @@ namespace Forum
         class CommandHandler final : private boost::noncopyable
         {
         public:
-            CommandHandler(Forum::Repository::ReadRepositoryRef readRepository,
-                           Forum::Repository::WriteRepositoryRef writeRepository,
-                           Forum::Repository::MetricsRepositoryRef metricsRepository);
+            CommandHandler(Repository::ReadRepositoryRef readRepository,
+                           Repository::WriteRepositoryRef writeRepository,
+                           Repository::MetricsRepositoryRef metricsRepository);
             void handle(Command command, const std::vector<std::string>& parameters, std::ostream& output);
 
-            Forum::Repository::ReadRepositoryRef getReadRepository();
-            Forum::Repository::WriteRepositoryRef getWriteRepository();
+            Repository::ReadRepositoryRef getReadRepository();
+            Repository::WriteRepositoryRef getWriteRepository();
 
         private:
 #define DECLARE_COMMAND_HANDLER(name) void name(const std::vector<std::string>& parameters, std::ostream& output);
@@ -117,9 +117,9 @@ namespace Forum
             bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);
 
             std::function<void(const std::vector<std::string>&, std::ostream&)> handlers_[int(LAST_COMMAND)];
-            Forum::Repository::ReadRepositoryRef readRepository_;
-            Forum::Repository::WriteRepositoryRef writeRepository_;
-            Forum::Repository::MetricsRepositoryRef metricsRepository_;
+            Repository::ReadRepositoryRef readRepository_;
+            Repository::WriteRepositoryRef writeRepository_;
+            Repository::MetricsRepositoryRef metricsRepository_;
         };
 
         typedef std::shared_ptr<CommandHandler> CommandHandlerRef;

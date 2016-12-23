@@ -161,7 +161,7 @@ static StatusCode validateUserName(const std::string& name, const ConfigConstRef
 void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateUserName(name, Configuration::getGlobalConfig());
+    auto validationCode = validateUserName(name, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;
@@ -195,7 +195,7 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
 void MemoryRepository::changeUserName(const IdType& id, const std::string& newName, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateUserName(newName, Configuration::getGlobalConfig());
+    auto validationCode = validateUserName(newName, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;

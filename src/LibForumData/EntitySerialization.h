@@ -5,12 +5,12 @@
 
 namespace Json
 {
-    Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::EntitiesCount& thread);
+    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::EntitiesCount& thread);
 
-    Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::IdType& id);
-    Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::User& user);
-    Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::DiscussionMessage& thread);
-    Json::JsonWriter& operator<<(Json::JsonWriter& writer, const Forum::Entities::DiscussionThread& thread);
+    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::IdType& id);
+    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::User& user);
+    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionMessage& thread);
+    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionThread& thread);
 }
 
 namespace Forum

@@ -13,24 +13,24 @@ namespace Forum
 {
     namespace Helpers
     {
-        inline void assertStatusCodeEqual(Forum::Repository::StatusCode expected, Forum::Repository::StatusCode actual)
+        inline void assertStatusCodeEqual(Repository::StatusCode expected, Repository::StatusCode actual)
         {
             BOOST_REQUIRE_EQUAL(expected, actual);
         }
 
         template <typename TStatusObj>
-        inline void assertStatusCodeEqual(Forum::Repository::StatusCode expected, const TStatusObj& obj)
+        inline void assertStatusCodeEqual(Repository::StatusCode expected, const TStatusObj& obj)
         {
-            assertStatusCodeEqual(expected, Forum::Repository::StatusCode(obj.template get<uint32_t>("status")));
+            assertStatusCodeEqual(expected, Repository::StatusCode(obj.template get<uint32_t>("status")));
         }
 
         inline bool isIdEmpty(const std::string& id)
         {
-            return Forum::Entities::UuidString(id) == Forum::Entities::UuidString::empty;
+            return Entities::UuidString(id) == Entities::UuidString::empty;
         }
 
         extern const std::string sampleValidIdString;
-        extern const Forum::Entities::IdType sampleValidId;
+        extern const Entities::IdType sampleValidId;
         extern const std::string sampleMessageContent;
 
         bool treeContains(const boost::property_tree::ptree& tree, const std::string& key);
@@ -56,48 +56,48 @@ namespace Forum
 
         struct ConfigChanger final
         {
-            ConfigChanger(std::function<void(Forum::Configuration::Config&)> configChangeAction)
+            ConfigChanger(std::function<void(Configuration::Config&)> configChangeAction)
             {
-                oldConfig_ = *Forum::Configuration::getGlobalConfig();
+                oldConfig_ = *Configuration::getGlobalConfig();
 
-                Forum::Configuration::Config newConfig(oldConfig_);
+                Configuration::Config newConfig(oldConfig_);
                 configChangeAction(newConfig);
-                Forum::Configuration::setGlobalConfig(newConfig);
+                Configuration::setGlobalConfig(newConfig);
             }
             ~ConfigChanger()
             {
-                Forum::Configuration::setGlobalConfig(oldConfig_);
+                Configuration::setGlobalConfig(oldConfig_);
             }
         private:
-            Forum::Configuration::Config oldConfig_;
+            Configuration::Config oldConfig_;
         };
 
         struct TimestampChanger final
         {
-            TimestampChanger(Forum::Entities::Timestamp value)
+            TimestampChanger(Entities::Timestamp value)
             {
-                Forum::Context::setCurrentTimeMockForCurrentThread([=]() { return value; });
+                Context::setCurrentTimeMockForCurrentThread([=]() { return value; });
             }
             ~TimestampChanger()
             {
-                Forum::Context::resetCurrentTimeMock();
+                Context::resetCurrentTimeMock();
             }
         };
 
         struct LoggedInUserChanger final
         {
-            LoggedInUserChanger(Forum::Entities::IdType userId)
+            LoggedInUserChanger(Entities::IdType userId)
             {
-                oldId_ = Forum::Context::getCurrentUserId();
-                Forum::Context::setCurrentUserId(userId);
+                oldId_ = Context::getCurrentUserId();
+                Context::setCurrentUserId(userId);
             }
             ~LoggedInUserChanger()
             {
-                Forum::Context::setCurrentUserId(oldId_);
+                Context::setCurrentUserId(oldId_);
             }
 
         private:
-            Forum::Entities::IdType oldId_;
+            Entities::IdType oldId_;
         };
     }
 }

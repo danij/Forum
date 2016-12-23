@@ -27,12 +27,12 @@ namespace Forum
             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &User::id>>,
             boost::multi_index::ranked_unique<boost::multi_index::tag<UserCollectionByName>,
                     const boost::multi_index::const_mem_fun<User, const std::string&, &User::name>,
-                    Forum::Helpers::StringAccentAndCaseInsensitiveLess>,
+                    Helpers::StringAccentAndCaseInsensitiveLess>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByCreated>,
-                    const boost::multi_index::const_mem_fun<Creatable, const Forum::Entities::Timestamp,
+                    const boost::multi_index::const_mem_fun<Creatable, const Timestamp,
                             &User::created>>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByLastSeen>,
-                    const boost::multi_index::const_mem_fun<User, const Forum::Entities::Timestamp,
+                    const boost::multi_index::const_mem_fun<User, const Timestamp,
                             &User::lastSeen>>
             > {};
 

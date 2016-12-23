@@ -12,5 +12,5 @@ boost::uuids::uuid Forum::Repository::generateUUID()
 
 Forum::Entities::UuidString Forum::Repository::generateUUIDString()
 {
-    return Forum::Entities::UuidString(generateUUID());
+    return Entities::UuidString(generateUUID());
 }

@@ -28,31 +28,31 @@ namespace Forum
             virtual void onGetEntitiesCount(ObserverContext context) override;
 
             virtual void onGetUsers(ObserverContext context) override;
-            virtual void onGetUserById(ObserverContext context, const Forum::Entities::IdType& id) override;
+            virtual void onGetUserById(ObserverContext context, const Entities::IdType& id) override;
             virtual void onGetUserByName(ObserverContext context, const std::string& name) override;
             virtual void onGetDiscussionThreads(ObserverContext context) override;
             virtual void onGetDiscussionThreadById(ObserverContext context,
-                                                   const Forum::Entities::IdType& id) override;
+                                                   const Entities::IdType& id) override;
             virtual void onGetDiscussionThreadsOfUser(ObserverContext context,
-                                                      const Forum::Entities::User& user) override;
+                                                      const Entities::User& user) override;
             virtual void onGetDiscussionThreadMessagesOfUser(ObserverContext context,
-                                                             const Forum::Entities::User& user) override;
+                                                             const Entities::User& user) override;
 
-            virtual void onAddNewUser(ObserverContext context, const Forum::Entities::User& newUser) override;
-            virtual void onChangeUser(ObserverContext context, const Forum::Entities::User& user,
-                                    Forum::Entities::User::ChangeType change) override;
-            virtual void onDeleteUser(ObserverContext context, const Forum::Entities::User& deletedUser) override;
+            virtual void onAddNewUser(ObserverContext context, const Entities::User& newUser) override;
+            virtual void onChangeUser(ObserverContext context, const Entities::User& user,
+                                    Entities::User::ChangeType change) override;
+            virtual void onDeleteUser(ObserverContext context, const Entities::User& deletedUser) override;
             virtual void onAddNewDiscussionThread(ObserverContext context,
-                                                  const Forum::Entities::DiscussionThread& newThread) override;
+                                                  const Entities::DiscussionThread& newThread) override;
             virtual void onChangeDiscussionThread(ObserverContext context,
-                                                  const Forum::Entities::DiscussionThread& thread,
-                                                  Forum::Entities::DiscussionThread::ChangeType change) override;
+                                                  const Entities::DiscussionThread& thread,
+                                                  Entities::DiscussionThread::ChangeType change) override;
             virtual void onDeleteDiscussionThread(ObserverContext context,
-                                                  const Forum::Entities::DiscussionThread& deletedThread) override;
+                                                  const Entities::DiscussionThread& deletedThread) override;
             virtual void onAddNewDiscussionMessage(ObserverContext context,
-                                                   const Forum::Entities::DiscussionMessage& newMessage) override;
+                                                   const Entities::DiscussionMessage& newMessage) override;
             virtual void onDeleteDiscussionMessage(ObserverContext context,
-                                                   const Forum::Entities::DiscussionMessage& deletedMessage) override;
+                                                   const Entities::DiscussionMessage& deletedMessage) override;
 
         private:
             std::vector<ReadRepositoryObserverRef> readObservers_;

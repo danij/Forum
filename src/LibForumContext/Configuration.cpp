@@ -11,7 +11,7 @@ std::shared_ptr<const Forum::Configuration::Config> Forum::Configuration::getGlo
     return std::atomic_load(&currentConfig);
 }
 
-void Forum::Configuration::setGlobalConfig(const Forum::Configuration::Config& value)
+void Forum::Configuration::setGlobalConfig(const Config& value)
 {
-    std::atomic_store(&currentConfig, std::make_shared<const Forum::Configuration::Config>(value));
+    std::atomic_store(&currentConfig, std::make_shared<const Config>(value));
 }

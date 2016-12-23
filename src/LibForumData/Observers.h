@@ -9,14 +9,14 @@ namespace Forum
 {
     namespace Repository
     {
-        typedef const Forum::Entities::User& PerformedByType;
+        typedef const Entities::User& PerformedByType;
 
         struct ObserverContext_
         {
             PerformedByType performedBy;
-            Forum::Entities::Timestamp timestamp;
+            Entities::Timestamp timestamp;
 
-            ObserverContext_(PerformedByType performedBy, Forum::Entities::Timestamp timestamp) :
+            ObserverContext_(PerformedByType performedBy, Entities::Timestamp timestamp) :
                     performedBy(performedBy), timestamp(timestamp)
             {
             }
@@ -36,15 +36,15 @@ namespace Forum
             virtual void onGetEntitiesCount(ObserverContext context) {};
 
             virtual void onGetUsers(ObserverContext context) {};
-            virtual void onGetUserById(ObserverContext context, const Forum::Entities::IdType& id) {};
+            virtual void onGetUserById(ObserverContext context, const Entities::IdType& id) {};
             virtual void onGetUserByName(ObserverContext context, const std::string& name) {};
 
             virtual void onGetDiscussionThreads(ObserverContext context) {};
-            virtual void onGetDiscussionThreadById(ObserverContext context, const Forum::Entities::IdType& id) {};
-            virtual void onGetDiscussionThreadsOfUser(ObserverContext context, const Forum::Entities::User& user) {};
+            virtual void onGetDiscussionThreadById(ObserverContext context, const Entities::IdType& id) {};
+            virtual void onGetDiscussionThreadsOfUser(ObserverContext context, const Entities::User& user) {};
 
             virtual void onGetDiscussionThreadMessagesOfUser(ObserverContext context,
-                                                             const Forum::Entities::User& user) {};
+                                                             const Entities::User& user) {};
         };
 
         typedef std::shared_ptr<AbstractReadRepositoryObserver> ReadRepositoryObserverRef;
@@ -58,23 +58,23 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(AbstractWriteRepositoryObserver);
 
-            virtual void onAddNewUser(ObserverContext context, const Forum::Entities::User& newUser) {};
-            virtual void onChangeUser(ObserverContext context, const Forum::Entities::User& user,
-                                      Forum::Entities::User::ChangeType change) {};
-            virtual void onDeleteUser(ObserverContext context, const Forum::Entities::User& deletedUser) {};
+            virtual void onAddNewUser(ObserverContext context, const Entities::User& newUser) {};
+            virtual void onChangeUser(ObserverContext context, const Entities::User& user,
+                                      Entities::User::ChangeType change) {};
+            virtual void onDeleteUser(ObserverContext context, const Entities::User& deletedUser) {};
 
             virtual void onAddNewDiscussionThread(ObserverContext context,
-                                                  const Forum::Entities::DiscussionThread& newThread) {};
+                                                  const Entities::DiscussionThread& newThread) {};
             virtual void onChangeDiscussionThread(ObserverContext context,
-                                                  const Forum::Entities::DiscussionThread& thread,
-                                                  Forum::Entities::DiscussionThread::ChangeType change) {};
+                                                  const Entities::DiscussionThread& thread,
+                                                  Entities::DiscussionThread::ChangeType change) {};
             virtual void onDeleteDiscussionThread(ObserverContext context,
-                                                  const Forum::Entities::DiscussionThread& deletedThread) {};
+                                                  const Entities::DiscussionThread& deletedThread) {};
 
             virtual void onAddNewDiscussionMessage(ObserverContext context,
-                                                   const Forum::Entities::DiscussionMessage& newMessage) {};
+                                                   const Entities::DiscussionMessage& newMessage) {};
             virtual void onDeleteDiscussionMessage(ObserverContext context,
-                                                   const Forum::Entities::DiscussionMessage& deletedMessage) {};
+                                                   const Entities::DiscussionMessage& deletedMessage) {};
         };
 
         typedef std::shared_ptr<AbstractWriteRepositoryObserver> WriteRepositoryObserverRef;

@@ -8,21 +8,21 @@ namespace Forum
 {
     namespace Helpers
     {
-        Forum::Commands::CommandHandlerRef createCommandHandler();
+        Commands::CommandHandlerRef createCommandHandler();
 
-        std::string handlerToString(Forum::Commands::CommandHandlerRef handler, Forum::Commands::Command command,
+        std::string handlerToString(Commands::CommandHandlerRef handler, Commands::Command command,
                                     const std::vector<std::string>& parameters);
-        std::string handlerToString(Forum::Commands::CommandHandlerRef handler, Forum::Commands::Command command);
+        std::string handlerToString(Commands::CommandHandlerRef handler, Commands::Command command);
 
-        boost::property_tree::ptree handlerToObj(Forum::Commands::CommandHandlerRef handler,
-                                                 Forum::Commands::Command command,
+        boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef handler,
+                                                 Commands::Command command,
                                                  const std::vector<std::string>& parameters);
-        boost::property_tree::ptree handlerToObj(Forum::Commands::CommandHandlerRef handler,
-                                                 Forum::Commands::Command command);
+        boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef handler,
+                                                 Commands::Command command);
 
-        std::string createUserAndGetId(Forum::Commands::CommandHandlerRef handler, const std::string& name);
-        std::string createDiscussionThreadAndGetId(Forum::Commands::CommandHandlerRef handler, const std::string& name);
-        std::string createDiscussionMessageAndGetId(Forum::Commands::CommandHandlerRef handler,
+        std::string createUserAndGetId(Commands::CommandHandlerRef handler, const std::string& name);
+        std::string createDiscussionThreadAndGetId(Commands::CommandHandlerRef handler, const std::string& name);
+        std::string createDiscussionMessageAndGetId(Commands::CommandHandlerRef handler,
                                                     const std::string& threadId, const std::string& content);
 
         template<typename T, typename It>

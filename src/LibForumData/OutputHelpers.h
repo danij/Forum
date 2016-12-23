@@ -30,7 +30,7 @@ namespace Forum
                 << Json::objEnd;
         }
 
-        inline void writeStatusCode(std::ostream& output, Forum::Repository::StatusCode code)
+        inline void writeStatusCode(std::ostream& output, Repository::StatusCode code)
         {
             writeSingleValueSafeName(output, "status", code);
         }
@@ -53,7 +53,7 @@ namespace Forum
             /**
              * Initializes the helper with the stream to write to and the default status code
              */
-            inline StatusWriter(std::ostream& output, Forum::Repository::StatusCode defaultCode) :
+            inline StatusWriter(std::ostream& output, Repository::StatusCode defaultCode) :
                     output_(output), statusCode_(defaultCode), enabled_(true)
             {}
 
@@ -81,7 +81,7 @@ namespace Forum
                 enabled_ = false;
             }
 
-            inline StatusWriter& operator=(Forum::Repository::StatusCode newCode)
+            inline StatusWriter& operator=(Repository::StatusCode newCode)
             {
                 statusCode_ = newCode;
                 return *this;
@@ -101,7 +101,7 @@ namespace Forum
 
         private:
             std::ostream& output_;
-            Forum::Repository::StatusCode statusCode_;
+            Repository::StatusCode statusCode_;
             bool enabled_;
             std::vector<std::function<void(Json::JsonWriter&)>> extras_;
         };

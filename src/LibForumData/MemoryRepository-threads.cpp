@@ -367,7 +367,7 @@ static StatusCode validateDiscussionMessageContent(const std::string& content, c
 void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateDiscussionThreadName(name, Configuration::getGlobalConfig());
+    auto validationCode = validateDiscussionThreadName(name, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;
@@ -399,7 +399,7 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
 void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::string& newName, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateDiscussionThreadName(newName, Configuration::getGlobalConfig());
+    auto validationCode = validateDiscussionThreadName(newName, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;
@@ -464,7 +464,7 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
         return;
     }
 
-    auto validationCode = validateDiscussionMessageContent(content, Configuration::getGlobalConfig());
+    auto validationCode = validateDiscussionMessageContent(content, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;

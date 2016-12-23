@@ -9,6 +9,6 @@ namespace Forum
     namespace Repository
     {
         boost::uuids::uuid generateUUID();
-        Forum::Entities::UuidString generateUUIDString();
+        Entities::UuidString generateUUIDString();
     }
 }

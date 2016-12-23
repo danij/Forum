@@ -30,13 +30,13 @@ namespace Forum
             virtual void getUsersByLastSeenAscending(std::ostream& output) const override;
             virtual void getUsersByLastSeenDescending(std::ostream& output) const override;
 
-            virtual void getUserById(const Forum::Entities::IdType& id, std::ostream& output) const override;
+            virtual void getUserById(const Entities::IdType& id, std::ostream& output) const override;
             virtual void getUserByName(const std::string& name, std::ostream& output) const override;
 
             virtual void addNewUser(const std::string& name, std::ostream& output) override;
-            virtual void changeUserName(const Forum::Entities::IdType& id, const std::string& newName,
+            virtual void changeUserName(const Entities::IdType& id, const std::string& newName,
                                         std::ostream& output) override;
-            virtual void deleteUser(const Forum::Entities::IdType& id, std::ostream& output) override;
+            virtual void deleteUser(const Entities::IdType& id, std::ostream& output) override;
 
             virtual void getDiscussionThreadsByName(std::ostream& output) const override;
             virtual void getDiscussionThreadsByCreatedAscending(std::ostream& output) const override;
@@ -45,35 +45,35 @@ namespace Forum
             virtual void getDiscussionThreadsByLastUpdatedDescending(std::ostream& output) const override;
             virtual void getDiscussionThreadsByMessageCountAscending(std::ostream& output) const override;
             virtual void getDiscussionThreadsByMessageCountDescending(std::ostream& output) const override;
-            virtual void getDiscussionThreadById(const Forum::Entities::IdType& id, std::ostream& output) const override;
+            virtual void getDiscussionThreadById(const Entities::IdType& id, std::ostream& output) const override;
 
-            virtual void getDiscussionThreadsOfUserByName(const Forum::Entities::IdType& id,
+            virtual void getDiscussionThreadsOfUserByName(const Entities::IdType& id,
                                                           std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByCreatedAscending(const Forum::Entities::IdType& id,
+            virtual void getDiscussionThreadsOfUserByCreatedAscending(const Entities::IdType& id,
                                                                       std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByCreatedDescending(const Forum::Entities::IdType& id,
+            virtual void getDiscussionThreadsOfUserByCreatedDescending(const Entities::IdType& id,
                                                                        std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByLastUpdatedAscending(const Forum::Entities::IdType& id,
+            virtual void getDiscussionThreadsOfUserByLastUpdatedAscending(const Entities::IdType& id,
                                                                           std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByLastUpdatedDescending(const Forum::Entities::IdType& id,
+            virtual void getDiscussionThreadsOfUserByLastUpdatedDescending(const Entities::IdType& id,
                                                                            std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByMessageCountAscending(const Forum::Entities::IdType& id,
+            virtual void getDiscussionThreadsOfUserByMessageCountAscending(const Entities::IdType& id,
                                                                            std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByMessageCountDescending(const Forum::Entities::IdType& id,
+            virtual void getDiscussionThreadsOfUserByMessageCountDescending(const Entities::IdType& id,
                                                                             std::ostream& output) const override;
 
             virtual void addNewDiscussionThread(const std::string& name, std::ostream& output) override;
-            virtual void changeDiscussionThreadName(const Forum::Entities::IdType& id, const std::string& newName,
+            virtual void changeDiscussionThreadName(const Entities::IdType& id, const std::string& newName,
                                                     std::ostream& output) override;
-            virtual void deleteDiscussionThread(const Forum::Entities::IdType& id, std::ostream& output) override;
+            virtual void deleteDiscussionThread(const Entities::IdType& id, std::ostream& output) override;
 
-            virtual void addNewDiscussionMessageInThread(const Forum::Entities::IdType& threadId,
+            virtual void addNewDiscussionMessageInThread(const Entities::IdType& threadId,
                                                          const std::string& content, std::ostream& output) override;
-            virtual void deleteDiscussionMessage(const Forum::Entities::IdType& id, std::ostream& output) override;
+            virtual void deleteDiscussionMessage(const Entities::IdType& id, std::ostream& output) override;
 
-            virtual void getDiscussionThreadMessagesOfUserByCreatedAscending(const Forum::Entities::IdType& id,
+            virtual void getDiscussionThreadMessagesOfUserByCreatedAscending(const Entities::IdType& id,
                                                                              std::ostream& output) const override;
-            virtual void getDiscussionThreadMessagesOfUserByCreatedDescending(const Forum::Entities::IdType& id,
+            virtual void getDiscussionThreadMessagesOfUserByCreatedDescending(const Entities::IdType& id,
                                                                               std::ostream& output) const override;
 
         private:
@@ -86,17 +86,17 @@ namespace Forum
             void getDiscussionThreadsByLastUpdated(bool ascending, std::ostream& output) const;
             void getDiscussionThreadsByMessageCount(bool ascending, std::ostream& output) const;
 
-            void getDiscussionThreadsOfUserByCreated(bool ascending, const Forum::Entities::IdType& id,
+            void getDiscussionThreadsOfUserByCreated(bool ascending, const Entities::IdType& id,
                                                      std::ostream& output) const;
-            void getDiscussionThreadsOfUserByLastUpdated(bool ascending, const Forum::Entities::IdType& id,
+            void getDiscussionThreadsOfUserByLastUpdated(bool ascending, const Entities::IdType& id,
                                                          std::ostream& output) const;
-            void getDiscussionThreadsOfUserByMessageCount(bool ascending, const Forum::Entities::IdType& id,
+            void getDiscussionThreadsOfUserByMessageCount(bool ascending, const Entities::IdType& id,
                                                           std::ostream& output) const;
 
-            void getDiscussionThreadMessagesOfUserByCreated(bool ascending, const Forum::Entities::IdType& id,
+            void getDiscussionThreadMessagesOfUserByCreated(bool ascending, const Entities::IdType& id,
                                                             std::ostream& output) const;
 
-            Forum::Helpers::ResourceGuard<Forum::Entities::EntityCollection> collection_;
+            Helpers::ResourceGuard<Entities::EntityCollection> collection_;
             mutable ObserverCollection observers_;
         };
 
@@ -114,13 +114,13 @@ namespace Forum
             /**
              * Get the current user that performs the action and optionally schedule the update of last seen
              */
-            PerformedByType get(const Forum::Entities::EntityCollection& collection);
+            PerformedByType get(const Entities::EntityCollection& collection);
 
             /**
              * Get the current user that performs the action and optionally also perform the update of last seen
              * This method takes advantage if a write lock on the collection is already secured
              */
-            Forum::Entities::UserRef getAndUpdate(Forum::Entities::EntityCollection& collection);
+            Entities::UserRef getAndUpdate(Entities::EntityCollection& collection);
 
         private:
             MemoryRepository& repository_;
@@ -131,7 +131,7 @@ namespace Forum
 
         inline ObserverContext_ createObserverContext(PerformedByType performedBy)
         {
-            return ObserverContext_(performedBy, Forum::Context::getCurrentTime());
+            return ObserverContext_(performedBy, Context::getCurrentTime());
         }
     }
 }

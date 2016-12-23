@@ -72,14 +72,14 @@ PerformedByWithLastSeenUpdateGuard::~PerformedByWithLastSeenUpdateGuard()
 PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& collection)
 {
     const auto& index = collection.usersById();
-    auto it = index.find(Forum::Context::getCurrentUserId());
+    auto it = index.find(Context::getCurrentUserId());
     if (it == index.end())
     {
         return *AnonymousUser;
     }
     auto& result = **it;
 
-    auto now = Forum::Context::getCurrentTime();
+    auto now = Context::getCurrentTime();
 
     if ((result.lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
     {
@@ -103,14 +103,14 @@ UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
 {
     lastSeenUpdate_ = nullptr;
     const auto& index = collection.users().get<EntityCollection::UserCollectionById>();
-    auto it = index.find(Forum::Context::getCurrentUserId());
+    auto it = index.find(Context::getCurrentUserId());
     if (it == index.end())
     {
         return AnonymousUser;
     }
     auto& result = *it;
 
-    auto now = Forum::Context::getCurrentTime();
+    auto now = Context::getCurrentTime();
 
     if ((result->lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
     {
@@ -122,7 +122,7 @@ UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
     return result;
 }
 
-PerformedByWithLastSeenUpdateGuard Forum::Repository::preparePerformedBy(const MemoryRepository& repository)
+PerformedByWithLastSeenUpdateGuard Repository::preparePerformedBy(const MemoryRepository& repository)
 {
     return PerformedByWithLastSeenUpdateGuard(repository);
 }
