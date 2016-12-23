@@ -3,6 +3,7 @@
 #include <boost/locale.hpp>
 #include <boost/locale/boundary.hpp>
 
+#include <cstdint>
 #include <algorithm>
 #include <string>
 
@@ -25,7 +26,7 @@ namespace Forum
             return getUTF8CharactersIterator(value.cbegin(), value.cend());
         }
 
-        inline size_t countUTF8Characters(const std::string& value)
+        inline int_fast32_t countUTF8Characters(const std::string& value)
         {
             auto iterator = getUTF8CharactersIterator(value);
             return std::distance(iterator.begin(), iterator.end());
