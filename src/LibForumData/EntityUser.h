@@ -16,7 +16,7 @@ namespace Forum
         {
             const std::string& name()     const { return name_; }
                   std::string& name()           { return name_; }
-            const Timestamp    lastSeen() const { return lastSeen_; }
+            const Timestamp&   lastSeen() const { return lastSeen_; }
                   Timestamp&   lastSeen()       { return lastSeen_; }
 
             enum ChangeType : uint32_t

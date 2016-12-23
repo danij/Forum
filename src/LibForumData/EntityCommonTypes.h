@@ -29,7 +29,7 @@ namespace Forum
 
         struct Creatable
         {
-            const Timestamp  created() const { return created_; }
+            const Timestamp& created() const { return created_; }
                   Timestamp& created()       { return created_; }
 
             Creatable() : created_(0) {}

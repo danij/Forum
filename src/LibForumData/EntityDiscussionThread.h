@@ -17,7 +17,7 @@ namespace Forum
         {
             const std::string&        name()        const { return name_; }
                   std::string&        name()              { return name_; }
-            const Timestamp           lastUpdated() const { return lastUpdated_; }
+            const Timestamp&          lastUpdated() const { return lastUpdated_; }
                   Timestamp&          lastUpdated()       { return lastUpdated_; }
             const User&               createdBy()   const { return createdBy_; }
                   User&               createdBy()         { return createdBy_; }
