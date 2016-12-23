@@ -54,7 +54,7 @@ namespace Json
         JsonWriter& newPropertyWithSafeName(const std::string& name);
 
         template <typename T>
-        inline JsonWriter& writeSafeString(const T& value)
+        JsonWriter& writeSafeString(const T& value)
         {
             addCommaIfNeeded();
             _stream << '"' << value << '"';
@@ -150,7 +150,7 @@ namespace Json
     }
 
     template<typename ForwardIterator>
-    inline JsonWriter& writeArray(JsonWriter& writer, ForwardIterator begin, ForwardIterator end)
+    JsonWriter& writeArray(JsonWriter& writer, ForwardIterator begin, ForwardIterator end)
     {
         writer.startArray();
         while (begin != end)
@@ -183,28 +183,28 @@ namespace Json
     }
 
     template<typename StringType, typename ValueType>
-    inline JsonWriter& _property(JsonWriter& writer, const StringType& name, const ValueType& value)
+    JsonWriter& _property(JsonWriter& writer, const StringType& name, const ValueType& value)
     {
         writer.newProperty(name) << value;
         return writer;
     }
 
     template<typename StringType, typename ValueType>
-    inline JsonWriter& _propertySafe(JsonWriter& writer, const StringType& name, const ValueType& value)
+    JsonWriter& _propertySafe(JsonWriter& writer, const StringType& name, const ValueType& value)
     {
         writer.newPropertyWithSafeName(name) << value;
         return writer;
     }
 
     template<typename StringType, typename ValueType>
-    inline JsonWriterManipulatorWithTwoParams<StringType, ValueType> property(const StringType& name,
+    JsonWriterManipulatorWithTwoParams<StringType, ValueType> property(const StringType& name,
                                                                               const ValueType& value)
     {
         return JsonWriterManipulatorWithTwoParams<StringType, ValueType>(_property<StringType, ValueType>, name, value);
     }
 
     template<typename StringType, typename ValueType>
-    inline JsonWriterManipulatorWithTwoParams<StringType, ValueType> propertySafeName(const StringType& name,
+    JsonWriterManipulatorWithTwoParams<StringType, ValueType> propertySafeName(const StringType& name,
                                                                                       const ValueType& value)
     {
         return JsonWriterManipulatorWithTwoParams<StringType, ValueType>(_propertySafe<StringType, ValueType>, name,
@@ -228,7 +228,7 @@ namespace Json
     }
 
     template<typename ForwardIterator>
-    inline IteratorPair<ForwardIterator> enumerate(ForwardIterator begin, ForwardIterator end)
+    IteratorPair<ForwardIterator> enumerate(ForwardIterator begin, ForwardIterator end)
     {
         return IteratorPair<ForwardIterator>(begin, end);
     }
