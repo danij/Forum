@@ -1,7 +1,6 @@
 #include "CommandHandler.h"
-#include "JsonWriter.h"
+
 #include "OutputHelpers.h"
-#include "Version.h"
 
 using namespace Forum::Commands;
 using namespace Forum::Entities;

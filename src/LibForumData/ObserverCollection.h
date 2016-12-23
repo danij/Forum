@@ -1,12 +1,11 @@
 #pragma once
 
-#include <mutex>
-#include <shared_mutex>
-#include <vector>
+#include "Observers.h"
 
 #include <boost/core/noncopyable.hpp>
 
-#include "Observers.h"
+#include <shared_mutex>
+#include <vector>
 
 namespace Forum
 {

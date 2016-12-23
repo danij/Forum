@@ -1,6 +1,3 @@
-#include <atomic>
-#include <stdexcept>
-
 #include "Configuration.h"
 
 static std::shared_ptr<const Forum::Configuration::Config> currentConfig =

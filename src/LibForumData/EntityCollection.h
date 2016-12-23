@@ -1,12 +1,12 @@
 #pragma once
 
-#include <string>
-#include <memory>
-
 #include "EntityDiscussionMessageCollectionBase.h"
 #include "EntityDiscussionThreadCollectionBase.h"
 #include "EntityUserCollectionBase.h"
 #include "Entities.h"
+
+#include <string>
+#include <memory>
 
 namespace Forum
 {

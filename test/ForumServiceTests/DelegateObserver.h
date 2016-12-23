@@ -1,10 +1,10 @@
 #pragma once
 
-#include <functional>
-#include <memory>
-
 #include "CommandHandler.h"
 #include "Observers.h"
+
+#include <functional>
+#include <memory>
 
 namespace Forum
 {

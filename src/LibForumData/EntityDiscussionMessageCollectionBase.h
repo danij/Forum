@@ -1,7 +1,9 @@
 #pragma once
 
-#include <string>
-#include <memory>
+#include "ConstCollectionAdapter.h"
+#include "EntityDiscussionMessage.h"
+#include "StringHelpers.h"
+#include "TypeHelpers.h"
 
 #include <boost/noncopyable.hpp>
 #include <boost/multi_index_container.hpp>
@@ -9,10 +11,8 @@
 #include <boost/multi_index/ranked_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 
-#include "ConstCollectionAdapter.h"
-#include "EntityDiscussionMessage.h"
-#include "StringHelpers.h"
-#include "TypeHelpers.h"
+#include <string>
+#include <memory>
 
 namespace Forum
 {

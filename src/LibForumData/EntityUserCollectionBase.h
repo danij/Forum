@@ -1,11 +1,9 @@
 #pragma once
 
-#include <string>
-#include <memory>
-
-#include "EntityDiscussionThreadCollectionBase.h"
-#include "EntityDiscussionMessageCollectionBase.h"
 #include "Entities.h"
+#include "EntityDiscussionMessageCollectionBase.h"
+
+#include <string>
 
 namespace Forum
 {

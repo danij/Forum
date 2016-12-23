@@ -1,8 +1,8 @@
 #pragma once
 
-#include <boost/property_tree/ptree.hpp>
-
 #include "CommandHandler.h"
+
+#include <boost/property_tree/ptree.hpp>
 
 namespace Forum
 {

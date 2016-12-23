@@ -1,10 +1,10 @@
 #pragma once
 
+#include <boost/core/noncopyable.hpp>
+
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
-
-#include <boost/core/noncopyable.hpp>
 
 namespace Forum
 {

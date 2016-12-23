@@ -1,7 +1,7 @@
-#include <vector>
-
 #include "CommandsCommon.h"
 #include "TestHelpers.h"
+
+#include <vector>
 
 using namespace Forum::Configuration;
 using namespace Forum::Entities;

@@ -1,9 +1,8 @@
 #pragma once
 
-#include <cstdint>
-#include <string>
-
 #include "UuidString.h"
+
+#include <cstdint>
 
 namespace Forum
 {

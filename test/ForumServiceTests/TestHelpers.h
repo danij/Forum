@@ -1,13 +1,12 @@
 #pragma once
 
-#include <string>
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/test/unit_test.hpp>
-
 #include "Configuration.h"
 #include "ContextProviderMocks.h"
 #include "Repository.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/test/unit_test.hpp>
+
+#include <string>
 
 namespace Forum
 {

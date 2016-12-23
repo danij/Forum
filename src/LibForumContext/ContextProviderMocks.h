@@ -1,8 +1,8 @@
 #pragma once
 
-#include <functional>
-
 #include "ContextProviders.h"
+
+#include <functional>
 
 /**
  * This header is only to be included in tests

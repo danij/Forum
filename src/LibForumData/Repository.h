@@ -1,13 +1,12 @@
 #pragma once
 
+#include "Observers.h"
+#include "TypeHelpers.h"
+
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
 #include <string>
-
-#include "Entities.h"
-#include "Observers.h"
-#include "TypeHelpers.h"
 
 namespace Forum
 {

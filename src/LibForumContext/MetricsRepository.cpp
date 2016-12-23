@@ -1,4 +1,5 @@
 #include "MetricsRepository.h"
+
 #include "OutputHelpers.h"
 #include "Version.h"
 

@@ -1,7 +1,6 @@
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
-
 #include "RandomGenerator.h"
+
+#include <boost/uuid/random_generator.hpp>
 
 static thread_local boost::uuids::random_generator localUUIDGenerator;
 

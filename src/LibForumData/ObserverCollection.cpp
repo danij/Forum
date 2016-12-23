@@ -1,6 +1,6 @@
-#include <algorithm>
-
 #include "ObserverCollection.h"
+
+#include <algorithm>
 
 using namespace Forum::Entities;
 using namespace Forum::Repository;

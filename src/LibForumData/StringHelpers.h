@@ -1,10 +1,10 @@
 #pragma once
 
-#include <algorithm>
-#include <string>
-
 #include <boost/locale.hpp>
 #include <boost/locale/boundary.hpp>
+
+#include <algorithm>
+#include <string>
 
 namespace Forum
 {

@@ -1,12 +1,12 @@
 #pragma once
 
-#include <iosfwd>
-#include <functional>
-#include <vector>
+#include "Repository.h"
 
 #include <boost/core/noncopyable.hpp>
 
-#include "Repository.h"
+#include <iosfwd>
+#include <functional>
+#include <vector>
 
 namespace Forum
 {

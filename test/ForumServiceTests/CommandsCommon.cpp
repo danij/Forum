@@ -1,11 +1,12 @@
-#include <string>
-#include <sstream>
+#include "CommandsCommon.h"
+
+#include "MemoryRepository.h"
+#include "MetricsRepository.h"
 
 #include <boost/property_tree/json_parser.hpp>
 
-#include "CommandsCommon.h"
-#include "MemoryRepository.h"
-#include "MetricsRepository.h"
+#include <sstream>
+#include <string>
 
 using namespace Forum::Commands;
 using namespace Forum::Repository;

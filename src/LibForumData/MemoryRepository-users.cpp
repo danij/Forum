@@ -1,13 +1,14 @@
-#include <boost/regex/icu.hpp>
+#include "MemoryRepository.h"
 
 #include "Configuration.h"
 #include "ContextProviders.h"
 #include "EntitySerialization.h"
-#include "MemoryRepository.h"
 #include "OutputHelpers.h"
 #include "RandomGenerator.h"
 #include "StateHelpers.h"
 #include "StringHelpers.h"
+
+#include <boost/regex/icu.hpp>
 
 using namespace Forum;
 using namespace Forum::Configuration;

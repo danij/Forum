@@ -1,10 +1,10 @@
 #pragma once
 
-#include <iosfwd>
-#include <vector>
-
 #include "JsonWriter.h"
 #include "Repository.h"
+
+#include <iosfwd>
+#include <vector>
 
 namespace Forum
 {

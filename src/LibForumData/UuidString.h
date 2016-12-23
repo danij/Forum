@@ -1,9 +1,9 @@
 #pragma once
 
+#include <boost/uuid/uuid.hpp>
+
 #include <array>
 #include <ostream>
-
-#include <boost/uuid/uuid.hpp>
 
 namespace Forum
 {

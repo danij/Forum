@@ -1,8 +1,8 @@
 #pragma once
 
-#include <boost/core/noncopyable.hpp>
-
 #include "Repository.h"
+
+#include <boost/core/noncopyable.hpp>
 
 namespace Forum
 {

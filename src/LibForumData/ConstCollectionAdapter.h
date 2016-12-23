@@ -1,8 +1,9 @@
 #pragma once
 
-#include <cassert>
-
 #include <boost/iterator/transform_iterator.hpp>
+
+#include <cassert>
+#include <memory>
 
 namespace Forum
 {

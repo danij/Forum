@@ -1,7 +1,7 @@
+#include "TestHelpers.h"
+
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-
-#include "TestHelpers.h"
 
 bool Forum::Helpers::treeContains(const boost::property_tree::ptree& tree, const std::string& key)
 {

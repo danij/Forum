@@ -1,9 +1,9 @@
-#include <vector>
-
 #include "CommandsCommon.h"
 #include "EntityCollection.h"
 #include "RandomGenerator.h"
 #include "TestHelpers.h"
+
+#include <vector>
 
 using namespace Forum::Configuration;
 using namespace Forum::Entities;

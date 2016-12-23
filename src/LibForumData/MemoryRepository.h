@@ -1,12 +1,12 @@
 #pragma once
 
-#include <boost/core/noncopyable.hpp>
-
 #include "ContextProviders.h"
 #include "EntityCollection.h"
 #include "ObserverCollection.h"
 #include "Repository.h"
 #include "ResourceGuard.h"
+
+#include <boost/core/noncopyable.hpp>
 
 namespace Forum
 {

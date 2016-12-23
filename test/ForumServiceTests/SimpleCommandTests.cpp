@@ -1,9 +1,9 @@
-#include <boost/test/unit_test.hpp>
-
 #include "CommandHandler.h"
 #include "TestHelpers.h"
 #include "Version.h"
 #include "CommandsCommon.h"
+
+#include <boost/test/unit_test.hpp>
 
 using namespace Forum::Helpers;
 

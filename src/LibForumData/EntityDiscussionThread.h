@@ -1,14 +1,11 @@
 #pragma once
 
+#include "EntityCommonTypes.h"
+#include "EntityDiscussionMessageCollectionBase.h"
+
 #include <atomic>
 #include <string>
 #include <memory>
-
-#include <boost/noncopyable.hpp>
-
-#include "EntityCommonTypes.h"
-#include "EntityDiscussionMessageCollectionBase.h"
-#include "StringHelpers.h"
 
 namespace Forum
 {

@@ -1,9 +1,9 @@
-#include <algorithm>
-#include <sstream>
+#include "UuidString.h"
 
 #include <boost/uuid/uuid_io.hpp>
 
-#include "UuidString.h"
+#include <algorithm>
+#include <sstream>
 
 using namespace Forum::Entities;
 

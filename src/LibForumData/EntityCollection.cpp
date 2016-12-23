@@ -1,4 +1,5 @@
 #include "EntityCollection.h"
+
 #include "StateHelpers.h"
 
 using namespace Forum::Entities;

@@ -1,7 +1,8 @@
+#include "MemoryRepository.h"
+
 #include "Configuration.h"
 #include "ContextProviders.h"
 #include "EntitySerialization.h"
-#include "MemoryRepository.h"
 #include "OutputHelpers.h"
 
 using namespace Forum;

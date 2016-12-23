@@ -1,12 +1,11 @@
 #pragma once
 
-#include <string>
-#include <memory>
+#include "EntityCommonTypes.h"
 
 #include <boost/noncopyable.hpp>
 
-#include "EntityCommonTypes.h"
-#include "StringHelpers.h"
+#include <memory>
+#include <string>
 
 namespace Forum
 {
