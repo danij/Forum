@@ -11,7 +11,7 @@ namespace Forum
     namespace Helpers
     {
         template <typename T>
-        inline void writeSingleValue(std::ostream& output, const char* name, const T& value)
+        void writeSingleValue(std::ostream& output, const char* name, const T& value)
         {
             Json::JsonWriter writer(output);
             writer
@@ -21,7 +21,7 @@ namespace Forum
         }
 
         template <typename T>
-        inline void writeSingleValueSafeName(std::ostream& output, const char* name, const T& value)
+        void writeSingleValueSafeName(std::ostream& output, const char* name, const T& value)
         {
             Json::JsonWriter writer(output);
             writer
@@ -36,7 +36,7 @@ namespace Forum
         }
 
         template <typename TValue>
-        inline void writeSingleObjectSafeName(std::ostream& output, const char* name, const TValue& value)
+        void writeSingleObjectSafeName(std::ostream& output, const char* name, const TValue& value)
         {
             Json::JsonWriter writer(output);
             writer
@@ -53,11 +53,11 @@ namespace Forum
             /**
              * Initializes the helper with the stream to write to and the default status code
              */
-            inline StatusWriter(std::ostream& output, Repository::StatusCode defaultCode) :
+            StatusWriter(std::ostream& output, Repository::StatusCode defaultCode) :
                     output_(output), statusCode_(defaultCode), enabled_(true)
             {}
 
-            inline ~StatusWriter()
+            ~StatusWriter()
             {
                 if ( ! enabled_) return;
 
@@ -76,12 +76,12 @@ namespace Forum
              * Disables this helper, preventing it to write to the stream.
              * Use this method when something else is to be written to the output
              */
-            inline void disable()
+            void disable()
             {
                 enabled_ = false;
             }
 
-            inline StatusWriter& operator=(Repository::StatusCode newCode)
+            StatusWriter& operator=(Repository::StatusCode newCode)
             {
                 statusCode_ = newCode;
                 return *this;
@@ -91,7 +91,7 @@ namespace Forum
              * Adds extra information to be written
              */
             template <typename T>
-            inline void addExtraSafeName(const std::string& key, const T& value)
+            void addExtraSafeName(const std::string& key, const T& value)
             {
                 extras_.push_back([=](auto& writer)
                                   {

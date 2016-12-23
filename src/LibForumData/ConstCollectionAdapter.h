@@ -15,42 +15,42 @@ namespace Forum
         public:
             ConstCollectionAdapter(const TCollection& collection) : collection_(collection) {}
 
-            inline auto size() const { return collection_.size(); }
+            auto size() const { return collection_.size(); }
 
-            inline auto begin() const { return cbegin(); };
-            inline auto end() const { return cend(); };
-            inline auto rbegin() const { return crbegin(); };
-            inline auto rend() const { return crend(); };
+            auto begin() const { return cbegin(); };
+            auto end() const { return cend(); };
+            auto rbegin() const { return crbegin(); };
+            auto rend() const { return crend(); };
 
-            inline auto cbegin() const
+            auto cbegin() const
             {
                 return boost::make_transform_iterator(collection_.cbegin(), getPointer);
             };
 
-            inline auto cend() const
+            auto cend() const
             {
                 return boost::make_transform_iterator(collection_.cend(), getPointer);
             };
 
-            inline auto crbegin() const
+            auto crbegin() const
             {
                 return boost::make_transform_iterator(collection_.crbegin(), getPointer);
             };
 
-            inline auto crend() const
+            auto crend() const
             {
                 return boost::make_transform_iterator(collection_.crend(), getPointer);
             };
 
             template <typename TSearchType>
-            inline auto find(const TSearchType& value) const
+            auto find(const TSearchType& value) const
             {
                 return boost::make_transform_iterator(collection_.find(value), getPointer);
             }
 
         private:
 
-            inline static const T* getPointer(const std::shared_ptr<T>& ptr)
+            static const T* getPointer(const std::shared_ptr<T>& ptr)
             {
                 if ( ! ptr)
                 {

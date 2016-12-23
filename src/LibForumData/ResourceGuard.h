@@ -16,13 +16,13 @@ namespace Forum
         public:
             ResourceGuard(std::shared_ptr<T> resource) : resource_(resource) {}
 
-            inline void read(std::function<void(const T&)> action) const
+            void read(std::function<void(const T&)> action) const
             {
                 std::shared_lock<decltype(mutex_)> lock(mutex_);
                 action(*resource_);
             }
 
-            inline void write(std::function<void(T&)> action)
+            void write(std::function<void(T&)> action)
             {
                 std::unique_lock<decltype(mutex_)> lock(mutex_);
                 action(*resource_);

@@ -5,7 +5,6 @@
 #include "EntityUserCollectionBase.h"
 #include "Entities.h"
 
-#include <string>
 #include <memory>
 
 namespace Forum

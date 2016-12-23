@@ -21,45 +21,45 @@ namespace Forum
             static constexpr int MaxCharacters = 36;
             typedef std::array<char, MaxCharacters> CharacterArrayType;
 
-            inline const boost::uuids::uuid&      value() const { return value_; }
-            inline const CharacterArrayType& characters() const { return characters_; }
+            const boost::uuids::uuid&      value() const { return value_; }
+            const CharacterArrayType& characters() const { return characters_; }
 
-            inline bool operator==(const UuidString& other) const
+            bool operator==(const UuidString& other) const
             {
                 return value_ == other.value_;
             }
 
-            inline bool operator!=(const UuidString& other) const
+            bool operator!=(const UuidString& other) const
             {
                 return value_ != other.value_;
             }
 
-            inline bool operator<(const UuidString& other) const
+            bool operator<(const UuidString& other) const
             {
                 return value_ < other.value_;
             }
 
-            inline bool operator<=(const UuidString& other) const
+            bool operator<=(const UuidString& other) const
             {
                 return value_ <= other.value_;
             }
 
-            inline bool operator>(const UuidString& other) const
+            bool operator>(const UuidString& other) const
             {
                 return value_ > other.value_;
             }
 
-            inline bool operator>=(const UuidString& other) const
+            bool operator>=(const UuidString& other) const
             {
                 return value_ >= other.value_;
             }
 
-            inline explicit operator std::string() const
+            explicit operator std::string() const
             {
                 return std::string(characters_.data(), MaxCharacters);
             }
 
-            inline operator bool() const
+            operator bool() const
             {
                 return *this != empty;
             }

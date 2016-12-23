@@ -26,7 +26,7 @@ namespace Forum
                                                     const std::string& threadId, const std::string& content);
 
         template<typename T, typename It>
-        inline void fillPropertyFromCollection(const boost::property_tree::ptree& collection, const char* name,
+        void fillPropertyFromCollection(const boost::property_tree::ptree& collection, const char* name,
                                                It iterator, const T& defaultValue)
         {
             for (auto& pair : collection)

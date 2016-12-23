@@ -14,7 +14,7 @@ namespace Forum
         extern thread_local const std::locale en_US_UTF8Locale;
 
         template <typename T>
-        inline auto getUTF8CharactersIterator(T begin, T end)
+        auto getUTF8CharactersIterator(T begin, T end)
         {
             return boost::locale::boundary::ssegment_index(boost::locale::boundary::character,
                                                            begin, end, en_US_UTF8Locale);

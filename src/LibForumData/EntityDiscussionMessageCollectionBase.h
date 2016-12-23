@@ -11,9 +11,6 @@
 #include <boost/multi_index/ranked_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 
-#include <string>
-#include <memory>
-
 namespace Forum
 {
     namespace Entities
@@ -33,18 +30,18 @@ namespace Forum
                     boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionMessageCollectionById>,
             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionMessage::id>>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionMessageCollectionByCreated>,
-                    const boost::multi_index::const_mem_fun<Creatable, const Forum::Entities::Timestamp,
+                    const boost::multi_index::const_mem_fun<Creatable, const Timestamp,
                             &DiscussionMessage::created>>
             > {};
 
             typedef boost::multi_index_container<DiscussionMessageRef, DiscussionMessageCollectionIndices>
                     DiscussionMessageCollection;
 
-            inline auto& messages() { return messages_; }
-            inline auto  messageCount() const { return messages_.size(); }
-            inline auto  messagesById() const
+            auto& messages() { return messages_; }
+            auto  messageCount() const { return messages_.size(); }
+            auto  messagesById() const
             { return Helpers::toConst(messages_.get<DiscussionMessageCollectionById>()); }
-            inline auto  messagesByCreated() const
+            auto  messagesByCreated() const
             { return Helpers::toConst(messages_.get<DiscussionMessageCollectionByCreated>()); }
 
             /**

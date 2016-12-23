@@ -54,16 +54,16 @@ namespace Forum
             typedef boost::multi_index_container<DiscussionThreadRef, DiscussionThreadCollectionIndices>
                     DiscussionThreadCollection;
 
-            inline auto& threads() { return threads_; }
-            inline auto  threadsById() const
+            auto& threads() { return threads_; }
+            auto  threadsById() const
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionById>()); }
-            inline auto  threadsByName() const
+            auto  threadsByName() const
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByName>()); }
-            inline auto  threadsByCreated() const
+            auto  threadsByCreated() const
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByCreated>()); }
-            inline auto  threadsByLastUpdated() const
+            auto  threadsByLastUpdated() const
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLastUpdated>()); }
-            inline auto  threadsByMessageCount() const
+            auto  threadsByMessageCount() const
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByMessageCount>()); }
 
             /**

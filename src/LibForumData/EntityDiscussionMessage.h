@@ -16,14 +16,14 @@ namespace Forum
 
         struct DiscussionMessage final : public Identifiable, public Creatable, private boost::noncopyable
         {
-            inline const std::string&       content()      const { return content_; }
-            inline       std::string&       content()            { return content_; }
-            inline const User&              createdBy()    const { return createdBy_; }
-            inline       User&              createdBy()          { return createdBy_; }
-            inline const DiscussionThread&  parentThread() const { return parentThread_; }
-            inline       DiscussionThread&  parentThread()       { return parentThread_; }
+            const std::string&       content()      const { return content_; }
+                  std::string&       content()            { return content_; }
+            const User&              createdBy()    const { return createdBy_; }
+                  User&              createdBy()          { return createdBy_; }
+            const DiscussionThread&  parentThread() const { return parentThread_; }
+                  DiscussionThread&  parentThread()       { return parentThread_; }
 
-            inline DiscussionMessage(User& createdBy, DiscussionThread& parentThread)
+            DiscussionMessage(User& createdBy, DiscussionThread& parentThread)
                 : createdBy_(createdBy), parentThread_(parentThread) {};
 
         private:

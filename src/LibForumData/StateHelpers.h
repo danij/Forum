@@ -6,12 +6,12 @@ namespace Forum
     {
         struct BoolTemporaryChanger
         {
-            inline BoolTemporaryChanger(bool& toChange, bool newValue) noexcept : toChange_(toChange)
+            BoolTemporaryChanger(bool& toChange, bool newValue) noexcept : toChange_(toChange)
             {
                 oldValue_ = toChange;
                 toChange = newValue;
             }
-            inline ~BoolTemporaryChanger() noexcept
+            ~BoolTemporaryChanger() noexcept
             {
                 toChange_ = oldValue_;
             }

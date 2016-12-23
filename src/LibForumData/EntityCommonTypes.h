@@ -20,8 +20,8 @@ namespace Forum
 
         struct Identifiable
         {
-            inline const IdType& id() const { return id_; }
-            inline       IdType& id()       { return id_; }
+            const IdType& id() const { return id_; }
+                  IdType& id()       { return id_; }
 
         private:
             IdType id_;
@@ -29,8 +29,8 @@ namespace Forum
 
         struct Creatable
         {
-            inline const Timestamp  created() const { return created_; }
-            inline       Timestamp& created()       { return created_; }
+            const Timestamp  created() const { return created_; }
+                  Timestamp& created()       { return created_; }
 
             Creatable() : created_(0) {}
 

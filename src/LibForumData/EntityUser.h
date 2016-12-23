@@ -4,8 +4,6 @@
 #include "EntityDiscussionMessageCollectionBase.h"
 #include "EntityCommonTypes.h"
 
-#include <boost/noncopyable.hpp>
-
 #include <string>
 #include <memory>
 
@@ -16,10 +14,10 @@ namespace Forum
         struct User final : public Identifiable, public Creatable,
                             public DiscussionThreadCollectionBase, public DiscussionMessageCollectionBase
         {
-            inline const std::string& name()     const { return name_; }
-            inline       std::string& name()           { return name_; }
-            inline const Timestamp    lastSeen() const { return lastSeen_; }
-            inline       Timestamp&   lastSeen()       { return lastSeen_; }
+            const std::string& name()     const { return name_; }
+                  std::string& name()           { return name_; }
+            const Timestamp    lastSeen() const { return lastSeen_; }
+                  Timestamp&   lastSeen()       { return lastSeen_; }
 
             enum ChangeType : uint32_t
             {

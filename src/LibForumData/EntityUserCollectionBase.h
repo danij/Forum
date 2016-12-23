@@ -3,8 +3,6 @@
 #include "Entities.h"
 #include "EntityDiscussionMessageCollectionBase.h"
 
-#include <string>
-
 namespace Forum
 {
     namespace Entities
@@ -36,11 +34,11 @@ namespace Forum
 
             typedef boost::multi_index_container<UserRef, UserCollectionIndices> UserCollection;
 
-            inline auto& users()                 { return users_; }
-            inline auto  usersById()       const { return Helpers::toConst(users_.get<UserCollectionById>()); }
-            inline auto  usersByName()     const { return Helpers::toConst(users_.get<UserCollectionByName>()); }
-            inline auto  usersByCreated()  const { return Helpers::toConst(users_.get<UserCollectionByCreated>()); }
-            inline auto  usersByLastSeen() const { return Helpers::toConst(users_.get<UserCollectionByLastSeen>()); }
+            auto& users()                 { return users_; }
+            auto  usersById()       const { return Helpers::toConst(users_.get<UserCollectionById>()); }
+            auto  usersByName()     const { return Helpers::toConst(users_.get<UserCollectionByName>()); }
+            auto  usersByCreated()  const { return Helpers::toConst(users_.get<UserCollectionByCreated>()); }
+            auto  usersByLastSeen() const { return Helpers::toConst(users_.get<UserCollectionByLastSeen>()); }
 
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in

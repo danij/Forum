@@ -3,6 +3,7 @@
 #include "Configuration.h"
 #include "ContextProviderMocks.h"
 #include "Repository.h"
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -18,7 +19,7 @@ namespace Forum
         }
 
         template <typename TStatusObj>
-        inline void assertStatusCodeEqual(Repository::StatusCode expected, const TStatusObj& obj)
+        void assertStatusCodeEqual(Repository::StatusCode expected, const TStatusObj& obj)
         {
             assertStatusCodeEqual(expected, Repository::StatusCode(obj.template get<uint32_t>("status")));
         }
@@ -48,7 +49,7 @@ namespace Forum
         };
 
         template <typename TAction>
-        inline auto createDisposer(TAction action)
+        auto createDisposer(TAction action)
         {
             return Disposer<TAction>(action);
         }
@@ -61,11 +62,11 @@ namespace Forum
 
                 Configuration::Config newConfig(oldConfig_);
                 configChangeAction(newConfig);
-                Configuration::setGlobalConfig(newConfig);
+                setGlobalConfig(newConfig);
             }
             ~ConfigChanger()
             {
-                Configuration::setGlobalConfig(oldConfig_);
+                setGlobalConfig(oldConfig_);
             }
         private:
             Configuration::Config oldConfig_;

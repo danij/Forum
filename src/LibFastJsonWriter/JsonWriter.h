@@ -84,7 +84,7 @@ namespace Json
     };
 
     template <typename T>
-    inline JsonWriter& operator<<(JsonWriter& writer, const T& value)
+    JsonWriter& operator<<(JsonWriter& writer, const T& value)
     {
         writer.addCommaIfNeeded();
         writer._stream << value;
@@ -92,7 +92,7 @@ namespace Json
     }
 
     template <typename T>
-    inline JsonWriter& operator<<(JsonWriter& writer, const T* value)
+    JsonWriter& operator<<(JsonWriter& writer, const T* value)
     {
         return value ? (writer << *value) : writer.null();
     }
