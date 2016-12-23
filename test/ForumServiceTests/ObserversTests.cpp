@@ -293,3 +293,13 @@ BOOST_AUTO_TEST_CASE( Observer_context_includes_timestamp_of_action )
     }
     BOOST_REQUIRE_EQUAL(timestamp, timestampFromContext);
 }
+
+BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_invokes_observer ) {}
+BOOST_AUTO_TEST_CASE( Listing_discussion_tags_invokes_observer ) {}
+BOOST_AUTO_TEST_CASE( Renaming_a_discussion_tag_invokes_observer ) {}
+BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_invokes_observer ) {}
+
+BOOST_AUTO_TEST_CASE( Attaching_a_discussion_tag_to_a_thread_invokes_observer ) {}
+BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_thread_invokes_observer ) {}
+
+BOOST_AUTO_TEST_CASE( Listing_discussion_threads_attached_to_tags_invokes_observer ) {}
