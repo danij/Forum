@@ -13,7 +13,7 @@ namespace Forum
         class ConstCollectionAdapter final
         {
         public:
-            ConstCollectionAdapter(const TCollection& collection) : collection_(collection) {}
+            explicit ConstCollectionAdapter(const TCollection& collection) : collection_(collection) {}
 
             auto size() const { return collection_.size(); }
 

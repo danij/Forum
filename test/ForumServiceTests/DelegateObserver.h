@@ -131,7 +131,7 @@ namespace Forum
 
         struct DisposingDelegateObserver
         {
-            DisposingDelegateObserver(Commands::CommandHandler& handler)
+            explicit DisposingDelegateObserver(Commands::CommandHandler& handler)
             {
                 observer_ = std::make_shared<DelegateObserver>();
                 readRepository_ = handler.getReadRepository();

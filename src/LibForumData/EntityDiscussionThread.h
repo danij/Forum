@@ -34,7 +34,7 @@ namespace Forum
                 Name
             };
 
-            DiscussionThread(User& createdBy) : createdBy_(createdBy), lastUpdated_(0), visited_(0) {};
+            explicit DiscussionThread(User& createdBy) : createdBy_(createdBy), lastUpdated_(0), visited_(0) {};
 
         private:
             std::string name_;

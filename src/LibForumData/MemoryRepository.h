@@ -108,7 +108,7 @@ namespace Forum
          */
         struct PerformedByWithLastSeenUpdateGuard final
         {
-            PerformedByWithLastSeenUpdateGuard(const MemoryRepository& repository);
+            explicit PerformedByWithLastSeenUpdateGuard(const MemoryRepository& repository);
             ~PerformedByWithLastSeenUpdateGuard();
 
             /**

@@ -29,7 +29,7 @@ namespace Forum
             /**
              * Only used to construct the anonymous user
              */
-            User(const std::string& name) : name_(name), lastSeen_(0) {}
+            explicit User(const std::string& name) : name_(name), lastSeen_(0) {}
 
         private:
             std::string name_;
