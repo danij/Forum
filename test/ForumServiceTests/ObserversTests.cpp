@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE( Observer_context_includes_user_that_performs_the_action )
     DisposingDelegateObserver observer(*handler);
     observer->getEntitiesCountAction = [&](auto& context)
     {
-        userIdFromContext = (std::string)context.performedBy.id();
+        userIdFromContext = static_cast<std::string>(context.performedBy.id());
         userNameFromContext = context.performedBy.name();
     };
 
@@ -268,13 +268,13 @@ BOOST_AUTO_TEST_CASE( Observer_context_performed_by_is_the_anonymous_user )
     DisposingDelegateObserver observer(*handler);
     observer->getEntitiesCountAction = [&](auto& context)
     {
-        userIdFromContext = (std::string)context.performedBy.id();
+        userIdFromContext = static_cast<std::string>(context.performedBy.id());
         userNameFromContext = context.performedBy.name();
     };
 
     handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
 
-    BOOST_REQUIRE_EQUAL((std::string)UuidString::empty, userIdFromContext);
+    BOOST_REQUIRE_EQUAL(static_cast<std::string>(UuidString::empty), userIdFromContext);
     BOOST_REQUIRE_EQUAL("<anonymous>", userNameFromContext);
 }
 
