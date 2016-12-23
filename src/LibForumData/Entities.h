@@ -1,5 +1,6 @@
 #pragma once
 
+//aggregate all entities headers
 #include "EntityUser.h"
 #include "EntityDiscussionThread.h"
 #include "EntityDiscussionMessage.h"
