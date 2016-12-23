@@ -31,15 +31,21 @@
 *.out
 *.app
 build
+Debug
+Release
 
 # IDE Folders
 .idea
 .vs
 .vscode
 
-# IDE Projects
+# IDE Related
 *.sln
 *.csproj
+*.vcxproj
+*.vcxproj.*
+*.db
+*.opendb
 
 #Temporary Files
 *.swp
