@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommandHandler.h"
+#include "ContextProviders.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -18,7 +19,12 @@ namespace Forum
                                                  Commands::Command command,
                                                  const std::vector<std::string>& parameters);
         boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef handler,
+                                                 Commands::Command command, Context::SortOrder sortOrder,
+                                                 const std::vector<std::string>& parameters);
+        boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef handler,
                                                  Commands::Command command);
+        boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef handler,
+                                                 Commands::Command command, Context::SortOrder sortOrder);
 
         std::string createUserAndGetId(Commands::CommandHandlerRef handler, const std::string& name);
         std::string createDiscussionThreadAndGetId(Commands::CommandHandlerRef handler, const std::string& name);

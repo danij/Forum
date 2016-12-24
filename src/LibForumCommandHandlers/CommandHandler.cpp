@@ -21,10 +21,8 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
 
     setHandler(ADD_USER, addNewUser);
     setHandler(GET_USERS_BY_NAME, getUsersByName);
-    setHandler(GET_USERS_BY_CREATED_ASCENDING, getUsersByCreatedAscending);
-    setHandler(GET_USERS_BY_CREATED_DESCENDING, getUsersByCreatedDescending);
-    setHandler(GET_USERS_BY_LAST_SEEN_ASCENDING, getUsersByLastSeenAscending);
-    setHandler(GET_USERS_BY_LAST_SEEN_DESCENDING, getUsersByLastSeenDescending);
+    setHandler(GET_USERS_BY_CREATED, getUsersByCreated);
+    setHandler(GET_USERS_BY_LAST_SEEN, getUsersByLastSeen);
     setHandler(GET_USER_BY_ID, getUserById);
     setHandler(GET_USER_BY_NAME, getUserByName);
     setHandler(CHANGE_USER_NAME, changeUserName);
@@ -32,35 +30,22 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
 
     setHandler(ADD_DISCUSSION_THREAD, addNewDiscussionThread);
     setHandler(GET_DISCUSSION_THREADS_BY_NAME, getDiscussionThreadsByName);
-    setHandler(GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING, getDiscussionThreadsByCreatedAscending);
-    setHandler(GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING, getDiscussionThreadsByCreatedDescending);
-    setHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED_ASCENDING, getDiscussionThreadsByLastUpdatedAscending);
-    setHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED_DESCENDING, getDiscussionThreadsByLastUpdatedDescending);
-    setHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_ASCENDING, getDiscussionThreadsByMessageCountAscending);
-    setHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_DESCENDING, getDiscussionThreadsByMessageCountDescending);
+    setHandler(GET_DISCUSSION_THREADS_BY_CREATED, getDiscussionThreadsByCreated);
+    setHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED, getDiscussionThreadsByLastUpdated);
+    setHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT, getDiscussionThreadsByMessageCount);
     setHandler(GET_DISCUSSION_THREAD_BY_ID, getDiscussionThreadById);
     setHandler(CHANGE_DISCUSSION_THREAD_NAME, changeDiscussionThreadName);
     setHandler(DELETE_DISCUSSION_THREAD, deleteDiscussionThread);
 
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME, getDiscussionThreadsOfUserByName);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING, getDiscussionThreadsOfUserByCreatedAscending);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING, getDiscussionThreadsOfUserByCreatedDescending);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING,
-               getDiscussionThreadsOfUserByLastUpdatedAscending);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING,
-               getDiscussionThreadsOfUserByLastUpdatedDescending);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT_ASCENDING,
-               getDiscussionThreadsOfUserByMessageCountAscending);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT_DESCENDING,
-               getDiscussionThreadsOfUserByMessageCountDescending);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, getDiscussionThreadsOfUserByCreated);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, getDiscussionThreadsOfUserByLastUpdated);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT, getDiscussionThreadsOfUserByMessageCount);
 
     setHandler(ADD_DISCUSSION_THREAD_MESSAGE, addNewDiscussionThreadMessage);
     setHandler(DELETE_DISCUSSION_THREAD_MESSAGE, deleteDiscussionThreadMessage);
 
-    setHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_ASCENDING,
-               getDiscussionThreadMessagesOfUserByCreatedAscending);
-    setHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_DESCENDING,
-               getDiscussionThreadMessagesOfUserByCreatedDescending);
+    setHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, getDiscussionThreadMessagesOfUserByCreated);
 }
 
 ReadRepositoryRef CommandHandler::getReadRepository()
@@ -75,9 +60,6 @@ WriteRepositoryRef CommandHandler::getWriteRepository()
 
 void CommandHandler::handle(Command command, const std::vector<std::string>& parameters, std::ostream& output)
 {
-    //reset the current displayContext
-    Context::getMutableDisplayContext() = {};
-
     if (command >= 0 && command < LAST_COMMAND)
     {
         handlers_[command](parameters, output);
@@ -116,27 +98,13 @@ void CommandHandler::getUsersByName(const std::vector<std::string>& parameters, 
     readRepository_->getUsersByName(output);
 }
 
-void CommandHandler::getUsersByCreatedAscending(const std::vector<std::string>& parameters, std::ostream& output)
+void CommandHandler::getUsersByCreated(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
     readRepository_->getUsersByCreated(output);
 }
 
-void CommandHandler::getUsersByCreatedDescending(const std::vector<std::string>& parameters, std::ostream& output)
+void CommandHandler::getUsersByLastSeen(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Descending;
-    readRepository_->getUsersByCreated(output);
-}
-
-void CommandHandler::getUsersByLastSeenAscending(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
-    readRepository_->getUsersByLastSeen(output);
-}
-
-void CommandHandler::getUsersByLastSeenDescending(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Descending;
     readRepository_->getUsersByLastSeen(output);
 }
 
@@ -166,49 +134,21 @@ void CommandHandler::deleteUser(const std::vector<std::string>& parameters, std:
 
 void CommandHandler::getDiscussionThreadsByName(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
     readRepository_->getDiscussionThreadsByName(output);
 }
 
-void CommandHandler::getDiscussionThreadsByCreatedAscending(const std::vector<std::string>& parameters,
-                                                            std::ostream& output)
+void CommandHandler::getDiscussionThreadsByCreated(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
     readRepository_->getDiscussionThreadsByCreated(output);
 }
 
-void CommandHandler::getDiscussionThreadsByCreatedDescending(const std::vector<std::string>& parameters,
-                                                             std::ostream& output)
+void CommandHandler::getDiscussionThreadsByLastUpdated(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Descending;
-    readRepository_->getDiscussionThreadsByCreated(output);
-}
-
-void CommandHandler::getDiscussionThreadsByLastUpdatedAscending(const std::vector<std::string>& parameters,
-                                                                std::ostream& output)
-{
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
     readRepository_->getDiscussionThreadsByLastUpdated(output);
 }
 
-void CommandHandler::getDiscussionThreadsByLastUpdatedDescending(const std::vector<std::string>& parameters,
-                                                                 std::ostream& output)
+void CommandHandler::getDiscussionThreadsByMessageCount(const std::vector<std::string>& parameters, std::ostream& output)
 {
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Descending;
-    readRepository_->getDiscussionThreadsByLastUpdated(output);
-}
-
-void CommandHandler::getDiscussionThreadsByMessageCountAscending(const std::vector<std::string>& parameters,
-                                                                 std::ostream& output)
-{
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
-    readRepository_->getDiscussionThreadsByMessageCount(output);
-}
-
-void CommandHandler::getDiscussionThreadsByMessageCountDescending(const std::vector<std::string>& parameters,
-                                                                 std::ostream& output)
-{
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Descending;
     readRepository_->getDiscussionThreadsByMessageCount(output);
 }
 
@@ -242,51 +182,24 @@ void CommandHandler::getDiscussionThreadsOfUserByName(const std::vector<std::str
     readRepository_->getDiscussionThreadsOfUserByName(parameters[0], output);
 }
 
-void CommandHandler::getDiscussionThreadsOfUserByCreatedAscending(const std::vector<std::string>& parameters,
-                                                                  std::ostream& output)
+void CommandHandler::getDiscussionThreadsOfUserByCreated(const std::vector<std::string>& parameters, 
+                                                         std::ostream& output)
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
     readRepository_->getDiscussionThreadsOfUserByCreated(parameters[0], output);
 }
 
-void CommandHandler::getDiscussionThreadsOfUserByCreatedDescending(const std::vector<std::string>& parameters,
-                                                                   std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Descending;
-    readRepository_->getDiscussionThreadsOfUserByCreated(parameters[0], output);
-}
-
-void CommandHandler::getDiscussionThreadsOfUserByLastUpdatedAscending(const std::vector<std::string>& parameters,
+void CommandHandler::getDiscussionThreadsOfUserByLastUpdated(const std::vector<std::string>& parameters,
                                                                       std::ostream& output)
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
     readRepository_->getDiscussionThreadsOfUserByLastUpdated(parameters[0], output);
 }
 
-void CommandHandler::getDiscussionThreadsOfUserByLastUpdatedDescending(const std::vector<std::string>& parameters,
-                                                                       std::ostream& output)
+void CommandHandler::getDiscussionThreadsOfUserByMessageCount(const std::vector<std::string>& parameters,
+                                                              std::ostream& output)
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Descending;
-    readRepository_->getDiscussionThreadsOfUserByLastUpdated(parameters[0], output);
-}
-
-void CommandHandler::getDiscussionThreadsOfUserByMessageCountAscending(const std::vector<std::string>& parameters,
-                                                                      std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
-    readRepository_->getDiscussionThreadsOfUserByMessageCount(parameters[0], output);
-}
-
-void CommandHandler::getDiscussionThreadsOfUserByMessageCountDescending(const std::vector<std::string>& parameters,
-                                                                       std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Descending;
     readRepository_->getDiscussionThreadsOfUserByMessageCount(parameters[0], output);
 }
 
@@ -302,18 +215,9 @@ void CommandHandler::deleteDiscussionThreadMessage(const std::vector<std::string
     writeRepository_->deleteDiscussionMessage(parameters[0], output);
 }
 
-void CommandHandler::getDiscussionThreadMessagesOfUserByCreatedAscending(const std::vector<std::string>& parameters,
-                                                                  std::ostream& output)
+void CommandHandler::getDiscussionThreadMessagesOfUserByCreated(const std::vector<std::string>& parameters,
+                                                                std::ostream& output)
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
-    readRepository_->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
-}
-
-void CommandHandler::getDiscussionThreadMessagesOfUserByCreatedDescending(const std::vector<std::string>& parameters,
-                                                                   std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Descending;
     readRepository_->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
 }

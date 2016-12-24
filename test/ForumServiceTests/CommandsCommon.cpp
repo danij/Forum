@@ -2,6 +2,7 @@
 
 #include "MemoryRepository.h"
 #include "MetricsRepository.h"
+#include "TestHelpers.h"
 
 #include <boost/property_tree/json_parser.hpp>
 
@@ -41,9 +42,26 @@ boost::property_tree::ptree Forum::Helpers::handlerToObj(CommandHandlerRef handl
     return result;
 }
 
+boost::property_tree::ptree Forum::Helpers::handlerToObj(CommandHandlerRef handler, Command command,
+                                                         Context::SortOrder sortOrder,
+                                                         const std::vector<std::string>& parameters)
+{
+    auto oldSortOrder = Context::getDisplayContext().sortOrder;
+    auto disposer = createDisposer([oldSortOrder]() { Context::getMutableDisplayContext().sortOrder = oldSortOrder; });
+    Context::getMutableDisplayContext().sortOrder = sortOrder;
+
+    return handlerToObj(handler, command, parameters);
+}
+
 boost::property_tree::ptree Forum::Helpers::handlerToObj(CommandHandlerRef handler, Command command)
 {
     return handlerToObj(handler, command, {});
+}
+
+boost::property_tree::ptree Forum::Helpers::handlerToObj(CommandHandlerRef handler, Command command, 
+                                                         Context::SortOrder sortOrder)
+{
+    return handlerToObj(handler, command, sortOrder, {});
 }
 
 std::string Forum::Helpers::createUserAndGetId(CommandHandlerRef handler, const std::string& name)

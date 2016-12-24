@@ -20,10 +20,8 @@ namespace Forum
             //users related
             ADD_USER,
             GET_USERS_BY_NAME,
-            GET_USERS_BY_CREATED_ASCENDING,
-            GET_USERS_BY_CREATED_DESCENDING,
-            GET_USERS_BY_LAST_SEEN_ASCENDING,
-            GET_USERS_BY_LAST_SEEN_DESCENDING,
+            GET_USERS_BY_CREATED,
+            GET_USERS_BY_LAST_SEEN,
             GET_USER_BY_ID,
             GET_USER_BY_NAME,
             CHANGE_USER_NAME,
@@ -32,12 +30,9 @@ namespace Forum
             //discussion thread related
             ADD_DISCUSSION_THREAD,
             GET_DISCUSSION_THREADS_BY_NAME,
-            GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING,
-            GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING,
-            GET_DISCUSSION_THREADS_BY_LAST_UPDATED_ASCENDING,
-            GET_DISCUSSION_THREADS_BY_LAST_UPDATED_DESCENDING,
-            GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_ASCENDING,
-            GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT_DESCENDING,
+            GET_DISCUSSION_THREADS_BY_CREATED,
+            GET_DISCUSSION_THREADS_BY_LAST_UPDATED,
+            GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT,
             GET_DISCUSSION_THREAD_BY_ID,
             CHANGE_DISCUSSION_THREAD_NAME,
             DELETE_DISCUSSION_THREAD,
@@ -47,15 +42,11 @@ namespace Forum
 
             //mixed user-discussion thread
             GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
-            GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING,
-            GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING,
-            GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING,
-            GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING,
-            GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT_ASCENDING,
-            GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT_DESCENDING,
+            GET_DISCUSSION_THREADS_OF_USER_BY_CREATED,
+            GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
+            GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT,
 
-            GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_ASCENDING,
-            GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_DESCENDING,
+            GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED,
 
             LAST_COMMAND
         };
@@ -79,10 +70,8 @@ namespace Forum
 
             DECLARE_COMMAND_HANDLER(addNewUser);
             DECLARE_COMMAND_HANDLER(getUsersByName);
-            DECLARE_COMMAND_HANDLER(getUsersByCreatedAscending);
-            DECLARE_COMMAND_HANDLER(getUsersByCreatedDescending);
-            DECLARE_COMMAND_HANDLER(getUsersByLastSeenAscending);
-            DECLARE_COMMAND_HANDLER(getUsersByLastSeenDescending);
+            DECLARE_COMMAND_HANDLER(getUsersByCreated);
+            DECLARE_COMMAND_HANDLER(getUsersByLastSeen);
             DECLARE_COMMAND_HANDLER(getUserById);
             DECLARE_COMMAND_HANDLER(getUserByName);
             DECLARE_COMMAND_HANDLER(changeUserName);
@@ -90,12 +79,9 @@ namespace Forum
 
             DECLARE_COMMAND_HANDLER(addNewDiscussionThread);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsByName);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreatedAscending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreatedDescending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdatedAscending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdatedDescending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByMessageCountAscending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByMessageCountDescending);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreated);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdated);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByMessageCount);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadById);
             DECLARE_COMMAND_HANDLER(changeDiscussionThreadName);
             DECLARE_COMMAND_HANDLER(deleteDiscussionThread);
@@ -104,15 +90,11 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(deleteDiscussionThreadMessage);
 
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByName);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreatedAscending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreatedDescending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByLastUpdatedAscending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByLastUpdatedDescending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByMessageCountAscending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByMessageCountDescending);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreated);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByLastUpdated);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByMessageCount);
 
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadMessagesOfUserByCreatedAscending);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadMessagesOfUserByCreatedDescending);
+            DECLARE_COMMAND_HANDLER(getDiscussionThreadMessagesOfUserByCreated);
 
             bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);
 

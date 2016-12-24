@@ -4,6 +4,7 @@
 #include "TestHelpers.h"
 
 using namespace Forum::Configuration;
+using namespace Forum::Context;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
@@ -28,13 +29,14 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
     DisposingDelegateObserver observer(*handler);
     observer->getUsersAction = [&](auto& _) { observerCalledNTimes += 1; };
 
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED_ASCENDING);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED_DESCENDING);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN_ASCENDING);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN_DESCENDING);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, SortOrder::Ascending);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, SortOrder::Descending);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED, SortOrder::Ascending);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED, SortOrder::Descending);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN, SortOrder::Ascending);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN, SortOrder::Descending);
 
-    BOOST_REQUIRE_EQUAL(5, observerCalledNTimes);
+    BOOST_REQUIRE_EQUAL(6, observerCalledNTimes);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_invokes_observer )
@@ -124,13 +126,14 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_user_invokes_observer )
 
     auto user1 = createUserAndGetId(handler, "User1");
 
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME, { user1 });
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_ASCENDING, { user1 });
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED_DESCENDING, { user1 });
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_ASCENDING, { user1 });
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED_DESCENDING, { user1 });
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME, SortOrder::Ascending, { user1 });
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME, SortOrder::Descending, { user1 });
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, SortOrder::Ascending, { user1 });
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, SortOrder::Descending, { user1 });
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, SortOrder::Ascending, { user1 });
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, SortOrder::Descending, { user1 });
 
-    BOOST_REQUIRE_EQUAL(5, methodCalledNrTimes);
+    BOOST_REQUIRE_EQUAL(6, methodCalledNrTimes);
 }
 
 BOOST_AUTO_TEST_CASE( Retrieving_discussion_thread_messages_of_user_invokes_observer )
@@ -143,8 +146,10 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_thread_messages_of_user_invokes_obse
 
     auto user1 = createUserAndGetId(handler, "User1");
 
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_ASCENDING, { user1 });
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED_DESCENDING, { user1 });
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, SortOrder::Ascending, 
+                 { user1 });
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, SortOrder::Descending, 
+                 { user1 });
 
     BOOST_REQUIRE_EQUAL(2, methodCalledNrTimes);
 }
@@ -157,13 +162,14 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_invokes_observer )
     DisposingDelegateObserver observer(*handler);
     observer->getDiscussionThreadsAction = [&](auto& _) { observerCalledNTimes += 1; };
 
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME);
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_ASCENDING);
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED_DESCENDING);
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_LAST_UPDATED_ASCENDING);
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_LAST_UPDATED_DESCENDING);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, SortOrder::Ascending);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, SortOrder::Descending);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED, SortOrder::Ascending);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED, SortOrder::Descending);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_LAST_UPDATED, SortOrder::Ascending);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_LAST_UPDATED, SortOrder::Descending);
 
-    BOOST_REQUIRE_EQUAL(5, observerCalledNTimes);
+    BOOST_REQUIRE_EQUAL(6, observerCalledNTimes);
 }
 
 BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_by_id_invokes_observer )
