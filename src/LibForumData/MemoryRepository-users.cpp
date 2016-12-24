@@ -231,36 +231,3 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
                           collection.deleteUser(it);
                       });
 }
-
-void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(const IdType& id, std::ostream& output) const
-{
-    auto performedBy = preparePerformedBy();
-
-    collection_.read([&](const EntityCollection& collection)
-                     {
-                         const auto& indexById = collection.usersById();
-                         auto it = indexById.find(id);
-                         if (it == indexById.end())
-                         {
-                             writeStatusCode(output, StatusCode::NOT_FOUND);
-                             return;
-                         }
-
-                         const auto& messages = (*it)->messagesByCreated();
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
-                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
-                         BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadMessages, true);
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "messages",
-                                                       Json::enumerate(messages.begin(), messages.end()));
-                         }
-                         else
-                         {
-                             writeSingleObjectSafeName(output, "messages",
-                                                       Json::enumerate(messages.rbegin(), messages.rend()));
-                         }
-                         observers_.onGetDiscussionThreadMessagesOfUser(
-                                 createObserverContext(performedBy.get(collection)), **it);
-                     });
-}

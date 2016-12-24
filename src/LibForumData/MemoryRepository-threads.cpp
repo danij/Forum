@@ -256,7 +256,6 @@ void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(const IdType& id
 }
 
 static const auto validDiscussionThreadNameRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");
-static const auto validDiscussionMessageContentRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");
 
 static StatusCode validateDiscussionThreadName(const std::string& name, const ConfigConstRef& config)
 {
@@ -282,37 +281,6 @@ static StatusCode validateDiscussionThreadName(const std::string& name, const Co
         return StatusCode::VALUE_TOO_LONG;
     }
     if (nrCharacters < config->discussionThread.minNameLength)
-    {
-        return StatusCode::VALUE_TOO_SHORT;
-    }
-
-    return StatusCode::OK;
-}
-
-static StatusCode validateDiscussionMessageContent(const std::string& content, const ConfigConstRef& config)
-{
-    if (content.empty())
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-    try
-    {
-        if ( ! boost::u32regex_match(content, validDiscussionMessageContentRegex, boost::match_flag_type::format_all))
-        {
-            return StatusCode::INVALID_PARAMETERS;
-        }
-    }
-    catch(...)
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    auto nrCharacters = countUTF8Characters(content);
-    if (nrCharacters > config->discussionMessage.maxContentLength)
-    {
-        return StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->discussionMessage.minContentLength)
     {
         return StatusCode::VALUE_TOO_SHORT;
     }
@@ -407,83 +375,5 @@ void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& ou
                           observers_.onDeleteDiscussionThread(
                                   createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteDiscussionThread(it);
-                      });
-}
-
-void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, const std::string& content,
-                                                       std::ostream& output)
-{
-    StatusWriter status(output, StatusCode::OK);
-    if ( ! threadId)
-    {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
-    }
-
-    auto validationCode = validateDiscussionMessageContent(content, getGlobalConfig());
-    if (validationCode != StatusCode::OK)
-    {
-        status = validationCode;
-        return;
-    }
-
-    auto performedBy = preparePerformedBy();
-
-    collection_.write([&](EntityCollection& collection)
-                      {
-                          auto& threadIndex = collection.threads();
-                          auto threadIt = threadIndex.find(threadId);
-                          if (threadIt == threadIndex.end())
-                          {
-                              status = StatusCode::NOT_FOUND;
-                              return;
-                          }
-
-                          const auto& createdBy = performedBy.getAndUpdate(collection);
-
-                          auto message = std::make_shared<DiscussionMessage>(*createdBy, **threadIt);
-                          message->id() = generateUUIDString();
-                          message->content() = content;
-                          message->created() = Context::getCurrentTime();
-
-                          collection.messages().insert(message);
-                          collection.modifyDiscussionThread(threadIt, [&message](DiscussionThread& thread)
-                          {
-                              thread.messages().insert(message);
-                          });
-
-                          createdBy->messages().insert(message);
-
-                          observers_.onAddNewDiscussionMessage(createObserverContext(*createdBy), *message);
-
-                          status.addExtraSafeName("id", message->id());
-                          status.addExtraSafeName("parentId", (*threadIt)->id());
-                          status.addExtraSafeName("created", message->created());
-                      });
-}
-
-void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& output)
-{
-    StatusWriter status(output, StatusCode::OK);
-    if ( ! id)
-    {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
-    }
-
-    auto performedBy = preparePerformedBy();
-    collection_.write([&](EntityCollection& collection)
-                      {
-                          auto& indexById = collection.messages().get<EntityCollection::DiscussionMessageCollectionById>();
-                          auto it = indexById.find(id);
-                          if (it == indexById.end())
-                          {
-                              status = StatusCode::NOT_FOUND;
-                              return;
-                          }
-                          //make sure the message is not deleted before being passed to the observers
-                          observers_.onDeleteDiscussionMessage(
-                                  createObserverContext(*performedBy.getAndUpdate(collection)), **it);
-                          collection.deleteDiscussionMessage(it);
                       });
 }
