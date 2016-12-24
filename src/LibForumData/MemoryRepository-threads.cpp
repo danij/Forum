@@ -18,7 +18,7 @@ using namespace Forum::Repository;
 
 void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -32,7 +32,7 @@ void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
 
 void MemoryRepository::getDiscussionThreadsByCreated(bool ascending, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -65,7 +65,7 @@ void MemoryRepository::getDiscussionThreadsByCreatedDescending(std::ostream& out
 
 void MemoryRepository::getDiscussionThreadsByLastUpdated(bool ascending, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -98,7 +98,7 @@ void MemoryRepository::getDiscussionThreadsByLastUpdatedDescending(std::ostream&
 
 void MemoryRepository::getDiscussionThreadsByMessageCount(bool ascending, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -131,7 +131,7 @@ void MemoryRepository::getDiscussionThreadsByMessageCountDescending(std::ostream
 
 void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -153,7 +153,7 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
 
 void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -176,7 +176,7 @@ void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::o
 
 void MemoryRepository::getDiscussionThreadsOfUserByCreated(bool ascending, const IdType& id, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -219,7 +219,7 @@ void MemoryRepository::getDiscussionThreadsOfUserByCreatedDescending(const IdTyp
 void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(bool ascending, const IdType& id,
                                                                std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -261,7 +261,7 @@ void MemoryRepository::getDiscussionThreadsOfUserByLastUpdatedDescending(const I
 void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(bool ascending, const IdType& id,
                                                                 std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -375,7 +375,7 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
         return;
     }
 
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.write([&](EntityCollection& collection)
                       {
@@ -405,7 +405,7 @@ void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::s
     {
         status = validationCode;
     }
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.write([&](EntityCollection& collection)
                       {
@@ -431,7 +431,7 @@ void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::s
 void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     if ( ! id)
     {
@@ -472,7 +472,7 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
         return;
     }
 
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.write([&](EntityCollection& collection)
                       {
@@ -516,7 +516,7 @@ void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& o
         return;
     }
 
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
     collection_.write([&](EntityCollection& collection)
                       {
                           auto& indexById = collection.messages().get<EntityCollection::DiscussionMessageCollectionById>();

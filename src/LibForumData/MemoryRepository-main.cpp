@@ -35,10 +35,9 @@ void MemoryRepository::removeObserver(const WriteRepositoryObserverRef& observer
     observers_.removeObserver(observer);
 }
 
-
 void MemoryRepository::getEntitiesCount(std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -123,7 +122,3 @@ UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
     return result;
 }
 
-PerformedByWithLastSeenUpdateGuard Repository::preparePerformedBy(const MemoryRepository& repository)
-{
-    return PerformedByWithLastSeenUpdateGuard(repository);
-}

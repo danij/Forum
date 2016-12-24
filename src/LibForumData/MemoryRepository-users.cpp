@@ -18,7 +18,7 @@ using namespace Forum::Repository;
 
 void MemoryRepository::getUsersByName(std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -30,7 +30,7 @@ void MemoryRepository::getUsersByName(std::ostream& output) const
 
 void MemoryRepository::getUsersByCreated(bool ascending, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -59,7 +59,7 @@ void MemoryRepository::getUsersByCreatedDescending(std::ostream& output) const
 
 void MemoryRepository::getUsersByLastSeen(bool ascending, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -88,7 +88,7 @@ void MemoryRepository::getUsersByLastSeenDescending(std::ostream& output) const
 
 void MemoryRepository::getUserById(const IdType& id, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -108,7 +108,7 @@ void MemoryRepository::getUserById(const IdType& id, std::ostream& output) const
 
 void MemoryRepository::getUserByName(const std::string& name, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -174,7 +174,7 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
     user->name() = name;
     user->created() = Context::getCurrentTime();
 
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.write([&](EntityCollection& collection)
                       {
@@ -201,7 +201,7 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
     {
         status = validationCode;
     }
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.write([&](EntityCollection& collection)
                       {
@@ -236,7 +236,7 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
         return;
     }
 
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.write([&](EntityCollection& collection)
                       {
@@ -256,7 +256,7 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
 void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(bool ascending, const IdType& id,
                                                                   std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy(*this);
+    auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
