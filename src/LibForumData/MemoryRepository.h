@@ -107,7 +107,7 @@ namespace Forum
 
         inline ObserverContext createObserverContext(PerformedByType performedBy)
         {
-            return ObserverContext(performedBy, Context::getCurrentTime());
+            return ObserverContext(performedBy, Context::getCurrentTime(), Context::getDisplayContext());
         }
     }
 }

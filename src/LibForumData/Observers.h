@@ -2,6 +2,7 @@
 
 #include "Entities.h"
 #include "TypeHelpers.h"
+#include "ContextProviders.h"
 
 #include <memory>
 
@@ -15,9 +16,11 @@ namespace Forum
         {
             const PerformedByType performedBy;
             const Entities::Timestamp timestamp;
+            const Context::DisplayContext displayContext;
 
-            ObserverContext(PerformedByType performedBy, Entities::Timestamp timestamp) :
-                    performedBy(performedBy), timestamp(timestamp)
+            ObserverContext(PerformedByType performedBy, Entities::Timestamp timestamp, 
+                            Context::DisplayContext displayContext) :
+                    performedBy(performedBy), timestamp(timestamp), displayContext(displayContext)
             {
             }
         };
