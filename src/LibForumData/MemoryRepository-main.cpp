@@ -85,16 +85,16 @@ PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& 
     if ((result.lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
     {
         auto& userId = result.id();
-        auto collection = &(repository_.collection_);
-        lastSeenUpdate_ = [collection, now, userId]()
+        auto mutableCollection = &repository_.collection_;
+        lastSeenUpdate_ = [mutableCollection, now, userId]()
         {
-            collection->write([&](EntityCollection& collection)
-                              {
-                                  collection.modifyUserById(userId, [ & ](User& user)
-                                  {
-                                      user.lastSeen() = now;
-                                  });
-                              });
+            mutableCollection->write([&](EntityCollection& collectionToModify)
+                                     {
+                                         collectionToModify.modifyUserById(userId, [ & ](User& user)
+                                         {
+                                             user.lastSeen() = now;
+                                         });
+                                     });
         };
     }
     return result;
