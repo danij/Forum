@@ -23,7 +23,7 @@ void UserCollectionBase::modifyUser(UserCollection::iterator iterator,
     });
 }
 
-void UserCollectionBase::modifyUser(const IdType& id, const std::function<void(User&)>& modifyFunction)
+void UserCollectionBase::modifyUserById(const IdType& id, const std::function<void(User&)>& modifyFunction)
 {
     return modifyUser(users_.get<UserCollectionById>().find(id), modifyFunction);
 }
@@ -62,7 +62,7 @@ void EntityCollection::deleteUser(UserCollection::iterator iterator)
         {
             //Each discussion message holds a reference to the user that created it and the parent thread
             //As such, delete the discussion message before deleting the thread and the user
-            static_cast<DiscussionMessageCollectionBase*>(this)->deleteDiscussionMessage(message->id());
+            static_cast<DiscussionMessageCollectionBase*>(this)->deleteDiscussionMessageById(message->id());
         }
     }
     {
@@ -71,13 +71,13 @@ void EntityCollection::deleteUser(UserCollection::iterator iterator)
         {
             //Each discussion thread holds a reference to the user that created it
             //As such, delete the discussion thread before deleting the user
-            static_cast<DiscussionThreadCollectionBase*>(this)->deleteDiscussionThread(thread->id());
+            static_cast<DiscussionThreadCollectionBase*>(this)->deleteDiscussionThreadById(thread->id());
         }
     }
     users_.erase(iterator);
 }
 
-void UserCollectionBase::deleteUser(const IdType& id)
+void UserCollectionBase::deleteUserById(const IdType& id)
 {
     deleteUser(users_.get<UserCollectionById>().find(id));
 }
@@ -111,13 +111,13 @@ void EntityCollection::modifyDiscussionThread(DiscussionThreadCollection::iterat
     {
         if (thread)
         {
-            thread->createdBy().modifyDiscussionThread(thread->id(), modifyFunction);
+            thread->createdBy().modifyDiscussionThreadById(thread->id(), modifyFunction);
         }
     });
 }
 
-void DiscussionThreadCollectionBase::modifyDiscussionThread(const IdType& id,
-                                                            const std::function<void(DiscussionThread&)>& modifyFunction)
+void DiscussionThreadCollectionBase::modifyDiscussionThreadById(const IdType& id,
+                                                                const std::function<void(DiscussionThread&)>& modifyFunction)
 {
     modifyDiscussionThread(threads_.get<DiscussionThreadCollectionById>().find(id), modifyFunction);
 }
@@ -143,17 +143,17 @@ void EntityCollection::deleteDiscussionThread(DiscussionThreadCollection::iterat
         {
             //Each discussion message holds a reference to the user that created it and the parent thread
             //As such, delete the discussion message before deleting the thread
-            static_cast<DiscussionMessageCollectionBase*>(this)->deleteDiscussionMessage(message->id());
+            static_cast<DiscussionMessageCollectionBase*>(this)->deleteDiscussionMessageById(message->id());
         }
     }
     if (alsoDeleteThreadsFromUser)
     {
-        (*iterator)->createdBy().deleteDiscussionThread((*iterator)->id());
+        (*iterator)->createdBy().deleteDiscussionThreadById((*iterator)->id());
     }
     threads_.erase(iterator);
 }
 
-void DiscussionThreadCollectionBase::deleteDiscussionThread(const IdType& id)
+void DiscussionThreadCollectionBase::deleteDiscussionThreadById(const IdType& id)
 {
     deleteDiscussionThread(threads_.get<DiscussionThreadCollectionById>().find(id));
 }
@@ -187,16 +187,16 @@ void EntityCollection::modifyDiscussionMessage(DiscussionMessageCollection::iter
     {
         if (message)
         {
-            message->createdBy().modifyDiscussionMessage(message->id(), [&modifyFunction](auto& message)
+            message->createdBy().modifyDiscussionMessageById(message->id(), [&modifyFunction](auto& message)
             {
-                message.parentThread().modifyDiscussionMessage(message.id(), modifyFunction);
+                message.parentThread().modifyDiscussionMessageById(message.id(), modifyFunction);
             });
         }
     });
 }
 
-void DiscussionMessageCollectionBase::modifyDiscussionMessage(const IdType& id,
-                                                              const std::function<void(DiscussionMessage&)>& modifyFunction)
+void DiscussionMessageCollectionBase::modifyDiscussionMessageById(const IdType& id,
+                                                                  const std::function<void(DiscussionMessage&)>& modifyFunction)
 {
     modifyDiscussionMessage(messages_.get<DiscussionMessageCollectionById>().find(id), modifyFunction);
 }
@@ -218,20 +218,20 @@ void EntityCollection::deleteDiscussionMessage(DiscussionMessageCollection::iter
     }
     if (alsoDeleteMessagesFromUser)
     {
-        (*iterator)->createdBy().deleteDiscussionMessage((*iterator)->id());
+        (*iterator)->createdBy().deleteDiscussionMessageById((*iterator)->id());
     }
     if (alsoDeleteMessagesFromThread)
     {
-        static_cast<DiscussionThreadCollectionBase*>(this)->modifyDiscussionThread((*iterator)->parentThread().id(),
-                                                                                   [&](DiscussionThread& thread)
+        modifyDiscussionThreadById((*iterator)->parentThread().id(),
+                                   [&](DiscussionThread& thread)
         {
-            thread.deleteDiscussionMessage((*iterator)->id());
+            thread.deleteDiscussionMessageById((*iterator)->id());
         });
     }
     messages_.erase(iterator);
 }
 
-void DiscussionMessageCollectionBase::deleteDiscussionMessage(const IdType& id)
+void DiscussionMessageCollectionBase::deleteDiscussionMessageById(const IdType& id)
 {
     deleteDiscussionMessage(messages_.get<DiscussionMessageCollectionById>().find(id));
 }

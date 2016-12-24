@@ -76,7 +76,7 @@ namespace Forum
              * Enables a safe modification of a discussion thread instance,
              * refreshing all indexes the thread is registered in
              */
-            void modifyDiscussionThread(const IdType& id, const std::function<void(DiscussionThread&)>& modifyFunction);
+            void modifyDiscussionThreadById(const IdType& id, const std::function<void(DiscussionThread&)>& modifyFunction);
             /**
              * Safely deletes a discussion thread instance, removing it from all indexes it is registered in
              */
@@ -84,7 +84,7 @@ namespace Forum
             /**
              * Safely deletes a discussion thread instance, removing it from all indexes it is registered in
              */
-            void deleteDiscussionThread(const IdType& id);
+            void deleteDiscussionThreadById(const IdType& id);
 
         protected:
             DiscussionThreadCollection threads_;

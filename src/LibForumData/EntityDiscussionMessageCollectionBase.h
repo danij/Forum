@@ -54,7 +54,7 @@ namespace Forum
              * Enables a safe modification of a discussion message instance,
              * refreshing all indexes the message is registered in
              */
-            void modifyDiscussionMessage(const IdType& id, const std::function<void(DiscussionMessage&)>& modifyFunction);
+            void modifyDiscussionMessageById(const IdType& id, const std::function<void(DiscussionMessage&)>& modifyFunction);
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */
@@ -62,7 +62,7 @@ namespace Forum
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */
-            void deleteDiscussionMessage(const IdType& id);
+            void deleteDiscussionMessageById(const IdType& id);
 
         protected:
             DiscussionMessageCollection messages_;

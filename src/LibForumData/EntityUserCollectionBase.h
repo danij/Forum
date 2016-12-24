@@ -45,7 +45,7 @@ namespace Forum
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
              */
-            void modifyUser(const IdType& id, const std::function<void(User&)>& modifyFunction);
+            void modifyUserById(const IdType& id, const std::function<void(User&)>& modifyFunction);
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
              */
@@ -53,7 +53,7 @@ namespace Forum
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
              */
-            void deleteUser(const IdType& id);
+            void deleteUserById(const IdType& id);
 
         protected:
             UserCollection users_;

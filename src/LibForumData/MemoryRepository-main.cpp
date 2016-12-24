@@ -90,7 +90,7 @@ PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& 
         {
             collection->write([&](EntityCollection& collection)
                               {
-                                  collection.modifyUser(userId, [ & ](User& user)
+                                  collection.modifyUserById(userId, [ & ](User& user)
                                   {
                                       user.lastSeen() = now;
                                   });
@@ -115,7 +115,7 @@ UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
 
     if ((result->lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
     {
-        collection.modifyUser(result->id(), [&](User& user)
+        collection.modifyUserById(result->id(), [&](User& user)
         {
             user.lastSeen() = now;
         });
