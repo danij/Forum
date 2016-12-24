@@ -57,21 +57,23 @@ void EntityCollection::deleteUser(UserCollection::iterator iterator)
         return;
     }
     {
+        //no need to delete the message from the user as we're deleting the whole user anyway
         BoolTemporaryChanger changer(alsoDeleteMessagesFromUser, false);
         for (auto& message : (*iterator)->messages())
         {
             //Each discussion message holds a reference to the user that created it and the parent thread
             //As such, delete the discussion message before deleting the thread and the user
-            static_cast<DiscussionMessageCollectionBase*>(this)->deleteDiscussionMessageById(message->id());
+            deleteDiscussionMessageById(message->id());
         }
     }
     {
+        //no need to delete the thread from the user as we're deleting the whole user anyway
         BoolTemporaryChanger changer(alsoDeleteThreadsFromUser, false);
         for (auto& thread : (*iterator)->threads())
         {
             //Each discussion thread holds a reference to the user that created it
             //As such, delete the discussion thread before deleting the user
-            static_cast<DiscussionThreadCollectionBase*>(this)->deleteDiscussionThreadById(thread->id());
+            deleteDiscussionThreadById(thread->id());
         }
     }
     users_.erase(iterator);
@@ -107,10 +109,12 @@ void EntityCollection::modifyDiscussionThread(DiscussionThreadCollection::iterat
     {
         return;
     }
+    //allow reindexing of the collection that includes all threads
     threads_.modify(iterator, [&modifyFunction](const DiscussionThreadRef& thread)
     {
         if (thread)
         {
+            //allow reindexing of the subcollection containing only the threads of the current user
             thread->createdBy().modifyDiscussionThreadById(thread->id(), modifyFunction);
         }
     });
@@ -138,12 +142,13 @@ void EntityCollection::deleteDiscussionThread(DiscussionThreadCollection::iterat
         return;
     }
     {
+        //no need to delete the message from the thread as we're deleting the whole thread anyway
         BoolTemporaryChanger changer(alsoDeleteMessagesFromThread, false);
         for (auto& message : (*iterator)->messages())
         {
             //Each discussion message holds a reference to the user that created it and the parent thread
             //As such, delete the discussion message before deleting the thread
-            static_cast<DiscussionMessageCollectionBase*>(this)->deleteDiscussionMessageById(message->id());
+            deleteDiscussionMessageById(message->id());
         }
     }
     if (alsoDeleteThreadsFromUser)
@@ -183,13 +188,15 @@ void EntityCollection::modifyDiscussionMessage(DiscussionMessageCollection::iter
     {
         return;
     }
+    //allow reindexing of the collection that includes all messages
     messages_.modify(iterator, [&modifyFunction](const DiscussionMessageRef& message)
     {
         if (message)
         {
-            message->createdBy().modifyDiscussionMessageById(message->id(), [&modifyFunction](auto& message)
+            //allow reindexing of the subcollection containing only the messages of the current user
+            message->createdBy().modifyDiscussionMessageById(message->id(), [&modifyFunction](auto& messageToModify)
             {
-                message.parentThread().modifyDiscussionMessageById(message.id(), modifyFunction);
+                messageToModify.parentThread().modifyDiscussionMessageById(messageToModify.id(), modifyFunction);
             });
         }
     });
