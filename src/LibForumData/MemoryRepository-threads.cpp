@@ -145,7 +145,17 @@ void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::o
                          const auto& threads = (*it)->threadsByName();
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
-                         writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
+                         {
+                             writeSingleObjectSafeName(output, "threads", 
+                                                       Json::enumerate(threads.begin(), threads.end()));
+                         }
+                         else
+                         {
+                             writeSingleObjectSafeName(output, "threads", 
+                                                       Json::enumerate(threads.rbegin(), threads.rend()));
+                         }
                          observers_.onGetDiscussionThreadsOfUser(createObserverContext(performedBy.get(collection)),
                                                                  **it);
                      });

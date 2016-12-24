@@ -325,13 +325,23 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_name )
 
     BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.discussionThreads"));
 
-    auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
-                                              .get_child("threads"));
+    auto threads = deserializeThreads(handlerToObj(handler, 
+                                                   Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
+                                                   SortOrder::Ascending).get_child("threads"));
 
     BOOST_REQUIRE_EQUAL(names.size(), threads.size());
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
     BOOST_REQUIRE_EQUAL("Ghi", threads[2].name);
+
+    threads = deserializeThreads(handlerToObj(handler, 
+                                              Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
+                                              SortOrder::Descending).get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(names.size(), threads.size());
+    BOOST_REQUIRE_EQUAL("Ghi", threads[0].name);
+    BOOST_REQUIRE_EQUAL("Def", threads[1].name);
+    BOOST_REQUIRE_EQUAL("Abc", threads[2].name);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_creation_date_ascending )
