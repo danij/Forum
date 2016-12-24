@@ -105,9 +105,9 @@ namespace Forum
             mutable ObserverCollection observers_;
         };
 
-        inline ObserverContext createObserverContext(PerformedByType performedBy)
+        inline ObserverContext_ createObserverContext(PerformedByType performedBy)
         {
-            return ObserverContext(performedBy, Context::getCurrentTime(), Context::getDisplayContext());
+            return ObserverContext_(performedBy, Context::getCurrentTime(), Context::getDisplayContext());
         }
     }
 }
