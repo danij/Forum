@@ -54,10 +54,8 @@ namespace Forum
             virtual void getEntitiesCount(std::ostream& output) const override;
 
             virtual void getUsersByName(std::ostream& output) const override;
-            virtual void getUsersByCreatedAscending(std::ostream& output) const override;
-            virtual void getUsersByCreatedDescending(std::ostream& output) const override;
-            virtual void getUsersByLastSeenAscending(std::ostream& output) const override;
-            virtual void getUsersByLastSeenDescending(std::ostream& output) const override;
+            virtual void getUsersByCreated(std::ostream& output) const override;
+            virtual void getUsersByLastSeen(std::ostream& output) const override;
 
             virtual void getUserById(const Entities::IdType& id, std::ostream& output) const override;
             virtual void getUserByName(const std::string& name, std::ostream& output) const override;
@@ -68,28 +66,20 @@ namespace Forum
             virtual void deleteUser(const Entities::IdType& id, std::ostream& output) override;
 
             virtual void getDiscussionThreadsByName(std::ostream& output) const override;
-            virtual void getDiscussionThreadsByCreatedAscending(std::ostream& output) const override;
-            virtual void getDiscussionThreadsByCreatedDescending(std::ostream& output) const override;
-            virtual void getDiscussionThreadsByLastUpdatedAscending(std::ostream& output) const override;
-            virtual void getDiscussionThreadsByLastUpdatedDescending(std::ostream& output) const override;
-            virtual void getDiscussionThreadsByMessageCountAscending(std::ostream& output) const override;
-            virtual void getDiscussionThreadsByMessageCountDescending(std::ostream& output) const override;
+            virtual void getDiscussionThreadsByCreated(std::ostream& output) const override;
+            virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const override;
+            virtual void getDiscussionThreadsByMessageCount(std::ostream& output) const override;
+
             virtual void getDiscussionThreadById(const Entities::IdType& id, std::ostream& output) const override;
 
             virtual void getDiscussionThreadsOfUserByName(const Entities::IdType& id,
                                                           std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByCreatedAscending(const Entities::IdType& id,
-                                                                      std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByCreatedDescending(const Entities::IdType& id,
-                                                                       std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByLastUpdatedAscending(const Entities::IdType& id,
-                                                                          std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByLastUpdatedDescending(const Entities::IdType& id,
-                                                                           std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByMessageCountAscending(const Entities::IdType& id,
-                                                                           std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByMessageCountDescending(const Entities::IdType& id,
-                                                                            std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfUserByCreated(const Entities::IdType& id,
+                                                             std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfUserByLastUpdated(const Entities::IdType& id,
+                                                                 std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfUserByMessageCount(const Entities::IdType& id,
+                                                                  std::ostream& output) const override;
 
             virtual void addNewDiscussionThread(const std::string& name, std::ostream& output) override;
             virtual void changeDiscussionThreadName(const Entities::IdType& id, const std::string& newName,
@@ -100,10 +90,8 @@ namespace Forum
                                                          const std::string& content, std::ostream& output) override;
             virtual void deleteDiscussionMessage(const Entities::IdType& id, std::ostream& output) override;
 
-            virtual void getDiscussionThreadMessagesOfUserByCreatedAscending(const Entities::IdType& id,
-                                                                             std::ostream& output) const override;
-            virtual void getDiscussionThreadMessagesOfUserByCreatedDescending(const Entities::IdType& id,
-                                                                              std::ostream& output) const override;
+            virtual void getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
+                                                                    std::ostream& output) const override;
 
         private:
             friend struct PerformedByWithLastSeenUpdateGuard;
@@ -112,23 +100,6 @@ namespace Forum
             {
                 return PerformedByWithLastSeenUpdateGuard(*this);
             }
-
-            void getUsersByCreated(bool ascending, std::ostream& output) const;
-            void getUsersByLastSeen(bool ascending, std::ostream& output) const;
-
-            void getDiscussionThreadsByCreated(bool ascending, std::ostream& output) const;
-            void getDiscussionThreadsByLastUpdated(bool ascending, std::ostream& output) const;
-            void getDiscussionThreadsByMessageCount(bool ascending, std::ostream& output) const;
-
-            void getDiscussionThreadsOfUserByCreated(bool ascending, const Entities::IdType& id,
-                                                     std::ostream& output) const;
-            void getDiscussionThreadsOfUserByLastUpdated(bool ascending, const Entities::IdType& id,
-                                                         std::ostream& output) const;
-            void getDiscussionThreadsOfUserByMessageCount(bool ascending, const Entities::IdType& id,
-                                                          std::ostream& output) const;
-
-            void getDiscussionThreadMessagesOfUserByCreated(bool ascending, const Entities::IdType& id,
-                                                            std::ostream& output) const;
 
             Helpers::ResourceGuard<Entities::EntityCollection> collection_;
             mutable ObserverCollection observers_;

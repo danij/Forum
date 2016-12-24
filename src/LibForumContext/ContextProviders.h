@@ -20,5 +20,21 @@ namespace Forum
          * Sets the id of the current user executing an action (thread-local)
          */
         void setCurrentUserId(Entities::IdType value);
+
+        enum class SortOrder
+        {
+            Ascending,
+            Descending
+        };
+
+        struct DisplayContext
+        {
+            SortOrder sortOrder = SortOrder::Ascending;
+            int_fast32_t pageNumber = 0;
+            int_fast32_t pagesSize = std::numeric_limits<decltype(pagesSize)>::max();
+        };
+
+        const DisplayContext& getDisplayContext();
+        DisplayContext& getMutableDisplayContext();
     }
 }

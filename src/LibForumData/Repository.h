@@ -23,46 +23,34 @@ namespace Forum
             virtual void getEntitiesCount(std::ostream& output) const = 0;
 
             virtual void getUsersByName(std::ostream& output) const = 0;
-            virtual void getUsersByCreatedAscending(std::ostream& output) const = 0;
-            virtual void getUsersByCreatedDescending(std::ostream& output) const = 0;
-            virtual void getUsersByLastSeenAscending(std::ostream& output) const = 0;
-            virtual void getUsersByLastSeenDescending(std::ostream& output) const = 0;
+            virtual void getUsersByCreated(std::ostream& output) const = 0;
+            virtual void getUsersByLastSeen(std::ostream& output) const = 0;
+
             virtual void getUserById(const Entities::IdType& id, std::ostream& output) const = 0;
             virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
 
             virtual void getDiscussionThreadsByName(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsByCreatedAscending(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsByCreatedDescending(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsByLastUpdatedAscending(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsByLastUpdatedDescending(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsByMessageCountAscending(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsByMessageCountDescending(std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsByCreated(std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsByMessageCount(std::ostream& output) const = 0;
             virtual void getDiscussionThreadById(const Entities::IdType& id, std::ostream& output) const = 0;
 
             virtual void getDiscussionThreadsOfUserByName(const Entities::IdType& id,
                                                           std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfUserByCreatedAscending(const Entities::IdType& id,
-                                                                      std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfUserByCreatedDescending(const Entities::IdType& id,
-                                                                       std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfUserByLastUpdatedAscending(const Entities::IdType& id,
-                                                                          std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfUserByLastUpdatedDescending(const Entities::IdType& id,
-                                                                           std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfUserByMessageCountAscending(const Entities::IdType& id,
-                                                                           std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfUserByMessageCountDescending(const Entities::IdType& id,
-                                                                            std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsOfUserByCreated(const Entities::IdType& id,
+                                                             std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsOfUserByLastUpdated(const Entities::IdType& id,
+                                                                 std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsOfUserByMessageCount(const Entities::IdType& id,
+                                                                  std::ostream& output) const = 0;
 
-            virtual void getDiscussionThreadMessagesOfUserByCreatedAscending(const Entities::IdType& id,
-                                                                             std::ostream& output) const = 0;
-            virtual void getDiscussionThreadMessagesOfUserByCreatedDescending(const Entities::IdType& id,
-                                                                              std::ostream& output) const = 0;
+            virtual void getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
+                                                                    std::ostream& output) const = 0;
         };
 
         typedef std::shared_ptr<IReadRepository> ReadRepositoryRef;
 
-        enum StatusCode : uint32_t
+        enum StatusCode : uint_fast32_t
         {
             OK = 0,
             INVALID_PARAMETERS,

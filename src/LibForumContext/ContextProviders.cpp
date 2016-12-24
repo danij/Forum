@@ -40,3 +40,15 @@ void Forum::Context::setCurrentUserId(IdType value)
 {
     currentUser = value;
 }
+
+static thread_local DisplayContext displayContext = {};
+
+const DisplayContext& Forum::Context::getDisplayContext()
+{
+    return displayContext;
+}
+
+DisplayContext& Forum::Context::getMutableDisplayContext()
+{
+    return displayContext;
+}

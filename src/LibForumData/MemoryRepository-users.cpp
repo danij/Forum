@@ -28,14 +28,14 @@ void MemoryRepository::getUsersByName(std::ostream& output) const
                      });
 }
 
-void MemoryRepository::getUsersByCreated(bool ascending, std::ostream& output) const
+void MemoryRepository::getUsersByCreated(std::ostream& output) const
 {
     auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
                          const auto& users = collection.usersByCreated();
-                         if (ascending)
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
                          {
                              writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
                          }
@@ -46,25 +46,14 @@ void MemoryRepository::getUsersByCreated(bool ascending, std::ostream& output) c
                          observers_.onGetUsers(createObserverContext(performedBy.get(collection)));
                      });
 }
-
-void MemoryRepository::getUsersByCreatedAscending(std::ostream& output) const
-{
-    getUsersByCreated(true, output);
-}
-
-void MemoryRepository::getUsersByCreatedDescending(std::ostream& output) const
-{
-    getUsersByCreated(false, output);
-}
-
-void MemoryRepository::getUsersByLastSeen(bool ascending, std::ostream& output) const
+void MemoryRepository::getUsersByLastSeen(std::ostream& output) const
 {
     auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
                      {
                          const auto& users = collection.usersByLastSeen();
-                         if (ascending)
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
                          {
                              writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
                          }
@@ -74,16 +63,6 @@ void MemoryRepository::getUsersByLastSeen(bool ascending, std::ostream& output) 
                          }
                          observers_.onGetUsers(createObserverContext(performedBy.get(collection)));
                      });
-}
-
-void MemoryRepository::getUsersByLastSeenAscending(std::ostream& output) const
-{
-    getUsersByLastSeen(true, output);
-}
-
-void MemoryRepository::getUsersByLastSeenDescending(std::ostream& output) const
-{
-    getUsersByLastSeen(false, output);
 }
 
 void MemoryRepository::getUserById(const IdType& id, std::ostream& output) const
@@ -253,8 +232,7 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
                       });
 }
 
-void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(bool ascending, const IdType& id,
-                                                                  std::ostream& output) const
+void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(const IdType& id, std::ostream& output) const
 {
     auto performedBy = preparePerformedBy();
 
@@ -272,7 +250,7 @@ void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(bool ascending
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
                          BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadMessages, true);
-                         if (ascending)
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
                          {
                              writeSingleObjectSafeName(output, "messages",
                                                        Json::enumerate(messages.begin(), messages.end()));
@@ -285,14 +263,4 @@ void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(bool ascending
                          observers_.onGetDiscussionThreadMessagesOfUser(
                                  createObserverContext(performedBy.get(collection)), **it);
                      });
-}
-
-void MemoryRepository::getDiscussionThreadMessagesOfUserByCreatedAscending(const IdType& id, std::ostream& output) const
-{
-    getDiscussionThreadMessagesOfUserByCreated(true, id, output);
-}
-
-void MemoryRepository::getDiscussionThreadMessagesOfUserByCreatedDescending(const IdType& id, std::ostream& output) const
-{
-    getDiscussionThreadMessagesOfUserByCreated(false, id, output);
 }

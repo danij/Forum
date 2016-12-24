@@ -25,12 +25,19 @@ void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
                          const auto& threads = collection.threadsByName();
                          BoolTemporaryChanger changer(serializationSettings.hideDiscussionThreadMessages, true);
 
-                         writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
+                         {
+                             writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.begin(), threads.end()));
+                         }
+                         else
+                         {
+                             writeSingleObjectSafeName(output, "threads", Json::enumerate(threads.rbegin(), threads.rend()));
+                         }
                          observers_.onGetDiscussionThreads(createObserverContext(performedBy.get(collection)));
                      });
 }
 
-void MemoryRepository::getDiscussionThreadsByCreated(bool ascending, std::ostream& output) const
+void MemoryRepository::getDiscussionThreadsByCreated(std::ostream& output) const
 {
     auto performedBy = preparePerformedBy();
 
@@ -39,7 +46,7 @@ void MemoryRepository::getDiscussionThreadsByCreated(bool ascending, std::ostrea
                          const auto& threads = collection.threadsByCreated();
                          BoolTemporaryChanger changer(serializationSettings.hideDiscussionThreadMessages, true);
 
-                         if (ascending)
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
                          {
                              writeSingleObjectSafeName(output, "threads",
                                                        Json::enumerate(threads.begin(), threads.end()));
@@ -53,17 +60,7 @@ void MemoryRepository::getDiscussionThreadsByCreated(bool ascending, std::ostrea
                      });
 }
 
-void MemoryRepository::getDiscussionThreadsByCreatedAscending(std::ostream& output) const
-{
-    getDiscussionThreadsByCreated(true, output);
-}
-
-void MemoryRepository::getDiscussionThreadsByCreatedDescending(std::ostream& output) const
-{
-    getDiscussionThreadsByCreated(false, output);
-}
-
-void MemoryRepository::getDiscussionThreadsByLastUpdated(bool ascending, std::ostream& output) const
+void MemoryRepository::getDiscussionThreadsByLastUpdated(std::ostream& output) const
 {
     auto performedBy = preparePerformedBy();
 
@@ -72,7 +69,7 @@ void MemoryRepository::getDiscussionThreadsByLastUpdated(bool ascending, std::os
                          const auto& threads = collection.threadsByLastUpdated();
                          BoolTemporaryChanger changer(serializationSettings.hideDiscussionThreadMessages, true);
 
-                         if (ascending)
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
                          {
                              writeSingleObjectSafeName(output, "threads",
                                                        Json::enumerate(threads.begin(), threads.end()));
@@ -86,17 +83,7 @@ void MemoryRepository::getDiscussionThreadsByLastUpdated(bool ascending, std::os
                      });
 }
 
-void MemoryRepository::getDiscussionThreadsByLastUpdatedAscending(std::ostream& output) const
-{
-    getDiscussionThreadsByLastUpdated(true, output);
-}
-
-void MemoryRepository::getDiscussionThreadsByLastUpdatedDescending(std::ostream& output) const
-{
-    getDiscussionThreadsByLastUpdated(false, output);
-}
-
-void MemoryRepository::getDiscussionThreadsByMessageCount(bool ascending, std::ostream& output) const
+void MemoryRepository::getDiscussionThreadsByMessageCount(std::ostream& output) const
 {
     auto performedBy = preparePerformedBy();
 
@@ -105,7 +92,7 @@ void MemoryRepository::getDiscussionThreadsByMessageCount(bool ascending, std::o
                          const auto& threads = collection.threadsByMessageCount();
                          BoolTemporaryChanger changer(serializationSettings.hideDiscussionThreadMessages, true);
 
-                         if (ascending)
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
                          {
                              writeSingleObjectSafeName(output, "threads",
                                                        Json::enumerate(threads.begin(), threads.end()));
@@ -117,16 +104,6 @@ void MemoryRepository::getDiscussionThreadsByMessageCount(bool ascending, std::o
                          }
                          observers_.onGetDiscussionThreads(createObserverContext(performedBy.get(collection)));
                      });
-}
-
-void MemoryRepository::getDiscussionThreadsByMessageCountAscending(std::ostream& output) const
-{
-    getDiscussionThreadsByMessageCount(true, output);
-}
-
-void MemoryRepository::getDiscussionThreadsByMessageCountDescending(std::ostream& output) const
-{
-    getDiscussionThreadsByMessageCount(false, output);
 }
 
 void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& output) const
@@ -174,7 +151,7 @@ void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::o
                      });
 }
 
-void MemoryRepository::getDiscussionThreadsOfUserByCreated(bool ascending, const IdType& id, std::ostream& output) const
+void MemoryRepository::getDiscussionThreadsOfUserByCreated(const IdType& id, std::ostream& output) const
 {
     auto performedBy = preparePerformedBy();
 
@@ -191,7 +168,7 @@ void MemoryRepository::getDiscussionThreadsOfUserByCreated(bool ascending, const
                          const auto& threads = (*it)->threadsByCreated();
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
-                         if (ascending)
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
                          {
                              writeSingleObjectSafeName(output, "threads",
                                                        Json::enumerate(threads.begin(), threads.end()));
@@ -206,18 +183,7 @@ void MemoryRepository::getDiscussionThreadsOfUserByCreated(bool ascending, const
                      });
 }
 
-void MemoryRepository::getDiscussionThreadsOfUserByCreatedAscending(const IdType& id, std::ostream& output) const
-{
-    getDiscussionThreadsOfUserByCreated(true, id, output);
-}
-
-void MemoryRepository::getDiscussionThreadsOfUserByCreatedDescending(const IdType& id, std::ostream& output) const
-{
-    getDiscussionThreadsOfUserByCreated(false, id, output);
-}
-
-void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(bool ascending, const IdType& id,
-                                                               std::ostream& output) const
+void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(const IdType& id, std::ostream& output) const
 {
     auto performedBy = preparePerformedBy();
 
@@ -234,7 +200,7 @@ void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(bool ascending, c
                          const auto& threads = (*it)->threadsByLastUpdated();
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
-                         if (ascending)
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
                          {
                              writeSingleObjectSafeName(output, "threads",
                                                        Json::enumerate(threads.begin(), threads.end()));
@@ -248,18 +214,7 @@ void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(bool ascending, c
                      });
 }
 
-void MemoryRepository::getDiscussionThreadsOfUserByLastUpdatedAscending(const IdType& id, std::ostream& output) const
-{
-    getDiscussionThreadsOfUserByLastUpdated(true, id, output);
-}
-
-void MemoryRepository::getDiscussionThreadsOfUserByLastUpdatedDescending(const IdType& id, std::ostream& output) const
-{
-    getDiscussionThreadsOfUserByLastUpdated(false, id, output);
-}
-
-void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(bool ascending, const IdType& id,
-                                                                std::ostream& output) const
+void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(const IdType& id, std::ostream& output) const
 {
     auto performedBy = preparePerformedBy();
 
@@ -276,7 +231,7 @@ void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(bool ascending, 
                          const auto& threads = (*it)->threadsByMessageCount();
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
-                         if (ascending)
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
                          {
                              writeSingleObjectSafeName(output, "threads",
                                                        Json::enumerate(threads.begin(), threads.end()));
@@ -288,16 +243,6 @@ void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(bool ascending, 
                          observers_.onGetDiscussionThreadsOfUser(createObserverContext(performedBy.get(collection)),
                                                                  **it);
                      });
-}
-
-void MemoryRepository::getDiscussionThreadsOfUserByMessageCountAscending(const IdType& id, std::ostream& output) const
-{
-    getDiscussionThreadsOfUserByMessageCount(true, id, output);
-}
-
-void MemoryRepository::getDiscussionThreadsOfUserByMessageCountDescending(const IdType& id, std::ostream& output) const
-{
-    getDiscussionThreadsOfUserByMessageCount(false, id, output);
 }
 
 static const auto validDiscussionThreadNameRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");
