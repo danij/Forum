@@ -11,18 +11,17 @@ namespace Forum
     {
         typedef const Entities::User& PerformedByType;
 
-        struct ObserverContext_
+        struct ObserverContext
         {
-            PerformedByType performedBy;
-            Entities::Timestamp timestamp;
+            const PerformedByType performedBy;
+            const Entities::Timestamp timestamp;
 
-            ObserverContext_(PerformedByType performedBy, Entities::Timestamp timestamp) :
+            ObserverContext(PerformedByType performedBy, Entities::Timestamp timestamp) :
                     performedBy(performedBy), timestamp(timestamp)
             {
             }
         };
 
-        typedef const ObserverContext_& ObserverContext;
 
         /**
          * Expanded by classes that want to be notified when a user performs a read action.
