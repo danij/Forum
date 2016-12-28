@@ -1,7 +1,6 @@
 #include "CommandHandler.h"
 
 #include "OutputHelpers.h"
-#include "ContextProviders.h"
 
 using namespace Forum::Commands;
 using namespace Forum::Entities;
