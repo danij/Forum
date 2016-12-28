@@ -96,8 +96,6 @@ namespace Forum
 
             DECLARE_COMMAND_HANDLER(getDiscussionThreadMessagesOfUserByCreated);
 
-            bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number);
-
             std::function<void(const std::vector<std::string>&, std::ostream&)> handlers_[int(LAST_COMMAND)];
             Repository::ReadRepositoryRef readRepository_;
             Repository::WriteRepositoryRef writeRepository_;

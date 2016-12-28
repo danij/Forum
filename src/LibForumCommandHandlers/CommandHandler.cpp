@@ -75,8 +75,7 @@ void CommandHandler::countEntities(const std::vector<std::string>& parameters, s
     readRepository_->getEntitiesCount(output);
 }
 
-bool CommandHandler::checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output,
-                                             size_t number)
+bool static checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number)
 {
     if (parameters.size() != number)
     {
