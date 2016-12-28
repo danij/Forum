@@ -30,6 +30,7 @@ namespace Forum
         std::string createDiscussionThreadAndGetId(Commands::CommandHandlerRef handler, const std::string& name);
         std::string createDiscussionMessageAndGetId(Commands::CommandHandlerRef handler,
                                                     const std::string& threadId, const std::string& content);
+        std::string createDiscussionTagAndGetId(Commands::CommandHandlerRef handler, const std::string& name);
 
         template<typename T, typename It>
         void fillPropertyFromCollection(const boost::property_tree::ptree& collection, const char* name,

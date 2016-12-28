@@ -82,3 +82,9 @@ std::string Forum::Helpers::createDiscussionMessageAndGetId(CommandHandlerRef ha
     auto result = handlerToObj(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, content });
     return result.get<std::string>("id");
 }
+
+std::string Forum::Helpers::createDiscussionTagAndGetId(CommandHandlerRef handler, const std::string& name)
+{
+    auto result = handlerToObj(handler, Command::ADD_DISCUSSION_TAG, { name });
+    return result.get<std::string>("id");
+}
