@@ -4,6 +4,7 @@
 #include <vector>
 
 using namespace Forum::Configuration;
+using namespace Forum::Context;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
@@ -234,10 +235,10 @@ BOOST_AUTO_TEST_CASE( Renaming_a_discussion_tag_succeeds_only_if_creation_criter
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_TAG_NAME, { tagId, "Foo\t" }));
     assertStatusCodeEqual(StatusCode::VALUE_TOO_SHORT, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_TAG_NAME, 
-                                                { tagId, std::string(config->discussionTag.minNameLength - 1, 'a') }));
+                                       { tagId, std::string(config->discussionTag.minNameLength - 1, 'a') }));
     assertStatusCodeEqual(StatusCode::VALUE_TOO_LONG, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_TAG_NAME, 
-                                                { tagId, std::string(config->discussionTag.maxNameLength + 1, 'a') }));
+                                       { tagId, std::string(config->discussionTag.maxNameLength + 1, 'a') }));
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_TAG_NAME, { tagId, "\xFF\xFF" }));
     assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, 
@@ -338,7 +339,7 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_attached_to_threads_even_if_they_ar
 
     auto threads = deserializeThreadsWithTag(handlerToObj(handler, 
                                                           Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME, 
-                                                          { tagId }));
+                                                          { tagId }).get_child("threads"));
     BOOST_REQUIRE_EQUAL(1, threads.size());
     BOOST_REQUIRE_EQUAL(threadId, threads[0].id);
     BOOST_REQUIRE_EQUAL("Thread", threads[0].name);
@@ -384,7 +385,7 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_detached_from_threads )
 
     auto threads = deserializeThreadsWithTag(handlerToObj(handler,
                                                           Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
-                                                          { tagId }));
+                                                          { tagId }).get_child("threads"));
     BOOST_REQUIRE_EQUAL(1, threads.size());
 
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::REMOVE_DISCUSSION_TAG_FROM_THREAD,
@@ -392,7 +393,7 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_detached_from_threads )
 
     threads = deserializeThreadsWithTag(handlerToObj(handler,
                                                      Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
-                                                     { tagId }));
+                                                     { tagId }).get_child("threads"));
     BOOST_REQUIRE_EQUAL(0, threads.size());
 }
 
@@ -418,7 +419,8 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_detaches_it_from_threads )
     BOOST_REQUIRE_EQUAL("Tag2", tags[0].name);
     BOOST_REQUIRE_EQUAL(2, tags[0].threadCount);
 
-    auto threads = deserializeThreadsWithTag(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME));
+    auto threads = deserializeThreadsWithTag(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
+                                             .get_child("threads"));
     BOOST_REQUIRE_EQUAL(2, threads.size());
     BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
     BOOST_REQUIRE_EQUAL("Thread1", threads[0].name);
@@ -459,7 +461,8 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_detaches_it_from_tags )
     BOOST_REQUIRE_EQUAL("Tag2", tags[1].name);
     BOOST_REQUIRE_EQUAL(1, tags[1].threadCount);
 
-    auto threads = deserializeThreadsWithTag(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME));
+    auto threads = deserializeThreadsWithTag(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
+                                             .get_child("threads"));
     BOOST_REQUIRE_EQUAL(1, threads.size());
     BOOST_REQUIRE_EQUAL(thread2Id, threads[0].id);
     BOOST_REQUIRE_EQUAL("Thread2", threads[0].name);
@@ -470,10 +473,159 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_detaches_it_from_tags )
     BOOST_REQUIRE_EQUAL("Tag2", threads[0].tags[1].name);
 }
 
-BOOST_AUTO_TEST_CASE( Discussion_threads_attached_to_one_tag_can_be_retrieved_sorted_by_various_criteria ) {}
-BOOST_AUTO_TEST_CASE( Listing_discussion_threads_attached_to_tags_does_not_include_messages ) {}
+BOOST_AUTO_TEST_CASE( Discussion_threads_attached_to_one_tag_can_be_retrieved_sorted_by_various_criteria )
+{
+    auto handler = createCommandHandler();
+    auto tagId = createDiscussionTagAndGetId(handler, "Tag");
+    std::string thread1Id, thread2Id, thread3Id;
+    {
+        TimestampChanger _(1000);
+        thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
+                                                           { tagId, thread1Id }));
+        for (size_t i = 0; i < 3; i++)
+        {
+            createDiscussionMessageAndGetId(handler, thread1Id, "Sample");
+        }
+    }
+    {
+        TimestampChanger _(3000);
+        thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
+                                                           { tagId, thread2Id }));
+        for (size_t i = 0; i < 1; i++)
+        {
+            createDiscussionMessageAndGetId(handler, thread2Id, "Sample");
+        }
+    }
+    {
+        TimestampChanger _(2000);
+        thread3Id = createDiscussionThreadAndGetId(handler, "Thread3");
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
+                                                           { tagId, thread3Id }));
+        for (size_t i = 0; i < 2; i++)
+        {
+            createDiscussionMessageAndGetId(handler, thread3Id, "Sample");
+        }
+    }
 
-BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_merged_keeping_all_discussion_thread_references ) {}
+    std::string ids[][3] =
+    {
+        { thread1Id, thread2Id, thread3Id }, //by name, ascending
+        { thread3Id, thread2Id, thread1Id }, //by name, descending
+        { thread1Id, thread3Id, thread2Id }, //by created, ascending
+        { thread2Id, thread3Id, thread1Id }, //by created, descending
+        { thread1Id, thread3Id, thread2Id }, //by last updated, ascending
+        { thread2Id, thread3Id, thread1Id }, //by last updated, descending
+        { thread2Id, thread3Id, thread1Id }, //by message count, ascending
+        { thread1Id, thread3Id, thread2Id }, //by message count, descending
+    };
+    int64_t messagesCount[][3] =
+    {
+        { 3, 1, 2 }, //by name, ascending
+        { 2, 1, 3 }, //by name, descending
+        { 3, 2, 1 }, //by created, ascending
+        { 1, 2, 3 }, //by created, descending
+        { 3, 2, 1 }, //by last updated, ascending
+        { 1, 2, 3 }, //by last updated, descending
+        { 1, 2, 3 }, //by message count, ascending
+        { 3, 2, 1 }, //by message count, descending
+    };
+
+    int index = 0;
+    for (auto command : GetDiscussionThreadWithTagCommands)
+        for (auto sortOrder : { SortOrder::Ascending, SortOrder::Descending })
+        {
+            auto threads = deserializeThreadsWithTag(handlerToObj(handler, command, sortOrder, { tagId })
+                                                     .get_child("threads"));
+            BOOST_REQUIRE_EQUAL(3, threads.size());
+            for (size_t i = 0; i < 3; i++)
+            {
+                BOOST_REQUIRE_EQUAL(ids[index][i], threads[i].id);
+                BOOST_REQUIRE_EQUAL(messagesCount[index][i], threads[i].messageCount);
+            }
+            ++index;
+        }
+}
+
+BOOST_AUTO_TEST_CASE( Listing_discussion_threads_attached_to_tags_does_not_include_messages )
+{
+    auto handler = createCommandHandler();
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    auto tagId = createDiscussionTagAndGetId(handler, "Tag");
+
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
+                                                       { tagId, threadId }));
+
+    for (auto& item : handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME).get_child("threads"))
+    {
+        BOOST_REQUIRE( ! treeContains(item.second, "messages"));
+    }
+}
+
+BOOST_AUTO_TEST_CASE( Merging_discussion_tags_requires_two_different_valid_tag_ids )
+{
+    auto handler = createCommandHandler();
+    auto tagId = createDiscussionTagAndGetId(handler, "Tag");
+
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler, 
+                                                                       Forum::Commands::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG,
+                                                                       { "bogus id 1", "bogus id 2" }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler, 
+                                                                       Forum::Commands::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG,
+                                                                       { "bogus id 1", tagId }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler, 
+                                                                       Forum::Commands::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG,
+                                                                       { tagId, "bogus id 2" }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, 
+                                                              Forum::Commands::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG,
+                                                              { sampleValidIdString, sampleValidIdString }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, 
+                                                              Forum::Commands::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG,
+                                                              { sampleValidIdString, tagId }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, 
+                                                              Forum::Commands::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG,
+                                                              { tagId, sampleValidIdString }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler, 
+                                                                       Forum::Commands::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG,
+                                                                       { tagId, tagId }));
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_merged_keeping_all_discussion_thread_references )
+{
+    auto handler = createCommandHandler();
+    auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+    auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+    auto thread3Id = createDiscussionThreadAndGetId(handler, "Thread3");
+    auto tag1Id = createDiscussionTagAndGetId(handler, "Tag1");
+    auto tag2Id = createDiscussionTagAndGetId(handler, "Tag2");
+
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
+                                                       { tag1Id, thread1Id }));
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
+                                                       { tag1Id, thread2Id }));
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
+                                                       { tag2Id, thread2Id }));
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
+                                                       { tag2Id, thread3Id }));
+
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG,
+                                                       { tag2Id, tag1Id }));
+
+    auto tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
+
+    BOOST_REQUIRE_EQUAL(1, tags.size());
+    BOOST_REQUIRE_EQUAL(tag1Id, tags[0].id);
+    BOOST_REQUIRE_EQUAL("Tag1", tags[0].name);
+
+    auto threads = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME)
+                                   .get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(3, threads.size());
+    BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
+    BOOST_REQUIRE_EQUAL(thread2Id, threads[1].id);
+    BOOST_REQUIRE_EQUAL(thread3Id, threads[2].id);
+}
 
 //deferred for a later release
 //BOOST_AUTO_TEST_CASE( Discussion_threads_attached_to_multiple_tags_can_be_distinctly_retrieved_sorted_by_various_criteria ) {}
