@@ -24,7 +24,7 @@ namespace Forum
 
             std::function<void(ObserverContext, const Entities::User&)> addNewUserAction;
             std::function<void(ObserverContext, const Entities::User&,
-                Entities::User::ChangeType)> changeUserAction;
+                               Entities::User::ChangeType)> changeUserAction;
             std::function<void(ObserverContext, const Entities::User&)> deleteUserAction;
 
             std::function<void(ObserverContext)> getDiscussionThreadsAction;
@@ -34,13 +34,27 @@ namespace Forum
 
             std::function<void(ObserverContext, const Entities::DiscussionThread&)> addNewDiscussionThreadAction;
             std::function<void(ObserverContext, const Entities::DiscussionThread&,
-                    Entities::DiscussionThread::ChangeType)> changeDiscussionThreadAction;
+                               Entities::DiscussionThread::ChangeType)> changeDiscussionThreadAction;
             std::function<void(ObserverContext, const Entities::DiscussionThread&)> deleteDiscussionThreadAction;
 
             std::function<void(ObserverContext, const Entities::DiscussionMessage&)>
                 addNewDiscussionMessageAction;
             std::function<void(ObserverContext, const Entities::DiscussionMessage&)>
                 deleteDiscussionMessageAction;
+
+            std::function<void(ObserverContext)> getDiscussionTagsAction;
+
+            std::function<void(ObserverContext, const Entities::DiscussionTag&)> addNewDiscussionTagAction;
+            std::function<void(ObserverContext, const Entities::DiscussionTag&,
+                               Entities::DiscussionTag::ChangeType)> changeDiscussionTagAction;
+            std::function<void(ObserverContext, const Entities::DiscussionTag&)> deleteDiscussionTagAction;
+            std::function<void(ObserverContext, const Entities::DiscussionTag&, const Entities::DiscussionThread&)> 
+                addDiscussionTagToThreadAction;
+            std::function<void(ObserverContext, const Entities::DiscussionTag&, const Entities::DiscussionThread&)>
+                removeDiscussionTagFromThreadAction;
+            std::function<void(ObserverContext, const Entities::DiscussionTag&)> getDiscussionThreadsWithTagAction;
+            std::function<void(ObserverContext, const Entities::DiscussionTag&, const Entities::DiscussionTag&)>
+                mergeDiscussionTagsAction;
         };
 
         class DelegateObserver final : public AbstractReadRepositoryObserver, public AbstractWriteRepositoryObserver,
@@ -127,6 +141,49 @@ namespace Forum
                 if (deleteDiscussionMessageAction) deleteDiscussionMessageAction(context, deletedMessage);
             }
 
+            virtual void onGetDiscussionTags(ObserverContext context) override
+            {
+                if (getDiscussionTagsAction) getDiscussionTagsAction(context);
+            }
+            virtual void onAddNewDiscussionTag(ObserverContext context,
+                                               const Entities::DiscussionTag& newTag) override
+            {
+                if (addNewDiscussionTagAction) addNewDiscussionTagAction(context, newTag);
+            }
+            virtual void onChangeDiscussionTag(ObserverContext context,
+                                               const Entities::DiscussionTag& tag,
+                                               Entities::DiscussionTag::ChangeType change) override
+            {
+                if (changeDiscussionTagAction) changeDiscussionTagAction(context, tag, change);
+            }
+            virtual void onDeleteDiscussionTag(ObserverContext context,
+                                               const Entities::DiscussionTag& deletedTag) override
+            {
+                if (deleteDiscussionTagAction) deleteDiscussionTagAction(context, deletedTag);
+            }
+            virtual void onAddDiscussionTagToThread(ObserverContext context,
+                                                    const Entities::DiscussionTag& tag,
+                                                    const Entities::DiscussionThread& thread) override
+            {
+                if (addDiscussionTagToThreadAction) addDiscussionTagToThreadAction(context, tag, thread);
+            }
+            virtual void onRemoveDiscussionTagFromThread(ObserverContext context,
+                                                         const Entities::DiscussionTag& tag,
+                                                         const Entities::DiscussionThread& thread) override
+            {
+                if (removeDiscussionTagFromThreadAction) removeDiscussionTagFromThreadAction(context, tag, thread);
+            }
+            virtual void onGetDiscussionThreadsWithTag(ObserverContext context, 
+                                                       const Entities::DiscussionTag& tag) override
+            {
+                if (getDiscussionThreadsWithTagAction) getDiscussionThreadsWithTagAction(context, tag);
+            }
+            virtual void onMergeDiscussionTags(ObserverContext context,
+                                               const Entities::DiscussionTag& fromTag,
+                                               const Entities::DiscussionTag& toTag) override
+            {
+                if (mergeDiscussionTagsAction) mergeDiscussionTagsAction(context, fromTag, toTag);
+            }
         };
 
         struct DisposingDelegateObserver

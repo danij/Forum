@@ -4,6 +4,7 @@
 #include "EntityUser.h"
 #include "EntityDiscussionThread.h"
 #include "EntityDiscussionMessage.h"
+#include "EntityDiscussionTag.h"
 
 namespace Forum
 {

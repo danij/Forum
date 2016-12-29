@@ -36,6 +36,7 @@ namespace Forum
                                                       const Entities::User& user) override;
             virtual void onGetDiscussionThreadMessagesOfUser(ObserverContext context,
                                                              const Entities::User& user) override;
+            virtual void onGetDiscussionTags(ObserverContext context) override;
 
             virtual void onAddNewUser(ObserverContext context, const Entities::User& newUser) override;
             virtual void onChangeUser(ObserverContext context, const Entities::User& user,
@@ -52,6 +53,23 @@ namespace Forum
                                                    const Entities::DiscussionMessage& newMessage) override;
             virtual void onDeleteDiscussionMessage(ObserverContext context,
                                                    const Entities::DiscussionMessage& deletedMessage) override;
+            virtual void onAddNewDiscussionTag(ObserverContext context,
+                                               const Entities::DiscussionTag& newTag) override;
+            virtual void onChangeDiscussionTag(ObserverContext context,
+                                               const Entities::DiscussionTag& tag,
+                                               Entities::DiscussionTag::ChangeType change) override;
+            virtual void onDeleteDiscussionTag(ObserverContext context,
+                                               const Entities::DiscussionTag& deletedTag) override;
+            virtual void onAddDiscussionTagToThread(ObserverContext context,
+                                                    const Entities::DiscussionTag& tag,
+                                                    const Entities::DiscussionThread& thread) override;
+            virtual void onRemoveDiscussionTagFromThread(ObserverContext context,
+                                                         const Entities::DiscussionTag& tag,
+                                                         const Entities::DiscussionThread& thread) override;
+            virtual void onGetDiscussionThreadsWithTag(ObserverContext context, const Entities::DiscussionTag& tag) override;
+            virtual void onMergeDiscussionTags(ObserverContext context,
+                                               const Entities::DiscussionTag& fromTag,
+                                               const Entities::DiscussionTag& toTag) override;
 
         private:
             std::vector<ReadRepositoryObserverRef> readObservers_;

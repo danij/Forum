@@ -49,6 +49,9 @@ namespace Forum
 
             virtual void onGetDiscussionThreadMessagesOfUser(ObserverContext context,
                                                              const Entities::User& user) {};
+
+            virtual void onGetDiscussionTags(ObserverContext context) {};
+            virtual void onGetDiscussionThreadsWithTag(ObserverContext context, const Entities::DiscussionTag& tag) {};
         };
 
         typedef std::shared_ptr<AbstractReadRepositoryObserver> ReadRepositoryObserverRef;
@@ -79,6 +82,23 @@ namespace Forum
                                                    const Entities::DiscussionMessage& newMessage) {};
             virtual void onDeleteDiscussionMessage(ObserverContext context,
                                                    const Entities::DiscussionMessage& deletedMessage) {};
+
+            virtual void onAddNewDiscussionTag(ObserverContext context,
+                                               const Entities::DiscussionTag& newTag) {};
+            virtual void onChangeDiscussionTag(ObserverContext context,
+                                               const Entities::DiscussionTag& tag,
+                                               Entities::DiscussionTag::ChangeType change) {};
+            virtual void onDeleteDiscussionTag(ObserverContext context,
+                                               const Entities::DiscussionTag& deletedTag) {};
+            virtual void onAddDiscussionTagToThread(ObserverContext context,
+                                                    const Entities::DiscussionTag& tag,
+                                                    const Entities::DiscussionThread& thread) {};
+            virtual void onRemoveDiscussionTagFromThread(ObserverContext context,
+                                                         const Entities::DiscussionTag& tag,
+                                                         const Entities::DiscussionThread& thread) {};
+            virtual void onMergeDiscussionTags(ObserverContext context,
+                                               const Entities::DiscussionTag& fromTag,
+                                               const Entities::DiscussionTag& toTag) {};
         };
 
         typedef std::shared_ptr<AbstractWriteRepositoryObserver> WriteRepositoryObserverRef;

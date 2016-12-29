@@ -300,12 +300,167 @@ BOOST_AUTO_TEST_CASE( Observer_context_includes_timestamp_of_action )
     BOOST_REQUIRE_EQUAL(timestamp, timestampFromContext);
 }
 
-BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_invokes_observer ) {}
-BOOST_AUTO_TEST_CASE( Listing_discussion_tags_invokes_observer ) {}
-BOOST_AUTO_TEST_CASE( Renaming_a_discussion_tag_invokes_observer ) {}
-BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_invokes_observer ) {}
+BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_invokes_observer )
+{
+    std::string newTagName;
+    auto handler = createCommandHandler();
 
-BOOST_AUTO_TEST_CASE( Attaching_a_discussion_tag_to_a_thread_invokes_observer ) {}
-BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_thread_invokes_observer ) {}
+    DisposingDelegateObserver observer(*handler);
+    observer->addNewDiscussionTagAction = [&](auto& _, auto& newTag)
+    {
+        newTagName = newTag.name();
+    };
 
-BOOST_AUTO_TEST_CASE( Listing_discussion_threads_attached_to_tags_invokes_observer ) {}
+    createDiscussionTagAndGetId(handler, "Foo");
+    BOOST_REQUIRE_EQUAL("Foo", newTagName);
+}
+
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_tags_invokes_observer )
+{
+    int observerCalledNTimes = 0;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->getDiscussionTagsAction = [&](auto& _) { observerCalledNTimes += 1; };
+
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME, SortOrder::Ascending);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME, SortOrder::Descending);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT, SortOrder::Ascending);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT, SortOrder::Descending);
+
+    BOOST_REQUIRE_EQUAL(4, observerCalledNTimes);
+}
+
+BOOST_AUTO_TEST_CASE( Renaming_a_discussion_tag_invokes_observer )
+{
+    std::string newName;
+    auto tagChange = DiscussionTag::ChangeType::None;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->changeDiscussionTagAction = [&](auto& _, auto& tag, auto change)
+    {
+        newName = tag.name();
+        tagChange = change;
+    };
+
+    auto tagId = createDiscussionTagAndGetId(handler, "Abc");
+
+    handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_TAG_NAME, { tagId, "Xyz" });
+    BOOST_REQUIRE_EQUAL("Xyz", newName);
+    BOOST_REQUIRE_EQUAL(DiscussionTag::ChangeType::Name, tagChange);
+}
+
+BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_invokes_observer )
+{
+    std::string deletedTagId;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->deleteDiscussionTagAction = [&](auto& _, auto& tag)
+    {
+        deletedTagId = static_cast<std::string>(tag.id());
+    };
+
+    auto tagId = createDiscussionTagAndGetId(handler, "Abc");
+
+    handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_TAG, { tagId });
+    BOOST_REQUIRE_EQUAL(tagId, deletedTagId);
+}
+
+BOOST_AUTO_TEST_CASE( Attaching_a_discussion_tag_to_a_thread_invokes_observer )
+{
+    std::string observedTagId, observedThreadId;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->addDiscussionTagToThreadAction = [&](auto& _, auto& tag, auto& thread)
+    {
+        observedTagId = tag.id();
+        observedThreadId = thread.id();
+    };
+
+    auto tagId = createDiscussionTagAndGetId(handler, "Tag");
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+
+    handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD, { tagId, threadId });
+
+    BOOST_REQUIRE_EQUAL(tagId, observedTagId);
+    BOOST_REQUIRE_EQUAL(threadId, observedThreadId);
+}
+
+BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_thread_invokes_observer )
+{
+    std::string observedTagId, observedThreadId;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->removeDiscussionTagFromThreadAction = [&](auto& _, auto& tag, auto& thread)
+    {
+        observedTagId = tag.id();
+        observedThreadId = thread.id();
+    };
+
+    auto tagId = createDiscussionTagAndGetId(handler, "Tag");
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+
+    handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD, { tagId, threadId });
+    handlerToObj(handler, Forum::Commands::REMOVE_DISCUSSION_TAG_FROM_THREAD, { tagId, threadId });
+
+    BOOST_REQUIRE_EQUAL(tagId, observedTagId);
+    BOOST_REQUIRE_EQUAL(threadId, observedThreadId);
+}
+
+BOOST_AUTO_TEST_CASE(Retrieving_discussion_threads_attached_to_tags_invokes_observer)
+{
+    int observerCalledNTimes = 0;
+    std::string observedTagId;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->getDiscussionThreadsWithTagAction = [&](auto& _, auto& tag)
+    {
+        observerCalledNTimes += 1;
+        observedTagId = tag.id();
+    };
+
+    auto tagId = createDiscussionTagAndGetId(handler, "Tag");
+
+    Forum::Commands::Command commands[] =
+    {
+        Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
+        Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED,
+        Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED,
+        Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT
+    };
+
+    for (auto command : commands)
+        for (auto sortOrder : { SortOrder::Ascending, SortOrder::Descending })
+        {
+            handlerToObj(handler, command, sortOrder, { tagId });
+        }
+
+    BOOST_REQUIRE_EQUAL(8, observerCalledNTimes);
+    BOOST_REQUIRE_EQUAL(tagId, observedTagId);
+}
+
+BOOST_AUTO_TEST_CASE( Merging_discussion_tags_invokes_observer)
+{
+    std::string observedFromTagId, observedToTagId;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->mergeDiscussionTagsAction = [&](auto& _, auto& fromTag, auto& toTag)
+    {
+        observedFromTagId = fromTag.id();
+        observedToTagId = toTag.id();
+    };
+
+    auto fromTagId = createDiscussionTagAndGetId(handler, "Tag1");
+    auto toTagId = createDiscussionTagAndGetId(handler, "Tag2");
+
+    handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG, { fromTagId, toTagId });
+
+    BOOST_REQUIRE_EQUAL(fromTagId, observedFromTagId);
+    BOOST_REQUIRE_EQUAL(toTagId, observedToTagId);
+}

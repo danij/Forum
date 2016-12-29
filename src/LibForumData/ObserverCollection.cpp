@@ -130,6 +130,7 @@ void ObserverCollection::onDeleteDiscussionThread(ObserverContext context, const
     for (auto& item : writeObservers_) item->onDeleteDiscussionThread(context, deletedThread);
 }
 
+
 void ObserverCollection::onAddNewDiscussionMessage(ObserverContext context, const DiscussionMessage& newMessage)
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
@@ -146,4 +147,57 @@ void ObserverCollection::onGetDiscussionThreadMessagesOfUser(ObserverContext con
 {
     std::shared_lock<decltype(mutex_)> lock(mutex_);
     for (auto& item : readObservers_) item->onGetDiscussionThreadMessagesOfUser(context, user);
+}
+
+
+void ObserverCollection::onGetDiscussionTags(ObserverContext context)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : readObservers_) item->onGetDiscussionTags(context);
+}
+
+void ObserverCollection::onAddNewDiscussionTag(ObserverContext context, const DiscussionTag& newTag)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : writeObservers_) item->onAddNewDiscussionTag(context, newTag);
+}
+
+void ObserverCollection::onChangeDiscussionTag(ObserverContext context, const DiscussionTag& tag,
+                                               DiscussionTag::ChangeType change)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : writeObservers_) item->onChangeDiscussionTag(context, tag, change);
+}
+
+void ObserverCollection::onDeleteDiscussionTag(ObserverContext context, const DiscussionTag& deletedTag)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : writeObservers_) item->onDeleteDiscussionTag(context, deletedTag);
+}
+
+void ObserverCollection::onAddDiscussionTagToThread(ObserverContext context, const DiscussionTag& tag,
+                                                    const DiscussionThread& thread)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : writeObservers_) item->onAddDiscussionTagToThread(context, tag, thread);
+}
+
+void ObserverCollection::onRemoveDiscussionTagFromThread(ObserverContext context, const DiscussionTag& tag,
+                                                         const DiscussionThread& thread)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : writeObservers_) item->onRemoveDiscussionTagFromThread(context, tag, thread);
+}
+
+void ObserverCollection::onGetDiscussionThreadsWithTag(ObserverContext context, const DiscussionTag& tag)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : readObservers_) item->onGetDiscussionThreadsWithTag(context, tag);
+}
+
+void ObserverCollection::onMergeDiscussionTags(ObserverContext context, const DiscussionTag& fromTag,
+                                               const DiscussionTag& toTag)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : writeObservers_) item->onMergeDiscussionTags(context, fromTag, toTag);
 }
