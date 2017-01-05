@@ -15,16 +15,26 @@ namespace Forum
                                     const std::vector<std::string>& parameters);
         std::string handlerToString(Commands::CommandHandlerRef handler, Commands::Command command);
 
+        struct DisplaySettings
+        {
+            int pageNumber = 0;
+            int pageSize = std::numeric_limits<int>::max();
+            Context::SortOrder sortOrder = Context::SortOrder::Ascending;
+
+            DisplaySettings() {}
+            DisplaySettings(Context::SortOrder overrideSortOrder) : sortOrder(overrideSortOrder) {}
+        };
+
         boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef handler,
                                                  Commands::Command command,
                                                  const std::vector<std::string>& parameters);
         boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef handler,
-                                                 Commands::Command command, Context::SortOrder sortOrder,
+                                                 Commands::Command command, DisplaySettings displaySettings,
                                                  const std::vector<std::string>& parameters);
         boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef handler,
                                                  Commands::Command command);
         boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef handler,
-                                                 Commands::Command command, Context::SortOrder sortOrder);
+                                                 Commands::Command command, DisplaySettings displaySettings);
 
         std::string createUserAndGetId(Commands::CommandHandlerRef handler, const std::string& name);
         std::string createDiscussionThreadAndGetId(Commands::CommandHandlerRef handler, const std::string& name);
