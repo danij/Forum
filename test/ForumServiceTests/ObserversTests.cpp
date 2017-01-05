@@ -222,6 +222,49 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_invokes_observer )
     BOOST_REQUIRE_EQUAL(threadId, deletedThreadId);
 }
 
+BOOST_AUTO_TEST_CASE( Merging_discussion_threads_invokes_observer )
+{
+    std::string observedFromThreadId, observedToThreadId;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->mergeDiscussionThreadsAction = [&](auto& _, auto& fromThread, auto& toThread)
+    {
+        observedFromThreadId = fromThread.id();
+        observedToThreadId = toThread.id();
+    };
+
+    auto fromThreadId = createDiscussionThreadAndGetId(handler, "Thread1");
+    auto toThreadId = createDiscussionThreadAndGetId(handler, "Thread2");
+
+    handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS, { fromThreadId, toThreadId });
+
+    BOOST_REQUIRE_EQUAL(fromThreadId, observedFromThreadId);
+    BOOST_REQUIRE_EQUAL(toThreadId, observedToThreadId);
+}
+
+BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_invokes_observer )
+{
+    std::string observedMessageId, observedToThreadId;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->moveDiscussionThreadMessageAction = [&](auto& _, auto& message, auto& intoThread)
+    {
+        observedMessageId = message.id();
+        observedToThreadId = intoThread.id();
+    };
+
+    auto fromThreadId = createDiscussionThreadAndGetId(handler, "Thread1");
+    auto messageId = createDiscussionMessageAndGetId(handler, fromThreadId, "Message1");
+    auto toThreadId = createDiscussionThreadAndGetId(handler, "Thread2");
+
+    handlerToObj(handler, Forum::Commands::MOVE_DISCUSSION_THREAD_MESSAGE, { messageId, toThreadId });
+
+    BOOST_REQUIRE_EQUAL(messageId, observedMessageId);
+    BOOST_REQUIRE_EQUAL(toThreadId, observedToThreadId);
+}
+
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_invokes_observer )
 {
     std::string deletedMessageId;

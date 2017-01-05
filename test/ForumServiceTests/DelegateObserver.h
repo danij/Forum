@@ -36,6 +36,10 @@ namespace Forum
             std::function<void(ObserverContext, const Entities::DiscussionThread&,
                                Entities::DiscussionThread::ChangeType)> changeDiscussionThreadAction;
             std::function<void(ObserverContext, const Entities::DiscussionThread&)> deleteDiscussionThreadAction;
+            std::function<void(ObserverContext, const Entities::DiscussionThread&, const Entities::DiscussionThread&)>
+                mergeDiscussionThreadsAction;
+            std::function<void(ObserverContext, const Entities::DiscussionMessage&, const Entities::DiscussionThread&)>
+                moveDiscussionThreadMessageAction;
 
             std::function<void(ObserverContext, const Entities::DiscussionMessage&)>
                 addNewDiscussionMessageAction;
@@ -128,6 +132,18 @@ namespace Forum
                                                   const Entities::DiscussionThread& deletedThread) override
             {
                 if (deleteDiscussionThreadAction) deleteDiscussionThreadAction(context, deletedThread);
+            }
+            virtual void onMergeDiscussionThreads(ObserverContext context,
+                                                  const Entities::DiscussionThread& fromThread,
+                                                  const Entities::DiscussionThread& toThread) override
+            {
+                if (mergeDiscussionThreadsAction) mergeDiscussionThreadsAction(context, fromThread, toThread);
+            }
+            virtual void onMoveDiscussionThreadMessage(ObserverContext context,
+                                                       const Entities::DiscussionMessage& message,
+                                                       const Entities::DiscussionThread& intoThread) override
+            {
+                if (moveDiscussionThreadMessageAction) moveDiscussionThreadMessageAction(context, message, intoThread);
             }
 
             virtual void onAddNewDiscussionMessage(ObserverContext context,

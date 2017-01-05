@@ -36,9 +36,11 @@ namespace Forum
             GET_DISCUSSION_THREAD_BY_ID,
             CHANGE_DISCUSSION_THREAD_NAME,
             DELETE_DISCUSSION_THREAD,
+            MERGE_DISCUSSION_THREADS,
 
             ADD_DISCUSSION_THREAD_MESSAGE,
             DELETE_DISCUSSION_THREAD_MESSAGE,
+            MOVE_DISCUSSION_THREAD_MESSAGE,
 
             //mixed user-discussion thread
             GET_DISCUSSION_THREADS_OF_USER_BY_NAME,

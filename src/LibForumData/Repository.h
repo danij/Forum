@@ -57,7 +57,8 @@ namespace Forum
             VALUE_TOO_LONG,
             VALUE_TOO_SHORT,
             ALREADY_EXISTS,
-            NOT_FOUND
+            NOT_FOUND,
+            NO_EFFECT
         };
 
         class IWriteRepository

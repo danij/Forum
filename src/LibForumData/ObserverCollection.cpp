@@ -130,6 +130,19 @@ void ObserverCollection::onDeleteDiscussionThread(ObserverContext context, const
     for (auto& item : writeObservers_) item->onDeleteDiscussionThread(context, deletedThread);
 }
 
+void ObserverCollection::onMergeDiscussionThreads(ObserverContext context, const DiscussionThread& fromThread,
+                                                  const DiscussionThread& toThread)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : writeObservers_) item->onMergeDiscussionThreads(context, fromThread, toThread);
+}
+
+void ObserverCollection::onMoveDiscussionThreadMessage(ObserverContext context, const DiscussionMessage& message,
+                                                       const DiscussionThread& intoThread)
+{
+    std::shared_lock<decltype(mutex_)> lock(mutex_);
+    for (auto& item : writeObservers_) item->onMoveDiscussionThreadMessage(context, message, intoThread);
+}
 
 void ObserverCollection::onAddNewDiscussionMessage(ObserverContext context, const DiscussionMessage& newMessage)
 {

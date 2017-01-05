@@ -77,6 +77,12 @@ namespace Forum
                                                   Entities::DiscussionThread::ChangeType change) {};
             virtual void onDeleteDiscussionThread(ObserverContext context,
                                                   const Entities::DiscussionThread& deletedThread) {};
+            virtual void onMergeDiscussionThreads(ObserverContext context,
+                                                  const Entities::DiscussionThread& fromThread,
+                                                  const Entities::DiscussionThread& toThread) {};
+            virtual void onMoveDiscussionThreadMessage(ObserverContext context,
+                                                       const Entities::DiscussionMessage& message,
+                                                       const Entities::DiscussionThread& intoThread) {};
 
             virtual void onAddNewDiscussionMessage(ObserverContext context,
                                                    const Entities::DiscussionMessage& newMessage) {};

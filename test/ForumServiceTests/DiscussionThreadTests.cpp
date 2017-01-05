@@ -1425,3 +1425,180 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_message_coun
     BOOST_REQUIRE_EQUAL("Def", threads[2].name);
     BOOST_REQUIRE_EQUAL(0, threads[2].messageCount);
 }
+
+BOOST_AUTO_TEST_CASE( Merging_discussion_threads_requires_two_valid_thread_ids )
+{
+    auto handler = createCommandHandler();
+
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS, { sampleValidIdString }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS, 
+                                       { "bogus id1", "bogus id2" }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS, 
+                                       { sampleValidIdString, "bogus id2" }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS, 
+                                       { "bogus id1", sampleValidIdString }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND,
+                          handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS, 
+                                       { sampleValidIdString, sampleValidIdString }));
+}
+
+BOOST_AUTO_TEST_CASE( Merging_discussion_threads_fails_if_the_same_id_is_provided_twice )
+{
+    auto handler = createCommandHandler();
+
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+
+    assertStatusCodeEqual(StatusCode::NO_EFFECT,
+                          handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS,
+                                       { threadId, threadId }));
+}
+
+
+BOOST_AUTO_TEST_CASE( Merging_discussion_threads_works_ok )
+{
+    auto handler = createCommandHandler();
+
+    auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+    auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+    std::string message1Id, message2Id, message3Id;
+
+    {
+        TimestampChanger _(1000);
+        message1Id = createDiscussionMessageAndGetId(handler, thread1Id, "Message 1");
+    }
+    {
+        TimestampChanger _(2000);
+        message2Id = createDiscussionMessageAndGetId(handler, thread2Id, "Message 2");
+    }
+    {
+        TimestampChanger _(3000);
+        message3Id = createDiscussionMessageAndGetId(handler, thread1Id, "Message 3");
+    }
+
+    assertStatusCodeEqual(StatusCode::OK,
+                          handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS,
+                                       { thread1Id, thread2Id }));
+
+    assertStatusCodeEqual(StatusCode::NOT_FOUND,
+                          handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
+                                       { thread1Id }));
+
+    auto thread = deserializeThread(handlerToObj(handler, 
+                                                 Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, 
+                                                 { thread2Id }).get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread2Id, thread.id);
+    BOOST_REQUIRE_EQUAL("Thread2", thread.name);
+
+    BOOST_REQUIRE_EQUAL(3, thread.messages.size());
+
+    BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
+    BOOST_REQUIRE_EQUAL("Message 1", thread.messages[0].content);
+    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].created);
+
+    BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
+    BOOST_REQUIRE_EQUAL("Message 2", thread.messages[1].content);
+    BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
+
+    BOOST_REQUIRE_EQUAL(message3Id, thread.messages[2].id);
+    BOOST_REQUIRE_EQUAL("Message 3", thread.messages[2].content);
+    BOOST_REQUIRE_EQUAL(3000, thread.messages[2].created);
+}
+
+BOOST_AUTO_TEST_CASE( Moving_discussion_threads_messages_requires_a_valid_message_id_and_a_valid_thread_id )
+{
+    auto handler = createCommandHandler();
+
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::MOVE_DISCUSSION_THREAD_MESSAGE));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::MOVE_DISCUSSION_THREAD_MESSAGE, 
+                                       { sampleValidIdString }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::MOVE_DISCUSSION_THREAD_MESSAGE,
+                                       { "bogus id1", "bogus id2" }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::MOVE_DISCUSSION_THREAD_MESSAGE,
+                                       { sampleValidIdString, "bogus id2" }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::MOVE_DISCUSSION_THREAD_MESSAGE,
+                                       { "bogus id1", sampleValidIdString }));
+    assertStatusCodeEqual(StatusCode::NOT_FOUND,
+                          handlerToObj(handler, Forum::Commands::MOVE_DISCUSSION_THREAD_MESSAGE,
+                                       { sampleValidIdString, sampleValidIdString }));
+}
+
+BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_fails_if_the_message_is_to_be_moved_to_the_thread_it_already_belongs_to )
+{
+    auto handler = createCommandHandler();
+
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    auto messageId = createDiscussionMessageAndGetId(handler, threadId, "Thread");
+
+    assertStatusCodeEqual(StatusCode::NO_EFFECT,
+                          handlerToObj(handler, Forum::Commands::MOVE_DISCUSSION_THREAD_MESSAGE,
+                                       { messageId, threadId }));
+}
+
+
+BOOST_AUTO_TEST_CASE( Moving_discussion_threads_works_ok )
+{
+    auto handler = createCommandHandler();
+
+    auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+    auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+    std::string message1Id, message2Id, message3Id;
+
+    {
+        TimestampChanger _(1000);
+        message1Id = createDiscussionMessageAndGetId(handler, thread1Id, "Message 1");
+    }
+    {
+        TimestampChanger _(2000);
+        message2Id = createDiscussionMessageAndGetId(handler, thread2Id, "Message 2");
+    }
+    {
+        TimestampChanger _(3000);
+        message3Id = createDiscussionMessageAndGetId(handler, thread1Id, "Message 3");
+    }
+
+    assertStatusCodeEqual(StatusCode::OK,
+                          handlerToObj(handler, Forum::Commands::MOVE_DISCUSSION_THREAD_MESSAGE,
+                                       { message1Id, thread2Id }));
+
+    auto thread1 = deserializeThread(handlerToObj(handler, 
+                                                 Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, 
+                                                 { thread1Id }).get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread1Id, thread1.id);
+    BOOST_REQUIRE_EQUAL("Thread1", thread1.name);
+
+    BOOST_REQUIRE_EQUAL(1, thread1.messages.size());
+    
+    BOOST_REQUIRE_EQUAL(message3Id, thread1.messages[0].id);
+    BOOST_REQUIRE_EQUAL("Message 3", thread1.messages[0].content);
+    BOOST_REQUIRE_EQUAL(3000, thread1.messages[0].created);
+
+    auto thread2 = deserializeThread(handlerToObj(handler, 
+                                                 Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, 
+                                                 { thread2Id }).get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
+    BOOST_REQUIRE_EQUAL("Thread2", thread2.name);
+
+    BOOST_REQUIRE_EQUAL(2, thread2.messages.size());
+
+    BOOST_REQUIRE_EQUAL(message1Id, thread2.messages[0].id);
+    BOOST_REQUIRE_EQUAL("Message 1", thread2.messages[0].content);
+    BOOST_REQUIRE_EQUAL(1000, thread2.messages[0].created);
+
+    BOOST_REQUIRE_EQUAL(message2Id, thread2.messages[1].id);
+    BOOST_REQUIRE_EQUAL("Message 2", thread2.messages[1].content);
+    BOOST_REQUIRE_EQUAL(2000, thread2.messages[1].created);
+}
