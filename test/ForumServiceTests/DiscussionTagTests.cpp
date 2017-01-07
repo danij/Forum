@@ -26,14 +26,14 @@ struct SerializedDiscussionTag
     }
 };
 
-auto deserializeTag(const boost::property_tree::ptree& tree)
+static auto deserializeTag(const boost::property_tree::ptree& tree)
 {
     SerializedDiscussionTag result;
     result.populate(tree);
     return result;
 }
 
-auto deserializeTags(const boost::property_tree::ptree& collection)
+static auto deserializeTags(const boost::property_tree::ptree& collection)
 {
     std::vector<SerializedDiscussionTag> result;
     for (auto& tree : collection)
@@ -46,7 +46,7 @@ auto deserializeTags(const boost::property_tree::ptree& collection)
 /**
 * Stores only the information that is sent out about a user referenced in a discussion thread or message
 */
-struct SerializedDiscussionThreadOrMessageUser
+struct SerializedUserReferencedInDiscussionThreadOrMessage
 {
     std::string id;
     std::string name;
@@ -69,7 +69,7 @@ struct SerializedDiscussionThreadOrMessageUser
 struct SerializedLatestDiscussionThreadMessage
 {
     Timestamp created = 0;
-    SerializedDiscussionThreadOrMessageUser createdBy;
+    SerializedUserReferencedInDiscussionThreadOrMessage createdBy;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -85,7 +85,7 @@ struct SerializedDiscussionThread
     std::string name;
     Timestamp created = 0;
     Timestamp lastUpdated = 0;
-    SerializedDiscussionThreadOrMessageUser createdBy;
+    SerializedUserReferencedInDiscussionThreadOrMessage createdBy;
     int64_t visited = 0;
     int64_t messageCount = 0;
     SerializedLatestDiscussionThreadMessage latestMessage;
@@ -115,19 +115,19 @@ struct SerializedDiscussionThread
     }
 };
 
-auto deserializeThreadWithTag(const boost::property_tree::ptree& tree)
+static auto deserializeThread(const boost::property_tree::ptree& tree)
 {
     SerializedDiscussionThread result;
     result.populate(tree);
     return result;
 }
 
-auto deserializeThreadsWithTag(const boost::property_tree::ptree& collection)
+static auto deserializeThreads(const boost::property_tree::ptree& collection)
 {
     std::vector<SerializedDiscussionThread> result;
     for (auto& tree : collection)
     {
-        result.push_back(deserializeThreadWithTag(tree.second));
+        result.push_back(deserializeThread(tree.second));
     }
     return result;
 }
@@ -320,7 +320,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_have_no_tags_attached_by_default )
         auto threadsObj = handlerToObj(handler, command, { tagId });
         assertStatusCodeEqual(StatusCode::OK, threadsObj);
 
-        auto threads = deserializeThreadsWithTag(threadsObj.get_child("threads"));
+        auto threads = deserializeThreads(threadsObj.get_child("threads"));
         BOOST_REQUIRE_EQUAL(0, threads.size());
     }
 }
@@ -337,9 +337,9 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_attached_to_threads_even_if_they_ar
                                                            { tagId, threadId }));
     }
 
-    auto threads = deserializeThreadsWithTag(handlerToObj(handler, 
-                                                          Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME, 
-                                                          { tagId }).get_child("threads"));
+    auto threads = deserializeThreads(handlerToObj(handler, 
+                                                   Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME, 
+                                                   { tagId }).get_child("threads"));
     BOOST_REQUIRE_EQUAL(1, threads.size());
     BOOST_REQUIRE_EQUAL(threadId, threads[0].id);
     BOOST_REQUIRE_EQUAL("Thread", threads[0].name);
@@ -383,17 +383,17 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_detached_from_threads )
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
                                                        { tagId, threadId }));
 
-    auto threads = deserializeThreadsWithTag(handlerToObj(handler,
-                                                          Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
-                                                          { tagId }).get_child("threads"));
+    auto threads = deserializeThreads(handlerToObj(handler,
+                                                   Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
+                                                   { tagId }).get_child("threads"));
     BOOST_REQUIRE_EQUAL(1, threads.size());
 
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::REMOVE_DISCUSSION_TAG_FROM_THREAD,
                                                        { tagId, threadId }));
 
-    threads = deserializeThreadsWithTag(handlerToObj(handler,
-                                                     Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
-                                                     { tagId }).get_child("threads"));
+    threads = deserializeThreads(handlerToObj(handler,
+                                              Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
+                                              { tagId }).get_child("threads"));
     BOOST_REQUIRE_EQUAL(0, threads.size());
 }
 
@@ -419,7 +419,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_detaches_it_from_threads )
     BOOST_REQUIRE_EQUAL("Tag2", tags[0].name);
     BOOST_REQUIRE_EQUAL(2, tags[0].threadCount);
 
-    auto threads = deserializeThreadsWithTag(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
+    auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
                                              .get_child("threads"));
     BOOST_REQUIRE_EQUAL(2, threads.size());
     BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
@@ -461,7 +461,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_detaches_it_from_tags )
     BOOST_REQUIRE_EQUAL("Tag2", tags[1].name);
     BOOST_REQUIRE_EQUAL(1, tags[1].threadCount);
 
-    auto threads = deserializeThreadsWithTag(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
+    auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
                                              .get_child("threads"));
     BOOST_REQUIRE_EQUAL(1, threads.size());
     BOOST_REQUIRE_EQUAL(thread2Id, threads[0].id);
@@ -536,7 +536,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_attached_to_one_tag_can_be_retrieved_so
     for (auto command : GetDiscussionThreadWithTagCommands)
         for (auto sortOrder : { SortOrder::Ascending, SortOrder::Descending })
         {
-            auto threads = deserializeThreadsWithTag(handlerToObj(handler, command, sortOrder, { tagId })
+            auto threads = deserializeThreads(handlerToObj(handler, command, sortOrder, { tagId })
                                                      .get_child("threads"));
             BOOST_REQUIRE_EQUAL(3, threads.size());
             for (size_t i = 0; i < 3; i++)
