@@ -136,13 +136,13 @@ static auto deserializeThreads(const boost::property_tree::ptree& collection)
 BOOST_AUTO_TEST_CASE( No_discussion_tags_are_present_before_one_is_created )
 {
     auto handler = createCommandHandler();
-    auto threads = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
+    auto tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(0, threads.size());
+    BOOST_REQUIRE_EQUAL(0, tags.size());
 
-    threads = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT).get_child("tags"));
+    tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(0, threads.size());
+    BOOST_REQUIRE_EQUAL(0, tags.size());
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_returns_the_id_and_name )
