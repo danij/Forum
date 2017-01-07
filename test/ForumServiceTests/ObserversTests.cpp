@@ -394,6 +394,26 @@ BOOST_AUTO_TEST_CASE( Renaming_a_discussion_tag_invokes_observer )
     BOOST_REQUIRE_EQUAL(DiscussionTag::ChangeType::Name, tagChange);
 }
 
+BOOST_AUTO_TEST_CASE( Changing_a_discussion_tag_ui_blob_invokes_observer )
+{
+    std::string newBlob;
+    auto tagChange = DiscussionTag::ChangeType::None;
+    auto handler = createCommandHandler();
+
+    DisposingDelegateObserver observer(*handler);
+    observer->changeDiscussionTagAction = [&](auto& _, auto& tag, auto change)
+    {
+        newBlob = tag.uiBlob();
+        tagChange = change;
+    };
+
+    auto tagId = createDiscussionTagAndGetId(handler, "Abc");
+
+    handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_TAG_UI_BLOB, { tagId, "sample blob" });
+    BOOST_REQUIRE_EQUAL("sample blob", newBlob);
+    BOOST_REQUIRE_EQUAL(DiscussionTag::ChangeType::UIBlob, tagChange);
+}
+
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_invokes_observer )
 {
     std::string deletedTagId;
