@@ -483,7 +483,7 @@ BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_thread_invokes_observer 
     BOOST_REQUIRE_EQUAL(threadId, observedThreadId);
 }
 
-BOOST_AUTO_TEST_CASE(Retrieving_discussion_threads_attached_to_tags_invokes_observer)
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_tags_invokes_observer )
 {
     int observerCalledNTimes = 0;
     std::string observedTagId;
@@ -535,4 +535,221 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_tags_invokes_observer)
 
     BOOST_REQUIRE_EQUAL(fromTagId, observedFromTagId);
     BOOST_REQUIRE_EQUAL(toTagId, observedToTagId);
+}
+
+BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_invokes_observer )
+{
+    std::string newCategoryName;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onAddNewDiscussionCategory,
+                          [&](auto& _, auto& newCategory) { newCategoryName = newCategory.name(); });
+
+    createDiscussionCategoryAndGetId(handler, "Foo");
+    BOOST_REQUIRE_EQUAL("Foo", newCategoryName);
+}
+
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_categories_invokes_observer )
+{
+    int observerCalledNTimes = 0;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getReadRepository()->readEvents().onGetDiscussionCategories,
+                          [&](auto& _) { observerCalledNTimes += 1; });
+
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_CATEGORIES_BY_NAME, SortOrder::Ascending);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_CATEGORIES_BY_NAME, SortOrder::Descending);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT, SortOrder::Ascending);
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT, SortOrder::Descending);
+
+    BOOST_REQUIRE_EQUAL(4, observerCalledNTimes);
+}
+
+BOOST_AUTO_TEST_CASE(Retrieving_root_discussion_categories_invokes_observer)
+{
+    int observerCalledNTimes = 0;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getReadRepository()->readEvents().onGetRootDiscussionCategories,
+        [&](auto& _) { observerCalledNTimes += 1; });
+
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_CATEGORIES_FROM_ROOT);
+
+    BOOST_REQUIRE_EQUAL(1, observerCalledNTimes);
+}
+
+BOOST_AUTO_TEST_CASE( Renaming_a_discussion_category_invokes_observer )
+{
+    std::string newName;
+    auto categoryChange = DiscussionCategory::ChangeType::None;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onChangeDiscussionCategory, 
+                          [&](auto& _, auto& category, auto change)
+                          {
+                              newName = category.name();
+                              categoryChange = change;
+                          });
+
+    auto categoryId = createDiscussionCategoryAndGetId(handler, "Abc");
+
+    handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId, "Xyz" });
+    BOOST_REQUIRE_EQUAL("Xyz", newName);
+    BOOST_REQUIRE_EQUAL(DiscussionCategory::ChangeType::Name, categoryChange);
+}
+
+BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_description_invokes_observer )
+{
+    std::string newDescription;
+    auto categoryChange = DiscussionCategory::ChangeType::None;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onChangeDiscussionCategory, 
+                          [&](auto& _, auto& category, auto change)
+                          {
+                              newDescription = category.description();
+                              categoryChange = change;
+                          });
+
+    auto categoryId = createDiscussionCategoryAndGetId(handler, "Abc");
+
+    handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_DESCRIPTION, { categoryId, "Xyz" });
+    BOOST_REQUIRE_EQUAL("Xyz", newDescription);
+    BOOST_REQUIRE_EQUAL(DiscussionCategory::ChangeType::Description, categoryChange);
+}
+
+BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_displayOrder_invokes_observer )
+{
+    uint16_t newDisplayOrder;
+    auto categoryChange = DiscussionCategory::ChangeType::None;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onChangeDiscussionCategory,
+                          [&](auto& _, auto& category, auto change)
+                          {
+                              newDisplayOrder = category.displayOrder();
+                              categoryChange = change;
+                          });
+
+    auto categoryId = createDiscussionCategoryAndGetId(handler, "Abc");
+
+    handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER, { categoryId, "100" });
+    BOOST_REQUIRE_EQUAL(100, newDisplayOrder);
+    BOOST_REQUIRE_EQUAL(DiscussionCategory::ChangeType::DisplayOrder, categoryChange);
+}
+
+BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_parent_invokes_observer )
+{
+    std::string newParentId;
+    auto categoryChange = DiscussionCategory::ChangeType::None;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onChangeDiscussionCategory, 
+                          [&](auto& _, auto& category, auto change)
+                          {
+                              //newParentId = category.parent();
+                              categoryChange = change;
+                          });
+
+    auto category1Id = createDiscussionCategoryAndGetId(handler, "Category1");
+    auto childCategory1Id = createDiscussionCategoryAndGetId(handler, "ChildCategory1", category1Id);
+    auto category2Id = createDiscussionCategoryAndGetId(handler, "Category2");
+
+    handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_PARENT, { childCategory1Id, category2Id });
+    BOOST_REQUIRE_EQUAL(category2Id, newParentId);
+    BOOST_REQUIRE_EQUAL(DiscussionCategory::ChangeType::Parent, categoryChange);
+}
+
+BOOST_AUTO_TEST_CASE( Deleting_a_discussion_category_invokes_observer )
+{
+    std::string deletedCategoryId;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onDeleteDiscussionCategory, 
+                          [&](auto& _, auto& tag)
+                          {
+                              deletedCategoryId = static_cast<std::string>(tag.id());
+                          });
+
+    auto categoryId = createDiscussionCategoryAndGetId(handler, "Abc");
+
+    handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_CATEGORY, { categoryId });
+    BOOST_REQUIRE_EQUAL(categoryId, deletedCategoryId);
+}
+
+BOOST_AUTO_TEST_CASE( Attaching_a_discussion_tag_to_a_category_invokes_observer )
+{
+    std::string observedTagId, observedCategoryId;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onAddDiscussionTagToCategory, 
+                          [&](auto& _, auto& tag, auto& category)
+                          {
+                              observedTagId = tag.id();
+                              observedCategoryId = category.id();
+                          });
+
+    auto tagId = createDiscussionTagAndGetId(handler, "Tag");
+    auto categoryId = createDiscussionThreadAndGetId(handler, "Category");
+
+    handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY, { tagId, categoryId });
+
+    BOOST_REQUIRE_EQUAL(tagId, observedTagId);
+    BOOST_REQUIRE_EQUAL(categoryId, observedCategoryId);
+}
+
+BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_category_invokes_observer )
+{
+    std::string observedTagId, observedCategoryId;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onRemoveDiscussionTagFromCategory, 
+                          [&](auto& _, auto& tag, auto& category)
+                          {
+                              observedTagId = tag.id();
+                              observedCategoryId = category.id();
+                          });
+
+    auto tagId = createDiscussionTagAndGetId(handler, "Tag");
+    auto categoryId = createDiscussionThreadAndGetId(handler, "Category");
+
+    handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY, { tagId, categoryId });
+    handlerToObj(handler, Forum::Commands::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, { tagId, categoryId });
+
+    BOOST_REQUIRE_EQUAL(tagId, observedTagId);
+    BOOST_REQUIRE_EQUAL(categoryId, observedCategoryId);
+}
+
+
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_categories_invokes_observer )
+{
+    int observerCalledNTimes = 0;
+    std::string observedCategoryId;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getReadRepository()->readEvents().onGetDiscussionThreadsOfCategory,
+                          [&](auto& _, auto& category)
+                          {
+                              observerCalledNTimes += 1;
+                              observedCategoryId = category.id();
+                          });
+
+    auto categoryId = createDiscussionTagAndGetId(handler, "Category");
+
+    Forum::Commands::Command commands[] =
+    {
+        Forum::Commands::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
+        Forum::Commands::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED,
+        Forum::Commands::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED,
+        Forum::Commands::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT
+    };
+
+    for (auto command : commands)
+        for (auto sortOrder : { SortOrder::Ascending, SortOrder::Descending })
+        {
+            handlerToObj(handler, command, sortOrder, { categoryId });
+        }
+
+    BOOST_REQUIRE_EQUAL(8, observerCalledNTimes);
+    BOOST_REQUIRE_EQUAL(categoryId, observedCategoryId);
 }

@@ -5,6 +5,7 @@
 #include "EntityDiscussionThread.h"
 #include "EntityDiscussionMessage.h"
 #include "EntityDiscussionTag.h"
+#include "EntityDiscussionCategory.h"
 
 namespace Forum
 {
