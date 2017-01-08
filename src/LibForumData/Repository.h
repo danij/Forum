@@ -17,8 +17,7 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IReadRepository);
 
-            virtual void addObserver(const ReadRepositoryObserverRef& observer) = 0;
-            virtual void removeObserver(const ReadRepositoryObserverRef& observer) = 0;
+            virtual ReadEvents& readEvents() = 0;
 
             virtual void getEntitiesCount(std::ostream& output) const = 0;
 
@@ -67,8 +66,7 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IWriteRepository);
 
-            virtual void addObserver(const WriteRepositoryObserverRef& observer) = 0;
-            virtual void removeObserver(const WriteRepositoryObserverRef& observer) = 0;
+            virtual WriteEvents& writeEvents() = 0;
 
             virtual void addNewUser(const std::string& name, std::ostream& output) = 0;
             virtual void changeUserName(const Entities::IdType& id, const std::string& newName,

@@ -24,7 +24,7 @@ void MemoryRepository::getUsersByName(std::ostream& output) const
                      {
                          const auto& users = collection.usersByName();
                          writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
-                         observers_.onGetUsers(createObserverContext(performedBy.get(collection)));
+                         readEvents_.onGetUsers(createObserverContext(performedBy.get(collection)));
                      });
 }
 
@@ -43,7 +43,7 @@ void MemoryRepository::getUsersByCreated(std::ostream& output) const
                          {
                              writeSingleObjectSafeName(output, "users", Json::enumerate(users.rbegin(), users.rend()));
                          }
-                         observers_.onGetUsers(createObserverContext(performedBy.get(collection)));
+                         readEvents_.onGetUsers(createObserverContext(performedBy.get(collection)));
                      });
 }
 void MemoryRepository::getUsersByLastSeen(std::ostream& output) const
@@ -61,7 +61,7 @@ void MemoryRepository::getUsersByLastSeen(std::ostream& output) const
                          {
                              writeSingleObjectSafeName(output, "users", Json::enumerate(users.rbegin(), users.rend()));
                          }
-                         observers_.onGetUsers(createObserverContext(performedBy.get(collection)));
+                         readEvents_.onGetUsers(createObserverContext(performedBy.get(collection)));
                      });
 }
 
@@ -81,7 +81,7 @@ void MemoryRepository::getUserById(const IdType& id, std::ostream& output) const
                          {
                              writeSingleObjectSafeName(output, "user", **it);
                          }
-                         observers_.onGetUserById(createObserverContext(performedBy.get(collection)), id);
+                         readEvents_.onGetUserById(createObserverContext(performedBy.get(collection)), id);
                      });
 }
 
@@ -101,7 +101,7 @@ void MemoryRepository::getUserByName(const std::string& name, std::ostream& outp
                          {
                              writeSingleObjectSafeName(output, "user", **it);
                          }
-                         observers_.onGetUserByName(createObserverContext(performedBy.get(collection)), name);
+                         readEvents_.onGetUserByName(createObserverContext(performedBy.get(collection)), name);
                      });
 }
 
@@ -164,7 +164,7 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
                               return;
                           }
                           collection.users().insert(user);
-                          observers_.onAddNewUser(createObserverContext(*performedBy.getAndUpdate(collection)), *user);
+                          writeEvents_.onAddNewUser(createObserverContext(*performedBy.getAndUpdate(collection)), *user);
 
                           status.addExtraSafeName("id", user->id());
                           status.addExtraSafeName("name", user->name());
@@ -201,8 +201,8 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
                           {
                               user.name() = newName;
                           });
-                          observers_.onChangeUser(createObserverContext(*performedBy.getAndUpdate(collection)),
-                                                  **it, User::ChangeType::Name);
+                          writeEvents_.onChangeUser(createObserverContext(*performedBy.getAndUpdate(collection)),
+                                                    **it, User::ChangeType::Name);
                       });
 }
 
@@ -227,7 +227,7 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
                               return;
                           }
                           //make sure the user is not deleted before being passed to the observers
-                          observers_.onDeleteUser(createObserverContext(*performedBy.getAndUpdate(collection)), **it);
+                          writeEvents_.onDeleteUser(createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteUser(it);
                       });
 }

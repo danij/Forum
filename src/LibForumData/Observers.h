@@ -4,7 +4,7 @@
 #include "TypeHelpers.h"
 #include "ContextProviders.h"
 
-#include <memory>
+#include <boost/signals2.hpp>
 
 namespace Forum
 {
@@ -28,86 +28,52 @@ namespace Forum
         //Do not polute all observer methods with const Struct&
         typedef const ObserverContext_& ObserverContext;
 
-        /**
-         * Expanded by classes that want to be notified when a user performs a read action.
-         * The class may be called from multiple threads so thread safety needs to be implemented.
-         */
-        class AbstractReadRepositoryObserver
-        {
-        public:
-            DECLARE_INTERFACE_MANDATORY(AbstractReadRepositoryObserver);
+        struct ReadEvents : private boost::noncopyable
+        {            
+            boost::signals2::signal<void(ObserverContext)> onGetEntitiesCount;
 
-            virtual void onGetEntitiesCount(ObserverContext context) {};
+            boost::signals2::signal<void(ObserverContext)> onGetUsers;
+            boost::signals2::signal<void(ObserverContext, const Entities::IdType&)> onGetUserById;
+            boost::signals2::signal<void(ObserverContext, const std::string&)> onGetUserByName;
 
-            virtual void onGetUsers(ObserverContext context) {};
-            virtual void onGetUserById(ObserverContext context, const Entities::IdType& id) {};
-            virtual void onGetUserByName(ObserverContext context, const std::string& name) {};
+            boost::signals2::signal<void(ObserverContext)> onGetDiscussionThreads;
+            boost::signals2::signal<void(ObserverContext, const Entities::IdType&)> onGetDiscussionThreadById;
+            boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetDiscussionThreadsOfUser;
 
-            virtual void onGetDiscussionThreads(ObserverContext context) {};
-            virtual void onGetDiscussionThreadById(ObserverContext context, const Entities::IdType& id) {};
-            virtual void onGetDiscussionThreadsOfUser(ObserverContext context, const Entities::User& user) {};
+            boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetDiscussionThreadMessagesOfUser;
 
-            virtual void onGetDiscussionThreadMessagesOfUser(ObserverContext context,
-                                                             const Entities::User& user) {};
-
-            virtual void onGetDiscussionTags(ObserverContext context) {};
-            virtual void onGetDiscussionThreadsWithTag(ObserverContext context, const Entities::DiscussionTag& tag) {};
+            boost::signals2::signal<void(ObserverContext)> onGetDiscussionTags;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)>onGetDiscussionThreadsWithTag;
         };
-
-        typedef std::shared_ptr<AbstractReadRepositoryObserver> ReadRepositoryObserverRef;
-
-        /**
-         * Expanded by classes that want to be notified when a user performs a write action.
-         * The class may be called from multiple threads so thread safety needs to be implemented.
-         */
-        class AbstractWriteRepositoryObserver
+        
+        struct WriteEvents : private boost::noncopyable
         {
-        public:
-            DECLARE_INTERFACE_MANDATORY(AbstractWriteRepositoryObserver);
+            boost::signals2::signal<void(ObserverContext, const Entities::User&)> onAddNewUser;
+            boost::signals2::signal<void(ObserverContext, const Entities::User&, Entities::User::ChangeType)> onChangeUser;
+            boost::signals2::signal<void(ObserverContext, const Entities::User&)> onDeleteUser;
 
-            virtual void onAddNewUser(ObserverContext context, const Entities::User& newUser) {};
-            virtual void onChangeUser(ObserverContext context, const Entities::User& user,
-                                      Entities::User::ChangeType change) {};
-            virtual void onDeleteUser(ObserverContext context, const Entities::User& deletedUser) {};
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onAddNewDiscussionThread;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&, 
+                                         Entities::DiscussionThread::ChangeType)> onChangeDiscussionThread;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onDeleteDiscussionThread;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread& fromThread, 
+                                         const Entities::DiscussionThread& toThread)> onMergeDiscussionThreads;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionMessage& message, 
+                                         const Entities::DiscussionThread& intoThread)> onMoveDiscussionThreadMessage;
 
-            virtual void onAddNewDiscussionThread(ObserverContext context,
-                                                  const Entities::DiscussionThread& newThread) {};
-            virtual void onChangeDiscussionThread(ObserverContext context,
-                                                  const Entities::DiscussionThread& thread,
-                                                  Entities::DiscussionThread::ChangeType change) {};
-            virtual void onDeleteDiscussionThread(ObserverContext context,
-                                                  const Entities::DiscussionThread& deletedThread) {};
-            virtual void onMergeDiscussionThreads(ObserverContext context,
-                                                  const Entities::DiscussionThread& fromThread,
-                                                  const Entities::DiscussionThread& toThread) {};
-            virtual void onMoveDiscussionThreadMessage(ObserverContext context,
-                                                       const Entities::DiscussionMessage& message,
-                                                       const Entities::DiscussionThread& intoThread) {};
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionMessage&)> onAddNewDiscussionMessage;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionMessage&)> onDeleteDiscussionMessage;
 
-            virtual void onAddNewDiscussionMessage(ObserverContext context,
-                                                   const Entities::DiscussionMessage& newMessage) {};
-            virtual void onDeleteDiscussionMessage(ObserverContext context,
-                                                   const Entities::DiscussionMessage& deletedMessage) {};
-
-            virtual void onAddNewDiscussionTag(ObserverContext context,
-                                               const Entities::DiscussionTag& newTag) {};
-            virtual void onChangeDiscussionTag(ObserverContext context,
-                                               const Entities::DiscussionTag& tag,
-                                               Entities::DiscussionTag::ChangeType change) {};
-            virtual void onDeleteDiscussionTag(ObserverContext context,
-                                               const Entities::DiscussionTag& deletedTag) {};
-            virtual void onAddDiscussionTagToThread(ObserverContext context,
-                                                    const Entities::DiscussionTag& tag,
-                                                    const Entities::DiscussionThread& thread) {};
-            virtual void onRemoveDiscussionTagFromThread(ObserverContext context,
-                                                         const Entities::DiscussionTag& tag,
-                                                         const Entities::DiscussionThread& thread) {};
-            virtual void onMergeDiscussionTags(ObserverContext context,
-                                               const Entities::DiscussionTag& fromTag,
-                                               const Entities::DiscussionTag& toTag) {};
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onAddNewDiscussionTag;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&, 
+                                         Entities::DiscussionTag::ChangeType)> onChangeDiscussionTag;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onDeleteDiscussionTag;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag, 
+                                         const Entities::DiscussionThread& thread)> onAddDiscussionTagToThread;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag, 
+                                         const Entities::DiscussionThread& thread)> onRemoveDiscussionTagFromThread;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& fromTag, 
+                                         const Entities::DiscussionTag& toTag)> onMergeDiscussionTags;
         };
-
-        typedef std::shared_ptr<AbstractWriteRepositoryObserver> WriteRepositoryObserverRef;
-
     }
 }

@@ -9,7 +9,7 @@ find_package(ICU)
 
 set(SOURCE_FILES main.cpp SimpleCommandTests.cpp CommandsCommon.cpp UserTests.cpp DiscussionThreadTests.cpp
         TestHelpers.cpp ObserversTests.cpp DiscussionTagTests.cpp DiscussionCategoryTests.cpp)
-set(HEADER_FILES TestHelpers.h CommandsCommon.h DelegateObserver.h)
+set(HEADER_FILES TestHelpers.h CommandsCommon.h)
 
 include_directories(../../src ../../src/LibFastJsonWriter ../../src/LibForumContext
         ../../src/LibForumCommandHandlers ../../src/LibForumData ${Boost_INCLUDE_DIRS})

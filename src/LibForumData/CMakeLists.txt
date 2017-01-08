@@ -7,12 +7,12 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost REQUIRED COMPONENTS locale regex thread system)
 find_package(ICU)
 
-set(SOURCE_FILES RandomGenerator.cpp EntitySerialization.cpp StringHelpers.cpp EntityCollection.cpp
-        ObserverCollection.cpp UuidString.cpp MemoryRepository-main.cpp MemoryRepository-users.cpp
+set(SOURCE_FILES RandomGenerator.cpp EntitySerialization.cpp StringHelpers.cpp EntityCollection.cpp UuidString.cpp 
+        MemoryRepository-main.cpp MemoryRepository-users.cpp
         MemoryRepository-threads.cpp MemoryRepository-messages.cpp)
 set(HEADER_FILES Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h
         ConstCollectionAdapter.h StringHelpers.h RandomGenerator.h
-        EntitySerialization.h EntityCollection.h Observers.h ObserverCollection.h EntityCommonTypes.h UuidString.h
+        EntitySerialization.h EntityCollection.h Observers.h EntityCommonTypes.h UuidString.h
         TypeHelpers.h EntityDiscussionThreadCollectionBase.h EntityDiscussionThread.h EntityUser.h StateHelpers.h
         EntityDiscussionMessage.h EntityDiscussionMessageCollectionBase.h EntityUserCollectionBase.h
         EntityDiscussionTag.h)

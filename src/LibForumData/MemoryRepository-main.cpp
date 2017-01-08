@@ -15,24 +15,14 @@ MemoryRepository::MemoryRepository() : collection_(std::make_shared<EntityCollec
 {
 }
 
-void MemoryRepository::addObserver(const ReadRepositoryObserverRef& observer)
+ReadEvents& MemoryRepository::readEvents()
 {
-    observers_.addObserver(observer);
+    return readEvents_;
 }
 
-void MemoryRepository::addObserver(const WriteRepositoryObserverRef& observer)
+WriteEvents& MemoryRepository::writeEvents()
 {
-    observers_.addObserver(observer);
-}
-
-void MemoryRepository::removeObserver(const ReadRepositoryObserverRef& observer)
-{
-    observers_.removeObserver(observer);
-}
-
-void MemoryRepository::removeObserver(const WriteRepositoryObserverRef& observer)
-{
-    observers_.removeObserver(observer);
+    return writeEvents_;
 }
 
 void MemoryRepository::getEntitiesCount(std::ostream& output) const
@@ -48,7 +38,7 @@ void MemoryRepository::getEntitiesCount(std::ostream& output) const
 
                          writeSingleValueSafeName(output, "count", count);
 
-                         observers_.onGetEntitiesCount(createObserverContext(performedBy.get(collection)));
+                         readEvents_.onGetEntitiesCount(createObserverContext(performedBy.get(collection)));
                      });
 }
 

@@ -2,7 +2,7 @@
 
 #include "ContextProviders.h"
 #include "EntityCollection.h"
-#include "ObserverCollection.h"
+#include "Observers.h"
 #include "Repository.h"
 #include "ResourceGuard.h"
 
@@ -46,10 +46,8 @@ namespace Forum
         public:
             MemoryRepository();
 
-            virtual void addObserver(const ReadRepositoryObserverRef& observer) override;
-            virtual void addObserver(const WriteRepositoryObserverRef& observer) override;
-            virtual void removeObserver(const ReadRepositoryObserverRef& observer) override;
-            virtual void removeObserver(const WriteRepositoryObserverRef& observer) override;
+            virtual ReadEvents& readEvents() override;
+            virtual WriteEvents& writeEvents() override;
 
             virtual void getEntitiesCount(std::ostream& output) const override;
 
@@ -102,7 +100,8 @@ namespace Forum
             }
 
             Helpers::ResourceGuard<Entities::EntityCollection> collection_;
-            mutable ObserverCollection observers_;
+            ReadEvents readEvents_;
+            WriteEvents writeEvents_;
         };
 
         inline ObserverContext_ createObserverContext(PerformedByType performedBy)

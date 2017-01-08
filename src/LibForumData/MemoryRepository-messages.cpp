@@ -44,8 +44,7 @@ void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(const IdType& 
             writeSingleObjectSafeName(output, "messages",
                 Json::enumerate(messages.rbegin(), messages.rend()));
         }
-        observers_.onGetDiscussionThreadMessagesOfUser(
-            createObserverContext(performedBy.get(collection)), **it);
+        readEvents_.onGetDiscussionThreadMessagesOfUser(createObserverContext(performedBy.get(collection)), **it);
     });
 }
 
@@ -127,7 +126,7 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
 
                           createdBy->messages().insert(message);
 
-                          observers_.onAddNewDiscussionMessage(createObserverContext(*createdBy), *message);
+                          writeEvents_.onAddNewDiscussionMessage(createObserverContext(*createdBy), *message);
 
                           status.addExtraSafeName("id", message->id());
                           status.addExtraSafeName("parentId", (*threadIt)->id());
@@ -155,7 +154,7 @@ void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& o
                               return;
                           }
                           //make sure the message is not deleted before being passed to the observers
-                          observers_.onDeleteDiscussionMessage(
+                          writeEvents_.onDeleteDiscussionMessage(
                                   createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteDiscussionMessage(it);
                       });
