@@ -96,3 +96,20 @@ std::string Forum::Helpers::createDiscussionTagAndGetId(CommandHandlerRef handle
     auto result = handlerToObj(handler, Command::ADD_DISCUSSION_TAG, { name });
     return result.get<std::string>("id");
 }
+
+std::string Forum::Helpers::createDiscussionCategoryAndGetId(CommandHandlerRef handler, const std::string& name,
+                                                             const std::string& parentId)
+{
+    auto result = handlerToObj(handler, Command::ADD_DISCUSSION_CATEGORY, { name, parentId });
+    return result.get<std::string>("id");
+}
+
+void Forum::Helpers::deleteDiscussionThread(CommandHandlerRef handler, const std::string& id)
+{
+    handlerToObj(handler, Command::DELETE_DISCUSSION_THREAD, { id });
+}
+
+void Forum::Helpers::deleteDiscussionTag(CommandHandlerRef handler, const std::string& id)
+{
+    handlerToObj(handler, Command::DELETE_DISCUSSION_TAG, { id });
+}
