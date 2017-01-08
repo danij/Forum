@@ -43,7 +43,12 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetDiscussionThreadMessagesOfUser;
 
             boost::signals2::signal<void(ObserverContext)> onGetDiscussionTags;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)>onGetDiscussionThreadsWithTag;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onGetDiscussionThreadsWithTag;
+
+            boost::signals2::signal<void(ObserverContext)> onGetDiscussionCategories;
+            boost::signals2::signal<void(ObserverContext)> onGetRootDiscussionCategories;
+            boost::signals2::signal<void(ObserverContext,
+                                         const Entities::DiscussionCategory&)> onGetDiscussionThreadsOfCategory;
         };
         
         struct WriteEvents : private boost::noncopyable
@@ -74,6 +79,15 @@ namespace Forum
                                          const Entities::DiscussionThread& thread)> onRemoveDiscussionTagFromThread;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& fromTag, 
                                          const Entities::DiscussionTag& toTag)> onMergeDiscussionTags;
+
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionCategory&)> onAddNewDiscussionCategory;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionCategory&, 
+                                         Entities::DiscussionCategory::ChangeType)> onChangeDiscussionCategory;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionCategory&)> onDeleteDiscussionCategory;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag, 
+                                         const Entities::DiscussionCategory& category)> onAddDiscussionTagToCategory;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag, 
+                                         const Entities::DiscussionCategory& category)> onRemoveDiscussionTagFromCategory;
         };
     }
 }
