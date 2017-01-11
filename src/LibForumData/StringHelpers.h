@@ -3,8 +3,8 @@
 #include <boost/locale.hpp>
 #include <boost/locale/boundary.hpp>
 
-#include <cstdint>
 #include <algorithm>
+#include <cstdint>
 #include <string>
 
 namespace Forum
@@ -26,10 +26,16 @@ namespace Forum
             return getUTF8CharactersIterator(value.cbegin(), value.cend());
         }
 
-        inline int_fast32_t countUTF8Characters(const std::string& value)
+        /*
+         * Returns the number of characters from a valid UTF-8 input
+         */
+        inline auto countUTF8Characters(const std::string& value)
         {
-            auto iterator = getUTF8CharactersIterator(value);
-            return std::distance(iterator.begin(), iterator.end());
+            return static_cast<int_fast32_t>(std::count_if(value.cbegin(), value.cend(), [](auto c)
+            {
+                auto v = static_cast<uint8_t>(c);
+                return v < 0b10000000 || v >= 0b11000000;
+            }));
         }
 
         struct StringAccentAndCaseInsensitiveLess
