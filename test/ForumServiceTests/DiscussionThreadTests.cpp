@@ -1839,3 +1839,55 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_a
         BOOST_REQUIRE_EQUAL(true, threads[1].visitedSinceLastChange);
     }
 }
+
+BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_editing_the_a_message_of_the_thread )
+{
+    auto handler = createCommandHandler();
+
+    auto userId = createUserAndGetId(handler, "User");
+
+    auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+    auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+    std::string message1Id, message2Id;
+    {
+        TimestampChanger _(1000);
+        message1Id = createDiscussionMessageAndGetId(handler, thread1Id, "Message1");
+        message2Id = createDiscussionMessageAndGetId(handler, thread2Id, "Message2");
+    }
+    {
+        LoggedInUserChanger _(userId);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
+                                                           { thread1Id }));
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
+                                                           { thread2Id }));
+
+        auto threads = deserializeThreads(handlerToObj(handler, 
+                                                       Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
+                                                       SortOrder::Ascending).get_child("threads"));
+
+        BOOST_REQUIRE_EQUAL(2, threads.size());
+        BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
+        BOOST_REQUIRE_EQUAL(true, threads[0].visitedSinceLastChange);
+        BOOST_REQUIRE_EQUAL(thread2Id, threads[1].id);
+        BOOST_REQUIRE_EQUAL(true, threads[1].visitedSinceLastChange);
+
+        {
+            TimestampChanger __(2000);
+            assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+                                                               Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
+                                                               { message1Id, "Message1 - New" }));
+        }
+
+        threads = deserializeThreads(handlerToObj(handler, 
+                                                  Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
+                                                  SortOrder::Ascending).get_child("threads"));
+
+        BOOST_REQUIRE_EQUAL(2, threads.size());
+        BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
+        BOOST_REQUIRE_EQUAL(false, threads[0].visitedSinceLastChange);
+        BOOST_REQUIRE_EQUAL(thread2Id, threads[1].id);
+        BOOST_REQUIRE_EQUAL(true, threads[1].visitedSinceLastChange);
+    }
+}
