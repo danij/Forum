@@ -394,7 +394,7 @@ BOOST_AUTO_TEST_CASE( Creating_multiple_discussion_categories_with_the_same_name
 {
     auto handler = createCommandHandler();
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY, { "Foo" }));
-    assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY, { "fˆo" }));
+    assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY, { "f»èo" }));
 }
 
 BOOST_AUTO_TEST_CASE( Renaming_a_discussion_category_succeeds_only_if_creation_criteria_are_met )
@@ -425,7 +425,7 @@ BOOST_AUTO_TEST_CASE( Renaming_a_discussion_category_succeeds_only_if_creation_c
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId, "\xFF\xFF" }));
     assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, 
-                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId, "fˆo" }));
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId, "f»èo" }));
 }
 
 BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_description_succeds_if_the_value_doesnt_contain_invalid_characters )

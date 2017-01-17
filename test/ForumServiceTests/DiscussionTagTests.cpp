@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE( Creating_multiple_discussion_tags_with_the_same_name_case_
 {
     auto handler = createCommandHandler();
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG, { "Foo" }));
-    assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG, { "fˆo" }));
+    assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG, { "f»èo" }));
 }
 
 BOOST_AUTO_TEST_CASE( Renaming_a_discussion_tag_succeeds_only_if_creation_criteria_are_met )
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE( Renaming_a_discussion_tag_succeeds_only_if_creation_criter
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_TAG_NAME, { tagId, "\xFF\xFF" }));
     assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, 
-                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_TAG_NAME, { tagId, "fˆo" }));
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_TAG_NAME, { tagId, "f»èo" }));
 }
 
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_with_an_invalid_id_returns_invalid_parameters )
