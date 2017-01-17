@@ -14,7 +14,7 @@ namespace Forum
 
         struct ObserverContext_
         {
-            const PerformedByType performedBy;
+            PerformedByType performedBy;
             const Entities::Timestamp timestamp;
             const Context::DisplayContext displayContext;
 
