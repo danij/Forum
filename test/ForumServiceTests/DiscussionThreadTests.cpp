@@ -92,7 +92,8 @@ struct SerializedDiscussionThread
     int64_t messageCount = 0;
     std::vector<SerializedDiscussionMessage> messages;
     SerializedLatestDiscussionThreadMessage latestMessage;
-
+    bool visitedSinceLastChange = false;
+    
     void populate(const boost::property_tree::ptree& tree)
     {
         id = tree.get<std::string>("id");
@@ -101,6 +102,7 @@ struct SerializedDiscussionThread
         lastUpdated = tree.get<Timestamp>("lastUpdated");
         visited = tree.get<int64_t>("visited");
         messageCount = tree.get<int64_t>("messageCount");
+        visitedSinceLastChange = tree.get<bool>("visitedSinceLastChange");
 
         createdBy.populate(tree.get_child("createdBy"));
         for (auto& pair : tree)
@@ -1546,7 +1548,6 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_fails_if_the_message_is_
                                        { messageId, threadId }));
 }
 
-
 BOOST_AUTO_TEST_CASE( Moving_discussion_threads_works_ok )
 {
     auto handler = createCommandHandler();
@@ -1601,4 +1602,148 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_threads_works_ok )
     BOOST_REQUIRE_EQUAL(message2Id, thread2.messages[1].id);
     BOOST_REQUIRE_EQUAL("Message 2", thread2.messages[1].content);
     BOOST_REQUIRE_EQUAL(2000, thread2.messages[1].created);
+}
+
+BOOST_AUTO_TEST_CASE( Retrieved_discussion_threads_have_visitedSinceLastChange_false_initially )
+{
+    auto handler = createCommandHandler();
+
+    auto userId = createUserAndGetId(handler, "User");
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    createDiscussionMessageAndGetId(handler, threadId, "Message");
+
+    {
+        LoggedInUserChanger _(userId);
+        auto threads = deserializeThreads(handlerToObj(handler, 
+                                                       Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
+                                                       SortOrder::Ascending).get_child("threads"));
+
+        BOOST_REQUIRE_EQUAL(1, threads.size());
+        BOOST_REQUIRE_EQUAL(threadId, threads[0].id);
+        BOOST_REQUIRE_EQUAL(false, threads[0].visitedSinceLastChange);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_true_after_requesting_a_thread )
+{
+    auto handler = createCommandHandler();
+
+    auto userId = createUserAndGetId(handler, "User");
+
+    auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+    createDiscussionMessageAndGetId(handler, thread1Id, "Message1");
+    auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+    createDiscussionMessageAndGetId(handler, thread2Id, "Message2");
+
+    {
+        LoggedInUserChanger _(userId);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
+                                                           { thread1Id }));
+
+        auto threads = deserializeThreads(handlerToObj(handler, 
+                                                       Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
+                                                       SortOrder::Ascending).get_child("threads"));
+
+        BOOST_REQUIRE_EQUAL(2, threads.size());
+        BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
+        BOOST_REQUIRE_EQUAL(true, threads[0].visitedSinceLastChange);
+        BOOST_REQUIRE_EQUAL(thread2Id, threads[1].id);
+        BOOST_REQUIRE_EQUAL(false, threads[1].visitedSinceLastChange);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_depends_on_user )
+{
+    auto handler = createCommandHandler();
+
+    auto user1Id = createUserAndGetId(handler, "User1");
+    auto user2Id = createUserAndGetId(handler, "User2");
+
+    auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+    createDiscussionMessageAndGetId(handler, thread1Id, "Message1");
+    auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+    createDiscussionMessageAndGetId(handler, thread2Id, "Message2");
+
+    {
+        LoggedInUserChanger _(user1Id);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
+                                                           { thread1Id }));
+
+        auto threads = deserializeThreads(handlerToObj(handler, 
+                                                       Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
+                                                       SortOrder::Ascending).get_child("threads"));
+
+        BOOST_REQUIRE_EQUAL(2, threads.size());
+        BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
+        BOOST_REQUIRE_EQUAL(true, threads[0].visitedSinceLastChange);
+        BOOST_REQUIRE_EQUAL(thread2Id, threads[1].id);
+        BOOST_REQUIRE_EQUAL(false, threads[1].visitedSinceLastChange);
+    }
+    {
+        LoggedInUserChanger _(user2Id);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
+                                                           { thread2Id }));
+
+        auto threads = deserializeThreads(handlerToObj(handler, 
+                                                       Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
+                                                       SortOrder::Ascending).get_child("threads"));
+
+        BOOST_REQUIRE_EQUAL(2, threads.size());
+        BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
+        BOOST_REQUIRE_EQUAL(false, threads[0].visitedSinceLastChange);
+        BOOST_REQUIRE_EQUAL(thread2Id, threads[1].id);
+        BOOST_REQUIRE_EQUAL(true, threads[1].visitedSinceLastChange);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_adding_a_new_message )
+{
+    auto handler = createCommandHandler();
+
+    auto userId = createUserAndGetId(handler, "User");
+
+    auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+    auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+    {
+        TimestampChanger _(1000);
+        createDiscussionMessageAndGetId(handler, thread1Id, "Message1");
+        createDiscussionMessageAndGetId(handler, thread2Id, "Message2");
+    }
+    {
+        LoggedInUserChanger _(userId);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
+                                                           { thread1Id }));
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
+                                                           { thread2Id }));
+
+        auto threads = deserializeThreads(handlerToObj(handler, 
+                                                       Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
+                                                       SortOrder::Ascending).get_child("threads"));
+
+        BOOST_REQUIRE_EQUAL(2, threads.size());
+        BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
+        BOOST_REQUIRE_EQUAL(true, threads[0].visitedSinceLastChange);
+        BOOST_REQUIRE_EQUAL(thread2Id, threads[1].id);
+        BOOST_REQUIRE_EQUAL(true, threads[1].visitedSinceLastChange);
+
+        {
+            TimestampChanger __(2000);
+            createDiscussionMessageAndGetId(handler, thread1Id, "Message3");
+        }
+
+        threads = deserializeThreads(handlerToObj(handler, 
+                                                  Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
+                                                  SortOrder::Ascending).get_child("threads"));
+
+        BOOST_REQUIRE_EQUAL(2, threads.size());
+        BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
+        BOOST_REQUIRE_EQUAL(false, threads[0].visitedSinceLastChange);
+        BOOST_REQUIRE_EQUAL(thread2Id, threads[1].id);
+        BOOST_REQUIRE_EQUAL(true, threads[1].visitedSinceLastChange);
+    }
 }
