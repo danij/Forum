@@ -14,7 +14,8 @@ namespace Forum
         struct User;
         struct DiscussionThread;
 
-        struct DiscussionMessage final : public Identifiable, public Creatable, private boost::noncopyable
+        struct DiscussionMessage final : public Identifiable, public CreatedMixin, public LastUpdatedMixin, 
+                                         private boost::noncopyable
         {
             const std::string&       content()      const { return content_; }
                   std::string&       content()            { return content_; }
@@ -23,8 +24,14 @@ namespace Forum
             const DiscussionThread&  parentThread() const { return parentThread_; }
                   DiscussionThread&  parentThread()       { return parentThread_; }
 
+            enum ChangeType : uint32_t
+            {
+                None = 0,
+                Content
+            };
+
             DiscussionMessage(User& createdBy, DiscussionThread& parentThread)
-                : createdBy_(createdBy), parentThread_(parentThread) {};
+                : createdBy_(createdBy), parentThread_(parentThread) {}
 
         private:
             std::string content_;

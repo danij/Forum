@@ -67,6 +67,8 @@ namespace Forum
                                          const Entities::DiscussionThread& intoThread)> onMoveDiscussionThreadMessage;
 
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionMessage&)> onAddNewDiscussionMessage;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionMessage&, 
+                                         Entities::DiscussionMessage::ChangeType)> onChangeDiscussionMessage;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionMessage&)> onDeleteDiscussionMessage;
 
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onAddNewDiscussionTag;

@@ -284,6 +284,27 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_invokes_observer )
     BOOST_REQUIRE_EQUAL(toThreadId, observedToThreadId);
 }
 
+BOOST_AUTO_TEST_CASE( Modifying_the_content_of_a_discussion_message_invokes_observer )
+{
+    std::string newContent;
+    auto messageChange = DiscussionMessage::ChangeType::None;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onChangeDiscussionMessage, 
+                          [&](auto& _, auto& message, auto change)
+                          {
+                              newContent = message.content();
+                              messageChange = change;
+                          });
+
+    auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
+    auto messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
+
+    handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, { messageId, "New Message" });
+    BOOST_REQUIRE_EQUAL("New Message", newContent);
+    BOOST_REQUIRE_EQUAL(DiscussionMessage::ChangeType::Content, messageChange);
+}
+
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_invokes_observer )
 {
     std::string deletedMessageId;

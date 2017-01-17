@@ -10,7 +10,7 @@ namespace Forum
 {
     namespace Entities
     {
-        struct DiscussionTag final : public Identifiable, public Creatable, public DiscussionThreadCollectionBase
+        struct DiscussionTag final : public Identifiable, public CreatedMixin, public DiscussionThreadCollectionBase
         {
             const std::string& name() const { return name_; }
                   std::string& name()       { return name_; }

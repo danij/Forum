@@ -52,6 +52,7 @@ struct SerializedDiscussionMessage
     std::string id;
     std::string content;
     Timestamp created = 0;
+    Timestamp lastUpdated = 0;
     SerializedDiscussionThreadOrMessageUser createdBy;
 
     void populate(const boost::property_tree::ptree& tree)
@@ -59,6 +60,13 @@ struct SerializedDiscussionMessage
         id = tree.get<std::string>("id");
         content = tree.get<std::string>("content");
         created = tree.get<Timestamp>("created");
+        for (auto& pair : tree)
+        {
+            if (pair.first == "lastUpdated")
+            {
+                lastUpdated = tree.get<Timestamp>("lastUpdated");
+            }
+        }
 
         createdBy.populate(tree.get_child("createdBy"));
     }
@@ -981,6 +989,90 @@ BOOST_AUTO_TEST_CASE( Retrieving_a_discussion_thread_also_returns_messages_but_e
     {
         BOOST_REQUIRE( ! treeContains(item.second, "parentThread"));
     }
+}
+
+BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds_only_if_creation_criteria_are_met )
+{
+    auto handler = createCommandHandler();
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    auto messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
+
+    auto config = getGlobalConfig();
+
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
+                                       { messageId }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
+                                       { messageId, "" }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
+                                       { messageId, " \t\r\n" }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
+                                       { messageId, " Message" }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
+                                       { messageId, "Message\t" }));
+    assertStatusCodeEqual(StatusCode::VALUE_TOO_SHORT, 
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
+                                       { messageId, std::string(config->discussionMessage.minContentLength - 1, 'a') }));
+    assertStatusCodeEqual(StatusCode::VALUE_TOO_LONG, 
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
+                                       { messageId, std::string(config->discussionMessage.maxContentLength + 1, 'a') }));
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
+                                       { messageId, "\xFF\xFF" }));
+    assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, 
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
+                                       { messageId, "fȏo" }));
+}
+
+BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds )
+{
+    auto handler = createCommandHandler();
+
+    auto userId = createUserAndGetId(handler, "User");
+    auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
+    std::string message1Id, message2Id;
+    {
+        TimestampChanger _(1000);
+        message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");
+    }
+    {
+        TimestampChanger _(2000);
+        message2Id = createDiscussionMessageAndGetId(handler, threadId, "Message2");
+    }
+    {
+        LoggedInUserChanger _(userId);
+        TimestampChanger __(3000);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+                                                           Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
+                                                           { message1Id, "Message1 - Updated" }));
+    }
+
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL("Abc", thread.name);
+    BOOST_REQUIRE_EQUAL(2, thread.messages.size());
+
+    BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
+    BOOST_REQUIRE_EQUAL("Message1 - Updated", thread.messages[0].content);
+    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].created);
+    BOOST_REQUIRE_EQUAL(3000, thread.messages[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(userId, thread.messages[0].createdBy.id);
+    BOOST_REQUIRE_EQUAL("User", thread.messages[0].createdBy.name);
+
+    BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
+    BOOST_REQUIRE_EQUAL("Message2", thread.messages[1].content);
+    BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
+    BOOST_REQUIRE_EQUAL(0, thread.messages[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(userId, thread.messages[1].createdBy.id);
+    BOOST_REQUIRE_EQUAL("User", thread.messages[1].createdBy.name);
 }
 
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_with_an_invalid_id_returns_invalid_parameters )

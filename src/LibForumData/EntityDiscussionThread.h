@@ -13,14 +13,13 @@ namespace Forum
     {
         struct User;
 
-        struct DiscussionThread final : public Identifiable, public Creatable, public DiscussionMessageCollectionBase
+        struct DiscussionThread final : public Identifiable, public CreatedMixin, public LastUpdatedMixin, 
+                                        public DiscussionMessageCollectionBase
         {
-            const std::string&        name()        const { return name_; }
-                  std::string&        name()              { return name_; }
-            const Timestamp&          lastUpdated() const { return lastUpdated_; }
-                  Timestamp&          lastUpdated()       { return lastUpdated_; }
-            const User&               createdBy()   const { return createdBy_; }
-                  User&               createdBy()         { return createdBy_; }
+            const std::string& name()        const { return name_; }
+                  std::string& name()              { return name_; }
+            const User&        createdBy()   const { return createdBy_; }
+                  User&        createdBy()         { return createdBy_; }
             /**
              * Thread-safe reference to the number of times the thread was visited.
              * Can be updated even for const values as it is not refenced in any index.
@@ -34,12 +33,11 @@ namespace Forum
                 Name
             };
 
-            explicit DiscussionThread(User& createdBy) : createdBy_(createdBy), lastUpdated_(0), visited_(0) {};
+            explicit DiscussionThread(User& createdBy) : createdBy_(createdBy), visited_(0) {};
 
         private:
             std::string name_;
             User& createdBy_;
-            Timestamp lastUpdated_;
             mutable std::atomic_int_fast64_t visited_;
         };
 

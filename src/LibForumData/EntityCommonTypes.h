@@ -27,15 +27,26 @@ namespace Forum
             IdType id_;
         };
 
-        struct Creatable
+        struct CreatedMixin
         {
             const Timestamp& created() const { return created_; }
                   Timestamp& created()       { return created_; }
 
-            Creatable() : created_(0) {}
+            CreatedMixin() : created_(0) {}
 
         private:
             Timestamp created_;
+        };
+
+        struct LastUpdatedMixin
+        {
+            const Timestamp& lastUpdated() const { return lastUpdated_; }
+                  Timestamp& lastUpdated()       { return lastUpdated_; }
+
+            LastUpdatedMixin() : lastUpdated_(0) {}
+
+        private:
+            Timestamp lastUpdated_;
         };
     }
 }

@@ -11,7 +11,7 @@ namespace Forum
 {
     namespace Entities
     {
-        struct User final : public Identifiable, public Creatable,
+        struct User final : public Identifiable, public CreatedMixin,
                             public DiscussionThreadCollectionBase, public DiscussionMessageCollectionBase
         {
             const std::string& name()     const { return name_; }

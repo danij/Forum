@@ -40,6 +40,7 @@ namespace Forum
 
             ADD_DISCUSSION_THREAD_MESSAGE,
             DELETE_DISCUSSION_THREAD_MESSAGE,
+            CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
             MOVE_DISCUSSION_THREAD_MESSAGE,
 
             //mixed user-discussion thread

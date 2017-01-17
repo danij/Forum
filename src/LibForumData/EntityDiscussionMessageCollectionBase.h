@@ -30,7 +30,7 @@ namespace Forum
                     boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionMessageCollectionById>,
             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionMessage::id>>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionMessageCollectionByCreated>,
-                    const boost::multi_index::const_mem_fun<Creatable, const Timestamp&,
+                    const boost::multi_index::const_mem_fun<CreatedMixin, const Timestamp&,
                             &DiscussionMessage::created>>
             > {};
 

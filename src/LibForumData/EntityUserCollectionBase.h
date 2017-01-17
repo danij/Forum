@@ -25,7 +25,7 @@ namespace Forum
                     const boost::multi_index::const_mem_fun<User, const std::string&, &User::name>,
                     Helpers::StringAccentAndCaseInsensitiveLess>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByCreated>,
-                    const boost::multi_index::const_mem_fun<Creatable, const Timestamp&, &User::created>>,
+                    const boost::multi_index::const_mem_fun<CreatedMixin, const Timestamp&, &User::created>>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByLastSeen>,
                     const boost::multi_index::const_mem_fun<User, const Timestamp&, &User::lastSeen>>
             > {};

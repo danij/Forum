@@ -25,7 +25,7 @@ namespace Forum
 
         struct DiscussionMessageConfig
         {
-            int_fast32_t minContentLength = 10;
+            int_fast32_t minContentLength = 5;
             int_fast32_t maxContentLength = 65535;
         };
 
