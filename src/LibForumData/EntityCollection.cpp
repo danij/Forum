@@ -63,7 +63,7 @@ void EntityCollection::deleteUser(UserCollection::iterator iterator)
         {
             //Each discussion message holds a reference to the user that created it and the parent thread
             //As such, delete the discussion message before deleting the thread and the user
-            deleteDiscussionMessageById(message->id());
+            deleteDiscussionThreadMessageById(message->id());
         }
     }
     {
@@ -148,7 +148,7 @@ void EntityCollection::deleteDiscussionThread(DiscussionThreadCollection::iterat
         {
             //Each discussion message holds a reference to the user that created it and the parent thread
             //As such, delete the discussion message before deleting the thread
-            deleteDiscussionMessageById(message->id());
+            deleteDiscussionThreadMessageById(message->id());
         }
     }
     if (alsoDeleteThreadsFromUser)
@@ -165,8 +165,8 @@ void DiscussionThreadCollectionBase::deleteDiscussionThreadById(const IdType& id
 
 //Discussion Messages
 
-void DiscussionMessageCollectionBase::modifyDiscussionMessage(DiscussionMessageCollection::iterator iterator,
-                                                              const std::function<void(DiscussionMessage&)>& modifyFunction)
+void DiscussionThreadMessageCollectionBase::modifyDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator,
+                                                                          const std::function<void(DiscussionThreadMessage&)>& modifyFunction)
 {
     if (iterator == messages_.end())
     {
@@ -181,8 +181,8 @@ void DiscussionMessageCollectionBase::modifyDiscussionMessage(DiscussionMessageC
     });
 }
 
-void EntityCollection::modifyDiscussionMessage(DiscussionMessageCollection::iterator iterator,
-                                               const std::function<void(DiscussionMessage&)>& modifyFunction)
+void EntityCollection::modifyDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator,
+                                                     const std::function<void(DiscussionThreadMessage&)>& modifyFunction)
 {
     if (iterator == messages_.end())
     {
@@ -194,21 +194,21 @@ void EntityCollection::modifyDiscussionMessage(DiscussionMessageCollection::iter
         if (message)
         {
             //allow reindexing of the subcollection containing only the messages of the current user
-            message->createdBy().modifyDiscussionMessageById(message->id(), [&modifyFunction](auto& messageToModify)
+            message->createdBy().modifyDiscussionThreadMessageById(message->id(), [&modifyFunction](auto& messageToModify)
             {
-                messageToModify.parentThread().modifyDiscussionMessageById(messageToModify.id(), modifyFunction);
+                messageToModify.parentThread().modifyDiscussionThreadMessageById(messageToModify.id(), modifyFunction);
             });
         }
     });
 }
 
-void DiscussionMessageCollectionBase::modifyDiscussionMessageById(const IdType& id,
-                                                                  const std::function<void(DiscussionMessage&)>& modifyFunction)
+void DiscussionThreadMessageCollectionBase::modifyDiscussionThreadMessageById(const IdType& id,
+                                                                              const std::function<void(DiscussionThreadMessage&)>& modifyFunction)
 {
-    modifyDiscussionMessage(messages_.get<DiscussionMessageCollectionById>().find(id), modifyFunction);
+    modifyDiscussionThreadMessage(messages_.get<DiscussionThreadMessageCollectionById>().find(id), modifyFunction);
 }
 
-void DiscussionMessageCollectionBase::deleteDiscussionMessage(DiscussionMessageCollection::iterator iterator)
+void DiscussionThreadMessageCollectionBase::deleteDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator)
 {
     if (iterator == messages_.end())
     {
@@ -217,7 +217,7 @@ void DiscussionMessageCollectionBase::deleteDiscussionMessage(DiscussionMessageC
     messages_.erase(iterator);
 }
 
-void EntityCollection::deleteDiscussionMessage(DiscussionMessageCollection::iterator iterator)
+void EntityCollection::deleteDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator)
 {
     if (iterator == messages_.end())
     {
@@ -225,20 +225,20 @@ void EntityCollection::deleteDiscussionMessage(DiscussionMessageCollection::iter
     }
     if (alsoDeleteMessagesFromUser)
     {
-        (*iterator)->createdBy().deleteDiscussionMessageById((*iterator)->id());
+        (*iterator)->createdBy().deleteDiscussionThreadMessageById((*iterator)->id());
     }
     if (alsoDeleteMessagesFromThread)
     {
         modifyDiscussionThreadById((*iterator)->parentThread().id(),
                                    [&](DiscussionThread& thread)
         {
-            thread.deleteDiscussionMessageById((*iterator)->id());
+            thread.deleteDiscussionThreadMessageById((*iterator)->id());
         });
     }
     messages_.erase(iterator);
 }
 
-void DiscussionMessageCollectionBase::deleteDiscussionMessageById(const IdType& id)
+void DiscussionThreadMessageCollectionBase::deleteDiscussionThreadMessageById(const IdType& id)
 {
-    deleteDiscussionMessage(messages_.get<DiscussionMessageCollectionById>().find(id));
+    deleteDiscussionThreadMessage(messages_.get<DiscussionThreadMessageCollectionById>().find(id));
 }

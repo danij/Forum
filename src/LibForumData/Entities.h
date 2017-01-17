@@ -3,7 +3,7 @@
 //aggregate all entities headers
 #include "EntityUser.h"
 #include "EntityDiscussionThread.h"
-#include "EntityDiscussionMessage.h"
+#include "EntityDiscussionThreadMessage.h"
 #include "EntityDiscussionTag.h"
 #include "EntityDiscussionCategory.h"
 

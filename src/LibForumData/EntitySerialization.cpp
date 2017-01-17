@@ -35,7 +35,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const User& user)
     return writer;
 }
 
-JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionMessage& message)
+JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& message)
 {
     writer
         << objStart

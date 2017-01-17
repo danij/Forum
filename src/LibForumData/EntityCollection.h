@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EntityDiscussionMessageCollectionBase.h"
+#include "EntityDiscussionThreadMessageCollectionBase.h"
 #include "EntityDiscussionThreadCollectionBase.h"
 #include "EntityUserCollectionBase.h"
 #include "Entities.h"
@@ -12,7 +12,7 @@ namespace Forum
     namespace Entities
     {
         struct EntityCollection : public UserCollectionBase,
-                                  public DiscussionThreadCollectionBase, public DiscussionMessageCollectionBase
+                                  public DiscussionThreadCollectionBase, public DiscussionThreadMessageCollectionBase
         {
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
@@ -35,12 +35,12 @@ namespace Forum
              * Enables a safe modification of a discussion message instance,
              * refreshing all indexes the message is registered in
              */
-            virtual void modifyDiscussionMessage(DiscussionMessageCollection::iterator iterator,
-                                                 const std::function<void(DiscussionMessage&)>& modifyFunction) override;
+            virtual void modifyDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator,
+                                                 const std::function<void(DiscussionThreadMessage&)>& modifyFunction) override;
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */
-            virtual void deleteDiscussionMessage(DiscussionMessageCollection::iterator iterator) override;
+            virtual void deleteDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator) override;
         };
 
         extern const UserRef AnonymousUser;

@@ -14,8 +14,8 @@ namespace Forum
         struct User;
         struct DiscussionThread;
 
-        struct DiscussionMessage final : public Identifiable, public CreatedMixin, public LastUpdatedMixin, 
-                                         private boost::noncopyable
+        struct DiscussionThreadMessage final : public Identifiable, public CreatedMixin, public LastUpdatedMixin, 
+                                               private boost::noncopyable
         {
             const std::string&       content()      const { return content_; }
                   std::string&       content()            { return content_; }
@@ -30,7 +30,7 @@ namespace Forum
                 Content
             };
 
-            DiscussionMessage(User& createdBy, DiscussionThread& parentThread)
+            DiscussionThreadMessage(User& createdBy, DiscussionThread& parentThread)
                 : createdBy_(createdBy), parentThread_(parentThread) {}
 
         private:
@@ -39,6 +39,6 @@ namespace Forum
             DiscussionThread& parentThread_;
         };
 
-        typedef std::shared_ptr<DiscussionMessage> DiscussionMessageRef;
+        typedef std::shared_ptr<DiscussionThreadMessage> DiscussionMessageRef;
     }
 }

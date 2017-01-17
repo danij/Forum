@@ -287,10 +287,10 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_invokes_observer )
 BOOST_AUTO_TEST_CASE( Modifying_the_content_of_a_discussion_message_invokes_observer )
 {
     std::string newContent;
-    auto messageChange = DiscussionMessage::ChangeType::None;
+    auto messageChange = DiscussionThreadMessage::ChangeType::None;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onChangeDiscussionMessage, 
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onChangeDiscussionThreadMessage, 
                           [&](auto& _, auto& message, auto change)
                           {
                               newContent = message.content();
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE( Modifying_the_content_of_a_discussion_message_invokes_obse
 
     handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, { messageId, "New Message" });
     BOOST_REQUIRE_EQUAL("New Message", newContent);
-    BOOST_REQUIRE_EQUAL(DiscussionMessage::ChangeType::Content, messageChange);
+    BOOST_REQUIRE_EQUAL(DiscussionThreadMessage::ChangeType::Content, messageChange);
 }
 
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_invokes_observer )
@@ -310,7 +310,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_invokes_observer )
     std::string deletedMessageId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onDeleteDiscussionMessage, 
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onDeleteDiscussionThreadMessage, 
                           [&](auto& _, auto& message) { deletedMessageId = static_cast<std::string>(message.id()); });
 
     auto threadId = createDiscussionThreadAndGetId(handler, "Abc");

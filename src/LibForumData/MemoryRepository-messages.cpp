@@ -70,11 +70,11 @@ static StatusCode validateDiscussionMessageContent(const std::string& content, c
     }
 
     auto nrCharacters = countUTF8Characters(content);
-    if (nrCharacters > config->discussionMessage.maxContentLength)
+    if (nrCharacters > config->discussionThreadMessage.maxContentLength)
     {
         return StatusCode::VALUE_TOO_LONG;
     }
-    if (nrCharacters < config->discussionMessage.minContentLength)
+    if (nrCharacters < config->discussionThreadMessage.minContentLength)
     {
         return StatusCode::VALUE_TOO_SHORT;
     }
@@ -113,7 +113,7 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
 
                           const auto& createdBy = performedBy.getAndUpdate(collection);
 
-                          auto message = std::make_shared<DiscussionMessage>(*createdBy, **threadIt);
+                          auto message = std::make_shared<DiscussionThreadMessage>(*createdBy, **threadIt);
                           message->id() = generateUUIDString();
                           message->content() = content;
                           message->created() = Context::getCurrentTime();
@@ -126,7 +126,7 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
 
                           createdBy->messages().insert(message);
 
-                          writeEvents_.onAddNewDiscussionMessage(createObserverContext(*createdBy), *message);
+                          writeEvents_.onAddNewDiscussionThreadMessage(createObserverContext(*createdBy), *message);
 
                           status.addExtraSafeName("id", message->id());
                           status.addExtraSafeName("parentId", (*threadIt)->id());
@@ -146,7 +146,7 @@ void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& o
     auto performedBy = preparePerformedBy();
     collection_.write([&](EntityCollection& collection)
                       {
-                          auto& indexById = collection.messages().get<EntityCollection::DiscussionMessageCollectionById>();
+                          auto& indexById = collection.messages().get<EntityCollection::DiscussionThreadMessageCollectionById>();
                           auto it = indexById.find(id);
                           if (it == indexById.end())
                           {
@@ -154,8 +154,8 @@ void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& o
                               return;
                           }
                           //make sure the message is not deleted before being passed to the observers
-                          writeEvents_.onDeleteDiscussionMessage(
+                          writeEvents_.onDeleteDiscussionThreadMessage(
                                   createObserverContext(*performedBy.getAndUpdate(collection)), **it);
-                          collection.deleteDiscussionMessage(it);
+                          collection.deleteDiscussionThreadMessage(it);
                       });
 }

@@ -792,7 +792,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_with_trailing_whitespace_in_
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_with_a_too_short_name_fails )
 {
     auto config = getGlobalConfig();
-    std::string content(config->discussionMessage.minContentLength - 1, 'a');
+    std::string content(config->discussionThreadMessage.minContentLength - 1, 'a');
 
     auto handler = createCommandHandler();
     auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
@@ -804,7 +804,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_with_a_too_short_name_fails 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_with_a_longer_name_fails )
 {
     auto config = getGlobalConfig();
-    std::string content(config->discussionMessage.maxContentLength + 1, 'a');
+    std::string content(config->discussionThreadMessage.maxContentLength + 1, 'a');
 
     auto handler = createCommandHandler();
     auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
@@ -817,8 +817,8 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_with_unicode_name_of_valid_l
 {
     auto configWithShorterName = ConfigChanger([](auto& config)
                                                {
-                                                   config.discussionMessage.minContentLength = 3;
-                                                   config.discussionMessage.maxContentLength = 3;
+                                                   config.discussionThreadMessage.minContentLength = 3;
+                                                   config.discussionThreadMessage.maxContentLength = 3;
                                                });
 
     auto handler = createCommandHandler();
@@ -1018,10 +1018,10 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds_only
                                        { messageId, "Message\t" }));
     assertStatusCodeEqual(StatusCode::VALUE_TOO_SHORT, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
-                                       { messageId, std::string(config->discussionMessage.minContentLength - 1, 'a') }));
+                                       { messageId, std::string(config->discussionThreadMessage.minContentLength - 1, 'a') }));
     assertStatusCodeEqual(StatusCode::VALUE_TOO_LONG, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
-                                       { messageId, std::string(config->discussionMessage.maxContentLength + 1, 'a') }));
+                                       { messageId, std::string(config->discussionThreadMessage.maxContentLength + 1, 'a') }));
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
                                        { messageId, "\xFF\xFF" }));

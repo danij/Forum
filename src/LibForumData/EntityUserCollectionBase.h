@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Entities.h"
-#include "EntityDiscussionMessageCollectionBase.h"
+#include "EntityDiscussionThreadMessageCollectionBase.h"
 
 namespace Forum
 {

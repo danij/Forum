@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ConstCollectionAdapter.h"
-#include "EntityDiscussionMessage.h"
+#include "EntityDiscussionThreadMessage.h"
 #include "StringHelpers.h"
 #include "TypeHelpers.h"
 
@@ -19,53 +19,53 @@ namespace Forum
          * Base class for storing a collection of discussion threads
          * Using multiple inheritance instead of composition in order to allow easier customization of modify/delete behavior
          */
-        struct DiscussionMessageCollectionBase : private boost::noncopyable
+        struct DiscussionThreadMessageCollectionBase : private boost::noncopyable
         {
-            DECLARE_INTERFACE_MANDATORY_NO_COPY(DiscussionMessageCollectionBase);
+            DECLARE_INTERFACE_MANDATORY_NO_COPY(DiscussionThreadMessageCollectionBase);
 
-            struct DiscussionMessageCollectionById {};
-            struct DiscussionMessageCollectionByCreated {};
+            struct DiscussionThreadMessageCollectionById {};
+            struct DiscussionThreadMessageCollectionByCreated {};
 
             struct DiscussionMessageCollectionIndices : boost::multi_index::indexed_by<
-                    boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionMessageCollectionById>,
-            const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionMessage::id>>,
-            boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionMessageCollectionByCreated>,
+                    boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionThreadMessageCollectionById>,
+            const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionThreadMessage::id>>,
+            boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadMessageCollectionByCreated>,
                     const boost::multi_index::const_mem_fun<CreatedMixin, const Timestamp&,
-                            &DiscussionMessage::created>>
+                            &DiscussionThreadMessage::created>>
             > {};
 
             typedef boost::multi_index_container<DiscussionMessageRef, DiscussionMessageCollectionIndices>
-                    DiscussionMessageCollection;
+                    DiscussionThreadMessageCollection;
 
             auto& messages() { return messages_; }
             auto  messageCount() const { return messages_.size(); }
             auto  messagesById() const
-            { return Helpers::toConst(messages_.get<DiscussionMessageCollectionById>()); }
+            { return Helpers::toConst(messages_.get<DiscussionThreadMessageCollectionById>()); }
             auto  messagesByCreated() const
-            { return Helpers::toConst(messages_.get<DiscussionMessageCollectionByCreated>()); }
+            { return Helpers::toConst(messages_.get<DiscussionThreadMessageCollectionByCreated>()); }
 
             /**
              * Enables a safe modification of a discussion message instance,
              * refreshing all indexes the message is registered in
              */
-            virtual void modifyDiscussionMessage(DiscussionMessageCollection::iterator iterator,
-                                                 const std::function<void(DiscussionMessage&)>& modifyFunction);
+            virtual void modifyDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator,
+                                                       const std::function<void(DiscussionThreadMessage&)>& modifyFunction);
             /**
              * Enables a safe modification of a discussion message instance,
              * refreshing all indexes the message is registered in
              */
-            void modifyDiscussionMessageById(const IdType& id, const std::function<void(DiscussionMessage&)>& modifyFunction);
+            void modifyDiscussionThreadMessageById(const IdType& id, const std::function<void(DiscussionThreadMessage&)>& modifyFunction);
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */
-            virtual void deleteDiscussionMessage(DiscussionMessageCollection::iterator iterator);
+            virtual void deleteDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator);
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */
-            void deleteDiscussionMessageById(const IdType& id);
+            void deleteDiscussionThreadMessageById(const IdType& id);
 
         protected:
-            DiscussionMessageCollection messages_;
+            DiscussionThreadMessageCollection messages_;
         };
     }
 }

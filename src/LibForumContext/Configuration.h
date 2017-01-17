@@ -23,7 +23,7 @@ namespace Forum
             int_fast16_t maxNameLength = 128;
         };
 
-        struct DiscussionMessageConfig
+        struct DiscussionThreadMessageConfig
         {
             int_fast32_t minContentLength = 5;
             int_fast32_t maxContentLength = 65535;
@@ -45,7 +45,7 @@ namespace Forum
         {
             UserConfig user;
             DiscussionThreadConfig discussionThread;
-            DiscussionMessageConfig discussionMessage;
+            DiscussionThreadMessageConfig discussionThreadMessage;
             DiscussionTagConfig discussionTag;
             DiscussionCategoryConfig discussionCategory;
         };

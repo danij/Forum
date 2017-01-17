@@ -63,13 +63,15 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onDeleteDiscussionThread;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread& fromThread, 
                                          const Entities::DiscussionThread& toThread)> onMergeDiscussionThreads;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionMessage& message, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage& message, 
                                          const Entities::DiscussionThread& intoThread)> onMoveDiscussionThreadMessage;
 
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionMessage&)> onAddNewDiscussionMessage;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionMessage&, 
-                                         Entities::DiscussionMessage::ChangeType)> onChangeDiscussionMessage;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionMessage&)> onDeleteDiscussionMessage;
+            boost::signals2::signal<void(ObserverContext, 
+                                         const Entities::DiscussionThreadMessage&)> onAddNewDiscussionThreadMessage;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&, 
+                                         Entities::DiscussionThreadMessage::ChangeType)> onChangeDiscussionThreadMessage;
+            boost::signals2::signal<void(ObserverContext, 
+                                         const Entities::DiscussionThreadMessage&)> onDeleteDiscussionThreadMessage;
 
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onAddNewDiscussionTag;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&, 

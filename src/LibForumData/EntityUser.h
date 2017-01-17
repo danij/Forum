@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EntityDiscussionThreadCollectionBase.h"
-#include "EntityDiscussionMessageCollectionBase.h"
+#include "EntityDiscussionThreadMessageCollectionBase.h"
 #include "EntityCommonTypes.h"
 
 #include <string>
@@ -12,7 +12,7 @@ namespace Forum
     namespace Entities
     {
         struct User final : public Identifiable, public CreatedMixin,
-                            public DiscussionThreadCollectionBase, public DiscussionMessageCollectionBase
+                            public DiscussionThreadCollectionBase, public DiscussionThreadMessageCollectionBase
         {
             const std::string& name()     const { return name_; }
                   std::string& name()           { return name_; }
