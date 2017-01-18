@@ -58,7 +58,8 @@ namespace Forum
             ALREADY_EXISTS,
             NOT_FOUND,
             NO_EFFECT,
-            CIRCULAR_REFERENCE_NOT_ALLOWED
+            CIRCULAR_REFERENCE_NOT_ALLOWED,
+            NOT_ALLOWED
         };
 
         class IWriteRepository

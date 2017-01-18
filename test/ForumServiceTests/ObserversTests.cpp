@@ -774,3 +774,56 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_categories_invok
     BOOST_REQUIRE_EQUAL(8, observerCalledNTimes);
     BOOST_REQUIRE_EQUAL(categoryId, observedCategoryId);
 }
+
+BOOST_AUTO_TEST_CASE( Voting_discussion_thread_messages_invokes_observers )
+{
+    std::string upVoteUser, downVoteUser, resetVoteUser, votedMessages[3];
+
+    auto handler = createCommandHandler();
+
+    auto __1 = addHandler(handler->getWriteRepository()->writeEvents().onDiscussionThreadMessageUpVote,
+                          [&](auto& _, auto& message, auto& user)
+                          {
+                             upVoteUser = user.id();
+                             votedMessages[0] = message.id();
+                          });
+    auto __2 = addHandler(handler->getWriteRepository()->writeEvents().onDiscussionThreadMessageDownVote,
+                          [&](auto& _, auto& message, auto& user)
+                          {
+                             downVoteUser = user.id();
+                             votedMessages[1] = message.id();
+                          });
+    auto __3 = addHandler(handler->getWriteRepository()->writeEvents().onDiscussionThreadMessageResetVote,
+                          [&](auto& _, auto& message, auto& user)
+                          {
+                             resetVoteUser = user.id();
+                             votedMessages[3] = message.id();
+                          });
+
+    auto user1Id = createUserAndGetId(handler, "User1");
+    auto user2Id = createUserAndGetId(handler, "User2");
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    auto messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
+    
+    {
+        auto _ = LoggedInUserChanger(user1Id);
+        handlerToObj(handler, Forum::Commands::UP_VOTE_DISCUSSION_THREAD_MESSAGE, { messageId });
+    }
+    {
+        auto _ = LoggedInUserChanger(user2Id);
+        handlerToObj(handler, Forum::Commands::DOWN_VOTE_DISCUSSION_THREAD_MESSAGE, { messageId });
+    }
+    {
+        auto _ = LoggedInUserChanger(user1Id);
+        handlerToObj(handler, Forum::Commands::RESET_VOTE_DISCUSSION_THREAD_MESSAGE, { messageId });
+    }
+
+    BOOST_REQUIRE_EQUAL(user1Id, upVoteUser);
+    BOOST_REQUIRE_EQUAL(user2Id, downVoteUser);
+    BOOST_REQUIRE_EQUAL(user1Id, resetVoteUser);
+
+    for (auto& id : votedMessages)
+    {
+        BOOST_REQUIRE_EQUAL(messageId, id);
+    }
+}

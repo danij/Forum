@@ -72,6 +72,12 @@ namespace Forum
                                          Entities::DiscussionThreadMessage::ChangeType)> onChangeDiscussionThreadMessage;
             boost::signals2::signal<void(ObserverContext, 
                                          const Entities::DiscussionThreadMessage&)> onDeleteDiscussionThreadMessage;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&, 
+                                         const Entities::User&)> onDiscussionThreadMessageUpVote;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&, 
+                                         const Entities::User&)> onDiscussionThreadMessageDownVote;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&, 
+                                         const Entities::User&)> onDiscussionThreadMessageResetVote;
 
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onAddNewDiscussionTag;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&, 
