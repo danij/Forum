@@ -21,23 +21,6 @@ struct SerializedDiscussionCategoryReferencedByTag
     }
 };
 
-static auto deserializeReferencedCategory(const boost::property_tree::ptree& tree)
-{
-    SerializedDiscussionCategoryReferencedByTag result;
-    result.populate(tree);
-    return result;
-}
-
-static auto deserializeReferencedCategories(const boost::property_tree::ptree& collection)
-{
-    std::vector<SerializedDiscussionCategoryReferencedByTag> result;
-    for (auto& tree : collection)
-    {
-        result.push_back(deserializeReferencedCategory(tree.second));
-    }
-    return result;
-}
-
 /**
 * Stores only the information that is sent out about a discussion tag 
 */
@@ -58,28 +41,13 @@ struct SerializedDiscussionTag
         {
             if (pair.first == "categories")
             {
-                categories = deserializeReferencedCategories(pair.second);
+                categories = deserializeEntities<SerializedDiscussionCategoryReferencedByTag>(pair.second);
             }
         }
     }
 };
 
-static auto deserializeTag(const boost::property_tree::ptree& tree)
-{
-    SerializedDiscussionTag result;
-    result.populate(tree);
-    return result;
-}
-
-static auto deserializeTags(const boost::property_tree::ptree& collection)
-{
-    std::vector<SerializedDiscussionTag> result;
-    for (auto& tree : collection)
-    {
-        result.push_back(deserializeTag(tree.second));
-    }
-    return result;
-}
+CREATE_FUNCTION_ALIAS(deserializeTags, deserializeEntities<SerializedDiscussionTag>)
 
 /**
 * Stores only the information that is sent out about a user referenced in a discussion thread or message
@@ -153,22 +121,7 @@ struct SerializedDiscussionThread
     }
 };
 
-static auto deserializeThread(const boost::property_tree::ptree& tree)
-{
-    SerializedDiscussionThread result;
-    result.populate(tree);
-    return result;
-}
-
-static auto deserializeThreads(const boost::property_tree::ptree& collection)
-{
-    std::vector<SerializedDiscussionThread> result;
-    for (auto& tree : collection)
-    {
-        result.push_back(deserializeThread(tree.second));
-    }
-    return result;
-}
+CREATE_FUNCTION_ALIAS(deserializeThreads, deserializeEntities<SerializedDiscussionThread>)
 
 struct SerializedDiscussionCategoryParentReference
 {
@@ -192,8 +145,9 @@ struct SerializedDiscussionCategoryParentReference
 };
 
 struct SerializedDiscussionCategory;
-static SerializedDiscussionCategory deserializeCategory(const boost::property_tree::ptree& tree);
-static std::vector<SerializedDiscussionCategory> deserializeCategories(const boost::property_tree::ptree& collection);
+
+CREATE_FUNCTION_ALIAS(deserializeCategory, deserializeEntity<SerializedDiscussionCategory>)
+CREATE_FUNCTION_ALIAS(deserializeCategories, deserializeEntities<SerializedDiscussionCategory>)
 
 /**
 * Stores only the information that is sent out about a discussion category
@@ -243,23 +197,6 @@ struct SerializedDiscussionCategory
         }
     }
 };
-
-static SerializedDiscussionCategory deserializeCategory(const boost::property_tree::ptree& tree)
-{
-    SerializedDiscussionCategory result;
-    result.populate(tree);
-    return result;
-}
-
-static std::vector<SerializedDiscussionCategory> deserializeCategories(const boost::property_tree::ptree& collection)
-{
-    std::vector<SerializedDiscussionCategory> result;
-    for (auto& tree : collection)
-    {
-        result.push_back(deserializeCategory(tree.second));
-    }
-    return result;
-}
 
 auto getCategories(Forum::Commands::CommandHandlerRef handler, Forum::Commands::Command command)
 {

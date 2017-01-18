@@ -1,6 +1,5 @@
 #include "CommandsCommon.h"
 #include "EntityCollection.h"
-#include "RandomGenerator.h"
 #include "TestHelpers.h"
 
 #include <vector>
@@ -61,23 +60,6 @@ struct SerializedDiscussionMessageVote
     }
 };
 
-auto deserializeDiscussionMessageVote(const boost::property_tree::ptree& tree)
-{
-    SerializedDiscussionMessageVote result;
-    result.populate(tree);
-    return result;
-}
-
-auto deserializeDiscussionMessageVotes(const boost::property_tree::ptree& collection)
-{
-    std::vector<SerializedDiscussionMessageVote> result;
-    for (auto& tree : collection)
-    {
-        result.push_back(deserializeDiscussionMessageVote(tree.second));
-    }
-    return result;
-}
-
 struct SerializedDiscussionMessage
 {
     std::string id;
@@ -101,34 +83,17 @@ struct SerializedDiscussionMessage
             }
             if (pair.first == "upVotes")
             {
-                upVotes = deserializeDiscussionMessageVotes(tree.get_child("upVotes"));
+                upVotes = deserializeEntities<SerializedDiscussionMessageVote>(tree.get_child("upVotes"));
             }
             if (pair.first == "downVotes")
             {
-                downVotes = deserializeDiscussionMessageVotes(tree.get_child("downVotes"));
+                downVotes = deserializeEntities<SerializedDiscussionMessageVote>(tree.get_child("downVotes"));
             }
         }
 
         createdBy.populate(tree.get_child("createdBy"));
     }
 };
-
-auto deserializeMessage(const boost::property_tree::ptree& tree)
-{
-    SerializedDiscussionMessage result;
-    result.populate(tree);
-    return result;
-}
-
-auto deserializeMessages(const boost::property_tree::ptree& collection)
-{
-    std::vector<SerializedDiscussionMessage> result;
-    for (auto& tree : collection)
-    {
-        result.push_back(deserializeMessage(tree.second));
-    }
-    return result;
-}
 
 struct SerializedDiscussionThread
 {
@@ -166,28 +131,14 @@ struct SerializedDiscussionThread
         {
             if (pair.first == "messages")
             {
-                messages = deserializeMessages(pair.second);
+                messages = deserializeEntities<SerializedDiscussionMessage>(pair.second);
             }
         }
     }
 };
 
-auto deserializeThread(const boost::property_tree::ptree& tree)
-{
-    SerializedDiscussionThread result;
-    result.populate(tree);
-    return result;
-}
-
-auto deserializeThreads(const boost::property_tree::ptree& collection)
-{
-    std::vector<SerializedDiscussionThread> result;
-    for (auto& tree : collection)
-    {
-        result.push_back(deserializeThread(tree.second));
-    }
-    return result;
-}
+CREATE_FUNCTION_ALIAS(deserializeThread, deserializeEntity<SerializedDiscussionThread>)
+CREATE_FUNCTION_ALIAS(deserializeThreads, deserializeEntities<SerializedDiscussionThread>)
 
 BOOST_AUTO_TEST_CASE( Discussion_thread_count_is_initially_zero )
 {

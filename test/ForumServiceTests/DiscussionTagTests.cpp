@@ -26,22 +26,7 @@ struct SerializedDiscussionTag
     }
 };
 
-static auto deserializeTag(const boost::property_tree::ptree& tree)
-{
-    SerializedDiscussionTag result;
-    result.populate(tree);
-    return result;
-}
-
-static auto deserializeTags(const boost::property_tree::ptree& collection)
-{
-    std::vector<SerializedDiscussionTag> result;
-    for (auto& tree : collection)
-    {
-        result.push_back(deserializeTag(tree.second));
-    }
-    return result;
-}
+CREATE_FUNCTION_ALIAS(deserializeTags, deserializeEntities<SerializedDiscussionTag>)
 
 /**
 * Stores only the information that is sent out about a user referenced in a discussion thread or message
@@ -115,23 +100,7 @@ struct SerializedDiscussionThread
     }
 };
 
-static auto deserializeThread(const boost::property_tree::ptree& tree)
-{
-    SerializedDiscussionThread result;
-    result.populate(tree);
-    return result;
-}
-
-static auto deserializeThreads(const boost::property_tree::ptree& collection)
-{
-    std::vector<SerializedDiscussionThread> result;
-    for (auto& tree : collection)
-    {
-        result.push_back(deserializeThread(tree.second));
-    }
-    return result;
-}
-
+CREATE_FUNCTION_ALIAS(deserializeThreads, deserializeEntities<SerializedDiscussionThread>)
 
 BOOST_AUTO_TEST_CASE( No_discussion_tags_are_present_before_one_is_created )
 {

@@ -32,22 +32,7 @@ struct SerializedUserDiscussionThread
     }
 };
 
-auto deserializeUserThread(const boost::property_tree::ptree& tree)
-{
-    SerializedUserDiscussionThread result;
-    result.populate(tree);
-    return result;
-}
-
-auto deserializeUserThreads(const boost::property_tree::ptree& collection)
-{
-    std::vector<SerializedUserDiscussionThread> result;
-    for (auto& tree : collection)
-    {
-        result.push_back(deserializeUserThread(tree.second));
-    }
-    return result;
-}
+CREATE_FUNCTION_ALIAS(deserializeUserThreads, deserializeEntities<SerializedUserDiscussionThread>)
 
 struct SerializedDiscussionMessageParentThread
 {
@@ -79,22 +64,7 @@ struct SerializedUserDiscussionThreadMessage
     }
 };
 
-auto deserializeUserThreadMessage(const boost::property_tree::ptree& tree)
-{
-    SerializedUserDiscussionThreadMessage result;
-    result.populate(tree);
-    return result;
-}
-
-auto deserializeUserThreadMessages(const boost::property_tree::ptree& collection)
-{
-    std::vector<SerializedUserDiscussionThreadMessage> result;
-    for (auto& tree : collection)
-    {
-        result.push_back(deserializeUserThreadMessage(tree.second));
-    }
-    return result;
-}
+CREATE_FUNCTION_ALIAS(deserializeUserThreadMessages, deserializeEntities<SerializedUserDiscussionThreadMessage>)
 
 BOOST_AUTO_TEST_CASE( User_count_is_initially_zero )
 {

@@ -5,6 +5,13 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#define CREATE_FUNCTION_ALIAS(name, target) \
+    template<typename... Args> \
+    static auto name(Args&&... args) \
+    { \
+        return target(std::forward<Args>(args)...); \
+    } \
+
 namespace Forum
 {
     namespace Helpers
@@ -54,6 +61,25 @@ namespace Forum
             {
                 *iterator++ = pair.second.get(name, defaultValue);
             }
-        };
+        }
+
+        template<typename T>
+        auto deserializeEntity(const boost::property_tree::ptree& tree)
+        {
+            T result;
+            result.populate(tree);
+            return result;
+        }
+
+        template<typename T>
+        auto deserializeEntities(const boost::property_tree::ptree& collection)
+        {
+            std::vector<T> result;
+            for (auto& tree : collection)
+            {
+                result.push_back(deserializeEntity<T>(tree.second));
+            }
+            return result;
+        }
     }
 }
