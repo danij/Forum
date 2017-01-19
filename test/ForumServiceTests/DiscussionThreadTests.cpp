@@ -73,8 +73,8 @@ struct SerializedDiscussionMessageLastUpdated
         userId = tree.get<std::string>("userId", "");
         userName = tree.get<std::string>("userName", "");
         at = tree.get<Timestamp>("at", 0);
-        ip = tree.get<Timestamp>("ip");
-        userAgent = tree.get<Timestamp>("userAgent");
+        ip = tree.get<std::string>("ip");
+        userAgent = tree.get<std::string>("userAgent");
     }
 };
 
@@ -95,8 +95,8 @@ struct SerializedDiscussionMessage
         id = tree.get<std::string>("id");
         content = tree.get<std::string>("content");
         created = tree.get<Timestamp>("created");
-        ip = tree.get<Timestamp>("ip");
-        userAgent = tree.get<Timestamp>("userAgent");
+        ip = tree.get<std::string>("ip");
+        userAgent = tree.get<std::string>("userAgent");
         for (auto& pair : tree)
         {
             if (pair.first == "lastUpdated")
