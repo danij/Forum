@@ -60,15 +60,29 @@ struct SerializedDiscussionMessageVote
     }
 };
 
+struct SerializedDiscussionMessageLastUpdated
+{
+    Timestamp at = 0;
+    std::string userId;
+    std::string userName;
+    
+    void populate(const boost::property_tree::ptree& tree)
+    {
+        userId = tree.get<std::string>("userId", "");
+        userName = tree.get<std::string>("userName", "");
+        at = tree.get<Timestamp>("at", 0);
+    }
+};
+
 struct SerializedDiscussionMessage
 {
     std::string id;
     std::string content;
     Timestamp created = 0;
-    Timestamp lastUpdated = 0;
     SerializedDiscussionThreadOrMessageUser createdBy;
     std::vector<SerializedDiscussionMessageVote> upVotes;
     std::vector<SerializedDiscussionMessageVote> downVotes;
+    std::unique_ptr<SerializedDiscussionMessageLastUpdated> lastUpdated;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -79,7 +93,8 @@ struct SerializedDiscussionMessage
         {
             if (pair.first == "lastUpdated")
             {
-                lastUpdated = tree.get<Timestamp>("lastUpdated");
+                lastUpdated = std::make_unique<SerializedDiscussionMessageLastUpdated>();
+                lastUpdated->populate(pair.second);
             }
             if (pair.first == "upVotes")
             {
@@ -1055,16 +1070,78 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds )
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
     BOOST_REQUIRE_EQUAL("Message1 - Updated", thread.messages[0].content);
     BOOST_REQUIRE_EQUAL(1000, thread.messages[0].created);
-    BOOST_REQUIRE_EQUAL(3000, thread.messages[0].lastUpdated);
+    BOOST_REQUIRE(thread.messages[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(3000, thread.messages[0].lastUpdated->at);
     BOOST_REQUIRE_EQUAL(userId, thread.messages[0].createdBy.id);
     BOOST_REQUIRE_EQUAL("User", thread.messages[0].createdBy.name);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
     BOOST_REQUIRE_EQUAL("Message2", thread.messages[1].content);
     BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
-    BOOST_REQUIRE_EQUAL(0, thread.messages[1].lastUpdated);
+    BOOST_REQUIRE( ! thread.messages[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(userId, thread.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User", thread.messages[1].createdBy.name);
+}
+
+BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_stores_the_user_only_if_it_differs_from_the_original_author )
+{
+    auto handler = createCommandHandler();
+
+    auto user1Id = createUserAndGetId(handler, "User1");
+    auto user2Id = createUserAndGetId(handler, "User2");
+    auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
+    std::string message1Id, message2Id;
+    {
+        LoggedInUserChanger _(user1Id);
+        TimestampChanger __(1000);
+        message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");
+    }
+    {
+        LoggedInUserChanger _(user1Id);
+        TimestampChanger __(2000);
+        message2Id = createDiscussionMessageAndGetId(handler, threadId, "Message2");
+    }
+    {
+        LoggedInUserChanger _(user1Id);
+        TimestampChanger __(3000);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+                                                           Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
+                                                           { message1Id, "Message1 - Updated" }));
+    }
+    {
+        LoggedInUserChanger _(user2Id);
+        TimestampChanger __(4000);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+                                                           Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
+                                                           { message2Id, "Message2 - Updated" }));
+    }
+
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL("Abc", thread.name);
+    BOOST_REQUIRE_EQUAL(2, thread.messages.size());
+
+    BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
+    BOOST_REQUIRE_EQUAL("Message1 - Updated", thread.messages[0].content);
+    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].created);
+    BOOST_REQUIRE(thread.messages[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(3000, thread.messages[0].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL("", thread.messages[0].lastUpdated->userId);
+    BOOST_REQUIRE_EQUAL("", thread.messages[0].lastUpdated->userName);
+    BOOST_REQUIRE_EQUAL(user1Id, thread.messages[0].createdBy.id);
+    BOOST_REQUIRE_EQUAL("User1", thread.messages[0].createdBy.name);
+
+    BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
+    BOOST_REQUIRE_EQUAL("Message2", thread.messages[1].content);
+    BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
+    BOOST_REQUIRE(thread.messages[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(4000, thread.messages[1].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].lastUpdated->userId);
+    BOOST_REQUIRE_EQUAL("User2", thread.messages[1].lastUpdated->userName);
+    BOOST_REQUIRE_EQUAL(user1Id, thread.messages[1].createdBy.id);
+    BOOST_REQUIRE_EQUAL("User1", thread.messages[1].createdBy.name);
 }
 
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_with_an_invalid_id_returns_invalid_parameters )
