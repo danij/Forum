@@ -806,15 +806,15 @@ BOOST_AUTO_TEST_CASE( Voting_discussion_thread_messages_invokes_observers )
     auto messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
     
     {
-        auto _ = LoggedInUserChanger(user1Id);
+        LoggedInUserChanger _(user1Id);
         handlerToObj(handler, Forum::Commands::UP_VOTE_DISCUSSION_THREAD_MESSAGE, { messageId });
     }
     {
-        auto _ = LoggedInUserChanger(user2Id);
+        LoggedInUserChanger _(user2Id);
         handlerToObj(handler, Forum::Commands::DOWN_VOTE_DISCUSSION_THREAD_MESSAGE, { messageId });
     }
     {
-        auto _ = LoggedInUserChanger(user1Id);
+        LoggedInUserChanger _(user1Id);
         handlerToObj(handler, Forum::Commands::RESET_VOTE_DISCUSSION_THREAD_MESSAGE, { messageId });
     }
 

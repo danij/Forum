@@ -185,10 +185,10 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_with_a_longer_name_fails )
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_unicode_name_of_valid_length_succeeds )
 {
-    auto configWithShorterName = ConfigChanger([](auto& config)
-                                               {
-                                                   config.user.maxNameLength = 3;
-                                               });
+    ConfigChanger _([](auto& config)
+                    {
+                        config.user.maxNameLength = 3;
+                    });
 
     //test a simple text that can also be represented as ASCII
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_USER, { "AAA" });

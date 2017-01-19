@@ -6,6 +6,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/noncopyable.hpp>
 
 #include <string>
 
@@ -41,7 +42,7 @@ namespace Forum
         template <typename TAction>
         struct Disposer final
         {
-            Disposer (TAction action) : action_(action) {}
+            explicit Disposer (TAction action) : action_(action) {}
             ~Disposer() { action_(); }
 
         private:
@@ -54,9 +55,9 @@ namespace Forum
             return Disposer<TAction>(action);
         }
 
-        struct ConfigChanger final
+        struct ConfigChanger final : private boost::noncopyable
         {
-            ConfigChanger(std::function<void(Configuration::Config&)> configChangeAction)
+            explicit ConfigChanger(std::function<void(Configuration::Config&)> configChangeAction)
             {
                 oldConfig_ = *Configuration::getGlobalConfig();
 
@@ -72,9 +73,9 @@ namespace Forum
             Configuration::Config oldConfig_;
         };
 
-        struct TimestampChanger final
+        struct TimestampChanger final : private boost::noncopyable
         {
-            TimestampChanger(Entities::Timestamp value)
+            explicit TimestampChanger(Entities::Timestamp value)
             {
                 Context::setCurrentTimeMockForCurrentThread([=]() { return value; });
             }
@@ -84,9 +85,9 @@ namespace Forum
             }
         };
 
-        struct LoggedInUserChanger final
+        struct LoggedInUserChanger final : private boost::noncopyable
         {
-            LoggedInUserChanger(Entities::IdType userId)
+            explicit LoggedInUserChanger(Entities::IdType userId)
             {
                 oldId_ = Context::getCurrentUserId();
                 Context::setCurrentUserId(userId);
@@ -100,7 +101,7 @@ namespace Forum
             Entities::IdType oldId_;
         };
 
-        struct IpUserAgentChanger final
+        struct IpUserAgentChanger final : private boost::noncopyable
         {
             IpUserAgentChanger(std::string newIp, std::string newUserAgent)
             {
