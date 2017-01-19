@@ -65,12 +65,16 @@ struct SerializedDiscussionMessageLastUpdated
     Timestamp at = 0;
     std::string userId;
     std::string userName;
-    
+    std::string ip;
+    std::string userAgent;
+
     void populate(const boost::property_tree::ptree& tree)
     {
         userId = tree.get<std::string>("userId", "");
         userName = tree.get<std::string>("userName", "");
         at = tree.get<Timestamp>("at", 0);
+        ip = tree.get<Timestamp>("ip");
+        userAgent = tree.get<Timestamp>("userAgent");
     }
 };
 
@@ -79,6 +83,8 @@ struct SerializedDiscussionMessage
     std::string id;
     std::string content;
     Timestamp created = 0;
+    std::string ip;
+    std::string userAgent;
     SerializedDiscussionThreadOrMessageUser createdBy;
     std::vector<SerializedDiscussionMessageVote> upVotes;
     std::vector<SerializedDiscussionMessageVote> downVotes;
@@ -89,6 +95,8 @@ struct SerializedDiscussionMessage
         id = tree.get<std::string>("id");
         content = tree.get<std::string>("content");
         created = tree.get<Timestamp>("created");
+        ip = tree.get<Timestamp>("ip");
+        userAgent = tree.get<Timestamp>("userAgent");
         for (auto& pair : tree)
         {
             if (pair.first == "lastUpdated")
@@ -1140,6 +1148,79 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_stores_the_us
     BOOST_REQUIRE_EQUAL(4000, thread.messages[1].lastUpdated->at);
     BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].lastUpdated->userId);
     BOOST_REQUIRE_EQUAL("User2", thread.messages[1].lastUpdated->userName);
+    BOOST_REQUIRE_EQUAL(user1Id, thread.messages[1].createdBy.id);
+    BOOST_REQUIRE_EQUAL("User1", thread.messages[1].createdBy.name);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_thread_message_store_the_ip_address_and_user_agent_of_author_and_editor )
+{
+    auto handler = createCommandHandler();
+
+    auto user1Id = createUserAndGetId(handler, "User1");
+    auto user2Id = createUserAndGetId(handler, "User2");
+    auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
+    std::string message1Id, message2Id;
+    {
+        LoggedInUserChanger _(user1Id);
+        TimestampChanger __(1000);
+        IpUserAgentChanger ___("1.2.3.4", "Browser 1");
+        message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");
+    }
+    {
+        LoggedInUserChanger _(user1Id);
+        TimestampChanger __(2000);
+        IpUserAgentChanger ___("1.2.3.4", "Browser 1");
+        message2Id = createDiscussionMessageAndGetId(handler, threadId, "Message2");
+    }
+    {
+        LoggedInUserChanger _(user1Id);
+        TimestampChanger __(3000);
+        IpUserAgentChanger ___("1.2.3.4", "Browser 2");
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler,
+                                                           Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
+                                                           { message1Id, "Message1 - Updated" }));
+    }
+    {
+        LoggedInUserChanger _(user2Id);
+        TimestampChanger __(4000);
+        IpUserAgentChanger ___("2.3.4.5", "Browser 3");
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler,
+                                                           Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
+                                                           { message2Id, "Message2 - Updated" }));
+    }
+
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL("Abc", thread.name);
+    BOOST_REQUIRE_EQUAL(2, thread.messages.size());
+
+    BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
+    BOOST_REQUIRE_EQUAL("Message1 - Updated", thread.messages[0].content);
+    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].created);
+    BOOST_REQUIRE_EQUAL("1.2.3.4", thread.messages[0].ip);
+    BOOST_REQUIRE_EQUAL("Browser 1", thread.messages[0].userAgent);
+    BOOST_REQUIRE(thread.messages[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(3000, thread.messages[0].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL("", thread.messages[0].lastUpdated->userId);
+    BOOST_REQUIRE_EQUAL("", thread.messages[0].lastUpdated->userName);
+    BOOST_REQUIRE_EQUAL("1.2.3.4", thread.messages[0].lastUpdated->ip);
+    BOOST_REQUIRE_EQUAL("Browser 2", thread.messages[0].lastUpdated->userAgent);
+    BOOST_REQUIRE_EQUAL(user1Id, thread.messages[0].createdBy.id);
+    BOOST_REQUIRE_EQUAL("User1", thread.messages[0].createdBy.name);
+
+    BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
+    BOOST_REQUIRE_EQUAL("Message2", thread.messages[1].content);
+    BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
+    BOOST_REQUIRE_EQUAL("1.2.3.4", thread.messages[1].ip);
+    BOOST_REQUIRE_EQUAL("Browser 1", thread.messages[1].userAgent);
+    BOOST_REQUIRE(thread.messages[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(4000, thread.messages[1].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].lastUpdated->userId);
+    BOOST_REQUIRE_EQUAL("User2", thread.messages[1].lastUpdated->userName);
+    BOOST_REQUIRE_EQUAL("2.3.4.5", thread.messages[1].lastUpdated->ip);
+    BOOST_REQUIRE_EQUAL("Browser 3", thread.messages[1].lastUpdated->userAgent);
     BOOST_REQUIRE_EQUAL(user1Id, thread.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread.messages[1].createdBy.name);
 }

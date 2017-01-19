@@ -99,5 +99,25 @@ namespace Forum
         private:
             Entities::IdType oldId_;
         };
+
+        struct IpUserAgentChanger final
+        {
+            IpUserAgentChanger(std::string newIp, std::string newUserAgent)
+            {
+                oldIp_ = Context::getCurrentUserIpAddress();
+                Context::setCurrentUserIpAddress(newIp);
+                oldUserAgent_ = Context::getCurrentUserBrowserUserAgent();
+                Context::setCurrentUserBrowserUserAgent(newUserAgent);
+            }
+            ~IpUserAgentChanger()
+            {
+                Context::setCurrentUserIpAddress(oldIp_);
+                Context::setCurrentUserBrowserUserAgent(oldUserAgent_);
+            }
+
+        private:
+            std::string oldIp_;
+            std::string oldUserAgent_;
+        };
     }
 }

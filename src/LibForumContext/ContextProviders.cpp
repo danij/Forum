@@ -29,7 +29,7 @@ void Forum::Context::resetCurrentTimeMock()
     getCurrentTimeCallback = getTimeSinceEpoch;
 }
 
-static thread_local IdType currentUser = {};
+static thread_local IdType currentUser{};
 
 IdType Forum::Context::getCurrentUserId()
 {
@@ -39,6 +39,30 @@ IdType Forum::Context::getCurrentUserId()
 void Forum::Context::setCurrentUserId(IdType value)
 {
     currentUser = value;
+}
+
+static thread_local std::string currentIpAddress{};
+
+std::string Forum::Context::getCurrentUserIpAddress()
+{
+    return currentIpAddress;
+}
+
+void Forum::Context::setCurrentUserIpAddress(const std::string& value)
+{
+    currentIpAddress = value;
+}
+
+static thread_local std::string currentUserAgent{};
+
+std::string Forum::Context::getCurrentUserBrowserUserAgent()
+{
+    return currentUserAgent;
+}
+
+void Forum::Context::setCurrentUserBrowserUserAgent(const std::string& value)
+{
+    currentUserAgent = value;
 }
 
 static thread_local DisplayContext displayContext = {};

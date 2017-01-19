@@ -21,6 +21,27 @@ namespace Forum
          */
         void setCurrentUserId(Entities::IdType value);
 
+        /**
+         * Returns the IP address of the current user executing an action
+         */
+        std::string getCurrentUserIpAddress();
+
+        /**
+        * Sets the IP address of the current user executing an action (thread-local)
+        */
+        void setCurrentUserIpAddress(const std::string& value);
+
+        /**
+        * Returns the browser user agent of the current user executing an action
+        */
+        std::string getCurrentUserBrowserUserAgent();
+
+        /**
+        * Sets the browser user agent of the current user executing an action (thread-local)
+        */
+        void setCurrentUserBrowserUserAgent(const std::string& value);
+
+
         enum class SortOrder
         {
             Ascending,
