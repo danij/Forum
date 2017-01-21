@@ -114,6 +114,8 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
                           message->id() = generateUUIDString();
                           message->content() = content;
                           message->created() = Context::getCurrentTime();
+                          message->creationDetails().ip = Context::getCurrentUserIpAddress();
+                          message->creationDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
 
                           collection.messages().insert(message);
                           collection.modifyDiscussionThread(threadIt, [&message](DiscussionThread& thread)
@@ -154,5 +156,44 @@ void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& o
                           writeEvents_.onDeleteDiscussionThreadMessage(
                                   createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteDiscussionThreadMessage(it);
+                      });
+}
+
+void MemoryRepository::changeDiscussionThreadMessageContent(const IdType& id, const std::string& newContent, 
+                                                            std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    auto validationCode = validateDiscussionMessageContent(newContent, validDiscussionMessageContentRegex, getGlobalConfig());
+    if (validationCode != StatusCode::OK)
+    {
+        status = validationCode;
+    }
+    auto performedBy = preparePerformedBy();
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto& indexById = collection.messages()
+                                  .get<EntityCollection::DiscussionThreadMessageCollectionById>();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          auto performedByPtr = performedBy.getAndUpdate(collection);
+
+                          collection.modifyDiscussionThreadMessage(it, [&](DiscussionThreadMessage& message)
+                          {
+                              message.content() = newContent;
+                              message.lastUpdated() = Context::getCurrentTime();
+                              message.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();
+                              message.lastUpdatedDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
+                              if (&message.createdBy() != performedByPtr.get())
+                              {
+                                  message.lastUpdatedDetails().by = performedByPtr;
+                              }
+                          });
+                          writeEvents_.onChangeDiscussionThreadMessage(createObserverContext(*performedByPtr), **it,
+                                  DiscussionThreadMessage::ChangeType::Content);
                       });
 }

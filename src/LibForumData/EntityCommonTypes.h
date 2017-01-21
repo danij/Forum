@@ -18,6 +18,16 @@ namespace Forum
          */
         typedef int_fast64_t Timestamp;
 
+        /**
+         * Representing an IPv4 or IPv6 address
+         */
+        typedef std::string IpType;
+
+        /**
+         * Representing a browser user agent
+         */
+        typedef std::string UserAgentType;
+
         struct Identifiable
         {
             const IdType& id() const { return id_; }

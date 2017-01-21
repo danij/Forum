@@ -88,6 +88,8 @@ namespace Forum
             virtual void addNewDiscussionMessageInThread(const Entities::IdType& threadId,
                                                          const std::string& content, std::ostream& output) override;
             virtual void deleteDiscussionMessage(const Entities::IdType& id, std::ostream& output) override;
+            virtual void changeDiscussionThreadMessageContent(const Entities::IdType& id, const std::string& newContent,
+                                                              std::ostream& output) override;
 
             virtual void getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
                                                                     std::ostream& output) const override;

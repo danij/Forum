@@ -24,7 +24,7 @@ namespace Forum
         /**
          * Returns the IP address of the current user executing an action
          */
-        std::string getCurrentUserIpAddress();
+        const std::string& getCurrentUserIpAddress();
 
         /**
         * Sets the IP address of the current user executing an action (thread-local)
@@ -34,7 +34,7 @@ namespace Forum
         /**
         * Returns the browser user agent of the current user executing an action
         */
-        std::string getCurrentUserBrowserUserAgent();
+        const std::string& getCurrentUserBrowserUserAgent();
 
         /**
         * Sets the browser user agent of the current user executing an action (thread-local)

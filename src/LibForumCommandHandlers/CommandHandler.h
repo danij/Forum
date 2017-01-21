@@ -127,6 +127,7 @@ namespace Forum
 
             DECLARE_COMMAND_HANDLER(addNewDiscussionThreadMessage);
             DECLARE_COMMAND_HANDLER(deleteDiscussionThreadMessage);
+            DECLARE_COMMAND_HANDLER(changeDiscussionThreadMessageContent);
 
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByName);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreated);

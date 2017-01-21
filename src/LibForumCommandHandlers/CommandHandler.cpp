@@ -43,6 +43,7 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
 
     setHandler(ADD_DISCUSSION_THREAD_MESSAGE, addNewDiscussionThreadMessage);
     setHandler(DELETE_DISCUSSION_THREAD_MESSAGE, deleteDiscussionThreadMessage);
+    setHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, changeDiscussionThreadMessageContent);
 
     setHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, getDiscussionThreadMessagesOfUserByCreated);
 }
@@ -212,6 +213,13 @@ void CommandHandler::deleteDiscussionThreadMessage(const std::vector<std::string
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
     writeRepository_->deleteDiscussionMessage(parameters[0], output);
 }
+
+void CommandHandler::changeDiscussionThreadMessageContent(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+    writeRepository_->changeDiscussionThreadMessageContent(parameters[0], parameters[1], output);
+}
+
 
 void CommandHandler::getDiscussionThreadMessagesOfUserByCreated(const std::vector<std::string>& parameters,
                                                                 std::ostream& output)

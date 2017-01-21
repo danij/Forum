@@ -73,8 +73,8 @@ struct SerializedDiscussionMessageLastUpdated
         userId = tree.get<std::string>("userId", "");
         userName = tree.get<std::string>("userName", "");
         at = tree.get<Timestamp>("at", 0);
-        ip = tree.get<std::string>("ip");
-        userAgent = tree.get<std::string>("userAgent");
+        ip = tree.get<std::string>("ip", "");
+        userAgent = tree.get<std::string>("userAgent", "");
     }
 };
 
@@ -95,8 +95,8 @@ struct SerializedDiscussionMessage
         id = tree.get<std::string>("id");
         content = tree.get<std::string>("content");
         created = tree.get<Timestamp>("created");
-        ip = tree.get<std::string>("ip");
-        userAgent = tree.get<std::string>("userAgent");
+        ip = tree.get<std::string>("ip", "");
+        userAgent = tree.get<std::string>("userAgent", "");
         for (auto& pair : tree)
         {
             if (pair.first == "lastUpdated")
@@ -1042,9 +1042,6 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds_only
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
                                        { messageId, "\xFF\xFF" }));
-    assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, 
-                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
-                                       { messageId, "fȏo" }));
 }
 
 BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds )
@@ -1055,11 +1052,13 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds )
     auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
     std::string message1Id, message2Id;
     {
-        TimestampChanger _(1000);
+        LoggedInUserChanger _(userId);
+        TimestampChanger __(1000);
         message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");
     }
     {
-        TimestampChanger _(2000);
+        LoggedInUserChanger _(userId);
+        TimestampChanger __(2000);
         message2Id = createDiscussionMessageAndGetId(handler, threadId, "Message2");
     }
     {
@@ -1144,7 +1143,7 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_stores_the_us
     BOOST_REQUIRE_EQUAL("User1", thread.messages[0].createdBy.name);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
-    BOOST_REQUIRE_EQUAL("Message2", thread.messages[1].content);
+    BOOST_REQUIRE_EQUAL("Message2 - Updated", thread.messages[1].content);
     BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
     BOOST_REQUIRE(thread.messages[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(4000, thread.messages[1].lastUpdated->at);
@@ -1213,7 +1212,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_message_store_the_ip_address_and_user_ag
     BOOST_REQUIRE_EQUAL("User1", thread.messages[0].createdBy.name);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
-    BOOST_REQUIRE_EQUAL("Message2", thread.messages[1].content);
+    BOOST_REQUIRE_EQUAL("Message2 - Updated", thread.messages[1].content);
     BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
     BOOST_REQUIRE_EQUAL("1.2.3.4", thread.messages[1].ip);
     BOOST_REQUIRE_EQUAL("Browser 1", thread.messages[1].userAgent);
@@ -1533,8 +1532,7 @@ BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_messa
         {
             if (threadProperty.first == "latestMessage")
             {
-                BOOST_REQUIRE( ! treeContains(threadProperty.second, "upVotes"));
-                BOOST_REQUIRE( ! treeContains(threadProperty.second, "downVotes"));
+                BOOST_REQUIRE( ! treeContains(threadProperty.second, "content"));
             }
         }
     }

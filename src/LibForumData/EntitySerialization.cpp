@@ -52,7 +52,25 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& 
         writer << propertySafeName("parentThread", message.parentThread());
     }
 
-    writer
+    if (message.lastUpdated())
+    {
+        writer.newPropertyWithSafeName("lastUpdated");
+        writer.startObject();
+        auto& details = message.lastUpdatedDetails();
+        if (auto ptr = details.by.lock())
+        {
+            writer << propertySafeName("userId", ptr->id())
+                   << propertySafeName("userName", ptr->name());
+        }
+        writer << propertySafeName("at", message.lastUpdated());
+        writer << propertySafeName("ip", details.ip);
+        writer << propertySafeName("userAgent", details.userAgent);
+
+        writer.endObject();
+    }
+
+    writer << propertySafeName("ip", message.creationDetails().ip)
+           << propertySafeName("userAgent", message.creationDetails().userAgent)
         << objEnd;
     return writer;
 }
@@ -90,6 +108,9 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
 
     writer  << propertySafeName("lastUpdated", thread.lastUpdated())
             << propertySafeName("visited", thread.visited().load())
+            << propertySafeName("visitedSinceLastChange", false)
+            << propertySafeName("voteScore", 0)
+    
         << objEnd;
     return writer;
 }
