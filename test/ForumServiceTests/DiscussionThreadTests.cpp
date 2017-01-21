@@ -1514,6 +1514,31 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_include_info_about_latest_message )
     BOOST_REQUIRE_EQUAL(1, thread.latestMessage.createdBy.messageCount);
 }
 
+BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_message_content )
+{
+    auto handler = createCommandHandler();
+
+    auto userId = createUserAndGetId(handler, "User");
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    auto messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
+
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED, SortOrder::Ascending);
+    auto resultThreads = result.get_child("threads");
+
+    for (auto& pair : resultThreads)
+    {
+        for (auto& threadProperty : pair.second)
+        {
+            if (threadProperty.first == "latestMessage")
+            {
+                BOOST_REQUIRE( ! treeContains(threadProperty.second, "upVotes"));
+                BOOST_REQUIRE( ! treeContains(threadProperty.second, "downVotes"));
+            }
+        }
+    }
+}
+
+
 BOOST_AUTO_TEST_CASE( Discussion_threads_include_total_message_count )
 {
     auto handler = createCommandHandler();
