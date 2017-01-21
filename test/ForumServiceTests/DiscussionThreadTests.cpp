@@ -2271,3 +2271,43 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_votes_cast_by_that_user )
     BOOST_REQUIRE_EQUAL("User2", thread.messages[1].downVotes[0].userName);
     BOOST_REQUIRE_EQUAL(4000, thread.messages[1].downVotes[0].at);
 }
+
+BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_votes )
+{
+    auto handler = createCommandHandler();
+
+    auto user1Id = createUserAndGetId(handler, "User1");
+    auto user2Id = createUserAndGetId(handler, "User2");
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    std::string messageId;
+
+    {
+        LoggedInUserChanger _(user1Id);
+        {
+            TimestampChanger __(1000);
+            messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
+        }
+    }
+    {
+        LoggedInUserChanger _(user2Id);
+        TimestampChanger __(2000);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler,
+                                                           Forum::Commands::UP_VOTE_DISCUSSION_THREAD_MESSAGE,
+                                                           { messageId }));
+    }
+
+    auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED, SortOrder::Ascending);
+    auto resultThreads = result.get_child("threads");
+
+    for (auto& pair : resultThreads)
+    {
+        for (auto& threadProperty : pair.second)
+        {
+            if (threadProperty.first == "latestMessage")
+            {
+                BOOST_REQUIRE( ! treeContains(threadProperty.second, "upVotes"));
+                BOOST_REQUIRE( ! treeContains(threadProperty.second, "downVotes"));
+            }
+        }
+    }
+}
