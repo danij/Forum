@@ -3,7 +3,19 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE( Sample_Test )
+#include <unicode/uclean.h>
+
+#include "StringHelpers.h"
+
+struct ICUCleanupFixture
 {
-    BOOST_CHECK(true);
-}
+    ~ICUCleanupFixture()
+    {
+        Forum::Helpers::cleanupStringHelpers();
+
+        //clean up resources cached by ICU so that they don't show up as memory leaks
+        u_cleanup();
+    }
+};
+
+BOOST_GLOBAL_FIXTURE(ICUCleanupFixture);

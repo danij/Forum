@@ -8,8 +8,6 @@
 #include "StateHelpers.h"
 #include "StringHelpers.h"
 
-#include <boost/regex/icu.hpp>
-
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -105,9 +103,7 @@ void MemoryRepository::getUserByName(const std::string& name, std::ostream& outp
                      });
 }
 
-static const auto validUserNameRegex = boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$");
-
-static StatusCode validateUserName(const std::string& name, const ConfigConstRef& config)
+static StatusCode validateUserName(const std::string& name, const boost::u32regex regex, const ConfigConstRef& config)
 {
     if (name.empty())
     {
@@ -115,7 +111,7 @@ static StatusCode validateUserName(const std::string& name, const ConfigConstRef
     }
     try
     {
-        if ( ! boost::u32regex_match(name, validUserNameRegex, boost::match_flag_type::format_all))
+        if ( ! boost::u32regex_match(name, regex, boost::match_flag_type::format_all))
         {
             return StatusCode::INVALID_PARAMETERS;
         }
@@ -141,7 +137,7 @@ static StatusCode validateUserName(const std::string& name, const ConfigConstRef
 void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateUserName(name, getGlobalConfig());
+    auto validationCode = validateUserName(name, validUserNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;
@@ -175,7 +171,7 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
 void MemoryRepository::changeUserName(const IdType& id, const std::string& newName, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateUserName(newName, getGlobalConfig());
+    auto validationCode = validateUserName(newName, validUserNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;

@@ -8,8 +8,6 @@
 #include "StateHelpers.h"
 #include "StringHelpers.h"
 
-#include <boost/regex/icu.hpp>
-
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -49,9 +47,8 @@ void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(const IdType& 
 }
 
 
-static const auto validDiscussionMessageContentRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");
-
-static StatusCode validateDiscussionMessageContent(const std::string& content, const ConfigConstRef& config)
+static StatusCode validateDiscussionMessageContent(const std::string& content, const boost::u32regex& regex, 
+                                                   const ConfigConstRef& config)
 {
     if (content.empty())
     {
@@ -59,7 +56,7 @@ static StatusCode validateDiscussionMessageContent(const std::string& content, c
     }
     try
     {
-        if ( ! boost::u32regex_match(content, validDiscussionMessageContentRegex, boost::match_flag_type::format_all))
+        if ( ! boost::u32regex_match(content, regex, boost::match_flag_type::format_all))
         {
             return StatusCode::INVALID_PARAMETERS;
         }
@@ -92,7 +89,7 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
         return;
     }
 
-    auto validationCode = validateDiscussionMessageContent(content, getGlobalConfig());
+    auto validationCode = validateDiscussionMessageContent(content, validDiscussionMessageContentRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;

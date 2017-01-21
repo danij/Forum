@@ -8,8 +8,6 @@
 #include "StateHelpers.h"
 #include "StringHelpers.h"
 
-#include <boost/regex/icu.hpp>
-
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -255,9 +253,8 @@ void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(const IdType& id
                      });
 }
 
-static const auto validDiscussionThreadNameRegex = boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$");
-
-static StatusCode validateDiscussionThreadName(const std::string& name, const ConfigConstRef& config)
+static StatusCode validateDiscussionThreadName(const std::string& name, const boost::u32regex& regex, 
+                                               const ConfigConstRef& config)
 {
     if (name.empty())
     {
@@ -265,7 +262,7 @@ static StatusCode validateDiscussionThreadName(const std::string& name, const Co
     }
     try
     {
-        if ( ! boost::u32regex_match(name, validDiscussionThreadNameRegex, boost::match_flag_type::format_all))
+        if ( ! boost::u32regex_match(name, regex, boost::match_flag_type::format_all))
         {
             return StatusCode::INVALID_PARAMETERS;
         }
@@ -291,7 +288,7 @@ static StatusCode validateDiscussionThreadName(const std::string& name, const Co
 void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateDiscussionThreadName(name, getGlobalConfig());
+    auto validationCode = validateDiscussionThreadName(name, validDiscussionThreadNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;
@@ -323,7 +320,7 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
 void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::string& newName, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateDiscussionThreadName(newName, getGlobalConfig());
+    auto validationCode = validateDiscussionThreadName(newName, validDiscussionThreadNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;

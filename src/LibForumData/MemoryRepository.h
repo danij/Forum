@@ -7,6 +7,7 @@
 #include "ResourceGuard.h"
 
 #include <boost/core/noncopyable.hpp>
+#include <boost/regex/icu.hpp>
 
 namespace Forum
 {
@@ -102,6 +103,10 @@ namespace Forum
             Helpers::ResourceGuard<Entities::EntityCollection> collection_;
             ReadEvents readEvents_;
             WriteEvents writeEvents_;
+
+            boost::u32regex validUserNameRegex;
+            boost::u32regex validDiscussionThreadNameRegex;
+            boost::u32regex validDiscussionMessageContentRegex;
         };
 
         inline ObserverContext_ createObserverContext(PerformedByType performedBy)

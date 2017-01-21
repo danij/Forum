@@ -11,7 +11,10 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-MemoryRepository::MemoryRepository() : collection_(std::make_shared<EntityCollection>())
+MemoryRepository::MemoryRepository() : collection_(std::make_shared<EntityCollection>()),
+    validUserNameRegex(boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$")),
+    validDiscussionThreadNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
+    validDiscussionMessageContentRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$"))
 {
 }
 

@@ -130,6 +130,7 @@ struct SerializedDiscussionThread
     std::vector<SerializedDiscussionMessage> messages;
     SerializedLatestDiscussionThreadMessage latestMessage;
     bool visitedSinceLastChange = false;
+    int64_t voteScore = 0;
     
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -140,6 +141,7 @@ struct SerializedDiscussionThread
         visited = tree.get<int64_t>("visited");
         messageCount = tree.get<int64_t>("messageCount");
         visitedSinceLastChange = tree.get<bool>("visitedSinceLastChange");
+        voteScore = tree.get<int64_t>("voteScore");
 
         createdBy.populate(tree.get_child("createdBy"));
         for (auto& pair : tree)
@@ -2335,4 +2337,75 @@ BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_votes
             }
         }
     }
+}
+
+BOOST_AUTO_TEST_CASE( Retrievng_a_list_of_threads_includes_the_vote_score_of_the_first_message )
+{
+    auto handler = createCommandHandler();
+
+    auto user1Id = createUserAndGetId(handler, "User1");
+    auto user2Id = createUserAndGetId(handler, "User2");
+    auto user3Id = createUserAndGetId(handler, "User3");
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    std::string message1Id, message2Id;
+
+    {
+        LoggedInUserChanger _(user1Id);
+        {
+            TimestampChanger __(1000);
+            message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");
+        }
+        {
+            TimestampChanger __(2000);
+            message2Id = createDiscussionMessageAndGetId(handler, threadId, "Message2");
+        }
+    }
+
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+
+    BOOST_REQUIRE_EQUAL(2, thread.messages.size());
+    BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
+    BOOST_REQUIRE_EQUAL(0, thread.voteScore);
+
+    {
+        LoggedInUserChanger _(user3Id);
+        TimestampChanger __(3000);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler,
+                                                           Forum::Commands::DOWN_VOTE_DISCUSSION_THREAD_MESSAGE,
+                                                           { message1Id }));
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler,
+                                                           Forum::Commands::DOWN_VOTE_DISCUSSION_THREAD_MESSAGE,
+                                                           { message2Id }));
+    }
+
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+
+    BOOST_REQUIRE_EQUAL(2, thread.messages.size());
+    BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
+    BOOST_REQUIRE_EQUAL(-1, thread.voteScore);
+
+    {
+        LoggedInUserChanger _(user2Id);
+        TimestampChanger __(4000);
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler,
+                                                           Forum::Commands::UP_VOTE_DISCUSSION_THREAD_MESSAGE,
+                                                           { message1Id }));
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler,
+                                                           Forum::Commands::DOWN_VOTE_DISCUSSION_THREAD_MESSAGE,
+                                                           { message2Id }));
+    }
+
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+
+    BOOST_REQUIRE_EQUAL(2, thread.messages.size());
+    BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
+    BOOST_REQUIRE_EQUAL(0, thread.voteScore);
+
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_USER, { user3Id }));
+
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+
+    BOOST_REQUIRE_EQUAL(2, thread.messages.size());
+    BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
+    BOOST_REQUIRE_EQUAL(1, thread.voteScore);
 }
