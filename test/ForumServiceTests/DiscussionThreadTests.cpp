@@ -1990,7 +1990,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_a
     }
 }
 
-BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_editing_the_a_message_of_the_thread )
+BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_editing_a_message_of_the_thread )
 {
     auto handler = createCommandHandler();
 
