@@ -324,6 +324,7 @@ void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::s
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;
+        return;
     }
     auto performedBy = preparePerformedBy();
 
@@ -351,13 +352,13 @@ void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::s
 void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto performedBy = preparePerformedBy();
-
     if ( ! id)
     {
         status = StatusCode::INVALID_PARAMETERS;
         return;
     }
+
+    auto performedBy = preparePerformedBy();
 
     collection_.write([&](EntityCollection& collection)
                       {

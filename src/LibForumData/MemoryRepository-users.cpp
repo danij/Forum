@@ -210,7 +210,6 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
         status = StatusCode::INVALID_PARAMETERS;
         return;
     }
-
     auto performedBy = preparePerformedBy();
 
     collection_.write([&](EntityCollection& collection)

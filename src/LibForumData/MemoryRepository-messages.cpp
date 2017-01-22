@@ -95,7 +95,6 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
         status = validationCode;
         return;
     }
-
     auto performedBy = preparePerformedBy();
 
     collection_.write([&](EntityCollection& collection)
@@ -141,8 +140,8 @@ void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& o
         status = StatusCode::INVALID_PARAMETERS;
         return;
     }
-
     auto performedBy = preparePerformedBy();
+
     collection_.write([&](EntityCollection& collection)
                       {
                           auto& indexById = collection.messages().get<EntityCollection::DiscussionThreadMessageCollectionById>();
@@ -207,7 +206,6 @@ void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, cons
         status = StatusCode::INVALID_PARAMETERS;
         return;
     }
-
     auto performedBy = preparePerformedBy();
 
     collection_.write([&](EntityCollection& collection)
