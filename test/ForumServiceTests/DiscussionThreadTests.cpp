@@ -1535,7 +1535,7 @@ BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_messa
                 BOOST_REQUIRE( ! treeContains(threadProperty.second, "content"));
             }
         }
-    }
+    }   
 }
 
 
@@ -1714,7 +1714,7 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_requires_two_valid_thread_ids )
                                        { "bogus id1", sampleValidIdString }));
     assertStatusCodeEqual(StatusCode::NOT_FOUND,
                           handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS, 
-                                       { sampleValidIdString, sampleValidIdString }));
+                                       { sampleValidIdString, sampleValidIdString2 }));
 }
 
 BOOST_AUTO_TEST_CASE( Merging_discussion_threads_fails_if_the_same_id_is_provided_twice )
@@ -1733,16 +1733,20 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_works_ok )
 {
     auto handler = createCommandHandler();
 
+    auto user1Id = createUserAndGetId(handler, "User1");
+    auto user2Id = createUserAndGetId(handler, "User2");
     auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
     auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
     std::string message1Id, message2Id, message3Id;
 
     {
-        TimestampChanger _(1000);
+        LoggedInUserChanger _(user1Id);
+        TimestampChanger __(1000);
         message1Id = createDiscussionMessageAndGetId(handler, thread1Id, "Message 1");
     }
     {
-        TimestampChanger _(2000);
+        LoggedInUserChanger _(user2Id);
+        TimestampChanger __(2000);
         message2Id = createDiscussionMessageAndGetId(handler, thread2Id, "Message 2");
     }
     {
@@ -1769,10 +1773,14 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_works_ok )
 
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
     BOOST_REQUIRE_EQUAL("Message 1", thread.messages[0].content);
+    BOOST_REQUIRE_EQUAL(user1Id, thread.messages[0].createdBy.id);
+    BOOST_REQUIRE_EQUAL("User1", thread.messages[0].createdBy.name);
     BOOST_REQUIRE_EQUAL(1000, thread.messages[0].created);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
     BOOST_REQUIRE_EQUAL("Message 2", thread.messages[1].content);
+    BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].createdBy.id);
+    BOOST_REQUIRE_EQUAL("User2", thread.messages[1].createdBy.name);
     BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
 
     BOOST_REQUIRE_EQUAL(message3Id, thread.messages[2].id);

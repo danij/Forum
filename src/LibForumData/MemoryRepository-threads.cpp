@@ -374,3 +374,57 @@ void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& ou
                           collection.deleteDiscussionThread(it);
                       });
 }
+
+void MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const IdType& intoId, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! fromId || ! intoId)
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
+    if (fromId == intoId)
+    {
+        status = StatusCode::NO_EFFECT;
+        return;
+    }
+
+    auto performedBy = preparePerformedBy();
+
+    collection_.write([&](EntityCollection& collection)
+                    {
+                        auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                        auto itFrom = indexById.find(fromId);
+                        if (itFrom == indexById.end())
+                        {
+                            status = StatusCode::NOT_FOUND;
+                            return;
+                        }
+                        auto itInto = indexById.find(intoId);
+                        if (itInto == indexById.end())
+                        {
+                            status = StatusCode::NOT_FOUND;
+                            return;
+                        }
+                        //make sure the thread is not deleted before being passed to the observers
+                        writeEvents_.onMergeDiscussionThreads(
+                                createObserverContext(*performedBy.getAndUpdate(collection)), **itFrom, **itInto);
+
+                        for (auto& message : (*itFrom)->messages())
+                        {
+                            auto& createdBy = message->createdBy();
+
+                            auto messageClone = std::make_shared<DiscussionThreadMessage>(*message, **itInto);
+
+                            collection.messages().insert(messageClone);
+                            collection.modifyDiscussionThread(itInto, [&messageClone](DiscussionThread& thread)
+                            {
+                                thread.messages().insert(messageClone);
+                            });
+
+                            createdBy.messages().insert(messageClone);
+                        }
+
+                        collection.deleteDiscussionThread(itFrom);
+                    });
+}

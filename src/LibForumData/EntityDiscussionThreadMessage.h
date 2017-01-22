@@ -48,6 +48,16 @@ namespace Forum
             DiscussionThreadMessage(User& createdBy, DiscussionThread& parentThread)
                 : createdBy_(createdBy), parentThread_(parentThread) {}
 
+            DiscussionThreadMessage(const DiscussionThreadMessage& other, DiscussionThread& newParent)
+                : content_(std::move(other.content_)), createdBy_(other.createdBy_), parentThread_(newParent),
+                  creationDetails_(std::move(other.creationDetails_)), 
+                  lastUpdatedDetails_(std::move(other.lastUpdatedDetails_))
+            {
+                id() = other.id();
+                created() = other.created();
+                lastUpdated() = other.lastUpdated();
+            }
+
         private:
             std::string content_;
             User& createdBy_;

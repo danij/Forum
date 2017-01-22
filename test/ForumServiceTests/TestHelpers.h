@@ -32,6 +32,8 @@ namespace Forum
 
         extern const std::string sampleValidIdString;
         extern const Entities::IdType sampleValidId;
+        extern const std::string sampleValidIdString2;
+        extern const Entities::IdType sampleValidId2;
         extern const std::string sampleMessageContent;
 
         bool treeContains(const boost::property_tree::ptree& tree, const std::string& key);

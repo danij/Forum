@@ -35,6 +35,7 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(GET_DISCUSSION_THREAD_BY_ID, getDiscussionThreadById);
     setHandler(CHANGE_DISCUSSION_THREAD_NAME, changeDiscussionThreadName);
     setHandler(DELETE_DISCUSSION_THREAD, deleteDiscussionThread);
+    setHandler(MERGE_DISCUSSION_THREADS, mergeDiscussionThreads);
 
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME, getDiscussionThreadsOfUserByName);
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, getDiscussionThreadsOfUserByCreated);
@@ -173,6 +174,12 @@ void CommandHandler::deleteDiscussionThread(const std::vector<std::string>& para
 {
     if ( ! checkNumberOfParameters(parameters, output, 1)) return;
     writeRepository_->deleteDiscussionThread(parameters[0], output);
+}
+
+void CommandHandler::mergeDiscussionThreads(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+    writeRepository_->mergeDiscussionThreads(parameters[0], parameters[1], output);
 }
 
 void CommandHandler::getDiscussionThreadsOfUserByName(const std::vector<std::string>& parameters, std::ostream& output)
