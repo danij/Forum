@@ -1823,7 +1823,7 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_fails_if_the_message_is_
                                        { messageId, threadId }));
 }
 
-BOOST_AUTO_TEST_CASE( Moving_discussion_threads_works_ok )
+BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_works_ok )
 {
     auto handler = createCommandHandler();
 

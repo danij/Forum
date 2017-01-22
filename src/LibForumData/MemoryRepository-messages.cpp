@@ -197,3 +197,58 @@ void MemoryRepository::changeDiscussionThreadMessageContent(const IdType& id, co
                                   DiscussionThreadMessage::ChangeType::Content);
                       });
 }
+
+void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, const IdType& intoThreadId, 
+                                                   std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! messageId || ! intoThreadId)
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
+
+    auto performedBy = preparePerformedBy();
+
+    collection_.write([&](EntityCollection& collection)
+                    {
+                        auto& messagesIndexById = collection.messages().get<EntityCollection::DiscussionThreadMessageCollectionById>();
+                        auto messageIt = messagesIndexById.find(messageId);
+                        if (messageIt == messagesIndexById.end())
+                        {
+                            status = StatusCode::NOT_FOUND;
+                            return;
+                        }
+                        auto& threadsIndexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                        auto itInto = threadsIndexById.find(intoThreadId);
+                        if (itInto == threadsIndexById.end())
+                        {
+                            status = StatusCode::NOT_FOUND;
+                            return;
+                        }
+
+                        if (&((**messageIt).parentThread()) == (*itInto).get())
+                        {
+                            status = StatusCode::NO_EFFECT;
+                            return;
+                        }
+
+                        //make sure the message is not deleted before being passed to the observers
+                        writeEvents_.onMoveDiscussionThreadMessage(
+                                createObserverContext(*performedBy.getAndUpdate(collection)), **messageIt, **itInto);
+
+                        auto& createdBy = (*messageIt)->createdBy();
+
+                        auto messageClone = std::make_shared<DiscussionThreadMessage>(**messageIt, **itInto);
+
+                        collection.messages().insert(messageClone);
+                        collection.modifyDiscussionThread(itInto, [&messageClone](DiscussionThread& thread)
+                        {
+                            thread.messages().insert(messageClone);
+                        });
+
+                        createdBy.messages().insert(messageClone);
+
+                        collection.deleteDiscussionThreadMessage(messageIt);
+                    });
+}
