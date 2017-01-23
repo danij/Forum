@@ -14,135 +14,81 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
+template<typename ThreadsCollection>
+static void writeDiscussionThreads(ThreadsCollection&& threads, std::ostream& output, const IdType& currentUserId)
 {
-    auto performedBy = preparePerformedBy();
+    BoolTemporaryChanger _(serializationSettings.visitedThreadSinceLastChange, false);
 
+    auto preWriteAction = [&](const auto& currentThread)
+    {
+        if (currentThread)
+        {
+            serializationSettings.visitedThreadSinceLastChange =
+                currentThread->hasVisitedSinceLastEdit(currentUserId);
+        }
+    };
+
+    if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
+    {
+        writeSingleObjectSafeName(output, "threads",
+            Json::enumerate(threads.begin(), threads.end(), preWriteAction));
+    }
+    else
+    {
+        writeSingleObjectSafeName(output, "threads",
+            Json::enumerate(threads.rbegin(), threads.rend(), preWriteAction));
+    }
+
+}
+
+template<typename ThreadsIndexFn>
+static void writeDiscussionThreads(std::ostream& output, PerformedByWithLastSeenUpdateGuard&& performedBy,
+    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, ThreadsIndexFn threadsIndexFn)
+{
     collection_.read([&](const EntityCollection& collection)
                      {
                          auto& currentUser = performedBy.get(collection);
-                         const auto& threads = collection.threadsByName();
+                         const auto threads = threadsIndexFn(collection);
 
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
-                         BoolTemporaryChanger __(serializationSettings.visitedThreadSinceLastChange, false);
 
-                         auto preWriteAction = [&](const auto& currentThread)
-                         {
-                             if (currentThread)
-                             {
-                                 serializationSettings.visitedThreadSinceLastChange =
-                                     currentThread->hasVisitedSinceLastEdit(currentUser.id());
-                             }
-                         };
+                         writeDiscussionThreads(threads, output, currentUser.id());
 
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "threads", 
-                                 Json::enumerate(threads.begin(), threads.end(), preWriteAction));
-                         }
-                         else
-                         {
-                             writeSingleObjectSafeName(output, "threads", 
-                                 Json::enumerate(threads.rbegin(), threads.rend(), preWriteAction));
-                         }
                          readEvents_.onGetDiscussionThreads(createObserverContext(currentUser));
                      });
+    
+}
+
+void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
+{
+    writeDiscussionThreads(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
+    {
+        return collection.threadsByName();
+    });
 }
 
 void MemoryRepository::getDiscussionThreadsByCreated(std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy();
-
-    collection_.read([&](const EntityCollection& collection)
-                     {
-                         auto& currentUser = performedBy.get(collection);
-                         const auto& threads = collection.threadsByCreated();
-
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
-                         BoolTemporaryChanger __(serializationSettings.visitedThreadSinceLastChange, false);
-
-                         auto preWriteAction = [&](const auto& currentThread)
-                         {
-                             serializationSettings.visitedThreadSinceLastChange =
-                                 currentThread->hasVisitedSinceLastEdit(currentUser.id());
-                         };
-
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.begin(), threads.end(), preWriteAction));
-                         }
-                         else
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.rbegin(), threads.rend(), preWriteAction));
-                         }
-                         readEvents_.onGetDiscussionThreads(createObserverContext(currentUser));
-                     });
+    writeDiscussionThreads(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
+    {
+        return collection.threadsByCreated();
+    });
 }
 
 void MemoryRepository::getDiscussionThreadsByLastUpdated(std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy();
-
-    collection_.read([&](const EntityCollection& collection)
-                     {
-                         auto& currentUser = performedBy.get(collection);
-                         const auto& threads = collection.threadsByLastUpdated();
-
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
-                         BoolTemporaryChanger __(serializationSettings.visitedThreadSinceLastChange, false);
-
-                         auto preWriteAction = [&](const auto& currentThread)
-                         {
-                             serializationSettings.visitedThreadSinceLastChange =
-                                 currentThread->hasVisitedSinceLastEdit(currentUser.id());
-                         };
-
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.begin(), threads.end(), preWriteAction));
-                         }
-                         else
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.rbegin(), threads.rend(), preWriteAction));
-                         }
-                         readEvents_.onGetDiscussionThreads(createObserverContext(currentUser));
-                     });
+    writeDiscussionThreads(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
+    {
+        return collection.threadsByLastUpdated();
+    });
 }
 
 void MemoryRepository::getDiscussionThreadsByMessageCount(std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy();
-
-    collection_.read([&](const EntityCollection& collection)
-                     {
-                         auto& currentUser = performedBy.get(collection);
-                         const auto& threads = collection.threadsByMessageCount();
-
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
-                         BoolTemporaryChanger __(serializationSettings.visitedThreadSinceLastChange, false);
-
-                         auto preWriteAction = [&](const auto& currentThread)
-                         {
-                             serializationSettings.visitedThreadSinceLastChange = 
-                                 currentThread->hasVisitedSinceLastEdit(currentUser.id());
-                         };
-
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.begin(), threads.end(), preWriteAction));
-                         }
-                         else
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.rbegin(), threads.rend(), preWriteAction));
-                         }
-                         readEvents_.onGetDiscussionThreads(createObserverContext(currentUser));
-                     });
+    writeDiscussionThreads(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
+    {
+        return collection.threadsByMessageCount();
+    });
 }
 
 void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& output)
@@ -191,10 +137,11 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
     }
 }
 
-void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::ostream& output) const
+template<typename ThreadsIndexFn>
+static void writeDiscussionThreadsOfUser(const IdType& id, std::ostream& output, 
+    PerformedByWithLastSeenUpdateGuard&& performedBy, const ResourceGuard<EntityCollection>& collection_, 
+    const ReadEvents& readEvents_, ThreadsIndexFn threadsIndexFn)
 {
-    auto performedBy = preparePerformedBy();
-
     collection_.read([&](const EntityCollection& collection)
                      {
                          auto& currentUser = performedBy.get(collection);
@@ -206,147 +153,47 @@ void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::o
                              return;
                          }
 
-                         const auto& threads = (*it)->threadsByName();
+                         const auto& threads = threadsIndexFn(**it);
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
-                         BoolTemporaryChanger ___(serializationSettings.visitedThreadSinceLastChange, false);
 
-                         auto preWriteAction = [&](const auto& currentThread)
-                         {
-                             serializationSettings.visitedThreadSinceLastChange =
-                                 currentThread->hasVisitedSinceLastEdit(currentUser.id());
-                         };
+                         writeDiscussionThreads(threads, output, currentUser.id());
 
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "threads", 
-                                                       Json::enumerate(threads.begin(), threads.end(), preWriteAction));
-                         }
-                         else
-                         {
-                             writeSingleObjectSafeName(output, "threads", 
-                                                       Json::enumerate(threads.rbegin(), threads.rend(), preWriteAction));
-                         }
                          readEvents_.onGetDiscussionThreadsOfUser(createObserverContext(currentUser), **it);
                      });
+}
+
+
+void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::ostream& output) const
+{
+    writeDiscussionThreadsOfUser(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& user)
+    {
+        return user.threadsByName();
+    });
 }
 
 void MemoryRepository::getDiscussionThreadsOfUserByCreated(const IdType& id, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy();
-
-    collection_.read([&](const EntityCollection& collection)
-                     {
-                         auto& currentUser = performedBy.get(collection);
-                         const auto& indexById = collection.usersById();
-                         auto it = indexById.find(id);
-                         if (it == indexById.end())
-                         {
-                             writeStatusCode(output, StatusCode::NOT_FOUND);
-                             return;
-                         }
-
-                         const auto& threads = (*it)->threadsByCreated();
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
-                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
-                         BoolTemporaryChanger ___(serializationSettings.visitedThreadSinceLastChange, false);
-
-                         auto preWriteAction = [&](const auto& currentThread)
-                         {
-                             serializationSettings.visitedThreadSinceLastChange =
-                                 currentThread->hasVisitedSinceLastEdit(currentUser.id());
-                         };
-
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.begin(), threads.end(), preWriteAction));
-                         }
-                         else
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.rbegin(), threads.rend(), preWriteAction));
-                         }
-                         readEvents_.onGetDiscussionThreadsOfUser(createObserverContext(currentUser), **it);
-                     });
+    writeDiscussionThreadsOfUser(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& user)
+    {
+        return user.threadsByCreated();
+    });
 }
 
 void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(const IdType& id, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy();
-
-    collection_.read([&](const EntityCollection& collection)
-                     {
-                         auto& currentUser = performedBy.get(collection);
-                         const auto& indexById = collection.usersById();
-                         auto it = indexById.find(id);
-                         if (it == indexById.end())
-                         {
-                             writeStatusCode(output, StatusCode::NOT_FOUND);
-                             return;
-                         }
-
-                         const auto& threads = (*it)->threadsByLastUpdated();
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
-                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
-                         BoolTemporaryChanger ___(serializationSettings.visitedThreadSinceLastChange, false);
-
-                         auto preWriteAction = [&](const auto& currentThread)
-                         {
-                             serializationSettings.visitedThreadSinceLastChange =
-                                 currentThread->hasVisitedSinceLastEdit(currentUser.id());
-                         };
-
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.begin(), threads.end(), preWriteAction));
-                         } else
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.rbegin(), threads.rend(), preWriteAction));
-                         }
-                         readEvents_.onGetDiscussionThreadsOfUser(createObserverContext(currentUser), **it);
-                     });
+    writeDiscussionThreadsOfUser(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& user)
+    {
+        return user.threadsByLastUpdated();
+    });
 }
 
 void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(const IdType& id, std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy();
-
-    collection_.read([&](const EntityCollection& collection)
-                     {
-                         auto& currentUser = performedBy.get(collection);
-                         const auto& indexById = collection.usersById();
-                         auto it = indexById.find(id);
-                         if (it == indexById.end())
-                         {
-                             writeStatusCode(output, StatusCode::NOT_FOUND);
-                             return;
-                         }
-
-                         const auto& threads = (*it)->threadsByMessageCount();
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
-                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
-                         BoolTemporaryChanger ___(serializationSettings.visitedThreadSinceLastChange, false);
-
-                         auto preWriteAction = [&](const auto& currentThread)
-                         {
-                             serializationSettings.visitedThreadSinceLastChange =
-                                 currentThread->hasVisitedSinceLastEdit(currentUser.id());
-                         };
-
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.begin(), threads.end(), preWriteAction));
-                         } else
-                         {
-                             writeSingleObjectSafeName(output, "threads",
-                                                       Json::enumerate(threads.rbegin(), threads.rend(), preWriteAction));
-                         }
-                         readEvents_.onGetDiscussionThreadsOfUser(createObserverContext(currentUser), **it);
-                     });
+    writeDiscussionThreadsOfUser(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& user)
+    {
+        return user.threadsByMessageCount();
+    });
 }
 
 static StatusCode validateDiscussionThreadName(const std::string& name, const boost::u32regex& regex, 
