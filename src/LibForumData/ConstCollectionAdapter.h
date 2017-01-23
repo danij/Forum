@@ -15,12 +15,12 @@ namespace Forum
         public:
             explicit ConstCollectionAdapter(const TCollection& collection) : collection_(collection) {}
 
-            auto size() const { return collection_.size(); }
+            auto size()   const { return collection_.size(); }
 
-            auto begin() const { return cbegin(); };
-            auto end() const { return cend(); };
-            auto rbegin() const { return crbegin(); };
-            auto rend() const { return crend(); };
+            auto begin()  const { return cbegin(); }
+            auto end()    const { return cend(); }
+            auto rbegin() const { return crbegin(); }
+            auto rend()   const { return crend(); }
 
             auto cbegin() const
             {
