@@ -14,53 +14,46 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-void MemoryRepository::getUsersByName(std::ostream& output) const
+template<typename UsersIndexFn>
+static void writeUsers(std::ostream& output, PerformedByWithLastSeenUpdateGuard&& performedBy,
+    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, UsersIndexFn usersIndexFn)
 {
-    auto performedBy = preparePerformedBy();
-
     collection_.read([&](const EntityCollection& collection)
                      {
-                         const auto& users = collection.usersByName();
-                         writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
+                         const auto users = usersIndexFn(collection);
+                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
+                         {
+                             writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
+                         }
+                         else
+                         {
+                             writeSingleObjectSafeName(output, "users", Json::enumerate(users.rbegin(), users.rend()));
+                         }
                          readEvents_.onGetUsers(createObserverContext(performedBy.get(collection)));
                      });
+}
+
+void MemoryRepository::getUsersByName(std::ostream& output) const
+{
+    writeUsers(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
+    {
+        return collection.usersByName();
+    });
 }
 
 void MemoryRepository::getUsersByCreated(std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy();
-
-    collection_.read([&](const EntityCollection& collection)
-                     {
-                         const auto& users = collection.usersByCreated();
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
-                         }
-                         else
-                         {
-                             writeSingleObjectSafeName(output, "users", Json::enumerate(users.rbegin(), users.rend()));
-                         }
-                         readEvents_.onGetUsers(createObserverContext(performedBy.get(collection)));
-                     });
+    writeUsers(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
+    {
+        return collection.usersByCreated();
+    });
 }
 void MemoryRepository::getUsersByLastSeen(std::ostream& output) const
 {
-    auto performedBy = preparePerformedBy();
-
-    collection_.read([&](const EntityCollection& collection)
-                     {
-                         const auto& users = collection.usersByLastSeen();
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
-                         }
-                         else
-                         {
-                             writeSingleObjectSafeName(output, "users", Json::enumerate(users.rbegin(), users.rend()));
-                         }
-                         readEvents_.onGetUsers(createObserverContext(performedBy.get(collection)));
-                     });
+    writeUsers(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
+    {
+        return collection.usersByLastSeen();
+    });
 }
 
 void MemoryRepository::getUserById(const IdType& id, std::ostream& output) const
