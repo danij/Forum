@@ -23,6 +23,9 @@ namespace Forum
             bool hideDiscussionThreadMessages = false;
             bool hideDiscussionThreadMessageCreatedBy = false;
             bool hideDiscussionThreadMessageParentThread = false;
+
+            bool hideVisitedThreadSinceLastChange = false;
+            bool visitedThreadSinceLastChange = false;
         };
 
         extern thread_local SerializationSettings serializationSettings;

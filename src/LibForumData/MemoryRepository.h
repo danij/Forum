@@ -69,7 +69,12 @@ namespace Forum
             virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const override;
             virtual void getDiscussionThreadsByMessageCount(std::ostream& output) const override;
 
-            virtual void getDiscussionThreadById(const Entities::IdType& id, std::ostream& output) const override;
+            /**
+             * Calling the function changes state:
+             * - Increases the number of visits
+             * - Stores that the current user has visited the discussion thread
+             */
+            virtual void getDiscussionThreadById(const Entities::IdType& id, std::ostream& output) override;
 
             virtual void getDiscussionThreadsOfUserByName(const Entities::IdType& id,
                                                           std::ostream& output) const override;

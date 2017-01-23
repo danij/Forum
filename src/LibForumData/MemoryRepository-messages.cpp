@@ -120,6 +120,7 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
                           collection.modifyDiscussionThread(threadIt, [&message](DiscussionThread& thread)
                           {
                               thread.messages().insert(message);
+                              thread.resetVisitorsSinceLastEdit();
                           });
 
                           createdBy->messages().insert(message);
@@ -191,6 +192,7 @@ void MemoryRepository::changeDiscussionThreadMessageContent(const IdType& id, co
                               {
                                   message.lastUpdatedDetails().by = performedByPtr;
                               }
+                              message.parentThread().resetVisitorsSinceLastEdit();
                           });
                           writeEvents_.onChangeDiscussionThreadMessage(createObserverContext(*performedByPtr), **it,
                                   DiscussionThreadMessage::ChangeType::Content);
@@ -238,15 +240,16 @@ void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, cons
                           auto& createdBy = (*messageIt)->createdBy();
                     
                           auto messageClone = std::make_shared<DiscussionThreadMessage>(**messageIt, **itInto);
-                    
+                                              
                           collection.messages().insert(messageClone);
                           collection.modifyDiscussionThread(itInto, [&messageClone](DiscussionThread& thread)
                           {
                               thread.messages().insert(messageClone);
+                              thread.resetVisitorsSinceLastEdit();
                           });
                     
                           createdBy.messages().insert(messageClone);
-                    
+                                              
                           collection.deleteDiscussionThreadMessage(messageIt);
                       });
 }

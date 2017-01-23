@@ -233,6 +233,7 @@ void EntityCollection::deleteDiscussionThreadMessage(DiscussionThreadMessageColl
                                    [&](DiscussionThread& thread)
         {
             thread.deleteDiscussionThreadMessageById((*iterator)->id());
+            thread.resetVisitorsSinceLastEdit();
         });
     }
     messages_.erase(iterator);

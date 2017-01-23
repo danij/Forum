@@ -155,6 +155,21 @@ namespace Json
         writer.startArray();
         while (begin != end)
         {
+
+            operator<<(writer, *begin);
+            ++begin;
+        }
+        writer.endArray();
+        return writer;
+    }
+
+    template<typename ForwardIterator, typename ActionType>
+    JsonWriter& writeArray(JsonWriter& writer, ForwardIterator begin, ForwardIterator end, ActionType preWriteAction)
+    {
+        writer.startArray();
+        while (begin != end)
+        {
+            preWriteAction(*begin);
             operator<<(writer, *begin);
             ++begin;
         }
@@ -217,7 +232,7 @@ namespace Json
         ForwardIterator begin;
         ForwardIterator end;
 
-        IteratorPair(ForwardIterator _begin, ForwardIterator _end) : begin(_begin), end(_end)
+        IteratorPair(ForwardIterator _begin, ForwardIterator _end) : begin(std::move(_begin)), end(std::move(_end))
         { }
     };
 
@@ -232,4 +247,31 @@ namespace Json
     {
         return IteratorPair<ForwardIterator>(begin, end);
     }
+
+
+    template<typename ForwardIterator, typename ActionType>
+    struct IteratorPairPreWriteAction
+    {
+        ForwardIterator begin;
+        ForwardIterator end;
+        ActionType preWriteAction;
+
+        IteratorPairPreWriteAction(ForwardIterator _begin, ForwardIterator _end, ActionType _preWriteAction)
+            : begin(std::move(_begin)), end(std::move(_end)), preWriteAction(std::move(_preWriteAction))
+        { }
+    };
+
+    template<typename ForwardIterator, typename ActionType>
+    JsonWriter& operator<<(JsonWriter& writer, const IteratorPairPreWriteAction<ForwardIterator, ActionType>& pair)
+    {
+        return writeArray(writer, pair.begin, pair.end, pair.preWriteAction);
+    }
+
+    template<typename ForwardIterator, typename ActionType>
+    auto enumerate(ForwardIterator begin, ForwardIterator end, ActionType preWriteAction)
+    {
+        return IteratorPairPreWriteAction<ForwardIterator, ActionType>(std::move(begin), std::move(end), 
+            std::move(preWriteAction));
+    }
+
 }

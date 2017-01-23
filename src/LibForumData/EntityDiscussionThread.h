@@ -6,6 +6,7 @@
 #include <atomic>
 #include <string>
 #include <memory>
+#include <set>
 
 namespace Forum
 {
@@ -25,7 +26,22 @@ namespace Forum
              * Can be updated even for const values as it is not refenced in any index.
              * @return An atomic integer of at least 64-bits
              */
-            std::atomic_int_fast64_t& visited()     const { return visited_; }
+            std::atomic_int_fast64_t& visited() const { return visited_; }
+
+            void addVisitorSinceLastEdit(const IdType& userId)
+            {
+                visitorsSinceLastEdit_.insert(userId.value());
+            }
+
+            bool hasVisitedSinceLastEdit(const IdType& userId) const
+            {
+                return visitorsSinceLastEdit_.find(userId.value()) != visitorsSinceLastEdit_.end();
+            }
+
+            void resetVisitorsSinceLastEdit()
+            {
+                visitorsSinceLastEdit_.clear();
+            }
 
             enum ChangeType : uint32_t
             {
@@ -39,6 +55,7 @@ namespace Forum
             std::string name_;
             User& createdBy_;
             mutable std::atomic_int_fast64_t visited_;
+            std::set<boost::uuids::uuid> visitorsSinceLastEdit_;
         };
 
         typedef std::shared_ptr<DiscussionThread> DiscussionThreadRef;

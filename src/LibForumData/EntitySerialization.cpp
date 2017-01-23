@@ -105,10 +105,13 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
     {
         writer << propertySafeName("messages", enumerate(messagesIndex.begin(), messagesIndex.end()));
     }
+    if ( ! serializationSettings.hideVisitedThreadSinceLastChange)
+    {
+        writer << propertySafeName("visitedSinceLastChange", serializationSettings.visitedThreadSinceLastChange);
+    }
 
     writer  << propertySafeName("lastUpdated", thread.lastUpdated())
             << propertySafeName("visited", thread.visited().load())
-            << propertySafeName("visitedSinceLastChange", false)
             << propertySafeName("voteScore", 0)
     
         << objEnd;

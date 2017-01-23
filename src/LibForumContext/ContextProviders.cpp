@@ -31,12 +31,12 @@ void Forum::Context::resetCurrentTimeMock()
 
 static thread_local IdType currentUser{};
 
-IdType Forum::Context::getCurrentUserId()
+const IdType& Forum::Context::getCurrentUserId()
 {
     return currentUser;
 }
 
-void Forum::Context::setCurrentUserId(IdType value)
+void Forum::Context::setCurrentUserId(const IdType& value)
 {
     currentUser = value;
 }

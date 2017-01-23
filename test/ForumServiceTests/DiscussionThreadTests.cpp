@@ -140,7 +140,7 @@ struct SerializedDiscussionThread
         lastUpdated = tree.get<Timestamp>("lastUpdated");
         visited = tree.get<int64_t>("visited");
         messageCount = tree.get<int64_t>("messageCount");
-        visitedSinceLastChange = tree.get<bool>("visitedSinceLastChange");
+        visitedSinceLastChange = tree.get<bool>("visitedSinceLastChange", false);
         voteScore = tree.get<int64_t>("voteScore");
 
         createdBy.populate(tree.get_child("createdBy"));
@@ -1912,9 +1912,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_true_after_re
 
     {
         LoggedInUserChanger _(userId);
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
-                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
-                                                           { thread1Id }));
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
 
         auto threads = deserializeThreads(handlerToObj(handler, 
                                                        Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
@@ -1942,9 +1940,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_depends_on_user 
 
     {
         LoggedInUserChanger _(user1Id);
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
-                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
-                                                           { thread1Id }));
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
 
         auto threads = deserializeThreads(handlerToObj(handler, 
                                                        Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
@@ -1958,9 +1954,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_depends_on_user 
     }
     {
         LoggedInUserChanger _(user2Id);
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
-                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
-                                                           { thread2Id }));
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id });
 
         auto threads = deserializeThreads(handlerToObj(handler, 
                                                        Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
@@ -1989,12 +1983,8 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_a
     }
     {
         LoggedInUserChanger _(userId);
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
-                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
-                                                           { thread1Id }));
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
-                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
-                                                           { thread2Id }));
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id });
 
         auto threads = deserializeThreads(handlerToObj(handler, 
                                                        Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
@@ -2039,12 +2029,8 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_e
     }
     {
         LoggedInUserChanger _(userId);
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
-                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
-                                                           { thread1Id }));
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
-                                                           Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
-                                                           { thread2Id }));
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
+        handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id });
 
         auto threads = deserializeThreads(handlerToObj(handler, 
                                                        Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, 
