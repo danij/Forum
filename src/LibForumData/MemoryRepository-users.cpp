@@ -102,6 +102,17 @@ static StatusCode validateUserName(const std::string& name, const boost::u32rege
     {
         return StatusCode::INVALID_PARAMETERS;
     }
+
+    auto nrCharacters = countUTF8Characters(name);
+    if (nrCharacters > config->user.maxNameLength)
+    {
+        return StatusCode::VALUE_TOO_LONG;
+    }
+    if (nrCharacters < config->user.minNameLength)
+    {
+        return StatusCode::VALUE_TOO_SHORT;
+    }
+
     try
     {
         if ( ! boost::u32regex_match(name, regex, boost::match_flag_type::format_all))
@@ -112,16 +123,6 @@ static StatusCode validateUserName(const std::string& name, const boost::u32rege
     catch(...)
     {
         return StatusCode::INVALID_PARAMETERS;
-    }
-
-    auto nrCharacters = countUTF8Characters(name);
-    if (nrCharacters > config->user.maxNameLength)
-    {
-        return StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->user.minNameLength)
-    {
-        return StatusCode::VALUE_TOO_SHORT;
     }
 
     return StatusCode::OK;

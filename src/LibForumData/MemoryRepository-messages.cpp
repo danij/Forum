@@ -60,6 +60,17 @@ static StatusCode validateDiscussionMessageContent(const std::string& content, c
     {
         return StatusCode::INVALID_PARAMETERS;
     }
+
+    auto nrCharacters = countUTF8Characters(content);
+    if (nrCharacters > config->discussionThreadMessage.maxContentLength)
+    {
+        return StatusCode::VALUE_TOO_LONG;
+    }
+    if (nrCharacters < config->discussionThreadMessage.minContentLength)
+    {
+        return StatusCode::VALUE_TOO_SHORT;
+    }
+
     try
     {
         if ( ! boost::u32regex_match(content, regex, boost::match_flag_type::format_all))
@@ -70,16 +81,6 @@ static StatusCode validateDiscussionMessageContent(const std::string& content, c
     catch(...)
     {
         return StatusCode::INVALID_PARAMETERS;
-    }
-
-    auto nrCharacters = countUTF8Characters(content);
-    if (nrCharacters > config->discussionThreadMessage.maxContentLength)
-    {
-        return StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->discussionThreadMessage.minContentLength)
-    {
-        return StatusCode::VALUE_TOO_SHORT;
     }
 
     return StatusCode::OK;

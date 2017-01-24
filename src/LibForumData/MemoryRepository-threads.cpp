@@ -275,6 +275,17 @@ static StatusCode validateDiscussionThreadName(const std::string& name, const bo
     {
         return StatusCode::INVALID_PARAMETERS;
     }
+
+    auto nrCharacters = countUTF8Characters(name);
+    if (nrCharacters > config->discussionThread.maxNameLength)
+    {
+        return StatusCode::VALUE_TOO_LONG;
+    }
+    if (nrCharacters < config->discussionThread.minNameLength)
+    {
+        return StatusCode::VALUE_TOO_SHORT;
+    }
+
     try
     {
         if ( ! boost::u32regex_match(name, regex, boost::match_flag_type::format_all))
@@ -285,16 +296,6 @@ static StatusCode validateDiscussionThreadName(const std::string& name, const bo
     catch(...)
     {
         return StatusCode::INVALID_PARAMETERS;
-    }
-
-    auto nrCharacters = countUTF8Characters(name);
-    if (nrCharacters > config->discussionThread.maxNameLength)
-    {
-        return StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->discussionThread.minNameLength)
-    {
-        return StatusCode::VALUE_TOO_SHORT;
     }
 
     return StatusCode::OK;
