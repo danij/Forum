@@ -34,7 +34,7 @@ namespace Forum
                             &DiscussionThreadMessage::created>>
             > {};
 
-            typedef boost::multi_index_container<DiscussionMessageRef, DiscussionMessageCollectionIndices>
+            typedef boost::multi_index_container<DiscussionThreadMessageRef, DiscussionMessageCollectionIndices>
                     DiscussionThreadMessageCollection;
 
             auto& messages() { return messages_; }

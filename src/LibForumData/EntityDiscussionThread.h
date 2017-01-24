@@ -21,6 +21,15 @@ namespace Forum
                   std::string& name()              { return name_; }
             const User&        createdBy()   const { return createdBy_; }
                   User&        createdBy()         { return createdBy_; }
+
+            DiscussionThreadMessage::VoteScoreType voteScore() const
+            {
+                if (messages_.size())
+                {
+                    return (*messagesById().begin())->voteScore();
+                }
+                return 0;
+            }
             /**
              * Thread-safe reference to the number of times the thread was visited.
              * Can be updated even for const values as it is not refenced in any index.

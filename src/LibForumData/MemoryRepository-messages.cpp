@@ -253,3 +253,114 @@ void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, cons
                           collection.deleteDiscussionThreadMessage(messageIt);
                       });
 }
+
+void MemoryRepository::voteDiscussionThreadMessage(const IdType& id, std::ostream& output, bool up)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! id)
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
+    if (Context::getCurrentUserId() == AnonymousUserId)
+    {
+        status = StatusCode::NOT_ALLOWED;
+        return;
+    }
+    auto performedBy = preparePerformedBy();
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto currentUser = performedBy.getAndUpdate(collection);
+
+                          auto& indexById = collection.messages().get<EntityCollection::DiscussionThreadMessageCollectionById>();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          auto& message = **it;
+
+                          if (&message.createdBy() == currentUser.get())
+                          {
+                              status = StatusCode::NOT_ALLOWED;
+                              return;
+                          }
+
+                          UserWeakRef userWeak(currentUser);
+                          if (message.hasVoted(userWeak))
+                          {
+                              status = StatusCode::NO_EFFECT;
+                              return;
+                          }
+
+                          auto timestamp = Context::getCurrentTime();
+                          currentUser->registerVote(*it);
+
+                          if (up)
+                          {
+                              message.addUpVote(std::move(userWeak), timestamp);
+                              writeEvents_.onDiscussionThreadMessageUpVote(createObserverContext(*currentUser), **it);
+                          }
+                          else
+                          {
+                              message.addDownVote(std::move(userWeak), timestamp);
+                              writeEvents_.onDiscussionThreadMessageDownVote(createObserverContext(*currentUser), **it);
+                          }
+    });
+}
+
+void MemoryRepository::upVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
+{
+    voteDiscussionThreadMessage(id, output, true);
+}
+
+void MemoryRepository::downVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
+{
+    voteDiscussionThreadMessage(id, output, false);
+}
+
+void MemoryRepository::resetVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! id)
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
+    if (Context::getCurrentUserId() == AnonymousUserId)
+    {
+        status = StatusCode::NOT_ALLOWED;
+        return;
+    }
+    auto performedBy = preparePerformedBy();
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto currentUser = performedBy.getAndUpdate(collection);
+
+                          auto& indexById = collection.messages().get<EntityCollection::DiscussionThreadMessageCollectionById>();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          auto& message = **it;
+
+                          if (&message.createdBy() == currentUser.get())
+                          {
+                              status = StatusCode::NOT_ALLOWED;
+                              return;
+                          }
+
+                          if ( ! message.removeVote(UserWeakRef(currentUser)))
+                          {
+                              status = StatusCode::NO_EFFECT;
+                              return;
+                          }
+
+                          writeEvents_.onDiscussionThreadMessageResetVote(createObserverContext(*currentUser), **it);
+    });
+}

@@ -782,22 +782,22 @@ BOOST_AUTO_TEST_CASE( Voting_discussion_thread_messages_invokes_observers )
     auto handler = createCommandHandler();
 
     auto __1 = addHandler(handler->getWriteRepository()->writeEvents().onDiscussionThreadMessageUpVote,
-                          [&](auto& _, auto& message, auto& user)
+                          [&](auto& context, auto& message)
                           {
-                             upVoteUser = user.id();
+                             upVoteUser = context.performedBy.id();
                              votedMessages[0] = message.id();
                           });
     auto __2 = addHandler(handler->getWriteRepository()->writeEvents().onDiscussionThreadMessageDownVote,
-                          [&](auto& _, auto& message, auto& user)
+                          [&](auto& context, auto& message)
                           {
-                             downVoteUser = user.id();
+                             downVoteUser = context.performedBy.id();
                              votedMessages[1] = message.id();
                           });
     auto __3 = addHandler(handler->getWriteRepository()->writeEvents().onDiscussionThreadMessageResetVote,
-                          [&](auto& _, auto& message, auto& user)
+                          [&](auto& context, auto& message)
                           {
-                             resetVoteUser = user.id();
-                             votedMessages[3] = message.id();
+                             resetVoteUser = context.performedBy.id();
+                             votedMessages[2] = message.id();
                           });
 
     auto user1Id = createUserAndGetId(handler, "User1");

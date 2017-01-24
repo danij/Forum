@@ -2,6 +2,7 @@
 #include "EntityCollection.h"
 #include "TestHelpers.h"
 
+#include <algorithm>
 #include <vector>
 
 using namespace Forum::Configuration;
@@ -60,6 +61,12 @@ struct SerializedDiscussionMessageVote
     }
 };
 
+static bool SerializedDiscussionMessageVoteLess(const SerializedDiscussionMessageVote& first, 
+                                                const SerializedDiscussionMessageVote& second)
+{
+    return first.at < second.at;
+};
+
 struct SerializedDiscussionMessageLastUpdated
 {
     Timestamp at = 0;
@@ -104,13 +111,16 @@ struct SerializedDiscussionMessage
                 lastUpdated = std::make_unique<SerializedDiscussionMessageLastUpdated>();
                 lastUpdated->populate(pair.second);
             }
+            //votes need to be sorted on the client to avoid the complexity of using multi-index containers on each message
             if (pair.first == "upVotes")
             {
                 upVotes = deserializeEntities<SerializedDiscussionMessageVote>(tree.get_child("upVotes"));
+                std::sort(upVotes.begin(), upVotes.end(), SerializedDiscussionMessageVoteLess);
             }
             if (pair.first == "downVotes")
             {
                 downVotes = deserializeEntities<SerializedDiscussionMessageVote>(tree.get_child("downVotes"));
+                std::sort(downVotes.begin(), downVotes.end(), SerializedDiscussionMessageVoteLess);
             }
         }
 
@@ -2064,6 +2074,9 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_e
 BOOST_AUTO_TEST_CASE( Voting_a_discussion_thread_message_fails_if_message_is_invalid )
 {
     auto handler = createCommandHandler();
+    auto user = createUserAndGetId(handler, "User");
+
+    LoggedInUserChanger _(user);
 
     Forum::Commands::Command commands[] = 
     {
@@ -2121,7 +2134,8 @@ BOOST_AUTO_TEST_CASE( Voting_a_discussion_thread_message_can_only_occur_once_unl
         }
     }
 
-    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(2, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
@@ -2148,7 +2162,8 @@ BOOST_AUTO_TEST_CASE( Voting_a_discussion_thread_message_can_only_occur_once_unl
                                                            { message2Id }));
     }
 
-    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(2, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
@@ -2159,7 +2174,7 @@ BOOST_AUTO_TEST_CASE( Voting_a_discussion_thread_message_can_only_occur_once_unl
     BOOST_REQUIRE_EQUAL(0, thread.messages[0].downVotes.size());
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
-    BOOST_REQUIRE_EQUAL(0, thread.messages[0].upVotes.size());
+    BOOST_REQUIRE_EQUAL(0, thread.messages[1].upVotes.size());
     BOOST_REQUIRE_EQUAL(1, thread.messages[1].downVotes.size());
     BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].downVotes[0].userId);
     BOOST_REQUIRE_EQUAL("User2", thread.messages[1].downVotes[0].userName);
@@ -2179,7 +2194,8 @@ BOOST_AUTO_TEST_CASE( Voting_a_discussion_thread_message_can_only_occur_once_unl
                                                            { message2Id }));
     }
 
-    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(2, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
@@ -2219,7 +2235,8 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_votes_cast_by_that_user )
         }
     }
 
-    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(2, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
@@ -2247,7 +2264,8 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_votes_cast_by_that_user )
                                                            { message2Id }));
     }
 
-    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(2, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
@@ -2261,7 +2279,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_votes_cast_by_that_user )
     BOOST_REQUIRE_EQUAL(3000, thread.messages[0].downVotes[0].at);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
-    BOOST_REQUIRE_EQUAL(0, thread.messages[0].upVotes.size());
+    BOOST_REQUIRE_EQUAL(0, thread.messages[1].upVotes.size());
     BOOST_REQUIRE_EQUAL(2, thread.messages[1].downVotes.size());
     BOOST_REQUIRE_EQUAL(user3Id, thread.messages[1].downVotes[0].userId);
     BOOST_REQUIRE_EQUAL("User3", thread.messages[1].downVotes[0].userName);
@@ -2272,7 +2290,8 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_votes_cast_by_that_user )
 
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_USER, { user3Id }));
 
-    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
 
 
     BOOST_REQUIRE_EQUAL(2, thread.messages.size());
@@ -2284,7 +2303,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_votes_cast_by_that_user )
     BOOST_REQUIRE_EQUAL(0, thread.messages[0].downVotes.size());
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
-    BOOST_REQUIRE_EQUAL(0, thread.messages[0].upVotes.size());
+    BOOST_REQUIRE_EQUAL(0, thread.messages[1].upVotes.size());
     BOOST_REQUIRE_EQUAL(1, thread.messages[1].downVotes.size());
     BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].downVotes[0].userId);
     BOOST_REQUIRE_EQUAL("User2", thread.messages[1].downVotes[0].userName);
@@ -2353,7 +2372,8 @@ BOOST_AUTO_TEST_CASE( Retrievng_a_list_of_threads_includes_the_vote_score_of_the
         }
     }
 
-    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(2, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
@@ -2370,7 +2390,8 @@ BOOST_AUTO_TEST_CASE( Retrievng_a_list_of_threads_includes_the_vote_score_of_the
                                                            { message2Id }));
     }
 
-    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(2, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
@@ -2387,7 +2408,8 @@ BOOST_AUTO_TEST_CASE( Retrievng_a_list_of_threads_includes_the_vote_score_of_the
                                                            { message2Id }));
     }
 
-    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(2, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
@@ -2395,7 +2417,8 @@ BOOST_AUTO_TEST_CASE( Retrievng_a_list_of_threads_includes_the_vote_score_of_the
 
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_USER, { user3Id }));
 
-    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId }));
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(2, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);

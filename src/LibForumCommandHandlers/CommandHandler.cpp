@@ -46,6 +46,9 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(DELETE_DISCUSSION_THREAD_MESSAGE, deleteDiscussionThreadMessage);
     setHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, changeDiscussionThreadMessageContent);
     setHandler(MOVE_DISCUSSION_THREAD_MESSAGE, moveDiscussionThreadMessage);
+    setHandler(UP_VOTE_DISCUSSION_THREAD_MESSAGE, upVoteDiscussionThreadMessage);
+    setHandler(DOWN_VOTE_DISCUSSION_THREAD_MESSAGE, downVoteDiscussionThreadMessage);
+    setHandler(RESET_VOTE_DISCUSSION_THREAD_MESSAGE, resetVoteDiscussionThreadMessage);
 
     setHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, getDiscussionThreadMessagesOfUserByCreated);
 }
@@ -232,6 +235,24 @@ void CommandHandler::moveDiscussionThreadMessage(const std::vector<std::string>&
 {
     if ( ! checkNumberOfParameters(parameters, output, 2)) return;
     writeRepository_->moveDiscussionThreadMessage(parameters[0], parameters[1], output);
+}
+
+void CommandHandler::upVoteDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    writeRepository_->upVoteDiscussionThreadMessage(parameters[0], output);
+}
+
+void CommandHandler::downVoteDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    writeRepository_->downVoteDiscussionThreadMessage(parameters[0], output);
+}
+
+void CommandHandler::resetVoteDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)
+{
+    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+    writeRepository_->resetVoteDiscussionThreadMessage(parameters[0], output);
 }
 
 void CommandHandler::getDiscussionThreadMessagesOfUserByCreated(const std::vector<std::string>& parameters,

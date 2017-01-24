@@ -99,11 +99,16 @@ namespace Forum
                                                               std::ostream& output) override;
             virtual void moveDiscussionThreadMessage(const Entities::IdType& messageId, 
                                                      const Entities::IdType& intoThreadId, std::ostream& output) override ;
+            virtual void upVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
+            virtual void downVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
+            virtual void resetVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
 
             virtual void getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
                                                                     std::ostream& output) const override;
 
         private:
+            void voteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output, bool up);
+
             friend struct PerformedByWithLastSeenUpdateGuard;
 
             PerformedByWithLastSeenUpdateGuard preparePerformedBy() const

@@ -57,6 +57,17 @@ void EntityCollection::deleteUser(UserCollection::iterator iterator)
     {
         return;
     }
+    //delete all votes of this user
+    {
+        auto userWeak = UserWeakRef(*iterator);
+        for (auto& messageWeak : (*iterator)->votedMessages())
+        {
+            if (auto message = messageWeak.lock())
+            {
+                message->removeVote(userWeak);
+            }
+        }
+    }
     {
         //no need to delete the message from the user as we're deleting the whole user anyway
         BoolTemporaryChanger changer(alsoDeleteMessagesFromUser, false);
@@ -173,7 +184,7 @@ void DiscussionThreadMessageCollectionBase::modifyDiscussionThreadMessage(Discus
     {
         return;
     }
-    messages_.modify(iterator, [&modifyFunction](const DiscussionMessageRef& message)
+    messages_.modify(iterator, [&modifyFunction](const DiscussionThreadMessageRef& message)
     {
         if (message)
         {
@@ -190,7 +201,7 @@ void EntityCollection::modifyDiscussionThreadMessage(DiscussionThreadMessageColl
         return;
     }
     //allow reindexing of the collection that includes all messages
-    messages_.modify(iterator, [&modifyFunction](const DiscussionMessageRef& message)
+    messages_.modify(iterator, [&modifyFunction](const DiscussionThreadMessageRef& message)
     {
         if (message)
         {

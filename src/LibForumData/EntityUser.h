@@ -6,6 +6,7 @@
 
 #include <string>
 #include <memory>
+#include <set>
 
 namespace Forum
 {
@@ -18,6 +19,7 @@ namespace Forum
                   std::string& name()           { return name_; }
             const Timestamp&   lastSeen() const { return lastSeen_; }
                   Timestamp&   lastSeen()       { return lastSeen_; }
+            auto&              votedMessages()  { return votedMessages_; }
 
             enum ChangeType : uint32_t
             {
@@ -31,9 +33,16 @@ namespace Forum
              */
             explicit User(const std::string& name) : name_(name), lastSeen_(0) {}
 
+            void registerVote(const DiscussionThreadMessageRef& message)
+            {
+                votedMessages_.insert(DiscussionThreadMessageWeakRef(message));
+            }
+
         private:
             std::string name_;
             Timestamp lastSeen_;
+            std::set<DiscussionThreadMessageWeakRef, std::owner_less<DiscussionThreadMessageWeakRef>> votedMessages_;
+
         };
 
         typedef std::shared_ptr<User> UserRef;

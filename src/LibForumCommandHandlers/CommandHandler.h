@@ -130,6 +130,9 @@ namespace Forum
             DECLARE_COMMAND_HANDLER(deleteDiscussionThreadMessage);
             DECLARE_COMMAND_HANDLER(changeDiscussionThreadMessageContent);
             DECLARE_COMMAND_HANDLER(moveDiscussionThreadMessage);
+            DECLARE_COMMAND_HANDLER(upVoteDiscussionThreadMessage);
+            DECLARE_COMMAND_HANDLER(downVoteDiscussionThreadMessage);
+            DECLARE_COMMAND_HANDLER(resetVoteDiscussionThreadMessage);
 
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByName);
             DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreated);

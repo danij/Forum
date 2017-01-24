@@ -88,6 +88,9 @@ namespace Forum
                                                               std::ostream& output) = 0;
             virtual void moveDiscussionThreadMessage(const Entities::IdType& messageId, 
                                                      const Entities::IdType& intoThreadId, std::ostream& output) = 0;
+            virtual void upVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) = 0;
+            virtual void downVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) = 0;
+            virtual void resetVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) = 0;
         };
 
         typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;

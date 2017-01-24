@@ -35,6 +35,26 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const User& user)
     return writer;
 }
 
+template<typename Collection>
+static JsonWriter& writeVotes(JsonWriter& writer, const char* name, const Collection& votes)
+{
+    writer.newPropertyWithSafeName(name);
+    writer.startArray();
+    for (auto& pair : votes)
+    {
+        if (auto user = pair.first.lock())
+        {
+            writer << objStart
+                << propertySafeName("userId", user->id())
+                << propertySafeName("userName", user->name())
+                << propertySafeName("at", pair.second)
+                << objEnd;
+        }
+    }
+    writer.endArray();
+    return writer;
+}
+
 JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& message)
 {
     writer
@@ -70,8 +90,12 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& 
     }
 
     writer << propertySafeName("ip", message.creationDetails().ip)
-           << propertySafeName("userAgent", message.creationDetails().userAgent)
-        << objEnd;
+           << propertySafeName("userAgent", message.creationDetails().userAgent);
+    
+    writeVotes(writer, "upVotes", message.upVotes());
+    writeVotes(writer, "downVotes", message.downVotes());
+
+    writer << objEnd;
     return writer;
 }
 
@@ -112,7 +136,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
 
     writer  << propertySafeName("lastUpdated", thread.lastUpdated())
             << propertySafeName("visited", thread.visited().load())
-            << propertySafeName("voteScore", 0)
+            << propertySafeName("voteScore", thread.voteScore())
     
         << objEnd;
     return writer;
