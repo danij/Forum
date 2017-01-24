@@ -106,6 +106,24 @@ namespace Forum
             virtual void getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
                                                                     std::ostream& output) const override;
 
+            virtual void getDiscussionTagsByName(std::ostream& output) const override;
+            virtual void getDiscussionTagsByMessageCount(std::ostream& output) const override;
+            virtual void addNewDiscussionTag(const std::string& name, std::ostream& output) override;
+            virtual void changeDiscussionTagName(const Entities::IdType& id, const std::string& newName,
+                                                 std::ostream& output) override;
+            virtual void changeDiscussionTagUiBlob(const Entities::IdType& id, const std::string& blob,
+                                                   std::ostream& output) override;
+            virtual void deleteDiscussionTag(const Entities::IdType& id, std::ostream& output) override;
+
+            virtual void getDiscussionThreadsWithTagByName(const Entities::IdType& id, 
+                                                           std::ostream& output) const override;
+            virtual void getDiscussionThreadsWithTagByCreated(const Entities::IdType& id,
+                                                              std::ostream& output) const override;
+            virtual void getDiscussionThreadsWithTagByLastUpdated(const Entities::IdType& id,
+                                                                  std::ostream& output) const override;
+            virtual void getDiscussionThreadsWithTagByMessageCount(const Entities::IdType& id,
+                                                                   std::ostream& output) const override;
+
         private:
             void voteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output, bool up);
 
@@ -123,6 +141,7 @@ namespace Forum
             boost::u32regex validUserNameRegex;
             boost::u32regex validDiscussionThreadNameRegex;
             boost::u32regex validDiscussionMessageContentRegex;
+            boost::u32regex validDiscussionTagNameRegex;
         };
 
         inline ObserverContext_ createObserverContext(PerformedByType performedBy)

@@ -255,3 +255,82 @@ void DiscussionThreadMessageCollectionBase::deleteDiscussionThreadMessageById(co
 {
     deleteDiscussionThreadMessage(messages_.get<DiscussionThreadMessageCollectionById>().find(id));
 }
+
+//Discussion Tags
+
+void DiscussionTagCollectionBase::modifyDiscussionTag(DiscussionTagCollection::iterator iterator,
+                                                      const std::function<void(DiscussionTag&)>& modifyFunction)
+{
+    if (iterator == tags_.end())
+    {
+        return;
+    }
+    tags_.modify(iterator, [&modifyFunction](const DiscussionTagRef& tag)
+    {
+        if (tag)
+        {
+            modifyFunction(*tag);
+        }
+    });
+}
+
+//void EntityCollection::modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
+//    const std::function<void(DiscussionThread&)>& modifyFunction)
+//{
+//    if (iterator == threads_.end())
+//    {
+//        return;
+//    }
+//    //allow reindexing of the collection that includes all threads
+//    threads_.modify(iterator, [&modifyFunction](const DiscussionThreadRef& thread)
+//    {
+//        if (thread)
+//        {
+//            //allow reindexing of the subcollection containing only the threads of the current user
+//            thread->createdBy().modifyDiscussionThreadById(thread->id(), modifyFunction);
+//        }
+//    });
+//}
+
+void DiscussionTagCollectionBase::modifyDiscussionTagById(const IdType& id,
+    const std::function<void(DiscussionTag&)>& modifyFunction)
+{
+    modifyDiscussionTag(tags_.get<DiscussionTagCollectionById>().find(id), modifyFunction);
+}
+
+void DiscussionTagCollectionBase::deleteDiscussionTag(DiscussionTagCollection::iterator iterator)
+{
+    if (iterator == tags_.end())
+    {
+        return;
+    }
+    tags_.erase(iterator);
+}
+
+//void EntityCollection::deleteDiscussionThread(DiscussionThreadCollection::iterator iterator)
+//{
+//    if (iterator == threads_.end())
+//    {
+//        return;
+//    }
+//    {
+//        //no need to delete the message from the thread as we're deleting the whole thread anyway
+//        BoolTemporaryChanger changer(alsoDeleteMessagesFromThread, false);
+//        for (auto& message : (*iterator)->messages())
+//        {
+//            //Each discussion message holds a reference to the user that created it and the parent thread
+//            //As such, delete the discussion message before deleting the thread
+//            deleteDiscussionThreadMessageById(message->id());
+//        }
+//    }
+//    if (alsoDeleteThreadsFromUser)
+//    {
+//        (*iterator)->createdBy().deleteDiscussionThreadById((*iterator)->id());
+//    }
+//    threads_.erase(iterator);
+//}
+
+void DiscussionTagCollectionBase::deleteDiscussionTagById(const IdType& id)
+{
+    deleteDiscussionTag(tags_.get<DiscussionTagCollectionById>().find(id));
+}

@@ -12,6 +12,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const EntitiesCount& value)
             << propertySafeName("users", value.nrOfUsers)
             << propertySafeName("discussionThreads", value.nrOfDiscussionThreads)
             << propertySafeName("discussionMessages", value.nrOfDiscussionMessages)
+            << propertySafeName("discussionTags", value.nrOfDiscussionTags)
         << objEnd;
     return writer;
 }
@@ -139,5 +140,17 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
             << propertySafeName("voteScore", thread.voteScore())
     
         << objEnd;
+    return writer;
+}
+
+JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionTag& tag)
+{
+    writer << objStart
+        << propertySafeName("id", tag.id())
+        << propertySafeName("name", tag.name())
+        << propertySafeName("created", tag.created())
+        << propertySafeName("threadCount", tag.threadsById().size())
+        << propertySafeName("messageCount", tag.messageCount())
+            << objEnd;
     return writer;
 }

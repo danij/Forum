@@ -139,11 +139,17 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
     }
 }
 
+
 template<typename ThreadsIndexFn>
 static void writeDiscussionThreadsOfUser(const IdType& id, std::ostream& output, 
     PerformedByWithLastSeenUpdateGuard&& performedBy, const ResourceGuard<EntityCollection>& collection_, 
     const ReadEvents& readEvents_, ThreadsIndexFn threadsIndexFn)
 {
+    if ( ! id )
+    {
+        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
+        return;
+    }
     collection_.read([&](const EntityCollection& collection)
                      {
                          auto& currentUser = performedBy.get(collection);
@@ -164,7 +170,6 @@ static void writeDiscussionThreadsOfUser(const IdType& id, std::ostream& output,
                          readEvents_.onGetDiscussionThreadsOfUser(createObserverContext(currentUser), **it);
                      });
 }
-
 
 void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::ostream& output) const
 {
@@ -197,6 +202,71 @@ void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(const IdType& id
         return user.threadsByMessageCount();
     });
 }
+
+
+template<typename ThreadsIndexFn>
+static void writeDiscussionThreadsWithTag(const IdType& id, std::ostream& output, 
+    PerformedByWithLastSeenUpdateGuard&& performedBy, const ResourceGuard<EntityCollection>& collection_, 
+    const ReadEvents& readEvents_, ThreadsIndexFn threadsIndexFn)
+{
+    if ( ! id )
+    {
+        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
+        return;
+    }    
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         auto& currentUser = performedBy.get(collection);
+                         const auto& indexById = collection.tagsById();
+                         auto it = indexById.find(id);
+                         if (it == indexById.end())
+                         {
+                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             return;
+                         }
+
+                         const auto& threads = threadsIndexFn(**it);
+                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
+
+                         writeDiscussionThreads(threads, output, currentUser.id());
+
+                         readEvents_.onGetDiscussionThreadsWithTag(createObserverContext(currentUser), **it);
+                     });
+}
+
+void MemoryRepository::getDiscussionThreadsWithTagByName(const IdType& id, std::ostream& output) const
+{
+    writeDiscussionThreadsWithTag(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& tag)
+    {
+        return tag.threadsByName();
+    });
+}
+
+void MemoryRepository::getDiscussionThreadsWithTagByCreated(const IdType& id, std::ostream& output) const
+{
+    writeDiscussionThreadsWithTag(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& tag)
+    {
+        return tag.threadsByCreated();
+    });
+}
+
+void MemoryRepository::getDiscussionThreadsWithTagByLastUpdated(const IdType& id, std::ostream& output) const
+{
+    writeDiscussionThreadsWithTag(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& tag)
+    {
+        return tag.threadsByLastUpdated();
+    });
+}
+
+void MemoryRepository::getDiscussionThreadsWithTagByMessageCount(const IdType& id, std::ostream& output) const
+{
+    writeDiscussionThreadsWithTag(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& tag)
+    {
+        return tag.threadsByMessageCount();
+    });
+}
+
 
 static StatusCode validateDiscussionThreadName(const std::string& name, const boost::u32regex& regex, 
                                                const ConfigConstRef& config)

@@ -2,6 +2,7 @@
 
 #include "EntityDiscussionThreadMessageCollectionBase.h"
 #include "EntityDiscussionThreadCollectionBase.h"
+#include "EntityDiscussionTagCollectionBase.h"
 #include "EntityUserCollectionBase.h"
 #include "Entities.h"
 
@@ -12,7 +13,8 @@ namespace Forum
     namespace Entities
     {
         struct EntityCollection : public UserCollectionBase,
-                                  public DiscussionThreadCollectionBase, public DiscussionThreadMessageCollectionBase
+                                  public DiscussionThreadCollectionBase, public DiscussionThreadMessageCollectionBase,
+                                  public DiscussionTagCollectionBase
         {
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in

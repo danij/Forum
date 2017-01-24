@@ -12,11 +12,13 @@ namespace Forum
     {
         struct DiscussionTag final : public Identifiable, public CreatedMixin, public DiscussionThreadCollectionBase
         {
-            const std::string& name() const { return name_; }
-                  std::string& name()       { return name_; }
+            const std::string& name()         const { return name_; }
+                  std::string& name()               { return name_; }
 
-            const std::string& uiBlob() const { return uiBlob_; }
-                  std::string& uiBlob()       { return uiBlob_; }
+            const std::string& uiBlob()       const { return uiBlob_; }
+                  std::string& uiBlob()             { return uiBlob_; }
+
+            int_fast32_t       messageCount() const { return messageCount_; }
 
             enum ChangeType : uint32_t
             {
@@ -28,6 +30,7 @@ namespace Forum
         private:
             std::string name_;
             std::string uiBlob_;
+            int_fast32_t messageCount_ = 0;
         };
 
         typedef std::shared_ptr<DiscussionTag> DiscussionTagRef;

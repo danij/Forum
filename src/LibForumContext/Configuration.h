@@ -33,6 +33,7 @@ namespace Forum
         {
             int_fast16_t minNameLength = 2;
             int_fast16_t maxNameLength = 128;
+            int_fast16_t maxUiBlobSize = 10000;
         };
 
         struct DiscussionCategoryConfig

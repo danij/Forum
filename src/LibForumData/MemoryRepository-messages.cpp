@@ -18,6 +18,12 @@ void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(const IdType& 
 {
     auto performedBy = preparePerformedBy();
 
+    if ( ! id)
+    {
+        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
+        return;
+    }
+
     collection_.read([&](const EntityCollection& collection)
     {
         const auto& indexById = collection.usersById();
@@ -167,6 +173,7 @@ void MemoryRepository::changeDiscussionThreadMessageContent(const IdType& id, co
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;
+        return;
     }
     auto performedBy = preparePerformedBy();
 

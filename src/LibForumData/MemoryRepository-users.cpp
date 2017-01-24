@@ -168,6 +168,7 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
     if (validationCode != StatusCode::OK)
     {
         status = validationCode;
+        return;
     }
     auto performedBy = preparePerformedBy();
 

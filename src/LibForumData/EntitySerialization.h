@@ -11,6 +11,7 @@ namespace Json
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::User& user);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionThreadMessage& thread);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionThread& thread);
+    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionTag& tag);
 }
 
 namespace Forum

@@ -208,52 +208,60 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        writeRepository->addNewDiscussionTag(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_NAME )
     {
-        output << "{}";
+        readRepository->getDiscussionTagsByName(output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT )
     {
-        output << "{}";
+        readRepository->getDiscussionTagsByMessageCount(output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_NAME )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->changeDiscussionTagName(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_UI_BLOB )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->changeDiscussionTagUiBlob(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_TAG )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        writeRepository->deleteDiscussionTag(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsWithTagByName(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsWithTagByCreated(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsWithTagByLastUpdated(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsWithTagByMessageCount(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG_TO_THREAD )

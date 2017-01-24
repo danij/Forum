@@ -14,7 +14,8 @@ using namespace Forum::Repository;
 MemoryRepository::MemoryRepository() : collection_(std::make_shared<EntityCollection>()),
     validUserNameRegex(boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$")),
     validDiscussionThreadNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
-    validDiscussionMessageContentRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$"))
+    validDiscussionMessageContentRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
+    validDiscussionTagNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$"))
 {
 }
 
@@ -38,6 +39,7 @@ void MemoryRepository::getEntitiesCount(std::ostream& output) const
                          count.nrOfUsers = collection.usersById().size();
                          count.nrOfDiscussionThreads = collection.threadsById().size();
                          count.nrOfDiscussionMessages = collection.messagesById().size();
+                         count.nrOfDiscussionTags = collection.tagsById().size();
 
                          writeSingleValueSafeName(output, "count", count);
 

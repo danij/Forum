@@ -45,6 +45,16 @@ namespace Forum
 
             virtual void getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
                                                                     std::ostream& output) const = 0;
+
+            virtual void getDiscussionTagsByName(std::ostream& output) const = 0;
+            virtual void getDiscussionTagsByMessageCount(std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsWithTagByName(const Entities::IdType& id, std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsWithTagByCreated(const Entities::IdType& id, 
+                                                              std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsWithTagByLastUpdated(const Entities::IdType& id, 
+                                                                  std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsWithTagByMessageCount(const Entities::IdType& id, 
+                                                                   std::ostream& output) const = 0;
         };
 
         typedef std::shared_ptr<IReadRepository> ReadRepositoryRef;
@@ -91,6 +101,13 @@ namespace Forum
             virtual void upVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) = 0;
             virtual void downVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) = 0;
             virtual void resetVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) = 0;
+
+            virtual void addNewDiscussionTag(const std::string& name, std::ostream& output) = 0;
+            virtual void changeDiscussionTagName(const Entities::IdType& id, const std::string& newName,
+                                                 std::ostream& output) = 0;
+            virtual void changeDiscussionTagUiBlob(const Entities::IdType& id, const std::string& blob,
+                                                   std::ostream& output) = 0;
+            virtual void deleteDiscussionTag(const Entities::IdType& id, std::ostream& output) = 0;
         };
 
         typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;

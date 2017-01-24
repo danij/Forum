@@ -16,6 +16,7 @@ namespace Forum
             uint_fast32_t nrOfUsers;
             uint_fast32_t nrOfDiscussionThreads;
             uint_fast32_t nrOfDiscussionMessages;
+            uint_fast32_t nrOfDiscussionTags;
         };
     }
 }

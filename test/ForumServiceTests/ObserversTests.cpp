@@ -469,8 +469,8 @@ BOOST_AUTO_TEST_CASE( Attaching_a_discussion_tag_to_a_thread_invokes_observer )
     auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onAddDiscussionTagToThread, 
                           [&](auto& _, auto& tag, auto& thread)
                           {
-                              observedTagId = tag.id();
-                              observedThreadId = thread.id();
+                              observedTagId = static_cast<std::string>(tag.id());
+                              observedThreadId = static_cast<std::string>(thread.id());
                           });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
@@ -490,8 +490,8 @@ BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_thread_invokes_observer 
     auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onRemoveDiscussionTagFromThread, 
                           [&](auto& _, auto& tag, auto& thread)
                           {
-                              observedTagId = tag.id();
-                              observedThreadId = thread.id();
+                              observedTagId = static_cast<std::string>(tag.id());
+                              observedThreadId = static_cast<std::string>(thread.id());
                           });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
@@ -514,7 +514,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_tags_invokes_obs
                           [&](auto& _, auto& tag)
                           {
                               observerCalledNTimes += 1;
-                              observedTagId = tag.id();
+                              observedTagId = static_cast<std::string>(tag.id());
                           });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
@@ -545,8 +545,8 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_tags_invokes_observer)
     auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onMergeDiscussionTags, 
                           [&](auto& _, auto& fromTag, auto& toTag)
                           {
-                              observedFromTagId = fromTag.id();
-                              observedToTagId = toTag.id();
+                              observedFromTagId = static_cast<std::string>(fromTag.id());
+                              observedToTagId = static_cast<std::string>(toTag.id());
                           });
 
     auto fromTagId = createDiscussionTagAndGetId(handler, "Tag1");
@@ -706,8 +706,8 @@ BOOST_AUTO_TEST_CASE( Attaching_a_discussion_tag_to_a_category_invokes_observer 
     auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onAddDiscussionTagToCategory, 
                           [&](auto& _, auto& tag, auto& category)
                           {
-                              observedTagId = tag.id();
-                              observedCategoryId = category.id();
+                              observedTagId = static_cast<std::string>(tag.id());
+                              observedCategoryId = static_cast<std::string>(category.id());
                           });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
@@ -727,8 +727,8 @@ BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_category_invokes_observe
     auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onRemoveDiscussionTagFromCategory, 
                           [&](auto& _, auto& tag, auto& category)
                           {
-                              observedTagId = tag.id();
-                              observedCategoryId = category.id();
+                              observedTagId = static_cast<std::string>(tag.id());
+                              observedCategoryId = static_cast<std::string>(category.id());
                           });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
@@ -752,7 +752,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_categories_invok
                           [&](auto& _, auto& category)
                           {
                               observerCalledNTimes += 1;
-                              observedCategoryId = category.id();
+                              observedCategoryId = static_cast<std::string>(category.id());
                           });
 
     auto categoryId = createDiscussionTagAndGetId(handler, "Category");

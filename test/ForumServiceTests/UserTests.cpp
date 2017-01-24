@@ -563,31 +563,31 @@ BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
     BOOST_REQUIRE_EQUAL("Abc", retrievedNames[2]);
 }
 
-BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_invalid_user_returns_not_found )
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_invalid_user_returns_invalid_parameters )
 {
     auto handler = createCommandHandler();
 
-    assertStatusCodeEqual(StatusCode::NOT_FOUND, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, 
                                        Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
                                        SortOrder::Ascending, { "bogusId" }));
-    assertStatusCodeEqual(StatusCode::NOT_FOUND, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, 
                                        Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
                                        SortOrder::Descending, { "bogusId" }));
-    assertStatusCodeEqual(StatusCode::NOT_FOUND, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, 
                                        Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, 
                                        SortOrder::Ascending, { "bogusId" }));
-    assertStatusCodeEqual(StatusCode::NOT_FOUND, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, 
                                        Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, 
                                        SortOrder::Descending, { "bogusId" }));
-    assertStatusCodeEqual(StatusCode::NOT_FOUND, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, 
                                        Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
                                        SortOrder::Ascending, { "bogusId" }));
-    assertStatusCodeEqual(StatusCode::NOT_FOUND, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, 
                                        Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
                                        SortOrder::Descending, { "bogusId" }));
@@ -1050,15 +1050,15 @@ BOOST_AUTO_TEST_CASE( Retrieving_a_user_includes_count_of_discussion_messages_cr
     BOOST_REQUIRE_EQUAL(1, user2Result.get<int>("user.messageCount"));
 }
 
-BOOST_AUTO_TEST_CASE( Retrieving_discussion_messages_of_invalid_user_returns_not_found )
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_messages_of_invalid_user_returns_invalid_parameters )
 {
     auto handler = createCommandHandler();
 
-    assertStatusCodeEqual(StatusCode::NOT_FOUND,
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, 
                                        Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, 
                                        SortOrder::Ascending, { "bogusId" }));
-    assertStatusCodeEqual(StatusCode::NOT_FOUND,
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, 
                                        Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, 
                                        SortOrder::Descending, { "bogusId" }));
