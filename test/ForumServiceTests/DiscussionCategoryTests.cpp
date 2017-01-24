@@ -9,7 +9,7 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-struct SerializedDiscussionCategoryReferencedByTag
+struct SerializedDiscussionCategoryReferencedByTagInCategoryTest
 {
     std::string id;
     std::string name;
@@ -24,12 +24,12 @@ struct SerializedDiscussionCategoryReferencedByTag
 /**
 * Stores only the information that is sent out about a discussion tag 
 */
-struct SerializedDiscussionTag
+struct SerializedDiscussionTagInCategoryTest
 {
     std::string id;
     std::string name;
     int64_t threadCount = 0;
-    std::vector<SerializedDiscussionCategoryReferencedByTag> categories;
+    std::vector<SerializedDiscussionCategoryReferencedByTagInCategoryTest> categories;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -41,18 +41,18 @@ struct SerializedDiscussionTag
         {
             if (pair.first == "categories")
             {
-                categories = deserializeEntities<SerializedDiscussionCategoryReferencedByTag>(pair.second);
+                categories = deserializeEntities<SerializedDiscussionCategoryReferencedByTagInCategoryTest>(pair.second);
             }
         }
     }
 };
 
-CREATE_FUNCTION_ALIAS(deserializeTags, deserializeEntities<SerializedDiscussionTag>)
+CREATE_FUNCTION_ALIAS(deserializeTags, deserializeEntities<SerializedDiscussionTagInCategoryTest>)
 
 /**
 * Stores only the information that is sent out about a user referenced in a discussion thread or message
 */
-struct SerializedUserReferencedInDiscussionThreadOrMessage
+struct SerializedUserReferencedInDiscussionThreadOrMessageInCategoryTest
 {
     std::string id;
     std::string name;
@@ -72,10 +72,10 @@ struct SerializedUserReferencedInDiscussionThreadOrMessage
     }
 };
 
-struct SerializedLatestDiscussionThreadMessage
+struct SerializedLatestDiscussionThreadMessageInCategoryTest
 {
     Timestamp created = 0;
-    SerializedUserReferencedInDiscussionThreadOrMessage createdBy;
+    SerializedUserReferencedInDiscussionThreadOrMessageInCategoryTest createdBy;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -85,17 +85,17 @@ struct SerializedLatestDiscussionThreadMessage
     }
 };
 
-struct SerializedDiscussionThread
+struct SerializedDiscussionThreadInCategoryTest
 {
     std::string id;
     std::string name;
     Timestamp created = 0;
     Timestamp lastUpdated = 0;
-    SerializedUserReferencedInDiscussionThreadOrMessage createdBy;
+    SerializedUserReferencedInDiscussionThreadOrMessageInCategoryTest createdBy;
     int64_t visited = 0;
     int64_t messageCount = 0;
-    SerializedLatestDiscussionThreadMessage latestMessage;
-    std::vector<SerializedDiscussionTag> tags;
+    SerializedLatestDiscussionThreadMessageInCategoryTest latestMessage;
+    std::vector<SerializedDiscussionTagInCategoryTest> tags;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -121,13 +121,13 @@ struct SerializedDiscussionThread
     }
 };
 
-CREATE_FUNCTION_ALIAS(deserializeThreads, deserializeEntities<SerializedDiscussionThread>)
+CREATE_FUNCTION_ALIAS(deserializeThreads, deserializeEntities<SerializedDiscussionThreadInCategoryTest>)
 
-struct SerializedDiscussionCategoryParentReference
+struct SerializedDiscussionCategoryParentReferenceInCategoryTest
 {
     std::string id;
     std::string name;
-    std::unique_ptr<SerializedDiscussionCategoryParentReference> parent;
+    std::unique_ptr<SerializedDiscussionCategoryParentReferenceInCategoryTest> parent;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -137,7 +137,7 @@ struct SerializedDiscussionCategoryParentReference
         {
             if (pair.first == "parent")
             {
-                parent = std::make_unique<SerializedDiscussionCategoryParentReference>();
+                parent = std::make_unique<SerializedDiscussionCategoryParentReferenceInCategoryTest>();
                 parent->populate(pair.second);
             }
         }
@@ -160,11 +160,11 @@ struct SerializedDiscussionCategory
     int displayOrder;
     int threadCount;
     int messageCount;
-    std::unique_ptr<SerializedDiscussionCategoryParentReference> parent;
+    std::unique_ptr<SerializedDiscussionCategoryParentReferenceInCategoryTest> parent;
     //Tags that are directly attached to the current category
-    std::vector<SerializedDiscussionTag> tags;
+    std::vector<SerializedDiscussionTagInCategoryTest> tags;
     std::vector<SerializedDiscussionCategory> children;
-    std::unique_ptr<SerializedLatestDiscussionThreadMessage> latestMessage;
+    std::unique_ptr<SerializedLatestDiscussionThreadMessageInCategoryTest> latestMessage;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -178,7 +178,7 @@ struct SerializedDiscussionCategory
         {
             if (pair.first == "parent")
             {
-                parent = std::make_unique<SerializedDiscussionCategoryParentReference>();
+                parent = std::make_unique<SerializedDiscussionCategoryParentReferenceInCategoryTest>();
                 parent->populate(pair.second);
             }
             else if (pair.first == "tags")
@@ -191,7 +191,7 @@ struct SerializedDiscussionCategory
             }
             else if (pair.first == "latestMessage")
             {
-                latestMessage = std::make_unique<SerializedLatestDiscussionThreadMessage>();
+                latestMessage = std::make_unique<SerializedLatestDiscussionThreadMessageInCategoryTest>();
                 latestMessage->populate(pair.second);
             }
         }

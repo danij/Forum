@@ -33,7 +33,7 @@ CREATE_FUNCTION_ALIAS(deserializeTags, deserializeEntities<SerializedDiscussionT
 /**
 * Stores only the information that is sent out about a user referenced in a discussion thread or message
 */
-struct SerializedUserReferencedInDiscussionThreadOrMessage
+struct SerializedUserReferencedInDiscussionThreadOrMessageInTagTest
 {
     std::string id;
     std::string name;
@@ -53,10 +53,10 @@ struct SerializedUserReferencedInDiscussionThreadOrMessage
     }
 };
 
-struct SerializedLatestDiscussionThreadMessage
+struct SerializedLatestDiscussionThreadMessageInTagTest
 {
     Timestamp created = 0;
-    SerializedUserReferencedInDiscussionThreadOrMessage createdBy;
+    SerializedUserReferencedInDiscussionThreadOrMessageInTagTest createdBy;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -66,16 +66,16 @@ struct SerializedLatestDiscussionThreadMessage
     }
 };
 
-struct SerializedDiscussionThread
+struct SerializedDiscussionThreadInTagTest
 {
     std::string id;
     std::string name;
     Timestamp created = 0;
     Timestamp lastUpdated = 0;
-    SerializedUserReferencedInDiscussionThreadOrMessage createdBy;
+    SerializedUserReferencedInDiscussionThreadOrMessageInTagTest createdBy;
     int64_t visited = 0;
     int64_t messageCount = 0;
-    SerializedLatestDiscussionThreadMessage latestMessage;
+    SerializedLatestDiscussionThreadMessageInTagTest latestMessage;
     std::vector<SerializedDiscussionTag> tags;
 
     void populate(const boost::property_tree::ptree& tree)
@@ -102,7 +102,7 @@ struct SerializedDiscussionThread
     }
 };
 
-CREATE_FUNCTION_ALIAS(deserializeThreads, deserializeEntities<SerializedDiscussionThread>)
+CREATE_FUNCTION_ALIAS(deserializeThreads, deserializeEntities<SerializedDiscussionThreadInTagTest>)
 
 BOOST_AUTO_TEST_CASE( No_discussion_tags_are_present_before_one_is_created )
 {
