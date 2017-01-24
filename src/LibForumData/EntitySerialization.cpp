@@ -41,7 +41,7 @@ static JsonWriter& writeVotes(JsonWriter& writer, const char* name, const Collec
 {
     writer.newPropertyWithSafeName(name);
     writer.startArray();
-    for (auto& pair : votes)
+    for (const auto& pair : votes)
     {
         if (auto user = pair.first.lock())
         {
