@@ -249,8 +249,8 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_invokes_observer )
     auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onMergeDiscussionThreads, 
                           [&](auto& _, auto& fromThread, auto& toThread)
                           {
-                              observedFromThreadId = fromThread.id();
-                              observedToThreadId = toThread.id();
+                              observedFromThreadId = static_cast<std::string>(fromThread.id());
+                              observedToThreadId = static_cast<std::string>(toThread.id());
                           });
 
     auto fromThreadId = createDiscussionThreadAndGetId(handler, "Thread1");
@@ -270,8 +270,8 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_invokes_observer )
     auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onMoveDiscussionThreadMessage, 
                           [&](auto& _, auto& message, auto& intoThread)
                           {
-                              observedMessageId = message.id();
-                              observedToThreadId = intoThread.id();
+                              observedMessageId = static_cast<std::string>(message.id());
+                              observedToThreadId = static_cast<std::string>(intoThread.id());
                           });
 
     auto fromThreadId = createDiscussionThreadAndGetId(handler, "Thread1");
@@ -784,20 +784,20 @@ BOOST_AUTO_TEST_CASE( Voting_discussion_thread_messages_invokes_observers )
     auto __1 = addHandler(handler->getWriteRepository()->writeEvents().onDiscussionThreadMessageUpVote,
                           [&](auto& context, auto& message)
                           {
-                             upVoteUser = context.performedBy.id();
-                             votedMessages[0] = message.id();
+                             upVoteUser = static_cast<std::string>(context.performedBy.id());
+                             votedMessages[0] = static_cast<std::string>(message.id());
                           });
     auto __2 = addHandler(handler->getWriteRepository()->writeEvents().onDiscussionThreadMessageDownVote,
                           [&](auto& context, auto& message)
                           {
-                             downVoteUser = context.performedBy.id();
-                             votedMessages[1] = message.id();
+                             downVoteUser = static_cast<std::string>(context.performedBy.id());
+                             votedMessages[1] = static_cast<std::string>(message.id());
                           });
     auto __3 = addHandler(handler->getWriteRepository()->writeEvents().onDiscussionThreadMessageResetVote,
                           [&](auto& context, auto& message)
                           {
-                             resetVoteUser = context.performedBy.id();
-                             votedMessages[2] = message.id();
+                             resetVoteUser = static_cast<std::string>(context.performedBy.id());
+                             votedMessages[2] = static_cast<std::string>(message.id());
                           });
 
     auto user1Id = createUserAndGetId(handler, "User1");
