@@ -36,10 +36,10 @@ void MemoryRepository::getEntitiesCount(std::ostream& output) const
     collection_.read([&](const EntityCollection& collection)
                      {
                          EntitiesCount count;
-                         count.nrOfUsers = collection.usersById().size();
-                         count.nrOfDiscussionThreads = collection.threadsById().size();
-                         count.nrOfDiscussionMessages = collection.messagesById().size();
-                         count.nrOfDiscussionTags = collection.tagsById().size();
+                         count.nrOfUsers = static_cast<uint_fast32_t>(collection.usersById().size());
+                         count.nrOfDiscussionThreads = static_cast<uint_fast32_t>(collection.threadsById().size());
+                         count.nrOfDiscussionMessages = static_cast<uint_fast32_t>(collection.messagesById().size());
+                         count.nrOfDiscussionTags = static_cast<uint_fast32_t>(collection.tagsById().size());
 
                          writeSingleValueSafeName(output, "count", count);
 
