@@ -96,55 +96,18 @@ namespace Forum
             CommandHandler(Repository::ReadRepositoryRef readRepository,
                            Repository::WriteRepositoryRef writeRepository,
                            Repository::MetricsRepositoryRef metricsRepository);
+            ~CommandHandler();
+
             void handle(Command command, const std::vector<std::string>& parameters, std::ostream& output);
 
             Repository::ReadRepositoryRef getReadRepository();
             Repository::WriteRepositoryRef getWriteRepository();
 
         private:
-#define DECLARE_COMMAND_HANDLER(name) void name(const std::vector<std::string>& parameters, std::ostream& output);
 
-            DECLARE_COMMAND_HANDLER(version);
-            DECLARE_COMMAND_HANDLER(countEntities);
-
-            DECLARE_COMMAND_HANDLER(addNewUser);
-            DECLARE_COMMAND_HANDLER(getUsersByName);
-            DECLARE_COMMAND_HANDLER(getUsersByCreated);
-            DECLARE_COMMAND_HANDLER(getUsersByLastSeen);
-            DECLARE_COMMAND_HANDLER(getUserById);
-            DECLARE_COMMAND_HANDLER(getUserByName);
-            DECLARE_COMMAND_HANDLER(changeUserName);
-            DECLARE_COMMAND_HANDLER(deleteUser);
-
-            DECLARE_COMMAND_HANDLER(addNewDiscussionThread);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByName);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByCreated);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByLastUpdated);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsByMessageCount);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadById);
-            DECLARE_COMMAND_HANDLER(changeDiscussionThreadName);
-            DECLARE_COMMAND_HANDLER(deleteDiscussionThread);
-            DECLARE_COMMAND_HANDLER(mergeDiscussionThreads);
-
-            DECLARE_COMMAND_HANDLER(addNewDiscussionThreadMessage);
-            DECLARE_COMMAND_HANDLER(deleteDiscussionThreadMessage);
-            DECLARE_COMMAND_HANDLER(changeDiscussionThreadMessageContent);
-            DECLARE_COMMAND_HANDLER(moveDiscussionThreadMessage);
-            DECLARE_COMMAND_HANDLER(upVoteDiscussionThreadMessage);
-            DECLARE_COMMAND_HANDLER(downVoteDiscussionThreadMessage);
-            DECLARE_COMMAND_HANDLER(resetVoteDiscussionThreadMessage);
-
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByName);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByCreated);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByLastUpdated);
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadsOfUserByMessageCount);
-
-            DECLARE_COMMAND_HANDLER(getDiscussionThreadMessagesOfUserByCreated);
-
-            std::function<void(const std::vector<std::string>&, std::ostream&)> handlers_[int(LAST_COMMAND)];
-            Repository::ReadRepositoryRef readRepository_;
-            Repository::WriteRepositoryRef writeRepository_;
-            Repository::MetricsRepositoryRef metricsRepository_;
+            struct CommandHandlerImpl;
+            //std::unique_ptr wants the complete type
+            CommandHandlerImpl* impl_;
         };
 
         typedef std::shared_ptr<CommandHandler> CommandHandlerRef;

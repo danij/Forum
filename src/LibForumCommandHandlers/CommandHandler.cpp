@@ -2,262 +2,459 @@
 
 #include "OutputHelpers.h"
 
+#include <memory>
+
 using namespace Forum::Commands;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-#define setHandler(command, function) \
-    handlers_[command] = std::bind(&CommandHandler::function, this, std::placeholders::_1, std::placeholders::_2);
+#define COMMAND_HANDLER_METHOD(name) \
+    void name(const std::vector<std::string>& parameters, std::ostream& output)
 
+struct Forum::Commands::CommandHandler::CommandHandlerImpl
+{
+    std::function<void(const std::vector<std::string>&, std::ostream&)> handlers[int(LAST_COMMAND)];
+    ReadRepositoryRef readRepository;
+    WriteRepositoryRef writeRepository;
+    MetricsRepositoryRef metricsRepository;
+
+    bool static checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number)
+    {
+        if (parameters.size() != number)
+        {
+            writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
+            return false;
+        }
+        return true;
+    }
+
+    COMMAND_HANDLER_METHOD( SHOW_VERSION )
+    {
+        metricsRepository->getVersion(output);
+    }
+
+    COMMAND_HANDLER_METHOD( COUNT_ENTITIES )
+    {
+        readRepository->getEntitiesCount(output);
+    }
+
+    COMMAND_HANDLER_METHOD( ADD_USER )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        writeRepository->addNewUser(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_USERS_BY_NAME )
+    {
+        readRepository->getUsersByName(output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_USERS_BY_CREATED )
+    {
+        readRepository->getUsersByCreated(output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_USERS_BY_LAST_SEEN )
+    {
+        readRepository->getUsersByLastSeen(output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_USER_BY_ID )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getUserById(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_USER_BY_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getUserByName(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_USER_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->changeUserName(parameters[0], parameters[1], output);
+    }
+
+    COMMAND_HANDLER_METHOD( DELETE_USER )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        writeRepository->deleteUser(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_NAME )
+    {
+        readRepository->getDiscussionThreadsByName(output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_CREATED )
+    {
+        readRepository->getDiscussionThreadsByCreated(output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_LAST_UPDATED )
+    {
+        readRepository->getDiscussionThreadsByLastUpdated(output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT )
+    {
+        readRepository->getDiscussionThreadsByMessageCount(output);
+    }
+
+    COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        writeRepository->addNewDiscussionThread(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREAD_BY_ID )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadById(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->changeDiscussionThreadName(parameters[0], parameters[1], output);
+    }
+
+    COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        writeRepository->deleteDiscussionThread(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( MERGE_DISCUSSION_THREADS )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->mergeDiscussionThreads(parameters[0], parameters[1], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsOfUserByName(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsOfUserByCreated(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsOfUserByLastUpdated(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsOfUserByMessageCount(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->addNewDiscussionMessageInThread(parameters[0], parameters[1], output);
+    }
+
+    COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        writeRepository->deleteDiscussionMessage(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->changeDiscussionThreadMessageContent(parameters[0], parameters[1], output);
+    }
+
+    COMMAND_HANDLER_METHOD( MOVE_DISCUSSION_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->moveDiscussionThreadMessage(parameters[0], parameters[1], output);
+    }
+
+    COMMAND_HANDLER_METHOD( UP_VOTE_DISCUSSION_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        writeRepository->upVoteDiscussionThreadMessage(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( DOWN_VOTE_DISCUSSION_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        writeRepository->downVoteDiscussionThreadMessage(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( RESET_VOTE_DISCUSSION_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        writeRepository->resetVoteDiscussionThreadMessage(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_NAME )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_NAME )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_UI_BLOB )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_TAG )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG_TO_THREAD )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( REMOVE_DISCUSSION_TAG_FROM_THREAD )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( MERGE_DISCUSSION_TAG_INTO_OTHER_TAG )
+    {
+        output << "{}";
+    }
+
+
+    COMMAND_HANDLER_METHOD( ADD_DISCUSSION_CATEGORY )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORY_BY_ID )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_NAME )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_FROM_ROOT )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_NAME )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_DESCRIPTION )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_PARENT )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_CATEGORY )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG_TO_CATEGORY )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( REMOVE_DISCUSSION_TAG_FROM_CATEGORY )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED )
+    {
+        output << "{}";
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT )
+    {
+        output << "{}";
+    }
+};
+
+
+#define setHandler(command) \
+    impl_->handlers[command] = [&](auto& parameters, auto& output) { impl_->command(parameters, output); }
 
 CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepositoryRef writeRepository,
-                               MetricsRepositoryRef metricsRepository)
-        : readRepository_(readRepository), writeRepository_(writeRepository), metricsRepository_(metricsRepository)
+    MetricsRepositoryRef metricsRepository) : impl_(new CommandHandlerImpl)
 {
-    setHandler(SHOW_VERSION, version);
-    setHandler(COUNT_ENTITIES, countEntities);
+    impl_->readRepository = readRepository;
+    impl_->writeRepository = writeRepository;
+    impl_->metricsRepository = metricsRepository;
 
-    setHandler(ADD_USER, addNewUser);
-    setHandler(GET_USERS_BY_NAME, getUsersByName);
-    setHandler(GET_USERS_BY_CREATED, getUsersByCreated);
-    setHandler(GET_USERS_BY_LAST_SEEN, getUsersByLastSeen);
-    setHandler(GET_USER_BY_ID, getUserById);
-    setHandler(GET_USER_BY_NAME, getUserByName);
-    setHandler(CHANGE_USER_NAME, changeUserName);
-    setHandler(DELETE_USER, deleteUser);
+    setHandler(SHOW_VERSION);
+    setHandler(COUNT_ENTITIES);
 
-    setHandler(ADD_DISCUSSION_THREAD, addNewDiscussionThread);
-    setHandler(GET_DISCUSSION_THREADS_BY_NAME, getDiscussionThreadsByName);
-    setHandler(GET_DISCUSSION_THREADS_BY_CREATED, getDiscussionThreadsByCreated);
-    setHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED, getDiscussionThreadsByLastUpdated);
-    setHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT, getDiscussionThreadsByMessageCount);
-    setHandler(GET_DISCUSSION_THREAD_BY_ID, getDiscussionThreadById);
-    setHandler(CHANGE_DISCUSSION_THREAD_NAME, changeDiscussionThreadName);
-    setHandler(DELETE_DISCUSSION_THREAD, deleteDiscussionThread);
-    setHandler(MERGE_DISCUSSION_THREADS, mergeDiscussionThreads);
+    setHandler(ADD_USER);
+    setHandler(GET_USERS_BY_NAME);
+    setHandler(GET_USERS_BY_CREATED);
+    setHandler(GET_USERS_BY_LAST_SEEN);
+    setHandler(GET_USER_BY_ID);
+    setHandler(GET_USER_BY_NAME);
+    setHandler(CHANGE_USER_NAME);
+    setHandler(DELETE_USER);
 
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME, getDiscussionThreadsOfUserByName);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, getDiscussionThreadsOfUserByCreated);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, getDiscussionThreadsOfUserByLastUpdated);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT, getDiscussionThreadsOfUserByMessageCount);
+    setHandler(ADD_DISCUSSION_THREAD);
+    setHandler(GET_DISCUSSION_THREADS_BY_NAME);
+    setHandler(GET_DISCUSSION_THREADS_BY_CREATED);
+    setHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED);
+    setHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
+    setHandler(GET_DISCUSSION_THREAD_BY_ID);
+    setHandler(CHANGE_DISCUSSION_THREAD_NAME);
+    setHandler(DELETE_DISCUSSION_THREAD);
+    setHandler(MERGE_DISCUSSION_THREADS);
 
-    setHandler(ADD_DISCUSSION_THREAD_MESSAGE, addNewDiscussionThreadMessage);
-    setHandler(DELETE_DISCUSSION_THREAD_MESSAGE, deleteDiscussionThreadMessage);
-    setHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, changeDiscussionThreadMessageContent);
-    setHandler(MOVE_DISCUSSION_THREAD_MESSAGE, moveDiscussionThreadMessage);
-    setHandler(UP_VOTE_DISCUSSION_THREAD_MESSAGE, upVoteDiscussionThreadMessage);
-    setHandler(DOWN_VOTE_DISCUSSION_THREAD_MESSAGE, downVoteDiscussionThreadMessage);
-    setHandler(RESET_VOTE_DISCUSSION_THREAD_MESSAGE, resetVoteDiscussionThreadMessage);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
+    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
 
-    setHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, getDiscussionThreadMessagesOfUserByCreated);
+    setHandler(ADD_DISCUSSION_THREAD_MESSAGE);
+    setHandler(DELETE_DISCUSSION_THREAD_MESSAGE);
+    setHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT);
+    setHandler(MOVE_DISCUSSION_THREAD_MESSAGE);
+    setHandler(UP_VOTE_DISCUSSION_THREAD_MESSAGE);
+    setHandler(DOWN_VOTE_DISCUSSION_THREAD_MESSAGE);
+    setHandler(RESET_VOTE_DISCUSSION_THREAD_MESSAGE);
+
+    setHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED);
+
+    setHandler(ADD_DISCUSSION_TAG);
+    setHandler(GET_DISCUSSION_TAGS_BY_NAME);
+    setHandler(GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT);
+    setHandler(CHANGE_DISCUSSION_TAG_NAME);
+    setHandler(CHANGE_DISCUSSION_TAG_UI_BLOB);
+    setHandler(DELETE_DISCUSSION_TAG);
+    setHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME);
+    setHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED);
+    setHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED);
+    setHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT);
+    setHandler(ADD_DISCUSSION_TAG_TO_THREAD);
+    setHandler(REMOVE_DISCUSSION_TAG_FROM_THREAD);
+    setHandler(MERGE_DISCUSSION_TAG_INTO_OTHER_TAG);
+
+    setHandler(ADD_DISCUSSION_CATEGORY);
+    setHandler(GET_DISCUSSION_CATEGORY_BY_ID);
+    setHandler(GET_DISCUSSION_CATEGORIES_BY_NAME);
+    setHandler(GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT);
+    setHandler(GET_DISCUSSION_CATEGORIES_FROM_ROOT);
+    setHandler(CHANGE_DISCUSSION_CATEGORY_NAME);
+    setHandler(CHANGE_DISCUSSION_CATEGORY_DESCRIPTION);
+    setHandler(CHANGE_DISCUSSION_CATEGORY_PARENT);
+    setHandler(CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER);
+    setHandler(DELETE_DISCUSSION_CATEGORY);
+    setHandler(ADD_DISCUSSION_TAG_TO_CATEGORY);
+    setHandler(REMOVE_DISCUSSION_TAG_FROM_CATEGORY);
+    setHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME);
+    setHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED);
+    setHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED);
+    setHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT);
+}
+
+CommandHandler::~CommandHandler()
+{
+    if (impl_)
+    {
+        delete impl_;
+    }
 }
 
 ReadRepositoryRef CommandHandler::getReadRepository()
 {
-    return readRepository_;
+    return impl_->readRepository;
 }
 
 WriteRepositoryRef CommandHandler::getWriteRepository()
 {
-    return writeRepository_;
+    return impl_->writeRepository;
 }
 
 void CommandHandler::handle(Command command, const std::vector<std::string>& parameters, std::ostream& output)
 {
     if (command >= 0 && command < LAST_COMMAND)
     {
-        handlers_[command](parameters, output);
+        impl_->handlers[command](parameters, output);
     }
-}
-
-void CommandHandler::version(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    metricsRepository_->getVersion(output);
-}
-
-void CommandHandler::countEntities(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    readRepository_->getEntitiesCount(output);
-}
-
-bool static checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number)
-{
-    if (parameters.size() != number)
-    {
-        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
-        return false;
-    }
-    return true;
-}
-
-void CommandHandler::addNewUser(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    writeRepository_->addNewUser(parameters[0], output);
-}
-
-void CommandHandler::getUsersByName(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    readRepository_->getUsersByName(output);
-}
-
-void CommandHandler::getUsersByCreated(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    readRepository_->getUsersByCreated(output);
-}
-
-void CommandHandler::getUsersByLastSeen(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    readRepository_->getUsersByLastSeen(output);
-}
-
-void CommandHandler::getUserById(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    readRepository_->getUserById(parameters[0], output);
-}
-
-void CommandHandler::getUserByName(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    readRepository_->getUserByName(parameters[0], output);
-}
-
-void CommandHandler::changeUserName(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 2)) return;
-    writeRepository_->changeUserName(parameters[0], parameters[1], output);
-}
-
-void CommandHandler::deleteUser(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    writeRepository_->deleteUser(parameters[0], output);
-}
-
-void CommandHandler::getDiscussionThreadsByName(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    readRepository_->getDiscussionThreadsByName(output);
-}
-
-void CommandHandler::getDiscussionThreadsByCreated(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    readRepository_->getDiscussionThreadsByCreated(output);
-}
-
-void CommandHandler::getDiscussionThreadsByLastUpdated(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    readRepository_->getDiscussionThreadsByLastUpdated(output);
-}
-
-void CommandHandler::getDiscussionThreadsByMessageCount(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    readRepository_->getDiscussionThreadsByMessageCount(output);
-}
-
-void CommandHandler::addNewDiscussionThread(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    writeRepository_->addNewDiscussionThread(parameters[0], output);
-}
-
-void CommandHandler::getDiscussionThreadById(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    readRepository_->getDiscussionThreadById(parameters[0], output);
-}
-
-void CommandHandler::changeDiscussionThreadName(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 2)) return;
-    writeRepository_->changeDiscussionThreadName(parameters[0], parameters[1], output);
-}
-
-void CommandHandler::deleteDiscussionThread(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    writeRepository_->deleteDiscussionThread(parameters[0], output);
-}
-
-void CommandHandler::mergeDiscussionThreads(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 2)) return;
-    writeRepository_->mergeDiscussionThreads(parameters[0], parameters[1], output);
-}
-
-void CommandHandler::getDiscussionThreadsOfUserByName(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    readRepository_->getDiscussionThreadsOfUserByName(parameters[0], output);
-}
-
-void CommandHandler::getDiscussionThreadsOfUserByCreated(const std::vector<std::string>& parameters, 
-                                                         std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    readRepository_->getDiscussionThreadsOfUserByCreated(parameters[0], output);
-}
-
-void CommandHandler::getDiscussionThreadsOfUserByLastUpdated(const std::vector<std::string>& parameters,
-                                                                      std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    readRepository_->getDiscussionThreadsOfUserByLastUpdated(parameters[0], output);
-}
-
-void CommandHandler::getDiscussionThreadsOfUserByMessageCount(const std::vector<std::string>& parameters,
-                                                              std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    readRepository_->getDiscussionThreadsOfUserByMessageCount(parameters[0], output);
-}
-
-void CommandHandler::addNewDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 2)) return;
-    writeRepository_->addNewDiscussionMessageInThread(parameters[0], parameters[1], output);
-}
-
-void CommandHandler::deleteDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    writeRepository_->deleteDiscussionMessage(parameters[0], output);
-}
-
-void CommandHandler::changeDiscussionThreadMessageContent(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 2)) return;
-    writeRepository_->changeDiscussionThreadMessageContent(parameters[0], parameters[1], output);
-}
-
-void CommandHandler::moveDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 2)) return;
-    writeRepository_->moveDiscussionThreadMessage(parameters[0], parameters[1], output);
-}
-
-void CommandHandler::upVoteDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    writeRepository_->upVoteDiscussionThreadMessage(parameters[0], output);
-}
-
-void CommandHandler::downVoteDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    writeRepository_->downVoteDiscussionThreadMessage(parameters[0], output);
-}
-
-void CommandHandler::resetVoteDiscussionThreadMessage(const std::vector<std::string>& parameters, std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    writeRepository_->resetVoteDiscussionThreadMessage(parameters[0], output);
-}
-
-void CommandHandler::getDiscussionThreadMessagesOfUserByCreated(const std::vector<std::string>& parameters,
-                                                                std::ostream& output)
-{
-    if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-    readRepository_->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
 }
