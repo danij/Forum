@@ -21,11 +21,12 @@ static void writeDiscussionThreads(ThreadsCollection&& threads, std::ostream& ou
 
     auto preWriteAction = [&](const auto& currentThread)
     {
-        if (currentThread)
+        bool visitedThreadSinceLastChange = false;
+        if (currentThread && (currentUserId != AnonymousUserId))
         {
-            serializationSettings.visitedThreadSinceLastChange =
-                currentThread->hasVisitedSinceLastEdit(currentUserId);
+            visitedThreadSinceLastChange = currentThread->hasVisitedSinceLastEdit(currentUserId);
         }
+        serializationSettings.visitedThreadSinceLastChange = visitedThreadSinceLastChange;
     };
 
     if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
@@ -111,6 +112,7 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
                              auto& thread = **it;
                              thread.visited().fetch_add(1);
 
+                             if (currentUser.id() != AnonymousUserId)
                              if ( ! thread.hasVisitedSinceLastEdit(currentUser.id()))
                              {
                                  addUserToVisitedSinceLastEdit = true;

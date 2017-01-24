@@ -44,5 +44,6 @@ namespace Forum
         };
 
         extern const UserRef AnonymousUser;
+        extern const IdType AnonymousUserId;
     }
 }

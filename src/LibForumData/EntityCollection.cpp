@@ -6,6 +6,7 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 
 const UserRef Forum::Entities::AnonymousUser = std::make_shared<User>("<anonymous>");
+const IdType Forum::Entities::AnonymousUserId = AnonymousUser->id();
 
 void UserCollectionBase::modifyUser(UserCollection::iterator iterator,
                                     const std::function<void(User&)>& modifyFunction)
