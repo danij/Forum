@@ -256,7 +256,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_unicode_name_of_valid_le
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_a_name_that_contains_invalid_characters_fails_with_appropriate_message)
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { "\xFF\xFF" });
+    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { "\xFF\xFF\xFF\xFF" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
@@ -794,7 +794,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_with_only_whitespace_in_the_
     auto handler = createCommandHandler();
     auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
 
-    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, " \t\r\n" });
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, " \t\r\n " });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
@@ -803,7 +803,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_with_leading_whitespace_in_t
     auto handler = createCommandHandler();
     auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
 
-    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, " Foo" });
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, "  Foo" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
@@ -812,7 +812,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_with_trailing_whitespace_in_
     auto handler = createCommandHandler();
     auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
 
-    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, "Foo\t" });
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, "Foo\t\t" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
@@ -1036,7 +1036,7 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds_only
                                        { messageId, "" }));
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
-                                       { messageId, " \t\r\n" }));
+                                       { messageId, " \t\r\n " }));
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
                                        { messageId, " Message" }));
@@ -1051,7 +1051,7 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds_only
                                        { messageId, std::string(config->discussionThreadMessage.maxContentLength + 1, 'a') }));
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
-                                       { messageId, "\xFF\xFF" }));
+                                       { messageId, "\xFF\xFF\xFF\xFF\xFF" }));
 }
 
 BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds )
