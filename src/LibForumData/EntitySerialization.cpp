@@ -135,10 +135,22 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
         writer << propertySafeName("visitedSinceLastChange", serializationSettings.visitedThreadSinceLastChange);
     }
 
+    //need to iterate manually over tags as they are shared pointers and may be empty
+    writer.newPropertyWithSafeName("tags");
+    writer << arrayStart;
+    for (auto& tagRef : thread.tags())
+    {
+        if (tagRef)
+        {
+            writer << *tagRef;
+        }
+    }
+    writer << arrayEnd;
+
     writer  << propertySafeName("lastUpdated", thread.lastUpdated())
             << propertySafeName("visited", thread.visited().load())
             << propertySafeName("voteScore", thread.voteScore())
-    
+
         << objEnd;
     return writer;
 }

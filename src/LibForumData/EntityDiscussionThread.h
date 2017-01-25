@@ -13,6 +13,7 @@ namespace Forum
     namespace Entities
     {
         struct User;
+        struct DiscussionTag;
 
         struct DiscussionThread final : public Identifiable, public CreatedMixin, public LastUpdatedMixin, 
                                         public DiscussionThreadMessageCollectionBase
@@ -21,6 +22,8 @@ namespace Forum
                   std::string& name()              { return name_; }
             const User&        createdBy()   const { return createdBy_; }
                   User&        createdBy()         { return createdBy_; }
+            auto               tags()        const { return Helpers::toConst(tags_); }
+            auto&              tagsWeak()          { return tags_; }
 
             DiscussionThreadMessage::VoteScoreType voteScore() const
             {
@@ -30,12 +33,21 @@ namespace Forum
                 }
                 return 0;
             }
+            
             /**
              * Thread-safe reference to the number of times the thread was visited.
              * Can be updated even for const values as it is not refenced in any index.
              * @return An atomic integer of at least 64-bits
              */
             std::atomic_int_fast64_t& visited() const { return visited_; }
+
+            enum ChangeType : uint32_t
+            {
+                None = 0,
+                Name
+            };
+
+            explicit DiscussionThread(User& createdBy) : createdBy_(createdBy), visited_(0) {};
 
             void addVisitorSinceLastEdit(const IdType& userId)
             {
@@ -52,19 +64,22 @@ namespace Forum
                 visitorsSinceLastEdit_.clear();
             }
 
-            enum ChangeType : uint32_t
+            bool addTag(std::weak_ptr<DiscussionTag> tag)
             {
-                None = 0,
-                Name
-            };
+                return std::get<1>(tags_.insert(std::move(tag)));
+            }
 
-            explicit DiscussionThread(User& createdBy) : createdBy_(createdBy), visited_(0) {};
+            bool removeTag(std::weak_ptr<DiscussionTag> tag)
+            {
+                return tags_.erase(std::move(tag)) > 0;
+            }
 
         private:
             std::string name_;
             User& createdBy_;
             mutable std::atomic_int_fast64_t visited_;
             std::set<boost::uuids::uuid> visitorsSinceLastEdit_;
+            std::set<std::weak_ptr<DiscussionTag>, std::owner_less<std::weak_ptr<DiscussionTag>>> tags_;
         };
 
         typedef std::shared_ptr<DiscussionThread> DiscussionThreadRef;

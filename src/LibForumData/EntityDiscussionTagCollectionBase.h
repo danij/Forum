@@ -36,8 +36,7 @@ namespace Forum
                             const boost::multi_index::const_mem_fun<DiscussionTag, const std::string&,
                                     &DiscussionTag::name>, Helpers::StringAccentAndCaseInsensitiveLess>,
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionTagCollectionByMessageCount>,
-                            const boost::multi_index::const_mem_fun<DiscussionTag,
-                                    std::result_of<decltype(&DiscussionTag::messageCount)(DiscussionTag*)>::type,
+                            const boost::multi_index::const_mem_fun<DiscussionTag, int_fast32_t,
                                     &DiscussionTag::messageCount>>
             > {};
 

@@ -123,6 +123,12 @@ namespace Forum
                                                                   std::ostream& output) const override;
             virtual void getDiscussionThreadsWithTagByMessageCount(const Entities::IdType& id,
                                                                    std::ostream& output) const override;
+            virtual void addDiscussionTagToThread(const Entities::IdType& tagId, const Entities::IdType& threadId, 
+                                                  std::ostream& output) override;
+            virtual void removeDiscussionTagFromThread(const Entities::IdType& tagId, const Entities::IdType& threadId, 
+                                                       std::ostream& output) override;
+            virtual void mergeDiscussionTags(const Entities::IdType& fromId, const Entities::IdType& intoId,
+                                             std::ostream& output) override;
 
         private:
             void voteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output, bool up);

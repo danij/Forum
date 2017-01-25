@@ -266,19 +266,21 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG_TO_THREAD )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->addDiscussionTagToThread(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( REMOVE_DISCUSSION_TAG_FROM_THREAD )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->removeDiscussionTagFromThread(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( MERGE_DISCUSSION_TAG_INTO_OTHER_TAG )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->mergeDiscussionTags(parameters[0], parameters[1], output);
     }
-
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_CATEGORY )
     {

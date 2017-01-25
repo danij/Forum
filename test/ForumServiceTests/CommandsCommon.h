@@ -51,6 +51,7 @@ namespace Forum
         std::string createDiscussionCategoryAndGetId(Commands::CommandHandlerRef handler, const std::string& name,
                                                      const std::string& parentId = "");
         void deleteDiscussionThread(Commands::CommandHandlerRef handler, const std::string& id);
+        void deleteDiscussionThreadMessage(Commands::CommandHandlerRef handler, const std::string& id);
         void deleteDiscussionTag(Commands::CommandHandlerRef handler, const std::string& id);
 
         template<typename T, typename It>

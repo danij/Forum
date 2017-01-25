@@ -43,6 +43,11 @@ namespace Forum
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */
             virtual void deleteDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator) override;
+
+            /**
+            * Safely deletes a discussion tag instance, removing it from all indexes it is registered in
+            */
+            virtual void deleteDiscussionTag(DiscussionTagCollection::iterator iterator) override;
         };
 
         extern const UserRef AnonymousUser;

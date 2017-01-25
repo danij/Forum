@@ -19,6 +19,7 @@ namespace Forum
                   std::string& uiBlob()             { return uiBlob_; }
 
             int_fast32_t       messageCount() const { return messageCount_; }
+            int_fast32_t&      messageCount()       { return messageCount_; }
 
             enum ChangeType : uint32_t
             {
@@ -34,5 +35,6 @@ namespace Forum
         };
 
         typedef std::shared_ptr<DiscussionTag> DiscussionTagRef;
+        typedef std::  weak_ptr<DiscussionTag> DiscussionTagWeakRef;
     }
 }

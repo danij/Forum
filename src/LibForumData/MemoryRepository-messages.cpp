@@ -124,10 +124,20 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
                           message->creationDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
 
                           collection.messages().insert(message);
-                          collection.modifyDiscussionThread(threadIt, [&message](DiscussionThread& thread)
+                          collection.modifyDiscussionThread(threadIt, [&collection, &message](DiscussionThread& thread)
                           {
                               thread.messages().insert(message);
                               thread.resetVisitorsSinceLastEdit();
+                              for (auto& tagWeak : thread.tagsWeak())
+                              {
+                                  if (auto tagShared = tagWeak.lock())
+                                  {
+                                      collection.modifyDiscussionTagById(tagShared->id(), [](auto& tag)
+                                      {
+                                          tag.messageCount() += 1;
+                                      });
+                                  }
+                              }
                           });
 
                           createdBy->messages().insert(message);
@@ -250,14 +260,24 @@ void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, cons
                           auto messageClone = std::make_shared<DiscussionThreadMessage>(**messageIt, **itInto);
                                               
                           collection.messages().insert(messageClone);
-                          collection.modifyDiscussionThread(itInto, [&messageClone](DiscussionThread& thread)
+                          collection.modifyDiscussionThread(itInto, [&collection, &messageClone](DiscussionThread& thread)
                           {
                               thread.messages().insert(messageClone);
                               thread.resetVisitorsSinceLastEdit();
+                              for (auto& tagWeak : thread.tagsWeak())
+                              {
+                                  if (auto tagShared = tagWeak.lock())
+                                  {
+                                      collection.modifyDiscussionTagById(tagShared->id(), [](auto& tag)
+                                      {
+                                          tag.messageCount() += 1;
+                                      });
+                                  }
+                              }                          
                           });
                     
                           createdBy.messages().insert(messageClone);
-                                              
+                          //this will also decrease the message count of all tags part of the thread the message is moved from
                           collection.deleteDiscussionThreadMessage(messageIt);
                       });
 }

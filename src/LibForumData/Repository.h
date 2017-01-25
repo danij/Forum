@@ -108,6 +108,12 @@ namespace Forum
             virtual void changeDiscussionTagUiBlob(const Entities::IdType& id, const std::string& blob,
                                                    std::ostream& output) = 0;
             virtual void deleteDiscussionTag(const Entities::IdType& id, std::ostream& output) = 0;
+            virtual void addDiscussionTagToThread(const Entities::IdType& tagId, const Entities::IdType& threadId, 
+                                                  std::ostream& output) = 0;
+            virtual void removeDiscussionTagFromThread(const Entities::IdType& tagId, const Entities::IdType& threadId, 
+                                                       std::ostream& output) = 0;
+            virtual void mergeDiscussionTags(const Entities::IdType& fromId, const Entities::IdType& intoId,
+                                             std::ostream& output) = 0;
         };
 
         typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;

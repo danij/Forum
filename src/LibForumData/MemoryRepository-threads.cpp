@@ -226,8 +226,7 @@ static void writeDiscussionThreadsWithTag(const IdType& id, std::ostream& output
                          }
 
                          const auto& threads = threadsIndexFn(**it);
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
-                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
+                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
 
                          writeDiscussionThreads(threads, output, currentUser.id());
 
@@ -427,21 +426,30 @@ void MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const IdType
                         writeEvents_.onMergeDiscussionThreads(
                                 createObserverContext(*performedBy.getAndUpdate(collection)), **itFrom, **itInto);
 
-                        for (auto& message : (*itFrom)->messages())
+                        collection.modifyDiscussionThread(itInto, [&](DiscussionThread& thread)
                         {
-                            auto& createdBy = message->createdBy();
-
-                            auto messageClone = std::make_shared<DiscussionThreadMessage>(*message, **itInto);
-
-                            collection.messages().insert(messageClone);
-                            collection.modifyDiscussionThread(itInto, [&messageClone](DiscussionThread& thread)
+                            for (auto& message : (*itFrom)->messages())
                             {
+                                auto& createdBy = message->createdBy();
+
+                                auto messageClone = std::make_shared<DiscussionThreadMessage>(*message, **itInto);
+
+                                collection.messages().insert(messageClone);
                                 thread.messages().insert(messageClone);
-                            });
-
-                            createdBy.messages().insert(messageClone);
-                        }
-
+                                createdBy.messages().insert(messageClone);
+                            }
+                            for (auto& tagWeak : thread.tagsWeak())
+                            {
+                                if (auto tagShared = tagWeak.lock())
+                                {
+                                    collection.modifyDiscussionTagById(tagShared->id(), [&itFrom](auto& tag)
+                                    {
+                                        tag.messageCount() += (*itFrom)->messages().size();
+                                    });
+                                }
+                            }
+                        });
+                        //this will also decrease the message count on the tags the thread was part of
                         collection.deleteDiscussionThread(itFrom);
                     });
 }

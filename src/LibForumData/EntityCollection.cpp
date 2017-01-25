@@ -167,6 +167,17 @@ void EntityCollection::deleteDiscussionThread(DiscussionThreadCollection::iterat
     {
         (*iterator)->createdBy().deleteDiscussionThreadById((*iterator)->id());
     }
+    for (auto& tagWeak : (*iterator)->tagsWeak())
+    {
+        if (auto tagShared = tagWeak.lock())
+        {
+            modifyDiscussionTagById(tagShared->id(), [&iterator](auto& tag)
+            {
+                tag.messageCount() -= (*iterator)->messages().size();
+            });
+            tagShared->deleteDiscussionThreadById((*iterator)->id());
+        }
+    }
     threads_.erase(iterator);
 }
 
@@ -246,6 +257,16 @@ void EntityCollection::deleteDiscussionThreadMessage(DiscussionThreadMessageColl
         {
             thread.deleteDiscussionThreadMessageById((*iterator)->id());
             thread.resetVisitorsSinceLastEdit();
+            for (auto& tagWeak : thread.tagsWeak())
+            {
+                if (auto tagShared = tagWeak.lock())
+                {
+                    modifyDiscussionTagById(tagShared->id(), [](auto& tag)
+                    {
+                        tag.messageCount() -= 1;
+                    });
+                }
+            }
         });
     }
     messages_.erase(iterator);
@@ -274,24 +295,6 @@ void DiscussionTagCollectionBase::modifyDiscussionTag(DiscussionTagCollection::i
     });
 }
 
-//void EntityCollection::modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-//    const std::function<void(DiscussionThread&)>& modifyFunction)
-//{
-//    if (iterator == threads_.end())
-//    {
-//        return;
-//    }
-//    //allow reindexing of the collection that includes all threads
-//    threads_.modify(iterator, [&modifyFunction](const DiscussionThreadRef& thread)
-//    {
-//        if (thread)
-//        {
-//            //allow reindexing of the subcollection containing only the threads of the current user
-//            thread->createdBy().modifyDiscussionThreadById(thread->id(), modifyFunction);
-//        }
-//    });
-//}
-
 void DiscussionTagCollectionBase::modifyDiscussionTagById(const IdType& id,
     const std::function<void(DiscussionTag&)>& modifyFunction)
 {
@@ -307,28 +310,23 @@ void DiscussionTagCollectionBase::deleteDiscussionTag(DiscussionTagCollection::i
     tags_.erase(iterator);
 }
 
-//void EntityCollection::deleteDiscussionThread(DiscussionThreadCollection::iterator iterator)
-//{
-//    if (iterator == threads_.end())
-//    {
-//        return;
-//    }
-//    {
-//        //no need to delete the message from the thread as we're deleting the whole thread anyway
-//        BoolTemporaryChanger changer(alsoDeleteMessagesFromThread, false);
-//        for (auto& message : (*iterator)->messages())
-//        {
-//            //Each discussion message holds a reference to the user that created it and the parent thread
-//            //As such, delete the discussion message before deleting the thread
-//            deleteDiscussionThreadMessageById(message->id());
-//        }
-//    }
-//    if (alsoDeleteThreadsFromUser)
-//    {
-//        (*iterator)->createdBy().deleteDiscussionThreadById((*iterator)->id());
-//    }
-//    threads_.erase(iterator);
-//}
+void EntityCollection::deleteDiscussionTag(DiscussionTagCollection::iterator iterator)
+{
+    if (iterator == tags_.end())
+    {
+        return;
+    }
+    DiscussionTagWeakRef tagWeak(*iterator);
+    for (auto& thread : (*iterator)->threads().get<DiscussionThreadCollectionById>())
+    {
+        if (thread)
+        {
+            thread->removeTag(tagWeak);
+        }
+    }
+    tags_.erase(iterator);
+}
+
 
 void DiscussionTagCollectionBase::deleteDiscussionTagById(const IdType& id)
 {

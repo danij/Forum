@@ -109,6 +109,11 @@ void Forum::Helpers::deleteDiscussionThread(CommandHandlerRef handler, const std
     handlerToObj(handler, Command::DELETE_DISCUSSION_THREAD, { id });
 }
 
+void Forum::Helpers::deleteDiscussionThreadMessage(CommandHandlerRef handler, const std::string& id)
+{
+    handlerToObj(handler, Command::DELETE_DISCUSSION_THREAD_MESSAGE, { id });
+}
+
 void Forum::Helpers::deleteDiscussionTag(CommandHandlerRef handler, const std::string& id)
 {
     handlerToObj(handler, Command::DELETE_DISCUSSION_TAG, { id });

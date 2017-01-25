@@ -51,6 +51,7 @@ void MemoryRepository::getDiscussionTagsByMessageCount(std::ostream& output) con
         return collection.tagsByMessageCount();
     });
 }
+
 static StatusCode validateDiscussionTagName(const std::string& name, const boost::u32regex& regex,
     const ConfigConstRef& config)
 {
@@ -210,4 +211,158 @@ void MemoryRepository::deleteDiscussionTag(const IdType& id, std::ostream& outpu
                                   createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteDiscussionTag(it);
                       });
+}
+
+void MemoryRepository::addDiscussionTagToThread(const IdType& tagId, const IdType& threadId, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! tagId || ! threadId)
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
+
+    auto performedBy = preparePerformedBy();
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+                          auto tagIt = tagIndexById.find(tagId);
+                          if (tagIt == tagIndexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& threadIndexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                          auto threadIt = threadIndexById.find(threadId);
+                          if (threadIt == threadIndexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          DiscussionTagWeakRef tagWeak(*tagIt);
+
+                          //the number of tags associated to a thread is much smaller than 
+                          //the number of threads associated to a tag, so search the tag in the thread
+                          if ( ! (*threadIt)->addTag(tagWeak))
+                          {
+                              //actually already added, but return ok
+                              status = StatusCode::OK;
+                              return;
+                          }
+
+                          (*tagIt)->threads().insert(*threadIt);
+                          collection.modifyDiscussionTag(tagIt, [&threadIt](auto& tag)
+                          {
+                              tag.messageCount() += (*threadIt)->messages().size();
+                          });
+
+                          writeEvents_.onAddDiscussionTagToThread(
+                                  createObserverContext(*performedBy.getAndUpdate(collection)), **tagIt, **threadIt);
+                      });
+}
+
+void MemoryRepository::removeDiscussionTagFromThread(const IdType& tagId, const IdType& threadId, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! tagId || ! threadId)
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
+
+    auto performedBy = preparePerformedBy();
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+                          auto tagIt = tagIndexById.find(tagId);
+                          if (tagIt == tagIndexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& threadIndexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                          auto threadIt = threadIndexById.find(threadId);
+                          if (threadIt == threadIndexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          DiscussionTagWeakRef tagWeak(*tagIt);
+
+                          if ( ! (*threadIt)->removeTag(tagWeak))
+                          {
+                              //tag was not added to the thread
+                              status = StatusCode::NO_EFFECT;
+                              return;
+                          }
+
+                          (*tagIt)->deleteDiscussionThreadById(threadId);
+                          collection.modifyDiscussionTag(tagIt, [&threadIt](auto& tag)
+                          {
+                              tag.messageCount() -= (*threadIt)->messages().size();
+                          });
+
+                          writeEvents_.onRemoveDiscussionTagFromThread(
+                                  createObserverContext(*performedBy.getAndUpdate(collection)), **tagIt, **threadIt);
+                      });    
+}
+
+void MemoryRepository::mergeDiscussionTags(const IdType& fromId, const IdType& intoId, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! fromId || ! intoId)
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
+    if (fromId == intoId)
+    {
+        status = StatusCode::NO_EFFECT;
+        return;
+    }
+
+    auto performedBy = preparePerformedBy();
+
+    collection_.write([&](EntityCollection& collection)
+                    {
+                        auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+                        auto itFrom = indexById.find(fromId);
+                        if (itFrom == indexById.end())
+                        {
+                            status = StatusCode::NOT_FOUND;
+                            return;
+                        }
+                        auto itInto = indexById.find(intoId);
+                        if (itInto == indexById.end())
+                        {
+                            status = StatusCode::NOT_FOUND;
+                            return;
+                        }
+                        //make sure the tag is not deleted before being passed to the observers
+                        writeEvents_.onMergeDiscussionTags(
+                                createObserverContext(*performedBy.getAndUpdate(collection)), **itFrom, **itInto);
+
+                        DiscussionTagWeakRef fromTagWeak(*itFrom);
+                        DiscussionTagWeakRef intoTagWeak(*itInto);
+
+                        collection.modifyDiscussionTag(itInto, [&](DiscussionTag& tag)
+                        {
+                            tag.messageCount() = 0;
+                            for (auto& thread : (*itFrom)->threads())
+                            {
+                                tag.threads().insert(thread);
+                                thread->removeTag(fromTagWeak);
+                                thread->addTag(intoTagWeak);
+                                //recalculate total message count of into tag
+                                tag.messageCount() += thread->messages().size();
+                            }
+                        });
+                        collection.deleteDiscussionTag(itFrom);
+                    });
 }

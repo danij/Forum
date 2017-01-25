@@ -5,6 +5,7 @@
 #include <cassert>
 #include <memory>
 #include <map>
+#include <set>
 
 namespace Forum
 {
@@ -127,6 +128,62 @@ namespace Forum
         auto toConst(const std::map<MapKey, MapT, MapCompare, MapAllocator>& collection)
         {
             return ConstMapAdapter<MapKey, MapT, std::map<MapKey, MapT, MapCompare, MapAllocator>>(collection);
+        }
+
+        template <typename T, typename TCollection>
+        class ConstWeakPtrAdapter final
+        {
+        public:
+            explicit ConstWeakPtrAdapter(const TCollection& collection) : collection_(collection) {}
+
+            auto size()   const { return collection_.size(); }
+
+            auto begin()  const { return cbegin(); }
+            auto end()    const { return cend(); }
+            auto rbegin() const { return crbegin(); }
+            auto rend()   const { return crend(); }
+
+            auto cbegin() const
+            {
+                return boost::make_transform_iterator(collection_.cbegin(), getSharedPtr);
+            }
+
+            auto cend() const
+            {
+                return boost::make_transform_iterator(collection_.cend(), getSharedPtr);
+            }
+
+            auto crbegin() const
+            {
+                return boost::make_transform_iterator(collection_.crbegin(), getSharedPtr);
+            }
+
+            auto crend() const
+            {
+                return boost::make_transform_iterator(collection_.crend(), getSharedPtr);
+            }
+
+            template <typename TSearchType>
+            auto find(const TSearchType& value) const
+            {
+                return boost::make_transform_iterator(collection_.find(value), getSharedPtr);
+            }
+
+        private:
+
+            //TODO take care of shared/weak_ptrs that point to non-const items
+            static auto getSharedPtr(const std::weak_ptr<T>& weakPtr)
+            {
+                return weakPtr.lock();
+            }
+
+            const TCollection& collection_;
+        };
+
+        template<typename T, typename SetCompare, typename SetAllocator>
+        auto toConst(const std::set<std::weak_ptr<T>, SetCompare, SetAllocator>& collection)
+        {
+            return ConstWeakPtrAdapter<T, std::set<std::weak_ptr<T>, SetCompare, SetAllocator>>(collection);
         }
     }
 }
