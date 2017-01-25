@@ -16,7 +16,7 @@ using namespace Forum::Repository;
 
 template<typename UsersIndexFn>
 static void writeUsers(std::ostream& output, PerformedByWithLastSeenUpdateGuard&& performedBy,
-    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, UsersIndexFn usersIndexFn)
+    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, UsersIndexFn&& usersIndexFn)
 {
     collection_.read([&](const EntityCollection& collection)
                      {

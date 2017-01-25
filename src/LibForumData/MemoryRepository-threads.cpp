@@ -44,7 +44,7 @@ static void writeDiscussionThreads(ThreadsCollection&& threads, std::ostream& ou
 
 template<typename ThreadsIndexFn>
 static void writeDiscussionThreads(std::ostream& output, PerformedByWithLastSeenUpdateGuard&& performedBy,
-    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, ThreadsIndexFn threadsIndexFn)
+    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, ThreadsIndexFn&& threadsIndexFn)
 {
     collection_.read([&](const EntityCollection& collection)
                      {
@@ -143,7 +143,7 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
 template<typename ThreadsIndexFn>
 static void writeDiscussionThreadsOfUser(const IdType& id, std::ostream& output, 
     PerformedByWithLastSeenUpdateGuard&& performedBy, const ResourceGuard<EntityCollection>& collection_, 
-    const ReadEvents& readEvents_, ThreadsIndexFn threadsIndexFn)
+    const ReadEvents& readEvents_, ThreadsIndexFn&& threadsIndexFn)
 {
     if ( ! id )
     {
@@ -207,7 +207,7 @@ void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(const IdType& id
 template<typename ThreadsIndexFn>
 static void writeDiscussionThreadsWithTag(const IdType& id, std::ostream& output, 
     PerformedByWithLastSeenUpdateGuard&& performedBy, const ResourceGuard<EntityCollection>& collection_, 
-    const ReadEvents& readEvents_, ThreadsIndexFn threadsIndexFn)
+    const ReadEvents& readEvents_, ThreadsIndexFn&& threadsIndexFn)
 {
     if ( ! id )
     {

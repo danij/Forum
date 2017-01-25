@@ -16,7 +16,7 @@ using namespace Forum::Repository;
 
 template<typename TagsIndexFn>
 static void writeDiscussionTags(std::ostream& output, PerformedByWithLastSeenUpdateGuard&& performedBy,
-    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, TagsIndexFn tagsIndexFn)
+    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, TagsIndexFn&& tagsIndexFn)
 {
     collection_.read([&](const EntityCollection& collection)
     {
