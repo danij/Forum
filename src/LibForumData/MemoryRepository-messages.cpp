@@ -132,9 +132,11 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
                               {
                                   if (auto tagShared = tagWeak.lock())
                                   {
-                                      collection.modifyDiscussionTagById(tagShared->id(), [](auto& tag)
+                                      collection.modifyDiscussionTagById(tagShared->id(), [&thread](auto& tag)
                                       {
                                           tag.messageCount() += 1;
+                                          //notify the thread collection of each tag that the thread has a new message
+                                          tag.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
                                       });
                                   }
                               }

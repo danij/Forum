@@ -442,9 +442,11 @@ void MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const IdType
                             {
                                 if (auto tagShared = tagWeak.lock())
                                 {
-                                    collection.modifyDiscussionTagById(tagShared->id(), [&itFrom](auto& tag)
+                                    collection.modifyDiscussionTagById(tagShared->id(), [&itFrom, &thread](auto& tag)
                                     {
                                         tag.messageCount() += (*itFrom)->messages().size();
+                                        //notify the thread collection of each tag that the thread has new messages
+                                        tag.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
                                     });
                                 }
                             }

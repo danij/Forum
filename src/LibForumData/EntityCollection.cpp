@@ -261,9 +261,11 @@ void EntityCollection::deleteDiscussionThreadMessage(DiscussionThreadMessageColl
             {
                 if (auto tagShared = tagWeak.lock())
                 {
-                    modifyDiscussionTagById(tagShared->id(), [](auto& tag)
+                    modifyDiscussionTagById(tagShared->id(), [&thread](auto& tag)
                     {
                         tag.messageCount() -= 1;
+                        //notify the thread collection of each tag that the thread has fewer messages
+                        tag.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
                     });
                 }
             }
