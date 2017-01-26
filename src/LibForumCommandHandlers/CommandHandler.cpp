@@ -87,6 +87,12 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
         if ( ! checkNumberOfParameters(parameters, output, 2)) return;
         writeRepository->changeUserName(parameters[0], parameters[1], output);
     }
+    
+    COMMAND_HANDLER_METHOD( CHANGE_USER_INFO )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->changeUserInfo(parameters[0], parameters[1], output);
+    }
 
     COMMAND_HANDLER_METHOD( DELETE_USER )
     {
@@ -395,6 +401,7 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(GET_USER_BY_ID);
     setHandler(GET_USER_BY_NAME);
     setHandler(CHANGE_USER_NAME);
+    setHandler(CHANGE_USER_INFO);
     setHandler(DELETE_USER);
 
     setHandler(ADD_DISCUSSION_THREAD);
