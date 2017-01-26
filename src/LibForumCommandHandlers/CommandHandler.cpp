@@ -19,9 +19,19 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
     WriteRepositoryRef writeRepository;
     MetricsRepositoryRef metricsRepository;
 
-    bool static checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number)
+    static bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number)
     {
         if (parameters.size() != number)
+        {
+            writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
+            return false;
+        }
+        return true;
+    }
+
+    static bool checkMinNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number)
+    {
+        if (parameters.size() < number)
         {
             writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
             return false;
@@ -172,8 +182,9 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
-        writeRepository->changeDiscussionThreadMessageContent(parameters[0], parameters[1], output);
+        if ( ! checkMinNumberOfParameters(parameters, output, 2)) return;
+        auto& changeReason = parameters.size() > 2 ? parameters[2] : "";
+        writeRepository->changeDiscussionThreadMessageContent(parameters[0], parameters[1], changeReason, output);
     }
 
     COMMAND_HANDLER_METHOD( MOVE_DISCUSSION_THREAD_MESSAGE )

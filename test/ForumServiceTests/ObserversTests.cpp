@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_invokes_observer )
 
 BOOST_AUTO_TEST_CASE( Modifying_the_content_of_a_discussion_message_invokes_observer )
 {
-    std::string newContent;
+    std::string newContent, changeReason;
     auto messageChange = DiscussionThreadMessage::ChangeType::None;
     auto handler = createCommandHandler();
 
@@ -314,14 +314,16 @@ BOOST_AUTO_TEST_CASE( Modifying_the_content_of_a_discussion_message_invokes_obse
                           [&](auto& _, auto& message, auto change)
                           {
                               newContent = message.content();
+                              changeReason = message.lastUpdatedDetails().reason;
                               messageChange = change;
                           });
 
     auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
     auto messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
 
-    handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, { messageId, "New Message" });
+    handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, { messageId, "New Message", "Reason" });
     BOOST_REQUIRE_EQUAL("New Message", newContent);
+    BOOST_REQUIRE_EQUAL("Reason", changeReason);
     BOOST_REQUIRE_EQUAL(DiscussionThreadMessage::ChangeType::Content, messageChange);
 }
 

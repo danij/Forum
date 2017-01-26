@@ -27,6 +27,7 @@ namespace Forum
             struct LastUpdatedDetails : public CreationDetails
             {
                 std::weak_ptr<User> by;
+                std::string reason;
             };
 
             typedef int_fast32_t VoteScoreType;

@@ -97,7 +97,7 @@ namespace Forum
                                                          const std::string& content, std::ostream& output) = 0;
             virtual void deleteDiscussionMessage(const Entities::IdType& id, std::ostream& output) = 0;
             virtual void changeDiscussionThreadMessageContent(const Entities::IdType& id, const std::string& newContent,
-                                                              std::ostream& output) = 0;
+                                                              const std::string& changeReason, std::ostream& output) = 0;
             virtual void moveDiscussionThreadMessage(const Entities::IdType& messageId, 
                                                      const Entities::IdType& intoThreadId, std::ostream& output) = 0;
             virtual void upVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) = 0;

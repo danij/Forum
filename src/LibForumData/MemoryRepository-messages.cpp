@@ -86,6 +86,40 @@ static StatusCode validateDiscussionMessageContent(const std::string& content, c
     return StatusCode::OK;
 }
 
+static StatusCode validateDiscussionMessageChangeReason(const std::string& reason, const boost::u32regex& regex, 
+                                                        const ConfigConstRef& config)
+{
+    if (reason.empty() && 0 == config->discussionThreadMessage.minChangeReasonLength)
+    {
+        //allow an empty reason only if the minimum configured length is 0
+        return StatusCode::OK;
+    }
+
+    auto nrCharacters = countUTF8Characters(reason);
+    if (nrCharacters > config->discussionThreadMessage.maxChangeReasonLength)
+    {
+        return StatusCode::VALUE_TOO_LONG;
+    }
+    if (nrCharacters < config->discussionThreadMessage.minChangeReasonLength)
+    {
+        return StatusCode::VALUE_TOO_SHORT;
+    }
+
+    try
+    {
+        if ( ! boost::u32regex_match(reason, regex, boost::match_flag_type::format_all))
+        {
+            return StatusCode::INVALID_PARAMETERS;
+        }
+    }
+    catch(...)
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    return StatusCode::OK;
+}
+
 void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, const std::string& content,
                                                        std::ostream& output)
 {
@@ -179,13 +213,22 @@ void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& o
 }
 
 void MemoryRepository::changeDiscussionThreadMessageContent(const IdType& id, const std::string& newContent, 
-                                                            std::ostream& output)
+                                                            const std::string& changeReason, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateDiscussionMessageContent(newContent, validDiscussionMessageContentRegex, getGlobalConfig());
-    if (validationCode != StatusCode::OK)
+
+    auto config = getGlobalConfig();
+    auto contentValidationCode = validateDiscussionMessageContent(newContent, validDiscussionMessageContentRegex, config);
+    if (contentValidationCode != StatusCode::OK)
     {
-        status = validationCode;
+        status = contentValidationCode;
+        return;
+    }
+    auto reasonValidationCode = validateDiscussionMessageChangeReason(changeReason, validDiscussionMessageChangeReasonRegex, 
+                                                                      config);
+    if (reasonValidationCode != StatusCode::OK)
+    {
+        status = reasonValidationCode;
         return;
     }
     auto performedBy = preparePerformedBy();
@@ -206,6 +249,7 @@ void MemoryRepository::changeDiscussionThreadMessageContent(const IdType& id, co
                           {
                               message.content() = newContent;
                               message.lastUpdated() = Context::getCurrentTime();
+                              message.lastUpdatedDetails().reason = changeReason;
                               message.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();
                               message.lastUpdatedDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
                               if (&message.createdBy() != performedByPtr.get())

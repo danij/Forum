@@ -33,6 +33,8 @@ namespace Forum
         {
             int_fast32_t minContentLength = 5;
             int_fast32_t maxContentLength = 65535;
+            int_fast16_t minChangeReasonLength = 0;
+            int_fast16_t maxChangeReasonLength = 64;
         };
 
         struct DiscussionTagConfig

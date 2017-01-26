@@ -98,7 +98,7 @@ namespace Forum
                                                          const std::string& content, std::ostream& output) override;
             virtual void deleteDiscussionMessage(const Entities::IdType& id, std::ostream& output) override;
             virtual void changeDiscussionThreadMessageContent(const Entities::IdType& id, const std::string& newContent,
-                                                              std::ostream& output) override;
+                                                              const std::string& changeReason, std::ostream& output) override;
             virtual void moveDiscussionThreadMessage(const Entities::IdType& messageId, 
                                                      const Entities::IdType& intoThreadId, std::ostream& output) override ;
             virtual void upVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
@@ -149,6 +149,7 @@ namespace Forum
             boost::u32regex validUserNameRegex;
             boost::u32regex validDiscussionThreadNameRegex;
             boost::u32regex validDiscussionMessageContentRegex;
+            boost::u32regex validDiscussionMessageChangeReasonRegex;
             boost::u32regex validDiscussionTagNameRegex;
         };
 
