@@ -105,7 +105,7 @@ namespace Forum
 
         struct IpUserAgentChanger final : private boost::noncopyable
         {
-            IpUserAgentChanger(std::string newIp, std::string newUserAgent)
+            IpUserAgentChanger(const std::string& newIp, const std::string& newUserAgent)
             {
                 oldIp_ = Context::getCurrentUserIpAddress();
                 Context::setCurrentUserIpAddress(newIp);
