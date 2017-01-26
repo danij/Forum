@@ -21,6 +21,10 @@ namespace Forum
         {
             int_fast16_t minNameLength = 3;
             int_fast16_t maxNameLength = 128;
+            /**
+             * Do not store more than this amount of users in the visited since last collection of a discussion thread
+             */
+            int_fast32_t maxUsersInVisitedSinceLastChange = 1024;
         };
 
         struct DiscussionThreadMessageConfig

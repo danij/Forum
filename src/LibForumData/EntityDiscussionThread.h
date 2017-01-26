@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Configuration.h"
 #include "EntityCommonTypes.h"
 #include "EntityDiscussionThreadMessageCollectionBase.h"
 
@@ -51,6 +52,11 @@ namespace Forum
 
             void addVisitorSinceLastEdit(const IdType& userId)
             {
+                if (static_cast<int_fast32_t>(visitorsSinceLastEdit_.size()) >=
+                    Configuration::getGlobalConfig()->discussionThread.maxUsersInVisitedSinceLastChange)
+                {
+                    visitorsSinceLastEdit_.clear();
+                }
                 visitorsSinceLastEdit_.insert(userId.value());
             }
 
