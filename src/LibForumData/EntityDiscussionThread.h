@@ -19,12 +19,13 @@ namespace Forum
         struct DiscussionThread final : public Identifiable, public CreatedMixin, public LastUpdatedMixin, 
                                         public DiscussionThreadMessageCollectionBase
         {
-            const std::string& name()        const { return name_; }
-                  std::string& name()              { return name_; }
-            const User&        createdBy()   const { return createdBy_; }
-                  User&        createdBy()         { return createdBy_; }
-            auto               tags()        const { return Helpers::toConst(tags_); }
-            auto&              tagsWeak()          { return tags_; }
+            const std::string& name()                      const { return name_; }
+                  std::string& name()                            { return name_; }
+            const User&        createdBy()                 const { return createdBy_; }
+                  User&        createdBy()                       { return createdBy_; }
+            auto               tags()                      const { return Helpers::toConst(tags_); }
+            auto&              tagsWeak()                        { return tags_; }
+            auto               nrOfVisitorsSinceLastEdit() const { return visitorsSinceLastEdit_.size(); }
 
             DiscussionThreadMessage::VoteScoreType voteScore() const
             {

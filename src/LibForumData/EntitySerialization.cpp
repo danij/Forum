@@ -108,7 +108,8 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
         << objStart
             << propertySafeName("id", thread.id())
             << propertySafeName("name", thread.name())
-            << propertySafeName("created", thread.created());
+            << propertySafeName("created", thread.created())
+            << propertySafeName("visitorsSinceLastChange", thread.nrOfVisitorsSinceLastEdit());
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
     {
         writer << propertySafeName("createdBy", thread.createdBy());
