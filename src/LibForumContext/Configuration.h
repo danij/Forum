@@ -11,6 +11,8 @@ namespace Forum
         {
             int_fast16_t minNameLength = 3;
             int_fast16_t maxNameLength = 20;
+            int_fast16_t minInfoLength = 0;
+            int_fast16_t maxInfoLength = 1024;
             /**
              * Do not update last seen more frequently than this amount (in seconds)
              */

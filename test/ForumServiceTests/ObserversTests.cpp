@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_by_name_invokes_observer )
     BOOST_REQUIRE_EQUAL("SampleUser", nameToBeRetrieved);
 }
 
-BOOST_AUTO_TEST_CASE( Modifying_a_user_invokes_observer )
+BOOST_AUTO_TEST_CASE( Modifying_a_user_name_invokes_observer )
 {
     std::string newName;
     auto userChange = User::ChangeType::None;
@@ -120,6 +120,26 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_invokes_observer )
     handlerToObj(handler, Forum::Commands::CHANGE_USER_NAME, { userId, "Xyz" });
     BOOST_REQUIRE_EQUAL("Xyz", newName);
     BOOST_REQUIRE_EQUAL(User::ChangeType::Name, userChange);
+}
+
+BOOST_AUTO_TEST_CASE( Modifying_a_user_info_invokes_observer )
+{
+    std::string newInfo;
+    auto userChange = User::ChangeType::None;
+    auto handler = createCommandHandler();
+
+    auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onChangeUser,
+                          [&](auto& _, auto& user, auto change)
+                          {
+                              newInfo = user.info();
+                              userChange = change;
+                          });
+
+    auto userId = createUserAndGetId(handler, "Abc");
+
+    handlerToObj(handler, Forum::Commands::CHANGE_USER_INFO, { userId, "Hello World" });
+    BOOST_REQUIRE_EQUAL("Hello World", newInfo);
+    BOOST_REQUIRE_EQUAL(User::ChangeType::Info, userChange);
 }
 
 BOOST_AUTO_TEST_CASE( Deleting_a_user_invokes_observer )

@@ -17,6 +17,8 @@ namespace Forum
         {
             const std::string& name()     const { return name_; }
                   std::string& name()           { return name_; }
+            const std::string& info()     const { return info_; }
+                  std::string& info()           { return info_; }
             const Timestamp&   lastSeen() const { return lastSeen_; }
                   Timestamp&   lastSeen()       { return lastSeen_; }
             auto&              votedMessages()  { return votedMessages_; }
@@ -24,7 +26,8 @@ namespace Forum
             enum ChangeType : uint32_t
             {
                 None = 0,
-                Name
+                Name,
+                Info
             };
 
             User() : lastSeen_(0) {}
@@ -40,6 +43,7 @@ namespace Forum
 
         private:
             std::string name_;
+            std::string info_;
             Timestamp lastSeen_;
             std::set<DiscussionThreadMessageWeakRef, std::owner_less<DiscussionThreadMessageWeakRef>> votedMessages_;
 

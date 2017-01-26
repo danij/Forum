@@ -28,6 +28,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const User& user)
         << objStart
             << propertySafeName("id", user.id())
             << propertySafeName("name", user.name())
+            << propertySafeName("info", user.info())
             << propertySafeName("created", user.created())
             << propertySafeName("lastSeen", user.lastSeen())
             << propertySafeName("threadCount", user.threadsById().size())

@@ -82,6 +82,8 @@ namespace Forum
             virtual void addNewUser(const std::string& name, std::ostream& output) = 0;
             virtual void changeUserName(const Entities::IdType& id, const std::string& newName,
                                         std::ostream& output) = 0;
+            virtual void changeUserInfo(const Entities::IdType& id, const std::string& newInfo,
+                                        std::ostream& output) = 0;
             virtual void deleteUser(const Entities::IdType& id, std::ostream& output) = 0;
 
             virtual void addNewDiscussionThread(const std::string& name, std::ostream& output) = 0;

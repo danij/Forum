@@ -25,6 +25,7 @@ namespace Forum
             GET_USER_BY_ID,
             GET_USER_BY_NAME,
             CHANGE_USER_NAME,
+            CHANGE_USER_INFO,
             DELETE_USER,
 
             //discussion thread related

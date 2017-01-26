@@ -197,6 +197,43 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
                       });
 }
 
+void MemoryRepository::changeUserInfo(const IdType& id, const std::string& newInfo, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    auto config = getGlobalConfig();
+    
+    auto nrCharacters = countUTF8Characters(newInfo);
+    if (nrCharacters > config->user.maxInfoLength)
+    {
+        status = StatusCode::VALUE_TOO_LONG;
+        return;
+    }
+    if (nrCharacters < config->user.minInfoLength)
+    {
+        status = StatusCode::VALUE_TOO_SHORT;
+        return;
+    }
+
+    auto performedBy = preparePerformedBy();
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          collection.modifyUser(it, [&newInfo](User& user)
+                          {
+                              user.info() = newInfo;
+                          });
+                          writeEvents_.onChangeUser(createObserverContext(*performedBy.getAndUpdate(collection)),
+                                                    **it, User::ChangeType::Info);
+                      });
+}
+
 void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);

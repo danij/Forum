@@ -62,6 +62,8 @@ namespace Forum
             virtual void addNewUser(const std::string& name, std::ostream& output) override;
             virtual void changeUserName(const Entities::IdType& id, const std::string& newName,
                                         std::ostream& output) override;
+            virtual void changeUserInfo(const Entities::IdType& id, const std::string& newInfo,
+                                        std::ostream& output) override;
             virtual void deleteUser(const Entities::IdType& id, std::ostream& output) override;
 
             virtual void getDiscussionThreadsByName(std::ostream& output) const override;
