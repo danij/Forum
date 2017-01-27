@@ -125,6 +125,11 @@ void MemoryRepository::addNewDiscussionTag(const std::string& name, std::ostream
 void MemoryRepository::changeDiscussionTagName(const IdType& id, const std::string& newName, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
+    if ( ! id )
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
     auto validationCode = validateDiscussionTagName(newName, validDiscussionTagNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
@@ -160,7 +165,11 @@ void MemoryRepository::changeDiscussionTagName(const IdType& id, const std::stri
 void MemoryRepository::changeDiscussionTagUiBlob(const IdType& id, const std::string& blob, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    
+    if ( ! id )
+    {
+        status = StatusCode::INVALID_PARAMETERS;
+        return;
+    }
     if (blob.size() > static_cast<std::string::size_type>(getGlobalConfig()->discussionTag.maxUiBlobSize))
     {
         status = StatusCode::VALUE_TOO_LONG;
