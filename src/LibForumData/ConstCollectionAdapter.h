@@ -12,10 +12,10 @@ namespace Forum
     namespace Helpers
     {
         template <typename T, typename TCollection>
-        class ConstCollectionAdapter final
+        class ConstSharedPointerCollectionAdapter final
         {
         public:
-            explicit ConstCollectionAdapter(const TCollection& collection) : collection_(collection) {}
+            explicit ConstSharedPointerCollectionAdapter(const TCollection& collection) : collection_(collection) {}
 
             auto size()   const { return collection_.size(); }
 
@@ -68,8 +68,8 @@ namespace Forum
         template<typename TCollection>
         auto toConst(const TCollection& collection)
         {
-            return ConstCollectionAdapter<typename std::remove_pointer<typename TCollection::value_type::element_type>::type,
-                    TCollection>(collection);
+            return ConstSharedPointerCollectionAdapter<typename std::remove_pointer<typename 
+                TCollection::value_type::element_type>::type, TCollection>(collection);
         }
         
 
