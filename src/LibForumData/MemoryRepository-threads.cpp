@@ -267,6 +267,70 @@ void MemoryRepository::getDiscussionThreadsWithTagByMessageCount(const IdType& i
 }
 
 
+
+template<typename ThreadsIndexFn>
+static void writeDiscussionThreadsOfCategory(const IdType& id, std::ostream& output, 
+    PerformedByWithLastSeenUpdateGuard&& performedBy, const ResourceGuard<EntityCollection>& collection_, 
+    const ReadEvents& readEvents_, ThreadsIndexFn&& threadsIndexFn)
+{
+    if ( ! id )
+    {
+        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
+        return;
+    }
+    collection_.read([&](const EntityCollection& collection)
+                     {
+                         auto& currentUser = performedBy.get(collection);
+                         const auto& indexById = collection.categoriesById();
+                         auto it = indexById.find(id);
+                         if (it == indexById.end())
+                         {
+                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             return;
+                         }
+
+                         const auto& threads = threadsIndexFn(**it);
+                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
+
+                         writeDiscussionThreads(threads, output, currentUser.id());
+
+                         readEvents_.onGetDiscussionThreadsOfCategory(createObserverContext(currentUser), **it);
+                     });
+}
+
+void MemoryRepository::getDiscussionThreadsOfCategoryByName(const IdType& id, std::ostream& output) const
+{
+    writeDiscussionThreadsOfCategory(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& category)
+    {
+        return category.threadsByName();
+    });
+}
+
+void MemoryRepository::getDiscussionThreadsOfCategoryByCreated(const IdType& id, std::ostream& output) const
+{
+    writeDiscussionThreadsOfCategory(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& category)
+    {
+        return category.threadsByCreated();
+    });
+}
+
+void MemoryRepository::getDiscussionThreadsOfCategoryByLastUpdated(const IdType& id, std::ostream& output) const
+{
+    writeDiscussionThreadsOfCategory(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& category)
+    {
+        return category.threadsByLastUpdated();
+    });
+}
+
+void MemoryRepository::getDiscussionThreadsOfCategoryByMessageCount(const IdType& id, std::ostream& output) const
+{
+    writeDiscussionThreadsOfCategory(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& category)
+    {
+        return category.threadsByMessageCount();
+    });
+}
+
+
 static StatusCode validateDiscussionThreadName(const std::string& name, const boost::u32regex& regex, 
                                                const ConfigConstRef& config)
 {
@@ -321,8 +385,8 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
                           thread->name() = name;
                           thread->created() = thread->lastUpdated() = Context::getCurrentTime();
 
-                          collection.threads().insert(thread);
-                          createdBy->threads().insert(thread);
+                          collection.insertDiscussionThread(thread);
+                          createdBy->insertDiscussionThread(thread);
 
                           writeEvents_.onAddNewDiscussionThread(createObserverContext(*createdBy), *thread);
 
@@ -447,6 +511,19 @@ void MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const IdType
                                         tag.messageCount() += (*itFrom)->messages().size();
                                         //notify the thread collection of each tag that the thread has new messages
                                         tag.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
+                                    });
+                                }
+                            }
+                            for (auto& categoryWeak : thread.categoriesWeak())
+                            {
+                                if (auto categoryShared = categoryWeak.lock())
+                                {
+                                    collection.modifyDiscussionCategoryById(categoryShared->id(), 
+                                        [&itFrom, &thread](auto& category)
+                                    {
+                                        category.updateMessageCount(*itFrom, (*itFrom)->messages().size());
+                                        //notify the thread collection of each category that the thread has new messages
+                                        category.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
                                     });
                                 }
                             }

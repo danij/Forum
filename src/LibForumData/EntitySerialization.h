@@ -12,6 +12,7 @@ namespace Json
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionThreadMessage& thread);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionThread& thread);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionTag& tag);
+    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionCategory& category);
 }
 
 namespace Forum
@@ -27,6 +28,11 @@ namespace Forum
 
             bool hideVisitedThreadSinceLastChange = false;
             bool visitedThreadSinceLastChange = false;
+
+            bool hideDiscussionCategoryTags = false;
+            bool hideDiscussionCategoryParent = false;
+            bool showDiscussionCategoryChildren = false;
+            bool hideDiscussionCategoriesOfTags = false;
         };
 
         extern thread_local SerializationSettings serializationSettings;

@@ -25,9 +25,9 @@ namespace Forum
                     const boost::multi_index::const_mem_fun<User, const std::string&, &User::name>,
                     Helpers::StringAccentAndCaseInsensitiveLess>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByCreated>,
-                    const boost::multi_index::const_mem_fun<CreatedMixin, const Timestamp&, &User::created>>,
+                    const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &User::created>>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByLastSeen>,
-                    const boost::multi_index::const_mem_fun<User, const Timestamp&, &User::lastSeen>>
+                    const boost::multi_index::const_mem_fun<User, Timestamp, &User::lastSeen>>
             > {};
 
             typedef boost::multi_index_container<UserRef, UserCollectionIndices> UserCollection;
@@ -49,11 +49,11 @@ namespace Forum
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
              */
-            virtual void deleteUser(UserCollection::iterator iterator);
+            virtual UserRef deleteUser(UserCollection::iterator iterator);
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
              */
-            void deleteUserById(const IdType& id);
+            UserRef deleteUserById(const IdType& id);
 
         protected:
             UserCollection users_;

@@ -109,6 +109,7 @@ void MemoryRepository::addNewDiscussionTag(const std::string& name, std::ostream
                           }
 
                           auto tag = std::make_shared<DiscussionTag>();
+                          tag->modifyWithNotificationFn() = collection.modifyTagWithNotification();
                           tag->id() = generateUUIDString();
                           tag->name() = name;
                           tag->created() = Context::getCurrentTime();
@@ -262,11 +263,7 @@ void MemoryRepository::addDiscussionTagToThread(const IdType& tagId, const IdTyp
                               return;
                           }
 
-                          (*tagIt)->threads().insert(*threadIt);
-                          collection.modifyDiscussionTag(tagIt, [&threadIt](auto& tag)
-                          {
-                              tag.messageCount() += (*threadIt)->messages().size();
-                          });
+                          (*tagIt)->insertDiscussionThread(*threadIt);
 
                           writeEvents_.onAddDiscussionTagToThread(
                                   createObserverContext(*performedBy.getAndUpdate(collection)), **tagIt, **threadIt);
@@ -312,10 +309,6 @@ void MemoryRepository::removeDiscussionTagFromThread(const IdType& tagId, const 
                           }
 
                           (*tagIt)->deleteDiscussionThreadById(threadId);
-                          collection.modifyDiscussionTag(tagIt, [&threadIt](auto& tag)
-                          {
-                              tag.messageCount() -= (*threadIt)->messages().size();
-                          });
 
                           writeEvents_.onRemoveDiscussionTagFromThread(
                                   createObserverContext(*performedBy.getAndUpdate(collection)), **tagIt, **threadIt);
@@ -360,18 +353,19 @@ void MemoryRepository::mergeDiscussionTags(const IdType& fromId, const IdType& i
                         DiscussionTagWeakRef fromTagWeak(*itFrom);
                         DiscussionTagWeakRef intoTagWeak(*itInto);
 
-                        collection.modifyDiscussionTag(itInto, [&](DiscussionTag& tag)
+                        for (auto& thread : (*itFrom)->threads())
                         {
-                            tag.messageCount() = 0;
-                            for (auto& thread : (*itFrom)->threads())
+                            thread->addTag(intoTagWeak);
+                            (*itInto)->insertDiscussionThread(thread);
+                        }
+                        for (auto& categoryWeak : (*itFrom)->categoriesWeak())
+                        {
+                            if (auto category = categoryWeak.lock())
                             {
-                                tag.threads().insert(thread);
-                                thread->removeTag(fromTagWeak);
-                                thread->addTag(intoTagWeak);
-                                //recalculate total message count of into tag
-                                tag.messageCount() += thread->messages().size();
+                                category->addTag(*itInto);
                             }
-                        });
+                        }
+
                         collection.deleteDiscussionTag(itFrom);
                     });
 }

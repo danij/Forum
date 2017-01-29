@@ -16,7 +16,8 @@ MemoryRepository::MemoryRepository() : collection_(std::make_shared<EntityCollec
     validDiscussionThreadNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
     validDiscussionMessageContentRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
     validDiscussionMessageChangeReasonRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
-    validDiscussionTagNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$"))
+    validDiscussionTagNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
+    validDiscussionCategoryNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$"))
 {
 }
 
@@ -41,6 +42,7 @@ void MemoryRepository::getEntitiesCount(std::ostream& output) const
                          count.nrOfDiscussionThreads = static_cast<uint_fast32_t>(collection.threadsById().size());
                          count.nrOfDiscussionMessages = static_cast<uint_fast32_t>(collection.messagesById().size());
                          count.nrOfDiscussionTags = static_cast<uint_fast32_t>(collection.tagsById().size());
+                         count.nrOfDiscussionCategories = static_cast<uint_fast32_t>(collection.categoriesById().size());
 
                          writeSingleValueSafeName(output, "count", count);
 

@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include <boost/lexical_cast.hpp>
+
 using namespace Forum::Commands;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
@@ -27,6 +29,21 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
             return false;
         }
         return true;
+    }
+
+    template<typename T>
+    static bool convertTo(const std::string& value, T& result, std::ostream& output)
+    {
+        try
+        {
+            result = boost::lexical_cast<T>(value);
+            return true;
+        }
+        catch (...)
+        {
+            writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
+            return false;
+        }
     }
 
     static bool checkMinNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number)
@@ -301,82 +318,98 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_CATEGORY )
     {
-        output << "{}";
+        if ( ! checkMinNumberOfParameters(parameters, output, 1)) return;
+        auto& parentId = parameters.size() > 1 ? parameters[1] : "";
+        writeRepository->addNewDiscussionCategory(parameters[0], parentId, output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORY_BY_ID )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionCategoryById(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_NAME )
     {
-        output << "{}";
+        readRepository->getDiscussionCategoriesByName(output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT )
     {
-        output << "{}";
+        readRepository->getDiscussionCategoriesByMessageCount(output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_FROM_ROOT )
     {
-        output << "{}";
+        readRepository->getDiscussionCategoriesFromRoot(output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_NAME )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->changeDiscussionCategoryName(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_DESCRIPTION )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->changeDiscussionCategoryDescription(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_PARENT )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->changeDiscussionCategoryParent(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        int_fast16_t newDisplayOrder{ 0 };
+        if ( ! convertTo(parameters[1], newDisplayOrder, output)) return;
+        writeRepository->changeDiscussionCategoryDisplayOrder(parameters[0], newDisplayOrder, output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_CATEGORY )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        writeRepository->deleteDiscussionCategory(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG_TO_CATEGORY )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->addDiscussionTagToCategory(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( REMOVE_DISCUSSION_TAG_FROM_CATEGORY )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return;
+        writeRepository->removeDiscussionTagFromCategory(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsOfCategoryByName(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsOfCategoryByCreated(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsOfCategoryByLastUpdated(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT )
     {
-        output << "{}";
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return;
+        readRepository->getDiscussionThreadsOfCategoryByMessageCount(parameters[0], output);
     }
 };
 

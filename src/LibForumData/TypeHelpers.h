@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 /**
  * To be used when declaring an interface.
  * Move constructor/assignment operator is not implicitly declared if a destructor has been declared.
@@ -18,3 +20,15 @@
     virtual ~TypeName() = default; \
     TypeName(TypeName&&) = default; \
     TypeName& operator=(TypeName&&) = default;
+
+namespace Forum
+{
+    namespace Helpers
+    {
+        template<typename T>
+        bool ownerEqual(const std::weak_ptr<T>& first, const std::weak_ptr<T>& second)
+        {
+            return ! first.owner_before(second) && ! second.owner_before(first);
+        }
+    }
+}

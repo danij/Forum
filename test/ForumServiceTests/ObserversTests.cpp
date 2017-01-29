@@ -690,7 +690,10 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_parent_invokes_observer )
     auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onChangeDiscussionCategory, 
                           [&](auto& _, auto& category, auto change)
                           {
-                              //newParentId = category.parent();
+                              if (auto parent = category.parentWeak().lock())
+                              {
+                                  newParentId = static_cast<std::string>(parent->id());
+                              }
                               categoryChange = change;
                           });
 
@@ -733,7 +736,7 @@ BOOST_AUTO_TEST_CASE( Attaching_a_discussion_tag_to_a_category_invokes_observer 
                           });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
-    auto categoryId = createDiscussionThreadAndGetId(handler, "Category");
+    auto categoryId = createDiscussionCategoryAndGetId(handler, "Category");
 
     handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY, { tagId, categoryId });
 
@@ -754,7 +757,7 @@ BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_category_invokes_observe
                           });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
-    auto categoryId = createDiscussionThreadAndGetId(handler, "Category");
+    auto categoryId = createDiscussionCategoryAndGetId(handler, "Category");
 
     handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY, { tagId, categoryId });
     handlerToObj(handler, Forum::Commands::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, { tagId, categoryId });
@@ -777,7 +780,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_categories_invok
                               observedCategoryId = static_cast<std::string>(category.id());
                           });
 
-    auto categoryId = createDiscussionTagAndGetId(handler, "Category");
+    auto categoryId = createDiscussionCategoryAndGetId(handler, "Category");
 
     Forum::Commands::Command commands[] =
     {

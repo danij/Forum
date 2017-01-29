@@ -18,7 +18,7 @@ namespace Forum
     namespace Entities
     {
         /**
-         * Base class for storing a collection of discussion threads
+         * Base class for storing a collection of discussion tags
          * Using multiple inheritance instead of composition in order to allow easier customization of modify/delete behavior
          */
         struct DiscussionTagCollectionBase : private boost::noncopyable
@@ -65,11 +65,11 @@ namespace Forum
             /**
              * Safely deletes a discussion tag instance, removing it from all indexes it is registered in
              */
-            virtual void deleteDiscussionTag(DiscussionTagCollection::iterator iterator);
+            virtual DiscussionTagRef deleteDiscussionTag(DiscussionTagCollection::iterator iterator);
             /**
              * Safely deletes a discussion tag instance, removing it from all indexes it is registered in
              */
-            void deleteDiscussionTagById(const IdType& id);
+            DiscussionTagRef deleteDiscussionTagById(const IdType& id);
 
         protected:
             DiscussionTagCollection tags_;

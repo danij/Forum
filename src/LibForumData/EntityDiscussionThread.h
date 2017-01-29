@@ -15,17 +15,24 @@ namespace Forum
     {
         struct User;
         struct DiscussionTag;
+        struct DiscussionCategory;
 
         struct DiscussionThread final : public Identifiable, public CreatedMixin, public LastUpdatedMixin, 
-                                        public DiscussionThreadMessageCollectionBase
+                                        public DiscussionThreadMessageCollectionBase, public IndicateDeletionInProgress,
+                                        public std::enable_shared_from_this<DiscussionThread>
         {
             const std::string& name()                      const { return name_; }
                   std::string& name()                            { return name_; }
             const User&        createdBy()                 const { return createdBy_; }
                   User&        createdBy()                       { return createdBy_; }
-            auto               tags()                      const { return Helpers::toConst(tags_); }
-            auto&              tagsWeak()                        { return tags_; }
-            auto               nrOfVisitorsSinceLastEdit() const { return visitorsSinceLastEdit_.size(); }
+
+                  auto         tags()                      const { return Helpers::toConst(tags_); }
+                  auto&        tagsWeak()                        { return tags_; }
+
+                  auto         categories()                const { return Helpers::toConst(categories_); }
+                  auto&        categoriesWeak()                  { return categories_; }
+
+                  auto         nrOfVisitorsSinceLastEdit() const { return visitorsSinceLastEdit_.size(); }
 
             DiscussionThreadMessage::VoteScoreType voteScore() const
             {
@@ -76,9 +83,29 @@ namespace Forum
                 return std::get<1>(tags_.insert(std::move(tag)));
             }
 
-            bool removeTag(std::weak_ptr<DiscussionTag> tag)
+            bool removeTag(const std::weak_ptr<DiscussionTag>& tag)
             {
-                return tags_.erase(std::move(tag)) > 0;
+                return tags_.erase(tag) > 0;
+            }
+
+            bool addCategory(std::weak_ptr<DiscussionCategory> category)
+            {
+                return std::get<1>(categories_.insert(std::move(category)));
+            }
+
+            bool removeCategory(const std::weak_ptr<DiscussionCategory>& category)
+            {
+                return categories_.erase(category) > 0;
+            }
+
+            Timestamp latestMessageCreated() const
+            {
+                auto& index = messagesByCreated();
+                if ( ! index.size())
+                {
+                    return 0;
+                }
+                return (*index.rbegin())->created();
             }
 
         private:
@@ -87,6 +114,7 @@ namespace Forum
             mutable std::atomic_int_fast64_t visited_;
             std::set<boost::uuids::uuid> visitorsSinceLastEdit_;
             std::set<std::weak_ptr<DiscussionTag>, std::owner_less<std::weak_ptr<DiscussionTag>>> tags_;
+            std::set<std::weak_ptr<DiscussionCategory>, std::owner_less<std::weak_ptr<DiscussionCategory>>> categories_;
         };
 
         typedef std::shared_ptr<DiscussionThread> DiscussionThreadRef;

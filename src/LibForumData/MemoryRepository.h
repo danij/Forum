@@ -132,6 +132,35 @@ namespace Forum
             virtual void mergeDiscussionTags(const Entities::IdType& fromId, const Entities::IdType& intoId,
                                              std::ostream& output) override;
 
+            virtual void addNewDiscussionCategory(const std::string& name, const Entities::IdType& parentId,
+                                                  std::ostream& output) override;
+            virtual void changeDiscussionCategoryName(const Entities::IdType& id, const std::string& newName,
+                                                      std::ostream& output) override;
+            virtual void changeDiscussionCategoryDescription(const Entities::IdType& id, const std::string& newDescription,
+                                                             std::ostream& output) override;
+            virtual void changeDiscussionCategoryParent(const Entities::IdType& id, const Entities::IdType& newParentId,
+                                                        std::ostream& output) override;
+            virtual void changeDiscussionCategoryDisplayOrder(const Entities::IdType& id, int_fast16_t newDisplayOrder,
+                                                              std::ostream& output) override;
+            virtual void deleteDiscussionCategory(const Entities::IdType& id, std::ostream& output) override;
+            virtual void getDiscussionCategoryById(const Entities::IdType& id, std::ostream& output) const override;
+            virtual void getDiscussionCategoriesByName(std::ostream& output) const override;
+            virtual void getDiscussionCategoriesByMessageCount(std::ostream& output) const override;
+            virtual void getDiscussionCategoriesFromRoot(std::ostream& output) const override;
+            virtual void addDiscussionTagToCategory(const Entities::IdType& tagId, const Entities::IdType& categoryId, 
+                                                    std::ostream& output) override;
+            virtual void removeDiscussionTagFromCategory(const Entities::IdType& tagId, const Entities::IdType& categoryId, 
+                                                         std::ostream& output) override;
+            virtual void getDiscussionThreadsOfCategoryByName(const Entities::IdType& id,
+                                                              std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfCategoryByCreated(const Entities::IdType& id,
+                                                                 std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfCategoryByLastUpdated(const Entities::IdType& id,
+                                                                     std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfCategoryByMessageCount(const Entities::IdType& id,
+                                                                      std::ostream& output) const override;
+
+
         private:
             void voteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output, bool up);
 
@@ -151,6 +180,7 @@ namespace Forum
             boost::u32regex validDiscussionMessageContentRegex;
             boost::u32regex validDiscussionMessageChangeReasonRegex;
             boost::u32regex validDiscussionTagNameRegex;
+            boost::u32regex validDiscussionCategoryNameRegex;
         };
 
         inline ObserverContext_ createObserverContext(PerformedByType performedBy)

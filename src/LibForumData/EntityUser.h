@@ -19,7 +19,7 @@ namespace Forum
                   std::string& name()           { return name_; }
             const std::string& info()     const { return info_; }
                   std::string& info()           { return info_; }
-            const Timestamp&   lastSeen() const { return lastSeen_; }
+                  Timestamp    lastSeen() const { return lastSeen_; }
                   Timestamp&   lastSeen()       { return lastSeen_; }
             auto&              votedMessages()  { return votedMessages_; }
 

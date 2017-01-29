@@ -158,7 +158,8 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
                           message->creationDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
 
                           collection.messages().insert(message);
-                          collection.modifyDiscussionThread(threadIt, [&collection, &message](DiscussionThread& thread)
+                          collection.modifyDiscussionThread(threadIt, [&collection, &message, &threadIt]
+                            (DiscussionThread& thread)
                           {
                               thread.messages().insert(message);
                               thread.resetVisitorsSinceLastEdit();
@@ -171,6 +172,19 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
                                           tag.messageCount() += 1;
                                           //notify the thread collection of each tag that the thread has a new message
                                           tag.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
+                                      });
+                                  }
+                              }
+                              for (auto& categoryWeak : thread.categoriesWeak())
+                              {
+                                  if (auto categoryShared = categoryWeak.lock())
+                                  {
+                                      collection.modifyDiscussionCategoryById(categoryShared->id(), 
+                                          [&thread, &threadIt](auto& category)
+                                      {
+                                          category.updateMessageCount(*threadIt, 1);
+                                          //notify the thread collection of each category that the thread has a new message
+                                          category.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
                                       });
                                   }
                               }
@@ -306,7 +320,8 @@ void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, cons
                           auto messageClone = std::make_shared<DiscussionThreadMessage>(**messageIt, **itInto);
                                               
                           collection.messages().insert(messageClone);
-                          collection.modifyDiscussionThread(itInto, [&collection, &messageClone](DiscussionThread& thread)
+                          collection.modifyDiscussionThread(itInto, [&collection, &messageClone, &itInto]
+                            (DiscussionThread& thread)
                           {
                               thread.messages().insert(messageClone);
                               thread.resetVisitorsSinceLastEdit();
@@ -320,6 +335,17 @@ void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, cons
                                       });
                                   }
                               }                          
+                              for (auto& categoryWeak : thread.categoriesWeak())
+                              {
+                                  if (auto categoryShared = categoryWeak.lock())
+                                  {
+                                      collection.modifyDiscussionCategoryById(categoryShared->id(), 
+                                          [&itInto](auto& category)
+                                      {
+                                          category.updateMessageCount(*itInto, 1);
+                                      });
+                                  }
+                              }
                           });
                     
                           createdBy.messages().insert(messageClone);

@@ -599,8 +599,8 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_merged_keeping_all_discussion_threa
     BOOST_REQUIRE_EQUAL(tag1Id, tags[0].id);
     BOOST_REQUIRE_EQUAL("Tag1", tags[0].name);
 
-    auto threads = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME)
-                                   .get_child("threads"));
+    auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME, 
+                                                { tag1Id }).get_child("threads"));
 
     BOOST_REQUIRE_EQUAL(3, threads.size());
     BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);

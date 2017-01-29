@@ -30,7 +30,7 @@ namespace Forum
                     boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionThreadMessageCollectionById>,
             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionThreadMessage::id>>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadMessageCollectionByCreated>,
-                    const boost::multi_index::const_mem_fun<CreatedMixin, const Timestamp&,
+                    const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp,
                             &DiscussionThreadMessage::created>>
             > {};
 
@@ -58,11 +58,11 @@ namespace Forum
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */
-            virtual void deleteDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator);
+            virtual DiscussionThreadMessageRef deleteDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator);
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */
-            void deleteDiscussionThreadMessageById(const IdType& id);
+            DiscussionThreadMessageRef deleteDiscussionThreadMessageById(const IdType& id);
 
         protected:
             DiscussionThreadMessageCollection messages_;

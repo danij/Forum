@@ -31,6 +31,7 @@ namespace Forum
             struct DiscussionThreadCollectionByName {};
             struct DiscussionThreadCollectionByCreated {};
             struct DiscussionThreadCollectionByLastUpdated {};
+            struct DiscussionThreadCollectionByLatestMessageCreated {};
             struct DiscussionThreadCollectionByMessageCount {};
 
             struct DiscussionThreadCollectionIndices : boost::multi_index::indexed_by<
@@ -40,11 +41,14 @@ namespace Forum
                             const boost::multi_index::const_mem_fun<DiscussionThread, const std::string&,
                                     &DiscussionThread::name>, Helpers::StringAccentAndCaseInsensitiveLess>,
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByCreated>,
-                            const boost::multi_index::const_mem_fun<CreatedMixin, const Timestamp&,
+                            const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp,
                                     &DiscussionThread::created>>,
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLastUpdated>,
-                            const boost::multi_index::const_mem_fun<LastUpdatedMixin, const Timestamp&,
+                            const boost::multi_index::const_mem_fun<LastUpdatedMixin, Timestamp, 
                                     &DiscussionThread::lastUpdated>>,
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLatestMessageCreated>,
+                            const boost::multi_index::const_mem_fun<DiscussionThread, Timestamp,
+                                    &DiscussionThread::latestMessageCreated>>,
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByMessageCount>,
                             const boost::multi_index::const_mem_fun<DiscussionThreadMessageCollectionBase,
                                     std::result_of<decltype(&DiscussionThread::messageCount)(DiscussionThread*)>::type,
@@ -63,9 +67,24 @@ namespace Forum
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByCreated>()); }
             auto  threadsByLastUpdated() const
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLastUpdated>()); }
+            auto  threadsByLatestMessageCreated() const
+                { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLatestMessageCreated>()); }
             auto  threadsByMessageCount() const
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByMessageCount>()); }
 
+            bool containsThread(const DiscussionThreadRef& thread) const
+            {
+                if ( ! thread)
+                {
+                    return false;
+                }
+                return threads_.find(thread->id()) != threads_.end();
+            }
+
+            /**
+             * Inserts a thread into a collection, returning false if the thread was already present
+             */
+            virtual bool insertDiscussionThread(const DiscussionThreadRef& thread);
             /**
              * Enables a safe modification of a discussion thread instance,
              * refreshing all indexes the thread is registered in
@@ -80,11 +99,11 @@ namespace Forum
             /**
              * Safely deletes a discussion thread instance, removing it from all indexes it is registered in
              */
-            virtual void deleteDiscussionThread(DiscussionThreadCollection::iterator iterator);
+            virtual DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator);
             /**
              * Safely deletes a discussion thread instance, removing it from all indexes it is registered in
              */
-            void deleteDiscussionThreadById(const IdType& id);
+            DiscussionThreadRef deleteDiscussionThreadById(const IdType& id);
 
         protected:
             DiscussionThreadCollection threads_;

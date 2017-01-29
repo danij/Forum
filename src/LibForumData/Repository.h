@@ -55,6 +55,21 @@ namespace Forum
                                                                   std::ostream& output) const = 0;
             virtual void getDiscussionThreadsWithTagByMessageCount(const Entities::IdType& id, 
                                                                    std::ostream& output) const = 0;
+
+            virtual void getDiscussionCategoryById(const Entities::IdType& id, std::ostream& output) const = 0;
+            virtual void getDiscussionCategoriesByName(std::ostream& output) const = 0;
+            virtual void getDiscussionCategoriesByMessageCount(std::ostream& output) const = 0;
+            virtual void getDiscussionCategoriesFromRoot(std::ostream& output) const = 0;
+
+            virtual void getDiscussionThreadsOfCategoryByName(const Entities::IdType& id,
+                                                              std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsOfCategoryByCreated(const Entities::IdType& id,
+                                                                 std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsOfCategoryByLastUpdated(const Entities::IdType& id,
+                                                                     std::ostream& output) const = 0;
+            virtual void getDiscussionThreadsOfCategoryByMessageCount(const Entities::IdType& id,
+                                                                      std::ostream& output) const = 0;
+
         };
 
         typedef std::shared_ptr<IReadRepository> ReadRepositoryRef;
@@ -116,6 +131,23 @@ namespace Forum
                                                        std::ostream& output) = 0;
             virtual void mergeDiscussionTags(const Entities::IdType& fromId, const Entities::IdType& intoId,
                                              std::ostream& output) = 0;
+
+            virtual void addNewDiscussionCategory(const std::string& name, const Entities::IdType& parentId, 
+                                                  std::ostream& output) = 0;
+            virtual void changeDiscussionCategoryName(const Entities::IdType& id, const std::string& newName,
+                                                      std::ostream& output) = 0;
+            virtual void changeDiscussionCategoryDescription(const Entities::IdType& id, const std::string& newDescription,
+                                                             std::ostream& output) = 0;
+            virtual void changeDiscussionCategoryParent(const Entities::IdType& id, const Entities::IdType& newParentId,
+                                                        std::ostream& output) = 0;
+            virtual void changeDiscussionCategoryDisplayOrder(const Entities::IdType& id, int_fast16_t newDisplayOrder,
+                                                              std::ostream& output) = 0;
+            virtual void deleteDiscussionCategory(const Entities::IdType& id, std::ostream& output) = 0;
+            virtual void addDiscussionTagToCategory(const Entities::IdType& tagId, const Entities::IdType& categoryId, 
+                                                    std::ostream& output) = 0;
+            virtual void removeDiscussionTagFromCategory(const Entities::IdType& tagId, const Entities::IdType& categoryId, 
+                                                         std::ostream& output) = 0;
+
         };
 
         typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;

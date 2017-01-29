@@ -37,10 +37,18 @@ namespace Forum
             IdType id_;
         };
 
+        struct IndicateDeletionInProgress
+        {
+            bool&  aboutToBeDeleted() { return aboutToBeDeleted_; }
+
+        private:
+            bool aboutToBeDeleted_ = false;
+        };
+
         struct CreatedMixin
         {
-            const Timestamp& created() const { return created_; }
-                  Timestamp& created()       { return created_; }
+            Timestamp  created() const { return created_; }
+            Timestamp& created()       { return created_; }
 
             CreatedMixin() : created_(0) {}
 
@@ -50,8 +58,8 @@ namespace Forum
 
         struct LastUpdatedMixin
         {
-            const Timestamp& lastUpdated() const { return lastUpdated_; }
-                  Timestamp& lastUpdated()       { return lastUpdated_; }
+            Timestamp  lastUpdated() const { return lastUpdated_; }
+            Timestamp& lastUpdated()       { return lastUpdated_; }
 
             LastUpdatedMixin() : lastUpdated_(0) {}
 

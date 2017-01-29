@@ -45,6 +45,7 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext)> onGetDiscussionTags;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onGetDiscussionThreadsWithTag;
 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionCategory&)> onGetDiscussionCategory;
             boost::signals2::signal<void(ObserverContext)> onGetDiscussionCategories;
             boost::signals2::signal<void(ObserverContext)> onGetRootDiscussionCategories;
             boost::signals2::signal<void(ObserverContext,
