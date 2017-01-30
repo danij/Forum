@@ -52,7 +52,6 @@ namespace Forum
         {
             SortOrder sortOrder = SortOrder::Ascending;
             int_fast32_t pageNumber = 0;
-            int_fast32_t pageSize = std::numeric_limits<decltype(pageSize)>::max();
         };
 
         const DisplayContext& getDisplayContext();

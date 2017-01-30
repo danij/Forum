@@ -44,6 +44,11 @@ namespace Forum
                 return boost::make_transform_iterator(collection_.crend(), getPointer);
             }
 
+            auto nth(typename TCollection::size_type n) const
+            {
+                return boost::make_transform_iterator(collection_.nth(n), getPointer);
+            }
+
             template <typename TSearchType>
             auto find(const TSearchType& value) const
             {

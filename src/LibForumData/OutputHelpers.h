@@ -44,6 +44,62 @@ namespace Forum
                     << Json::propertySafeName(name, value)
                 << Json::objEnd;
         }
+        
+        template<typename Collection, typename InterceptorFn>
+        void writeEntitiesWithPagination(const Collection& collection, const char* propertyName, std::ostream& output,
+            int_fast32_t pageNumber, int_fast32_t pageSize, bool ascending, InterceptorFn&& interceptor)
+        {
+            auto count = static_cast<int_fast32_t>(collection.size());
+
+            typedef decltype(collection.begin()) IteratorType;
+
+            IteratorType itStart, itEnd;
+
+            auto firstElementIndex = static_cast<decltype(count)>(pageNumber * pageSize);
+            if (ascending)
+            {
+
+                itStart = collection.nth(firstElementIndex);
+                itEnd = collection.nth(firstElementIndex + pageSize);
+            }
+            else
+            {
+                itStart = collection.nth(std::max(count - firstElementIndex, 0));
+                itEnd = collection.nth(std::max(count - firstElementIndex - pageSize, 0));
+            }
+
+            Json::JsonWriter writer(output);
+            writer << Json::objStart
+                << Json::propertySafeName("totalCount", count)
+                << Json::propertySafeName("pageSize", pageSize)
+                << Json::propertySafeName("page", pageNumber);
+
+            //need to write the array manually, so that we can control the advance direction of iteration
+            writer.newPropertyWithSafeName(propertyName);
+            writer << Json::arrayStart;
+            if (ascending)
+            {
+                while (itStart != itEnd)
+                {
+                    writer << interceptor(*itStart);
+                    ++itStart;
+                }
+            }
+            else
+            {
+                auto start = collection.begin();
+                if (itStart != start)
+                {
+                    while (itStart != itEnd)
+                    {
+                        writer << interceptor(*--itStart);
+                    }
+                }
+            }
+            writer << Json::arrayEnd;
+
+            writer << Json::objEnd;
+        }
 
         /**
          * Helper for writing a status message in the output if no other output is provided

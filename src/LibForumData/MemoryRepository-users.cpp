@@ -21,14 +21,12 @@ static void writeUsers(std::ostream& output, PerformedByWithLastSeenUpdateGuard&
     collection_.read([&](const EntityCollection& collection)
                      {
                          const auto users = usersIndexFn(collection);
-                         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-                         {
-                             writeSingleObjectSafeName(output, "users", Json::enumerate(users.begin(), users.end()));
-                         }
-                         else
-                         {
-                             writeSingleObjectSafeName(output, "users", Json::enumerate(users.rbegin(), users.rend()));
-                         }
+                         auto pageSize = getGlobalConfig()->user.maxUsersPerPage;
+                         auto& displayContext = Context::getDisplayContext();
+
+                         writeEntitiesWithPagination(users, "users", output, displayContext.pageNumber, pageSize, 
+                             displayContext.sortOrder == Context::SortOrder::Ascending, [](auto u) { return u; });
+
                          readEvents_.onGetUsers(createObserverContext(performedBy.get(collection)));
                      });
 }

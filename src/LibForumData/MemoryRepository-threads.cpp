@@ -19,7 +19,7 @@ static void writeDiscussionThreads(ThreadsCollection&& threads, std::ostream& ou
 {
     BoolTemporaryChanger _(serializationSettings.visitedThreadSinceLastChange, false);
 
-    auto preWriteAction = [&](const auto& currentThread)
+    auto writeInterceptor = [&](auto currentThread)
     {
         bool visitedThreadSinceLastChange = false;
         if (currentThread && (currentUserId != AnonymousUserId))
@@ -27,19 +27,14 @@ static void writeDiscussionThreads(ThreadsCollection&& threads, std::ostream& ou
             visitedThreadSinceLastChange = currentThread->hasVisitedSinceLastEdit(currentUserId);
         }
         serializationSettings.visitedThreadSinceLastChange = visitedThreadSinceLastChange;
+        return currentThread;
     };
 
-    if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-    {
-        writeSingleObjectSafeName(output, "threads",
-            Json::enumerate(threads.begin(), threads.end(), preWriteAction));
-    }
-    else
-    {
-        writeSingleObjectSafeName(output, "threads",
-            Json::enumerate(threads.rbegin(), threads.rend(), preWriteAction));
-    }
+    auto pageSize = getGlobalConfig()->discussionThread.maxThreadsPerPage;
+    auto& displayContext = Context::getDisplayContext();
 
+    writeEntitiesWithPagination(threads, "threads", output, displayContext.pageNumber, pageSize,
+        displayContext.sortOrder == Context::SortOrder::Ascending, writeInterceptor);
 }
 
 template<typename ThreadsIndexFn>

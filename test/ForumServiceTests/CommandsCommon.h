@@ -25,7 +25,6 @@ namespace Forum
         struct DisplaySettings
         {
             int pageNumber = 0;
-            int pageSize = std::numeric_limits<int>::max();
             Context::SortOrder sortOrder = Context::SortOrder::Ascending;
 
             DisplaySettings() {}

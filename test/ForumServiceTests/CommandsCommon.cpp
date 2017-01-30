@@ -47,15 +47,12 @@ boost::property_tree::ptree Forum::Helpers::handlerToObj(CommandHandlerRef& hand
                                                          const std::vector<std::string>& parameters)
 {
     auto oldPageNumber = Context::getDisplayContext().pageNumber;
-    auto oldPageSize = Context::getDisplayContext().pageSize;
     auto oldSortOrder = Context::getDisplayContext().sortOrder;
 
     auto _ = createDisposer([oldPageNumber]() { Context::getMutableDisplayContext().pageNumber = oldPageNumber; });
-    auto __ = createDisposer([oldPageSize]() { Context::getMutableDisplayContext().pageSize = oldPageSize; });
     auto ___ = createDisposer([oldSortOrder]() { Context::getMutableDisplayContext().sortOrder = oldSortOrder; });
 
     Context::getMutableDisplayContext().pageNumber = displaySettings.pageNumber;
-    Context::getMutableDisplayContext().pageSize = displaySettings.pageSize;
     Context::getMutableDisplayContext().sortOrder = displaySettings.sortOrder;
 
     return handlerToObj(handler, command, parameters);

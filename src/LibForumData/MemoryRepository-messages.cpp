@@ -38,16 +38,13 @@ void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(const IdType& 
         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
         BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadMessages, true);
-        if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
-        {
-            writeSingleObjectSafeName(output, "messages",
-                Json::enumerate(messages.begin(), messages.end()));
-        }
-        else
-        {
-            writeSingleObjectSafeName(output, "messages",
-                Json::enumerate(messages.rbegin(), messages.rend()));
-        }
+
+        auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
+        auto& displayContext = Context::getDisplayContext();
+
+        writeEntitiesWithPagination(messages, "messages", output, displayContext.pageNumber, pageSize,
+            displayContext.sortOrder == Context::SortOrder::Ascending, [](auto m) { return m; });
+
         readEvents_.onGetDiscussionThreadMessagesOfUser(createObserverContext(performedBy.get(collection)), **it);
     });
 }

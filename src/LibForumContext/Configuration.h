@@ -17,6 +17,7 @@ namespace Forum
              * Do not update last seen more frequently than this amount (in seconds)
              */
             int_fast32_t lastSeenUpdatePrecision = 300;
+            int_fast32_t maxUsersPerPage = 20;
         };
 
         struct DiscussionThreadConfig
@@ -27,6 +28,7 @@ namespace Forum
              * Do not store more than this amount of users in the visited since last collection of a discussion thread
              */
             int_fast32_t maxUsersInVisitedSinceLastChange = 1024;
+            int_fast32_t maxThreadsPerPage = 25;
         };
 
         struct DiscussionThreadMessageConfig
@@ -35,6 +37,7 @@ namespace Forum
             int_fast32_t maxContentLength = 65535;
             int_fast16_t minChangeReasonLength = 0;
             int_fast16_t maxChangeReasonLength = 64;
+            int_fast32_t maxMessagesPerPage = 20;
         };
 
         struct DiscussionTagConfig

@@ -66,6 +66,20 @@ struct SerializedUserDiscussionThreadMessage
 
 CREATE_FUNCTION_ALIAS(deserializeUserThreadMessages, deserializeEntities<SerializedUserDiscussionThreadMessage>)
 
+struct SerializedUser
+{
+    std::string id;
+    std::string name;
+
+    void populate(const boost::property_tree::ptree& tree)
+    {
+        id = tree.get<std::string>("id");
+        name = tree.get<std::string>("name");
+    }
+};
+
+CREATE_FUNCTION_ALIAS(deserializeUsers, deserializeEntities<SerializedUser>)
+
 BOOST_AUTO_TEST_CASE( User_count_is_initially_zero )
 {
     auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::COUNT_ENTITIES);
@@ -1494,4 +1508,132 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_of_users_can_be_retrieved_sorted_by_mes
     BOOST_REQUIRE_EQUAL("Abc", threads[1].name);
     BOOST_REQUIRE_EQUAL(0, threads[1].messageCount);
 
+}
+
+BOOST_AUTO_TEST_CASE( Retrieving_users_involves_pagination )
+{
+    auto handler = createCommandHandler();
+    std::vector<std::string> userIds;
+    for (size_t i = 0; i < 10; i++)
+    {
+        userIds.push_back(createUserAndGetId(handler, "User" + std::to_string(i + 101)));
+    }
+    const int pageSize = 3;
+
+    ConfigChanger _([pageSize](auto& config)
+                    {
+                        config.user.maxUsersPerPage = pageSize;
+                    });
+
+    DisplaySettings settings;
+    settings.sortOrder = SortOrder::Ascending;
+
+    //get full pages
+    for (size_t i = 0; i < pageSize; i++)
+    {
+        settings.pageNumber = i;
+        auto page = handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, settings);
+
+        BOOST_REQUIRE_EQUAL(10, page.get<int>("totalCount"));
+        BOOST_REQUIRE_EQUAL(pageSize, page.get<int>("pageSize"));
+        BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
+
+        auto users = deserializeUsers(page.get_child("users"));
+        BOOST_REQUIRE_EQUAL(pageSize, users.size());
+
+        for (size_t j = 0; j < users.size(); j++)
+        {
+            BOOST_REQUIRE_EQUAL(userIds[pageSize*i + j], users[j].id);
+            BOOST_REQUIRE_EQUAL("User" + std::to_string(pageSize*i + j + 101), users[j].name);
+        }
+    }
+
+    //get last, partial page
+    settings.pageNumber = 3;
+    auto page = handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, settings);
+
+    BOOST_REQUIRE_EQUAL(10, page.get<int>("totalCount"));
+    BOOST_REQUIRE_EQUAL(pageSize, page.get<int>("pageSize"));
+    BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
+
+    auto users = deserializeUsers(page.get_child("users"));
+    BOOST_REQUIRE_EQUAL(1, users.size());
+
+    BOOST_REQUIRE_EQUAL(userIds[9], users[0].id);
+    BOOST_REQUIRE_EQUAL("User110", users[0].name);
+    
+    //get empty page
+    settings.pageNumber = 4;
+    page = handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, settings);
+
+    BOOST_REQUIRE_EQUAL(10, page.get<int>("totalCount"));
+    BOOST_REQUIRE_EQUAL(pageSize, page.get<int>("pageSize"));
+    BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
+
+    users = deserializeUsers(page.get_child("users"));
+    BOOST_REQUIRE_EQUAL(0, users.size());
+}
+
+BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descending_order )
+{
+    auto handler = createCommandHandler();
+    std::vector<std::string> userIds;
+    for (size_t i = 0; i < 10; i++)
+    {
+        userIds.push_back(createUserAndGetId(handler, "User" + std::to_string(i + 101)));
+    }
+    const int pageSize = 3;
+
+    ConfigChanger _([pageSize](auto& config)
+                    {
+                        config.user.maxUsersPerPage = pageSize;
+                    });
+
+    DisplaySettings settings;
+    settings.sortOrder = SortOrder::Descending;
+    
+    //get full pages
+    for (size_t i = 0; i < pageSize; i++)
+    {
+        settings.pageNumber = i;
+        auto page = handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, settings);
+
+        BOOST_REQUIRE_EQUAL(10, page.get<int>("totalCount"));
+        BOOST_REQUIRE_EQUAL(pageSize, page.get<int>("pageSize"));
+        BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
+
+        auto users = deserializeUsers(page.get_child("users"));
+        BOOST_REQUIRE_EQUAL(pageSize, users.size());
+
+        for (size_t j = 0; j < users.size(); j++)
+        {
+            BOOST_REQUIRE_EQUAL(userIds[9 - (pageSize*i + j)], users[j].id);
+            BOOST_REQUIRE_EQUAL("User" + std::to_string(9 - (pageSize*i + j) + 101), users[j].name);
+        }
+    }
+
+    //get last, partial page
+    settings.pageNumber = 3;
+    auto page = handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, settings);
+
+    BOOST_REQUIRE_EQUAL(10, page.get<int>("totalCount"));
+    BOOST_REQUIRE_EQUAL(pageSize, page.get<int>("pageSize"));
+    BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
+
+    auto users = deserializeUsers(page.get_child("users"));
+    BOOST_REQUIRE_EQUAL(1, users.size());
+
+    BOOST_REQUIRE_EQUAL(userIds[0], users[0].id);
+    BOOST_REQUIRE_EQUAL("User101", users[0].name);
+    
+    //get empty page
+    settings.pageNumber = 4;
+    page = handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, settings);
+
+    BOOST_REQUIRE_EQUAL(10, page.get<int>("totalCount"));
+    BOOST_REQUIRE_EQUAL(pageSize, page.get<int>("pageSize"));
+    BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
+
+    users = deserializeUsers(page.get_child("users"));
+    BOOST_REQUIRE_EQUAL(0, users.size());
 }
