@@ -38,7 +38,7 @@ namespace Forum
                     DiscussionThreadMessageCollection;
 
             auto& messages() { return messages_; }
-            auto  messageCount() const { return messages_.size(); }
+            auto  messageCount() const { return static_cast<int_fast32_t>(messages_.size()); }
             auto  messagesById() const
             { return Helpers::toConst(messages_.get<DiscussionThreadMessageCollectionById>()); }
             auto  messagesByCreated() const
