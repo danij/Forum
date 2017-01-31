@@ -65,8 +65,8 @@ namespace Forum
             }
             else
             {
-                itStart = collection.nth(std::max(count - firstElementIndex, 0));
-                itEnd = collection.nth(std::max(count - firstElementIndex - pageSize, 0));
+                itStart = collection.nth(std::max(count - firstElementIndex, static_cast<decltype(count)>(0)));
+                itEnd = collection.nth(std::max(count - firstElementIndex - pageSize, static_cast<decltype(count)>(0)));
             }
 
             writer << Json::propertySafeName("totalCount", count)
