@@ -44,9 +44,9 @@ namespace Forum
                     << Json::propertySafeName(name, value)
                 << Json::objEnd;
         }
-        
+
         template<typename Collection, typename InterceptorFn>
-        void writeEntitiesWithPagination(const Collection& collection, const char* propertyName, std::ostream& output,
+        void writeEntitiesWithPagination(const Collection& collection, const char* propertyName, Json::JsonWriter& writer,
             int_fast32_t pageNumber, int_fast32_t pageSize, bool ascending, InterceptorFn&& interceptor)
         {
             auto count = static_cast<int_fast32_t>(collection.size());
@@ -55,7 +55,8 @@ namespace Forum
 
             IteratorType itStart, itEnd;
 
-            auto firstElementIndex = static_cast<decltype(count)>(pageNumber * pageSize);
+            auto firstElementIndex = std::max(static_cast<decltype(count)>(0), 
+                                              static_cast<decltype(count)>(pageNumber * pageSize));
             if (ascending)
             {
 
@@ -68,11 +69,9 @@ namespace Forum
                 itEnd = collection.nth(std::max(count - firstElementIndex - pageSize, 0));
             }
 
-            Json::JsonWriter writer(output);
-            writer << Json::objStart
-                << Json::propertySafeName("totalCount", count)
-                << Json::propertySafeName("pageSize", pageSize)
-                << Json::propertySafeName("page", pageNumber);
+            writer << Json::propertySafeName("totalCount", count)
+                   << Json::propertySafeName("pageSize", pageSize)
+                   << Json::propertySafeName("page", pageNumber);
 
             //need to write the array manually, so that we can control the advance direction of iteration
             writer.newPropertyWithSafeName(propertyName);
@@ -97,6 +96,16 @@ namespace Forum
                 }
             }
             writer << Json::arrayEnd;
+        }
+        
+        template<typename Collection, typename InterceptorFn>
+        void writeEntitiesWithPagination(const Collection& collection, const char* propertyName, std::ostream& output,
+            int_fast32_t pageNumber, int_fast32_t pageSize, bool ascending, InterceptorFn&& interceptor)
+        {
+            Json::JsonWriter writer(output);
+            writer << Json::objStart;
+
+            writeEntitiesWithPagination(collection, propertyName, writer, pageNumber, pageSize, ascending, interceptor);
 
             writer << Json::objEnd;
         }

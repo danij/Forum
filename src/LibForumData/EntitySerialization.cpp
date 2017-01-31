@@ -1,6 +1,9 @@
 #include "EntitySerialization.h"
 #include "StateHelpers.h"
+#include "OutputHelpers.h"
 
+using namespace Forum;
+using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Json;
@@ -153,7 +156,11 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
     }
     if ( ! serializationSettings.hideDiscussionThreadMessages)
     {
-        writer << propertySafeName("messages", enumerate(messagesIndex.begin(), messagesIndex.end()));
+        auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
+        auto& displayContext = Context::getDisplayContext();
+
+        writeEntitiesWithPagination(messagesIndex, "messages", writer, displayContext.pageNumber, pageSize, true, 
+                                    [](auto m) { return m; });
     }
     if ( ! serializationSettings.hideVisitedThreadSinceLastChange)
     {
