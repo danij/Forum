@@ -50,7 +50,8 @@ namespace Forum
                             const boost::multi_index::const_mem_fun<DiscussionThread, Timestamp,
                                     &DiscussionThread::latestMessageCreated>>,
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByMessageCount>,
-                            const boost::multi_index::const_mem_fun<DiscussionThreadMessageCollectionBase, int_fast32_t,
+                            const boost::multi_index::const_mem_fun<DiscussionThreadMessageCollectionBase,
+                                    std::result_of<decltype(&DiscussionThread::messageCount)(DiscussionThread*)>::type,
                                     &DiscussionThread::messageCount>>
             > {};
 
