@@ -100,7 +100,7 @@ namespace Forum
 
             Timestamp latestMessageCreated() const
             {
-                auto& index = messagesByCreated();
+                auto index = messagesByCreated();
                 if ( ! index.size())
                 {
                     return 0;
