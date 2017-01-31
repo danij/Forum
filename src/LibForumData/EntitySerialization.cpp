@@ -172,7 +172,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
         //need to iterate manually over tags as they are weak pointers and may be empty
         writer.newPropertyWithSafeName("tags");
         writer << arrayStart;
-        for (auto& tag : thread.tags())
+        for (auto tag : thread.tags())
         {
             if (tag)
             {
@@ -187,7 +187,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
         //need to iterate manually over categories as they are weak pointers and may be empty
         writer.newPropertyWithSafeName("categories");
         writer << arrayStart;
-        for (auto& category : thread.categories())
+        for (auto category : thread.categories())
         {
             if (category)
             {
