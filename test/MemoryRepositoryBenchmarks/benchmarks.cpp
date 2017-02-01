@@ -28,17 +28,12 @@ struct CleanupFixture
 template<typename Duration = std::chrono::microseconds, typename Action>
 auto countDuration(Action action)
 {
+
     auto start = std::chrono::high_resolution_clock::now();
     action();
     auto end = std::chrono::high_resolution_clock::now();
     return std::chrono::duration_cast<Duration>(end - start).count();
 }
-
-//
-//inline float getNormalRandomFloat(float mean, float stddev)
-//{
-//    return distribution(getRandomGenerator());
-//}
 
 using namespace Forum;
 using namespace Forum::Commands;
@@ -476,7 +471,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME, { tagIds[0] });
+            execute(handler, Command::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME, { categoryIds[0] });
         }) << " ";
     }
     std::cout << '\n';

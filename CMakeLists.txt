@@ -12,6 +12,7 @@ add_subdirectory(src/LibForumContext)
 add_subdirectory(src/LibForumCommandHandlers)
 add_subdirectory(src/LibForumData)
 add_subdirectory(test/ForumServiceTests)
+add_subdirectory(test/MemoryRepositoryBenchmarks)
 
 #set(SOURCE_FILES main.cpp)
 #add_executable(Forum ${SOURCE_FILES})
