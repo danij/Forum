@@ -109,7 +109,7 @@ void MemoryRepository::addNewDiscussionTag(const std::string& name, std::ostream
                           }
 
                           auto tag = std::make_shared<DiscussionTag>();
-                          tag->modifyWithNotificationFn() = collection.modifyTagWithNotification();
+                          tag->notifyChange() = collection.notifyTagChange();
                           tag->id() = generateUUIDString();
                           tag->name() = name;
                           tag->created() = Context::getCurrentTime();

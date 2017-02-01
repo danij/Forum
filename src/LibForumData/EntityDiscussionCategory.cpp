@@ -35,27 +35,22 @@ static void executeOnCategoryAndAllParents(DiscussionCategory& category, std::fu
 
 bool DiscussionCategory::insertDiscussionThread(const DiscussionThreadRef& thread)
 {
-    bool result = false;
-    modifyWithNotificationFn_(*this, [&](auto& _)
+    if ( ! DiscussionThreadCollectionBase::insertDiscussionThread(thread))
     {
-        if ( ! DiscussionThreadCollectionBase::insertDiscussionThread(thread))
-        {
-            result = false;
-            return;
-        }
-        //don't use updateMessageCount() as insertDiscussionThread will take care of that for totals
-        messageCount_ += thread->messages().size();
-        thread->addCategory(DiscussionCategoryWeakRef(shared_from_this()));
+        return false;
+    }
+    //don't use updateMessageCount() as insertDiscussionThread will take care of that for totals
+    messageCount_ += thread->messages().size();
+    thread->addCategory(DiscussionCategoryWeakRef(shared_from_this()));
 
-        executeOnCategoryAndAllParents(*this, [&](auto& category)
-        {
-            //this category and all parents will hold separate references to the new thread
-            category.totalThreads_.insertDiscussionThread(thread);
-        });
-
-        result = true;
+    executeOnCategoryAndAllParents(*this, [&](auto& category)
+    {
+        //this category and all parents will hold separate references to the new thread
+        category.totalThreads_.insertDiscussionThread(thread);
     });
-    return result;
+
+    notifyChangeFn_(*this);
+    return true;
 }
 
 void DiscussionCategory::modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
@@ -81,25 +76,23 @@ void DiscussionCategory::modifyDiscussionThread(DiscussionThreadCollection::iter
 DiscussionThreadRef DiscussionCategory::deleteDiscussionThread(DiscussionThreadCollection::iterator iterator)
 {
     DiscussionThreadRef result;
-    modifyWithNotificationFn_(*this, [&](auto& _)
+    if ( ! ((result = DiscussionThreadCollectionBase::deleteDiscussionThread(iterator))))
     {
-        if ( ! ((result = DiscussionThreadCollectionBase::deleteDiscussionThread(iterator))))
-        {
-            return;
-        }
-        //don't use updateMessageCount() as deleteDiscussionThreadById will take care of that for totals
-        messageCount_ -= static_cast<int_fast32_t>(result->messages().size());
-        if ( ! result->aboutToBeDeleted())
-        {
-            result->removeCategory(DiscussionCategoryWeakRef(shared_from_this()));
-        }
+        return result;
+    }
+    //don't use updateMessageCount() as deleteDiscussionThreadById will take care of that for totals
+    messageCount_ -= static_cast<int_fast32_t>(result->messages().size());
+    if ( ! result->aboutToBeDeleted())
+    {
+        result->removeCategory(DiscussionCategoryWeakRef(shared_from_this()));
+    }
 
-        executeOnCategoryAndAllParents(*this, [&](auto& category)
-        {
-            category.totalThreads_.deleteDiscussionThreadById(result->id());
-        });
-
+    executeOnCategoryAndAllParents(*this, [&](auto& category)
+    {
+        category.totalThreads_.deleteDiscussionThreadById(result->id());
     });
+
+    notifyChangeFn_(*this);
     return result;
 }
 
@@ -187,9 +180,9 @@ void DiscussionCategory::resetTotals()
 
 void DiscussionCategory::recalculateTotals()
 {
-    executeOnCategoryAndAllParents(*this, [&](auto& category)
+    executeOnCategoryAndAllParents(*this, [this](auto& category)
     {
-        for (auto& thread : threads())
+        for (auto& thread : this->threads())
         {
             totalThreads_.insertDiscussionThread(thread);
         }

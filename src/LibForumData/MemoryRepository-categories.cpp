@@ -160,7 +160,7 @@ void MemoryRepository::addNewDiscussionCategory(const std::string& name, const I
                           }
 
                           auto category = std::make_shared<DiscussionCategory>();
-                          category->modifyWithNotificationFn() = collection.modifyCategoryWithNotification();
+                          category->notifyChange() = collection.notifyCategoryChange();
                           category->id() = generateUUIDString();
                           category->name() = name;
                           category->created() = Context::getCurrentTime();

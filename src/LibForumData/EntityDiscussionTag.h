@@ -34,7 +34,7 @@ namespace Forum
                 UIBlob
             };
 
-            DiscussionTag() : modifyWithNotificationFn_(&DiscussionTag::emptyModifyWithNotification) {  }
+            DiscussionTag() : notifyChangeFn_(&DiscussionTag::emptyNotifyChange) {  }
 
             virtual bool insertDiscussionThread(const DiscussionThreadRef& thread) override;
             virtual DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
@@ -49,20 +49,17 @@ namespace Forum
                 return categories_.erase(category) > 0;
             }
             
-            typedef std::function<void(DiscussionTag&, std::function<void(DiscussionTag&)>&&)> ModifyWithNotification;
-            auto& modifyWithNotificationFn() { return modifyWithNotificationFn_; }
+            typedef std::function<void(DiscussionTag&)> NotifyChangeActionType;
+            auto& notifyChange() { return notifyChangeFn_; }
 
         private:
             std::string name_;
             std::string uiBlob_;
             int_fast32_t messageCount_ = 0;
             std::set<std::weak_ptr<DiscussionCategory>, std::owner_less<std::weak_ptr<DiscussionCategory>>> categories_;
-            ModifyWithNotification modifyWithNotificationFn_;
+            NotifyChangeActionType notifyChangeFn_;
 
-            static void emptyModifyWithNotification(DiscussionTag& tag, std::function<void(DiscussionTag&)>&& action)
-            {
-                action(tag);
-            }
+            static void emptyNotifyChange(DiscussionTag& tag) { }
         };
 
         typedef std::shared_ptr<DiscussionTag> DiscussionTagRef;

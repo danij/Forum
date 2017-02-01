@@ -6,46 +6,39 @@ using namespace Forum::Entities;
 
 bool DiscussionTag::insertDiscussionThread(const DiscussionThreadRef& thread)
 {
-    bool result = false;
-    modifyWithNotificationFn_(*this, [&](auto& _)
+    if ( ! DiscussionThreadCollectionBase::insertDiscussionThread(thread))
     {
-        if ( ! DiscussionThreadCollectionBase::insertDiscussionThread(thread))
-        {
-            result = false;
-            return;
-        }
-        messageCount() += thread->messages().size();
+        return false;
+    }
+    messageCount() += thread->messages().size();
 
-        for (auto& categoryWeak : categoriesWeak())
+    for (auto& categoryWeak : categoriesWeak())
+    {
+        if (auto category = categoryWeak.lock())
         {
-            if (auto category = categoryWeak.lock())
-            {
-                category->insertDiscussionThread(thread);
-            }
+            category->insertDiscussionThread(thread);
         }
-        result = true;
-    });
-    return result;
+    }
+    notifyChangeFn_(*this);
+    return true;
 }
 
 DiscussionThreadRef DiscussionTag::deleteDiscussionThread(DiscussionThreadCollection::iterator iterator)
 {
     DiscussionThreadRef result;
-    modifyWithNotificationFn_(*this, [&](auto& _)
+    if ( ! ((result = DiscussionThreadCollectionBase::deleteDiscussionThread(iterator))))
     {
-        if ( ! ((result = DiscussionThreadCollectionBase::deleteDiscussionThread(iterator))))
+        return result;
+    }
+    messageCount() -= result->messages().size();
+    for (auto& categoryWeak : categoriesWeak())
+    {
+        if (auto category = categoryWeak.lock())
         {
-            return;
+            //called from detaching a tag from a thread
+            category->deleteDiscussionThreadIfNoOtherTagsReferenceIt(result);
         }
-        messageCount() -= result->messages().size();
-        for (auto& categoryWeak : categoriesWeak())
-        {
-            if (auto category = categoryWeak.lock())
-            {
-                //called from detaching a tag from a thread
-                category->deleteDiscussionThreadIfNoOtherTagsReferenceIt(result);
-            }
-        }
-    });
+    }
+    notifyChangeFn_(*this);
     return result;
 }

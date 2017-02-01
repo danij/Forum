@@ -58,7 +58,7 @@ namespace Forum
                 Parent
             };
 
-            DiscussionCategory() : modifyWithNotificationFn_(&DiscussionCategory::emptyModifyWithNotification) {  }
+            DiscussionCategory() : notifyChangeFn_(&DiscussionCategory::emptyNotifyChange) { }
 
             bool addChild(std::shared_ptr<DiscussionCategory> category)
             {
@@ -104,9 +104,9 @@ namespace Forum
             void resetTotals();
             void recalculateTotals();
 
-            typedef std::function<void(DiscussionCategory&, std::function<void(DiscussionCategory&)>&&)> ModifyWithNotification;
-            auto& modifyWithNotificationFn() { return modifyWithNotificationFn_; }
-                        
+            typedef std::function<void(DiscussionCategory&)> NotifyChangeActionType;
+            auto& notifyChange() { return notifyChangeFn_; }
+
         private:
             std::string name_;
             std::string description_;
@@ -117,13 +117,9 @@ namespace Forum
             //enable fast search of children, client can sort them on display order
             std::set<std::shared_ptr<DiscussionCategory>, std::owner_less<std::shared_ptr<DiscussionCategory>>> children_;
             std::set<DiscussionTagRef, std::owner_less<DiscussionTagRef>> tags_;
-            ModifyWithNotification modifyWithNotificationFn_;
+            NotifyChangeActionType notifyChangeFn_;
 
-            static void emptyModifyWithNotification(DiscussionCategory& category, 
-                                                    std::function<void(DiscussionCategory&)>&& action)
-            {
-                action(category);
-            }
+            static void emptyNotifyChange(DiscussionCategory& categoty) { }
         };
 
         typedef std::shared_ptr<DiscussionCategory> DiscussionCategoryRef;

@@ -56,24 +56,24 @@ namespace Forum
             */
             virtual DiscussionCategoryRef deleteDiscussionCategory(DiscussionCategoryCollection::iterator iterator) override;
 
-            auto& modifyTagWithNotification() { return modifyTagWithNotification_; }
-            auto& modifyCategoryWithNotification() { return modifyCategoryWithNotification_; }
+            auto& notifyTagChange() { return notifyTagChange_; }
+            auto& notifyCategoryChange() { return notifyCategoryChange_; }
 
             EntityCollection()
             {
-                modifyTagWithNotification_ = [&](auto& tag, auto&& action)
+                notifyTagChange_ = [this](auto& tag)
                 {
-                    modifyDiscussionTagById(tag.id(), action);
+                    this->modifyDiscussionTagById(tag.id(), [](auto&) {});
                 };
-                modifyCategoryWithNotification_ = [&](auto& category, auto&& action)
+                notifyCategoryChange_ = [this](auto& category)
                 {
-                    modifyDiscussionCategoryById(category.id(), action);
+                    this->modifyDiscussionCategoryById(category.id(), [](auto&) {});
                 };
             }
 
         private:
-            DiscussionTag::ModifyWithNotification modifyTagWithNotification_;
-            DiscussionCategory::ModifyWithNotification modifyCategoryWithNotification_;
+            DiscussionTag::NotifyChangeActionType notifyTagChange_;
+            DiscussionCategory::NotifyChangeActionType notifyCategoryChange_;
 
         };
 
