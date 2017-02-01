@@ -49,7 +49,14 @@ namespace Json
 
         JsonWriter& newProperty(const std::string& name);
 
-        JsonWriter& newPropertyWithSafeName(const char* name);
+        JsonWriter& newPropertyWithSafeName(const char* name, std::size_t length);
+
+        template<std::size_t Length>
+        JsonWriter& newPropertyWithSafeName(const char(&name)[Length])
+        {
+            //ignore null terminator
+            return newPropertyWithSafeName(name, Length - 1);
+        }
 
         JsonWriter& newPropertyWithSafeName(const std::string& name);
 
@@ -191,10 +198,28 @@ namespace Json
         { }
     };
 
+    template<typename T1, std::size_t T1Size, typename T2>
+    struct JsonWriterManipulatorPropertySafeNameArray
+    {
+        const T1(&argument1)[T1Size];
+        const T2& argument2;
+
+        JsonWriterManipulatorPropertySafeNameArray(const T1(&arg1)[T1Size], const T2& arg2) :
+                argument1(arg1), argument2(arg2)
+        { }
+    };
+
     template<typename T1, typename T2>
     JsonWriter& operator<<(JsonWriter& writer, JsonWriterManipulatorWithTwoParams<T1, T2> manipulator)
     {
         return manipulator.function(writer, manipulator.argument1, manipulator.argument2);
+    }
+
+    template<typename T1, std::size_t T1Size, typename T2>
+    JsonWriter& operator<<(JsonWriter& writer, JsonWriterManipulatorPropertySafeNameArray<T1, T1Size, T2> manipulator)
+    {
+        writer.newPropertyWithSafeName<T1Size>(manipulator.argument1) << manipulator.argument2;
+        return writer;
     }
 
     template<typename StringType, typename ValueType>
@@ -213,17 +238,24 @@ namespace Json
 
     template<typename StringType, typename ValueType>
     JsonWriterManipulatorWithTwoParams<StringType, ValueType> property(const StringType& name,
-                                                                              const ValueType& value)
+                                                                       const ValueType& value)
     {
         return JsonWriterManipulatorWithTwoParams<StringType, ValueType>(_property<StringType, ValueType>, name, value);
     }
 
     template<typename StringType, typename ValueType>
     JsonWriterManipulatorWithTwoParams<StringType, ValueType> propertySafeName(const StringType& name,
-                                                                                      const ValueType& value)
+                                                                               const ValueType& value)
     {
         return JsonWriterManipulatorWithTwoParams<StringType, ValueType>(_propertySafe<StringType, ValueType>, name,
                                                                          value);
+    }
+
+    template<std::size_t StringSize, typename ValueType>
+    JsonWriterManipulatorPropertySafeNameArray<const char, StringSize, ValueType> propertySafeName(const char(&name)[StringSize],
+                                                                                                   const ValueType& value)
+    {
+        return JsonWriterManipulatorPropertySafeNameArray<const char, StringSize, ValueType>(name, value);
     }
 
     template<typename ForwardIterator>

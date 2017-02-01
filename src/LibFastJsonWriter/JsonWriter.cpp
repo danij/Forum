@@ -90,10 +90,12 @@ JsonWriter& JsonWriter::newProperty(const string& name)
    return *this;
 }
 
-JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name)
+JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name, std::size_t length)
 {
    addCommaIfNeeded();
-   _stream << '"' << name << "\":";
+   _stream << '"';
+      _stream.write(name, length);
+   _stream << "\":";
    _state.top().propertyNameAdded = true;
    return *this;
 }

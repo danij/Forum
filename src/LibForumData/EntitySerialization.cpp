@@ -43,8 +43,8 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const User& user)
     return writer;
 }
 
-template<typename Collection>
-static JsonWriter& writeVotes(JsonWriter& writer, const char* name, const Collection& votes)
+template<typename Collection, std::size_t NameSize>
+static JsonWriter& writeVotes(JsonWriter& writer, const char(&name)[NameSize], const Collection& votes)
 {
     writer.newPropertyWithSafeName(name);
     writer.startArray();

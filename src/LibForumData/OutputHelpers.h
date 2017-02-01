@@ -20,13 +20,13 @@ namespace Forum
                 << Json::objEnd;
         }
 
-        template <typename T>
-        void writeSingleValueSafeName(std::ostream& output, const char* name, const T& value)
+        template <typename T, std::size_t Size>
+        void writeSingleValueSafeName(std::ostream& output, const char(&name)[Size], const T& value)
         {
             Json::JsonWriter writer(output);
             writer
                 << Json::objStart
-                    << Json::propertySafeName(name, value)
+                    << Json::propertySafeName<Size, const T&>(name, value)
                 << Json::objEnd;
         }
 
@@ -35,19 +35,20 @@ namespace Forum
             writeSingleValueSafeName(output, "status", code);
         }
 
-        template <typename TValue>
-        void writeSingleObjectSafeName(std::ostream& output, const char* name, const TValue& value)
+        template <typename TValue, std::size_t Size>
+        void writeSingleObjectSafeName(std::ostream& output, const char(&name)[Size], const TValue& value)
         {
             Json::JsonWriter writer(output);
             writer
                 << Json::objStart
-                    << Json::propertySafeName(name, value)
+                    << Json::propertySafeName<Size, const TValue&>(name, value)
                 << Json::objEnd;
         }
 
-        template<typename Collection, typename InterceptorFn>
-        void writeEntitiesWithPagination(const Collection& collection, const char* propertyName, Json::JsonWriter& writer,
-            int_fast32_t pageNumber, int_fast32_t pageSize, bool ascending, InterceptorFn&& interceptor)
+        template<typename Collection, typename InterceptorFn, std::size_t PropertyNameSize>
+        void writeEntitiesWithPagination(const Collection& collection, const char(&propertyName)[PropertyNameSize],
+                                         Json::JsonWriter& writer, int_fast32_t pageNumber, int_fast32_t pageSize,
+                                         bool ascending, InterceptorFn&& interceptor)
         {
             auto count = static_cast<int_fast32_t>(collection.size());
 
@@ -74,7 +75,7 @@ namespace Forum
                    << Json::propertySafeName("page", pageNumber);
 
             //need to write the array manually, so that we can control the advance direction of iteration
-            writer.newPropertyWithSafeName(propertyName);
+            writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
             writer << Json::arrayStart;
             if (ascending)
             {
@@ -98,9 +99,10 @@ namespace Forum
             writer << Json::arrayEnd;
         }
         
-        template<typename Collection, typename InterceptorFn>
-        void writeEntitiesWithPagination(const Collection& collection, const char* propertyName, std::ostream& output,
-            int_fast32_t pageNumber, int_fast32_t pageSize, bool ascending, InterceptorFn&& interceptor)
+        template<typename Collection, typename InterceptorFn, std::size_t PropertyNameSize>
+        void writeEntitiesWithPagination(const Collection& collection, const char(&propertyName)[PropertyNameSize],
+                                         std::ostream& output, int_fast32_t pageNumber, int_fast32_t pageSize,
+                                         bool ascending, InterceptorFn&& interceptor)
         {
             Json::JsonWriter writer(output);
             writer << Json::objStart;
