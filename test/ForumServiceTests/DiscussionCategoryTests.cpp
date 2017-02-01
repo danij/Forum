@@ -266,7 +266,8 @@ BOOST_AUTO_TEST_CASE( No_discussion_categories_are_present_before_one_is_created
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_returns_the_id_name_and_empty_parent_id )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_CATEGORY, { "Foo" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY, { "Foo" });
 
     assertStatusCodeEqual(StatusCode::OK, returnObject);
 
@@ -291,31 +292,36 @@ BOOST_AUTO_TEST_CASE( Creating_a_child_discussion_category_returns_the_id_name_a
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_with_no_parameters_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_CATEGORY);
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY);
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_with_empty_name_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_CATEGORY, { "" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY, { "" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_with_only_whitespace_in_the_name_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_CATEGORY, { " \t\r\n" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY, { " \t\r\n" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_with_leading_whitespace_in_the_name_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_CATEGORY, { " Foo" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY, { " Foo" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_with_trailing_whitespace_in_the_name_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_CATEGORY, { "Foo\t" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY, { "Foo\t" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
@@ -323,7 +329,8 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_with_a_too_short_name_fails
 {
     auto config = getGlobalConfig();
     std::string name(config->discussionCategory.minNameLength - 1, 'a');
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_CATEGORY, { name });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY, { name });
     assertStatusCodeEqual(StatusCode::VALUE_TOO_SHORT, returnObject);
 }
 
@@ -331,13 +338,15 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_with_a_too_long_name_fails 
 {
     auto config = getGlobalConfig();
     std::string name(config->discussionCategory.maxNameLength + 1, 'a');
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_CATEGORY, { name });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY, { name });
     assertStatusCodeEqual(StatusCode::VALUE_TOO_LONG, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_with_a_name_that_contains_invalid_characters_fails_with_appropriate_message )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_CATEGORY, { "\xFF\xFF" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_CATEGORY, { "\xFF\xFF" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
@@ -496,13 +505,15 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_parent_fails_on_circular_li
 
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_category_with_an_invalid_id_returns_invalid_parameters )
 {
+    auto handler = createCommandHandler();
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
-                          handlerToObj(createCommandHandler(), Forum::Commands::DELETE_DISCUSSION_CATEGORY, { "bogus id" }));
+                          handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_CATEGORY, { "bogus id" }));
 }
 
 BOOST_AUTO_TEST_CASE( Deleting_an_inexistent_discussion_category_returns_not_found )
 {
-    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(createCommandHandler(), 
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler,
                                                               Forum::Commands::DELETE_DISCUSSION_CATEGORY,
                                                               { sampleValidIdString }));
 }

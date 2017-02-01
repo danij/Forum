@@ -177,26 +177,30 @@ CREATE_FUNCTION_ALIAS(deserializeThreads, deserializeEntities<SerializedDiscussi
 
 BOOST_AUTO_TEST_CASE( Discussion_thread_count_is_initially_zero )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::COUNT_ENTITIES);
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
     BOOST_REQUIRE_EQUAL(0, returnObject.get<int>("count.discussionThreads"));
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_no_parameters_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD);
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD);
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_empty_name_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { "" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_returns_the_id_name_and_created )
 {
     TimestampChanger changer(20000);
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { "Foo" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Foo" });
 
     assertStatusCodeEqual(StatusCode::OK, returnObject);
     BOOST_REQUIRE( ! isIdEmpty(returnObject.get<std::string>("id")));
@@ -206,19 +210,22 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_returns_the_id_name_and_creat
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_only_whitespace_in_the_name_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { " \t\r\n" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { " \t\r\n" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_leading_whitespace_in_the_name_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { " Foo" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { " Foo" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_trailing_whitespace_in_the_name_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { "Foo\t" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Foo\t" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
@@ -226,7 +233,8 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_a_too_short_name_fails )
 {
     auto config = getGlobalConfig();
     std::string name(config->discussionThread.minNameLength - 1, 'a');
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { name });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { name });
     assertStatusCodeEqual(StatusCode::VALUE_TOO_SHORT, returnObject);
 }
 
@@ -234,7 +242,8 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_a_longer_name_fails )
 {
     auto config = getGlobalConfig();
     std::string name(config->discussionThread.maxNameLength + 1, 'a');
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { name });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { name });
     assertStatusCodeEqual(StatusCode::VALUE_TOO_LONG, returnObject);
 }
 
@@ -246,17 +255,19 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_unicode_name_of_valid_le
                     });
 
     //test a simple text that can also be represented as ASCII
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { "AAA" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "AAA" });
     assertStatusCodeEqual(StatusCode::OK, returnObject);
 
     //test a 3 characters text that requires multiple bytes for representation using UTF-8
-    returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { "早上好" });
+    returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "早上好" });
     assertStatusCodeEqual(StatusCode::OK, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_a_name_that_contains_invalid_characters_fails_with_appropriate_message)
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD, { "\xFF\xFF\xFF\xFF" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "\xFF\xFF\xFF\xFF" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
@@ -771,8 +782,9 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_returns_the_id_parent_id_and
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_without_specifying_the_discussion_thread_fails )
 {
     TimestampChanger changer(20000);
+    auto handler = createCommandHandler();
 
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { "Foo" });
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD_MESSAGE, { "Foo" });
 
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }

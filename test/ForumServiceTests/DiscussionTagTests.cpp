@@ -127,7 +127,8 @@ BOOST_AUTO_TEST_CASE( No_discussion_tags_are_present_before_one_is_created )
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_returns_the_id_and_name )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_TAG, { "Foo" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG, { "Foo" });
 
     assertStatusCodeEqual(StatusCode::OK, returnObject);
 
@@ -137,31 +138,36 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_returns_the_id_and_name )
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_with_no_parameters_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_TAG);
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG);
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_with_empty_name_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_TAG, { "" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG, { "" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_with_only_whitespace_in_the_name_fails)
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_TAG, { " \t\r\n" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG, { " \t\r\n" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_with_leading_whitespace_in_the_name_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_TAG, { " Foo" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG, { " Foo" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_with_trailing_whitespace_in_the_name_fails )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_TAG, { "Foo\t" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG, { "Foo\t" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
@@ -169,7 +175,8 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_with_a_too_short_name_fails )
 {
     auto config = getGlobalConfig();
     std::string name(config->discussionTag.minNameLength - 1, 'a');
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_TAG, { name });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG, { name });
     assertStatusCodeEqual(StatusCode::VALUE_TOO_SHORT, returnObject);
 }
 
@@ -177,13 +184,15 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_with_a_too_long_name_fails )
 {
     auto config = getGlobalConfig();
     std::string name(config->discussionTag.maxNameLength + 1, 'a');
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_TAG, { name });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG, { name });
     assertStatusCodeEqual(StatusCode::VALUE_TOO_LONG, returnObject);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_with_a_name_that_contains_invalid_characters_fails_with_appropriate_message )
 {
-    auto returnObject = handlerToObj(createCommandHandler(), Forum::Commands::ADD_DISCUSSION_TAG, { "\xFF\xFF" });
+    auto handler = createCommandHandler();
+    auto returnObject = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG, { "\xFF\xFF" });
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, returnObject);
 }
 
@@ -227,13 +236,15 @@ BOOST_AUTO_TEST_CASE( Renaming_a_discussion_tag_succeeds_only_if_creation_criter
 
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_with_an_invalid_id_returns_invalid_parameters )
 {
+    auto handler = createCommandHandler();
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
-                          handlerToObj(createCommandHandler(), Forum::Commands::DELETE_DISCUSSION_TAG, { "bogus id" }));
+                          handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_TAG, { "bogus id" }));
 }
 
 BOOST_AUTO_TEST_CASE( Deleting_an_inexistent_discussion_tag_returns_not_found )
 {
-    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(createCommandHandler(), 
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler,
                                                               Forum::Commands::DELETE_DISCUSSION_TAG, 
                                                               { sampleValidIdString }));
 }
