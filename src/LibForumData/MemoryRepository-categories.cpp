@@ -340,7 +340,7 @@ void MemoryRepository::changeDiscussionCategoryDisplayOrder(const IdType& id, in
         status = StatusCode::INVALID_PARAMETERS;
         return;
     }
-    auto maxLength = static_cast<std::string::size_type>(getGlobalConfig()->discussionCategory.maxDescriptionLength);
+
     if (newDisplayOrder < 0)
     {
         status = StatusCode::INVALID_PARAMETERS;
