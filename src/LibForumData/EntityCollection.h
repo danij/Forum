@@ -61,11 +61,11 @@ namespace Forum
 
             EntityCollection()
             {
-                modifyTagWithNotification_ = [&](auto& tag, auto& action)
+                modifyTagWithNotification_ = [&](auto& tag, auto&& action)
                 {
                     modifyDiscussionTagById(tag.id(), action);
                 };
-                modifyCategoryWithNotification_ = [&](auto& category, auto& action)
+                modifyCategoryWithNotification_ = [&](auto& category, auto&& action)
                 {
                     modifyDiscussionCategoryById(category.id(), action);
                 };
