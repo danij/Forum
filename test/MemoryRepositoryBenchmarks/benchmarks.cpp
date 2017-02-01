@@ -82,9 +82,9 @@ inline void execute(CommandHandler& handler, Command command, std::vector<std::s
     handler.handle(command, parameters, stream);
 }
 
-const int nrOfUsers = 100/*00*/;
-const int nrOfThreads = nrOfUsers * 10;
-const int nrOfMessages = nrOfThreads * 10;
+const int nrOfUsers = 10000;
+const int nrOfThreads = nrOfUsers * 1;
+const int nrOfMessages = nrOfThreads * 50;
 const int nrOfTags = 100;
 const int nrOfCategories = 100;
 const int nrOfCategoryParentChildRelationships = 20;
@@ -94,7 +94,7 @@ const int nrOfTagsPerThreadMin = 1;
 const int nrOfTagsPerThreadMax = 4;
 const float messageContentLengthMean = 1000;
 const float messageContentLengthStddev = 200;
-const int retries = 10;
+const int retries = 1000;
 
 std::random_device device;
 std::mt19937 randomGenerator(device());
