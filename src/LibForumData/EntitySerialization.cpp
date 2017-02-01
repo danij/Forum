@@ -169,6 +169,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
 
     {
         BoolTemporaryChanger _(serializationSettings.hideDiscussionCategoriesOfTags, true);
+        BoolTemporaryChanger __(serializationSettings.hideLatestMessage, true);
         //need to iterate manually over tags as they are weak pointers and may be empty
         writer.newPropertyWithSafeName("tags");
         writer << arrayStart;
@@ -184,6 +185,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
     {
         BoolTemporaryChanger _(serializationSettings.hideDiscussionCategoryParent, true);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryTags, true);
+        BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
         //need to iterate manually over categories as they are weak pointers and may be empty
         writer.newPropertyWithSafeName("categories");
         writer << arrayStart;
@@ -213,7 +215,10 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionTag& tag)
         << propertySafeName("threadCount", tag.threadsById().size())
         << propertySafeName("messageCount", tag.messageCount());
 
-    writeLatestMessage(writer, tag);
+    if ( ! serializationSettings.hideLatestMessage)
+    {
+        writeLatestMessage(writer, tag);
+    }
     if ( ! serializationSettings.hideDiscussionCategoriesOfTags)
     {
         BoolTemporaryChanger _(serializationSettings.hideDiscussionCategoryTags, true);
@@ -248,12 +253,14 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionCategory& categ
         << propertySafeName("threadTotalCount", category.threadTotalCount())
         << propertySafeName("messageTotalCount", category.messageTotalCount());
 
-    auto latestMessage = category.latestMessage();
-    if (latestMessage)
+    if ( ! serializationSettings.hideLatestMessage)
     {
-        writeLatestMessage(writer, *latestMessage);
+        auto latestMessage = category.latestMessage();
+        if (latestMessage)
+        {
+            writeLatestMessage(writer, *latestMessage);
+        }
     }
-
     if ( ! serializationSettings.hideDiscussionCategoryTags)
     {
         BoolTemporaryChanger _(serializationSettings.hideDiscussionCategoriesOfTags, true);

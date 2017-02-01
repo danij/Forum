@@ -33,6 +33,8 @@ namespace Forum
             bool hideDiscussionCategoryParent = false;
             bool showDiscussionCategoryChildren = false;
             bool hideDiscussionCategoriesOfTags = false;
+
+            bool hideLatestMessage = false;
         };
 
         extern thread_local SerializationSettings serializationSettings;
