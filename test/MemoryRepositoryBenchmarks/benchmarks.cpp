@@ -125,11 +125,26 @@ int main()
     std::cout << "# of discussion tags/category: " << nrOfTagsPerCategoryMin << "-" << nrOfTagsPerCategoryMax << '\n';
     std::cout << "# of discussion tags/thread: " << nrOfTagsPerThreadMin << "-" << nrOfTagsPerThreadMax << '\n';
 
-    std::string line;
-    std::cout << "\nPress [ENTER] to start the benchmark\n";
-    std::getline(std::cin, line);
-    
+    //std::string line;
+    //std::cout << "\nPress [ENTER] to start the benchmark\n";
+    //std::getline(std::cin, line);
+
     doBenchmarks(context);
+}
+
+char* getRandomText(size_t size)
+{
+    static std::uniform_int_distribution<> lowercaseAsciiDistribution('a', 'z');
+    static char name[8192];
+
+    size = std::min(size, sizeof(name) / sizeof(name[0]) - 1);
+    for (size_t i = 0; i < size; ++i)
+    {
+        name[i] = static_cast<char>(lowercaseAsciiDistribution(randomGenerator));
+    }
+    name[size] = 0;
+
+    return name;
 }
 
 void populateData(BenchmarkContext& context)
@@ -140,21 +155,12 @@ void populateData(BenchmarkContext& context)
     auto& tagIds = context.tagIds;
     auto& categoryIds = context.categoryIds;
 
-    std::uniform_int_distribution<> lowercaseAsciiDistribution('a', 'z');
-        
     auto getCurrentTimestamp = [&context]() { return context.currentTimestamp; };
     Context::setCurrentTimeMockForCurrentThread(getCurrentTimestamp);
 
     for (size_t i = 0; i < nrOfUsers; i++)
     {
-        char prefix[5];
-        for (char& c : prefix)
-        {
-            c = static_cast<char>(lowercaseAsciiDistribution(randomGenerator));
-        }
-        *(std::end(prefix) - 1) = 0;
-        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { prefix + std::to_string(i + 1) }));
-
+        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { getRandomText(5) + std::to_string(i + 1) }));
         context.currentTimestamp += 100;
     }
 
@@ -194,38 +200,24 @@ void populateData(BenchmarkContext& context)
     std::uniform_int_distribution<> userIdDistribution(0, userIds.size() - 1);
     std::normal_distribution<float> messageSizedistribution(messageContentLengthMean, messageContentLengthStddev);
     
-    char messageBuffer[4096];
     auto config = Configuration::getGlobalConfig();
 
-    auto addMessage = [&](const std::string threadId)
+    auto addMessage = [&](const std::string& threadId)
     {
         auto messageLength = static_cast<int>(messageSizedistribution(randomGenerator));
         messageLength = std::max(config->discussionThreadMessage.minContentLength, messageLength);
         messageLength = std::min(config->discussionThreadMessage.maxContentLength, messageLength);
-        messageLength = std::min(static_cast<int>(sizeof(messageBuffer) / sizeof(messageBuffer[0]) - 1), messageLength);
+        messageLength = std::min(4095, messageLength);
 
-        for (int i = 0; i < messageLength; i++)
-        {
-            messageBuffer[i] = static_cast<char>(lowercaseAsciiDistribution(randomGenerator));
-        }
-        messageBuffer[messageLength] = 0;
-
-        execute(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, messageBuffer });
+        execute(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, getRandomText(messageLength) });
     };
 
     for (size_t i = 0; i < nrOfThreads; i++)
     {
-        char name[50];
-        for (char& c : name)
-        {
-            c = static_cast<char>(lowercaseAsciiDistribution(randomGenerator));
-        }
-        *(std::end(name) - 1) = 0;
-
         Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
-        auto id = executeAndGetId(handler, Command::ADD_DISCUSSION_THREAD, { name });
+        auto id = executeAndGetId(handler, Command::ADD_DISCUSSION_THREAD, { getRandomText(50) });
 
-        for (int j = 0; j < nrOfTagsPerCategoryDistribution(randomGenerator); ++j)
+        for (int j = 0; j < nrOfTagsPerThreadDistribution(randomGenerator); ++j)
         {
             execute(handler, Command::ADD_DISCUSSION_TAG_TO_THREAD, { tagIds[tagIdDistribution(randomGenerator)], id });
         }
@@ -237,7 +229,7 @@ void populateData(BenchmarkContext& context)
     }
     std::uniform_int_distribution<> threadIdDistribution(0, threadIds.size() - 1);
 
-    for (size_t i = 0; i < nrOfMessages - nrOfThreads; i++)
+    for (size_t i = 0; i < (nrOfMessages - nrOfThreads); i++)
     {
         Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
         addMessage(threadIds[threadIdDistribution(randomGenerator)]);
@@ -269,25 +261,17 @@ void doBenchmarks(BenchmarkContext& context)
     }
     std::cout << '\n';
 
-    std::uniform_int_distribution<> lowercaseAsciiDistribution('a', 'z');
     std::uniform_int_distribution<> userIdDistribution(0, userIds.size() - 1);
     std::uniform_int_distribution<> threadIdDistribution(0, threadIds.size() - 1);
+    std::uniform_int_distribution<> tagIdDistribution(0, tagIds.size() - 1);
+    std::uniform_int_distribution<> categoryIdDistribution(0, categoryIds.size() - 1);
 
     std::cout << "Adding a new discussion thread: ";
     for (int i = 0; i < retries; ++i)
     {
-        char name[50];
-        for (char& c : name)
-        {
-            c = static_cast<char>(lowercaseAsciiDistribution(randomGenerator));
-        }
-        *(std::end(name) - 1) = 0;
-
-        Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
-
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::ADD_DISCUSSION_THREAD, { name });
+            execute(handler, Command::ADD_DISCUSSION_THREAD, { getRandomText(50) });
         }) << " ";
         context.currentTimestamp += 10;
     }
@@ -296,13 +280,6 @@ void doBenchmarks(BenchmarkContext& context)
     std::cout << "Adding a new message to an existing discussion thread: ";
     for (int i = 0; i < retries; ++i)
     {
-        char name[50];
-        for (char& c : name)
-        {
-            c = static_cast<char>(lowercaseAsciiDistribution(randomGenerator));
-        }
-        *(std::end(name) - 1) = 0;
-
         Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
 
         const char* sampleMessage = "wmahcgobadxjrtbzoryzdskvxzidmjunsfjrajqljjtyhpgmhbtdrpqbkirlrowssftocsilbycloqxlhxpdlhnxnpxikkmbswckpoxijljjdqmfmdorehztywtcsvbcasnpksnwbmjztxoqxogfjmxwuymkhxzzjqtytmtqxdizxtjqqscczyhssnnucttrjdxzibrgihojzwcgsuwxboumqzqmlsjxxnclqpmsjkqsqvhgyzhpoyhtotilggkxyojwbefizlexbgtswxwjqjohlaeexzxcwtpikfluvqhxqsqlnamaytnmxtazzbvmdykeyvsihcpngnmnwchmpfzrwsjngtmykcyzazsbpmaymejmxjrjpcltdixesatxpstjffjwtsysswnyrzycamsimtzfqkickbohwgpsyvpbvuytoxrcicfzpiiaygoansusdymdelglbclljnpzhqzfsklepvdhtejdptwwpyxwibgjgvcylcdtzcoqzaouqgnobhmywvcskqcpmaquqzirymnfxvmmxyvvohzchiotnztbfocqsueriwedyyqwlimbqjcxvbxlfdorqoriehywuprfnubxdskvprfkpvgxyaqfnuuqpghpdypiuqmcmtslinlbobbqumrcbyoczdsajfhcsidgwsrfqmzasefyomizcuuqttioxxintwzrysjqqkpkyrawtxjvyaapmghpykwbnepfsozmngkwapmwqhketucpgxkfpmorssyjftqsytqchnnedgbgasqylszuqmeezsihxdqtqxgqndflxwetbkwwgontycfizbgyzefzqwcffqewaxdronkeitbwuujxkvvpdqrjyujbznpvtkibzpumyhtpfkxnabpookgqpkgrkjuznklokqwngtqumdmzttixjncjjqemsdhenlfmdqfpbbrvgzrhnqdzgaygbfwukljhwwvoddltjriuztdsolssyyosymqooeucdqqjbjgqzqdcbfataqjggjmjaroaaanjqdeesnfnjxagylhswcufxinzwvrxrpqhtbkzosukhfvvtfusklappmtkvvsrfohvdylvhggbsuempkyruiwhtzqelvwmnmdtbdtaqqgxrqyyivdrjjdxztpxgkseohgbjdqdtcpndm";
@@ -430,8 +407,9 @@ void doBenchmarks(BenchmarkContext& context)
         Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
 
         std::cout << countDuration([&]()
-        {            
-            execute(handler, Command::GET_DISCUSSION_THREADS_OF_USER_BY_NAME, { userIds[0] });
+        {
+            execute(handler, Command::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
+                    { userIds[userIdDistribution(randomGenerator)] });
         }) << " ";
     }
     std::cout << '\n';
@@ -444,7 +422,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREAD_BY_ID, { threadIds[0] });
+            execute(handler, Command::GET_DISCUSSION_THREAD_BY_ID, { threadIds[threadIdDistribution(randomGenerator)] });
         }) << " ";
     }
     std::cout << '\n';
@@ -458,7 +436,8 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME, { tagIds[0] });
+            execute(handler, Command::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
+                    { tagIds[tagIdDistribution(randomGenerator)] });
         }) << " ";
     }
     std::cout << '\n';
@@ -471,7 +450,8 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME, { categoryIds[0] });
+            execute(handler, Command::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
+                    { categoryIds[categoryIdDistribution(randomGenerator)] });
         }) << " ";
     }
     std::cout << '\n';
