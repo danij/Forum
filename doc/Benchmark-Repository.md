@@ -4,10 +4,9 @@ A benchmark has been conducted on the memory repository.
 
 ## Environment
 
-The environment used consisted of a virtual machine running 64-bit Linux 4.8.0 
-under a 2.4 GHz core with less than 2 GB RAM.
+The benchmark was conducted on a virtual machine with a 2.4 GHz core, <2 GB RAM and running 64-bit Linux 4.8.0. 
 
-The code was compiled with gcc 6.2.0 and the following flags `-std=c++14 -Wall -Werror -O3 -DNDEBUG`
+The code was compiled with GCC 6.2.0 and the following flags `-std=c++14 -Wall -Werror -O3 -DNDEBUG`
 
 ## Test Data
 
@@ -24,7 +23,7 @@ The benchmark generated a set of random data.
 |Discussion tags/category|1 .. 4|
 |Discussion tags/thread|1 .. 4| 
 
-> No IP or browser user-agent information has been included in the benhkmarks
+> No IP or browser user-agent information has been included in the benchmarks
 
 ## Results
 
@@ -49,6 +48,6 @@ Each operation has been performed 1 000 times. Spikes greater than 10 times the 
 |Get fourth page of discussion threads by name|3 613|1 057|
 |Get first page of discussion threads by message count descending|2 939| 902|
 |Get fourth page of discussion threads by message count descending|3 112| 966|
-|Get first page of message of discussion threads|10 413|1 557|
+|Get first page of messages of discussion threads|10 413|1 557|
 |Get first page of discussion threads with tag by name|2 631| 910|
 |Get first page of discussion threads of category by name|2 408| 826|
