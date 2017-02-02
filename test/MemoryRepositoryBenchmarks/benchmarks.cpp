@@ -204,10 +204,10 @@ void populateData(BenchmarkContext& context)
 
     auto addMessage = [&](const std::string& threadId)
     {
-        auto messageLength = static_cast<int>(messageSizedistribution(randomGenerator));
+        auto messageLength = static_cast<int_fast32_t>(messageSizedistribution(randomGenerator));
         messageLength = std::max(config->discussionThreadMessage.minContentLength, messageLength);
         messageLength = std::min(config->discussionThreadMessage.maxContentLength, messageLength);
-        messageLength = std::min(4095, messageLength);
+        messageLength = std::min(static_cast<decltype(messageLength)>(4095), messageLength);
 
         execute(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, getRandomText(messageLength) });
     };
