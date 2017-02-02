@@ -12,3 +12,4 @@ set(HEADER_FILES ../Version.h Configuration.h MetricsRepository.h ContextProvide
 include_directories(. ../. ../LibFastJsonWriter ../LibForumData ${Boost_INCLUDE_DIRS})
 
 add_library(ForumContext STATIC ${SOURCE_FILES} ${HEADER_FILES})
+target_link_libraries(ForumContext FastJsonWriter)

@@ -22,3 +22,4 @@ set(HEADER_FILES Entities.h MemoryRepository.h Repository.h ResourceGuard.h Outp
 include_directories(. ../. ../LibFastJsonWriter ../LibForumContext ${Boost_INCLUDE_DIRS})
 
 add_library(ForumData STATIC ${SOURCE_FILES} ${HEADER_FILES})
+target_link_libraries(ForumData FastJsonWriter ForumContext)
