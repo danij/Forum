@@ -268,10 +268,12 @@ void MemoryRepository::addDiscussionTagToThread(const IdType& tagId, const IdTyp
                               return;
                           }
 
-                          (*tagIt)->insertDiscussionThread(*threadIt);
+                          auto user = performedBy.getAndUpdate(collection);
 
-                          writeEvents_.onAddDiscussionTagToThread(
-                                  createObserverContext(*performedBy.getAndUpdate(collection)), **tagIt, **threadIt);
+                          (*tagIt)->insertDiscussionThread(*threadIt);
+                          updateLastUpdated(**threadIt, user);
+
+                          writeEvents_.onAddDiscussionTagToThread(createObserverContext(*user), **tagIt, **threadIt);
                       });
 }
 
@@ -313,10 +315,12 @@ void MemoryRepository::removeDiscussionTagFromThread(const IdType& tagId, const 
                               return;
                           }
 
-                          (*tagIt)->deleteDiscussionThreadById(threadId);
+                          auto user = performedBy.getAndUpdate(collection);
 
-                          writeEvents_.onRemoveDiscussionTagFromThread(
-                                  createObserverContext(*performedBy.getAndUpdate(collection)), **tagIt, **threadIt);
+                          (*tagIt)->deleteDiscussionThreadById(threadId);
+                          updateLastUpdated(**threadIt, user);
+
+                          writeEvents_.onRemoveDiscussionTagFromThread(createObserverContext(*user), **tagIt, **threadIt);
                       });    
 }
 
@@ -362,6 +366,7 @@ void MemoryRepository::mergeDiscussionTags(const IdType& fromId, const IdType& i
                         for (auto& thread : (*itFrom)->threads())
                         {
                             thread->addTag(intoTagWeak);
+                            updateLastUpdated(*thread, user);
                             (*itInto)->insertDiscussionThread(thread);
                         }
                         for (auto& categoryWeak : (*itFrom)->categoriesWeak())
@@ -369,6 +374,7 @@ void MemoryRepository::mergeDiscussionTags(const IdType& fromId, const IdType& i
                             if (auto category = categoryWeak.lock())
                             {
                                 category->addTag(*itInto);
+                                updateLastUpdated(*category, user);
                             }
                         }
 
