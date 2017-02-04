@@ -112,7 +112,7 @@ void MemoryRepository::addNewDiscussionTag(const std::string& name, std::ostream
                           tag->notifyChange() = collection.notifyTagChange();
                           tag->id() = generateUUIDString();
                           tag->name() = name;
-                          tag->created() = Context::getCurrentTime();
+                          updateCreated(*tag);
 
                           collection.tags().insert(tag);
 
@@ -154,12 +154,17 @@ void MemoryRepository::changeDiscussionTagName(const IdType& id, const std::stri
                               status = StatusCode::ALREADY_EXISTS;
                               return;
                           }
-                          collection.modifyDiscussionTag(it, [&newName](DiscussionTag& tag)
+
+                          auto user = performedBy.getAndUpdate(collection);
+
+                          collection.modifyDiscussionTag(it, [&newName, &user](DiscussionTag& tag)
                           {
                               tag.name() = newName;
+                              updateLastUpdated(tag, user);
                           });
-                          writeEvents_.onChangeDiscussionTag(createObserverContext(*performedBy.getAndUpdate(collection)),
-                                                             **it, DiscussionTag::ChangeType::Name);
+
+                          writeEvents_.onChangeDiscussionTag(createObserverContext(*user), **it, 
+                                                             DiscussionTag::ChangeType::Name);
                       });
 }
 
@@ -346,11 +351,12 @@ void MemoryRepository::mergeDiscussionTags(const IdType& fromId, const IdType& i
                             status = StatusCode::NOT_FOUND;
                             return;
                         }
-                        //make sure the tag is not deleted before being passed to the observers
-                        writeEvents_.onMergeDiscussionTags(
-                                createObserverContext(*performedBy.getAndUpdate(collection)), **itFrom, **itInto);
 
-                        DiscussionTagWeakRef fromTagWeak(*itFrom);
+                        auto user = performedBy.getAndUpdate(collection);
+
+                        //make sure the tag is not deleted before being passed to the observers
+                        writeEvents_.onMergeDiscussionTags(createObserverContext(*user), **itFrom, **itInto);
+
                         DiscussionTagWeakRef intoTagWeak(*itInto);
 
                         for (auto& thread : (*itFrom)->threads())
@@ -365,6 +371,8 @@ void MemoryRepository::mergeDiscussionTags(const IdType& fromId, const IdType& i
                                 category->addTag(*itInto);
                             }
                         }
+
+                        updateLastUpdated(**itInto, user);
 
                         collection.deleteDiscussionTag(itFrom);
                     });

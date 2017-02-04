@@ -20,21 +20,9 @@ namespace Forum
          * Repositories are responsible for updating the relationships between this message and other entities
          * When cloning a message, the repository needs to reintroduce it in all collections it was part of
          */
-        struct DiscussionThreadMessage final : public Identifiable, public CreatedMixin, public LastUpdatedMixin, 
+        struct DiscussionThreadMessage final : public Identifiable, public CreatedMixin, public LastUpdatedMixin<User>, 
                                                private boost::noncopyable
         {
-            struct CreationDetails
-            {
-                IpType ip;
-                UserAgentType userAgent;
-            };
-
-            struct LastUpdatedDetails : public CreationDetails
-            {
-                std::weak_ptr<User> by;
-                std::string reason;
-            };
-
             typedef int_fast32_t VoteScoreType;
 
             const std::string&        content()            const { return content_; }
@@ -43,10 +31,7 @@ namespace Forum
                   User&               createdBy()                { return createdBy_; }
             const DiscussionThread&   parentThread()       const { return parentThread_; }
                   DiscussionThread&   parentThread()             { return parentThread_; }
-            const CreationDetails&    creationDetails()    const { return creationDetails_; }
-                  CreationDetails&    creationDetails()          { return creationDetails_; }
-            const LastUpdatedDetails& lastUpdatedDetails() const { return lastUpdatedDetails_; }
-                  LastUpdatedDetails& lastUpdatedDetails()       { return lastUpdatedDetails_; }
+
             auto                      upVotes()            const { return Helpers::toConst(upVotes_); }
             auto                      downVotes()          const { return Helpers::toConst(downVotes_); }
             VoteScoreType             voteScore()          const 
@@ -61,14 +46,16 @@ namespace Forum
             DiscussionThreadMessage(User& createdBy, DiscussionThread& parentThread)
                 : createdBy_(createdBy), parentThread_(parentThread) {}
 
-            DiscussionThreadMessage(const DiscussionThreadMessage& other, DiscussionThread& newParent)
-                : content_(std::move(other.content_)), createdBy_(other.createdBy_), parentThread_(newParent),
-                  creationDetails_(std::move(other.creationDetails_)), 
-                  lastUpdatedDetails_(std::move(other.lastUpdatedDetails_))
+            DiscussionThreadMessage(DiscussionThreadMessage& other, DiscussionThread& newParent)
+                : content_(std::move(other.content_)), createdBy_(other.createdBy_), parentThread_(newParent)
             {
                 id() = other.id();
                 created() = other.created();
+                creationDetails() = other.creationDetails();
                 lastUpdated() = other.lastUpdated();
+                lastUpdatedDetails() = other.lastUpdatedDetails();
+                lastUpdatedBy() = other.lastUpdatedBy();
+                lastUpdatedReason() = other.lastUpdatedReason();
             }
 
             bool hasVoted(const std::weak_ptr<User>& user) const
@@ -99,8 +86,6 @@ namespace Forum
             std::string content_;
             User& createdBy_;
             DiscussionThread& parentThread_;
-            LastUpdatedDetails creationDetails_;
-            LastUpdatedDetails lastUpdatedDetails_;
             //using maps as they use less memory than unordered_maps
             //number of votes/message will usually be small
             std::map<std::weak_ptr<User>, Timestamp, std::owner_less<std::weak_ptr<User>>> upVotes_;

@@ -150,9 +150,7 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
                           auto message = std::make_shared<DiscussionThreadMessage>(*createdBy, **threadIt);
                           message->id() = generateUUIDString();
                           message->content() = content;
-                          message->created() = Context::getCurrentTime();
-                          message->creationDetails().ip = Context::getCurrentUserIpAddress();
-                          message->creationDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
+                          updateCreated(*message);
 
                           collection.messages().insert(message);
                           collection.modifyDiscussionThread(threadIt, [&collection, &message, &threadIt]
@@ -259,13 +257,11 @@ void MemoryRepository::changeDiscussionThreadMessageContent(const IdType& id, co
                           collection.modifyDiscussionThreadMessage(it, [&](DiscussionThreadMessage& message)
                           {
                               message.content() = newContent;
-                              message.lastUpdated() = Context::getCurrentTime();
-                              message.lastUpdatedDetails().reason = changeReason;
-                              message.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();
-                              message.lastUpdatedDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
+                              updateLastUpdated(message, {});
+                              message.lastUpdatedReason() = changeReason;
                               if (&message.createdBy() != performedByPtr.get())
                               {
-                                  message.lastUpdatedDetails().by = performedByPtr;
+                                  message.lastUpdatedBy() = performedByPtr;
                               }
                               message.parentThread().resetVisitorsSinceLastEdit();
                           });

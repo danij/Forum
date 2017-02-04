@@ -84,16 +84,15 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& 
     {
         writer.newPropertyWithSafeName("lastUpdated");
         writer.startObject();
-        auto& details = message.lastUpdatedDetails();
-        if (auto ptr = details.by.lock())
+        message.executeActionWithLastUpdatedByIfAvailable([&](auto& by)
         {
-            writer << propertySafeName("userId", ptr->id())
-                   << propertySafeName("userName", ptr->name());
-        }
+            writer << propertySafeName("userId", by.id())
+                   << propertySafeName("userName", by.name());
+        });
         writer << propertySafeName("at", message.lastUpdated());
-        writer << propertySafeName("reason", details.reason);
-        writer << propertySafeName("ip", details.ip);
-        writer << propertySafeName("userAgent", details.userAgent);
+        writer << propertySafeName("reason", message.lastUpdatedReason());
+        writer << propertySafeName("ip", message.lastUpdatedDetails().ip);
+        writer << propertySafeName("userAgent", message.lastUpdatedDetails().userAgent);
 
         writer.endObject();
     }

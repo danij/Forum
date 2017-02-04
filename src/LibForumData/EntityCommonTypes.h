@@ -3,6 +3,7 @@
 #include "UuidString.h"
 
 #include <cstdint>
+#include <memory>
 
 namespace Forum
 {
@@ -39,32 +40,65 @@ namespace Forum
 
         struct IndicateDeletionInProgress
         {
-            bool&  aboutToBeDeleted() { return aboutToBeDeleted_; }
+            bool& aboutToBeDeleted() { return aboutToBeDeleted_; }
 
         private:
             bool aboutToBeDeleted_ = false;
         };
 
+        struct VisitDetails
+        {
+            IpType ip;
+            UserAgentType userAgent;
+        };
+
         struct CreatedMixin
         {
-            Timestamp  created() const { return created_; }
-            Timestamp& created()       { return created_; }
+                  Timestamp     created()         const { return created_; }
+                  Timestamp&    created()               { return created_; }
+
+            const VisitDetails& creationDetails() const { return creationDetails_; }
+                  VisitDetails& creationDetails()       { return creationDetails_; }
 
             CreatedMixin() : created_(0) {}
 
         private:
             Timestamp created_;
+            VisitDetails creationDetails_;
         };
 
+        template<typename ByType>
         struct LastUpdatedMixin
         {
-            Timestamp  lastUpdated() const { return lastUpdated_; }
-            Timestamp& lastUpdated()       { return lastUpdated_; }
+                     Timestamp  lastUpdated()        const { return lastUpdated_; }
+                     Timestamp& lastUpdated()              { return lastUpdated_; }
+
+            const VisitDetails& lastUpdatedDetails() const { return lastUpdatedDetails_; }
+                  VisitDetails& lastUpdatedDetails()       { return lastUpdatedDetails_; }
+                        
+                   std::string  lastUpdatedReason()  const { return lastUpdatedReason_; }
+                   std::string& lastUpdatedReason()        { return lastUpdatedReason_; }
+
+            std::weak_ptr<ByType>& lastUpdatedBy() { return lastUpdatedBy_; }
+
+            template<typename Action>
+            void executeActionWithLastUpdatedByIfAvailable(Action&& action) const
+            {
+                if (auto updatedByShared = lastUpdatedBy_.lock())
+                {
+                    action(const_cast<const ByType&>(*updatedByShared));
+                }
+            }
 
             LastUpdatedMixin() : lastUpdated_(0) {}
 
+            typedef std::weak_ptr<ByType> ByTypeRef;
+
         private:
             Timestamp lastUpdated_;
+            VisitDetails lastUpdatedDetails_;
+            ByTypeRef lastUpdatedBy_;
+            std::string lastUpdatedReason_;
         };
     }
 }

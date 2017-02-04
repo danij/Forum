@@ -20,7 +20,7 @@ namespace Forum
         * The discussion category manages the message count and the total thread/message counts
         * when adding/removing threads and/or tags
         */
-        struct DiscussionCategory final : public Identifiable, public CreatedMixin,
+        struct DiscussionCategory final : public Identifiable, public CreatedMixin, public LastUpdatedMixin<User>,
                                           public std::enable_shared_from_this<DiscussionCategory>,
                                           public DiscussionThreadCollectionBase
         {
