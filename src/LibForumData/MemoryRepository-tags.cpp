@@ -14,41 +14,44 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-template<typename TagsIndexFn>
-static void writeDiscussionTags(std::ostream& output, PerformedByWithLastSeenUpdateGuard&& performedBy,
-    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, TagsIndexFn&& tagsIndexFn)
+void MemoryRepository::getDiscussionTags(std::ostream& output, RetrieveDiscussionTagsBy by) const
 {
+    auto performedBy = preparePerformedBy();
+
     collection_.read([&](const EntityCollection& collection)
     {
         auto& currentUser = performedBy.get(collection);
-        const auto tags = tagsIndexFn(collection);
 
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
         {
-            writeSingleObjectSafeName(output, "tags", Json::enumerate(tags.begin(), tags.end()));
+            switch (by)
+            {
+            case RetrieveDiscussionTagsBy::Name: 
+                writeSingleObjectSafeName(output, "tags", Json::enumerate(collection.tagsByName().begin(), 
+                                                                          collection.tagsByName().end()));
+                break;
+            case RetrieveDiscussionTagsBy::MessageCount: 
+                writeSingleObjectSafeName(output, "tags", Json::enumerate(collection.tagsByMessageCount().begin(),
+                                                                          collection.tagsByMessageCount().end()));
+                break;
+            }
         }
         else
         {
-            writeSingleObjectSafeName(output, "tags", Json::enumerate(tags.rbegin(), tags.rend()));
+            switch (by)
+            {
+            case RetrieveDiscussionTagsBy::Name: 
+                writeSingleObjectSafeName(output, "tags", Json::enumerate(collection.tagsByName().rbegin(), 
+                                                                          collection.tagsByName().rend()));
+                break;
+            case RetrieveDiscussionTagsBy::MessageCount: 
+                writeSingleObjectSafeName(output, "tags", Json::enumerate(collection.tagsByMessageCount().rbegin(),
+                                                                          collection.tagsByMessageCount().rend()));
+                break;
+            }
         }
 
         readEvents_.onGetDiscussionTags(createObserverContext(currentUser));
-    });
-}
-
-void MemoryRepository::getDiscussionTagsByName(std::ostream& output) const
-{
-    writeDiscussionTags(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
-    {
-        return collection.tagsByName();
-    });
-}
-
-void MemoryRepository::getDiscussionTagsByMessageCount(std::ostream& output) const
-{
-    writeDiscussionTags(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
-    {
-        return collection.tagsByMessageCount();
     });
 }
 

@@ -15,9 +15,11 @@ using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
 template<typename ThreadsCollection>
-static void writeDiscussionThreads(ThreadsCollection&& threads, std::ostream& output, const IdType& currentUserId)
+static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscussionThreadsBy by, 
+                                   std::ostream& output, const IdType& currentUserId)
 {
     BoolTemporaryChanger _(serializationSettings.visitedThreadSinceLastChange, false);
+    BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
 
     auto writeInterceptor = [&](auto currentThread)
     {
@@ -33,57 +35,37 @@ static void writeDiscussionThreads(ThreadsCollection&& threads, std::ostream& ou
     auto pageSize = getGlobalConfig()->discussionThread.maxThreadsPerPage;
     auto& displayContext = Context::getDisplayContext();
 
-    writeEntitiesWithPagination(threads, "threads", output, displayContext.pageNumber, pageSize,
-        displayContext.sortOrder == Context::SortOrder::Ascending, writeInterceptor);
+    switch (by)
+    {
+    case RetrieveDiscussionThreadsBy::Name:
+        writeEntitiesWithPagination(collection.threadsByName(), "threads", output, displayContext.pageNumber, 
+            pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, writeInterceptor);
+        break;
+    case RetrieveDiscussionThreadsBy::Created:
+        writeEntitiesWithPagination(collection.threadsByCreated(), "threads", output, displayContext.pageNumber, 
+            pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, writeInterceptor);
+        break;
+    case RetrieveDiscussionThreadsBy::LastUpdated:
+        writeEntitiesWithPagination(collection.threadsByLastUpdated(), "threads", output, displayContext.pageNumber, 
+            pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, writeInterceptor);
+        break;
+    case RetrieveDiscussionThreadsBy::MessageCount:
+        writeEntitiesWithPagination(collection.threadsByMessageCount(), "threads", output, displayContext.pageNumber, 
+            pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, writeInterceptor);
+        break;
+    }
 }
 
-template<typename ThreadsIndexFn>
-static void writeDiscussionThreads(std::ostream& output, PerformedByWithLastSeenUpdateGuard&& performedBy,
-    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, ThreadsIndexFn&& threadsIndexFn)
+void MemoryRepository::getDiscussionThreads(std::ostream& output, RetrieveDiscussionThreadsBy by) const
 {
+    auto performedBy = preparePerformedBy();
     collection_.read([&](const EntityCollection& collection)
-                     {
-                         auto& currentUser = performedBy.get(collection);
-                         const auto threads = threadsIndexFn(collection);
-
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
-
-                         writeDiscussionThreads(threads, output, currentUser.id());
-
-                         readEvents_.onGetDiscussionThreads(createObserverContext(currentUser));
-                     });
-    
-}
-
-void MemoryRepository::getDiscussionThreadsByName(std::ostream& output) const
-{
-    writeDiscussionThreads(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
     {
-        return collection.threadsByName();
-    });
-}
+        auto& currentUser = performedBy.get(collection);
+        
+        writeDiscussionThreads(collection, by, output, currentUser.id());
 
-void MemoryRepository::getDiscussionThreadsByCreated(std::ostream& output) const
-{
-    writeDiscussionThreads(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
-    {
-        return collection.threadsByCreated();
-    });
-}
-
-void MemoryRepository::getDiscussionThreadsByLastUpdated(std::ostream& output) const
-{
-    writeDiscussionThreads(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
-    {
-        return collection.threadsByLastUpdated();
-    });
-}
-
-void MemoryRepository::getDiscussionThreadsByMessageCount(std::ostream& output) const
-{
-    writeDiscussionThreads(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
-    {
-        return collection.threadsByMessageCount();
+        readEvents_.onGetDiscussionThreads(createObserverContext(currentUser));
     });
 }
 
@@ -136,16 +118,16 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
 }
 
 
-template<typename ThreadsIndexFn>
-static void writeDiscussionThreadsOfUser(const IdType& id, std::ostream& output, 
-    PerformedByWithLastSeenUpdateGuard&& performedBy, const ResourceGuard<EntityCollection>& collection_, 
-    const ReadEvents& readEvents_, ThreadsIndexFn&& threadsIndexFn)
+void MemoryRepository::getDiscussionThreadsOfUser(const IdType& id, std::ostream& output, 
+                                                  RetrieveDiscussionThreadsBy by) const
 {
     if ( ! id )
     {
         writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
         return;
     }
+    auto performedBy = preparePerformedBy();
+
     collection_.read([&](const EntityCollection& collection)
                      {
                          auto& currentUser = performedBy.get(collection);
@@ -156,61 +138,26 @@ static void writeDiscussionThreadsOfUser(const IdType& id, std::ostream& output,
                              writeStatusCode(output, StatusCode::NOT_FOUND);
                              return;
                          }
-
                          auto& user = **it;
-                         const auto& threads = threadsIndexFn(user);
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
-                         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
 
-                         writeDiscussionThreads(threads, output, currentUser.id());
+                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
+
+                         writeDiscussionThreads(user, by, output, currentUser.id());
 
                          readEvents_.onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
                      });
 }
 
-void MemoryRepository::getDiscussionThreadsOfUserByName(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsOfUser(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& user)
-    {
-        return user.threadsByName();
-    });
-}
-
-void MemoryRepository::getDiscussionThreadsOfUserByCreated(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsOfUser(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& user)
-    {
-        return user.threadsByCreated();
-    });
-}
-
-void MemoryRepository::getDiscussionThreadsOfUserByLastUpdated(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsOfUser(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& user)
-    {
-        return user.threadsByLastUpdated();
-    });
-}
-
-void MemoryRepository::getDiscussionThreadsOfUserByMessageCount(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsOfUser(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& user)
-    {
-        return user.threadsByMessageCount();
-    });
-}
-
-
-template<typename ThreadsIndexFn>
-static void writeDiscussionThreadsWithTag(const IdType& id, std::ostream& output, 
-    PerformedByWithLastSeenUpdateGuard&& performedBy, const ResourceGuard<EntityCollection>& collection_, 
-    const ReadEvents& readEvents_, ThreadsIndexFn&& threadsIndexFn)
+void MemoryRepository::getDiscussionThreadsWithTag(const IdType& id, std::ostream& output, 
+                                                   RetrieveDiscussionThreadsBy by) const
 {
     if ( ! id )
     {
         writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
         return;
-    }    
+    }
+    auto performedBy = preparePerformedBy();
+
     collection_.read([&](const EntityCollection& collection)
                      {
                          auto& currentUser = performedBy.get(collection);
@@ -223,59 +170,23 @@ static void writeDiscussionThreadsWithTag(const IdType& id, std::ostream& output
                          }
 
                          auto& tag = **it;
-                         const auto& threads = threadsIndexFn(tag);
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
 
-                         writeDiscussionThreads(threads, output, currentUser.id());
+                         writeDiscussionThreads(tag, by, output, currentUser.id());
 
                          readEvents_.onGetDiscussionThreadsWithTag(createObserverContext(currentUser), tag);
                      });
 }
 
-void MemoryRepository::getDiscussionThreadsWithTagByName(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsWithTag(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& tag)
-    {
-        return tag.threadsByName();
-    });
-}
-
-void MemoryRepository::getDiscussionThreadsWithTagByCreated(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsWithTag(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& tag)
-    {
-        return tag.threadsByCreated();
-    });
-}
-
-void MemoryRepository::getDiscussionThreadsWithTagByLastUpdated(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsWithTag(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& tag)
-    {
-        return tag.threadsByLastUpdated();
-    });
-}
-
-void MemoryRepository::getDiscussionThreadsWithTagByMessageCount(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsWithTag(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& tag)
-    {
-        return tag.threadsByMessageCount();
-    });
-}
-
-
-
-template<typename ThreadsIndexFn>
-static void writeDiscussionThreadsOfCategory(const IdType& id, std::ostream& output, 
-    PerformedByWithLastSeenUpdateGuard&& performedBy, const ResourceGuard<EntityCollection>& collection_, 
-    const ReadEvents& readEvents_, ThreadsIndexFn&& threadsIndexFn)
+void MemoryRepository::getDiscussionThreadsOfCategory(const IdType& id, std::ostream& output, 
+                                                      RetrieveDiscussionThreadsBy by) const
 {
     if ( ! id )
     {
         writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
         return;
     }
+    auto performedBy = preparePerformedBy();
+
     collection_.read([&](const EntityCollection& collection)
                      {
                          auto& currentUser = performedBy.get(collection);
@@ -287,45 +198,11 @@ static void writeDiscussionThreadsOfCategory(const IdType& id, std::ostream& out
                              return;
                          }
                          auto& category = **it;
-                         const auto& threads = threadsIndexFn(category);
-                         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
 
-                         writeDiscussionThreads(threads, output, currentUser.id());
+                         writeDiscussionThreads(category, by, output, currentUser.id());
 
                          readEvents_.onGetDiscussionThreadsOfCategory(createObserverContext(currentUser), category);
                      });
-}
-
-void MemoryRepository::getDiscussionThreadsOfCategoryByName(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsOfCategory(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& category)
-    {
-        return category.threadsByName();
-    });
-}
-
-void MemoryRepository::getDiscussionThreadsOfCategoryByCreated(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsOfCategory(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& category)
-    {
-        return category.threadsByCreated();
-    });
-}
-
-void MemoryRepository::getDiscussionThreadsOfCategoryByLastUpdated(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsOfCategory(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& category)
-    {
-        return category.threadsByLastUpdated();
-    });
-}
-
-void MemoryRepository::getDiscussionThreadsOfCategoryByMessageCount(const IdType& id, std::ostream& output) const
-{
-    writeDiscussionThreadsOfCategory(id, output, preparePerformedBy(), collection_, readEvents_, [](const auto& category)
-    {
-        return category.threadsByMessageCount();
-    });
 }
 
 

@@ -12,68 +12,6 @@ namespace Forum
 {
     namespace Repository
     {
-        class IReadRepository
-        {
-        public:
-            DECLARE_INTERFACE_MANDATORY(IReadRepository);
-
-            virtual ReadEvents& readEvents() = 0;
-
-            virtual void getEntitiesCount(std::ostream& output) const = 0;
-
-            virtual void getUsersByName(std::ostream& output) const = 0;
-            virtual void getUsersByCreated(std::ostream& output) const = 0;
-            virtual void getUsersByLastSeen(std::ostream& output) const = 0;
-
-            virtual void getUserById(const Entities::IdType& id, std::ostream& output) const = 0;
-            virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
-
-            virtual void getDiscussionThreadsByName(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsByCreated(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsByMessageCount(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadById(const Entities::IdType& id, std::ostream& output) = 0;
-
-            virtual void getDiscussionThreadsOfUserByName(const Entities::IdType& id,
-                                                          std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfUserByCreated(const Entities::IdType& id,
-                                                             std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfUserByLastUpdated(const Entities::IdType& id,
-                                                                 std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfUserByMessageCount(const Entities::IdType& id,
-                                                                  std::ostream& output) const = 0;
-
-            virtual void getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
-                                                                    std::ostream& output) const = 0;
-
-            virtual void getDiscussionTagsByName(std::ostream& output) const = 0;
-            virtual void getDiscussionTagsByMessageCount(std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsWithTagByName(const Entities::IdType& id, std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsWithTagByCreated(const Entities::IdType& id, 
-                                                              std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsWithTagByLastUpdated(const Entities::IdType& id, 
-                                                                  std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsWithTagByMessageCount(const Entities::IdType& id, 
-                                                                   std::ostream& output) const = 0;
-
-            virtual void getDiscussionCategoryById(const Entities::IdType& id, std::ostream& output) const = 0;
-            virtual void getDiscussionCategoriesByName(std::ostream& output) const = 0;
-            virtual void getDiscussionCategoriesByMessageCount(std::ostream& output) const = 0;
-            virtual void getDiscussionCategoriesFromRoot(std::ostream& output) const = 0;
-
-            virtual void getDiscussionThreadsOfCategoryByName(const Entities::IdType& id,
-                                                              std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfCategoryByCreated(const Entities::IdType& id,
-                                                                 std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfCategoryByLastUpdated(const Entities::IdType& id,
-                                                                     std::ostream& output) const = 0;
-            virtual void getDiscussionThreadsOfCategoryByMessageCount(const Entities::IdType& id,
-                                                                      std::ostream& output) const = 0;
-
-        };
-
-        typedef std::shared_ptr<IReadRepository> ReadRepositoryRef;
-
         enum StatusCode : uint_fast32_t
         {
             OK = 0,
@@ -86,6 +24,71 @@ namespace Forum
             CIRCULAR_REFERENCE_NOT_ALLOWED,
             NOT_ALLOWED
         };
+
+        enum class RetrieveUsersBy
+        {
+            Name,
+            Created,
+            LastSeen
+        };
+
+        enum class RetrieveDiscussionThreadsBy
+        {
+            Name,
+            Created,
+            LastUpdated,
+            MessageCount
+        };
+
+        enum class RetrieveDiscussionTagsBy
+        {
+            Name,
+            MessageCount
+        };
+
+        enum class RetrieveDiscussionCategoriesBy
+        {
+            Name,
+            MessageCount
+        };
+        
+        class IReadRepository
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IReadRepository);
+
+            virtual ReadEvents& readEvents() = 0;
+
+            virtual void getEntitiesCount(std::ostream& output) const = 0;
+
+            virtual void getUsers(std::ostream& output, RetrieveUsersBy by) const = 0;
+
+            virtual void getUserById(const Entities::IdType& id, std::ostream& output) const = 0;
+            virtual void getUserByName(const std::string& name, std::ostream& output) const = 0;
+
+            virtual void getDiscussionThreads(std::ostream& output, RetrieveDiscussionThreadsBy by) const = 0;
+            virtual void getDiscussionThreadById(const Entities::IdType& id, std::ostream& output) = 0;
+
+            virtual void getDiscussionThreadsOfUser(const Entities::IdType& id, std::ostream& output, 
+                                                    RetrieveDiscussionThreadsBy by) const = 0;
+
+            virtual void getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
+                                                                    std::ostream& output) const = 0;
+
+            virtual void getDiscussionTags(std::ostream& output, RetrieveDiscussionTagsBy by) const = 0;
+            virtual void getDiscussionThreadsWithTag(const Entities::IdType& id, std::ostream& output, 
+                                                     RetrieveDiscussionThreadsBy by) const = 0;
+
+            virtual void getDiscussionCategoryById(const Entities::IdType& id, std::ostream& output) const = 0;
+            virtual void getDiscussionCategories(std::ostream& output, RetrieveDiscussionCategoriesBy by) const = 0;
+            virtual void getDiscussionCategoriesFromRoot(std::ostream& output) const = 0;
+
+            virtual void getDiscussionThreadsOfCategory(const Entities::IdType& id, std::ostream& output, 
+                                                        RetrieveDiscussionThreadsBy by) const = 0;
+
+        };
+
+        typedef std::shared_ptr<IReadRepository> ReadRepositoryRef;
 
         class IWriteRepository
         {

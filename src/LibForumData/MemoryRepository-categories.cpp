@@ -14,41 +14,44 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-template<typename CategoriesIndexFn>
-static void writeDiscussionCategories(std::ostream& output, PerformedByWithLastSeenUpdateGuard&& performedBy,
-    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, CategoriesIndexFn&& categoriesIndexFn)
+void MemoryRepository::getDiscussionCategories(std::ostream& output, RetrieveDiscussionCategoriesBy by) const
 {
+    auto performedBy = preparePerformedBy();
+
     collection_.read([&](const EntityCollection& collection)
     {
         auto& currentUser = performedBy.get(collection);
-        const auto categories = categoriesIndexFn(collection);
 
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
         {
-            writeSingleObjectSafeName(output, "categories", Json::enumerate(categories.begin(), categories.end()));
+            switch (by)
+            {
+            case RetrieveDiscussionCategoriesBy::Name: 
+                writeSingleObjectSafeName(output, "categories", Json::enumerate(collection.categoriesByName().begin(), 
+                                                                                collection.categoriesByName().end()));
+                break;
+            case RetrieveDiscussionCategoriesBy::MessageCount: 
+                writeSingleObjectSafeName(output, "categories", Json::enumerate(collection.categoriesByMessageCount().begin(), 
+                                                                                collection.categoriesByMessageCount().end()));
+                break;
+            }
         }
         else
         {
-            writeSingleObjectSafeName(output, "categories", Json::enumerate(categories.rbegin(), categories.rend()));
+            switch (by)
+            {
+            case RetrieveDiscussionCategoriesBy::Name: 
+                writeSingleObjectSafeName(output, "categories", Json::enumerate(collection.categoriesByName().rbegin(), 
+                                                                                collection.categoriesByName().rend()));
+                break;
+            case RetrieveDiscussionCategoriesBy::MessageCount: 
+                writeSingleObjectSafeName(output, "categories", Json::enumerate(collection.categoriesByMessageCount().rbegin(), 
+                                                                                collection.categoriesByMessageCount().rend()));
+                break;
+            }
         }
 
         readEvents_.onGetDiscussionCategories(createObserverContext(currentUser));
-    });
-}
-
-void MemoryRepository::getDiscussionCategoriesByName(std::ostream& output) const
-{
-    writeDiscussionCategories(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
-    {
-        return collection.categoriesByName();
-    });
-}
-
-void MemoryRepository::getDiscussionCategoriesByMessageCount(std::ostream& output) const
-{
-    writeDiscussionCategories(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
-    {
-        return collection.categoriesByMessageCount();
     });
 }
 

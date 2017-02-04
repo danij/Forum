@@ -52,9 +52,7 @@ namespace Forum
 
             virtual void getEntitiesCount(std::ostream& output) const override;
 
-            virtual void getUsersByName(std::ostream& output) const override;
-            virtual void getUsersByCreated(std::ostream& output) const override;
-            virtual void getUsersByLastSeen(std::ostream& output) const override;
+            virtual void getUsers(std::ostream& output, RetrieveUsersBy by) const override;
 
             virtual void getUserById(const Entities::IdType& id, std::ostream& output) const override;
             virtual void getUserByName(const std::string& name, std::ostream& output) const override;
@@ -66,10 +64,7 @@ namespace Forum
                                         std::ostream& output) override;
             virtual void deleteUser(const Entities::IdType& id, std::ostream& output) override;
 
-            virtual void getDiscussionThreadsByName(std::ostream& output) const override;
-            virtual void getDiscussionThreadsByCreated(std::ostream& output) const override;
-            virtual void getDiscussionThreadsByLastUpdated(std::ostream& output) const override;
-            virtual void getDiscussionThreadsByMessageCount(std::ostream& output) const override;
+            virtual void getDiscussionThreads(std::ostream& output, RetrieveDiscussionThreadsBy by) const override;
 
             /**
              * Calling the function changes state:
@@ -78,14 +73,8 @@ namespace Forum
              */
             virtual void getDiscussionThreadById(const Entities::IdType& id, std::ostream& output) override;
 
-            virtual void getDiscussionThreadsOfUserByName(const Entities::IdType& id,
-                                                          std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByCreated(const Entities::IdType& id,
-                                                             std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByLastUpdated(const Entities::IdType& id,
-                                                                 std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfUserByMessageCount(const Entities::IdType& id,
-                                                                  std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfUser(const Entities::IdType& id, std::ostream& output, 
+                                                    RetrieveDiscussionThreadsBy by) const override;
 
             virtual void addNewDiscussionThread(const std::string& name, std::ostream& output) override;
             virtual void changeDiscussionThreadName(const Entities::IdType& id, const std::string& newName,
@@ -108,8 +97,8 @@ namespace Forum
             virtual void getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
                                                                     std::ostream& output) const override;
 
-            virtual void getDiscussionTagsByName(std::ostream& output) const override;
-            virtual void getDiscussionTagsByMessageCount(std::ostream& output) const override;
+            virtual void getDiscussionTags(std::ostream& output, RetrieveDiscussionTagsBy by) const override;
+            
             virtual void addNewDiscussionTag(const std::string& name, std::ostream& output) override;
             virtual void changeDiscussionTagName(const Entities::IdType& id, const std::string& newName,
                                                  std::ostream& output) override;
@@ -117,14 +106,9 @@ namespace Forum
                                                    std::ostream& output) override;
             virtual void deleteDiscussionTag(const Entities::IdType& id, std::ostream& output) override;
 
-            virtual void getDiscussionThreadsWithTagByName(const Entities::IdType& id, 
-                                                           std::ostream& output) const override;
-            virtual void getDiscussionThreadsWithTagByCreated(const Entities::IdType& id,
-                                                              std::ostream& output) const override;
-            virtual void getDiscussionThreadsWithTagByLastUpdated(const Entities::IdType& id,
-                                                                  std::ostream& output) const override;
-            virtual void getDiscussionThreadsWithTagByMessageCount(const Entities::IdType& id,
-                                                                   std::ostream& output) const override;
+            virtual void getDiscussionThreadsWithTag(const Entities::IdType& id, std::ostream& output,
+                                                     RetrieveDiscussionThreadsBy by) const override;
+            
             virtual void addDiscussionTagToThread(const Entities::IdType& tagId, const Entities::IdType& threadId, 
                                                   std::ostream& output) override;
             virtual void removeDiscussionTagFromThread(const Entities::IdType& tagId, const Entities::IdType& threadId, 
@@ -143,22 +127,17 @@ namespace Forum
             virtual void changeDiscussionCategoryDisplayOrder(const Entities::IdType& id, int_fast16_t newDisplayOrder,
                                                               std::ostream& output) override;
             virtual void deleteDiscussionCategory(const Entities::IdType& id, std::ostream& output) override;
+
             virtual void getDiscussionCategoryById(const Entities::IdType& id, std::ostream& output) const override;
-            virtual void getDiscussionCategoriesByName(std::ostream& output) const override;
-            virtual void getDiscussionCategoriesByMessageCount(std::ostream& output) const override;
+            virtual void getDiscussionCategories(std::ostream& output, RetrieveDiscussionCategoriesBy by) const override;
             virtual void getDiscussionCategoriesFromRoot(std::ostream& output) const override;
+
             virtual void addDiscussionTagToCategory(const Entities::IdType& tagId, const Entities::IdType& categoryId, 
                                                     std::ostream& output) override;
             virtual void removeDiscussionTagFromCategory(const Entities::IdType& tagId, const Entities::IdType& categoryId, 
                                                          std::ostream& output) override;
-            virtual void getDiscussionThreadsOfCategoryByName(const Entities::IdType& id,
-                                                              std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfCategoryByCreated(const Entities::IdType& id,
-                                                                 std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfCategoryByLastUpdated(const Entities::IdType& id,
-                                                                     std::ostream& output) const override;
-            virtual void getDiscussionThreadsOfCategoryByMessageCount(const Entities::IdType& id,
-                                                                      std::ostream& output) const override;
+            virtual void getDiscussionThreadsOfCategory(const Entities::IdType& id, std::ostream& output,
+                                                        RetrieveDiscussionThreadsBy by) const override;
 
 
         private:

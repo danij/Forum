@@ -14,43 +14,32 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-template<typename UsersIndexFn>
-static void writeUsers(std::ostream& output, PerformedByWithLastSeenUpdateGuard&& performedBy,
-    const ResourceGuard<EntityCollection>& collection_, const ReadEvents& readEvents_, UsersIndexFn&& usersIndexFn)
+void MemoryRepository::getUsers(std::ostream& output, RetrieveUsersBy by) const
 {
+    auto performedBy = preparePerformedBy();
+
     collection_.read([&](const EntityCollection& collection)
-                     {
-                         const auto users = usersIndexFn(collection);
-                         auto pageSize = getGlobalConfig()->user.maxUsersPerPage;
-                         auto& displayContext = Context::getDisplayContext();
-
-                         writeEntitiesWithPagination(users, "users", output, displayContext.pageNumber, pageSize, 
-                             displayContext.sortOrder == Context::SortOrder::Ascending, [](auto u) { return u; });
-
-                         readEvents_.onGetUsers(createObserverContext(performedBy.get(collection)));
-                     });
-}
-
-void MemoryRepository::getUsersByName(std::ostream& output) const
-{
-    writeUsers(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
     {
-        return collection.usersByName();
-    });
-}
+        auto pageSize = getGlobalConfig()->user.maxUsersPerPage;
+        auto& displayContext = Context::getDisplayContext();
 
-void MemoryRepository::getUsersByCreated(std::ostream& output) const
-{
-    writeUsers(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
-    {
-        return collection.usersByCreated();
-    });
-}
-void MemoryRepository::getUsersByLastSeen(std::ostream& output) const
-{
-    writeUsers(output, preparePerformedBy(), collection_, readEvents_, [](const auto& collection)
-    {
-        return collection.usersByLastSeen();
+        switch (by)
+        {
+        case RetrieveUsersBy::Name:
+            writeEntitiesWithPagination(collection.usersByName(), "users", output, displayContext.pageNumber, 
+                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](auto u) { return u; });
+            break;
+        case RetrieveUsersBy::Created:
+            writeEntitiesWithPagination(collection.usersByCreated(), "users", output, displayContext.pageNumber, 
+                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](auto u) { return u; });
+            break;
+        case RetrieveUsersBy::LastSeen:
+            writeEntitiesWithPagination(collection.usersByLastSeen(), "users", output, displayContext.pageNumber, 
+                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](auto u) { return u; });
+            break;
+        }
+
+        readEvents_.onGetUsers(createObserverContext(performedBy.get(collection)));
     });
 }
 

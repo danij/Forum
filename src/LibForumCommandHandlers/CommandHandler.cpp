@@ -74,17 +74,17 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_NAME )
     {
-        readRepository->getUsersByName(output);
+        readRepository->getUsers(output, RetrieveUsersBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_CREATED )
     {
-        readRepository->getUsersByCreated(output);
+        readRepository->getUsers(output, RetrieveUsersBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_LAST_SEEN )
     {
-        readRepository->getUsersByLastSeen(output);
+        readRepository->getUsers(output, RetrieveUsersBy::LastSeen);
     }
 
     COMMAND_HANDLER_METHOD( GET_USER_BY_ID )
@@ -119,22 +119,22 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_NAME )
     {
-        readRepository->getDiscussionThreadsByName(output);
+        readRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_CREATED )
     {
-        readRepository->getDiscussionThreadsByCreated(output);
+        readRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_LAST_UPDATED )
     {
-        readRepository->getDiscussionThreadsByLastUpdated(output);
+        readRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT )
     {
-        readRepository->getDiscussionThreadsByMessageCount(output);
+        readRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD )
@@ -170,25 +170,25 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsOfUserByName(parameters[0], output);
+        readRepository->getDiscussionThreadsOfUser(parameters[0], output, RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_CREATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsOfUserByCreated(parameters[0], output);
+        readRepository->getDiscussionThreadsOfUser(parameters[0], output, RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsOfUserByLastUpdated(parameters[0], output);
+        readRepository->getDiscussionThreadsOfUser(parameters[0], output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsOfUserByMessageCount(parameters[0], output);
+        readRepository->getDiscussionThreadsOfUser(parameters[0], output, RetrieveDiscussionThreadsBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD_MESSAGE )
@@ -248,12 +248,12 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_NAME )
     {
-        readRepository->getDiscussionTagsByName(output);
+        readRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT )
     {
-        readRepository->getDiscussionTagsByMessageCount(output);
+        readRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_NAME )
@@ -277,25 +277,25 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsWithTagByName(parameters[0], output);
+        readRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsWithTagByCreated(parameters[0], output);
+        readRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsWithTagByLastUpdated(parameters[0], output);
+        readRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsWithTagByMessageCount(parameters[0], output);
+        readRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG_TO_THREAD )
@@ -331,12 +331,12 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_NAME )
     {
-        readRepository->getDiscussionCategoriesByName(output);
+        readRepository->getDiscussionCategories(output, RetrieveDiscussionCategoriesBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT )
     {
-        readRepository->getDiscussionCategoriesByMessageCount(output);
+        readRepository->getDiscussionCategories(output, RetrieveDiscussionCategoriesBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_FROM_ROOT )
@@ -391,25 +391,25 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsOfCategoryByName(parameters[0], output);
+        readRepository->getDiscussionThreadsOfCategory(parameters[0], output, RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsOfCategoryByCreated(parameters[0], output);
+        readRepository->getDiscussionThreadsOfCategory(parameters[0], output, RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsOfCategoryByLastUpdated(parameters[0], output);
+        readRepository->getDiscussionThreadsOfCategory(parameters[0], output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
-        readRepository->getDiscussionThreadsOfCategoryByMessageCount(parameters[0], output);
+        readRepository->getDiscussionThreadsOfCategory(parameters[0], output, RetrieveDiscussionThreadsBy::MessageCount);
     }
 };
 
