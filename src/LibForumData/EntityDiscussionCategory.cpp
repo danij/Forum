@@ -21,16 +21,7 @@ static void executeOnAllCategoryParents(DiscussionCategory& category, std::funct
 static void executeOnCategoryAndAllParents(DiscussionCategory& category, std::function<void(DiscussionCategory&)>&& fn)
 {
     fn(category);
-    DiscussionCategoryWeakRef parentWeak = category.parentWeak();
-    while (true)
-    {
-        if (auto parent = parentWeak.lock())
-        {
-            fn(*parent);
-            parentWeak = parent->parentWeak();
-        }
-        else { break; }
-    }
+    executeOnAllCategoryParents(category, std::move(fn));
 }
 
 bool DiscussionCategory::insertDiscussionThread(const DiscussionThreadRef& thread)
