@@ -59,12 +59,11 @@ UserRef EntityCollection::deleteUser(UserCollection::iterator iterator)
     }
     //delete all votes of this user
     {
-        auto userWeak = UserWeakRef(user);
         for (auto& messageWeak : user->votedMessages())
         {
             if (auto message = messageWeak.lock())
             {
-                message->removeVote(userWeak);
+                message->removeVote(user);
             }
         }
     }
@@ -370,12 +369,11 @@ DiscussionTagRef EntityCollection::deleteDiscussionTag(DiscussionTagCollection::
             category->removeTag(tag);
         }
     }
-    DiscussionTagWeakRef tagWeak(tag);
     for (auto& thread : tag->threads().get<DiscussionThreadCollectionById>())
     {
         if (thread)
         {
-            thread->removeTag(tagWeak);
+            thread->removeTag(tag);
         }
     }
     return tag;
@@ -434,12 +432,11 @@ DiscussionCategoryRef EntityCollection::deleteDiscussionCategory(DiscussionCateg
     {
         return category;
     }
-    DiscussionCategoryWeakRef categoryWeak(category);
     for (auto& tag : category->tags())
     {
         if (tag)
         {
-            tag->removeCategory(categoryWeak);
+            tag->removeCategory(category);
         }
     }
     return category;

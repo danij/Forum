@@ -448,7 +448,7 @@ void MemoryRepository::resetVoteDiscussionThreadMessage(const IdType& id, std::o
                               return;
                           }
 
-                          if ( ! message.removeVote(UserWeakRef(currentUser)))
+                          if ( ! message.removeVote(currentUser))
                           {
                               status = StatusCode::NO_EFFECT;
                               return;

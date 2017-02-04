@@ -176,7 +176,7 @@ void MemoryRepository::addNewDiscussionCategory(const std::string& name, const I
                                   {
                                       parent.addChild(category);
                                   });
-                                  category->parentWeak() = DiscussionCategoryWeakRef(*it);
+                                  category->parentWeak() = *it;
                                   setParentId = parentId;
                               }
                           }
@@ -296,7 +296,7 @@ void MemoryRepository::changeDiscussionCategoryParent(const IdType& id, const Id
                           {
                               newParentRef = *newParentIt;
                               //check that the new parent is not a child of the current category
-                              if (newParentRef->hasAncestor(DiscussionCategoryWeakRef(*it)))
+                              if (newParentRef->hasAncestor(*it))
                               {
                                   status = StatusCode::CIRCULAR_REFERENCE_NOT_ALLOWED;
                                   return;
@@ -320,7 +320,7 @@ void MemoryRepository::changeDiscussionCategoryParent(const IdType& id, const Id
                           
                           collection.modifyDiscussionCategory(it, [&newParentRef, &user](DiscussionCategory& category)
                           {
-                              category.parentWeak() = DiscussionCategoryWeakRef(newParentRef);
+                              category.parentWeak() = newParentRef;
                               updateLastUpdated(category, user);
                           });
 
@@ -434,12 +434,10 @@ void MemoryRepository::addDiscussionTagToCategory(const IdType& tagId, const IdT
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
-
-                          DiscussionCategoryWeakRef categoryWeak(*categoryIt);
-
+                          
                           //the number of categories associated to a tag is smaller than 
                           //the number of tags associated to a category, so search the category in the tag
-                          if ( ! (*tagIt)->addCategory(categoryWeak))
+                          if ( ! (*tagIt)->addCategory(*categoryIt))
                           {
                               //actually already added, but return ok
                               status = StatusCode::OK;
@@ -487,11 +485,9 @@ void MemoryRepository::removeDiscussionTagFromCategory(const IdType& tagId, cons
                               return;
                           }
 
-                          DiscussionCategoryWeakRef categoryWeak(*categoryIt);
-
                           //the number of categories associated to a tag is smaller than 
                           //the number of tags associated to a category, so search the category in the tag
-                          if ( ! (*tagIt)->removeCategory(categoryWeak))
+                          if ( ! (*tagIt)->removeCategory(*categoryIt))
                           {
                               status = StatusCode::NO_EFFECT;
                               return;

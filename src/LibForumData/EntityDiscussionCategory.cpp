@@ -32,7 +32,7 @@ bool DiscussionCategory::insertDiscussionThread(const DiscussionThreadRef& threa
     }
     //don't use updateMessageCount() as insertDiscussionThread will take care of that for totals
     messageCount_ += thread->messages().size();
-    thread->addCategory(DiscussionCategoryWeakRef(shared_from_this()));
+    thread->addCategory(shared_from_this());
 
     executeOnCategoryAndAllParents(*this, [&](auto& category)
     {
@@ -75,7 +75,7 @@ DiscussionThreadRef DiscussionCategory::deleteDiscussionThread(DiscussionThreadC
     messageCount_ -= static_cast<int_fast32_t>(result->messages().size());
     if ( ! result->aboutToBeDeleted())
     {
-        result->removeCategory(DiscussionCategoryWeakRef(shared_from_this()));
+        result->removeCategory(shared_from_this());
     }
 
     executeOnCategoryAndAllParents(*this, [&](auto& category)

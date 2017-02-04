@@ -257,11 +257,9 @@ void MemoryRepository::addDiscussionTagToThread(const IdType& tagId, const IdTyp
                               return;
                           }
 
-                          DiscussionTagWeakRef tagWeak(*tagIt);
-
                           //the number of tags associated to a thread is much smaller than 
                           //the number of threads associated to a tag, so search the tag in the thread
-                          if ( ! (*threadIt)->addTag(tagWeak))
+                          if ( ! (*threadIt)->addTag(*tagIt))
                           {
                               //actually already added, but return ok
                               status = StatusCode::OK;
@@ -305,10 +303,8 @@ void MemoryRepository::removeDiscussionTagFromThread(const IdType& tagId, const 
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
-
-                          DiscussionTagWeakRef tagWeak(*tagIt);
-
-                          if ( ! (*threadIt)->removeTag(tagWeak))
+                          
+                          if ( ! (*threadIt)->removeTag(*tagIt))
                           {
                               //tag was not added to the thread
                               status = StatusCode::NO_EFFECT;
@@ -360,12 +356,10 @@ void MemoryRepository::mergeDiscussionTags(const IdType& fromId, const IdType& i
 
                         //make sure the tag is not deleted before being passed to the observers
                         writeEvents_.onMergeDiscussionTags(createObserverContext(*user), **itFrom, **itInto);
-
-                        DiscussionTagWeakRef intoTagWeak(*itInto);
-
+                        
                         for (auto& thread : (*itFrom)->threads())
                         {
-                            thread->addTag(intoTagWeak);
+                            thread->addTag(*itInto);
                             updateLastUpdated(*thread, user);
                             (*itInto)->insertDiscussionThread(thread);
                         }
