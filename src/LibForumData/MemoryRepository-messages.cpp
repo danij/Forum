@@ -297,8 +297,12 @@ void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, cons
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
+
+                          auto& message = **messageIt;
+                          auto& threadIntoRef = *itInto;
+                          auto& threadInto = **itInto;
                     
-                          if (&((**messageIt).parentThread()) == (*itInto).get())
+                          if (&(message.parentThread()) == &threadInto)
                           {
                               status = StatusCode::NO_EFFECT;
                               return;
@@ -306,14 +310,14 @@ void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, cons
                     
                           //make sure the message is not deleted before being passed to the observers
                           writeEvents_.onMoveDiscussionThreadMessage(
-                                  createObserverContext(*performedBy.getAndUpdate(collection)), **messageIt, **itInto);
+                                  createObserverContext(*performedBy.getAndUpdate(collection)), message, threadInto);
                     
-                          auto& createdBy = (*messageIt)->createdBy();
+                          auto& createdBy = message.createdBy();
                     
-                          auto messageClone = std::make_shared<DiscussionThreadMessage>(**messageIt, **itInto);
+                          auto messageClone = std::make_shared<DiscussionThreadMessage>(message, threadInto);
                                               
                           collection.messages().insert(messageClone);
-                          collection.modifyDiscussionThread(itInto, [&collection, &messageClone, &itInto]
+                          collection.modifyDiscussionThread(itInto, [&collection, &messageClone, &threadIntoRef]
                             (DiscussionThread& thread)
                           {
                               thread.messages().insert(messageClone);
@@ -333,9 +337,9 @@ void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, cons
                                   if (auto categoryShared = categoryWeak.lock())
                                   {
                                       collection.modifyDiscussionCategoryById(categoryShared->id(), 
-                                          [&itInto](auto& category)
+                                          [&threadIntoRef](auto& category)
                                       {
-                                          category.updateMessageCount(*itInto, 1);
+                                          category.updateMessageCount(threadIntoRef, 1);
                                       });
                                   }
                               }
@@ -373,6 +377,7 @@ void MemoryRepository::voteDiscussionThreadMessage(const IdType& id, std::ostrea
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
+                          auto& messageRef = *it;
                           auto& message = **it;
 
                           if (&message.createdBy() == currentUser.get())
@@ -389,17 +394,17 @@ void MemoryRepository::voteDiscussionThreadMessage(const IdType& id, std::ostrea
                           }
 
                           auto timestamp = Context::getCurrentTime();
-                          currentUser->registerVote(*it);
+                          currentUser->registerVote(messageRef);
 
                           if (up)
                           {
                               message.addUpVote(std::move(userWeak), timestamp);
-                              writeEvents_.onDiscussionThreadMessageUpVote(createObserverContext(*currentUser), **it);
+                              writeEvents_.onDiscussionThreadMessageUpVote(createObserverContext(*currentUser), message);
                           }
                           else
                           {
                               message.addDownVote(std::move(userWeak), timestamp);
-                              writeEvents_.onDiscussionThreadMessageDownVote(createObserverContext(*currentUser), **it);
+                              writeEvents_.onDiscussionThreadMessageDownVote(createObserverContext(*currentUser), message);
                           }
     });
 }
@@ -454,6 +459,6 @@ void MemoryRepository::resetVoteDiscussionThreadMessage(const IdType& id, std::o
                               return;
                           }
 
-                          writeEvents_.onDiscussionThreadMessageResetVote(createObserverContext(*currentUser), **it);
+                          writeEvents_.onDiscussionThreadMessageResetVote(createObserverContext(*currentUser), message);
     });
 }

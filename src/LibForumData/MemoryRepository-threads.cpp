@@ -156,13 +156,14 @@ static void writeDiscussionThreadsOfUser(const IdType& id, std::ostream& output,
                              return;
                          }
 
-                         const auto& threads = threadsIndexFn(**it);
+                         auto& user = **it;
+                         const auto& threads = threadsIndexFn(user);
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
 
                          writeDiscussionThreads(threads, output, currentUser.id());
 
-                         readEvents_.onGetDiscussionThreadsOfUser(createObserverContext(currentUser), **it);
+                         readEvents_.onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
                      });
 }
 
@@ -220,12 +221,13 @@ static void writeDiscussionThreadsWithTag(const IdType& id, std::ostream& output
                              return;
                          }
 
-                         const auto& threads = threadsIndexFn(**it);
+                         auto& tag = **it;
+                         const auto& threads = threadsIndexFn(tag);
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
 
                          writeDiscussionThreads(threads, output, currentUser.id());
 
-                         readEvents_.onGetDiscussionThreadsWithTag(createObserverContext(currentUser), **it);
+                         readEvents_.onGetDiscussionThreadsWithTag(createObserverContext(currentUser), tag);
                      });
 }
 
@@ -283,13 +285,13 @@ static void writeDiscussionThreadsOfCategory(const IdType& id, std::ostream& out
                              writeStatusCode(output, StatusCode::NOT_FOUND);
                              return;
                          }
-
-                         const auto& threads = threadsIndexFn(**it);
+                         auto& category = **it;
+                         const auto& threads = threadsIndexFn(category);
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
 
                          writeDiscussionThreads(threads, output, currentUser.id());
 
-                         readEvents_.onGetDiscussionThreadsOfCategory(createObserverContext(currentUser), **it);
+                         readEvents_.onGetDiscussionThreadsOfCategory(createObserverContext(currentUser), category);
                      });
 }
 
@@ -486,19 +488,22 @@ void MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const IdType
                         }
 
                         auto user = performedBy.getAndUpdate(collection);
+                        auto& threadFromRef = *itFrom;
+                        auto& threadFrom = **itFrom;
+                        auto& threadInto = **itInto;
 
                         //make sure the thread is not deleted before being passed to the observers
-                        writeEvents_.onMergeDiscussionThreads(createObserverContext(*user), **itFrom, **itInto);
+                        writeEvents_.onMergeDiscussionThreads(createObserverContext(*user), threadFrom, threadInto);
 
                         collection.modifyDiscussionThread(itInto, [&](DiscussionThread& thread)
                         {
                             updateLastUpdated(thread, user);
 
-                            for (auto& message : (*itFrom)->messages())
+                            for (auto& message : threadFrom.messages())
                             {
                                 auto& createdBy = message->createdBy();
 
-                                auto messageClone = std::make_shared<DiscussionThreadMessage>(*message, **itInto);
+                                auto messageClone = std::make_shared<DiscussionThreadMessage>(*message, threadInto);
 
                                 collection.messages().insert(messageClone);
                                 thread.messages().insert(messageClone);
@@ -508,9 +513,9 @@ void MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const IdType
                             {
                                 if (auto tagShared = tagWeak.lock())
                                 {
-                                    collection.modifyDiscussionTagById(tagShared->id(), [&itFrom, &thread](auto& tag)
+                                    collection.modifyDiscussionTagById(tagShared->id(), [&threadFrom, &thread](auto& tag)
                                     {
-                                        tag.messageCount() += (*itFrom)->messages().size();
+                                        tag.messageCount() += threadFrom.messages().size();
                                         //notify the thread collection of each tag that the thread has new messages
                                         tag.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
                                     });
@@ -521,9 +526,9 @@ void MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const IdType
                                 if (auto categoryShared = categoryWeak.lock())
                                 {
                                     collection.modifyDiscussionCategoryById(categoryShared->id(), 
-                                        [&itFrom, &thread](auto& category)
+                                        [&threadFrom, &threadFromRef, &thread](auto& category)
                                     {
-                                        category.updateMessageCount(*itFrom, (*itFrom)->messages().size());
+                                        category.updateMessageCount(threadFromRef, threadFrom.messages().size());
                                         //notify the thread collection of each category that the thread has new messages
                                         category.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
                                     });

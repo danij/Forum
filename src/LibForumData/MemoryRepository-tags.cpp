@@ -257,9 +257,14 @@ void MemoryRepository::addDiscussionTagToThread(const IdType& tagId, const IdTyp
                               return;
                           }
 
+                          auto& tagRef = *tagIt;
+                          auto& tag = **tagIt;
+                          auto& threadRef = *threadIt;
+                          auto& thread = **threadIt;
+
                           //the number of tags associated to a thread is much smaller than 
                           //the number of threads associated to a tag, so search the tag in the thread
-                          if ( ! (*threadIt)->addTag(*tagIt))
+                          if ( ! thread.addTag(tagRef))
                           {
                               //actually already added, but return ok
                               status = StatusCode::OK;
@@ -268,10 +273,10 @@ void MemoryRepository::addDiscussionTagToThread(const IdType& tagId, const IdTyp
 
                           auto user = performedBy.getAndUpdate(collection);
 
-                          (*tagIt)->insertDiscussionThread(*threadIt);
-                          updateLastUpdated(**threadIt, user);
+                          tag.insertDiscussionThread(threadRef);
+                          updateLastUpdated(thread, user);
 
-                          writeEvents_.onAddDiscussionTagToThread(createObserverContext(*user), **tagIt, **threadIt);
+                          writeEvents_.onAddDiscussionTagToThread(createObserverContext(*user), tag, thread);
                       });
 }
 
@@ -303,8 +308,12 @@ void MemoryRepository::removeDiscussionTagFromThread(const IdType& tagId, const 
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
-                          
-                          if ( ! (*threadIt)->removeTag(*tagIt))
+
+                          auto& tagRef = *tagIt;
+                          auto& tag = **tagIt;
+                          auto& thread = **threadIt;
+
+                          if ( ! thread.removeTag(tagRef))
                           {
                               //tag was not added to the thread
                               status = StatusCode::NO_EFFECT;
@@ -313,10 +322,10 @@ void MemoryRepository::removeDiscussionTagFromThread(const IdType& tagId, const 
 
                           auto user = performedBy.getAndUpdate(collection);
 
-                          (*tagIt)->deleteDiscussionThreadById(threadId);
-                          updateLastUpdated(**threadIt, user);
+                          tag.deleteDiscussionThreadById(threadId);
+                          updateLastUpdated(thread, user);
 
-                          writeEvents_.onRemoveDiscussionTagFromThread(createObserverContext(*user), **tagIt, **threadIt);
+                          writeEvents_.onRemoveDiscussionTagFromThread(createObserverContext(*user), tag, thread);
                       });    
 }
 
@@ -353,26 +362,29 @@ void MemoryRepository::mergeDiscussionTags(const IdType& fromId, const IdType& i
                         }
 
                         auto user = performedBy.getAndUpdate(collection);
+                        auto& tagFrom = **itFrom;
+                        auto& tagIntoRef = *itInto;
+                        auto& tagInto = **itInto;
 
                         //make sure the tag is not deleted before being passed to the observers
-                        writeEvents_.onMergeDiscussionTags(createObserverContext(*user), **itFrom, **itInto);
+                        writeEvents_.onMergeDiscussionTags(createObserverContext(*user), tagFrom, tagInto);
                         
-                        for (auto& thread : (*itFrom)->threads())
+                        for (auto& thread : tagFrom.threads())
                         {
-                            thread->addTag(*itInto);
+                            thread->addTag(tagIntoRef);
                             updateLastUpdated(*thread, user);
-                            (*itInto)->insertDiscussionThread(thread);
+                            tagInto.insertDiscussionThread(thread);
                         }
-                        for (auto& categoryWeak : (*itFrom)->categoriesWeak())
+                        for (auto& categoryWeak : tagFrom.categoriesWeak())
                         {
                             if (auto category = categoryWeak.lock())
                             {
-                                category->addTag(*itInto);
+                                category->addTag(tagIntoRef);
                                 updateLastUpdated(*category, user);
                             }
                         }
 
-                        updateLastUpdated(**itInto, user);
+                        updateLastUpdated(tagInto, user);
 
                         collection.deleteDiscussionTag(itFrom);
                     });

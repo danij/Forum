@@ -290,29 +290,34 @@ void MemoryRepository::changeDiscussionCategoryParent(const IdType& id, const Id
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
+
+                          auto& threadRef = *it;
+                          auto& thread = **it;
                           auto newParentIt = indexById.find(newParentId);
                           DiscussionCategoryRef newParentRef; //might be empty
+
                           if (newParentIt != indexById.end())
                           {
                               newParentRef = *newParentIt;
                               //check that the new parent is not a child of the current category
-                              if (newParentRef->hasAncestor(*it))
+                              if (newParentRef->hasAncestor(threadRef))
                               {
                                   status = StatusCode::CIRCULAR_REFERENCE_NOT_ALLOWED;
                                   return;
                               }
                           }
-                          if (auto currentParent = (*it)->parentWeak().lock())
+                          if (auto currentParent = thread.parentWeak().lock())
                           {
                               if (currentParent->id() == newParentId)
                               {
                                   status = StatusCode::NO_EFFECT;
                                   return;
                               }
-                              collection.modifyDiscussionCategoryById(currentParent->id(), [&it](DiscussionCategory& parent)
+                              collection.modifyDiscussionCategoryById(currentParent->id(), 
+                                  [&threadRef](DiscussionCategory& parent)
                               {
                                   //remove the current category from it's parent child list
-                                  parent.removeChild(*it);
+                                  parent.removeChild(threadRef);
                               });
                           }
                           
@@ -335,7 +340,7 @@ void MemoryRepository::changeDiscussionCategoryParent(const IdType& id, const Id
                               category->recalculateTotals();
                           }
 
-                          writeEvents_.onChangeDiscussionCategory(createObserverContext(*user), **it, 
+                          writeEvents_.onChangeDiscussionCategory(createObserverContext(*user), thread, 
                                                                   DiscussionCategory::ChangeType::Parent);
                       });
 }
@@ -435,9 +440,14 @@ void MemoryRepository::addDiscussionTagToCategory(const IdType& tagId, const IdT
                               return;
                           }
                           
+                          auto& tagRef = *tagIt;
+                          auto& tag = **tagIt;
+                          auto& categoryRef = *categoryIt;
+                          auto& category = **categoryIt;
+
                           //the number of categories associated to a tag is smaller than 
                           //the number of tags associated to a category, so search the category in the tag
-                          if ( ! (*tagIt)->addCategory(*categoryIt))
+                          if ( ! tag.addCategory(categoryRef))
                           {
                               //actually already added, but return ok
                               status = StatusCode::OK;
@@ -446,13 +456,13 @@ void MemoryRepository::addDiscussionTagToCategory(const IdType& tagId, const IdT
 
                           auto user = performedBy.getAndUpdate(collection);
 
-                          collection.modifyDiscussionCategory(categoryIt, [&tagIt, &user](auto& category)
+                          collection.modifyDiscussionCategory(categoryIt, [&tagRef, &user](auto& category)
                           {
-                              category.addTag(*tagIt);
+                              category.addTag(tagRef);
                               updateLastUpdated(category, user);
                           });
 
-                          writeEvents_.onAddDiscussionTagToCategory(createObserverContext(*user), **tagIt, **categoryIt);
+                          writeEvents_.onAddDiscussionTagToCategory(createObserverContext(*user), tag, category);
                       });
 }
 
@@ -485,9 +495,14 @@ void MemoryRepository::removeDiscussionTagFromCategory(const IdType& tagId, cons
                               return;
                           }
 
+                          auto& tagRef = *tagIt;
+                          auto& tag = **tagIt;
+                          auto& categoryRef = *categoryIt;
+                          auto& category = **categoryIt;
+                          
                           //the number of categories associated to a tag is smaller than 
                           //the number of tags associated to a category, so search the category in the tag
-                          if ( ! (*tagIt)->removeCategory(*categoryIt))
+                          if ( ! tag.removeCategory(categoryRef))
                           {
                               status = StatusCode::NO_EFFECT;
                               return;
@@ -495,13 +510,12 @@ void MemoryRepository::removeDiscussionTagFromCategory(const IdType& tagId, cons
 
                           auto user = performedBy.getAndUpdate(collection);
 
-                          collection.modifyDiscussionCategory(categoryIt, [&tagIt, &user](auto& category)
+                          collection.modifyDiscussionCategory(categoryIt, [&tagRef, &user](auto& category)
                           {
-                              category.removeTag(*tagIt);
+                              category.removeTag(tagRef);
                               updateLastUpdated(category, user);
                           });
 
-                          writeEvents_.onRemoveDiscussionTagFromCategory(createObserverContext(*user), **tagIt, 
-                                                                         **categoryIt);
+                          writeEvents_.onRemoveDiscussionTagFromCategory(createObserverContext(*user), tag, category);
                       });    
 }
