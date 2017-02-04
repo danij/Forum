@@ -93,6 +93,7 @@ void MemoryRepository::getDiscussionCategoryById(const IdType& id, std::ostream&
         if (it == index.end())
         {
             writeStatusCode(output, StatusCode::NOT_FOUND);
+            return;
         }
         else
         {

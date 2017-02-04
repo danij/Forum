@@ -101,6 +101,7 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
                          if (it == index.end())
                          {
                              writeStatusCode(output, StatusCode::NOT_FOUND);
+                             return;
                          }
                          else
                          {

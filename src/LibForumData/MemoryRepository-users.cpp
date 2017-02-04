@@ -65,6 +65,7 @@ void MemoryRepository::getUserById(const IdType& id, std::ostream& output) const
                          if (it == index.end())
                          {
                              writeStatusCode(output, StatusCode::NOT_FOUND);
+                             return;
                          }
                          else
                          {
@@ -85,6 +86,7 @@ void MemoryRepository::getUserByName(const std::string& name, std::ostream& outp
                          if (it == index.end())
                          {
                              writeStatusCode(output, StatusCode::NOT_FOUND);
+                             return;
                          }
                          else
                          {

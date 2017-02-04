@@ -78,14 +78,15 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_invokes_observer )
 
 BOOST_AUTO_TEST_CASE( Retrieving_users_by_id_invokes_observer )
 {
-    IdType idToBeRetrieved;
+    std::string idToBeRetrieved;
     auto handler = createCommandHandler();
 
     auto ___ = addHandler(handler->getReadRepository()->readEvents().onGetUserById,
-                          [&](auto& _, auto& id) { idToBeRetrieved = id; });
+                          [&](auto& _, auto& id) { idToBeRetrieved = static_cast<std::string>(id); });
 
-    handlerToObj(handler, Forum::Commands::GET_USER_BY_ID, { static_cast<std::string>(sampleValidId) });
-    BOOST_REQUIRE_EQUAL(sampleValidId, idToBeRetrieved);
+    auto userId = createUserAndGetId(handler, "User");
+    handlerToObj(handler, Forum::Commands::GET_USER_BY_ID, { userId });
+    BOOST_REQUIRE_EQUAL(userId, idToBeRetrieved);
 }
 
 BOOST_AUTO_TEST_CASE( Retrieving_users_by_name_invokes_observer )
@@ -96,6 +97,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_by_name_invokes_observer )
     auto ___ = addHandler(handler->getReadRepository()->readEvents().onGetUserByName,
                           [&](auto& _, auto& name) { nameToBeRetrieved = name; });
 
+    createUserAndGetId(handler, "SampleUser");
     handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "SampleUser" });
     BOOST_REQUIRE_EQUAL("SampleUser", nameToBeRetrieved);
 }
@@ -222,9 +224,9 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_by_id_invokes_observer )
     auto ___ = addHandler(handler->getReadRepository()->readEvents().onGetDiscussionThreadById, 
                           [&](auto& _, auto& id) { idOfThread = static_cast<std::string>(id); });
 
-    auto idToSearch = static_cast<std::string>(generateUUIDString());
-    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { idToSearch });
-    BOOST_REQUIRE_EQUAL(idToSearch, idOfThread);
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId });
+    BOOST_REQUIRE_EQUAL(threadId, idOfThread);
 }
 
 BOOST_AUTO_TEST_CASE( Modifying_a_discussion_thread_invokes_observer )
