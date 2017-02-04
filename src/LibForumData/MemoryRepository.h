@@ -171,6 +171,23 @@ namespace Forum
                 return PerformedByWithLastSeenUpdateGuard(*this);
             }
 
+            static void updateCreated(Entities::CreatedMixin& entity)
+            {
+                entity.created()= Context::getCurrentTime();
+                entity.creationDetails().ip = Context::getCurrentUserIpAddress();
+                entity.creationDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
+            }
+
+            template<typename ByType>
+            static void updateLastUpdated(Entities::LastUpdatedMixin<ByType>& entity, 
+                                          const typename Entities::LastUpdatedMixin<ByType>::ByTypeRef& by)
+            {
+                entity.lastUpdated() = Context::getCurrentTime();
+                entity.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();
+                entity.lastUpdatedDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
+                entity.lastUpdatedBy() = by;
+            }
+
             Helpers::ResourceGuard<Entities::EntityCollection> collection_;
             ReadEvents readEvents_;
             WriteEvents writeEvents_;

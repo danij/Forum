@@ -378,8 +378,9 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
                           auto thread = std::make_shared<DiscussionThread>(*createdBy);
                           thread->id() = generateUUIDString();
                           thread->name() = name;
-                          thread->created() = thread->lastUpdated() = Context::getCurrentTime();
-
+                          updateCreated(*thread);
+                          thread->lastUpdated() = thread->created();
+                          
                           collection.insertDiscussionThread(thread);
                           createdBy->insertDiscussionThread(thread);
 
@@ -412,13 +413,15 @@ void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::s
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
-                          collection.modifyDiscussionThread(it, [&newName](DiscussionThread& thread)
+
+                          auto user = performedBy.getAndUpdate(collection);
+
+                          collection.modifyDiscussionThread(it, [&newName, &user](DiscussionThread& thread)
                           {
                               thread.name() = newName;
-                              thread.lastUpdated() = Context::getCurrentTime();
+                              updateLastUpdated(thread, user);
                           });
-                          writeEvents_.onChangeDiscussionThread(
-                                  createObserverContext(*performedBy.getAndUpdate(collection)), **it,
+                          writeEvents_.onChangeDiscussionThread(createObserverContext(*user), **it,
                                   DiscussionThread::ChangeType::Name);
                       });
 }
@@ -481,12 +484,16 @@ void MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const IdType
                             status = StatusCode::NOT_FOUND;
                             return;
                         }
+
+                        auto user = performedBy.getAndUpdate(collection);
+
                         //make sure the thread is not deleted before being passed to the observers
-                        writeEvents_.onMergeDiscussionThreads(
-                                createObserverContext(*performedBy.getAndUpdate(collection)), **itFrom, **itInto);
+                        writeEvents_.onMergeDiscussionThreads(createObserverContext(*user), **itFrom, **itInto);
 
                         collection.modifyDiscussionThread(itInto, [&](DiscussionThread& thread)
                         {
+                            updateLastUpdated(thread, user);
+
                             for (auto& message : (*itFrom)->messages())
                             {
                                 auto& createdBy = message->createdBy();

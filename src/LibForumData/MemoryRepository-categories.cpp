@@ -163,7 +163,7 @@ void MemoryRepository::addNewDiscussionCategory(const std::string& name, const I
                           category->notifyChange() = collection.notifyCategoryChange();
                           category->id() = generateUUIDString();
                           category->name() = name;
-                          category->created() = Context::getCurrentTime();
+                          updateCreated(*category);
 
                           auto setParentId = IdType::empty;
                           if (parentId)
@@ -222,12 +222,16 @@ void MemoryRepository::changeDiscussionCategoryName(const IdType& id, const std:
                               status = StatusCode::ALREADY_EXISTS;
                               return;
                           }
-                          collection.modifyDiscussionCategory(it, [&newName](DiscussionCategory& category)
+
+                          auto user = performedBy.getAndUpdate(collection);
+
+                          collection.modifyDiscussionCategory(it, [&newName, &user](DiscussionCategory& category)
                           {
                               category.name() = newName;
+                              updateLastUpdated(category, user);
                           });
-                          writeEvents_.onChangeDiscussionCategory(createObserverContext(*performedBy.getAndUpdate(collection)),
-                                                                  **it, DiscussionCategory::ChangeType::Name);
+                          writeEvents_.onChangeDiscussionCategory(createObserverContext(*user), **it,
+                                                                  DiscussionCategory::ChangeType::Name);
                       });
 }
 
@@ -311,9 +315,13 @@ void MemoryRepository::changeDiscussionCategoryParent(const IdType& id, const Id
                                   parent.removeChild(*it);
                               });
                           }
-                          collection.modifyDiscussionCategory(it, [&newParentRef](DiscussionCategory& category)
+                          
+                          auto user = performedBy.getAndUpdate(collection);
+                          
+                          collection.modifyDiscussionCategory(it, [&newParentRef, &user](DiscussionCategory& category)
                           {
                               category.parentWeak() = DiscussionCategoryWeakRef(newParentRef);
+                              updateLastUpdated(category, user);
                           });
 
                           //changing a parent requires updating totals
@@ -327,8 +335,8 @@ void MemoryRepository::changeDiscussionCategoryParent(const IdType& id, const Id
                               category->recalculateTotals();
                           }
 
-                          writeEvents_.onChangeDiscussionCategory(createObserverContext(*performedBy.getAndUpdate(collection)),
-                                                                  **it, DiscussionCategory::ChangeType::Parent);
+                          writeEvents_.onChangeDiscussionCategory(createObserverContext(*user), **it, 
+                                                                  DiscussionCategory::ChangeType::Parent);
                       });
 }
 void MemoryRepository::changeDiscussionCategoryDisplayOrder(const IdType& id, int_fast16_t newDisplayOrder, 
@@ -357,13 +365,17 @@ void MemoryRepository::changeDiscussionCategoryDisplayOrder(const IdType& id, in
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
-                          collection.modifyDiscussionCategory(it, [&newDisplayOrder](DiscussionCategory& category)
+
+                          auto user = performedBy.getAndUpdate(collection);
+
+                          collection.modifyDiscussionCategory(it, [&newDisplayOrder, &user](DiscussionCategory& category)
                           {
                               category.displayOrder() = newDisplayOrder;
+                              updateLastUpdated(category, user);
                           });
 
-                          writeEvents_.onChangeDiscussionCategory(createObserverContext(*performedBy.getAndUpdate(collection)),
-                                                                  **it, DiscussionCategory::ChangeType::DisplayOrder);
+                          writeEvents_.onChangeDiscussionCategory(createObserverContext(*user), **it, 
+                                                                  DiscussionCategory::ChangeType::DisplayOrder);
                       });
 }
 
@@ -434,13 +446,15 @@ void MemoryRepository::addDiscussionTagToCategory(const IdType& tagId, const IdT
                               return;
                           }
 
-                          collection.modifyDiscussionCategory(categoryIt, [&tagIt](auto& category)
+                          auto user = performedBy.getAndUpdate(collection);
+
+                          collection.modifyDiscussionCategory(categoryIt, [&tagIt, &user](auto& category)
                           {
                               category.addTag(*tagIt);
+                              updateLastUpdated(category, user);
                           });
 
-                          writeEvents_.onAddDiscussionTagToCategory(
-                                  createObserverContext(*performedBy.getAndUpdate(collection)), **tagIt, **categoryIt);
+                          writeEvents_.onAddDiscussionTagToCategory(createObserverContext(*user), **tagIt, **categoryIt);
                       });
 }
 
@@ -483,12 +497,15 @@ void MemoryRepository::removeDiscussionTagFromCategory(const IdType& tagId, cons
                               return;
                           }
 
-                          collection.modifyDiscussionCategory(categoryIt, [&tagIt](auto& category)
+                          auto user = performedBy.getAndUpdate(collection);
+
+                          collection.modifyDiscussionCategory(categoryIt, [&tagIt, &user](auto& category)
                           {
                               category.removeTag(*tagIt);
+                              updateLastUpdated(category, user);
                           });
 
-                          writeEvents_.onRemoveDiscussionTagFromCategory(
-                                  createObserverContext(*performedBy.getAndUpdate(collection)), **tagIt, **categoryIt);
+                          writeEvents_.onRemoveDiscussionTagFromCategory(createObserverContext(*user), **tagIt, 
+                                                                         **categoryIt);
                       });    
 }

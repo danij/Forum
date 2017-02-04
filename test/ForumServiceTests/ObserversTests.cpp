@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE( Modifying_the_content_of_a_discussion_message_invokes_obse
                           [&](auto& _, auto& message, auto change)
                           {
                               newContent = message.content();
-                              changeReason = message.lastUpdatedDetails().reason;
+                              changeReason = message.lastUpdatedReason();
                               messageChange = change;
                           });
 

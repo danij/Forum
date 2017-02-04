@@ -139,7 +139,7 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
     auto user = std::make_shared<User>();
     user->id() = generateUUIDString();
     user->name() = name;
-    user->created() = Context::getCurrentTime();
+    updateCreated(*user);
 
     auto performedBy = preparePerformedBy();
 
