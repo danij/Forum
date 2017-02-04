@@ -13,7 +13,14 @@ namespace Forum
 {
     namespace Entities
     {
-        struct DiscussionCategory final : public Identifiable, public CreatedMixin, 
+        /**
+        * Stores hierarchical category that groups discussion threads
+        * Repositories are responsible for updating the relationships between this message and other entities
+        * 
+        * The discussion category manages the message count and the total thread/message counts
+        * when adding/removing threads and/or tags
+        */
+        struct DiscussionCategory final : public Identifiable, public CreatedMixin,
                                           public std::enable_shared_from_this<DiscussionCategory>,
                                           public DiscussionThreadCollectionBase
         {

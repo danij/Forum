@@ -14,7 +14,12 @@ namespace Forum
     {
         struct User;
         struct DiscussionThread;
-
+        
+        /**
+         * Stores a message part of a discussion thread
+         * Repositories are responsible for updating the relationships between this message and other entities
+         * When cloning a message, the repository needs to reintroduce it in all collections it was part of
+         */
         struct DiscussionThreadMessage final : public Identifiable, public CreatedMixin, public LastUpdatedMixin, 
                                                private boost::noncopyable
         {

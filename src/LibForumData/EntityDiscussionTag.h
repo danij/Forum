@@ -12,6 +12,12 @@ namespace Forum
     {
         struct DiscussionCategory;
 
+        /**
+        * Stores a discussion tag that groups threads of similar discussions
+        * Repositories are responsible for updating the relationships between this message and other entities
+        * 
+        * The tag manages the message count and also notifies any discussion categories when a thread is added or removed
+        */
         struct DiscussionTag final : public Identifiable, public CreatedMixin, public DiscussionThreadCollectionBase,
                                      public IndicateDeletionInProgress
         {

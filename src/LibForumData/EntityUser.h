@@ -12,6 +12,10 @@ namespace Forum
 {
     namespace Entities
     {
+        /**
+        * Stores a user that creates content
+        * Repositories are responsible for updating the relationships between this message and other entities
+        */
         struct User final : public Identifiable, public CreatedMixin,
                             public DiscussionThreadCollectionBase, public DiscussionThreadMessageCollectionBase
         {

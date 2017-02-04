@@ -17,7 +17,11 @@ namespace Forum
         struct DiscussionTag;
         struct DiscussionCategory;
 
-        struct DiscussionThread final : public Identifiable, public CreatedMixin, public LastUpdatedMixin, 
+        /**
+        * Stores a discussion thread that contains messages
+        * Repositories are responsible for updating the relationships between this message and other entities
+        */
+        struct DiscussionThread final : public Identifiable, public CreatedMixin, public LastUpdatedMixin,
                                         public DiscussionThreadMessageCollectionBase, public IndicateDeletionInProgress,
                                         public std::enable_shared_from_this<DiscussionThread>
         {

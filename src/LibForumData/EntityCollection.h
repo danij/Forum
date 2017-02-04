@@ -14,6 +14,10 @@ namespace Forum
 {
     namespace Entities
     {
+        /**
+         * Stores references to all entities present in memory
+         * Upon deleting an entitie, the collection also removes the entity from any other collection if might have been part of
+         */
         struct EntityCollection : public UserCollectionBase,
                                   public DiscussionThreadCollectionBase, public DiscussionThreadMessageCollectionBase,
                                   public DiscussionTagCollectionBase, public DiscussionCategoryCollectionBase
