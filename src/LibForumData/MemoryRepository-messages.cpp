@@ -14,14 +14,14 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(const IdType& id, std::ostream& output) const
+StatusCode MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(const IdType& id, std::ostream& output) const
 {
+    StatusWriter status(output, StatusCode::OK);
     auto performedBy = preparePerformedBy();
 
     if ( ! id)
     {
-        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
 
     collection_.read([&](const EntityCollection& collection)
@@ -30,7 +30,7 @@ void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(const IdType& 
         auto it = indexById.find(id);
         if (it == indexById.end())
         {
-            writeStatusCode(output, StatusCode::NOT_FOUND);
+            status = StatusCode::NOT_FOUND;
             return;
         }
 
@@ -42,11 +42,13 @@ void MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(const IdType& 
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
         auto& displayContext = Context::getDisplayContext();
 
+        status.disable();
         writeEntitiesWithPagination(messages, "messages", output, displayContext.pageNumber, pageSize,
             displayContext.sortOrder == Context::SortOrder::Ascending, [](auto m) { return m; });
 
         readEvents_.onGetDiscussionThreadMessagesOfUser(createObserverContext(performedBy.get(collection)), **it);
     });
+    return status;
 }
 
 
@@ -117,21 +119,19 @@ static StatusCode validateDiscussionMessageChangeReason(const std::string& reaso
     return StatusCode::OK;
 }
 
-void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, const std::string& content,
-                                                       std::ostream& output)
+StatusCode MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, const std::string& content,
+                                                             std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! threadId)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
 
     auto validationCode = validateDiscussionMessageContent(content, validDiscussionMessageContentRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
-        status = validationCode;
-        return;
+        return status = validationCode;
     }
     auto performedBy = preparePerformedBy();
 
@@ -193,15 +193,15 @@ void MemoryRepository::addNewDiscussionMessageInThread(const IdType& threadId, c
                           status.addExtraSafeName("parentId", (*threadIt)->id());
                           status.addExtraSafeName("created", message->created());
                       });
+    return status;
 }
 
-void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& output)
+StatusCode MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     auto performedBy = preparePerformedBy();
 
@@ -219,10 +219,11 @@ void MemoryRepository::deleteDiscussionMessage(const IdType& id, std::ostream& o
                                   createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteDiscussionThreadMessage(it);
                       });
+    return status;
 }
 
-void MemoryRepository::changeDiscussionThreadMessageContent(const IdType& id, const std::string& newContent, 
-                                                            const std::string& changeReason, std::ostream& output)
+StatusCode MemoryRepository::changeDiscussionThreadMessageContent(const IdType& id, const std::string& newContent, 
+                                                                  const std::string& changeReason, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -230,15 +231,13 @@ void MemoryRepository::changeDiscussionThreadMessageContent(const IdType& id, co
     auto contentValidationCode = validateDiscussionMessageContent(newContent, validDiscussionMessageContentRegex, config);
     if (contentValidationCode != StatusCode::OK)
     {
-        status = contentValidationCode;
-        return;
+        return status = contentValidationCode;
     }
     auto reasonValidationCode = validateDiscussionMessageChangeReason(changeReason, validDiscussionMessageChangeReasonRegex, 
                                                                       config);
     if (reasonValidationCode != StatusCode::OK)
     {
-        status = reasonValidationCode;
-        return;
+        return status = reasonValidationCode;
     }
     auto performedBy = preparePerformedBy();
 
@@ -268,16 +267,16 @@ void MemoryRepository::changeDiscussionThreadMessageContent(const IdType& id, co
                           writeEvents_.onChangeDiscussionThreadMessage(createObserverContext(*performedByPtr), **it,
                                   DiscussionThreadMessage::ChangeType::Content);
                       });
+    return status;
 }
 
-void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, const IdType& intoThreadId, 
-                                                   std::ostream& output)
+StatusCode MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, const IdType& intoThreadId, 
+                                                         std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! messageId || ! intoThreadId)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     auto performedBy = preparePerformedBy();
 
@@ -349,20 +348,19 @@ void MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId, cons
                           //this will also decrease the message count of all tags part of the thread the message is moved from
                           collection.deleteDiscussionThreadMessage(messageIt);
                       });
+    return status;
 }
 
-void MemoryRepository::voteDiscussionThreadMessage(const IdType& id, std::ostream& output, bool up)
+StatusCode MemoryRepository::voteDiscussionThreadMessage(const IdType& id, std::ostream& output, bool up)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     if (Context::getCurrentUserId() == AnonymousUserId)
     {
-        status = StatusCode::NOT_ALLOWED;
-        return;
+        return status = StatusCode::NOT_ALLOWED;
     }
     auto performedBy = preparePerformedBy();
 
@@ -406,31 +404,30 @@ void MemoryRepository::voteDiscussionThreadMessage(const IdType& id, std::ostrea
                               message.addDownVote(std::move(userWeak), timestamp);
                               writeEvents_.onDiscussionThreadMessageDownVote(createObserverContext(*currentUser), message);
                           }
-    });
+                      });
+    return status;
 }
 
-void MemoryRepository::upVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
+StatusCode MemoryRepository::upVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
 {
-    voteDiscussionThreadMessage(id, output, true);
+    return voteDiscussionThreadMessage(id, output, true);
 }
 
-void MemoryRepository::downVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
+StatusCode MemoryRepository::downVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
 {
-    voteDiscussionThreadMessage(id, output, false);
+    return voteDiscussionThreadMessage(id, output, false);
 }
 
-void MemoryRepository::resetVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
+StatusCode MemoryRepository::resetVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     if (Context::getCurrentUserId() == AnonymousUserId)
     {
-        status = StatusCode::NOT_ALLOWED;
-        return;
+        return status = StatusCode::NOT_ALLOWED;
     }
     auto performedBy = preparePerformedBy();
 
@@ -460,5 +457,6 @@ void MemoryRepository::resetVoteDiscussionThreadMessage(const IdType& id, std::o
                           }
 
                           writeEvents_.onDiscussionThreadMessageResetVote(createObserverContext(*currentUser), message);
-    });
+                      });
+    return status;
 }

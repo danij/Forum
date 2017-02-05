@@ -31,7 +31,7 @@ WriteEvents& MemoryRepository::writeEvents()
     return writeEvents_;
 }
 
-void MemoryRepository::getEntitiesCount(std::ostream& output) const
+StatusCode MemoryRepository::getEntitiesCount(std::ostream& output) const
 {
     auto performedBy = preparePerformedBy();
 
@@ -48,6 +48,7 @@ void MemoryRepository::getEntitiesCount(std::ostream& output) const
 
                          readEvents_.onGetEntitiesCount(createObserverContext(performedBy.get(collection)));
                      });
+    return StatusCode::OK;
 }
 
 

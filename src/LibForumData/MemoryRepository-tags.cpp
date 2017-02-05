@@ -14,7 +14,7 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-void MemoryRepository::getDiscussionTags(std::ostream& output, RetrieveDiscussionTagsBy by) const
+StatusCode MemoryRepository::getDiscussionTags(std::ostream& output, RetrieveDiscussionTagsBy by) const
 {
     auto performedBy = preparePerformedBy();
 
@@ -53,6 +53,7 @@ void MemoryRepository::getDiscussionTags(std::ostream& output, RetrieveDiscussio
 
         readEvents_.onGetDiscussionTags(createObserverContext(currentUser));
     });
+    return StatusCode::OK;
 }
 
 static StatusCode validateDiscussionTagName(const std::string& name, const boost::u32regex& regex,
@@ -88,14 +89,13 @@ static StatusCode validateDiscussionTagName(const std::string& name, const boost
     return StatusCode::OK;
 }
 
-void MemoryRepository::addNewDiscussionTag(const std::string& name, std::ostream& output)
+StatusCode MemoryRepository::addNewDiscussionTag(const std::string& name, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     auto validationCode = validateDiscussionTagName(name, validDiscussionTagNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
-        status = validationCode;
-        return;
+        return status = validationCode;
     }
 
     auto performedBy = preparePerformedBy();
@@ -124,21 +124,20 @@ void MemoryRepository::addNewDiscussionTag(const std::string& name, std::ostream
                           status.addExtraSafeName("id", tag->id());
                           status.addExtraSafeName("name", tag->name());
                       });
+    return status;
 }
 
-void MemoryRepository::changeDiscussionTagName(const IdType& id, const std::string& newName, std::ostream& output)
+StatusCode MemoryRepository::changeDiscussionTagName(const IdType& id, const std::string& newName, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id )
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     auto validationCode = validateDiscussionTagName(newName, validDiscussionTagNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
-        status = validationCode;
-        return;
+        return status = validationCode;
     }
     auto performedBy = preparePerformedBy();
 
@@ -169,20 +168,19 @@ void MemoryRepository::changeDiscussionTagName(const IdType& id, const std::stri
                           writeEvents_.onChangeDiscussionTag(createObserverContext(*user), **it, 
                                                              DiscussionTag::ChangeType::Name);
                       });
+    return status;
 }
 
-void MemoryRepository::changeDiscussionTagUiBlob(const IdType& id, const std::string& blob, std::ostream& output)
+StatusCode MemoryRepository::changeDiscussionTagUiBlob(const IdType& id, const std::string& blob, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id )
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     if (blob.size() > static_cast<std::string::size_type>(getGlobalConfig()->discussionTag.maxUiBlobSize))
     {
-        status = StatusCode::VALUE_TOO_LONG;
-        return;
+        return status = StatusCode::VALUE_TOO_LONG;
     }
     auto performedBy = preparePerformedBy();
 
@@ -202,15 +200,15 @@ void MemoryRepository::changeDiscussionTagUiBlob(const IdType& id, const std::st
                           writeEvents_.onChangeDiscussionTag(createObserverContext(*performedBy.getAndUpdate(collection)),
                                                              **it, DiscussionTag::ChangeType::UIBlob);
                       });
+    return status;
 }
 
-void MemoryRepository::deleteDiscussionTag(const IdType& id, std::ostream& output)
+StatusCode MemoryRepository::deleteDiscussionTag(const IdType& id, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
 
     auto performedBy = preparePerformedBy();
@@ -229,15 +227,15 @@ void MemoryRepository::deleteDiscussionTag(const IdType& id, std::ostream& outpu
                                   createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteDiscussionTag(it);
                       });
+    return status;
 }
 
-void MemoryRepository::addDiscussionTagToThread(const IdType& tagId, const IdType& threadId, std::ostream& output)
+StatusCode MemoryRepository::addDiscussionTagToThread(const IdType& tagId, const IdType& threadId, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! tagId || ! threadId)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
 
     auto performedBy = preparePerformedBy();
@@ -281,15 +279,15 @@ void MemoryRepository::addDiscussionTagToThread(const IdType& tagId, const IdTyp
 
                           writeEvents_.onAddDiscussionTagToThread(createObserverContext(*user), tag, thread);
                       });
+    return status;
 }
 
-void MemoryRepository::removeDiscussionTagFromThread(const IdType& tagId, const IdType& threadId, std::ostream& output)
+StatusCode MemoryRepository::removeDiscussionTagFromThread(const IdType& tagId, const IdType& threadId, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! tagId || ! threadId)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
 
     auto performedBy = preparePerformedBy();
@@ -329,21 +327,20 @@ void MemoryRepository::removeDiscussionTagFromThread(const IdType& tagId, const 
                           updateLastUpdated(thread, user);
 
                           writeEvents_.onRemoveDiscussionTagFromThread(createObserverContext(*user), tag, thread);
-                      });    
+                      });
+    return status;
 }
 
-void MemoryRepository::mergeDiscussionTags(const IdType& fromId, const IdType& intoId, std::ostream& output)
+StatusCode MemoryRepository::mergeDiscussionTags(const IdType& fromId, const IdType& intoId, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! fromId || ! intoId)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     if (fromId == intoId)
     {
-        status = StatusCode::NO_EFFECT;
-        return;
+        return status = StatusCode::NO_EFFECT;
     }
 
     auto performedBy = preparePerformedBy();
@@ -391,4 +388,5 @@ void MemoryRepository::mergeDiscussionTags(const IdType& fromId, const IdType& i
 
                         collection.deleteDiscussionTag(itFrom);
                     });
+    return status;
 }

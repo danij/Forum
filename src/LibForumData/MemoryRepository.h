@@ -50,98 +50,107 @@ namespace Forum
             virtual ReadEvents& readEvents() override;
             virtual WriteEvents& writeEvents() override;
 
-            virtual void getEntitiesCount(std::ostream& output) const override;
+            virtual StatusCode getEntitiesCount(std::ostream& output) const override;
 
-            virtual void getUsers(std::ostream& output, RetrieveUsersBy by) const override;
+            virtual StatusCode getUsers(std::ostream& output, RetrieveUsersBy by) const override;
 
-            virtual void getUserById(const Entities::IdType& id, std::ostream& output) const override;
-            virtual void getUserByName(const std::string& name, std::ostream& output) const override;
+            virtual StatusCode getUserById(const Entities::IdType& id, std::ostream& output) const override;
+            virtual StatusCode getUserByName(const std::string& name, std::ostream& output) const override;
 
-            virtual void addNewUser(const std::string& name, std::ostream& output) override;
-            virtual void changeUserName(const Entities::IdType& id, const std::string& newName,
-                                        std::ostream& output) override;
-            virtual void changeUserInfo(const Entities::IdType& id, const std::string& newInfo,
-                                        std::ostream& output) override;
-            virtual void deleteUser(const Entities::IdType& id, std::ostream& output) override;
+            virtual StatusCode addNewUser(const std::string& name, std::ostream& output) override;
+            virtual StatusCode changeUserName(const Entities::IdType& id, const std::string& newName,
+                                              std::ostream& output) override;
+            virtual StatusCode changeUserInfo(const Entities::IdType& id, const std::string& newInfo,
+                                              std::ostream& output) override;
+            virtual StatusCode deleteUser(const Entities::IdType& id, std::ostream& output) override;
 
-            virtual void getDiscussionThreads(std::ostream& output, RetrieveDiscussionThreadsBy by) const override;
+            virtual StatusCode getDiscussionThreads(std::ostream& output, RetrieveDiscussionThreadsBy by) const override;
 
             /**
              * Calling the function changes state:
              * - Increases the number of visits
              * - Stores that the current user has visited the discussion thread
              */
-            virtual void getDiscussionThreadById(const Entities::IdType& id, std::ostream& output) override;
+            virtual StatusCode getDiscussionThreadById(const Entities::IdType& id, std::ostream& output) override;
 
-            virtual void getDiscussionThreadsOfUser(const Entities::IdType& id, std::ostream& output, 
-                                                    RetrieveDiscussionThreadsBy by) const override;
+            virtual StatusCode getDiscussionThreadsOfUser(const Entities::IdType& id, std::ostream& output, 
+                                                          RetrieveDiscussionThreadsBy by) const override;
 
-            virtual void addNewDiscussionThread(const std::string& name, std::ostream& output) override;
-            virtual void changeDiscussionThreadName(const Entities::IdType& id, const std::string& newName,
-                                                    std::ostream& output) override;
-            virtual void deleteDiscussionThread(const Entities::IdType& id, std::ostream& output) override;
-            virtual void mergeDiscussionThreads(const Entities::IdType& fromId, const Entities::IdType& intoId, 
-                                                std::ostream& output) override;
-
-            virtual void addNewDiscussionMessageInThread(const Entities::IdType& threadId,
-                                                         const std::string& content, std::ostream& output) override;
-            virtual void deleteDiscussionMessage(const Entities::IdType& id, std::ostream& output) override;
-            virtual void changeDiscussionThreadMessageContent(const Entities::IdType& id, const std::string& newContent,
-                                                              const std::string& changeReason, std::ostream& output) override;
-            virtual void moveDiscussionThreadMessage(const Entities::IdType& messageId, 
-                                                     const Entities::IdType& intoThreadId, std::ostream& output) override ;
-            virtual void upVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
-            virtual void downVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
-            virtual void resetVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
-
-            virtual void getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
-                                                                    std::ostream& output) const override;
-
-            virtual void getDiscussionTags(std::ostream& output, RetrieveDiscussionTagsBy by) const override;
-            
-            virtual void addNewDiscussionTag(const std::string& name, std::ostream& output) override;
-            virtual void changeDiscussionTagName(const Entities::IdType& id, const std::string& newName,
-                                                 std::ostream& output) override;
-            virtual void changeDiscussionTagUiBlob(const Entities::IdType& id, const std::string& blob,
-                                                   std::ostream& output) override;
-            virtual void deleteDiscussionTag(const Entities::IdType& id, std::ostream& output) override;
-
-            virtual void getDiscussionThreadsWithTag(const Entities::IdType& id, std::ostream& output,
-                                                     RetrieveDiscussionThreadsBy by) const override;
-            
-            virtual void addDiscussionTagToThread(const Entities::IdType& tagId, const Entities::IdType& threadId, 
-                                                  std::ostream& output) override;
-            virtual void removeDiscussionTagFromThread(const Entities::IdType& tagId, const Entities::IdType& threadId, 
-                                                       std::ostream& output) override;
-            virtual void mergeDiscussionTags(const Entities::IdType& fromId, const Entities::IdType& intoId,
-                                             std::ostream& output) override;
-
-            virtual void addNewDiscussionCategory(const std::string& name, const Entities::IdType& parentId,
-                                                  std::ostream& output) override;
-            virtual void changeDiscussionCategoryName(const Entities::IdType& id, const std::string& newName,
+            virtual StatusCode addNewDiscussionThread(const std::string& name, std::ostream& output) override;
+            virtual StatusCode changeDiscussionThreadName(const Entities::IdType& id, const std::string& newName,
+                                                          std::ostream& output) override;
+            virtual StatusCode deleteDiscussionThread(const Entities::IdType& id, std::ostream& output) override;
+            virtual StatusCode mergeDiscussionThreads(const Entities::IdType& fromId, const Entities::IdType& intoId, 
                                                       std::ostream& output) override;
-            virtual void changeDiscussionCategoryDescription(const Entities::IdType& id, const std::string& newDescription,
-                                                             std::ostream& output) override;
-            virtual void changeDiscussionCategoryParent(const Entities::IdType& id, const Entities::IdType& newParentId,
-                                                        std::ostream& output) override;
-            virtual void changeDiscussionCategoryDisplayOrder(const Entities::IdType& id, int_fast16_t newDisplayOrder,
-                                                              std::ostream& output) override;
-            virtual void deleteDiscussionCategory(const Entities::IdType& id, std::ostream& output) override;
 
-            virtual void getDiscussionCategoryById(const Entities::IdType& id, std::ostream& output) const override;
-            virtual void getDiscussionCategories(std::ostream& output, RetrieveDiscussionCategoriesBy by) const override;
-            virtual void getDiscussionCategoriesFromRoot(std::ostream& output) const override;
+            virtual StatusCode addNewDiscussionMessageInThread(const Entities::IdType& threadId,
+                                                               const std::string& content, std::ostream& output) override;
+            virtual StatusCode deleteDiscussionMessage(const Entities::IdType& id, std::ostream& output) override;
+            virtual StatusCode changeDiscussionThreadMessageContent(const Entities::IdType& id, 
+                                                                    const std::string& newContent,
+                                                                    const std::string& changeReason, 
+                                                                    std::ostream& output) override;
+            virtual StatusCode moveDiscussionThreadMessage(const Entities::IdType& messageId, 
+                                                           const Entities::IdType& intoThreadId, 
+                                                           std::ostream& output) override ;
+            virtual StatusCode upVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
+            virtual StatusCode downVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
+            virtual StatusCode resetVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
 
-            virtual void addDiscussionTagToCategory(const Entities::IdType& tagId, const Entities::IdType& categoryId, 
-                                                    std::ostream& output) override;
-            virtual void removeDiscussionTagFromCategory(const Entities::IdType& tagId, const Entities::IdType& categoryId, 
+            virtual StatusCode getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
+                                                                          std::ostream& output) const override;
+
+            virtual StatusCode getDiscussionTags(std::ostream& output, RetrieveDiscussionTagsBy by) const override;
+            
+            virtual StatusCode addNewDiscussionTag(const std::string& name, std::ostream& output) override;
+            virtual StatusCode changeDiscussionTagName(const Entities::IdType& id, const std::string& newName,
+                                                       std::ostream& output) override;
+            virtual StatusCode changeDiscussionTagUiBlob(const Entities::IdType& id, const std::string& blob,
                                                          std::ostream& output) override;
-            virtual void getDiscussionThreadsOfCategory(const Entities::IdType& id, std::ostream& output,
-                                                        RetrieveDiscussionThreadsBy by) const override;
+            virtual StatusCode deleteDiscussionTag(const Entities::IdType& id, std::ostream& output) override;
+
+            virtual StatusCode getDiscussionThreadsWithTag(const Entities::IdType& id, std::ostream& output,
+                                                           RetrieveDiscussionThreadsBy by) const override;
+            
+            virtual StatusCode addDiscussionTagToThread(const Entities::IdType& tagId, const Entities::IdType& threadId, 
+                                                        std::ostream& output) override;
+            virtual StatusCode removeDiscussionTagFromThread(const Entities::IdType& tagId, 
+                                                             const Entities::IdType& threadId, 
+                                                             std::ostream& output) override;
+            virtual StatusCode mergeDiscussionTags(const Entities::IdType& fromId, const Entities::IdType& intoId,
+                                                   std::ostream& output) override;
+
+            virtual StatusCode addNewDiscussionCategory(const std::string& name, const Entities::IdType& parentId,
+                                                        std::ostream& output) override;
+            virtual StatusCode changeDiscussionCategoryName(const Entities::IdType& id, const std::string& newName,
+                                                            std::ostream& output) override;
+            virtual StatusCode changeDiscussionCategoryDescription(const Entities::IdType& id, 
+                                                                   const std::string& newDescription,
+                                                                   std::ostream& output) override;
+            virtual StatusCode changeDiscussionCategoryParent(const Entities::IdType& id, 
+                                                              const Entities::IdType& newParentId,
+                                                              std::ostream& output) override;
+            virtual StatusCode changeDiscussionCategoryDisplayOrder(const Entities::IdType& id, 
+                                                                    int_fast16_t newDisplayOrder,
+                                                                    std::ostream& output) override;
+            virtual StatusCode deleteDiscussionCategory(const Entities::IdType& id, std::ostream& output) override;
+
+            virtual StatusCode getDiscussionCategoryById(const Entities::IdType& id, std::ostream& output) const override;
+            virtual StatusCode getDiscussionCategories(std::ostream& output, RetrieveDiscussionCategoriesBy by) const override;
+            virtual StatusCode getDiscussionCategoriesFromRoot(std::ostream& output) const override;
+
+            virtual StatusCode addDiscussionTagToCategory(const Entities::IdType& tagId, 
+                                                          const Entities::IdType& categoryId, 
+                                                          std::ostream& output) override;
+            virtual StatusCode removeDiscussionTagFromCategory(const Entities::IdType& tagId, 
+                                                               const Entities::IdType& categoryId, 
+                                                               std::ostream& output) override;
+            virtual StatusCode getDiscussionThreadsOfCategory(const Entities::IdType& id, std::ostream& output,
+                                                              RetrieveDiscussionThreadsBy by) const override;
 
 
         private:
-            void voteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output, bool up);
+            StatusCode voteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output, bool up);
 
             friend struct PerformedByWithLastSeenUpdateGuard;
 

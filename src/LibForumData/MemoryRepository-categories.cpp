@@ -14,7 +14,7 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-void MemoryRepository::getDiscussionCategories(std::ostream& output, RetrieveDiscussionCategoriesBy by) const
+StatusCode MemoryRepository::getDiscussionCategories(std::ostream& output, RetrieveDiscussionCategoriesBy by) const
 {
     auto performedBy = preparePerformedBy();
 
@@ -53,9 +53,10 @@ void MemoryRepository::getDiscussionCategories(std::ostream& output, RetrieveDis
 
         readEvents_.onGetDiscussionCategories(createObserverContext(currentUser));
     });
+    return StatusCode::OK;
 }
 
-void MemoryRepository::getDiscussionCategoriesFromRoot(std::ostream& output) const
+StatusCode MemoryRepository::getDiscussionCategoriesFromRoot(std::ostream& output) const
 {
     auto performedBy = preparePerformedBy();
     collection_.read([&](const EntityCollection& collection)
@@ -77,14 +78,15 @@ void MemoryRepository::getDiscussionCategoriesFromRoot(std::ostream& output) con
 
         readEvents_.onGetRootDiscussionCategories(createObserverContext(currentUser));
     });
+    return StatusCode::OK;
 }
 
-void MemoryRepository::getDiscussionCategoryById(const IdType& id, std::ostream& output) const
+StatusCode MemoryRepository::getDiscussionCategoryById(const IdType& id, std::ostream& output) const
 {
+    StatusWriter status(output, StatusCode::OK);
     if ( ! id)
     {
-        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     auto performedBy = preparePerformedBy();
 
@@ -95,16 +97,18 @@ void MemoryRepository::getDiscussionCategoryById(const IdType& id, std::ostream&
         auto it = index.find(id);
         if (it == index.end())
         {
-            writeStatusCode(output, StatusCode::NOT_FOUND);
+            status = StatusCode::NOT_FOUND;
             return;
         }
         else
         {
+            status.disable();
             BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
             writeSingleObjectSafeName(output, "category", **it);
         }
         readEvents_.onGetDiscussionCategory(createObserverContext(currentUser), **it);
     });
+    return status;
 }
 
 static StatusCode validateDiscussionCategoryName(const std::string& name, const boost::u32regex& regex,
@@ -140,14 +144,13 @@ static StatusCode validateDiscussionCategoryName(const std::string& name, const 
     return StatusCode::OK;
 }
 
-void MemoryRepository::addNewDiscussionCategory(const std::string& name, const IdType& parentId, std::ostream& output)
+StatusCode MemoryRepository::addNewDiscussionCategory(const std::string& name, const IdType& parentId, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     auto validationCode = validateDiscussionCategoryName(name, validDiscussionCategoryNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
-        status = validationCode;
-        return;
+        return status = validationCode;
     }
 
     auto performedBy = preparePerformedBy();
@@ -193,21 +196,20 @@ void MemoryRepository::addNewDiscussionCategory(const std::string& name, const I
                           status.addExtraSafeName("name", category->name());
                           status.addExtraSafeName("parentId", setParentId);
                       });
+    return status;
 }
 
-void MemoryRepository::changeDiscussionCategoryName(const IdType& id, const std::string& newName, std::ostream& output)
+StatusCode MemoryRepository::changeDiscussionCategoryName(const IdType& id, const std::string& newName, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id )
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     auto validationCode = validateDiscussionCategoryName(newName, validDiscussionCategoryNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
-        status = validationCode;
-        return;
+        return status = validationCode;
     }
     auto performedBy = preparePerformedBy();
 
@@ -237,22 +239,21 @@ void MemoryRepository::changeDiscussionCategoryName(const IdType& id, const std:
                           writeEvents_.onChangeDiscussionCategory(createObserverContext(*user), **it,
                                                                   DiscussionCategory::ChangeType::Name);
                       });
+    return status;
 }
 
-void MemoryRepository::changeDiscussionCategoryDescription(const IdType& id, const std::string& newDescription, 
-                                                           std::ostream& output)
+StatusCode MemoryRepository::changeDiscussionCategoryDescription(const IdType& id, const std::string& newDescription, 
+                                                                 std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id )
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     auto maxLength = static_cast<int_fast32_t>(getGlobalConfig()->discussionCategory.maxDescriptionLength);
     if (countUTF8Characters(newDescription) > maxLength)
     {
-        status = StatusCode::VALUE_TOO_LONG;
-        return;
+        return status = StatusCode::VALUE_TOO_LONG;
     }
     auto performedBy = preparePerformedBy();
 
@@ -273,15 +274,15 @@ void MemoryRepository::changeDiscussionCategoryDescription(const IdType& id, con
                           writeEvents_.onChangeDiscussionCategory(createObserverContext(*performedBy.getAndUpdate(collection)),
                                                                   **it, DiscussionCategory::ChangeType::Description);
                       });
+    return status;
 }
 
-void MemoryRepository::changeDiscussionCategoryParent(const IdType& id, const IdType& newParentId, std::ostream& output)
+StatusCode MemoryRepository::changeDiscussionCategoryParent(const IdType& id, const IdType& newParentId, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if (( ! id) || (id == newParentId))
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     auto performedBy = preparePerformedBy();
 
@@ -347,21 +348,21 @@ void MemoryRepository::changeDiscussionCategoryParent(const IdType& id, const Id
                           writeEvents_.onChangeDiscussionCategory(createObserverContext(*user), thread, 
                                                                   DiscussionCategory::ChangeType::Parent);
                       });
+    return status;
 }
-void MemoryRepository::changeDiscussionCategoryDisplayOrder(const IdType& id, int_fast16_t newDisplayOrder, 
-                                                            std::ostream& output)
+
+StatusCode MemoryRepository::changeDiscussionCategoryDisplayOrder(const IdType& id, int_fast16_t newDisplayOrder, 
+                                                                  std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id )
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
 
     if (newDisplayOrder < 0)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     auto performedBy = preparePerformedBy();
 
@@ -386,15 +387,15 @@ void MemoryRepository::changeDiscussionCategoryDisplayOrder(const IdType& id, in
                           writeEvents_.onChangeDiscussionCategory(createObserverContext(*user), **it, 
                                                                   DiscussionCategory::ChangeType::DisplayOrder);
                       });
+    return status;
 }
 
-void MemoryRepository::deleteDiscussionCategory(const IdType& id, std::ostream& output)
+StatusCode MemoryRepository::deleteDiscussionCategory(const IdType& id, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
 
     auto performedBy = preparePerformedBy();
@@ -413,15 +414,15 @@ void MemoryRepository::deleteDiscussionCategory(const IdType& id, std::ostream& 
                                   createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteDiscussionCategory(it);
                       });
+    return status;
 }
 
-void MemoryRepository::addDiscussionTagToCategory(const IdType& tagId, const IdType& categoryId, std::ostream& output)
+StatusCode MemoryRepository::addDiscussionTagToCategory(const IdType& tagId, const IdType& categoryId, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! tagId || ! categoryId)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
 
     auto performedBy = preparePerformedBy();
@@ -468,15 +469,15 @@ void MemoryRepository::addDiscussionTagToCategory(const IdType& tagId, const IdT
 
                           writeEvents_.onAddDiscussionTagToCategory(createObserverContext(*user), tag, category);
                       });
+    return status;
 }
 
-void MemoryRepository::removeDiscussionTagFromCategory(const IdType& tagId, const IdType& categoryId, std::ostream& output)
+StatusCode MemoryRepository::removeDiscussionTagFromCategory(const IdType& tagId, const IdType& categoryId, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! tagId || ! categoryId)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
 
     auto performedBy = preparePerformedBy();
@@ -521,5 +522,6 @@ void MemoryRepository::removeDiscussionTagFromCategory(const IdType& tagId, cons
                           });
 
                           writeEvents_.onRemoveDiscussionTagFromCategory(createObserverContext(*user), tag, category);
-                      });    
+                      });
+    return status;
 }

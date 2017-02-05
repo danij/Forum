@@ -56,9 +56,10 @@ static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscu
     }
 }
 
-void MemoryRepository::getDiscussionThreads(std::ostream& output, RetrieveDiscussionThreadsBy by) const
+StatusCode MemoryRepository::getDiscussionThreads(std::ostream& output, RetrieveDiscussionThreadsBy by) const
 {
     auto performedBy = preparePerformedBy();
+
     collection_.read([&](const EntityCollection& collection)
     {
         auto& currentUser = performedBy.get(collection);
@@ -67,10 +68,13 @@ void MemoryRepository::getDiscussionThreads(std::ostream& output, RetrieveDiscus
 
         readEvents_.onGetDiscussionThreads(createObserverContext(currentUser));
     });
+    return StatusCode::OK;
 }
 
-void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& output)
+StatusCode MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& output)
 {
+    StatusWriter status(output, StatusCode::OK);
+
     auto performedBy = preparePerformedBy();
     bool addUserToVisitedSinceLastEdit = false;
     IdType userId{};
@@ -82,7 +86,7 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
                          auto it = index.find(id);
                          if (it == index.end())
                          {
-                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             status = StatusCode::NOT_FOUND;
                              return;
                          }
                          else
@@ -99,6 +103,7 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
 
                              BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageParentThread, true);
                              BoolTemporaryChanger __(serializationSettings.hideVisitedThreadSinceLastChange, true);
+                             status.disable();
                              writeSingleObjectSafeName(output, "thread", thread);
                          }
                          readEvents_.onGetDiscussionThreadById(createObserverContext(currentUser), id);
@@ -115,16 +120,17 @@ void MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostream& o
             }
         });
     }
+    return status;
 }
 
 
-void MemoryRepository::getDiscussionThreadsOfUser(const IdType& id, std::ostream& output, 
-                                                  RetrieveDiscussionThreadsBy by) const
+StatusCode MemoryRepository::getDiscussionThreadsOfUser(const IdType& id, std::ostream& output, 
+                                                        RetrieveDiscussionThreadsBy by) const
 {
+    StatusWriter status(output, StatusCode::OK);
     if ( ! id )
     {
-        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;        
     }
     auto performedBy = preparePerformedBy();
 
@@ -135,26 +141,28 @@ void MemoryRepository::getDiscussionThreadsOfUser(const IdType& id, std::ostream
                          auto it = indexById.find(id);
                          if (it == indexById.end())
                          {
-                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             status = StatusCode::NOT_FOUND;
                              return;
                          }
                          auto& user = **it;
 
                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
 
+                         status.disable();
                          writeDiscussionThreads(user, by, output, currentUser.id());
 
                          readEvents_.onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
                      });
+    return status;
 }
 
-void MemoryRepository::getDiscussionThreadsWithTag(const IdType& id, std::ostream& output, 
-                                                   RetrieveDiscussionThreadsBy by) const
+StatusCode MemoryRepository::getDiscussionThreadsWithTag(const IdType& id, std::ostream& output, 
+                                                         RetrieveDiscussionThreadsBy by) const
 {
+    StatusWriter status(output, StatusCode::OK);
     if ( ! id )
     {
-        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     auto performedBy = preparePerformedBy();
 
@@ -165,25 +173,27 @@ void MemoryRepository::getDiscussionThreadsWithTag(const IdType& id, std::ostrea
                          auto it = indexById.find(id);
                          if (it == indexById.end())
                          {
-                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             status = StatusCode::NOT_FOUND;
                              return;
                          }
 
                          auto& tag = **it;
 
+                         status.disable();
                          writeDiscussionThreads(tag, by, output, currentUser.id());
 
                          readEvents_.onGetDiscussionThreadsWithTag(createObserverContext(currentUser), tag);
                      });
+    return status;
 }
 
-void MemoryRepository::getDiscussionThreadsOfCategory(const IdType& id, std::ostream& output, 
-                                                      RetrieveDiscussionThreadsBy by) const
+StatusCode MemoryRepository::getDiscussionThreadsOfCategory(const IdType& id, std::ostream& output, 
+                                                            RetrieveDiscussionThreadsBy by) const
 {
+    StatusWriter status(output, StatusCode::OK);
     if ( ! id )
     {
-        writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     auto performedBy = preparePerformedBy();
 
@@ -194,15 +204,17 @@ void MemoryRepository::getDiscussionThreadsOfCategory(const IdType& id, std::ost
                          auto it = indexById.find(id);
                          if (it == indexById.end())
                          {
-                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             status = StatusCode::NOT_FOUND;
                              return;
                          }
                          auto& category = **it;
 
+                         status.disable();
                          writeDiscussionThreads(category, by, output, currentUser.id());
 
                          readEvents_.onGetDiscussionThreadsOfCategory(createObserverContext(currentUser), category);
                      });
+    return status;
 }
 
 
@@ -239,14 +251,13 @@ static StatusCode validateDiscussionThreadName(const std::string& name, const bo
     return StatusCode::OK;
 }
 
-void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostream& output)
+StatusCode MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     auto validationCode = validateDiscussionThreadName(name, validDiscussionThreadNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
-        status = validationCode;
-        return;
+        return status = validationCode;
     }
 
     auto performedBy = preparePerformedBy();
@@ -270,16 +281,16 @@ void MemoryRepository::addNewDiscussionThread(const std::string& name, std::ostr
                           status.addExtraSafeName("name", thread->name());
                           status.addExtraSafeName("created", thread->created());
                       });
+    return status;
 }
 
-void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::string& newName, std::ostream& output)
+StatusCode MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::string& newName, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     auto validationCode = validateDiscussionThreadName(newName, validDiscussionThreadNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
-        status = validationCode;
-        return;
+        return status = validationCode;
     }
     auto performedBy = preparePerformedBy();
 
@@ -304,15 +315,15 @@ void MemoryRepository::changeDiscussionThreadName(const IdType& id, const std::s
                           writeEvents_.onChangeDiscussionThread(createObserverContext(*user), **it,
                                   DiscussionThread::ChangeType::Name);
                       });
+    return status;
 }
 
-void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& output)
+StatusCode MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
 
     auto performedBy = preparePerformedBy();
@@ -331,20 +342,19 @@ void MemoryRepository::deleteDiscussionThread(const IdType& id, std::ostream& ou
                                   createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteDiscussionThread(it);
                       });
+    return status;
 }
 
-void MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const IdType& intoId, std::ostream& output)
+StatusCode MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const IdType& intoId, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! fromId || ! intoId)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     if (fromId == intoId)
     {
-        status = StatusCode::NO_EFFECT;
-        return;
+        return status = StatusCode::NO_EFFECT;
     }
 
     auto performedBy = preparePerformedBy();
@@ -416,4 +426,5 @@ void MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const IdType
                         //this will also decrease the message count on the tags the thread was part of
                         collection.deleteDiscussionThread(itFrom);
                     });
+    return status;
 }

@@ -14,7 +14,7 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-void MemoryRepository::getUsers(std::ostream& output, RetrieveUsersBy by) const
+StatusCode MemoryRepository::getUsers(std::ostream& output, RetrieveUsersBy by) const
 {
     auto performedBy = preparePerformedBy();
 
@@ -41,10 +41,12 @@ void MemoryRepository::getUsers(std::ostream& output, RetrieveUsersBy by) const
 
         readEvents_.onGetUsers(createObserverContext(performedBy.get(collection)));
     });
+    return StatusCode::OK;
 }
 
-void MemoryRepository::getUserById(const IdType& id, std::ostream& output) const
+StatusCode MemoryRepository::getUserById(const IdType& id, std::ostream& output) const
 {
+    StatusWriter status(output, StatusCode::OK);
     auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
@@ -53,19 +55,22 @@ void MemoryRepository::getUserById(const IdType& id, std::ostream& output) const
                          auto it = index.find(id);
                          if (it == index.end())
                          {
-                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             status = StatusCode::NOT_FOUND;
                              return;
                          }
                          else
                          {
+                             status.disable();
                              writeSingleObjectSafeName(output, "user", **it);
                          }
                          readEvents_.onGetUserById(createObserverContext(performedBy.get(collection)), id);
                      });
+    return status;
 }
 
-void MemoryRepository::getUserByName(const std::string& name, std::ostream& output) const
+StatusCode MemoryRepository::getUserByName(const std::string& name, std::ostream& output) const
 {
+    StatusWriter status(output, StatusCode::OK);
     auto performedBy = preparePerformedBy();
 
     collection_.read([&](const EntityCollection& collection)
@@ -74,15 +79,17 @@ void MemoryRepository::getUserByName(const std::string& name, std::ostream& outp
                          auto it = index.find(name);
                          if (it == index.end())
                          {
-                             writeStatusCode(output, StatusCode::NOT_FOUND);
+                             status = StatusCode::NOT_FOUND;
                              return;
                          }
                          else
                          {
+                             status.disable();
                              writeSingleObjectSafeName(output, "user", **it);
                          }
                          readEvents_.onGetUserByName(createObserverContext(performedBy.get(collection)), name);
                      });
+    return status;
 }
 
 static StatusCode validateUserName(const std::string& name, const boost::u32regex regex, const ConfigConstRef& config)
@@ -117,14 +124,13 @@ static StatusCode validateUserName(const std::string& name, const boost::u32rege
     return StatusCode::OK;
 }
 
-void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
+StatusCode MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     auto validationCode = validateUserName(name, validUserNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
-        status = validationCode;
-        return;
+        return status = validationCode;
     }
 
     auto user = std::make_shared<User>();
@@ -149,16 +155,16 @@ void MemoryRepository::addNewUser(const std::string& name, std::ostream& output)
                           status.addExtraSafeName("name", user->name());
                           status.addExtraSafeName("created", user->created());
                       });
+    return status;
 }
 
-void MemoryRepository::changeUserName(const IdType& id, const std::string& newName, std::ostream& output)
+StatusCode MemoryRepository::changeUserName(const IdType& id, const std::string& newName, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     auto validationCode = validateUserName(newName, validUserNameRegex, getGlobalConfig());
     if (validationCode != StatusCode::OK)
     {
-        status = validationCode;
-        return;
+        return status = validationCode;
     }
     auto performedBy = preparePerformedBy();
 
@@ -184,9 +190,10 @@ void MemoryRepository::changeUserName(const IdType& id, const std::string& newNa
                           writeEvents_.onChangeUser(createObserverContext(*performedBy.getAndUpdate(collection)),
                                                     **it, User::ChangeType::Name);
                       });
+    return status;
 }
 
-void MemoryRepository::changeUserInfo(const IdType& id, const std::string& newInfo, std::ostream& output)
+StatusCode MemoryRepository::changeUserInfo(const IdType& id, const std::string& newInfo, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     auto config = getGlobalConfig();
@@ -194,13 +201,11 @@ void MemoryRepository::changeUserInfo(const IdType& id, const std::string& newIn
     auto nrCharacters = countUTF8Characters(newInfo);
     if (nrCharacters > config->user.maxInfoLength)
     {
-        status = StatusCode::VALUE_TOO_LONG;
-        return;
+        return status = StatusCode::VALUE_TOO_LONG;
     }
     if (nrCharacters < config->user.minInfoLength)
     {
-        status = StatusCode::VALUE_TOO_SHORT;
-        return;
+        return status = StatusCode::VALUE_TOO_SHORT;
     }
 
     auto performedBy = preparePerformedBy();
@@ -221,15 +226,15 @@ void MemoryRepository::changeUserInfo(const IdType& id, const std::string& newIn
                           writeEvents_.onChangeUser(createObserverContext(*performedBy.getAndUpdate(collection)),
                                                     **it, User::ChangeType::Info);
                       });
+    return status;
 }
 
-void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
+StatusCode MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
     {
-        status = StatusCode::INVALID_PARAMETERS;
-        return;
+        return status = StatusCode::INVALID_PARAMETERS;
     }
     auto performedBy = preparePerformedBy();
 
@@ -246,4 +251,5 @@ void MemoryRepository::deleteUser(const IdType& id, std::ostream& output)
                           writeEvents_.onDeleteUser(createObserverContext(*performedBy.getAndUpdate(collection)), **it);
                           collection.deleteUser(it);
                       });
+    return status;
 }

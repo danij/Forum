@@ -154,6 +154,11 @@ namespace Forum
                 return *this;
             }
 
+            operator Repository::StatusCode() const
+            {
+                return statusCode_;
+            }
+
             /**
              * Adds extra information to be written
              */
