@@ -8,7 +8,7 @@ find_package(Boost REQUIRED COMPONENTS unit_test_framework locale regex thread s
 find_package(ICU)
 
 set(SOURCE_FILES main.cpp SimpleCommandTests.cpp CommandsCommon.cpp UserTests.cpp DiscussionThreadTests.cpp
-        TestHelpers.cpp ObserversTests.cpp DiscussionTagTests.cpp DiscussionCategoryTests.cpp)
+        TestHelpers.cpp ObserversTests.cpp DiscussionTagTests.cpp DiscussionCategoryTests.cpp AccessRightTests.cpp)
 set(HEADER_FILES TestHelpers.h CommandsCommon.h)
 
 include_directories(../../src ../../src/LibFastJsonWriter ../../src/LibForumContext
