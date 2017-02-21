@@ -14,4 +14,4 @@ include_directories(../../src ../../src/LibFastJsonWriter ../../src/LibForumCont
 
 add_executable(MemoryRepositoryBenchmarks ${SOURCE_FILES} ${HEADER_FILES} ${JSON_HEADER_FILES})
 target_link_libraries(MemoryRepositoryBenchmarks ForumCommandHandlers ForumData
-        ${Boost_LIBRARIES} ${ICU_LIBRARIES} ${ICU_I18N_LIBRARIES} -liconv)
+        ${Boost_LIBRARIES} ${ICU_LIBRARIES} ${ICU_I18N_LIBRARIES})
