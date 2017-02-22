@@ -20,6 +20,12 @@ using namespace Forum::Repository;
 //BOOST_AUTO_TEST_CASE( User_can_edit_own_discussion_thread_name_for_a_specific_period ) { }
 //BOOST_AUTO_TEST_CASE( User_can_delete_own_discussion_messages_for_a_specific_period ) { }
 //BOOST_AUTO_TEST_CASE( User_can_delete_own_discussion_threads_for_a_specific_period ) { }
+//BOOST_AUTO_TEST_CASE( Access_level_requirements_of_discussion_threads_can_be_overriden_on_a_per_thread_basis ) { }
+//BOOST_AUTO_TEST_CASE( Access_level_requirements_of_discussion_tags_can_be_overriden_on_a_per_tag_basis ) { }
+//BOOST_AUTO_TEST_CASE( Access_level_requirements_overriden_per_discussion_tag_override_those_per_thread_when_assigning_the_tag ) { }
+//BOOST_AUTO_TEST_CASE( Discussion_thread_can_be_hidden_from_user_by_overriding_access_level_requirements ) { }
+//BOOST_AUTO_TEST_CASE( Discussion_tag_can_be_hidden_from_user_by_overriding_access_level_requirements ) { }
+//BOOST_AUTO_TEST_CASE( Discussion_category_can_be_hidden_from_user_by_overriding_access_level_requirements ) { }
 //BOOST_AUTO_TEST_CASE( Editing_others_discussion_messages_requires_a_specific_access_level ) { }
 //BOOST_AUTO_TEST_CASE( Deleting_users_requires_a_specific_access_level ) { }
 //BOOST_AUTO_TEST_CASE( Merging_discussion_threads_requires_a_specific_access_level ) { }
