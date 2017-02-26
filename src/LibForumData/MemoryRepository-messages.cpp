@@ -187,7 +187,10 @@ StatusCode MemoryRepository::addNewDiscussionMessageInThread(const IdType& threa
                               }
                           });
 
-                          createdBy->messages().insert(message);
+                          collection.modifyUserById(createdBy->id(), [&](User& user)
+                          {
+                              user.messages().insert(message);
+                          });
 
                           writeEvents_.onAddNewDiscussionThreadMessage(createObserverContext(*createdBy), *message);
 

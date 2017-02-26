@@ -271,7 +271,10 @@ DiscussionThreadMessageRef EntityCollection::deleteDiscussionThreadMessage(Discu
     }
     if (alsoDeleteMessagesFromUser)
     {
-        message->createdBy().deleteDiscussionThreadMessageById(message->id());
+        modifyUserById(message->createdBy().id(), [&](User& user)
+        {
+            user.deleteDiscussionThreadMessageById(message->id());
+        });
     }
     if ( ! message->parentThread().aboutToBeDeleted())
     {

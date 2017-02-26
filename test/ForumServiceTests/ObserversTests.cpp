@@ -60,8 +60,10 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
     handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED, SortOrder::Descending);
     handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN, SortOrder::Ascending);
     handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN, SortOrder::Descending);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT, SortOrder::Ascending);
+    handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT, SortOrder::Descending);
 
-    BOOST_REQUIRE_EQUAL(6, observerCalledNTimes);
+    BOOST_REQUIRE_EQUAL(8, observerCalledNTimes);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_invokes_observer )

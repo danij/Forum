@@ -1657,3 +1657,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descendi
     users = deserializeUsers(page.get_child("users"));
     BOOST_REQUIRE_EQUAL(0, users.size());
 }
+
+//BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_message_count )
+//{
+//    
+//}

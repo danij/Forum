@@ -30,7 +30,8 @@ namespace Forum
         {
             Name,
             Created,
-            LastSeen
+            LastSeen,
+            MessageCount
         };
 
         enum class RetrieveDiscussionThreadsBy

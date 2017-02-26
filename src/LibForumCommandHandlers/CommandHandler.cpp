@@ -87,6 +87,11 @@ struct Forum::Commands::CommandHandler::CommandHandlerImpl
         readRepository->getUsers(output, RetrieveUsersBy::LastSeen);
     }
 
+    COMMAND_HANDLER_METHOD( GET_USERS_BY_MESSAGE_COUNT )
+    {
+        readRepository->getUsers(output, RetrieveUsersBy::MessageCount);
+    }
+
     COMMAND_HANDLER_METHOD( GET_USER_BY_ID )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return;
@@ -431,6 +436,7 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(GET_USERS_BY_NAME);
     setHandler(GET_USERS_BY_CREATED);
     setHandler(GET_USERS_BY_LAST_SEEN);
+    setHandler(GET_USERS_BY_MESSAGE_COUNT);
     setHandler(GET_USER_BY_ID);
     setHandler(GET_USER_BY_NAME);
     setHandler(CHANGE_USER_NAME);
