@@ -8,7 +8,7 @@ find_package(Boost REQUIRED COMPONENTS locale regex thread system)
 find_package(ICU)
 
 set(SOURCE_FILES RandomGenerator.cpp EntitySerialization.cpp StringHelpers.cpp EntityCollection.cpp UuidString.cpp 
-        EntityDiscussionCategory.cpp EntityDiscussionTag.cpp
+        EntityDiscussionThread.cpp EntityDiscussionCategory.cpp EntityDiscussionTag.cpp
         MemoryRepository-main.cpp MemoryRepository-users.cpp MemoryRepository-threads.cpp 
         MemoryRepository-messages.cpp MemoryRepository-tags.cpp MemoryRepository-categories.cpp)
 set(HEADER_FILES Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h

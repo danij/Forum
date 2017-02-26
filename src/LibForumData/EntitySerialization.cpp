@@ -1,3 +1,4 @@
+#include "Configuration.h"
 #include "EntitySerialization.h"
 #include "StateHelpers.h"
 #include "OutputHelpers.h"

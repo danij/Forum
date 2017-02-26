@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Configuration.h"
 #include "EntityCommonTypes.h"
 #include "EntityDiscussionThreadMessageCollectionBase.h"
-#include "ContextProviders.h"
 
 #include <atomic>
 #include <string>
@@ -41,15 +39,10 @@ namespace Forum
 
                   auto         nrOfVisitorsSinceLastEdit() const { return visitorsSinceLastEdit_.size(); }
 
-            DiscussionThreadMessage::VoteScoreType voteScore() const
-            {
-                if (messages_.size())
-                {
-                    return (*messagesById().begin())->voteScore();
-                }
-                return 0;
-            }
-            
+            DiscussionThreadMessage::VoteScoreType voteScore() const;
+
+            Timestamp latestMessageCreated() const;
+
             /**
              * Thread-safe reference to the number of times the thread was visited.
              * Can be updated even for const values as it is not refenced in any index.
@@ -63,61 +56,17 @@ namespace Forum
                 Name
             };
 
-            explicit DiscussionThread(User& createdBy) : createdBy_(createdBy), visited_(0), latestVisibleChange_(0) {};
+            explicit DiscussionThread(User& createdBy) : createdBy_(createdBy), latestVisibleChange_(0), visited_(0) {};
 
-            void addVisitorSinceLastEdit(const IdType& userId)
-            {
-                if (static_cast<int_fast32_t>(visitorsSinceLastEdit_.size()) >=
-                    Configuration::getGlobalConfig()->discussionThread.maxUsersInVisitedSinceLastChange)
-                {
-                    visitorsSinceLastEdit_.clear();
-                }
-                visitorsSinceLastEdit_.insert(userId.value());
-            }
+            void addVisitorSinceLastEdit(const IdType& userId);
+            bool hasVisitedSinceLastEdit(const IdType& userId) const;
+            void resetVisitorsSinceLastEdit();
 
-            bool hasVisitedSinceLastEdit(const IdType& userId) const
-            {
-                return visitorsSinceLastEdit_.find(userId.value()) != visitorsSinceLastEdit_.end();
-            }
+            bool addTag(std::weak_ptr<DiscussionTag> tag);
+            bool removeTag(const std::weak_ptr<DiscussionTag>& tag);
 
-            void resetVisitorsSinceLastEdit()
-            {
-                visitorsSinceLastEdit_.clear();
-            }
-
-            bool addTag(std::weak_ptr<DiscussionTag> tag)
-            {
-                latestVisibleChange() = Context::getCurrentTime();
-                return std::get<1>(tags_.insert(std::move(tag)));
-            }
-
-            bool removeTag(const std::weak_ptr<DiscussionTag>& tag)
-            {
-                latestVisibleChange() = Context::getCurrentTime();
-                return tags_.erase(tag) > 0;
-            }
-
-            bool addCategory(std::weak_ptr<DiscussionCategory> category)
-            {
-                latestVisibleChange() = Context::getCurrentTime();
-                return std::get<1>(categories_.insert(std::move(category)));
-            }
-
-            bool removeCategory(const std::weak_ptr<DiscussionCategory>& category)
-            {
-                latestVisibleChange() = Context::getCurrentTime();
-                return categories_.erase(category) > 0;
-            }
-
-            Timestamp latestMessageCreated() const
-            {
-                auto index = messagesByCreated();
-                if ( ! index.size())
-                {
-                    return 0;
-                }
-                return (*index.rbegin())->created();
-            }
+            bool addCategory(std::weak_ptr<DiscussionCategory> category);
+            bool removeCategory(const std::weak_ptr<DiscussionCategory>& category);
 
         private:
             std::string name_;
