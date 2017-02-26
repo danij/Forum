@@ -54,8 +54,8 @@ namespace Forum
 
         struct CreatedMixin
         {
-                  Timestamp     created()         const { return created_; }
-                  Timestamp&    created()               { return created_; }
+                     Timestamp  created()         const { return created_; }
+                     Timestamp& created()               { return created_; }
 
             const VisitDetails& creationDetails() const { return creationDetails_; }
                   VisitDetails& creationDetails()       { return creationDetails_; }
