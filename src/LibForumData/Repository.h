@@ -22,7 +22,8 @@ namespace Forum
             NOT_FOUND,
             NO_EFFECT,
             CIRCULAR_REFERENCE_NOT_ALLOWED,
-            NOT_ALLOWED
+            NOT_ALLOWED,
+            NOT_UPDATED_SINCE_LAST_CHECK
         };
 
         enum class RetrieveUsersBy

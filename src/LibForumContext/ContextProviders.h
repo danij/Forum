@@ -52,6 +52,7 @@ namespace Forum
         {
             SortOrder sortOrder = SortOrder::Ascending;
             int_fast32_t pageNumber = 0;
+            Entities::Timestamp checkNotChangedSince = 0;
         };
 
         const DisplayContext& getDisplayContext();

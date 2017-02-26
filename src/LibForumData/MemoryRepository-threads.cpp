@@ -101,6 +101,16 @@ StatusCode MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostr
                                  userId = currentUser.id();
                              }
 
+                             auto& displayContext = Context::getDisplayContext();
+                             if (displayContext.checkNotChangedSince > 0)
+                             {
+                                 if (thread.latestVisibleChange() <= displayContext.checkNotChangedSince)
+                                 {
+                                     status = StatusCode::NOT_UPDATED_SINCE_LAST_CHECK;
+                                     return;
+                                 }
+                             }
+
                              BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageParentThread, true);
                              BoolTemporaryChanger __(serializationSettings.hideVisitedThreadSinceLastChange, true);
                              status.disable();
@@ -270,7 +280,7 @@ StatusCode MemoryRepository::addNewDiscussionThread(const std::string& name, std
                           thread->id() = generateUUIDString();
                           thread->name() = name;
                           updateCreated(*thread);
-                          thread->lastUpdated() = thread->created();
+                          thread->latestVisibleChange() = thread->lastUpdated() = thread->created();
                           
                           collection.insertDiscussionThread(thread);
                           createdBy->insertDiscussionThread(thread);
@@ -310,6 +320,7 @@ StatusCode MemoryRepository::changeDiscussionThreadName(const IdType& id, const 
                           collection.modifyDiscussionThread(it, [&newName, &user](DiscussionThread& thread)
                           {
                               thread.name() = newName;
+                              thread.latestVisibleChange() = Context::getCurrentTime();
                               updateLastUpdated(thread, user);
                           });
                           writeEvents_.onChangeDiscussionThread(createObserverContext(*user), **it,
@@ -386,6 +397,7 @@ StatusCode MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const 
                         collection.modifyDiscussionThread(itInto, [&](DiscussionThread& thread)
                         {
                             updateLastUpdated(thread, user);
+                            thread.latestVisibleChange() = thread.lastUpdated();
 
                             for (auto& message : threadFrom.messages())
                             {

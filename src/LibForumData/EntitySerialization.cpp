@@ -143,6 +143,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
             << propertySafeName("id", thread.id())
             << propertySafeName("name", thread.name())
             << propertySafeName("created", thread.created())
+            << propertySafeName("latestVisibleChange", thread.latestVisibleChange())
             << propertySafeName("visitorsSinceLastChange", thread.nrOfVisitorsSinceLastEdit());
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
     {
@@ -152,7 +153,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
     const auto& messagesIndex = thread.messagesByCreated();
     auto messageCount = messagesIndex.size();
 
-    writer  << propertySafeName("messageCount", messageCount);
+    writer << propertySafeName("messageCount", messageCount);
 
     if (messageCount)
     {

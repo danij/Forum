@@ -2436,3 +2436,44 @@ BOOST_AUTO_TEST_CASE( Retrievng_a_list_of_threads_includes_the_vote_score_of_the
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
     BOOST_REQUIRE_EQUAL(1, thread.voteScore);
 }
+
+//BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_can_check_for_latest_visible_change )
+//{
+//}
+//
+//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_creation )
+//{
+//}
+//
+//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_update )
+//{
+//}
+//
+//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_adding_messages_to_thread )
+//{
+//}
+//
+//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_editing_messages_from_thread )
+//{
+//}
+//
+//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_removing_messages_from_thread )
+//{
+//}
+//
+//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_moving_messages_from_thread )
+//{
+//}
+//
+//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_merging_threads )
+//{
+//}
+//
+//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_tag_link_change )
+//{
+//}
+//
+//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_category_link_change )
+//{
+//}
+

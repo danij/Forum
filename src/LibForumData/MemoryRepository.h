@@ -161,7 +161,7 @@ namespace Forum
 
             static void updateCreated(Entities::CreatedMixin& entity)
             {
-                entity.created()= Context::getCurrentTime();
+                entity.created() = Context::getCurrentTime();
                 entity.creationDetails().ip = Context::getCurrentUserIpAddress();
                 entity.creationDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
             }

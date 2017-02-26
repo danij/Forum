@@ -1,6 +1,7 @@
 #include "EntityCollection.h"
 
 #include "StateHelpers.h"
+#include "ContextProviders.h"
 
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
@@ -279,6 +280,8 @@ DiscussionThreadMessageRef EntityCollection::deleteDiscussionThreadMessage(Discu
         {
             thread.deleteDiscussionThreadMessageById(message->id());
             thread.resetVisitorsSinceLastEdit();
+            thread.latestVisibleChange() = Context::getCurrentTime();
+
             for (auto& tagWeak : thread.tagsWeak())
             {
                 if (auto tagShared = tagWeak.lock())

@@ -158,6 +158,8 @@ StatusCode MemoryRepository::addNewDiscussionMessageInThread(const IdType& threa
                           {
                               thread.messages().insert(message);
                               thread.resetVisitorsSinceLastEdit();
+                              thread.latestVisibleChange() = message->created();
+
                               for (auto& tagWeak : thread.tagsWeak())
                               {
                                   if (auto tagShared = tagWeak.lock())
@@ -263,6 +265,7 @@ StatusCode MemoryRepository::changeDiscussionThreadMessageContent(const IdType& 
                                   message.lastUpdatedBy() = performedByPtr;
                               }
                               message.parentThread().resetVisitorsSinceLastEdit();
+                              message.parentThread().latestVisibleChange() = message.lastUpdated();
                           });
                           writeEvents_.onChangeDiscussionThreadMessage(createObserverContext(*performedByPtr), **it,
                                   DiscussionThreadMessage::ChangeType::Content);
@@ -321,6 +324,8 @@ StatusCode MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId
                           {
                               thread.messages().insert(messageClone);
                               thread.resetVisitorsSinceLastEdit();
+                              thread.latestVisibleChange() = Context::getCurrentTime();
+
                               for (auto& tagWeak : thread.tagsWeak())
                               {
                                   if (auto tagShared = tagWeak.lock())
