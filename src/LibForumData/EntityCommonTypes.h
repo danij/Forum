@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <memory>
 
+#include <boost/flyweight.hpp>
+
 namespace Forum
 {
     namespace Entities
@@ -22,12 +24,12 @@ namespace Forum
         /**
          * Representing an IPv4 or IPv6 address
          */
-        typedef std::string IpType;
+        typedef boost::flyweight<std::string> IpType;
 
         /**
          * Representing a browser user agent
          */
-        typedef std::string UserAgentType;
+        typedef boost::flyweight<std::string> UserAgentType;
 
         struct Identifiable
         {

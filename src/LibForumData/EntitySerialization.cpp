@@ -63,6 +63,13 @@ static JsonWriter& writeVotes(JsonWriter& writer, const char(&name)[NameSize], c
     return writer;
 }
 
+JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetails)
+{
+    //does not currently start a new object
+    return writer << propertySafeName("ip", visitDetails.ip.get())
+                  << propertySafeName("userAgent", visitDetails.userAgent.get());
+}
+
 JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& message)
 {
     writer
@@ -89,16 +96,14 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& 
             writer << propertySafeName("userId", by.id())
                    << propertySafeName("userName", by.name());
         });
-        writer << propertySafeName("at", message.lastUpdated());
-        writer << propertySafeName("reason", message.lastUpdatedReason());
-        writer << propertySafeName("ip", message.lastUpdatedDetails().ip);
-        writer << propertySafeName("userAgent", message.lastUpdatedDetails().userAgent);
+        writer << propertySafeName("at", message.lastUpdated())
+               << propertySafeName("reason", message.lastUpdatedReason());
+        writeVisitDetails(writer, message.lastUpdatedDetails());
 
         writer.endObject();
     }
 
-    writer << propertySafeName("ip", message.creationDetails().ip)
-           << propertySafeName("userAgent", message.creationDetails().userAgent);
+    writeVisitDetails(writer, message.creationDetails());
     
     writeVotes(writer, "upVotes", message.upVotes());
     writeVotes(writer, "downVotes", message.downVotes());
