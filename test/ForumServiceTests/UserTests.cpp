@@ -70,11 +70,19 @@ struct SerializedUser
 {
     std::string id;
     std::string name;
+    Timestamp created = 0;
+    Timestamp lastSeen = 0;
+    int threadCount = 0;
+    int messageCount = 0;
 
     void populate(const boost::property_tree::ptree& tree)
     {
         id = tree.get<std::string>("id");
         name = tree.get<std::string>("name");
+        created = tree.get<Timestamp>("created");
+        lastSeen = tree.get<Timestamp>("lastSeen");
+        threadCount = tree.get<int>("threadCount");
+        messageCount = tree.get<int>("messageCount");
     }
 };
 
@@ -1658,7 +1666,100 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descendi
     BOOST_REQUIRE_EQUAL(0, users.size());
 }
 
-//BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_message_count )
-//{
-//    
-//}
+BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_message_count )
+{
+    auto handler = createCommandHandler();
+
+    auto user1Id = createUserAndGetId(handler, "User1");
+    auto user2Id = createUserAndGetId(handler, "User2");
+    auto user3Id = createUserAndGetId(handler, "User3");
+
+    std::string thread1Id, thread2Id;
+    std::string messageToDelete;
+
+    {
+        LoggedInUserChanger _(user1Id);
+        thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+        thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+
+        createDiscussionMessageAndGetId(handler, thread1Id, "Message");
+        createDiscussionMessageAndGetId(handler, thread2Id, "Message");
+
+        messageToDelete = createDiscussionMessageAndGetId(handler, thread1Id, "Message");
+    }
+    {
+        LoggedInUserChanger _(user2Id);
+        createDiscussionMessageAndGetId(handler, thread1Id, "Message");
+    }
+    {
+        LoggedInUserChanger _(user3Id);
+        createDiscussionMessageAndGetId(handler, thread1Id, "Message");
+        createDiscussionMessageAndGetId(handler, thread1Id, "Message");
+
+        createDiscussionMessageAndGetId(handler, thread2Id, "Message");
+        createDiscussionMessageAndGetId(handler, thread2Id, "Message");
+    }
+
+    auto users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT).get_child("users"));
+
+    BOOST_REQUIRE_EQUAL(3, users.size());
+
+    BOOST_REQUIRE_EQUAL(user2Id, users[0].id);
+    BOOST_REQUIRE_EQUAL("User2", users[0].name);
+    BOOST_REQUIRE_EQUAL(1, users[0].messageCount);
+
+    BOOST_REQUIRE_EQUAL(user1Id, users[1].id);
+    BOOST_REQUIRE_EQUAL("User1", users[1].name);
+    BOOST_REQUIRE_EQUAL(3, users[1].messageCount);
+
+    BOOST_REQUIRE_EQUAL(user3Id, users[2].id);
+    BOOST_REQUIRE_EQUAL("User3", users[2].name);
+    BOOST_REQUIRE_EQUAL(4, users[2].messageCount);
+
+    {
+        LoggedInUserChanger _(user3Id);
+        createDiscussionMessageAndGetId(handler, thread2Id, "Message");
+    }
+    {
+        LoggedInUserChanger _(user1Id);
+        deleteDiscussionThreadMessage(handler, messageToDelete);
+    }
+
+    users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT).get_child("users"));
+
+    BOOST_REQUIRE_EQUAL(3, users.size());
+
+    BOOST_REQUIRE_EQUAL(user2Id, users[0].id);
+    BOOST_REQUIRE_EQUAL("User2", users[0].name);
+    BOOST_REQUIRE_EQUAL(1, users[0].messageCount);
+
+    BOOST_REQUIRE_EQUAL(user1Id, users[1].id);
+    BOOST_REQUIRE_EQUAL("User1", users[1].name);
+    BOOST_REQUIRE_EQUAL(2, users[1].messageCount);
+
+    BOOST_REQUIRE_EQUAL(user3Id, users[2].id);
+    BOOST_REQUIRE_EQUAL("User3", users[2].name);
+    BOOST_REQUIRE_EQUAL(5, users[2].messageCount);
+
+    {
+        LoggedInUserChanger _(user1Id);
+        deleteDiscussionThread(handler, thread1Id);
+    }
+
+    users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT).get_child("users"));
+
+    BOOST_REQUIRE_EQUAL(3, users.size());
+
+    BOOST_REQUIRE_EQUAL(user2Id, users[0].id);
+    BOOST_REQUIRE_EQUAL("User2", users[0].name);
+    BOOST_REQUIRE_EQUAL(0, users[0].messageCount);
+
+    BOOST_REQUIRE_EQUAL(user1Id, users[1].id);
+    BOOST_REQUIRE_EQUAL("User1", users[1].name);
+    BOOST_REQUIRE_EQUAL(1, users[1].messageCount);
+
+    BOOST_REQUIRE_EQUAL(user3Id, users[2].id);
+    BOOST_REQUIRE_EQUAL("User3", users[2].name);
+    BOOST_REQUIRE_EQUAL(3, users[2].messageCount);
+
+}
