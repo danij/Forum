@@ -11,6 +11,7 @@
 
 using namespace Forum::Commands;
 using namespace Forum::Repository;
+using namespace Forum::Helpers;
 
 std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
 {
@@ -32,19 +33,20 @@ std::string Forum::Helpers::handlerToString(CommandHandlerRef& handler, Command 
     return handlerToString(handler, command, {});
 }
 
-boost::property_tree::ptree Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command,
-                                                         const std::vector<std::string>& parameters)
+TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command,
+                                      const std::vector<std::string>& parameters)
 {
     std::stringstream stream;
     handler->handle(command, parameters, stream);
+
     boost::property_tree::ptree result;
     boost::property_tree::read_json(stream, result);
+
     return result;
 }
 
-boost::property_tree::ptree Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command,
-                                                         DisplaySettings displaySettings,
-                                                         const std::vector<std::string>& parameters)
+TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command, DisplaySettings displaySettings,
+                                      const std::vector<std::string>& parameters)
 {
     auto oldPageNumber = Context::getDisplayContext().pageNumber;
     auto oldSortOrder = Context::getDisplayContext().sortOrder;
@@ -58,16 +60,56 @@ boost::property_tree::ptree Forum::Helpers::handlerToObj(CommandHandlerRef& hand
     return handlerToObj(handler, command, parameters);
 }
 
-boost::property_tree::ptree Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command)
+TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command)
 {
     return handlerToObj(handler, command, DisplaySettings{});
 }
 
-boost::property_tree::ptree Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command, 
-                                                         DisplaySettings displaySettings)
+TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command, DisplaySettings displaySettings)
 {
     return handlerToObj(handler, command, displaySettings, {});
 }
+
+
+TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& handler, Command command,
+                                                          const std::vector<std::string>& parameters)
+{
+    std::stringstream stream;
+    auto statusCode = handler->handle(command, parameters, stream);
+
+    boost::property_tree::ptree result;
+    boost::property_tree::read_json(stream, result);
+
+    return std::make_tuple(result, statusCode);
+}
+
+TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& handler, Command command,
+                                                          DisplaySettings displaySettings,
+                                                          const std::vector<std::string>& parameters)
+{
+    auto oldPageNumber = Context::getDisplayContext().pageNumber;
+    auto oldSortOrder = Context::getDisplayContext().sortOrder;
+
+    auto _ = createDisposer([oldPageNumber]() { Context::getMutableDisplayContext().pageNumber = oldPageNumber; });
+    auto ___ = createDisposer([oldSortOrder]() { Context::getMutableDisplayContext().sortOrder = oldSortOrder; });
+
+    Context::getMutableDisplayContext().pageNumber = displaySettings.pageNumber;
+    Context::getMutableDisplayContext().sortOrder = displaySettings.sortOrder;
+
+    return handlerToObjAndStatus(handler, command, parameters);
+}
+
+TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& handler, Command command)
+{
+    return handlerToObjAndStatus(handler, command, DisplaySettings{});
+}
+
+TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& handler, Command command,
+                                                          DisplaySettings displaySettings)
+{
+    return handlerToObjAndStatus(handler, command, displaySettings, {});
+}
+
 
 std::string Forum::Helpers::createUserAndGetId(CommandHandlerRef& handler, const std::string& name)
 {

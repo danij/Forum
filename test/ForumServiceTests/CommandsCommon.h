@@ -3,6 +3,7 @@
 #include "CommandHandler.h"
 #include "ContextProviders.h"
 
+#include <tuple>
 #include <boost/property_tree/ptree.hpp>
 
 #define CREATE_FUNCTION_ALIAS(name, target) \
@@ -31,16 +32,25 @@ namespace Forum
             DisplaySettings(Context::SortOrder overrideSortOrder) : sortOrder(overrideSortOrder) {}
         };
 
-        boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef& handler,
-                                                 Commands::Command command,
-                                                 const std::vector<std::string>& parameters);
-        boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef& handler,
-                                                 Commands::Command command, DisplaySettings displaySettings,
-                                                 const std::vector<std::string>& parameters);
-        boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef& handler,
-                                                 Commands::Command command);
-        boost::property_tree::ptree handlerToObj(Commands::CommandHandlerRef& handler,
-                                                 Commands::Command command, DisplaySettings displaySettings);
+        using TreeType = boost::property_tree::ptree;
+        using TreeStatusTupleType = std::tuple<TreeType, Forum::Repository::StatusCode>;
+
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command, 
+                              const std::vector<std::string>& parameters);
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command, 
+                              DisplaySettings displaySettings, const std::vector<std::string>& parameters);
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command);
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command, 
+                              DisplaySettings displaySettings);
+
+        TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command,
+                                                  const std::vector<std::string>& parameters);
+        TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command,
+                                                  DisplaySettings displaySettings, 
+                                                  const std::vector<std::string>& parameters);
+        TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command);
+        TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command,
+                                                  DisplaySettings displaySettings);
 
         std::string createUserAndGetId(Commands::CommandHandlerRef& handler, const std::string& name);
         std::string createDiscussionThreadAndGetId(Commands::CommandHandlerRef& handler, const std::string& name);

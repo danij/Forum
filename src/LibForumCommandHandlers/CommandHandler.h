@@ -100,7 +100,8 @@ namespace Forum
                            Repository::MetricsRepositoryRef metricsRepository);
             ~CommandHandler();
 
-            void handle(Command command, const std::vector<std::string>& parameters, std::ostream& output);
+            Repository::StatusCode handle(Command command, const std::vector<std::string>& parameters, 
+                                          std::ostream& output);
 
             Repository::ReadRepositoryRef getReadRepository();
             Repository::WriteRepositoryRef getWriteRepository();
