@@ -36,38 +36,23 @@ std::string Forum::Helpers::handlerToString(CommandHandlerRef& handler, Command 
 TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command,
                                       const std::vector<std::string>& parameters)
 {
-    std::stringstream stream;
-    handler->handle(command, parameters, stream);
-
-    boost::property_tree::ptree result;
-    boost::property_tree::read_json(stream, result);
-
-    return result;
+    return std::get<0>(handlerToObjAndStatus(handler, command, parameters));
 }
 
 TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command, DisplaySettings displaySettings,
                                       const std::vector<std::string>& parameters)
 {
-    auto oldPageNumber = Context::getDisplayContext().pageNumber;
-    auto oldSortOrder = Context::getDisplayContext().sortOrder;
-
-    auto _ = createDisposer([oldPageNumber]() { Context::getMutableDisplayContext().pageNumber = oldPageNumber; });
-    auto ___ = createDisposer([oldSortOrder]() { Context::getMutableDisplayContext().sortOrder = oldSortOrder; });
-
-    Context::getMutableDisplayContext().pageNumber = displaySettings.pageNumber;
-    Context::getMutableDisplayContext().sortOrder = displaySettings.sortOrder;
-
-    return handlerToObj(handler, command, parameters);
+    return std::get<0>(handlerToObjAndStatus(handler, command, displaySettings, parameters));
 }
 
 TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command)
 {
-    return handlerToObj(handler, command, DisplaySettings{});
+    return std::get<0>(handlerToObjAndStatus(handler, command));
 }
 
 TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command, DisplaySettings displaySettings)
 {
-    return handlerToObj(handler, command, displaySettings, {});
+    return std::get<0>(handlerToObjAndStatus(handler, command, displaySettings));
 }
 
 
@@ -89,12 +74,18 @@ TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& han
 {
     auto oldPageNumber = Context::getDisplayContext().pageNumber;
     auto oldSortOrder = Context::getDisplayContext().sortOrder;
+    auto oldCheckNotChangedSince = Context::getDisplayContext().checkNotChangedSince;
 
     auto _ = createDisposer([oldPageNumber]() { Context::getMutableDisplayContext().pageNumber = oldPageNumber; });
-    auto ___ = createDisposer([oldSortOrder]() { Context::getMutableDisplayContext().sortOrder = oldSortOrder; });
+    auto __ = createDisposer([oldSortOrder]() { Context::getMutableDisplayContext().sortOrder = oldSortOrder; });
+    auto ___ = createDisposer([oldCheckNotChangedSince]()
+    {
+        Context::getMutableDisplayContext().checkNotChangedSince = oldCheckNotChangedSince;
+    });
 
     Context::getMutableDisplayContext().pageNumber = displaySettings.pageNumber;
     Context::getMutableDisplayContext().sortOrder = displaySettings.sortOrder;
+    Context::getMutableDisplayContext().checkNotChangedSince = displaySettings.checkNotChangedSince;
 
     return handlerToObjAndStatus(handler, command, parameters);
 }

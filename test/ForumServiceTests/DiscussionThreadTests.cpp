@@ -134,6 +134,7 @@ struct SerializedDiscussionThread
     std::string name;
     Timestamp created = 0;
     Timestamp lastUpdated = 0;
+    Timestamp latestVisibleChangeAt = 0;
     SerializedDiscussionThreadOrMessageUser createdBy;
     int64_t visited = 0;
     int64_t messageCount = 0;
@@ -148,6 +149,7 @@ struct SerializedDiscussionThread
         name = tree.get<std::string>("name");
         created = tree.get<Timestamp>("created");
         lastUpdated = tree.get<Timestamp>("lastUpdated");
+        latestVisibleChangeAt = tree.get<Timestamp>("latestVisibleChangeAt");
         visited = tree.get<int64_t>("visited");
         messageCount = tree.get<int64_t>("messageCount");
         visitedSinceLastChange = tree.get<bool>("visitedSinceLastChange", false);
@@ -2438,43 +2440,376 @@ BOOST_AUTO_TEST_CASE( Retrievng_a_list_of_threads_includes_the_vote_score_of_the
     BOOST_REQUIRE_EQUAL(1, thread.voteScore);
 }
 
-//BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_can_check_for_latest_visible_change )
-//{
-//}
-//
-//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_creation )
-//{
-//}
-//
-//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_update )
-//{
-//}
-//
-//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_adding_messages_to_thread )
-//{
-//}
-//
-//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_editing_messages_from_thread )
-//{
-//}
-//
-//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_removing_messages_from_thread )
-//{
-//}
-//
-//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_moving_messages_from_thread )
-//{
-//}
-//
-//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_merging_threads )
-//{
-//}
-//
-//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_tag_link_change )
-//{
-//}
-//
-//BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_category_link_change )
-//{
-//}
+BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_can_check_for_latest_visible_change )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+    std::string threadId;
 
+    {
+        TimestampChanger _(1000);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    }
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+    {
+        DisplaySettings settings;
+        settings.checkNotChangedSince = 100;
+
+        StatusCode status;
+        std::tie(std::ignore, status) = handlerToObjAndStatus(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
+                                                              settings, { threadId });
+        assertStatusCodeEqual(StatusCode::OK, status);
+    }
+    {
+        DisplaySettings settings;
+        settings.checkNotChangedSince = 10000;
+
+        StatusCode status;
+        std::tie(std::ignore, status) = handlerToObjAndStatus(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, 
+                                                              settings, { threadId });
+        assertStatusCodeEqual(StatusCode::NOT_UPDATED_SINCE_LAST_CHECK, status);   
+    }
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_creation )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+    std::string threadId;
+
+    LoggedInUserChanger _(userId);
+    {
+        TimestampChanger __(1000);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    }
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_update )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+    std::string threadId;
+
+    LoggedInUserChanger _(userId);
+    {
+        TimestampChanger __(1000);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    }
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(2000);
+        handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_NAME, { threadId, "New Thread Name" });
+    }
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_adding_messages_to_thread )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+    std::string threadId;
+
+    LoggedInUserChanger _(userId);
+    {
+        TimestampChanger __(1000);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    }
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(2000);
+        createDiscussionMessageAndGetId(handler, threadId, "Message");
+    }
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_editing_messages_from_thread )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+    std::string threadId, messageId;
+
+    LoggedInUserChanger _(userId);
+    {
+        TimestampChanger __(1000);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    }
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(2000);
+        messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
+    }
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(3000);
+        handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, { messageId, "New Thread Name" });
+    }
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(3000, thread.latestVisibleChangeAt);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_removing_messages_from_thread )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+    std::string threadId, messageId;
+
+    LoggedInUserChanger _(userId);
+    {
+        TimestampChanger __(1000);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    }
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(2000);
+        messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
+    }
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(3000);
+        handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD_MESSAGE, { messageId });
+    }
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(3000, thread.latestVisibleChangeAt);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_moving_messages_from_thread )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+    std::string thread1Id, thread2Id, messageId;
+
+    LoggedInUserChanger _(userId);
+    {
+        TimestampChanger __(1000);
+        thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+        thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+    }
+    auto thread1 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id })
+                                     .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread1Id, thread1.id);
+    BOOST_REQUIRE_EQUAL(1000, thread1.latestVisibleChangeAt);
+
+    auto thread2 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
+                                     .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
+    BOOST_REQUIRE_EQUAL(1000, thread2.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(2000);
+        messageId = createDiscussionMessageAndGetId(handler, thread1Id, "Message");
+    }
+    thread1 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id })
+                                .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread1Id, thread1.id);
+    BOOST_REQUIRE_EQUAL(2000, thread1.latestVisibleChangeAt);
+
+    thread2 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
+                                .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
+    BOOST_REQUIRE_EQUAL(1000, thread2.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(3000);
+        handlerToObj(handler, Forum::Commands::MOVE_DISCUSSION_THREAD_MESSAGE, { messageId, thread2Id });
+    }
+    thread1 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id })
+                                .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread1Id, thread1.id);
+    BOOST_REQUIRE_EQUAL(3000, thread1.latestVisibleChangeAt);
+
+    thread2 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
+                                .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
+    BOOST_REQUIRE_EQUAL(3000, thread2.latestVisibleChangeAt);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_merging_threads )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+    std::string thread1Id, thread2Id, messageId;
+
+    LoggedInUserChanger _(userId);
+    {
+        TimestampChanger __(1000);
+        thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+        thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+    }
+    auto thread1 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id })
+                                     .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread1Id, thread1.id);
+    BOOST_REQUIRE_EQUAL(1000, thread1.latestVisibleChangeAt);
+
+    auto thread2 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
+                                     .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
+    BOOST_REQUIRE_EQUAL(1000, thread2.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(2000);
+        messageId = createDiscussionMessageAndGetId(handler, thread1Id, "Message");
+    }
+    thread1 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id })
+                                .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread1Id, thread1.id);
+    BOOST_REQUIRE_EQUAL(2000, thread1.latestVisibleChangeAt);
+
+    thread2 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
+                                .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
+    BOOST_REQUIRE_EQUAL(1000, thread2.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(3000);
+        handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS, { thread1Id, thread2Id });
+    }
+    thread2 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
+                                .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
+    BOOST_REQUIRE_EQUAL(3000, thread2.latestVisibleChangeAt);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_tag_link_change )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+    std::string threadId, tagId;
+
+    LoggedInUserChanger _(userId);
+    {
+        TimestampChanger __(1000);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
+        tagId = createDiscussionTagAndGetId(handler, "Tag");
+    }
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(2000);
+        handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD, { tagId, threadId });
+    }
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(3000);
+        handlerToObj(handler, Forum::Commands::REMOVE_DISCUSSION_TAG_FROM_THREAD, { tagId, threadId });
+    }
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(3000, thread.latestVisibleChangeAt);
+}
+
+BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_category_link_change )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+    std::string threadId, tagId, categoryId;
+
+    LoggedInUserChanger _(userId);
+    {
+        TimestampChanger __(1000);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
+        tagId = createDiscussionTagAndGetId(handler, "Tag");
+        categoryId = createDiscussionCategoryAndGetId(handler, "Tag");
+
+        handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD, { tagId, threadId });
+    }
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(2000);
+        handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY, { tagId, categoryId });
+    }
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+
+    {
+        TimestampChanger __(3000);
+        handlerToObj(handler, Forum::Commands::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, { tagId, categoryId });
+    }
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(3000, thread.latestVisibleChangeAt);
+}

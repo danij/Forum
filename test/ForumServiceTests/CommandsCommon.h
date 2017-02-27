@@ -27,6 +27,7 @@ namespace Forum
         {
             int pageNumber = 0;
             Context::SortOrder sortOrder = Context::SortOrder::Ascending;
+            Entities::Timestamp checkNotChangedSince = 0;
 
             DisplaySettings() {}
             DisplaySettings(Context::SortOrder overrideSortOrder) : sortOrder(overrideSortOrder) {}
