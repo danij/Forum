@@ -114,7 +114,7 @@ StatusCode MemoryRepository::getDiscussionThreadById(const IdType& id, std::ostr
                              BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageParentThread, true);
                              BoolTemporaryChanger __(serializationSettings.hideVisitedThreadSinceLastChange, true);
                              status.disable();
-                             writeSingleObjectSafeName(output, "thread", thread);
+                             writeSingleValueSafeName(output, "thread", thread);
                          }
                          readEvents_.onGetDiscussionThreadById(createObserverContext(currentUser), id);
                      });

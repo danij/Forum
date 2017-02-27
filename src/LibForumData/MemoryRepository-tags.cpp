@@ -27,12 +27,12 @@ StatusCode MemoryRepository::getDiscussionTags(std::ostream& output, RetrieveDis
             switch (by)
             {
             case RetrieveDiscussionTagsBy::Name: 
-                writeSingleObjectSafeName(output, "tags", Json::enumerate(collection.tagsByName().begin(), 
-                                                                          collection.tagsByName().end()));
+                writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByName().begin(), 
+                                                                         collection.tagsByName().end()));
                 break;
             case RetrieveDiscussionTagsBy::MessageCount: 
-                writeSingleObjectSafeName(output, "tags", Json::enumerate(collection.tagsByMessageCount().begin(),
-                                                                          collection.tagsByMessageCount().end()));
+                writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByMessageCount().begin(),
+                                                                         collection.tagsByMessageCount().end()));
                 break;
             }
         }
@@ -41,12 +41,12 @@ StatusCode MemoryRepository::getDiscussionTags(std::ostream& output, RetrieveDis
             switch (by)
             {
             case RetrieveDiscussionTagsBy::Name: 
-                writeSingleObjectSafeName(output, "tags", Json::enumerate(collection.tagsByName().rbegin(), 
-                                                                          collection.tagsByName().rend()));
+                writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByName().rbegin(), 
+                                                                         collection.tagsByName().rend()));
                 break;
             case RetrieveDiscussionTagsBy::MessageCount: 
-                writeSingleObjectSafeName(output, "tags", Json::enumerate(collection.tagsByMessageCount().rbegin(),
-                                                                          collection.tagsByMessageCount().rend()));
+                writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByMessageCount().rbegin(),
+                                                                         collection.tagsByMessageCount().rend()));
                 break;
             }
         }

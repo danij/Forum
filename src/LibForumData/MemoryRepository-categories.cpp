@@ -27,12 +27,12 @@ StatusCode MemoryRepository::getDiscussionCategories(std::ostream& output, Retri
             switch (by)
             {
             case RetrieveDiscussionCategoriesBy::Name: 
-                writeSingleObjectSafeName(output, "categories", Json::enumerate(collection.categoriesByName().begin(), 
-                                                                                collection.categoriesByName().end()));
+                writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByName().begin(), 
+                                                                               collection.categoriesByName().end()));
                 break;
             case RetrieveDiscussionCategoriesBy::MessageCount: 
-                writeSingleObjectSafeName(output, "categories", Json::enumerate(collection.categoriesByMessageCount().begin(), 
-                                                                                collection.categoriesByMessageCount().end()));
+                writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByMessageCount().begin(), 
+                                                                               collection.categoriesByMessageCount().end()));
                 break;
             }
         }
@@ -41,12 +41,12 @@ StatusCode MemoryRepository::getDiscussionCategories(std::ostream& output, Retri
             switch (by)
             {
             case RetrieveDiscussionCategoriesBy::Name: 
-                writeSingleObjectSafeName(output, "categories", Json::enumerate(collection.categoriesByName().rbegin(), 
-                                                                                collection.categoriesByName().rend()));
+                writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByName().rbegin(), 
+                                                                               collection.categoriesByName().rend()));
                 break;
             case RetrieveDiscussionCategoriesBy::MessageCount: 
-                writeSingleObjectSafeName(output, "categories", Json::enumerate(collection.categoriesByMessageCount().rbegin(), 
-                                                                                collection.categoriesByMessageCount().rend()));
+                writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByMessageCount().rbegin(), 
+                                                                               collection.categoriesByMessageCount().rend()));
                 break;
             }
         }
@@ -74,7 +74,7 @@ StatusCode MemoryRepository::getDiscussionCategoriesFromRoot(std::ostream& outpu
         
         BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
 
-        writeSingleObjectSafeName(output, "categories", Json::enumerate(indexBegin, indexRootEnd));
+        writeSingleValueSafeName(output, "categories", Json::enumerate(indexBegin, indexRootEnd));
 
         readEvents_.onGetRootDiscussionCategories(createObserverContext(currentUser));
     });
@@ -104,7 +104,7 @@ StatusCode MemoryRepository::getDiscussionCategoryById(const IdType& id, std::os
         {
             status.disable();
             BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
-            writeSingleObjectSafeName(output, "category", **it);
+            writeSingleValueSafeName(output, "category", **it);
         }
         readEvents_.onGetDiscussionCategory(createObserverContext(currentUser), **it);
     });

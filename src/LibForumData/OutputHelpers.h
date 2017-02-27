@@ -10,16 +10,6 @@ namespace Forum
 {
     namespace Helpers
     {
-        template <typename T>
-        void writeSingleValue(std::ostream& output, const char* name, const T& value)
-        {
-            Json::JsonWriter writer(output);
-            writer
-                << Json::objStart
-                    << Json::property(name, value)
-                << Json::objEnd;
-        }
-
         template <typename T, std::size_t Size>
         void writeSingleValueSafeName(std::ostream& output, const char(&name)[Size], const T& value)
         {
@@ -33,16 +23,6 @@ namespace Forum
         inline void writeStatusCode(std::ostream& output, Repository::StatusCode code)
         {
             writeSingleValueSafeName(output, "status", code);
-        }
-
-        template <typename TValue, std::size_t Size>
-        void writeSingleObjectSafeName(std::ostream& output, const char(&name)[Size], const TValue& value)
-        {
-            Json::JsonWriter writer(output);
-            writer
-                << Json::objStart
-                    << Json::propertySafeName<Size, const TValue&>(name, value)
-                << Json::objEnd;
         }
 
         template<typename Collection, typename InterceptorFn, std::size_t PropertyNameSize>

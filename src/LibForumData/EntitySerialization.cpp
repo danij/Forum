@@ -144,7 +144,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
             << propertySafeName("id", thread.id())
             << propertySafeName("name", thread.name())
             << propertySafeName("created", thread.created())
-            << propertySafeName("latestVisibleChange", thread.latestVisibleChange())
+            << propertySafeName("latestVisibleChangeAt", thread.latestVisibleChange())
             << propertySafeName("visitorsSinceLastChange", thread.nrOfVisitorsSinceLastEdit());
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
     {

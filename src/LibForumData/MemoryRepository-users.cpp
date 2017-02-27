@@ -65,7 +65,7 @@ StatusCode MemoryRepository::getUserById(const IdType& id, std::ostream& output)
                          else
                          {
                              status.disable();
-                             writeSingleObjectSafeName(output, "user", **it);
+                             writeSingleValueSafeName(output, "user", **it);
                          }
                          readEvents_.onGetUserById(createObserverContext(performedBy.get(collection)), id);
                      });
@@ -89,7 +89,7 @@ StatusCode MemoryRepository::getUserByName(const std::string& name, std::ostream
                          else
                          {
                              status.disable();
-                             writeSingleObjectSafeName(output, "user", **it);
+                             writeSingleValueSafeName(output, "user", **it);
                          }
                          readEvents_.onGetUserByName(createObserverContext(performedBy.get(collection)), name);
                      });
