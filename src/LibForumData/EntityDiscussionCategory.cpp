@@ -188,7 +188,6 @@ void DiscussionCategory::recalculateTotals()
 
 const DiscussionThreadMessage* DiscussionThreadRefCountedCollection::latestMessage() const
 {
-    //return nullptr;
     auto index = threadsByLatestMessageCreated();
     if ( ! index.size())
     {
