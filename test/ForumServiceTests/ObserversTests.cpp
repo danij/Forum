@@ -322,6 +322,9 @@ BOOST_AUTO_TEST_CASE( Modifying_the_content_of_a_discussion_message_invokes_obse
                               messageChange = change;
                           });
 
+    auto userId = createUserAndGetId(handler, "User");
+    LoggedInUserChanger _(userId);
+
     auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
     auto messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
 

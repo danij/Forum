@@ -2040,9 +2040,11 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_e
     auto handler = createCommandHandler();
 
     auto userId = createUserAndGetId(handler, "User");
+    LoggedInUserChanger _(userId);
 
     auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
     auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+
     std::string message1Id, message2Id;
     {
         TimestampChanger _(1000);
@@ -2050,7 +2052,6 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_e
         message2Id = createDiscussionMessageAndGetId(handler, thread2Id, "Message2");
     }
     {
-        LoggedInUserChanger _(userId);
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id });
 
