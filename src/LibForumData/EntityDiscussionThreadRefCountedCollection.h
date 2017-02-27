@@ -15,7 +15,7 @@ namespace Forum
          */
         struct DiscussionThreadRefCountedCollection : public DiscussionThreadCollectionBase
         {
-            DECLARE_INTERFACE_MANDATORY_NO_COPY(DiscussionThreadRefCountedCollection);
+            DECLARE_ABSTRACT_MANDATORY_NO_COPY(DiscussionThreadRefCountedCollection);
 
             int_fast32_t  messageCount() const { return messageCount_; }
             int_fast32_t& messageCount()       { return messageCount_; }

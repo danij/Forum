@@ -13,6 +13,8 @@ namespace Forum
          */
         struct UserCollectionBase
         {
+            DECLARE_ABSTRACT_MANDATORY_NO_COPY(UserCollectionBase)
+
             struct UserCollectionById {};
             struct UserCollectionByName {};
             struct UserCollectionByCreated {};

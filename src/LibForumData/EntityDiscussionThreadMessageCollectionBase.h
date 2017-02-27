@@ -21,7 +21,7 @@ namespace Forum
          */
         struct DiscussionThreadMessageCollectionBase : private boost::noncopyable
         {
-            DECLARE_INTERFACE_MANDATORY_NO_COPY(DiscussionThreadMessageCollectionBase);
+            DECLARE_ABSTRACT_MANDATORY_NO_COPY(DiscussionThreadMessageCollectionBase);
 
             struct DiscussionThreadMessageCollectionById {};
             struct DiscussionThreadMessageCollectionByCreated {};

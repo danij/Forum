@@ -23,7 +23,7 @@ namespace Forum
          */
         struct DiscussionCategoryCollectionBase : private boost::noncopyable
         {
-            DECLARE_INTERFACE_MANDATORY_NO_COPY(DiscussionCategoryCollectionBase);
+            DECLARE_ABSTRACT_MANDATORY_NO_COPY(DiscussionCategoryCollectionBase);
 
             struct DiscussionCategoryCollectionById {};
             struct DiscussionCategoryCollectionByName {};

@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <boost/flyweight.hpp>
+#include "TypeHelpers.h"
 
 namespace Forum
 {
@@ -33,6 +34,8 @@ namespace Forum
 
         struct Identifiable
         {
+            DECLARE_ABSTRACT_MANDATORY(Identifiable)
+
             const IdType& id() const { return id_; }
                   IdType& id()       { return id_; }
 
@@ -42,6 +45,8 @@ namespace Forum
 
         struct IndicateDeletionInProgress
         {
+            DECLARE_ABSTRACT_MANDATORY(IndicateDeletionInProgress)
+
             bool& aboutToBeDeleted() { return aboutToBeDeleted_; }
 
         private:
@@ -56,30 +61,32 @@ namespace Forum
 
         struct CreatedMixin
         {
-                     Timestamp  created()         const { return created_; }
-                     Timestamp& created()               { return created_; }
+            DECLARE_ABSTRACT_MANDATORY(CreatedMixin)
+
+                  Timestamp     created()         const { return created_; }
+                  Timestamp&    created()               { return created_; }
 
             const VisitDetails& creationDetails() const { return creationDetails_; }
                   VisitDetails& creationDetails()       { return creationDetails_; }
 
-            CreatedMixin() : created_(0) {}
-
         private:
-            Timestamp created_;
+            Timestamp created_ = 0;
             VisitDetails creationDetails_;
         };
 
         template<typename ByType>
         struct LastUpdatedMixin
         {
-                     Timestamp  lastUpdated()        const { return lastUpdated_; }
-                     Timestamp& lastUpdated()              { return lastUpdated_; }
+            DECLARE_ABSTRACT_MANDATORY(LastUpdatedMixin)
+
+                  Timestamp     lastUpdated()        const { return lastUpdated_; }
+                  Timestamp&    lastUpdated()              { return lastUpdated_; }
 
             const VisitDetails& lastUpdatedDetails() const { return lastUpdatedDetails_; }
                   VisitDetails& lastUpdatedDetails()       { return lastUpdatedDetails_; }
                         
-                   std::string  lastUpdatedReason()  const { return lastUpdatedReason_; }
-                   std::string& lastUpdatedReason()        { return lastUpdatedReason_; }
+                  std::string   lastUpdatedReason()  const { return lastUpdatedReason_; }
+                  std::string&  lastUpdatedReason()        { return lastUpdatedReason_; }
 
             std::weak_ptr<ByType>& lastUpdatedBy() { return lastUpdatedBy_; }
 
@@ -92,12 +99,10 @@ namespace Forum
                 }
             }
 
-            LastUpdatedMixin() : lastUpdated_(0) {}
-
             typedef std::weak_ptr<ByType> ByTypeRef;
 
         private:
-            Timestamp lastUpdated_;
+            Timestamp lastUpdated_ = 0;
             VisitDetails lastUpdatedDetails_;
             ByTypeRef lastUpdatedBy_;
             std::string lastUpdatedReason_;

@@ -25,7 +25,7 @@ namespace Forum
          */
         struct DiscussionThreadCollectionBase : private boost::noncopyable
         {
-            DECLARE_INTERFACE_MANDATORY_NO_COPY(DiscussionThreadCollectionBase);
+            DECLARE_ABSTRACT_MANDATORY_NO_COPY(DiscussionThreadCollectionBase);
 
             struct DiscussionThreadCollectionById {};
             struct DiscussionThreadCollectionByName {};

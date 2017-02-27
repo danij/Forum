@@ -21,6 +21,11 @@
     TypeName(TypeName&&) = default; \
     TypeName& operator=(TypeName&&) = default;
 
+#define DECLARE_ABSTRACT_MANDATORY(TypeName) DECLARE_INTERFACE_MANDATORY(TypeName)
+
+#define DECLARE_ABSTRACT_MANDATORY_NO_COPY(TypeName) DECLARE_INTERFACE_MANDATORY_NO_COPY(TypeName)
+
+
 namespace Forum
 {
     namespace Helpers
