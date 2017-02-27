@@ -74,6 +74,7 @@ struct SerializedDiscussionMessageLastUpdated
     std::string userName;
     std::string ip;
     std::string userAgent;
+    std::string reason;
 
     void populate(const boost::property_tree::ptree& tree)
     {
@@ -82,6 +83,7 @@ struct SerializedDiscussionMessageLastUpdated
         at = tree.get<Timestamp>("at", 0);
         ip = tree.get<std::string>("ip", "");
         userAgent = tree.get<std::string>("userAgent", "");
+        reason = tree.get<std::string>("reason", "");
     }
 };
 
@@ -1248,6 +1250,50 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_message_store_the_ip_address_and_user_ag
     BOOST_REQUIRE_EQUAL("Browser 3", thread.messages[1].lastUpdated->userAgent);
     BOOST_REQUIRE_EQUAL(user1Id, thread.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread.messages[1].createdBy.name);
+}
+
+BOOST_AUTO_TEST_CASE( Changing_discussion_thread_messages_records_change_reason )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+
+    LoggedInUserChanger _(userId);
+
+    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    auto messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
+
+    {
+        TimestampChanger __(1000);
+        handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, { messageId, "New Message" });
+    }
+
+    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                                    .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(1, thread.messages.size());
+
+    BOOST_REQUIRE_EQUAL(messageId, thread.messages[0].id);
+    BOOST_REQUIRE(thread.messages[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL("", thread.messages[0].lastUpdated->reason);
+
+    {
+        TimestampChanger __(1000);
+        handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 
+                     { messageId, "New Message", "Change Reason" });
+    }
+
+    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId })
+                               .get_child("thread"));
+
+    BOOST_REQUIRE_EQUAL(threadId, thread.id);
+    BOOST_REQUIRE_EQUAL(1, thread.messages.size());
+
+    BOOST_REQUIRE_EQUAL(messageId, thread.messages[0].id);
+    BOOST_REQUIRE(thread.messages[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL("Change Reason", thread.messages[0].lastUpdated->reason);
 }
 
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_with_an_invalid_id_returns_invalid_parameters )
