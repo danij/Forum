@@ -54,16 +54,26 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
     auto ___ = addHandler(handler->getReadRepository()->readEvents().onGetUsers, 
                           [&](auto& _) { observerCalledNTimes += 1; });
 
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, SortOrder::Ascending);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, SortOrder::Descending);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED, SortOrder::Ascending);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED, SortOrder::Descending);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN, SortOrder::Ascending);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN, SortOrder::Descending);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT, SortOrder::Ascending);
-    handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT, SortOrder::Descending);
+    Forum::Commands::Command commands[] =
+    {
+        Forum::Commands::GET_USERS_BY_NAME,
+        Forum::Commands::GET_USERS_BY_CREATED,
+        Forum::Commands::GET_USERS_BY_LAST_SEEN,
+        Forum::Commands::GET_USERS_BY_MESSAGE_COUNT
+    };
 
-    BOOST_REQUIRE_EQUAL(8, observerCalledNTimes);
+    SortOrder sortOrders[] = { SortOrder::Ascending, SortOrder::Descending };
+
+    for (auto command : commands)
+    {
+        for (auto sortOrder : sortOrders)
+        {
+            handlerToObj(handler, command, sortOrder);
+        }
+    }
+
+    auto nrOfCalls = std::extent<decltype(commands)>::value * std::extent<decltype(sortOrders)>::value;
+    BOOST_REQUIRE_EQUAL(nrOfCalls, observerCalledNTimes);
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_invokes_observer )

@@ -19,6 +19,7 @@ namespace Forum
             struct UserCollectionByName {};
             struct UserCollectionByCreated {};
             struct UserCollectionByLastSeen {};
+            struct UserCollectionByThreadCount {};
             struct UserCollectionByMessageCount {};
 
             struct UserCollectionIndices : boost::multi_index::indexed_by<
@@ -31,6 +32,9 @@ namespace Forum
                     const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &User::created>>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByLastSeen>,
                     const boost::multi_index::const_mem_fun<User, Timestamp, &User::lastSeen>>,
+            boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByThreadCount>,
+                    const boost::multi_index::const_mem_fun<DiscussionThreadCollectionBase,
+                        std::result_of<decltype(&User::threadCount)(User*)>::type, &User::threadCount>>,
             boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByMessageCount>,
                     const boost::multi_index::const_mem_fun<DiscussionThreadMessageCollectionBase, 
                         std::result_of<decltype(&User::messageCount)(User*)>::type, &User::messageCount>>
@@ -43,6 +47,7 @@ namespace Forum
             auto  usersByName()         const { return Helpers::toConst(users_.get<UserCollectionByName>()); }
             auto  usersByCreated()      const { return Helpers::toConst(users_.get<UserCollectionByCreated>()); }
             auto  usersByLastSeen()     const { return Helpers::toConst(users_.get<UserCollectionByLastSeen>()); }
+            auto  usersByThreadCount()  const { return Helpers::toConst(users_.get<UserCollectionByThreadCount>()); }
             auto  usersByMessageCount() const { return Helpers::toConst(users_.get<UserCollectionByMessageCount>()); }
 
             /**

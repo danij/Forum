@@ -177,7 +177,10 @@ DiscussionThreadRef EntityCollection::deleteDiscussionThread(DiscussionThreadCol
     }
     if (alsoDeleteThreadsFromUser)
     {
-        thread->createdBy().deleteDiscussionThreadById(thread->id());
+        modifyUserById(thread->createdBy().id(), [&](User& user)
+        {
+            user.deleteDiscussionThreadById(thread->id());
+        });
     }
     for (auto& categoryWeak : thread->categoriesWeak())
     {

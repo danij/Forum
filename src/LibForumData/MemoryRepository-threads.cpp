@@ -283,7 +283,11 @@ StatusCode MemoryRepository::addNewDiscussionThread(const std::string& name, std
                           thread->latestVisibleChange() = thread->lastUpdated() = thread->created();
                           
                           collection.insertDiscussionThread(thread);
-                          createdBy->insertDiscussionThread(thread);
+
+                          collection.modifyUserById(createdBy->id(), [&](User& user)
+                          {
+                            user.insertDiscussionThread(thread);
+                          });
 
                           writeEvents_.onAddNewDiscussionThread(createObserverContext(*createdBy), *thread);
 

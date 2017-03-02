@@ -59,6 +59,7 @@ namespace Forum
                     DiscussionThreadCollection;
 
             auto& threads() { return threads_; }
+            auto  threadCount() const { return threads_.size(); }
             auto  threadsById() const
                 { return Helpers::toConst(threads_.get<DiscussionThreadCollectionById>()); }
             auto  threadsByName() const

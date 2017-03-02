@@ -31,6 +31,7 @@ namespace Forum
             Name,
             Created,
             LastSeen,
+            ThreadCount,
             MessageCount
         };
 
