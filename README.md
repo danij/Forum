@@ -48,6 +48,10 @@ from disk and replied to fill the repositories.
 * Max 120 characters/line
 * Space inside an initializer list (e.g. `{ 1, 2, 3 }` instead of `{1, 2, 3}`)
 
+### Library Dependencies
+
+* Boost C++ libraries compiled with ICU support
+
 ### Building
 
     mkdir build
