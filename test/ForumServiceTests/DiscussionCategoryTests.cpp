@@ -740,6 +740,8 @@ BOOST_AUTO_TEST_CASE( Discussion_categories_recursively_include_total_thread_and
 {
     auto handler = createCommandHandler();
 
+    LoggedInUserChanger __(createUserAndGetId(handler, "User"));
+    
     auto category1Id = createDiscussionCategoryAndGetId(handler, "Category1");
     auto childCategory1Id = createDiscussionCategoryAndGetId(handler, "ChildCategory1", category1Id);
     auto category2Id = createDiscussionCategoryAndGetId(handler, "Category2");
@@ -894,6 +896,8 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_attached_to_one_category_can_be_retriev
 {
     auto handler = createCommandHandler();
 
+    LoggedInUserChanger __(createUserAndGetId(handler, "User"));
+    
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Category");
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
 

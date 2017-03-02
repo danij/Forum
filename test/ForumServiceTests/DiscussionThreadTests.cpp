@@ -311,6 +311,9 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_by_id )
 BOOST_AUTO_TEST_CASE( Modifying_a_discussion_thread_name_succeds )
 {
     auto handler = createCommandHandler();
+
+    LoggedInUserChanger __(createUserAndGetId(handler, "User"));
+
     auto result = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Abc" });
     assertStatusCodeEqual(StatusCode::OK, result);
 
@@ -457,6 +460,8 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_last_updated
     auto handler = createCommandHandler();
     std::vector<std::string> names = { "Abc", "Ghi", "Def" };
     std::vector<std::string> ids;
+
+    LoggedInUserChanger __(createUserAndGetId(handler, "User"));
 
     Timestamp currentTime = 1000;
     for (auto& name : names)
@@ -1075,10 +1080,11 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds )
     auto handler = createCommandHandler();
 
     auto userId = createUserAndGetId(handler, "User");
-    auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
+    std::string threadId;
     std::string message1Id, message2Id;
     {
         LoggedInUserChanger _(userId);
+        threadId = createDiscussionThreadAndGetId(handler, "Abc");
         TimestampChanger __(1000);
         message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");
     }
@@ -1124,10 +1130,11 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_stores_the_us
 
     auto user1Id = createUserAndGetId(handler, "User1");
     auto user2Id = createUserAndGetId(handler, "User2");
-    auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
+    std::string threadId;
     std::string message1Id, message2Id;
     {
         LoggedInUserChanger _(user1Id);
+        threadId = createDiscussionThreadAndGetId(handler, "Abc");
         TimestampChanger __(1000);
         message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");
     }
@@ -1185,10 +1192,12 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_message_store_the_ip_address_and_user_ag
 
     auto user1Id = createUserAndGetId(handler, "User1");
     auto user2Id = createUserAndGetId(handler, "User2");
-    auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
+    std::string threadId;
     std::string message1Id, message2Id;
     {
         LoggedInUserChanger _(user1Id);
+        threadId = createDiscussionThreadAndGetId(handler, "Abc");
+
         TimestampChanger __(1000);
         IpUserAgentChanger ___("1.2.3.4", "Browser 1");
         message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");
@@ -1805,12 +1814,14 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_works_ok )
 
     auto user1Id = createUserAndGetId(handler, "User1");
     auto user2Id = createUserAndGetId(handler, "User2");
-    auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
-    auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+    std::string thread1Id, thread2Id;
     std::string message1Id, message2Id, message3Id;
 
     {
         LoggedInUserChanger _(user1Id);
+        thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+        thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+
         TimestampChanger __(1000);
         message1Id = createDiscussionMessageAndGetId(handler, thread1Id, "Message 1");
     }
@@ -1896,6 +1907,8 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_fails_if_the_message_is_
 BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_works_ok )
 {
     auto handler = createCommandHandler();
+
+    LoggedInUserChanger __(createUserAndGetId(handler, "User"));
 
     auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
     auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
@@ -2044,15 +2057,16 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_visitedSinceLastChange_is_reset_after_a
 
     auto userId = createUserAndGetId(handler, "User");
 
-    auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
-    auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
-    {
-        TimestampChanger _(1000);
-        createDiscussionMessageAndGetId(handler, thread1Id, "Message1");
-        createDiscussionMessageAndGetId(handler, thread2Id, "Message2");
-    }
+    std::string thread1Id, thread2Id;
     {
         LoggedInUserChanger _(userId);
+        thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
+        thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+        {
+            TimestampChanger _(1000);
+            createDiscussionMessageAndGetId(handler, thread1Id, "Message1");
+            createDiscussionMessageAndGetId(handler, thread2Id, "Message2");
+        }
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id });
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id });
 
@@ -2180,11 +2194,12 @@ BOOST_AUTO_TEST_CASE( Voting_a_discussion_thread_message_can_only_occur_once_unl
 
     auto user1Id = createUserAndGetId(handler, "User1");
     auto user2Id = createUserAndGetId(handler, "User2");
-    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    std::string threadId;
     std::string message1Id, message2Id;
 
     {
         LoggedInUserChanger _(user1Id);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
         {
             TimestampChanger __(1000);
             message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");
@@ -2281,11 +2296,13 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_votes_cast_by_that_user )
     auto user1Id = createUserAndGetId(handler, "User1");
     auto user2Id = createUserAndGetId(handler, "User2");
     auto user3Id = createUserAndGetId(handler, "User3");
-    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+
+    std::string threadId;
     std::string message1Id, message2Id;
 
     {
         LoggedInUserChanger _(user1Id);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
         {
             TimestampChanger __(1000);
             message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");
@@ -2418,11 +2435,12 @@ BOOST_AUTO_TEST_CASE( Retrievng_a_list_of_threads_includes_the_vote_score_of_the
     auto user1Id = createUserAndGetId(handler, "User1");
     auto user2Id = createUserAndGetId(handler, "User2");
     auto user3Id = createUserAndGetId(handler, "User3");
-    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
+    std::string threadId;
     std::string message1Id, message2Id;
 
     {
         LoggedInUserChanger _(user1Id);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
         {
             TimestampChanger __(1000);
             message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");

@@ -467,6 +467,9 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_detaches_it_from_tags )
 BOOST_AUTO_TEST_CASE( Discussion_threads_attached_to_one_tag_can_be_retrieved_sorted_by_various_criteria )
 {
     auto handler = createCommandHandler();
+
+    LoggedInUserChanger __(createUserAndGetId(handler, "User"));
+    
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
     std::string thread1Id, thread2Id, thread3Id;
     {
@@ -622,6 +625,9 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_merged_keeping_all_discussion_threa
 BOOST_AUTO_TEST_CASE( Deleting_discussion_threads_updates_discussion_tag_message_count )
 {
     auto handler = createCommandHandler();
+
+    LoggedInUserChanger __(createUserAndGetId(handler, "User"));
+    
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
     auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
     auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
@@ -660,6 +666,9 @@ BOOST_AUTO_TEST_CASE( Deleting_discussion_threads_updates_discussion_tag_message
 BOOST_AUTO_TEST_CASE( Deleting_discussion_thread_messages_updates_discussion_tag_message_count )
 {
     auto handler = createCommandHandler();
+
+    LoggedInUserChanger __(createUserAndGetId(handler, "User"));
+    
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
     auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
     auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
@@ -699,6 +708,9 @@ BOOST_AUTO_TEST_CASE( Deleting_discussion_thread_messages_updates_discussion_tag
 BOOST_AUTO_TEST_CASE( Merging_discussion_threads_with_same_tag_preserves_discussion_tag_message_count )
 {
     auto handler = createCommandHandler();
+    
+    LoggedInUserChanger __(createUserAndGetId(handler, "User"));
+
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
     auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
     auto thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
@@ -738,6 +750,9 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_with_same_tag_preserves_discuss
 BOOST_AUTO_TEST_CASE( Merging_discussion_threads_with_different_tags_updates_discussion_tag_message_count )
 {
     auto handler = createCommandHandler();
+    
+    LoggedInUserChanger __(createUserAndGetId(handler, "User"));
+    
     auto tag1Id = createDiscussionTagAndGetId(handler, "Tag1");
     auto tag2Id = createDiscussionTagAndGetId(handler, "Tag2");
     auto thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");

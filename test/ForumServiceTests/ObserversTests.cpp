@@ -247,6 +247,8 @@ BOOST_AUTO_TEST_CASE( Modifying_a_discussion_thread_invokes_observer )
     auto threadChange = DiscussionThread::ChangeType::None;
     auto handler = createCommandHandler();
 
+    LoggedInUserChanger __(createUserAndGetId(handler, "User"));
+
     auto ___ = addHandler(handler->getWriteRepository()->writeEvents().onChangeDiscussionThread, 
                           [&](auto& _, auto& thread, auto change)
                           {
