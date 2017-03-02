@@ -1766,13 +1766,14 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_message_count )
     auto user2Id = createUserAndGetId(handler, "User2");
     auto user3Id = createUserAndGetId(handler, "User3");
 
-    std::string thread1Id, thread2Id;
+    std::string thread1Id, thread2Id, thread3Id;
     std::string messageToDelete;
 
     {
         LoggedInUserChanger _(user1Id);
         thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
         thread2Id = createDiscussionThreadAndGetId(handler, "Thread2");
+        thread3Id = createDiscussionThreadAndGetId(handler, "Thread3");
 
         createDiscussionMessageAndGetId(handler, thread1Id, "Message");
         createDiscussionMessageAndGetId(handler, thread2Id, "Message");
@@ -1836,6 +1837,27 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_message_count )
     {
         LoggedInUserChanger _(user1Id);
         deleteDiscussionThread(handler, thread1Id);
+    }
+
+    users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT).get_child("users"));
+
+    BOOST_REQUIRE_EQUAL(3, users.size());
+
+    BOOST_REQUIRE_EQUAL(user2Id, users[0].id);
+    BOOST_REQUIRE_EQUAL("User2", users[0].name);
+    BOOST_REQUIRE_EQUAL(0, users[0].messageCount);
+
+    BOOST_REQUIRE_EQUAL(user1Id, users[1].id);
+    BOOST_REQUIRE_EQUAL("User1", users[1].name);
+    BOOST_REQUIRE_EQUAL(1, users[1].messageCount);
+
+    BOOST_REQUIRE_EQUAL(user3Id, users[2].id);
+    BOOST_REQUIRE_EQUAL("User3", users[2].name);
+    BOOST_REQUIRE_EQUAL(3, users[2].messageCount);
+
+    {
+        LoggedInUserChanger _(user1Id);
+        handlerToObj(handler, Forum::Commands::MERGE_DISCUSSION_THREADS, { thread2Id, thread3Id });
     }
 
     users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT).get_child("users"));

@@ -374,6 +374,8 @@ StatusCode MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const 
 
     auto performedBy = preparePerformedBy();
 
+    std::map<IdType, std::vector<DiscussionThreadMessageRef>> messageClonesToAdd;
+
     collection_.write([&](EntityCollection& collection)
                     {
                         auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
@@ -411,7 +413,8 @@ StatusCode MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const 
 
                                 collection.messages().insert(messageClone);
                                 thread.messages().insert(messageClone);
-                                createdBy.messages().insert(messageClone);
+
+                                messageClonesToAdd[createdBy.id()].push_back(messageClone);
                             }
                             for (auto& tagWeak : thread.tagsWeak())
                             {
@@ -441,6 +444,19 @@ StatusCode MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const 
                         });
                         //this will also decrease the message count on the tags the thread was part of
                         collection.deleteDiscussionThread(itFrom);
+
+                        //add message clones to the messages collection of their users
+                        //could not add them before deleting the thread because the old messages where already present
+                        for (auto& pair : messageClonesToAdd)
+                        {
+                            collection.modifyUserById(pair.first, [&](User& createdByUser)
+                            {
+                                for (auto& message : pair.second)
+                                {
+                                    createdByUser.messages().insert(message);
+                                }
+                            });
+                        }
                     });
     return status;
 }
