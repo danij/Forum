@@ -9,6 +9,7 @@
 #include "MemoryRepository.h"
 #include "MetricsRepository.h"
 #include "CommandHandler.h"
+#include "Configuration.h"
 #include "StringHelpers.h"
 
 #include <boost/property_tree/json_parser.hpp>
