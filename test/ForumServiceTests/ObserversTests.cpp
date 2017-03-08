@@ -871,3 +871,8 @@ BOOST_AUTO_TEST_CASE( Voting_discussion_thread_messages_invokes_observers )
         BOOST_REQUIRE_EQUAL(messageId, id);
     }
 }
+
+//BOOST_AUTO_TEST_CASE( Adding_comments_to_discussion_messages_invokes_observer )
+//BOOST_AUTO_TEST_CASE( Setting_discussion_message_comments_to_solved_invokes_observer )
+//BOOST_AUTO_TEST_CASE( Retrieving_discussion_message_comments_invokes_observer )
+//BOOST_AUTO_TEST_CASE( Retrieving_comments_of_a_specific_discussion_message_invokes_observer )
