@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EntityCommonTypes.h"
+#include "EntityMessageCommentCollectionBase.h"
 
 #include <boost/noncopyable.hpp>
 
@@ -20,8 +21,8 @@ namespace Forum
          * Repositories are responsible for updating the relationships between this message and other entities
          * When cloning a message, the repository needs to reintroduce it in all collections it was part of
          */
-        struct DiscussionThreadMessage final : public Identifiable, public CreatedMixin, public LastUpdatedMixin<User>, 
-                                               private boost::noncopyable
+        struct DiscussionThreadMessage final : public Identifiable, public CreatedMixin, public LastUpdatedMixin<User>,
+                                               public MessageCommentCollectionBase
         {
             typedef int_fast32_t VoteScoreType;
 

@@ -17,7 +17,7 @@ set(HEADER_FILES Entities.h MemoryRepository.h Repository.h ResourceGuard.h Outp
         TypeHelpers.h EntityDiscussionThreadCollectionBase.h EntityDiscussionThread.h EntityUser.h StateHelpers.h
         EntityDiscussionThreadMessage.h EntityDiscussionThreadMessageCollectionBase.h EntityUserCollectionBase.h
         EntityDiscussionTag.h EntityDiscussionTagCollectionBase.h EntityDiscussionCategoryCollectionBase.h
-        EntityDiscussionThreadRefCountedCollection.h)
+        EntityDiscussionThreadRefCountedCollection.h EntityMessageComment.h EntityMessageCommentCollectionBase.h)
 
 include_directories(. ../. ../LibFastJsonWriter ../LibForumContext ${Boost_INCLUDE_DIRS})
 

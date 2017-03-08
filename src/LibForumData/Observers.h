@@ -80,6 +80,15 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&)>
                                          onDiscussionThreadMessageResetVote;
 
+            boost::signals2::signal<void(ObserverContext, const Entities::MessageComment&)>
+                                         onMessageCommentAdded;
+            boost::signals2::signal<void(ObserverContext, const Entities::MessageComment&)>
+                                         onMessageCommentSolved;
+            boost::signals2::signal<void(ObserverContext)> onRetrieveMessageComments;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&)>
+                                         onRetrieveMessageCommentsOfMessage;
+
+
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onAddNewDiscussionTag;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&, 
                                          Entities::DiscussionTag::ChangeType)> onChangeDiscussionTag;

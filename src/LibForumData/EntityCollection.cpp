@@ -455,3 +455,48 @@ DiscussionCategoryRef DiscussionCategoryCollectionBase::deleteDiscussionCategory
 {
     return deleteDiscussionCategory(categories_.get<DiscussionCategoryCollectionById>().find(id));
 }
+
+//
+//
+//Message Comments
+//
+//
+
+void MessageCommentCollectionBase::modifyMessageComment(MessageCommentCollection::iterator iterator,
+                                                        const std::function<void(MessageComment&)>& modifyFunction)
+{
+    if (iterator == messageComments_.end())
+    {
+        return;
+    }
+    messageComments_.modify(iterator, [&modifyFunction](const MessageCommentRef& comment)
+    {
+        if (comment)
+        {
+            modifyFunction(*comment);
+        }
+    });
+}
+
+void MessageCommentCollectionBase::modifyMessageCommentById(const IdType& id,
+                                                            const std::function<void(MessageComment&)>& modifyFunction)
+{
+    modifyMessageComment(messageComments_.get<MessageCommentCollectionById>().find(id), modifyFunction);
+}
+
+MessageCommentRef MessageCommentCollectionBase::deleteMessageComment(MessageCommentCollection::iterator iterator)
+{
+    MessageCommentRef result;
+    if (iterator == messageComments_.end())
+    {
+        return result;
+    }
+    result = *iterator;
+    messageComments_.erase(iterator);
+    return result;
+}
+
+MessageCommentRef MessageCommentCollectionBase::deleteMessageCommentById(const IdType& id)
+{
+    return deleteMessageComment(messageComments_.get<MessageCommentCollectionById>().find(id));
+}

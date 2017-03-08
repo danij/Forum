@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EntityDiscussionThreadMessageCollectionBase.h"
+#include "EntityMessageCommentCollectionBase.h"
 #include "EntityDiscussionThreadCollectionBase.h"
 #include "EntityDiscussionTagCollectionBase.h"
 #include "EntityDiscussionCategoryCollectionBase.h"
@@ -18,8 +19,8 @@ namespace Forum
          * Stores references to all entities present in memory
          * Upon deleting an entitie, the collection also removes the entity from any other collection if might have been part of
          */
-        struct EntityCollection : public UserCollectionBase,
-                                  public DiscussionThreadCollectionBase, public DiscussionThreadMessageCollectionBase,
+        struct EntityCollection : public UserCollectionBase, public DiscussionThreadCollectionBase,
+                                  public DiscussionThreadMessageCollectionBase, public MessageCommentCollectionBase,
                                   public DiscussionTagCollectionBase, public DiscussionCategoryCollectionBase
         {
             /**

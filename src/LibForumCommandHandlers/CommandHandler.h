@@ -41,6 +41,7 @@ namespace Forum
             DELETE_DISCUSSION_THREAD,
             MERGE_DISCUSSION_THREADS,
 
+            //discussion thread message related
             ADD_DISCUSSION_THREAD_MESSAGE,
             DELETE_DISCUSSION_THREAD_MESSAGE,
             CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
@@ -57,6 +58,13 @@ namespace Forum
             GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT,
 
             GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED,            
+
+            //message comments related
+            ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE,
+            GET_MESSAGE_COMMENTS,
+            GET_MESSAGE_COMMENTS_OF_MESSAGE,
+            GET_MESSAGE_COMMENTS_OF_USER,
+            SET_MESSAGE_COMMENT_SOLVED,
 
             //discussion tag related
             ADD_DISCUSSION_TAG,

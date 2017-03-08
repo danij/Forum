@@ -4,6 +4,7 @@
 #include "EntityUser.h"
 #include "EntityDiscussionThread.h"
 #include "EntityDiscussionThreadMessage.h"
+#include "EntityMessageComment.h"
 #include "EntityDiscussionTag.h"
 #include "EntityDiscussionCategory.h"
 

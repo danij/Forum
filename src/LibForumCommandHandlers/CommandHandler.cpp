@@ -250,6 +250,35 @@ struct CommandHandler::CommandHandlerImpl
         return readRepository->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
     }
 
+    COMMAND_HANDLER_METHOD( ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        return NO_EFFECT;
+    }
+
+    COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS )
+    {
+        return NO_EFFECT;
+    }
+
+    COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS_OF_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        return NO_EFFECT;
+    }
+
+    COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS_OF_USER )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        return NO_EFFECT;
+    }
+
+    COMMAND_HANDLER_METHOD( SET_MESSAGE_COMMENT_SOLVED )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        return NO_EFFECT;
+    }
+
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
@@ -473,6 +502,13 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
     setHandler(RESET_VOTE_DISCUSSION_THREAD_MESSAGE);
 
     setHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED);
+
+    setHandler(ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE);
+    setHandler(GET_MESSAGE_COMMENTS);
+    setHandler(GET_MESSAGE_COMMENTS_OF_MESSAGE);
+    setHandler(GET_MESSAGE_COMMENTS_OF_USER);
+    setHandler(SET_MESSAGE_COMMENT_SOLVED);
+
 
     setHandler(ADD_DISCUSSION_TAG);
     setHandler(GET_DISCUSSION_TAGS_BY_NAME);
