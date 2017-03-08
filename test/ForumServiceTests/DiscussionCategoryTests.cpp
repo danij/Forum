@@ -388,6 +388,17 @@ BOOST_AUTO_TEST_CASE( Renaming_a_discussion_category_succeeds_only_if_creation_c
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId, "fȏo" }));
 }
 
+BOOST_AUTO_TEST_CASE( Changing_the_display_order_of_discussion_categories_requires_valid_integer_inputs )
+{
+    auto handler = createCommandHandler();
+
+    auto categoryId = createDiscussionCategoryAndGetId(handler, "Parent");
+
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER,
+                                      { categoryId, "abcd" }));
+}
+
 BOOST_AUTO_TEST_CASE( Discussion_categories_are_ordered_ascending_by_their_display_order_relative_to_their_parent )
 {
     auto handler = createCommandHandler();
