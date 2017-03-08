@@ -42,6 +42,16 @@ TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command comman
     return std::get<0>(handlerToObjAndStatus(handler, command, displaySettings));
 }
 
+static auto getSize(std::stringstream& stream)
+{
+    auto pos = stream.tellg();
+
+    stream.seekg(0, std::ios::end);
+    std::streamoff result = stream.tellg();
+
+    stream.seekg(pos, std::ios::beg);
+    return result;
+}
 
 TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& handler, Command command,
                                                           const std::vector<std::string>& parameters)
@@ -50,7 +60,10 @@ TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& han
     auto statusCode = handler->handle(command, parameters, stream);
 
     boost::property_tree::ptree result;
-    boost::property_tree::read_json(stream, result);
+    if (getSize(stream))
+    {
+        boost::property_tree::read_json(stream, result);
+    }
 
     return std::make_tuple(result, statusCode);
 }
