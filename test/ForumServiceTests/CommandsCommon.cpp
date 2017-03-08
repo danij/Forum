@@ -20,19 +20,6 @@ std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
     return std::make_shared<CommandHandler>(memoryRepository, memoryRepository, metricsRepository);
 }
 
-std::string Forum::Helpers::handlerToString(CommandHandlerRef& handler, Command command,
-                                            const std::vector<std::string>& parameters)
-{
-    std::stringstream stream;
-    handler->handle(command, parameters, stream);
-    return stream.str();
-}
-
-std::string Forum::Helpers::handlerToString(CommandHandlerRef& handler, Command command)
-{
-    return handlerToString(handler, command, {});
-}
-
 TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command,
                                       const std::vector<std::string>& parameters)
 {

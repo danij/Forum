@@ -19,10 +19,6 @@ namespace Forum
     {
         Commands::CommandHandlerRef createCommandHandler();
 
-        std::string handlerToString(Commands::CommandHandlerRef& handler, Commands::Command command,
-                                    const std::vector<std::string>& parameters);
-        std::string handlerToString(Commands::CommandHandlerRef& handler, Commands::Command command);
-
         struct DisplaySettings
         {
             int pageNumber = 0;
