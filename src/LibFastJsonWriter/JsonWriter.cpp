@@ -74,7 +74,6 @@ JsonWriter& JsonWriter::endObject()
 
 JsonWriter& JsonWriter::newProperty(const char* name)
 {
-   addCommaIfNeeded();
    writeEscapedString(name);
    _stream << ':';
    _state.top().propertyNameAdded = true;
@@ -83,7 +82,6 @@ JsonWriter& JsonWriter::newProperty(const char* name)
 
 JsonWriter& JsonWriter::newProperty(const string& name)
 {
-   addCommaIfNeeded();
    writeEscapedString(name.c_str(), name.length());
    _stream << ':';
    _state.top().propertyNameAdded = true;
