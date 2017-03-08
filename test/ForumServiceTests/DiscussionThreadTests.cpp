@@ -1599,6 +1599,9 @@ BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_messa
     auto handler = createCommandHandler();
 
     auto userId = createUserAndGetId(handler, "User");
+
+    LoggedInUserChanger __(userId);
+
     auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
     auto messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
 
@@ -2394,11 +2397,11 @@ BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_votes
 
     auto user1Id = createUserAndGetId(handler, "User1");
     auto user2Id = createUserAndGetId(handler, "User2");
-    auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
-    std::string messageId;
+    std::string threadId, messageId;
 
     {
         LoggedInUserChanger _(user1Id);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
         {
             TimestampChanger __(1000);
             messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
