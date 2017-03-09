@@ -15,6 +15,7 @@ MemoryRepository::MemoryRepository() : collection_(std::make_shared<EntityCollec
     validUserNameRegex(boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$")),
     validDiscussionThreadNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
     validDiscussionMessageContentRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
+    validDiscussionMessageCommentRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
     validDiscussionMessageChangeReasonRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
     validDiscussionTagNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
     validDiscussionCategoryNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$"))

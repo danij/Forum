@@ -83,6 +83,11 @@ namespace Forum
             virtual StatusCode getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
                                                                           std::ostream& output) const = 0;
 
+            virtual StatusCode getMessageComments(std::ostream& output) const = 0;
+            virtual StatusCode getMessageCommentsOfDiscussionThreadMessage(const Entities::IdType& id, 
+                                                                           std::ostream& output) const = 0;
+            virtual StatusCode getMessageCommentsOfUser(const Entities::IdType& id,  std::ostream& output) const = 0;
+
             virtual StatusCode getDiscussionTags(std::ostream& output, RetrieveDiscussionTagsBy by) const = 0;
             virtual StatusCode getDiscussionThreadsWithTag(const Entities::IdType& id, std::ostream& output, 
                                                            RetrieveDiscussionThreadsBy by) const = 0;
@@ -129,6 +134,10 @@ namespace Forum
             virtual StatusCode upVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) = 0;
             virtual StatusCode downVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) = 0;
             virtual StatusCode resetVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) = 0;
+
+            virtual StatusCode addCommentToDiscussionThreadMessage(const Entities::IdType& messageId, 
+                                                                   const std::string& content, std::ostream& output) = 0;
+            virtual StatusCode setMessageCommentToSolved(const Entities::IdType& id, std::ostream& output) = 0;
 
             virtual StatusCode addNewDiscussionTag(const std::string& name, std::ostream& output) = 0;
             virtual StatusCode changeDiscussionTagName(const Entities::IdType& id, const std::string& newName,

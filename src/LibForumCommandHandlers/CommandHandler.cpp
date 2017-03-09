@@ -253,30 +253,30 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return NO_EFFECT;
+        return writeRepository->addCommentToDiscussionThreadMessage(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS )
     {
-        return NO_EFFECT;
+        return readRepository->getMessageComments(output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS_OF_MESSAGE )
+    COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS_OF_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return NO_EFFECT;
+        return readRepository->getMessageCommentsOfDiscussionThreadMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS_OF_USER )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return NO_EFFECT;
+        return readRepository->getMessageCommentsOfUser(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( SET_MESSAGE_COMMENT_SOLVED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return NO_EFFECT;
+        return writeRepository->setMessageCommentToSolved(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG )
@@ -505,7 +505,7 @@ CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepository
 
     setHandler(ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE);
     setHandler(GET_MESSAGE_COMMENTS);
-    setHandler(GET_MESSAGE_COMMENTS_OF_MESSAGE);
+    setHandler(GET_MESSAGE_COMMENTS_OF_DISCUSSION_THREAD_MESSAGE);
     setHandler(GET_MESSAGE_COMMENTS_OF_USER);
     setHandler(SET_MESSAGE_COMMENT_SOLVED);
 

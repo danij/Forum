@@ -85,6 +85,40 @@ static StatusCode validateDiscussionMessageContent(const std::string& content, c
     return StatusCode::OK;
 }
 
+
+static StatusCode validateMessageCommentContent(const std::string& content, const boost::u32regex& regex,
+    const ConfigConstRef& config)
+{
+    if (content.empty())
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto nrCharacters = countUTF8Characters(content);
+    if (nrCharacters > config->discussionThreadMessage.maxCommentLength)
+    {
+        return StatusCode::VALUE_TOO_LONG;
+    }
+    if (nrCharacters < config->discussionThreadMessage.minCommentLength)
+    {
+        return StatusCode::VALUE_TOO_SHORT;
+    }
+
+    try
+    {
+        if ( ! boost::u32regex_match(content, regex, boost::match_flag_type::format_all))
+        {
+            return StatusCode::INVALID_PARAMETERS;
+        }
+    }
+    catch (...)
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    return StatusCode::OK;
+}
+
 static StatusCode validateDiscussionMessageChangeReason(const std::string& reason, const boost::u32regex& regex, 
                                                         const ConfigConstRef& config)
 {
@@ -467,4 +501,182 @@ StatusCode MemoryRepository::resetVoteDiscussionThreadMessage(const IdType& id, 
                           writeEvents_.onDiscussionThreadMessageResetVote(createObserverContext(*currentUser), message);
                       });
     return status;
+}
+
+template<typename Collection>
+static void writeMessageComments(const Collection& collection, std::ostream& output)
+{
+    auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesCommentsPerPage;
+    auto& displayContext = Context::getDisplayContext();
+
+    writeEntitiesWithPagination(collection, "message_comments", output, 
+        displayContext.pageNumber, pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, 
+        [](const auto& c) { return c; });
+}
+
+StatusCode MemoryRepository::getMessageComments(std::ostream& output) const
+{
+    auto performedBy = preparePerformedBy();
+
+    collection_.read([&](const EntityCollection& collection)
+    {
+        writeMessageComments(collection.messageCommentsByCreated(), output);
+        readEvents_.onGetMessageComments(createObserverContext(performedBy.get(collection)));
+    });
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepository::getMessageCommentsOfDiscussionThreadMessage(const IdType& id, std::ostream& output) const
+{
+    StatusWriter status(output, StatusCode::OK);
+    auto performedBy = preparePerformedBy();
+
+    if ( ! id)
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+
+    collection_.read([&](const EntityCollection& collection)
+    {
+        const auto& indexById = collection.messagesById();
+        auto it = indexById.find(id);
+        if (it == indexById.end())
+        {
+            status = StatusCode::NOT_FOUND;
+            return;
+        }
+        auto& message = **it;
+
+        BoolTemporaryChanger _(serializationSettings.hideMessageCommentMessage, true);
+
+        writeMessageComments(message.messageCommentsByCreated(), output);
+        readEvents_.onGetMessageCommentsOfMessage(createObserverContext(performedBy.get(collection)), message);
+    });
+    return status;
+}
+
+StatusCode MemoryRepository::getMessageCommentsOfUser(const IdType& id, std::ostream& output) const
+{
+    StatusWriter status(output, StatusCode::OK);
+    auto performedBy = preparePerformedBy();
+
+    if ( ! id)
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+
+    collection_.read([&](const EntityCollection& collection)
+    {
+        const auto& indexById = collection.usersById();
+        auto it = indexById.find(id);
+        if (it == indexById.end())
+        {
+            status = StatusCode::NOT_FOUND;
+            return;
+        }
+        auto& user = **it;
+
+        BoolTemporaryChanger _(serializationSettings.hideMessageCommentUser, true);
+        
+        writeMessageComments(user.messageCommentsByCreated(), output);
+        readEvents_.onGetMessageCommentsOfUser(createObserverContext(performedBy.get(collection)), user);
+    });
+    return status;
+}
+
+StatusCode MemoryRepository::addCommentToDiscussionThreadMessage(const IdType& messageId, const std::string& content,
+                                                                 std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! messageId)
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto validationCode = validateDiscussionMessageContent(content, validDiscussionMessageContentRegex, getGlobalConfig());
+    if (validationCode != StatusCode::OK)
+    {
+        return status = validationCode;
+    }
+    auto performedBy = preparePerformedBy();
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto& messageIndex = collection.messages();
+                          auto messageIt = messageIndex.find(messageId);
+                          if (messageIt == messageIndex.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          const auto& createdBy = performedBy.getAndUpdate(collection);
+
+                          auto comment = std::make_shared<MessageComment>(*createdBy);
+                          comment->id() = generateUUIDString();
+                          comment->content() = content;
+                          updateCreated(*comment);
+
+                          collection.messageComments().insert(comment);
+
+                          collection.modifyDiscussionThreadMessageById((*messageIt)->id(), [&](auto& message)
+                          {
+                              message.messageComments().insert(comment);
+                          });
+
+                          collection.modifyUserById(createdBy->id(), [&](User& user)
+                          {
+                              user.messageComments().insert(comment);
+                          });
+
+                          writeEvents_.onAddCommentToDiscussionThreadMessage(createObserverContext(*createdBy), *comment);
+
+                          status.addExtraSafeName("id", comment->id());
+                          status.addExtraSafeName("messageId", (*messageIt)->id());
+                          status.addExtraSafeName("created", comment->created());
+                      });
+    return status;    
+}
+
+StatusCode MemoryRepository::setMessageCommentToSolved(const IdType& id, std::ostream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! id)
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    if (Context::getCurrentUserId() == AnonymousUserId)
+    {
+        return status = StatusCode::NOT_ALLOWED;
+    }
+    auto performedBy = preparePerformedBy();
+
+    collection_.write([&](EntityCollection& collection)
+                      {
+                          auto currentUser = performedBy.getAndUpdate(collection);
+
+                          auto& indexById = collection.messageComments().get<EntityCollection::MessageCommentCollectionById>();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          auto& comment = **it;
+
+                          if ( ! comment.solved())
+                          {
+                              status = StatusCode::NO_EFFECT;
+                              return;
+                          }
+
+                          comment.solved() = true;
+                          comment.executeActionWithParentMessageIfAvailable([&](DiscussionThreadMessage& message)
+                          {
+                              message.solvedCommentsCount() += 1;
+                          });
+
+                          writeEvents_.onSolveDiscussionThreadMessageComment(createObserverContext(*currentUser), comment);
+                      });
+    return status;    
 }

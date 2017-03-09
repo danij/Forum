@@ -26,17 +26,20 @@ namespace Forum
         {
             typedef int_fast32_t VoteScoreType;
 
-            const std::string&        content()            const { return content_; }
-                  std::string&        content()                  { return content_; }
-            const User&               createdBy()          const { return createdBy_; }
-                  User&               createdBy()                { return createdBy_; }
-            const DiscussionThread&   parentThread()       const { return parentThread_; }
-                  DiscussionThread&   parentThread()             { return parentThread_; }
-
-            auto                      upVotes()            const { return Helpers::toConst(upVotes_); }
-            auto                      downVotes()          const { return Helpers::toConst(downVotes_); }
-            VoteScoreType             voteScore()          const 
+            const std::string&        content()             const { return content_; }
+                  std::string&        content()                   { return content_; }
+            const User&               createdBy()           const { return createdBy_; }
+                  User&               createdBy()                 { return createdBy_; }
+            const DiscussionThread&   parentThread()        const { return parentThread_; }
+                  DiscussionThread&   parentThread()              { return parentThread_; }
+                                                            
+            auto                      upVotes()             const { return Helpers::toConst(upVotes_); }
+            auto                      downVotes()           const { return Helpers::toConst(downVotes_); }
+            VoteScoreType             voteScore()           const 
                 { return static_cast<VoteScoreType>(upVotes_.size()) - static_cast<VoteScoreType>(downVotes_.size()); }
+
+            int_fast32_t              solvedCommentsCount() const { return solvedCommentsCount_; }
+            int_fast32_t&             solvedCommentsCount()       { return solvedCommentsCount_; }
 
             enum ChangeType : uint32_t
             {
@@ -45,7 +48,7 @@ namespace Forum
             };
 
             DiscussionThreadMessage(User& createdBy, DiscussionThread& parentThread)
-                : createdBy_(createdBy), parentThread_(parentThread) {}
+                : createdBy_(createdBy), parentThread_(parentThread), solvedCommentsCount_(0) {}
 
             DiscussionThreadMessage(DiscussionThreadMessage& other, DiscussionThread& newParent)
                 : content_(std::move(other.content_)), createdBy_(other.createdBy_), parentThread_(newParent)
@@ -57,6 +60,7 @@ namespace Forum
                 lastUpdatedDetails() = other.lastUpdatedDetails();
                 lastUpdatedBy() = other.lastUpdatedBy();
                 lastUpdatedReason() = other.lastUpdatedReason();
+                solvedCommentsCount() = other.solvedCommentsCount();
             }
 
             bool hasVoted(const std::weak_ptr<User>& user) const
@@ -87,6 +91,7 @@ namespace Forum
             std::string content_;
             User& createdBy_;
             DiscussionThread& parentThread_;
+            int_fast32_t solvedCommentsCount_;
             //using maps as they use less memory than unordered_maps
             //number of votes/message will usually be small
             std::map<std::weak_ptr<User>, Timestamp, std::owner_less<std::weak_ptr<User>>> upVotes_;

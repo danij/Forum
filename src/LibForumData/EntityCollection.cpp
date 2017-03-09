@@ -68,6 +68,23 @@ UserRef EntityCollection::deleteUser(UserCollection::iterator iterator)
             }
         }
     }
+    //delete all comments of this user
+    {
+        for (auto& commentRef : user->messageComments())
+        {
+            if (commentRef)
+            {
+                commentRef->executeActionWithParentMessageIfAvailable([&](DiscussionThreadMessage& message)
+                {
+                    if (commentRef->solved())
+                    {
+                        message.solvedCommentsCount() -= 1;
+                    }
+                    message.deleteMessageCommentById(commentRef->id());
+                });
+            }
+        }
+    }
     {
         //no need to delete the message from the user as we're deleting the whole user anyway
         BoolTemporaryChanger changer(alsoDeleteMessagesFromUser, false);

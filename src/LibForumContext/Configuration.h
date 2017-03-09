@@ -38,6 +38,9 @@ namespace Forum
             int_fast16_t minChangeReasonLength = 0;
             int_fast16_t maxChangeReasonLength = 64;
             int_fast32_t maxMessagesPerPage = 20;
+            int_fast16_t minCommentLength = 3;
+            int_fast16_t maxCommentLength = 1024;
+            int_fast32_t maxMessagesCommentsPerPage = 20;
         };
 
         struct DiscussionTagConfig

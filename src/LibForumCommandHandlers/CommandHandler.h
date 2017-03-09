@@ -62,7 +62,7 @@ namespace Forum
             //message comments related
             ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE,
             GET_MESSAGE_COMMENTS,
-            GET_MESSAGE_COMMENTS_OF_MESSAGE,
+            GET_MESSAGE_COMMENTS_OF_DISCUSSION_THREAD_MESSAGE,
             GET_MESSAGE_COMMENTS_OF_USER,
             SET_MESSAGE_COMMENT_SOLVED,
 

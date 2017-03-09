@@ -10,6 +10,7 @@ namespace Json
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::IdType& id);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::User& user);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionThreadMessage& thread);
+    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::MessageComment& messageComment);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionThread& thread);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionTag& tag);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionCategory& category);
@@ -25,6 +26,9 @@ namespace Forum
             bool hideDiscussionThreadMessages = false;
             bool hideDiscussionThreadMessageCreatedBy = false;
             bool hideDiscussionThreadMessageParentThread = false;
+
+            bool hideMessageCommentMessage = false;
+            bool hideMessageCommentUser = false;
 
             bool hideVisitedThreadSinceLastChange = false;
             bool visitedThreadSinceLastChange = false;

@@ -77,7 +77,9 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& 
         << objStart
             << propertySafeName("id", message.id())
             << propertySafeName("content", message.content())
-            << propertySafeName("created", message.created());
+            << propertySafeName("created", message.created())
+            << propertySafeName("commentsCount", message.messageCommentCount())
+            << propertySafeName("solvedCommentsCount", message.solvedCommentsCount());
 
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
     {
@@ -135,6 +137,33 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadCollect
     {
         writeLatestMessage(writer, **messageIndex.rbegin());
     }
+}
+
+JsonWriter& Json::operator<<(JsonWriter& writer, const MessageComment& comment)
+{
+    writer
+        << objStart
+        << propertySafeName("id", comment.id())
+        << propertySafeName("content", comment.content())
+        << propertySafeName("created", comment.created())
+        << propertySafeName("solved", comment.solved());
+
+    writeVisitDetails(writer, comment.creationDetails());
+
+    if ( ! serializationSettings.hideMessageCommentMessage)
+    {
+        comment.executeActionWithParentMessageIfAvailable([&](const DiscussionThreadMessage& message)
+        {
+            writer << propertySafeName("message", message);
+        });
+    }
+    if ( ! serializationSettings.hideMessageCommentUser)
+    {
+        writer << propertySafeName("createdBy", comment.createdBy());
+    }
+
+    writer << objEnd;
+    return writer;
 }
 
 JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)

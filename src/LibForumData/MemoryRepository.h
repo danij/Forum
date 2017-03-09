@@ -97,6 +97,14 @@ namespace Forum
             virtual StatusCode downVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
             virtual StatusCode resetVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
 
+            virtual StatusCode addCommentToDiscussionThreadMessage(const Entities::IdType& messageId, 
+                                                                   const std::string& content, std::ostream& output) override;
+            virtual StatusCode getMessageComments(std::ostream& output) const override;
+            virtual StatusCode getMessageCommentsOfDiscussionThreadMessage(const Entities::IdType& id, 
+                                                                           std::ostream& output) const override;
+            virtual StatusCode getMessageCommentsOfUser(const Entities::IdType& id, std::ostream& output) const override;
+            virtual StatusCode setMessageCommentToSolved(const Entities::IdType& id, std::ostream& output) override;
+
             virtual StatusCode getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
                                                                           std::ostream& output) const override;
 
@@ -183,6 +191,7 @@ namespace Forum
             boost::u32regex validUserNameRegex;
             boost::u32regex validDiscussionThreadNameRegex;
             boost::u32regex validDiscussionMessageContentRegex;
+            boost::u32regex validDiscussionMessageCommentRegex;
             boost::u32regex validDiscussionMessageChangeReasonRegex;
             boost::u32regex validDiscussionTagNameRegex;
             boost::u32regex validDiscussionCategoryNameRegex;

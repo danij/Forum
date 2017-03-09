@@ -42,6 +42,11 @@ namespace Forum
 
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetDiscussionThreadMessagesOfUser;
 
+            boost::signals2::signal<void(ObserverContext)> onGetMessageComments;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&)> 
+                                                          onGetMessageCommentsOfMessage;
+            boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetMessageCommentsOfUser;
+
             boost::signals2::signal<void(ObserverContext)> onGetDiscussionTags;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onGetDiscussionThreadsWithTag;
 
@@ -81,13 +86,9 @@ namespace Forum
                                          onDiscussionThreadMessageResetVote;
 
             boost::signals2::signal<void(ObserverContext, const Entities::MessageComment&)>
-                                         onMessageCommentAdded;
+                                         onAddCommentToDiscussionThreadMessage;
             boost::signals2::signal<void(ObserverContext, const Entities::MessageComment&)>
-                                         onMessageCommentSolved;
-            boost::signals2::signal<void(ObserverContext)> onRetrieveMessageComments;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&)>
-                                         onRetrieveMessageCommentsOfMessage;
-
+                                         onSolveDiscussionThreadMessageComment;
 
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onAddNewDiscussionTag;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&, 

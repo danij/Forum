@@ -20,7 +20,6 @@ namespace Forum
          */
         struct MessageComment final : public Identifiable, public CreatedMixin, private boost::noncopyable
         {
-
             const std::string&                      content()       const { return content_; }
                   std::string&                      content()             { return content_; }
             const User&                             createdBy()     const { return createdBy_; }
@@ -36,7 +35,17 @@ namespace Forum
                 auto parentMessageShared = parentMessage_.lock();
                 if (parentMessageShared)
                 {
-                    action(parentMessageShared);
+                    action(const_cast<const DiscussionThreadMessage&>(*parentMessageShared));
+                }
+            }
+
+            template<typename TAction>
+            void executeActionWithParentMessageIfAvailable(TAction&& action)
+            {
+                auto parentMessageShared = parentMessage_.lock();
+                if (parentMessageShared)
+                {
+                    action(*parentMessageShared);
                 }
             }
 
