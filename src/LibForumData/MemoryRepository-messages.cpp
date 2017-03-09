@@ -363,7 +363,7 @@ StatusCode MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId
                               threadRef->resetVisitorsSinceLastEdit();
                               threadRef->latestVisibleChange() = Context::getCurrentTime();
 
-                              auto increment = insert ? 1 : -1;
+                              int_fast32_t increment = insert ? 1 : -1;
 
                               for (auto& tagWeak : threadRef->tagsWeak())
                               {

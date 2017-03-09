@@ -399,7 +399,7 @@ StatusCode MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const 
                         //make sure the thread is not deleted before being passed to the observers
                         writeEvents_.onMergeDiscussionThreads(createObserverContext(*user), threadFrom, threadInto);
 
-                        auto updateMessageCounts = [&collection](DiscussionThreadRef& threadRef, int difference)
+                        auto updateMessageCounts = [&collection](DiscussionThreadRef& threadRef, int_fast32_t difference)
                         {
                             for (auto& tagWeak : threadRef->tagsWeak())
                             {
@@ -441,8 +441,8 @@ StatusCode MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const 
                                 thread.messages().insert(message);
                             }
 
-                            updateMessageCounts(threadFromRef, - threadFrom.messages().size());
-                            updateMessageCounts(threadIntoRef,   threadFrom.messages().size());
+                            updateMessageCounts(threadFromRef, - static_cast<int_fast32_t>(threadFrom.messages().size()));
+                            updateMessageCounts(threadIntoRef,   static_cast<int_fast32_t>(threadFrom.messages().size()));
 
                             //remove all message references from the thread so they don't get deleted
                             threadFrom.messages().clear();
