@@ -27,23 +27,23 @@ StatusCode MemoryRepository::getUsers(std::ostream& output, RetrieveUsersBy by) 
         {
         case RetrieveUsersBy::Name:
             writeEntitiesWithPagination(collection.usersByName(), "users", output, displayContext.pageNumber, 
-                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](auto u) { return u; });
+                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& u) { return u; });
             break;
         case RetrieveUsersBy::Created:
             writeEntitiesWithPagination(collection.usersByCreated(), "users", output, displayContext.pageNumber, 
-                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](auto u) { return u; });
+                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& u) { return u; });
             break;
         case RetrieveUsersBy::LastSeen:
             writeEntitiesWithPagination(collection.usersByLastSeen(), "users", output, displayContext.pageNumber, 
-                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](auto u) { return u; });
+                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& u) { return u; });
             break;
         case RetrieveUsersBy::ThreadCount:
             writeEntitiesWithPagination(collection.usersByThreadCount(), "users", output, displayContext.pageNumber, 
-                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](auto u) { return u; });
+                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& u) { return u; });
             break;
         case RetrieveUsersBy::MessageCount:
             writeEntitiesWithPagination(collection.usersByMessageCount(), "users", output, displayContext.pageNumber, 
-                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](auto u) { return u; });
+                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& u) { return u; });
             break;
         }
 

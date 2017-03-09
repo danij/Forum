@@ -195,7 +195,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
         auto& displayContext = Context::getDisplayContext();
 
         writeEntitiesWithPagination(messagesIndex, "messages", writer, displayContext.pageNumber, pageSize, true, 
-                                    [](auto m) { return m; });
+                                    [](const auto& m) { return m; });
     }
     if ( ! serializationSettings.hideVisitedThreadSinceLastChange)
     {

@@ -44,7 +44,7 @@ StatusCode MemoryRepository::getDiscussionThreadMessagesOfUserByCreated(const Id
 
         status.disable();
         writeEntitiesWithPagination(messages, "messages", output, displayContext.pageNumber, pageSize,
-            displayContext.sortOrder == Context::SortOrder::Ascending, [](auto m) { return m; });
+            displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& m) { return m; });
 
         readEvents_.onGetDiscussionThreadMessagesOfUser(createObserverContext(performedBy.get(collection)), **it);
     });
