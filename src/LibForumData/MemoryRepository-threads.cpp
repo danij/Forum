@@ -374,8 +374,6 @@ StatusCode MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const 
 
     auto performedBy = preparePerformedBy();
 
-    std::map<IdType, std::vector<DiscussionThreadMessageRef>> messageClonesToAdd;
-
     collection_.write([&](EntityCollection& collection)
                     {
                         auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
@@ -393,12 +391,43 @@ StatusCode MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const 
                         }
 
                         auto user = performedBy.getAndUpdate(collection);
-                        auto& threadFromRef = *itFrom;
+                        auto threadFromRef = *itFrom;
                         auto& threadFrom = **itFrom;
+                        auto threadIntoRef = *itInto;
                         auto& threadInto = **itInto;
 
                         //make sure the thread is not deleted before being passed to the observers
                         writeEvents_.onMergeDiscussionThreads(createObserverContext(*user), threadFrom, threadInto);
+
+                        auto updateMessageCounts = [&collection](DiscussionThreadRef& threadRef, int difference)
+                        {
+                            for (auto& tagWeak : threadRef->tagsWeak())
+                            {
+                                if (auto tagShared = tagWeak.lock())
+                                {
+                                    collection.modifyDiscussionTagById(tagShared->id(), [&threadRef, difference](auto& tag)
+                                    {
+                                        tag.messageCount() += difference;
+                                        //notify the thread collection of each tag that the thread has new messages
+                                        tag.modifyDiscussionThreadById(threadRef->id(), [](auto& _) {});
+                                    });
+                                }
+                            }
+                            for (auto& categoryWeak : threadRef->categoriesWeak())
+                            {
+                                if (auto categoryShared = categoryWeak.lock())
+                                {
+                                    collection.modifyDiscussionCategoryById(categoryShared->id(),
+                                        [&threadRef, difference](auto& category)
+                                    {
+                                        category.updateMessageCount(threadRef, difference);
+                                        //notify the thread collection of each category that the thread has new messages
+                                        category.modifyDiscussionThreadById(threadRef->id(), [](auto& _) {});
+                                    });
+                                }
+                            }
+
+                        };
 
                         collection.modifyDiscussionThread(itInto, [&](DiscussionThread& thread)
                         {
@@ -409,54 +438,17 @@ StatusCode MemoryRepository::mergeDiscussionThreads(const IdType& fromId, const 
                             {
                                 auto& createdBy = message->createdBy();
 
-                                auto messageClone = std::make_shared<DiscussionThreadMessage>(*message, threadInto);
+                                thread.messages().insert(message);
+                            }
 
-                                collection.messages().insert(messageClone);
-                                thread.messages().insert(messageClone);
+                            updateMessageCounts(threadFromRef, - threadFrom.messages().size());
+                            updateMessageCounts(threadIntoRef,   threadFrom.messages().size());
 
-                                messageClonesToAdd[createdBy.id()].push_back(messageClone);
-                            }
-                            for (auto& tagWeak : thread.tagsWeak())
-                            {
-                                if (auto tagShared = tagWeak.lock())
-                                {
-                                    collection.modifyDiscussionTagById(tagShared->id(), [&threadFrom, &thread](auto& tag)
-                                    {
-                                        tag.messageCount() += threadFrom.messages().size();
-                                        //notify the thread collection of each tag that the thread has new messages
-                                        tag.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
-                                    });
-                                }
-                            }
-                            for (auto& categoryWeak : thread.categoriesWeak())
-                            {
-                                if (auto categoryShared = categoryWeak.lock())
-                                {
-                                    collection.modifyDiscussionCategoryById(categoryShared->id(), 
-                                        [&threadFrom, &threadFromRef, &thread](auto& category)
-                                    {
-                                        category.updateMessageCount(threadFromRef, threadFrom.messages().size());
-                                        //notify the thread collection of each category that the thread has new messages
-                                        category.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
-                                    });
-                                }
-                            }
+                            //remove all message references from the thread so they don't get deleted
+                            threadFrom.messages().clear();
                         });
                         //this will also decrease the message count on the tags the thread was part of
                         collection.deleteDiscussionThread(itFrom);
-
-                        //add message clones to the messages collection of their users
-                        //could not add them before deleting the thread because the old messages where already present
-                        for (auto& pair : messageClonesToAdd)
-                        {
-                            collection.modifyUserById(pair.first, [&](User& createdByUser)
-                            {
-                                for (auto& message : pair.second)
-                                {
-                                    createdByUser.messages().insert(message);
-                                }
-                            });
-                        }
                     });
     return status;
 }

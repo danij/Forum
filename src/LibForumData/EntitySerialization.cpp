@@ -87,7 +87,10 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& 
     }
     if ( ! serializationSettings.hideDiscussionThreadMessageParentThread)
     {
-        writer << propertySafeName("parentThread", message.parentThread());
+        message.executeActionWithParentThreadIfAvailable([&writer](auto& parentThread)
+        {
+            writer << propertySafeName("parentThread", parentThread);
+        });
     }
 
     if (message.lastUpdated())

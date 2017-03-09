@@ -3,8 +3,6 @@
 #include "EntityCommonTypes.h"
 #include "EntityMessageCommentCollectionBase.h"
 
-#include <boost/noncopyable.hpp>
-
 #include <memory>
 #include <string>
 #include <map>
@@ -30,8 +28,6 @@ namespace Forum
                   std::string&        content()                   { return content_; }
             const User&               createdBy()           const { return createdBy_; }
                   User&               createdBy()                 { return createdBy_; }
-            const DiscussionThread&   parentThread()        const { return parentThread_; }
-                  DiscussionThread&   parentThread()              { return parentThread_; }
                                                             
             auto                      upVotes()             const { return Helpers::toConst(upVotes_); }
             auto                      downVotes()           const { return Helpers::toConst(downVotes_); }
@@ -41,27 +37,33 @@ namespace Forum
             int_fast32_t              solvedCommentsCount() const { return solvedCommentsCount_; }
             int_fast32_t&             solvedCommentsCount()       { return solvedCommentsCount_; }
 
+            std::weak_ptr<DiscussionThread>& parentThread()       { return parentThread_; }
+
+            template<typename TAction>
+            void executeActionWithParentThreadIfAvailable(TAction&& action) const
+            {
+                if (auto parentThreadShared = parentThread_.lock())
+                {
+                    action(const_cast<const DiscussionThread&>(*parentThreadShared));
+                }
+            }
+
+            template<typename TAction>
+            void executeActionWithParentThreadIfAvailable(TAction&& action)
+            {
+                if (auto parentMessageThread = parentThread_.lock())
+                {
+                    action(*parentMessageThread);
+                }
+            }
+
             enum ChangeType : uint32_t
             {
                 None = 0,
                 Content
             };
 
-            DiscussionThreadMessage(User& createdBy, DiscussionThread& parentThread)
-                : createdBy_(createdBy), parentThread_(parentThread), solvedCommentsCount_(0) {}
-
-            DiscussionThreadMessage(DiscussionThreadMessage& other, DiscussionThread& newParent)
-                : content_(std::move(other.content_)), createdBy_(other.createdBy_), parentThread_(newParent)
-            {
-                id() = other.id();
-                created() = other.created();
-                creationDetails() = other.creationDetails();
-                lastUpdated() = other.lastUpdated();
-                lastUpdatedDetails() = other.lastUpdatedDetails();
-                lastUpdatedBy() = other.lastUpdatedBy();
-                lastUpdatedReason() = other.lastUpdatedReason();
-                solvedCommentsCount() = other.solvedCommentsCount();
-            }
+            DiscussionThreadMessage(User& createdBy) : createdBy_(createdBy), solvedCommentsCount_(0) {}
 
             bool hasVoted(const std::weak_ptr<User>& user) const
             {
@@ -90,7 +92,7 @@ namespace Forum
         private:
             std::string content_;
             User& createdBy_;
-            DiscussionThread& parentThread_;
+            std::weak_ptr<DiscussionThread> parentThread_;
             int_fast32_t solvedCommentsCount_;
             //using maps as they use less memory than unordered_maps
             //number of votes/message will usually be small

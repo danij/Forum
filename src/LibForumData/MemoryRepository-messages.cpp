@@ -181,8 +181,9 @@ StatusCode MemoryRepository::addNewDiscussionMessageInThread(const IdType& threa
 
                           const auto& createdBy = performedBy.getAndUpdate(collection);
 
-                          auto message = std::make_shared<DiscussionThreadMessage>(*createdBy, **threadIt);
+                          auto message = std::make_shared<DiscussionThreadMessage>(*createdBy);
                           message->id() = generateUUIDString();
+                          message->parentThread() = *threadIt;
                           message->content() = content;
                           updateCreated(*message);
 
@@ -301,8 +302,11 @@ StatusCode MemoryRepository::changeDiscussionThreadMessageContent(const IdType& 
                               {
                                   message.lastUpdatedBy() = performedByPtr;
                               }
-                              message.parentThread().resetVisitorsSinceLastEdit();
-                              message.parentThread().latestVisibleChange() = message.lastUpdated();
+                              message.executeActionWithParentThreadIfAvailable([&](auto& thread)
+                              {
+                                  thread.resetVisitorsSinceLastEdit();
+                                  thread.latestVisibleChange() = message.lastUpdated();
+                              });
                           });
                           writeEvents_.onChangeDiscussionThreadMessage(createObserverContext(*performedByPtr), **it,
                                   DiscussionThreadMessage::ChangeType::Content);
@@ -337,11 +341,11 @@ StatusCode MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId
                               return;
                           }
 
-                          auto& message = **messageIt;
-                          auto& threadIntoRef = *itInto;
-                          auto& threadInto = **itInto;
-                    
-                          if (&(message.parentThread()) == &threadInto)
+                          auto messageRef = *messageIt;
+                          auto threadIntoRef = *itInto;
+                          auto threadFromRef = messageRef->parentThread().lock();
+
+                          if (threadFromRef == threadIntoRef)
                           {
                               status = StatusCode::NO_EFFECT;
                               return;
@@ -349,46 +353,57 @@ StatusCode MemoryRepository::moveDiscussionThreadMessage(const IdType& messageId
                     
                           //make sure the message is not deleted before being passed to the observers
                           writeEvents_.onMoveDiscussionThreadMessage(
-                                  createObserverContext(*performedBy.getAndUpdate(collection)), message, threadInto);
+                              createObserverContext(*performedBy.getAndUpdate(collection)), 
+                                                    *messageRef, *threadIntoRef);
                     
-                          auto& createdBy = message.createdBy();
-                    
-                          auto messageClone = std::make_shared<DiscussionThreadMessage>(message, threadInto);
-                                              
-                          collection.messages().insert(messageClone);
-                          collection.modifyDiscussionThread(itInto, [&collection, &messageClone, &threadIntoRef]
-                            (DiscussionThread& thread)
+                          auto& createdBy = messageRef->createdBy();
+                         
+                          auto threadUpdateFn = [&collection](DiscussionThreadRef& threadRef, bool insert)
                           {
-                              thread.messages().insert(messageClone);
-                              thread.resetVisitorsSinceLastEdit();
-                              thread.latestVisibleChange() = Context::getCurrentTime();
+                              threadRef->resetVisitorsSinceLastEdit();
+                              threadRef->latestVisibleChange() = Context::getCurrentTime();
 
-                              for (auto& tagWeak : thread.tagsWeak())
+                              auto increment = insert ? 1 : -1;
+
+                              for (auto& tagWeak : threadRef->tagsWeak())
                               {
                                   if (auto tagShared = tagWeak.lock())
                                   {
-                                      collection.modifyDiscussionTagById(tagShared->id(), [](auto& tag)
+                                      collection.modifyDiscussionTagById(tagShared->id(), [increment](auto& tag)
                                       {
-                                          tag.messageCount() += 1;
+                                          tag.messageCount() += increment;
                                       });
                                   }
-                              }                          
-                              for (auto& categoryWeak : thread.categoriesWeak())
+                              }
+                              for (auto& categoryWeak : threadRef->categoriesWeak())
                               {
                                   if (auto categoryShared = categoryWeak.lock())
                                   {
                                       collection.modifyDiscussionCategoryById(categoryShared->id(), 
-                                          [&threadIntoRef](auto& category)
+                                          [&](auto& category)
                                       {
-                                          category.updateMessageCount(threadIntoRef, 1);
+                                          category.updateMessageCount(threadRef, increment);
                                       });
                                   }
-                              }
+                              }                              
+                          };
+
+                          collection.modifyDiscussionThread(itInto, [&collection, &messageRef, &threadUpdateFn]
+                              (DiscussionThread& thread)
+                          {
+                              thread.messages().insert(messageRef);
+                              threadUpdateFn(thread.shared_from_this(), true);
                           });
-                    
-                          createdBy.messages().insert(messageClone);
-                          //this will also decrease the message count of all tags part of the thread the message is moved from
-                          collection.deleteDiscussionThreadMessage(messageIt);
+
+                          if (threadFromRef)
+                          {
+                              collection.modifyDiscussionThreadById(threadFromRef->id(), 
+                                  [&collection, &messageRef, &threadUpdateFn](DiscussionThread& thread)
+                              {
+                                  thread.deleteDiscussionThreadMessageById(messageRef->id());
+                                  threadUpdateFn(thread.shared_from_this(), true);
+                              });                              
+                          }
                       });
     return status;
 }

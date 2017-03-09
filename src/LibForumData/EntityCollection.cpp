@@ -258,7 +258,10 @@ void EntityCollection::modifyDiscussionThreadMessage(DiscussionThreadMessageColl
             //allow reindexing of the subcollection containing only the messages of the current user
             message->createdBy().modifyDiscussionThreadMessageById(message->id(), [&modifyFunction](auto& messageToModify)
             {
-                messageToModify.parentThread().modifyDiscussionThreadMessageById(messageToModify.id(), modifyFunction);
+                messageToModify.executeActionWithParentThreadIfAvailable([&](auto& parentThread)
+                {
+                    parentThread.modifyDiscussionThreadMessageById(messageToModify.id(), modifyFunction);
+                });
             });
         }
     });
@@ -296,42 +299,45 @@ DiscussionThreadMessageRef EntityCollection::deleteDiscussionThreadMessage(Discu
             user.deleteDiscussionThreadMessageById(message->id());
         });
     }
-    if ( ! message->parentThread().aboutToBeDeleted())
-    {
-        modifyDiscussionThreadById(message->parentThread().id(),
-                                   [&](DiscussionThread& thread)
-        {
-            thread.deleteDiscussionThreadMessageById(message->id());
-            thread.resetVisitorsSinceLastEdit();
-            thread.latestVisibleChange() = Context::getCurrentTime();
 
-            for (auto& tagWeak : thread.tagsWeak())
+    message->executeActionWithParentThreadIfAvailable([&](auto& parentThread)
+    {
+        if ( ! parentThread.aboutToBeDeleted())
+        {
+            modifyDiscussionThreadById(parentThread.id(), [&](DiscussionThread& thread)
             {
-                if (auto tagShared = tagWeak.lock())
+                thread.deleteDiscussionThreadMessageById(message->id());
+                thread.resetVisitorsSinceLastEdit();
+                thread.latestVisibleChange() = Context::getCurrentTime();
+
+                for (auto& tagWeak : thread.tagsWeak())
                 {
-                    modifyDiscussionTagById(tagShared->id(), [&thread](auto& tag)
+                    if (auto tagShared = tagWeak.lock())
                     {
-                        tag.messageCount() -= 1;
-                        //notify the thread collection of each tag that the thread has fewer messages
-                        tag.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
-                    });
+                        modifyDiscussionTagById(tagShared->id(), [&thread](auto& tag)
+                        {
+                            tag.messageCount() -= 1;
+                            //notify the thread collection of each tag that the thread has fewer messages
+                            tag.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
+                        });
+                    }
                 }
-            }
-            for (auto& categoryWeak : thread.categoriesWeak())
-            {
-                if (auto categoryShared = categoryWeak.lock())
+                for (auto& categoryWeak : thread.categoriesWeak())
                 {
-                    auto threadShared = thread.shared_from_this();
-                    modifyDiscussionCategoryById(categoryShared->id(), [&thread, &threadShared](auto& category)
+                    if (auto categoryShared = categoryWeak.lock())
                     {
-                        category.updateMessageCount(threadShared, -1);
-                        //notify the thread collection of each category that the thread has fewer messages
-                        category.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
-                    });
+                        auto threadShared = thread.shared_from_this();
+                        modifyDiscussionCategoryById(categoryShared->id(), [&thread, &threadShared](auto& category)
+                        {
+                            category.updateMessageCount(threadShared, -1);
+                            //notify the thread collection of each category that the thread has fewer messages
+                            category.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
+                        });
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
+    });
     return message;
 }
 
