@@ -2,7 +2,6 @@
 
 #include "ConstCollectionAdapter.h"
 #include "EntityDiscussionThreadMessage.h"
-#include "StringHelpers.h"
 #include "TypeHelpers.h"
 
 #include <boost/noncopyable.hpp>
