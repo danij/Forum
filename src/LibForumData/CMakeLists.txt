@@ -9,15 +9,16 @@ find_package(ICU)
 
 set(SOURCE_FILES RandomGenerator.cpp EntitySerialization.cpp StringHelpers.cpp EntityCollection.cpp UuidString.cpp 
         EntityDiscussionThread.cpp EntityDiscussionCategory.cpp EntityDiscussionTag.cpp
-        MemoryRepository-main.cpp MemoryRepository-users.cpp MemoryRepository-threads.cpp 
-        MemoryRepository-messages.cpp MemoryRepository-tags.cpp MemoryRepository-categories.cpp)
-set(HEADER_FILES Entities.h MemoryRepository.h Repository.h ResourceGuard.h OutputHelpers.h
-        ConstCollectionAdapter.h StringHelpers.h RandomGenerator.h
-        EntitySerialization.h EntityCollection.h Observers.h EntityCommonTypes.h UuidString.h
+        MemoryRepositoryCommon.cpp MemoryRepositoryUser.cpp MemoryRepositoryDiscussionThread.cpp MemoryRepositoryStatistics.cpp
+        MemoryRepositoryDiscussionThreadMessage.cpp MemoryRepositoryDiscussionTag.cpp MemoryRepositoryDiscussionCategory.cpp)
+set(HEADER_FILES Entities.h Repository.h ResourceGuard.h OutputHelpers.h ConstCollectionAdapter.h StringHelpers.h
+        RandomGenerator.h EntitySerialization.h EntityCollection.h Observers.h EntityCommonTypes.h UuidString.h        
         TypeHelpers.h EntityDiscussionThreadCollectionBase.h EntityDiscussionThread.h EntityUser.h StateHelpers.h
         EntityDiscussionThreadMessage.h EntityDiscussionThreadMessageCollectionBase.h EntityUserCollectionBase.h
         EntityDiscussionTag.h EntityDiscussionTagCollectionBase.h EntityDiscussionCategoryCollectionBase.h
-        EntityDiscussionThreadRefCountedCollection.h EntityMessageComment.h EntityMessageCommentCollectionBase.h)
+        EntityDiscussionThreadRefCountedCollection.h EntityMessageComment.h EntityMessageCommentCollectionBase.h
+        MemoryRepositoryCommon.h MemoryRepositoryUser.h MemoryRepositoryDiscussionThread.h MemoryRepositoryStatistics.h
+        MemoryRepositoryDiscussionThreadMessage.h MemoryRepositoryDiscussionTag.h MemoryRepositoryDiscussionCategory.h)
 
 include_directories(. ../. ../LibFastJsonWriter ../LibForumContext ${Boost_INCLUDE_DIRS})
 

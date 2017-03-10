@@ -79,8 +79,8 @@ namespace Forum
         private:
             DiscussionTag::NotifyChangeActionType notifyTagChange_;
             DiscussionCategory::NotifyChangeActionType notifyCategoryChange_;
-
         };
+        typedef std::shared_ptr<EntityCollection> EntityCollectionRef;
 
         extern const UserRef AnonymousUser;
         extern const IdType AnonymousUserId;

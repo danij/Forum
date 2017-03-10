@@ -1,6 +1,12 @@
 #include "CommandsCommon.h"
 
-#include "MemoryRepository.h"
+#include "MemoryRepositoryCommon.h"
+#include "MemoryRepositoryUser.h"
+#include "MemoryRepositoryDiscussionThread.h"
+#include "MemoryRepositoryDiscussionThreadMessage.h"
+#include "MemoryRepositoryDiscussionTag.h"
+#include "MemoryRepositoryDiscussionCategory.h"
+#include "MemoryRepositoryStatistics.h"
 #include "MetricsRepository.h"
 #include "TestHelpers.h"
 
@@ -15,9 +21,20 @@ using namespace Forum::Helpers;
 
 std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
 {
-    auto memoryRepository = std::make_shared<MemoryRepository>();
+    auto store = std::make_shared<MemoryStore>(std::make_shared<Entities::EntityCollection>());
+    auto userRepository = std::make_shared<MemoryRepositoryUser>(store);
+    auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store);
+    auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store);
+    auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store);
+    auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store);
+    auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store);
     auto metricsRepository = std::make_shared<MetricsRepository>();
-    return std::make_shared<CommandHandler>(memoryRepository, memoryRepository, metricsRepository);
+
+    ObservableRepositoryRef observableRepository = userRepository;
+
+    return std::make_shared<CommandHandler>(observableRepository, userRepository, discussionThreadRepository, 
+        discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository, 
+        statisticsRepository, metricsRepository);
 }
 
 TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command,

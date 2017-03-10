@@ -60,25 +60,57 @@ namespace Forum
          * if needed, without parsing the output 
          */
         
-        class IReadRepository
+        class IUserRepository
         {
         public:
-            DECLARE_INTERFACE_MANDATORY(IReadRepository);
-
-            virtual ReadEvents& readEvents() = 0;
-
-            virtual StatusCode getEntitiesCount(std::ostream& output) const = 0;
+            DECLARE_INTERFACE_MANDATORY(IUserRepository);
 
             virtual StatusCode getUsers(std::ostream& output, RetrieveUsersBy by) const = 0;
 
             virtual StatusCode getUserById(const Entities::IdType& id, std::ostream& output) const = 0;
             virtual StatusCode getUserByName(const std::string& name, std::ostream& output) const = 0;
 
+            virtual StatusCode addNewUser(const std::string& name, std::ostream& output) = 0;
+            virtual StatusCode changeUserName(const Entities::IdType& id, const std::string& newName,
+                                              std::ostream& output) = 0;
+            virtual StatusCode changeUserInfo(const Entities::IdType& id, const std::string& newInfo,
+                                              std::ostream& output) = 0;
+            virtual StatusCode deleteUser(const Entities::IdType& id, std::ostream& output) = 0;
+        };
+        typedef std::shared_ptr<IUserRepository> UserRepositoryRef;
+
+
+        class IDiscussionThreadRepository
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IDiscussionThreadRepository);
+
             virtual StatusCode getDiscussionThreads(std::ostream& output, RetrieveDiscussionThreadsBy by) const = 0;
             virtual StatusCode getDiscussionThreadById(const Entities::IdType& id, std::ostream& output) = 0;
 
             virtual StatusCode getDiscussionThreadsOfUser(const Entities::IdType& id, std::ostream& output, 
                                                           RetrieveDiscussionThreadsBy by) const = 0;
+
+            virtual StatusCode getDiscussionThreadsWithTag(const Entities::IdType& id, std::ostream& output,
+                                                           RetrieveDiscussionThreadsBy by) const = 0;
+
+            virtual StatusCode getDiscussionThreadsOfCategory(const Entities::IdType& id, std::ostream& output,
+                                                              RetrieveDiscussionThreadsBy by) const = 0;
+
+            virtual StatusCode addNewDiscussionThread(const std::string& name, std::ostream& output) = 0;
+            virtual StatusCode changeDiscussionThreadName(const Entities::IdType& id, const std::string& newName,
+                                                          std::ostream& output) = 0;
+            virtual StatusCode deleteDiscussionThread(const Entities::IdType& id, std::ostream& output) = 0;
+            virtual StatusCode mergeDiscussionThreads(const Entities::IdType& fromId, const Entities::IdType& intoId,
+                                                      std::ostream& output) = 0;
+        };
+        typedef std::shared_ptr<IDiscussionThreadRepository> DiscussionThreadRepositoryRef;
+
+
+        class IDiscussionThreadMessageRepository
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IDiscussionThreadMessageRepository)
 
             virtual StatusCode getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
                                                                           std::ostream& output) const = 0;
@@ -87,42 +119,6 @@ namespace Forum
             virtual StatusCode getMessageCommentsOfDiscussionThreadMessage(const Entities::IdType& id, 
                                                                            std::ostream& output) const = 0;
             virtual StatusCode getMessageCommentsOfUser(const Entities::IdType& id,  std::ostream& output) const = 0;
-
-            virtual StatusCode getDiscussionTags(std::ostream& output, RetrieveDiscussionTagsBy by) const = 0;
-            virtual StatusCode getDiscussionThreadsWithTag(const Entities::IdType& id, std::ostream& output, 
-                                                           RetrieveDiscussionThreadsBy by) const = 0;
-
-            virtual StatusCode getDiscussionCategoryById(const Entities::IdType& id, std::ostream& output) const = 0;
-            virtual StatusCode getDiscussionCategories(std::ostream& output, RetrieveDiscussionCategoriesBy by) const = 0;
-            virtual StatusCode getDiscussionCategoriesFromRoot(std::ostream& output) const = 0;
-
-            virtual StatusCode getDiscussionThreadsOfCategory(const Entities::IdType& id, std::ostream& output, 
-                                                              RetrieveDiscussionThreadsBy by) const = 0;
-
-        };
-
-        typedef std::shared_ptr<IReadRepository> ReadRepositoryRef;
-
-        class IWriteRepository
-        {
-        public:
-            DECLARE_INTERFACE_MANDATORY(IWriteRepository);
-
-            virtual WriteEvents& writeEvents() = 0;
-
-            virtual StatusCode addNewUser(const std::string& name, std::ostream& output) = 0;
-            virtual StatusCode changeUserName(const Entities::IdType& id, const std::string& newName,
-                                              std::ostream& output) = 0;
-            virtual StatusCode changeUserInfo(const Entities::IdType& id, const std::string& newInfo,
-                                              std::ostream& output) = 0;
-            virtual StatusCode deleteUser(const Entities::IdType& id, std::ostream& output) = 0;
-
-            virtual StatusCode addNewDiscussionThread(const std::string& name, std::ostream& output) = 0;
-            virtual StatusCode changeDiscussionThreadName(const Entities::IdType& id, const std::string& newName,
-                                                          std::ostream& output) = 0;
-            virtual StatusCode deleteDiscussionThread(const Entities::IdType& id, std::ostream& output) = 0;
-            virtual StatusCode mergeDiscussionThreads(const Entities::IdType& fromId, const Entities::IdType& intoId,
-                                                      std::ostream& output) = 0;
 
             virtual StatusCode addNewDiscussionMessageInThread(const Entities::IdType& threadId,
                                                                const std::string& content, std::ostream& output) = 0;
@@ -138,6 +134,16 @@ namespace Forum
             virtual StatusCode addCommentToDiscussionThreadMessage(const Entities::IdType& messageId, 
                                                                    const std::string& content, std::ostream& output) = 0;
             virtual StatusCode setMessageCommentToSolved(const Entities::IdType& id, std::ostream& output) = 0;
+        };
+        typedef std::shared_ptr<IDiscussionThreadMessageRepository> DiscussionThreadMessageRepositoryRef;
+
+
+        class IDiscussionTagRepository
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IDiscussionTagRepository)
+
+            virtual StatusCode getDiscussionTags(std::ostream& output, RetrieveDiscussionTagsBy by) const = 0;
 
             virtual StatusCode addNewDiscussionTag(const std::string& name, std::ostream& output) = 0;
             virtual StatusCode changeDiscussionTagName(const Entities::IdType& id, const std::string& newName,
@@ -151,6 +157,18 @@ namespace Forum
                                                              const Entities::IdType& threadId, std::ostream& output) = 0;
             virtual StatusCode mergeDiscussionTags(const Entities::IdType& fromId, const Entities::IdType& intoId,
                                                    std::ostream& output) = 0;
+        };
+        typedef std::shared_ptr<IDiscussionTagRepository> DiscussionTagRepositoryRef;
+
+
+        class IDiscussionCategoryRepository
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IDiscussionCategoryRepository)
+
+            virtual StatusCode getDiscussionCategoryById(const Entities::IdType& id, std::ostream& output) const = 0;
+            virtual StatusCode getDiscussionCategories(std::ostream& output, RetrieveDiscussionCategoriesBy by) const = 0;
+            virtual StatusCode getDiscussionCategoriesFromRoot(std::ostream& output) const = 0;
 
             virtual StatusCode addNewDiscussionCategory(const std::string& name, const Entities::IdType& parentId, 
                                                         std::ostream& output) = 0;
@@ -171,10 +189,28 @@ namespace Forum
             virtual StatusCode removeDiscussionTagFromCategory(const Entities::IdType& tagId, 
                                                                const Entities::IdType& categoryId, 
                                                                std::ostream& output) = 0;
-
         };
+        typedef std::shared_ptr<IDiscussionCategoryRepository> DiscussionCategoryRepositoryRef;
 
-        typedef std::shared_ptr<IWriteRepository> WriteRepositoryRef;
+
+        class IObservableRepository
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IObservableRepository)
+
+            virtual ReadEvents& readEvents() = 0;
+            virtual WriteEvents& writeEvents() = 0;
+        };
+        typedef std::shared_ptr<IObservableRepository> ObservableRepositoryRef;
+
+        class IStatisticsRepository
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IStatisticsRepository);
+            
+            virtual StatusCode getEntitiesCount(std::ostream& output) const = 0;
+        };
+        typedef std::shared_ptr<IStatisticsRepository> StatisticsRepositoryRef;
 
 
         class IMetricsRepository
@@ -184,7 +220,6 @@ namespace Forum
 
             virtual StatusCode getVersion(std::ostream& output) = 0;
         };
-
         typedef std::shared_ptr<IMetricsRepository> MetricsRepositoryRef;
     }
 }

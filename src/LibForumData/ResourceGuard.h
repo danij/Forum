@@ -14,7 +14,7 @@ namespace Forum
         class ResourceGuard final : private boost::noncopyable
         {
         public:
-            explicit ResourceGuard(std::shared_ptr<T> resource) : resource_(resource) {}
+            explicit ResourceGuard(std::shared_ptr<T> resource) : resource_(std::move(resource)) {}
 
             void read(std::function<void(const T&)> action) const
             {

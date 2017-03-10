@@ -104,16 +104,21 @@ namespace Forum
         class CommandHandler final : private boost::noncopyable
         {
         public:
-            CommandHandler(Repository::ReadRepositoryRef readRepository,
-                           Repository::WriteRepositoryRef writeRepository,
+            CommandHandler(Repository::ObservableRepositoryRef observerRepository,
+                           Repository::UserRepositoryRef userRepository,
+                           Repository::DiscussionThreadRepositoryRef discussionThreadRepository,
+                           Repository::DiscussionThreadMessageRepositoryRef discussionThreadMessageRepository,
+                           Repository::DiscussionTagRepositoryRef discussionTagRepository,
+                           Repository::DiscussionCategoryRepositoryRef discussionCategoryRepository,
+                           Repository::StatisticsRepositoryRef statisticsRepository,
                            Repository::MetricsRepositoryRef metricsRepository);
             ~CommandHandler();
 
             Repository::StatusCode handle(Command command, const std::vector<std::string>& parameters, 
                                           std::ostream& output);
 
-            Repository::ReadRepositoryRef getReadRepository();
-            Repository::WriteRepositoryRef getWriteRepository();
+            Repository::ReadEvents& readEvents();
+            Repository::WriteEvents& writeEvents();
 
         private:
 

@@ -17,8 +17,13 @@ using namespace Forum::Repository;
 struct CommandHandler::CommandHandlerImpl
 {
     std::function<StatusCode(const std::vector<std::string>&, std::ostream&)> handlers[int(LAST_COMMAND)];
-    ReadRepositoryRef readRepository;
-    WriteRepositoryRef writeRepository;
+    ObservableRepositoryRef observerRepository;
+    UserRepositoryRef userRepository;
+    DiscussionThreadRepositoryRef discussionThreadRepository;
+    DiscussionThreadMessageRepositoryRef discussionThreadMessageRepository;
+    DiscussionTagRepositoryRef discussionTagRepository;
+    DiscussionCategoryRepositoryRef discussionCategoryRepository;
+    StatisticsRepositoryRef statisticsRepository;
     MetricsRepositoryRef metricsRepository;
 
     static bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number)
@@ -63,342 +68,347 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( COUNT_ENTITIES )
     {
-        return readRepository->getEntitiesCount(output);
+        return statisticsRepository->getEntitiesCount(output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_USER )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->addNewUser(parameters[0], output);
+        return userRepository->addNewUser(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_NAME )
     {
-        return readRepository->getUsers(output, RetrieveUsersBy::Name);
+        return userRepository->getUsers(output, RetrieveUsersBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_CREATED )
     {
-        return readRepository->getUsers(output, RetrieveUsersBy::Created);
+        return userRepository->getUsers(output, RetrieveUsersBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_LAST_SEEN )
     {
-        return readRepository->getUsers(output, RetrieveUsersBy::LastSeen);
+        return userRepository->getUsers(output, RetrieveUsersBy::LastSeen);
     }
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_THREAD_COUNT )
     {
-        return readRepository->getUsers(output, RetrieveUsersBy::ThreadCount);
+        return userRepository->getUsers(output, RetrieveUsersBy::ThreadCount);
     }
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_MESSAGE_COUNT )
     {
-        return readRepository->getUsers(output, RetrieveUsersBy::MessageCount);
+        return userRepository->getUsers(output, RetrieveUsersBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( GET_USER_BY_ID )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getUserById(parameters[0], output);
+        return userRepository->getUserById(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_USER_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getUserByName(parameters[0], output);
+        return userRepository->getUserByName(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->changeUserName(parameters[0], parameters[1], output);
+        return userRepository->changeUserName(parameters[0], parameters[1], output);
     }
     
     COMMAND_HANDLER_METHOD( CHANGE_USER_INFO )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->changeUserInfo(parameters[0], parameters[1], output);
+        return userRepository->changeUserInfo(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_USER )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->deleteUser(parameters[0], output);
+        return userRepository->deleteUser(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_NAME )
     {
-        return readRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::Name);
+        return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_CREATED )
     {
-        return readRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::Created);
+        return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_LAST_UPDATED )
     {
-        return readRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::LastUpdated);
+        return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT )
     {
-        return readRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::MessageCount);
+        return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->addNewDiscussionThread(parameters[0], output);
+        return discussionThreadRepository->addNewDiscussionThread(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREAD_BY_ID )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadById(parameters[0], output);
+        return discussionThreadRepository->getDiscussionThreadById(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->changeDiscussionThreadName(parameters[0], parameters[1], output);
+        return discussionThreadRepository->changeDiscussionThreadName(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_THREAD )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->deleteDiscussionThread(parameters[0], output);
+        return discussionThreadRepository->deleteDiscussionThread(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( MERGE_DISCUSSION_THREADS )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->mergeDiscussionThreads(parameters[0], parameters[1], output);
+        return discussionThreadRepository->mergeDiscussionThreads(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsOfUser(parameters[0], output, RetrieveDiscussionThreadsBy::Name);
+        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
+                                                                      RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_CREATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsOfUser(parameters[0], output, RetrieveDiscussionThreadsBy::Created);
+        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
+                                                                      RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsOfUser(parameters[0], output, RetrieveDiscussionThreadsBy::LastUpdated);
+        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
+                                                                      RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsOfUser(parameters[0], output, RetrieveDiscussionThreadsBy::MessageCount);
+        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
+                                                                      RetrieveDiscussionThreadsBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->addNewDiscussionMessageInThread(parameters[0], parameters[1], output);
+        return discussionThreadMessageRepository->addNewDiscussionMessageInThread(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->deleteDiscussionMessage(parameters[0], output);
+        return discussionThreadMessageRepository->deleteDiscussionMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT )
     {
         if ( ! checkMinNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
         auto& changeReason = parameters.size() > 2 ? parameters[2] : "";
-        return writeRepository->changeDiscussionThreadMessageContent(parameters[0], parameters[1], changeReason, output);
+        return discussionThreadMessageRepository->changeDiscussionThreadMessageContent(parameters[0], parameters[1], 
+                                                                                       changeReason, output);
     }
 
     COMMAND_HANDLER_METHOD( MOVE_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->moveDiscussionThreadMessage(parameters[0], parameters[1], output);
+        return discussionThreadMessageRepository->moveDiscussionThreadMessage(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( UP_VOTE_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->upVoteDiscussionThreadMessage(parameters[0], output);
+        return discussionThreadMessageRepository->upVoteDiscussionThreadMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( DOWN_VOTE_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->downVoteDiscussionThreadMessage(parameters[0], output);
+        return discussionThreadMessageRepository->downVoteDiscussionThreadMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( RESET_VOTE_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->resetVoteDiscussionThreadMessage(parameters[0], output);
+        return discussionThreadMessageRepository->resetVoteDiscussionThreadMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
+        return discussionThreadMessageRepository->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->addCommentToDiscussionThreadMessage(parameters[0], parameters[1], output);
+        return discussionThreadMessageRepository->addCommentToDiscussionThreadMessage(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS )
     {
-        return readRepository->getMessageComments(output);
+        return discussionThreadMessageRepository->getMessageComments(output);
     }
 
     COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS_OF_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getMessageCommentsOfDiscussionThreadMessage(parameters[0], output);
+        return discussionThreadMessageRepository->getMessageCommentsOfDiscussionThreadMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS_OF_USER )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getMessageCommentsOfUser(parameters[0], output);
+        return discussionThreadMessageRepository->getMessageCommentsOfUser(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( SET_MESSAGE_COMMENT_SOLVED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->setMessageCommentToSolved(parameters[0], output);
+        return discussionThreadMessageRepository->setMessageCommentToSolved(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->addNewDiscussionTag(parameters[0], output);
+        return discussionTagRepository->addNewDiscussionTag(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_NAME )
     {
-        return readRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::Name);
+        return discussionTagRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT )
     {
-        return readRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::MessageCount);
+        return discussionTagRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->changeDiscussionTagName(parameters[0], parameters[1], output);
+        return discussionTagRepository->changeDiscussionTagName(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_UI_BLOB )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->changeDiscussionTagUiBlob(parameters[0], parameters[1], output);
+        return discussionTagRepository->changeDiscussionTagUiBlob(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_TAG )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->deleteDiscussionTag(parameters[0], output);
+        return discussionTagRepository->deleteDiscussionTag(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::Name);
+        return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::Created);
+        return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::LastUpdated);
+        return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::MessageCount);
+        return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG_TO_THREAD )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->addDiscussionTagToThread(parameters[0], parameters[1], output);
+        return discussionTagRepository->addDiscussionTagToThread(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( REMOVE_DISCUSSION_TAG_FROM_THREAD )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->removeDiscussionTagFromThread(parameters[0], parameters[1], output);
+        return discussionTagRepository->removeDiscussionTagFromThread(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( MERGE_DISCUSSION_TAG_INTO_OTHER_TAG )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->mergeDiscussionTags(parameters[0], parameters[1], output);
+        return discussionTagRepository->mergeDiscussionTags(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_CATEGORY )
     {
         if ( ! checkMinNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
         auto& parentId = parameters.size() > 1 ? parameters[1] : "";
-        return writeRepository->addNewDiscussionCategory(parameters[0], parentId, output);
+        return discussionCategoryRepository->addNewDiscussionCategory(parameters[0], parentId, output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORY_BY_ID )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionCategoryById(parameters[0], output);
+        return discussionCategoryRepository->getDiscussionCategoryById(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_NAME )
     {
-        return readRepository->getDiscussionCategories(output, RetrieveDiscussionCategoriesBy::Name);
+        return discussionCategoryRepository->getDiscussionCategories(output, RetrieveDiscussionCategoriesBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT )
     {
-        return readRepository->getDiscussionCategories(output, RetrieveDiscussionCategoriesBy::MessageCount);
+        return discussionCategoryRepository->getDiscussionCategories(output, RetrieveDiscussionCategoriesBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_FROM_ROOT )
     {
-        return readRepository->getDiscussionCategoriesFromRoot(output);
+        return discussionCategoryRepository->getDiscussionCategoriesFromRoot(output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->changeDiscussionCategoryName(parameters[0], parameters[1], output);
+        return discussionCategoryRepository->changeDiscussionCategoryName(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_DESCRIPTION )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->changeDiscussionCategoryDescription(parameters[0], parameters[1], output);
+        return discussionCategoryRepository->changeDiscussionCategoryDescription(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_PARENT )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->changeDiscussionCategoryParent(parameters[0], parameters[1], output);
+        return discussionCategoryRepository->changeDiscussionCategoryParent(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER )
@@ -406,49 +416,53 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
         int_fast16_t newDisplayOrder{ 0 };
         if ( ! convertTo(parameters[1], newDisplayOrder, output)) return INVALID_PARAMETERS;
-        return writeRepository->changeDiscussionCategoryDisplayOrder(parameters[0], newDisplayOrder, output);
+        return discussionCategoryRepository->changeDiscussionCategoryDisplayOrder(parameters[0], newDisplayOrder, output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_CATEGORY )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return writeRepository->deleteDiscussionCategory(parameters[0], output);
+        return discussionCategoryRepository->deleteDiscussionCategory(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG_TO_CATEGORY )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->addDiscussionTagToCategory(parameters[0], parameters[1], output);
+        return discussionCategoryRepository->addDiscussionTagToCategory(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( REMOVE_DISCUSSION_TAG_FROM_CATEGORY )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return writeRepository->removeDiscussionTagFromCategory(parameters[0], parameters[1], output);
+        return discussionCategoryRepository->removeDiscussionTagFromCategory(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsOfCategory(parameters[0], output, RetrieveDiscussionThreadsBy::Name);
+        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
+                                                                          RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsOfCategory(parameters[0], output, RetrieveDiscussionThreadsBy::Created);
+        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
+                                                                          RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsOfCategory(parameters[0], output, RetrieveDiscussionThreadsBy::LastUpdated);
+        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
+                                                                          RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return readRepository->getDiscussionThreadsOfCategory(parameters[0], output, RetrieveDiscussionThreadsBy::MessageCount);
+        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
+                                                                          RetrieveDiscussionThreadsBy::MessageCount);
     }
 };
 
@@ -456,11 +470,21 @@ struct CommandHandler::CommandHandlerImpl
 #define setHandler(command) \
     impl_->handlers[command] = [&](auto& parameters, auto& output) { return impl_->command(parameters, output); }
 
-CommandHandler::CommandHandler(ReadRepositoryRef readRepository, WriteRepositoryRef writeRepository,
+CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository, 
+    UserRepositoryRef userRepository,
+    DiscussionThreadRepositoryRef discussionThreadRepository,
+    DiscussionThreadMessageRepositoryRef discussionThreadMessageRepository,
+    DiscussionTagRepositoryRef discussionTagRepository,
+    DiscussionCategoryRepositoryRef discussionCategoryRepository,
+    StatisticsRepositoryRef statisticsRepository,
     MetricsRepositoryRef metricsRepository) : impl_(new CommandHandlerImpl)
 {
-    impl_->readRepository = readRepository;
-    impl_->writeRepository = writeRepository;
+    impl_->userRepository = userRepository;
+    impl_->discussionThreadRepository = discussionThreadRepository;
+    impl_->discussionThreadMessageRepository = discussionThreadMessageRepository;
+    impl_->discussionTagRepository = discussionTagRepository;
+    impl_->discussionCategoryRepository = discussionCategoryRepository;
+    impl_->statisticsRepository = statisticsRepository;
     impl_->metricsRepository = metricsRepository;
 
     setHandler(SHOW_VERSION);
@@ -550,14 +574,14 @@ CommandHandler::~CommandHandler()
     }
 }
 
-ReadRepositoryRef CommandHandler::getReadRepository()
+ReadEvents& CommandHandler::readEvents()
 {
-    return impl_->readRepository;
+    return impl_->observerRepository->readEvents();
 }
 
-WriteRepositoryRef CommandHandler::getWriteRepository()
+WriteEvents& CommandHandler::writeEvents()
 {
-    return impl_->writeRepository;
+    return impl_->observerRepository->writeEvents();
 }
 
 StatusCode CommandHandler::handle(Command command, const std::vector<std::string>& parameters, std::ostream& output)
