@@ -6,7 +6,13 @@
 
 #include <unicode/uclean.h>
 
-#include "MemoryRepository.h"
+#include "MemoryRepositoryCommon.h"
+#include "MemoryRepositoryUser.h"
+#include "MemoryRepositoryDiscussionThread.h"
+#include "MemoryRepositoryDiscussionThreadMessage.h"
+#include "MemoryRepositoryDiscussionTag.h"
+#include "MemoryRepositoryDiscussionCategory.h"
+#include "MemoryRepositoryStatistics.h"
 #include "MetricsRepository.h"
 #include "CommandHandler.h"
 #include "Configuration.h"
@@ -52,10 +58,22 @@ struct BenchmarkContext
 
 auto createCommandHandler()
 {
-    auto memoryRepository = std::make_shared<MemoryRepository>();
+    auto store = std::make_shared<MemoryStore>(std::make_shared<Entities::EntityCollection>());
+    auto userRepository = std::make_shared<MemoryRepositoryUser>(store);
+    auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store);
+    auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store);
+    auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store);
+    auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store);
+    auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store);
     auto metricsRepository = std::make_shared<MetricsRepository>();
+
+    ObservableRepositoryRef observableRepository = userRepository;
+
     BenchmarkContext context;
-    context.handler = std::make_shared<CommandHandler>(memoryRepository, memoryRepository, metricsRepository);
+    context.handler = std::make_shared<CommandHandler>(observableRepository, userRepository, discussionThreadRepository,
+        discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository,
+        statisticsRepository, metricsRepository);
+
     return context;
 }
 
