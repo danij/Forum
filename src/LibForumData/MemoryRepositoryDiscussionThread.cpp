@@ -234,43 +234,13 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(cons
 }
 
 
-static StatusCode validateDiscussionThreadName(const std::string& name, const boost::u32regex& regex, 
-                                               const ConfigConstRef& config)
-{
-    if (name.empty())
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    auto nrCharacters = countUTF8Characters(name);
-    if (nrCharacters > config->discussionThread.maxNameLength)
-    {
-        return StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->discussionThread.minNameLength)
-    {
-        return StatusCode::VALUE_TOO_SHORT;
-    }
-
-    try
-    {
-        if ( ! boost::u32regex_match(name, regex, boost::match_flag_type::format_all))
-        {
-            return StatusCode::INVALID_PARAMETERS;
-        }
-    }
-    catch(...)
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    return StatusCode::OK;
-}
-
 StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const std::string& name, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateDiscussionThreadName(name, validDiscussionThreadNameRegex, getGlobalConfig());
+    
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(name, validDiscussionThreadNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->discussionThread.minNameLength, config->discussionThread.maxNameLength);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -307,7 +277,10 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const std::s
 StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const IdType& id, const std::string& newName, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateDiscussionThreadName(newName, validDiscussionThreadNameRegex, getGlobalConfig());
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(newName, validDiscussionThreadNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->discussionThread.minNameLength, config->discussionThread.maxNameLength);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;

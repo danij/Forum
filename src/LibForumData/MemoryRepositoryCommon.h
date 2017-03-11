@@ -7,6 +7,8 @@
 #include "ResourceGuard.h"
 
 #include <boost/core/noncopyable.hpp>
+#include <boost/optional.hpp>
+#include <boost/regex/icu.hpp>
 
 namespace Forum
 {
@@ -65,6 +67,17 @@ namespace Forum
             auto& collection() const { return store_->collection; }
             auto& store()      const { return *store_; }
 
+            enum EmptyStringValidation
+            {
+                ALLOW_EMPTY_STRING,
+                INVALID_PARAMETERS_FOR_EMPTY_STRING
+            };
+
+            static StatusCode validateString(const std::string& string, 
+                                             boost::optional<const boost::u32regex&> regex,
+                                             EmptyStringValidation emptyValidation,
+                                             boost::optional<int_fast32_t> minimumLength, 
+                                             boost::optional<int_fast32_t> maximumLength);
             MemoryStoreRef store_;
         };
 

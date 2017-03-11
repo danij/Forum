@@ -106,42 +106,13 @@ StatusCode MemoryRepositoryUser::getUserByName(const std::string& name, std::ost
     return status;
 }
 
-static StatusCode validateUserName(const std::string& name, const boost::u32regex regex, const ConfigConstRef& config)
-{
-    if (name.empty())
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    auto nrCharacters = countUTF8Characters(name);
-    if (nrCharacters > config->user.maxNameLength)
-    {
-        return StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->user.minNameLength)
-    {
-        return StatusCode::VALUE_TOO_SHORT;
-    }
-
-    try
-    {
-        if ( ! boost::u32regex_match(name, regex, boost::match_flag_type::format_all))
-        {
-            return StatusCode::INVALID_PARAMETERS;
-        }
-    }
-    catch(...)
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    return StatusCode::OK;
-}
-
 StatusCode MemoryRepositoryUser::addNewUser(const std::string& name, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateUserName(name, validUserNameRegex, getGlobalConfig());
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(name, validUserNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING, 
+                                         config->user.minNameLength, config->user.maxNameLength);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -175,7 +146,10 @@ StatusCode MemoryRepositoryUser::addNewUser(const std::string& name, std::ostrea
 StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const std::string& newName, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateUserName(newName, validUserNameRegex, getGlobalConfig());
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(newName, validUserNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->user.minNameLength, config->user.maxNameLength);
+
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -210,16 +184,14 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const std::str
 StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, const std::string& newInfo, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
+
     auto config = getGlobalConfig();
-    
-    auto nrCharacters = countUTF8Characters(newInfo);
-    if (nrCharacters > config->user.maxInfoLength)
+    auto validationCode = validateString(newInfo, boost::none, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->user.minInfoLength, config->user.maxInfoLength);
+
+    if (validationCode != StatusCode::OK)
     {
-        return status = StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->user.minInfoLength)
-    {
-        return status = StatusCode::VALUE_TOO_SHORT;
+        return status = validationCode;
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;

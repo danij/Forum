@@ -74,3 +74,39 @@ UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
     }
     return result;
 }
+
+StatusCode MemoryRepositoryBase::validateString(const std::string& string, 
+                                                boost::optional<const boost::u32regex&> regex,
+                                                EmptyStringValidation emptyValidation,
+                                                boost::optional<int_fast32_t> minimumLength, 
+                                                boost::optional<int_fast32_t> maximumLength)
+{
+    if ((INVALID_PARAMETERS_FOR_EMPTY_STRING == emptyValidation) && string.empty())
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto nrCharacters = countUTF8Characters(string);
+    if (maximumLength && (nrCharacters > *maximumLength))
+    {
+        return StatusCode::VALUE_TOO_LONG;
+    }
+    if (minimumLength && (nrCharacters < *minimumLength))
+    {
+        return StatusCode::VALUE_TOO_SHORT;
+    }
+
+    try
+    {
+        if (regex && ! boost::u32regex_match(string, *regex, boost::match_flag_type::format_all))
+        {
+            return StatusCode::INVALID_PARAMETERS;
+        }
+    }
+    catch (...)
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    return StatusCode::OK;
+}

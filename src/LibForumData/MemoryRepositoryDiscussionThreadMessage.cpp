@@ -60,107 +60,6 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
 }
 
 
-static StatusCode validateDiscussionMessageContent(const std::string& content, const boost::u32regex& regex, 
-                                                   const ConfigConstRef& config)
-{
-    if (content.empty())
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    auto nrCharacters = countUTF8Characters(content);
-    if (nrCharacters > config->discussionThreadMessage.maxContentLength)
-    {
-        return StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->discussionThreadMessage.minContentLength)
-    {
-        return StatusCode::VALUE_TOO_SHORT;
-    }
-
-    try
-    {
-        if ( ! boost::u32regex_match(content, regex, boost::match_flag_type::format_all))
-        {
-            return StatusCode::INVALID_PARAMETERS;
-        }
-    }
-    catch(...)
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    return StatusCode::OK;
-}
-
-
-static StatusCode validateMessageCommentContent(const std::string& content, const boost::u32regex& regex,
-    const ConfigConstRef& config)
-{
-    if (content.empty())
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    auto nrCharacters = countUTF8Characters(content);
-    if (nrCharacters > config->discussionThreadMessage.maxCommentLength)
-    {
-        return StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->discussionThreadMessage.minCommentLength)
-    {
-        return StatusCode::VALUE_TOO_SHORT;
-    }
-
-    try
-    {
-        if ( ! boost::u32regex_match(content, regex, boost::match_flag_type::format_all))
-        {
-            return StatusCode::INVALID_PARAMETERS;
-        }
-    }
-    catch (...)
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    return StatusCode::OK;
-}
-
-static StatusCode validateDiscussionMessageChangeReason(const std::string& reason, const boost::u32regex& regex, 
-                                                        const ConfigConstRef& config)
-{
-    if (reason.empty() && 0 == config->discussionThreadMessage.minChangeReasonLength)
-    {
-        //allow an empty reason only if the minimum configured length is 0
-        return StatusCode::OK;
-    }
-
-    auto nrCharacters = countUTF8Characters(reason);
-    if (nrCharacters > config->discussionThreadMessage.maxChangeReasonLength)
-    {
-        return StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->discussionThreadMessage.minChangeReasonLength)
-    {
-        return StatusCode::VALUE_TOO_SHORT;
-    }
-
-    try
-    {
-        if ( ! boost::u32regex_match(reason, regex, boost::match_flag_type::format_all))
-        {
-            return StatusCode::INVALID_PARAMETERS;
-        }
-    }
-    catch(...)
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    return StatusCode::OK;
-}
-
 StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(const IdType& threadId, 
                                                                                     const std::string& content,
                                                                                     std::ostream& output)
@@ -171,7 +70,11 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
-    auto validationCode = validateDiscussionMessageContent(content, validDiscussionMessageContentRegex, getGlobalConfig());
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(content, validDiscussionMessageContentRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->discussionThreadMessage.minContentLength, 
+                                         config->discussionThreadMessage.maxContentLength);
+
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -280,13 +183,22 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     StatusWriter status(output, StatusCode::OK);
 
     auto config = getGlobalConfig();
-    auto contentValidationCode = validateDiscussionMessageContent(newContent, validDiscussionMessageContentRegex, config);
+
+    auto contentValidationCode = validateString(newContent, validDiscussionMessageContentRegex, 
+                                                INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                                config->discussionThreadMessage.minContentLength, 
+                                                config->discussionThreadMessage.maxContentLength);
     if (contentValidationCode != StatusCode::OK)
     {
         return status = contentValidationCode;
     }
-    auto reasonValidationCode = validateDiscussionMessageChangeReason(changeReason, validDiscussionMessageChangeReasonRegex, 
-                                                                      config);
+
+    auto reasonEmptyValidation = 0 == config->discussionThreadMessage.minChangeReasonLength
+                                 ? ALLOW_EMPTY_STRING : INVALID_PARAMETERS_FOR_EMPTY_STRING;
+    auto reasonValidationCode = validateString(newContent, validDiscussionMessageChangeReasonRegex,
+                                               reasonEmptyValidation,
+                                               config->discussionThreadMessage.minChangeReasonLength, 
+                                               config->discussionThreadMessage.maxChangeReasonLength);
     if (reasonValidationCode != StatusCode::OK)
     {
         return status = reasonValidationCode;
@@ -626,7 +538,11 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
-    auto validationCode = validateDiscussionMessageContent(content, validDiscussionMessageContentRegex, getGlobalConfig());
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(content, validDiscussionMessageCommentRegex,
+                                         INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->discussionThreadMessage.minCommentLength,
+                                         config->discussionThreadMessage.maxCommentLength);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;

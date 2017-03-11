@@ -2,8 +2,6 @@
 
 #include "MemoryRepositoryCommon.h"
 
-#include <boost/regex/icu.hpp>
-
 namespace Forum
 {
     namespace Repository

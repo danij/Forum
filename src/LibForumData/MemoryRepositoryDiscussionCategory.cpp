@@ -117,43 +117,15 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const I
     return status;
 }
 
-static StatusCode validateDiscussionCategoryName(const std::string& name, const boost::u32regex& regex,
-    const ConfigConstRef& config)
-{
-    if (name.empty())
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-    
-    auto nrCharacters = countUTF8Characters(name);
-    if (nrCharacters > config->discussionTag.maxNameLength)
-    {
-        return StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->discussionTag.minNameLength)
-    {
-        return StatusCode::VALUE_TOO_SHORT;
-    }
-
-    try
-    {
-        if ( ! boost::u32regex_match(name, regex, boost::match_flag_type::format_all))
-        {
-            return StatusCode::INVALID_PARAMETERS;
-        }
-    }
-    catch (...)
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    return StatusCode::OK;
-}
 
 StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const std::string& name, const IdType& parentId, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateDiscussionCategoryName(name, validDiscussionCategoryNameRegex, getGlobalConfig());
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(name, validDiscussionCategoryNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->discussionCategory.minNameLength, 
+                                         config->discussionCategory.maxNameLength);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -205,14 +177,19 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const st
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(const IdType& id, const std::string& newName, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(const IdType& id, const std::string& newName, 
+                                                                            std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id )
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
-    auto validationCode = validateDiscussionCategoryName(newName, validDiscussionCategoryNameRegex, getGlobalConfig());
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(newName, validDiscussionCategoryNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->discussionCategory.minNameLength,
+                                         config->discussionCategory.maxNameLength);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;

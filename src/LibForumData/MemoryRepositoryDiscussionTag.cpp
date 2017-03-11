@@ -62,43 +62,14 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(std::ostream& output
     return StatusCode::OK;
 }
 
-static StatusCode validateDiscussionTagName(const std::string& name, const boost::u32regex& regex,
-    const ConfigConstRef& config)
-{
-    if (name.empty())
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-    
-    auto nrCharacters = countUTF8Characters(name);
-    if (nrCharacters > config->discussionTag.maxNameLength)
-    {
-        return StatusCode::VALUE_TOO_LONG;
-    }
-    if (nrCharacters < config->discussionTag.minNameLength)
-    {
-        return StatusCode::VALUE_TOO_SHORT;
-    }
-
-    try
-    {
-        if ( ! boost::u32regex_match(name, regex, boost::match_flag_type::format_all))
-        {
-            return StatusCode::INVALID_PARAMETERS;
-        }
-    }
-    catch (...)
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    return StatusCode::OK;
-}
 
 StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const std::string& name, std::ostream& output)
 {
     StatusWriter status(output, StatusCode::OK);
-    auto validationCode = validateDiscussionTagName(name, validDiscussionTagNameRegex, getGlobalConfig());
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(name, validDiscussionTagNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->discussionTag.minNameLength, config->discussionTag.maxNameLength);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -140,7 +111,10 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
-    auto validationCode = validateDiscussionTagName(newName, validDiscussionTagNameRegex, getGlobalConfig());
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(newName, validDiscussionTagNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->discussionTag.minNameLength, config->discussionTag.maxNameLength);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
