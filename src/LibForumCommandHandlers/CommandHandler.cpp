@@ -479,6 +479,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     StatisticsRepositoryRef statisticsRepository,
     MetricsRepositoryRef metricsRepository) : impl_(new CommandHandlerImpl)
 {
+    impl_->observerRepository = observerRepository;
     impl_->userRepository = userRepository;
     impl_->discussionThreadRepository = discussionThreadRepository;
     impl_->discussionThreadMessageRepository = discussionThreadMessageRepository;
