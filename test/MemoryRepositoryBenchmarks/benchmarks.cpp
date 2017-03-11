@@ -196,7 +196,7 @@ void populateData(BenchmarkContext& context)
     {
         auto id = executeAndGetId(handler, Command::ADD_DISCUSSION_CATEGORY, { "Category" + std::to_string(i + 1) });
         categoryIds.emplace_back(id);
-        for (int j = 0; j < nrOfTagsPerCategoryDistribution(randomGenerator); ++j)
+        for (int j = 0, n = nrOfTagsPerCategoryDistribution(randomGenerator); j < n; ++j)
         {
             execute(handler, Command::ADD_DISCUSSION_TAG_TO_CATEGORY, { tagIds[tagIdDistribution(randomGenerator)], id });
         }
@@ -236,7 +236,7 @@ void populateData(BenchmarkContext& context)
         Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
         auto id = executeAndGetId(handler, Command::ADD_DISCUSSION_THREAD, { getRandomText(50) });
 
-        for (int j = 0; j < nrOfTagsPerThreadDistribution(randomGenerator); ++j)
+        for (int j = 0, n = nrOfTagsPerThreadDistribution(randomGenerator); j < n; ++j)
         {
             execute(handler, Command::ADD_DISCUSSION_TAG_TO_THREAD, { tagIds[tagIdDistribution(randomGenerator)], id });
         }
