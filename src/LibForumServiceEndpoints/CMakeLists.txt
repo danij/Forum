@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.3)
-project(LibForumCommandHandlers CXX)
+project(LibForumServiceEndpoints CXX)
 
 set(Boost_USE_STATIC_LIBS    OFF)
 set(Boost_USE_MULTITHREADED  ON)
@@ -21,9 +21,9 @@ include_directories(
         ../LibForumData
         ${Boost_INCLUDE_DIRS})
 
-add_library(ForumCommandHandlers SHARED
+add_library(ForumServiceEndpoints SHARED
         ${SOURCE_FILES}
         ${HEADER_FILES})
 
-target_link_libraries(ForumCommandHandlers
+target_link_libraries(ForumServiceEndpoints
         ForumHelpers)

@@ -27,7 +27,7 @@ include_directories(
         ../../src
         ../../src/LibFastJsonWriter
         ../../src/LibForumContext
-        ../../src/LibForumCommandHandlers
+        ../../src/LibForumServiceEndpoints
         ../../src/LibForumData
         ../../src/LibForumData/private
         ../../src/LibForumHelpers
@@ -38,7 +38,7 @@ add_executable(ForumServiceTests
         ${HEADER_FILES})
 
 target_link_libraries(ForumServiceTests
-        ForumCommandHandlers
+        ForumServiceEndpoints
         ForumData
         ForumHelpers
         ${Boost_LIBRARIES}

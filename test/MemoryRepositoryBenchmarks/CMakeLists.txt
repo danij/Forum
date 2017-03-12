@@ -13,7 +13,7 @@ include_directories(
         ../../src
         ../../src/LibFastJsonWriter
         ../../src/LibForumContext
-        ../../src/LibForumCommandHandlers
+        ../../src/LibForumServiceEndpoints
         ../../src/LibForumData
         ../../src/LibForumData/private
         ../../src/LibForumHelpers
@@ -22,7 +22,7 @@ include_directories(
 add_executable(MemoryRepositoryBenchmarks ${SOURCE_FILES} ${HEADER_FILES} ${JSON_HEADER_FILES})
 
 target_link_libraries(MemoryRepositoryBenchmarks
-        ForumCommandHandlers
+        ForumServiceEndpoints
         ForumData
         ForumHelpers
         ${Boost_LIBRARIES}
