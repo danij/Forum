@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <boost/flyweight.hpp>
+
 #include "TypeHelpers.h"
 
 namespace Forum

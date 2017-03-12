@@ -4,11 +4,26 @@ project(LibForumCommandHandlers CXX)
 set(Boost_USE_STATIC_LIBS    OFF)
 set(Boost_USE_MULTITHREADED  ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
 
-set(SOURCE_FILES CommandHandler.cpp)
-set(HEADER_FILES CommandHandler.h ../Version.h)
+set(SOURCE_FILES
+        private/CommandHandler.cpp)
 
-include_directories(../. ../LibFastJsonWriter ../LibForumContext ../LibForumData ${Boost_INCLUDE_DIRS})
+set(HEADER_FILES
+        CommandHandler.h)
 
-add_library(ForumCommandHandlers STATIC ${SOURCE_FILES} ${HEADER_FILES})
+include_directories(
+        .
+        ../.
+        ../LibFastJsonWriter
+        ../LibForumContext
+        ../LibForumHelpers
+        ../LibForumData
+        ${Boost_INCLUDE_DIRS})
+
+add_library(ForumCommandHandlers SHARED
+        ${SOURCE_FILES}
+        ${HEADER_FILES})
+
+target_link_libraries(ForumCommandHandlers
+        ForumHelpers)
