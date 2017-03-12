@@ -60,7 +60,7 @@ void DiscussionCategory::modifyDiscussionThread(DiscussionThreadCollection::iter
     executeOnCategoryAndAllParents(*this, [&](auto& category)
     {
         //update separate references of this category and all parents
-        category.totalThreads_.modifyDiscussionThreadById(thread->id(), [](auto& _) {});
+        category.totalThreads_.modifyDiscussionThreadById(thread->id());
     });
 }
 

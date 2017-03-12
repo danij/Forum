@@ -389,7 +389,7 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                                            {
                                                tag.messageCount() += difference;
                                                //notify the thread collection of each tag that the thread has new messages
-                                               tag.modifyDiscussionThreadById(threadRef->id(), [](auto& _) {});
+                                               tag.modifyDiscussionThreadById(threadRef->id());
                                            });
                                    }
                                }
@@ -402,7 +402,7 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                                            {
                                                category.updateMessageCount(threadRef, difference);
                                                //notify the thread collection of each category that the thread has new messages
-                                               category.modifyDiscussionThreadById(threadRef->id(), [](auto& _) {});
+                                               category.modifyDiscussionThreadById(threadRef->id());
                                            });
                                    }
                                }

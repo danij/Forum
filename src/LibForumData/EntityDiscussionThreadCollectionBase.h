@@ -91,12 +91,13 @@ namespace Forum
              * refreshing all indexes the thread is registered in
              */
             virtual void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-                                                const std::function<void(DiscussionThread&)>& modifyFunction);
+                                                const std::function<void(DiscussionThread&)>& modifyFunction = emptyModifyFunction);
             /**
              * Enables a safe modification of a discussion thread instance,
              * refreshing all indexes the thread is registered in
              */
-            void modifyDiscussionThreadById(const IdType& id, const std::function<void(DiscussionThread&)>& modifyFunction);
+            void modifyDiscussionThreadById(const IdType& id,
+                                            const std::function<void(DiscussionThread&)>& modifyFunction = emptyModifyFunction);
             /**
              * Safely deletes a discussion thread instance, removing it from all indexes it is registered in
              */
@@ -108,6 +109,8 @@ namespace Forum
 
         protected:
             DiscussionThreadCollection threads_;
+
+            static void emptyModifyFunction(DiscussionThread&) {}
         };
     }
 }

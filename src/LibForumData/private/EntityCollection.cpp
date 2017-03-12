@@ -318,7 +318,7 @@ DiscussionThreadMessageRef EntityCollection::deleteDiscussionThreadMessage(Discu
                         {
                             tag.messageCount() -= 1;
                             //notify the thread collection of each tag that the thread has fewer messages
-                            tag.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
+                            tag.modifyDiscussionThreadById(thread.id());
                         });
                     }
                 }
@@ -331,7 +331,7 @@ DiscussionThreadMessageRef EntityCollection::deleteDiscussionThreadMessage(Discu
                         {
                             category.updateMessageCount(threadShared, -1);
                             //notify the thread collection of each category that the thread has fewer messages
-                            category.modifyDiscussionThreadById(thread.id(), [](auto& _) {});
+                            category.modifyDiscussionThreadById(thread.id());
                         });
                     }
                 }
