@@ -75,6 +75,69 @@ namespace Json
             return *this;
         }
 
+        JsonWriter& operator<<(bool value)
+        {
+            if (isCommaNeeded())
+            {
+                _stream << (value ? ",true" : ",false");
+            }
+            else
+            {
+                _stream << (value ? "true" : "false");
+            }
+            return *this;
+        }
+
+        JsonWriter& operator<<(char value)
+        {
+            return writeNumber(value, isCommaNeeded());
+        }
+
+        JsonWriter& operator<<(unsigned char value)
+        {
+            return writeNumber(value, isCommaNeeded());
+        }
+
+        JsonWriter& operator<<(short value)
+        {
+            return writeNumber(value, isCommaNeeded());
+        }
+
+        JsonWriter& operator<<(unsigned short value)
+        {
+            return writeNumber(value, isCommaNeeded());
+        }
+
+        JsonWriter& operator<<(int value)
+        {
+            return writeNumber(value, isCommaNeeded());
+        }
+
+        JsonWriter& operator<<(unsigned int value)
+        {
+            return writeNumber(value, isCommaNeeded());
+        }
+
+        JsonWriter& operator<<(long value)
+        {
+            return writeNumber(value, isCommaNeeded());
+        }
+
+        JsonWriter& operator<<(unsigned long value)
+        {
+            return writeNumber(value, isCommaNeeded());
+        }
+
+        JsonWriter& operator<<(long long value)
+        {
+            return writeNumber(value, isCommaNeeded());
+        }
+
+        JsonWriter& operator<<(unsigned long long value)
+        {
+            return writeNumber(value, isCommaNeeded());
+        }
+
     protected:
 
         bool isCommaNeeded()
@@ -104,9 +167,61 @@ namespace Json
 
         JsonWriter& writeEscapedString(const char* value, size_t length = 0);
 
+        constexpr int maxDigitsOfNumber(int numberOfBytes) noexcept
+        {
+            switch (numberOfBytes * 8)
+            {
+                case 8:
+                    return 3;
+                case 16:
+                    return 5;
+                case 32:
+                    return 10;
+                case 64:
+                    return 20;
+                case 128:
+                    return 39;
+                default:
+                    return 128;
+            }
+        }
+
         template<typename T>
-        friend JsonWriter& operator<<(JsonWriter& writer, const T& value);
-        friend JsonWriter& operator<<(JsonWriter& writer, bool value);
+        JsonWriter& writeNumber(T value, bool includeComma)
+        {
+            char digitsBuffer[maxDigitsOfNumber(sizeof(T)) + 3]; //extra space for sign and comma
+
+            char* bufferEnd = digitsBuffer + (sizeof(digitsBuffer) / sizeof(digitsBuffer[0]));
+            char* digit = bufferEnd - 1;
+
+            bool addSign = false;
+            if (value < 0)
+            {
+                addSign = true;
+                value = -value;
+            }
+
+            *digit-- = (value % 10) + '0';
+            while (value > 9)
+            {
+                value /= 10;
+                *digit-- = (value % 10) + '0';
+            }
+            if (addSign)
+            {
+                *digit-- = '-';
+            }
+            if (includeComma)
+            {
+                *digit-- = ',';
+            }
+
+            ++digit;
+            _stream.write(digit, bufferEnd - digit);
+
+            return *this;
+        };
+
         friend JsonWriter& operator<<(JsonWriter& writer, const char* value);
         friend JsonWriter& operator<<(JsonWriter& writer, const std::string& value);
 
@@ -122,30 +237,9 @@ namespace Json
     };
 
     template <typename T>
-    JsonWriter& operator<<(JsonWriter& writer, const T& value)
-    {
-        if (writer.isCommaNeeded()) writer._stream << ',';
-        writer._stream << value;
-        return writer;
-    }
-
-    template <typename T>
     JsonWriter& operator<<(JsonWriter& writer, const T* value)
     {
         return value ? (writer << *value) : writer.null();
-    }
-
-    inline JsonWriter& operator<<(JsonWriter& writer, bool value)
-    {
-        if (writer.isCommaNeeded())
-        {
-            writer._stream << (value ? ",true" : ",false");
-        }
-        else
-        {
-            writer._stream << (value ? "true" : "false");
-        }
-        return writer;
     }
 
     inline JsonWriter& operator<<(JsonWriter& writer, const char* value)
