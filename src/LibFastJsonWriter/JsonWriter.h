@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <functional>
 #include <iostream>
 #include <stack>
+#include <vector>
 
 namespace Json
 {
@@ -233,7 +234,7 @@ namespace Json
         };
 
         std::ostream& _stream;
-        std::stack<State> _state;
+        std::stack<State, std::vector<State>> _state;
     };
 
     template <typename T>
