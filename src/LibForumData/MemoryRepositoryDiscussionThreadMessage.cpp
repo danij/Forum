@@ -280,9 +280,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
                            writeEvents().onMoveDiscussionThreadMessage(
                                createObserverContext(*performedBy.getAndUpdate(collection)), 
                                                      *messageRef, *threadIntoRef);
-                     
-                           auto& createdBy = messageRef->createdBy();
-                          
+
                            auto threadUpdateFn = [&collection](DiscussionThreadRef&& threadRef, bool insert)
                            {
                                threadRef->resetVisitorsSinceLastEdit();
