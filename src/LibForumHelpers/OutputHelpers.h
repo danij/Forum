@@ -4,7 +4,7 @@
 #include "Repository.h"
 
 #include <iosfwd>
-#include <vector>
+#include <array>
 
 namespace Forum
 {
@@ -112,9 +112,9 @@ namespace Forum
 
                 writer << Json::objStart;
                 writer << Json::propertySafeName("status", statusCode_);
-                for (auto& extra : extras_)
+                for (int i = 0; i < elementCount_; ++i)
                 {
-                    extra(writer);
+                    extras_[i](writer);
                 }
                 writer << Json::objEnd;
             }
@@ -145,17 +145,19 @@ namespace Forum
             template <typename T>
             void addExtraSafeName(const std::string& key, const T& value)
             {
-                extras_.push_back([=](auto& writer)
-                                  {
-                                      writer << Json::propertySafeName(key, value);
-                                  });
+                extras_.at(elementCount_++) = [=](auto& writer)
+                                              {
+                                                  writer << Json::propertySafeName(key, value);
+                                              };
             }
 
         private:
             std::ostream& output_;
             Repository::StatusCode statusCode_;
             bool enabled_;
-            std::vector<std::function<void(Json::JsonWriter&)>> extras_;
+            int elementCount_ = 0;
+            //maximum count should be adjusted if needed, the value is known at compile time
+            std::array<std::function<void(Json::JsonWriter&)>, 10> extras_;
         };
     }
 }
