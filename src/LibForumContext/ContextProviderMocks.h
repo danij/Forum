@@ -14,5 +14,7 @@ namespace Forum
     {
         void setCurrentTimeMockForCurrentThread(std::function<Entities::Timestamp()> callback);
         void resetCurrentTimeMock();
+
+        bool& mutableSkipValidations();
     }
 }

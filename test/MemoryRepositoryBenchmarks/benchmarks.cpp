@@ -14,6 +14,7 @@
 #include "MemoryRepositoryDiscussionCategory.h"
 #include "MemoryRepositoryStatistics.h"
 #include "MetricsRepository.h"
+#include "ContextProviderMocks.h"
 #include "CommandHandler.h"
 #include "Configuration.h"
 #include "StringHelpers.h"
@@ -127,7 +128,9 @@ int main()
 
     auto context = createCommandHandler();
 
+    Context::mutableSkipValidations() = true;
     std::cout << "Populate duration: " << countDuration<std::chrono::milliseconds>([&]() { populateData(context); }) << " ms\n";
+    Context::mutableSkipValidations() = false;
 
     std::cout << "=====\n";
     std::cout << "Forum Memory Repository Benchmarks\n";

@@ -76,3 +76,15 @@ DisplayContext& Forum::Context::getMutableDisplayContext()
 {
     return displayContext;
 }
+
+static bool skipValidationsValue = false;
+
+bool Forum::Context::skipValidations()
+{
+    return skipValidationsValue;
+}
+
+bool& Forum::Context::mutableSkipValidations()
+{
+    return skipValidationsValue;
+}

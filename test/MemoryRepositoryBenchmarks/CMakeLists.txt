@@ -23,6 +23,7 @@ add_executable(MemoryRepositoryBenchmarks ${SOURCE_FILES} ${HEADER_FILES} ${JSON
 
 target_link_libraries(MemoryRepositoryBenchmarks
         ForumServiceEndpoints
+        ForumContext
         ForumData
         ForumHelpers
         ${Boost_LIBRARIES}

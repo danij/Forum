@@ -41,6 +41,10 @@ namespace Forum
         */
         void setCurrentUserBrowserUserAgent(const std::string& value);
 
+        /**
+         * Returns whether validations should be skipped (e.g. for populating data in benchmarks)
+         */
+        bool skipValidations();
 
         enum class SortOrder
         {
