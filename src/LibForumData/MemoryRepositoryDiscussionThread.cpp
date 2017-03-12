@@ -416,8 +416,6 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                    
                                for (auto& message : threadFrom.messages())
                                {
-                                   auto& createdBy = message->createdBy();
-                   
                                    thread.messages().insert(message);
                                }
                    
