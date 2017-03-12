@@ -137,20 +137,20 @@ static const unsigned char toEscape[128] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
+static constexpr int toEscapeLength = sizeof(toEscape) / sizeof(toEscape[0]);
 
 static const char hexDigits[16] = {
    '0', '1', '2', '3', '4', '5', '6', '7',
    '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 };
 
-#define MAX_STACK_BUFFER 60000
-
 JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
 {
     if (isCommaNeeded())
     {
         _stream << ",\"";
-    } else
+    }
+    else
     {
         _stream << '"';
     }
@@ -160,58 +160,52 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
         length = strlen(value);
     }
 
-    if (length > 0)
+    static thread_local char twoCharEscapeBuffer[2] = {'\\', 0};
+    static thread_local char sixCharEscapeBuffer[6] = {'\\', 'u', '0', '0', 0, 0};
+
+    auto directWriteFrom = value;
+    auto endValue = value + length;
+
+    while (value < endValue)
     {
-        const int toEscapeLength = sizeof(toEscape) / sizeof(toEscape[0]);
-        const int bufferMultiplier = 6;//in the worst case, something like \u005C is needed for each character
-        char stackBuffer[MAX_STACK_BUFFER];
-        char* buffer = stackBuffer;
-        unique_ptr<char> toDelete;
-
-        if ((length * bufferMultiplier) >= MAX_STACK_BUFFER)
+        unsigned char c = static_cast<unsigned char>(*value);
+        if (c < toEscapeLength)
         {
-            toDelete.reset(buffer = new char[length * bufferMultiplier + 1]);
-        }
-
-        int dstIndex = 0;
-        for (size_t i = 0; i < length; i ++)
-        {
-            const auto& c = static_cast<unsigned char>(value[i]);
-            if (c >= toEscapeLength)
+            auto r = toEscape[c];
+            if (r)
             {
-                buffer[dstIndex ++] = c;
-            } else
-            {
-                auto r = toEscape[c];
-                if (r)
+                //escape needed
+                if (directWriteFrom < value)
                 {
-                    //escape needed
-                    if (r < 0xFF)
-                    {
-                        //we have a special character for the escape
-                        buffer[dstIndex ++] = '\\';
-                        buffer[dstIndex ++] = r;
-                    } else
-                    {
-                        //we must use the six-character sequence
-                        //simplified as we only escape control characters this way
-                        buffer[dstIndex ++] = '\\';
-                        buffer[dstIndex ++] = 'u';
-                        buffer[dstIndex ++] = '0';
-                        buffer[dstIndex ++] = '0';
-                        buffer[dstIndex ++] = hexDigits[c / 16];
-                        buffer[dstIndex ++] = hexDigits[c % 16];
-                    }
-                } else
+                    //flush previous characters that don't require escaping
+                    _stream.write(directWriteFrom, value - directWriteFrom);
+                }
+                directWriteFrom = value + 1; //skip the current character as it needs escaping
+                if (r < 0xFF)
                 {
-                    //no escape needed
-                    buffer[dstIndex ++] = c;
+                    //we have a special character for the escape
+                    twoCharEscapeBuffer[1] = static_cast<char>(r);
+                    _stream.write(twoCharEscapeBuffer, 2);
+                }
+                else
+                {
+                    //we must use the six-character sequence
+                    //simplified as we only escape control characters this way
+                    sixCharEscapeBuffer[4] = hexDigits[c / 16];
+                    sixCharEscapeBuffer[5] = hexDigits[c % 16];
+                    _stream.write(sixCharEscapeBuffer, 6);
                 }
             }
         }
-
-        _stream.write(buffer, dstIndex);
+        ++value;
     }
+
+    if (directWriteFrom < value)
+    {
+        //write remaining characters that don't require escaping
+        _stream.write(directWriteFrom, value - directWriteFrom);
+    }
+
     _stream << '"';
 
     return *this;
