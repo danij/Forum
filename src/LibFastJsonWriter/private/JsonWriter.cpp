@@ -28,7 +28,7 @@ using namespace Json;
 
 JsonWriter::JsonWriter(ostream& stream) : _stream(stream)
 {
-   _state.push({ false, false, false });
+    _state.push({ false, false, false });
 }
 
 JsonWriter::~JsonWriter()
@@ -37,96 +37,94 @@ JsonWriter::~JsonWriter()
 
 JsonWriter& JsonWriter::null()
 {
-   addCommaIfNeeded();
-   _stream << "null";
-   return *this;
+    _stream << (isCommaNeeded() ? ",null" : "null");
+    return *this;
 }
 
 JsonWriter& JsonWriter::startArray()
 {
-   addCommaIfNeeded();
-   _stream << '[';
-   _state.push({ true, false, false });
-   return *this;
+    if (isCommaNeeded())
+    {
+        _stream << ",[";
+    } else
+    {
+        _stream << '[';
+    }
+    _state.push({ true, false, false });
+    return *this;
 }
 
 JsonWriter& JsonWriter::endArray()
 {
-   _stream << ']';
-   _state.pop();
-   return *this;
+    _stream << ']';
+    _state.pop();
+    return *this;
 }
 
 JsonWriter& JsonWriter::startObject()
 {
-   addCommaIfNeeded();
-   _stream << '{';
-   _state.push({ true, false, false });
-   return *this;
+    if (isCommaNeeded())
+    {
+        _stream << ",{";
+    }
+    else
+    {
+        _stream << '{';
+    }
+    _state.push({ true, false, false });
+    return *this;
 }
 
 JsonWriter& JsonWriter::endObject()
 {
-   _stream << '}';
-   _state.pop();
-   return *this;
+    _stream << '}';
+    _state.pop();
+    return *this;
 }
 
 JsonWriter& JsonWriter::newProperty(const char* name)
 {
-   writeEscapedString(name);
-   _stream << ':';
-   _state.top().propertyNameAdded = true;
-   return *this;
+    writeEscapedString(name);
+    _stream << ':';
+    _state.top().propertyNameAdded = true;
+    return *this;
 }
 
 JsonWriter& JsonWriter::newProperty(const string& name)
 {
-   writeEscapedString(name.c_str(), name.length());
-   _stream << ':';
-   _state.top().propertyNameAdded = true;
-   return *this;
+    writeEscapedString(name.c_str(), name.length());
+    _stream << ':';
+    _state.top().propertyNameAdded = true;
+    return *this;
 }
 
 JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name, std::size_t length)
 {
-   addCommaIfNeeded();
-   _stream << '"';
-      _stream.write(name, length);
-   _stream << "\":";
-   _state.top().propertyNameAdded = true;
-   return *this;
+    if (isCommaNeeded())
+    {
+        _stream << ",\"";
+    } else
+    {
+        _stream << '"';
+    }
+    _stream.write(name, length);
+    _stream << "\":";
+    _state.top().propertyNameAdded = true;
+    return *this;
 }
 
 JsonWriter& JsonWriter::newPropertyWithSafeName(const string& name)
 {
-   addCommaIfNeeded();
-   _stream << '"' << name << "\":";
+    if (isCommaNeeded())
+    {
+        _stream << ",\"";
+    } else
+    {
+        _stream << '"';
+    }
+   _stream << name << "\":";
    _state.top().propertyNameAdded = true;
    return *this;
-}
-
-void JsonWriter::addCommaIfNeeded()
-{
-   auto& state = _state.top();
-   if (state.enumerationStarted)
-   {
-      if (state.commaRequired)
-      {
-         if (state.propertyNameAdded)
-         {
-            state.propertyNameAdded = false;
-         }
-         else
-         {
-            _stream << ',';
-         }
-      }
-      else
-      {
-         state.commaRequired = true;
-      }
-   }
 }
 
 static const unsigned char toEscape[128] = {
@@ -149,69 +147,72 @@ static const char hexDigits[16] = {
 
 JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
 {
-   addCommaIfNeeded();
-   if (length == 0)
-   {
-      length = strlen(value);
-   }
+    if (isCommaNeeded())
+    {
+        _stream << ",\"";
+    } else
+    {
+        _stream << '"';
+    }
 
-   _stream << '"';
-   if (length > 0)
-   {
-      const int toEscapeLength = sizeof(toEscape) / sizeof(toEscape[0]);
-      const int bufferMultiplier = 6;//in the worst case, something like \u005C is needed for each character
-      char stackBuffer[MAX_STACK_BUFFER];
-      char* buffer = stackBuffer;
-      unique_ptr<char> toDelete;
+    if (length == 0)
+    {
+        length = strlen(value);
+    }
 
-      if ((length * bufferMultiplier) >= MAX_STACK_BUFFER)
-      {
-         toDelete.reset(buffer = new char[length * bufferMultiplier + 1]);
-      }
+    if (length > 0)
+    {
+        const int toEscapeLength = sizeof(toEscape) / sizeof(toEscape[0]);
+        const int bufferMultiplier = 6;//in the worst case, something like \u005C is needed for each character
+        char stackBuffer[MAX_STACK_BUFFER];
+        char* buffer = stackBuffer;
+        unique_ptr<char> toDelete;
 
-      int dstIndex = 0;
-      for (size_t i = 0; i < length; i++)
-      {
-         const auto& c = static_cast<unsigned char>(value[i]);
-         if (c >= toEscapeLength)
-         {
-            buffer[dstIndex++] = c;
-         }
-         else
-         {
-            auto r = toEscape[c];
-            if (r)
+        if ((length * bufferMultiplier) >= MAX_STACK_BUFFER)
+        {
+            toDelete.reset(buffer = new char[length * bufferMultiplier + 1]);
+        }
+
+        int dstIndex = 0;
+        for (size_t i = 0; i < length; i ++)
+        {
+            const auto& c = static_cast<unsigned char>(value[i]);
+            if (c >= toEscapeLength)
             {
-               //escape needed
-               if (r < 0xFF)
-               {
-                  //we have a special character for the escape
-                  buffer[dstIndex++] = '\\';
-                  buffer[dstIndex++] = r;
-               }
-               else
-               {
-                  //we must use the six-character sequence
-                  //simplified as we only escape control characters this way
-                  buffer[dstIndex++] = '\\';
-                  buffer[dstIndex++] = 'u';
-                  buffer[dstIndex++] = '0';
-                  buffer[dstIndex++] = '0';
-                  buffer[dstIndex++] = hexDigits[c / 16];
-                  buffer[dstIndex++] = hexDigits[c % 16];
-               }
-            }
-            else
+                buffer[dstIndex ++] = c;
+            } else
             {
-               //no escape needed
-               buffer[dstIndex++] = c;
+                auto r = toEscape[c];
+                if (r)
+                {
+                    //escape needed
+                    if (r < 0xFF)
+                    {
+                        //we have a special character for the escape
+                        buffer[dstIndex ++] = '\\';
+                        buffer[dstIndex ++] = r;
+                    } else
+                    {
+                        //we must use the six-character sequence
+                        //simplified as we only escape control characters this way
+                        buffer[dstIndex ++] = '\\';
+                        buffer[dstIndex ++] = 'u';
+                        buffer[dstIndex ++] = '0';
+                        buffer[dstIndex ++] = '0';
+                        buffer[dstIndex ++] = hexDigits[c / 16];
+                        buffer[dstIndex ++] = hexDigits[c % 16];
+                    }
+                } else
+                {
+                    //no escape needed
+                    buffer[dstIndex ++] = c;
+                }
             }
-         }
-      }
+        }
 
-      _stream.write(buffer, dstIndex);
-   }
-   _stream << '"';
+        _stream.write(buffer, dstIndex);
+    }
+    _stream << '"';
 
-   return *this;
+    return *this;
 }

@@ -63,14 +63,45 @@ namespace Json
         template <typename T>
         JsonWriter& writeSafeString(const T& value)
         {
-            addCommaIfNeeded();
-            _stream << '"' << value << '"';
+            if (isCommaNeeded())
+            {
+                _stream << ",\"";
+            }
+            else
+            {
+                _stream << '"';
+            }
+            _stream << value << '"';
             return *this;
         }
 
     protected:
 
-        void addCommaIfNeeded();
+        bool isCommaNeeded()
+        {
+            bool result = false;
+            auto& state = _state.top();
+            if (state.enumerationStarted)
+            {
+                if (state.commaRequired)
+                {
+                    if (state.propertyNameAdded)
+                    {
+                        state.propertyNameAdded = false;
+                    }
+                    else
+                    {
+                        result = true;
+                    }
+                }
+                else
+                {
+                    state.commaRequired = true;
+                }
+            }
+            return result;
+        }
+
         JsonWriter& writeEscapedString(const char* value, size_t length = 0);
 
         template<typename T>
@@ -93,7 +124,7 @@ namespace Json
     template <typename T>
     JsonWriter& operator<<(JsonWriter& writer, const T& value)
     {
-        writer.addCommaIfNeeded();
+        if (writer.isCommaNeeded()) writer._stream << ',';
         writer._stream << value;
         return writer;
     }
@@ -106,8 +137,14 @@ namespace Json
 
     inline JsonWriter& operator<<(JsonWriter& writer, bool value)
     {
-        writer.addCommaIfNeeded();
-        writer._stream << (value ? "true" : "false");
+        if (writer.isCommaNeeded())
+        {
+            writer._stream << (value ? ",true" : ",false");
+        }
+        else
+        {
+            writer._stream << (value ? "true" : "false");
+        }
         return writer;
     }
 
