@@ -16,5 +16,6 @@ namespace Forum
         void resetCurrentTimeMock();
 
         bool& mutableSkipValidations();
+        bool& mutableSkipObservers();
     }
 }

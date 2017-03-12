@@ -51,7 +51,8 @@ StatusCode MemoryRepositoryUser::getUsers(std::ostream& output, RetrieveUsersBy 
             break;
         }
 
-        readEvents().onGetUsers(createObserverContext(performedBy.get(collection, store())));
+        if ( ! Context::skipObservers())
+            readEvents().onGetUsers(createObserverContext(performedBy.get(collection, store())));
     });
     return StatusCode::OK;
 }
@@ -76,7 +77,8 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, std::ostream& out
                               status.disable();
                               writeSingleValueSafeName(output, "user", **it);
                           }
-                          readEvents().onGetUserById(createObserverContext(performedBy.get(collection, store())), id);
+                          if ( ! Context::skipObservers())
+                              readEvents().onGetUserById(createObserverContext(performedBy.get(collection, store())), id);
                       });
     return status;
 }
@@ -101,7 +103,9 @@ StatusCode MemoryRepositoryUser::getUserByName(const std::string& name, std::ost
                               status.disable();
                               writeSingleValueSafeName(output, "user", **it);
                           }
-                          readEvents().onGetUserByName(createObserverContext(performedBy.get(collection, store())), name);
+                          if ( ! Context::skipObservers())
+                              readEvents().onGetUserByName(createObserverContext(performedBy.get(collection, store())),
+                                                           name);
                       });
     return status;
 }
@@ -134,7 +138,10 @@ StatusCode MemoryRepositoryUser::addNewUser(const std::string& name, std::ostrea
                                return;
                            }
                            collection.users().insert(user);
-                           writeEvents().onAddNewUser(createObserverContext(*performedBy.getAndUpdate(collection)), *user);
+
+                           if ( ! Context::skipObservers())
+                               writeEvents().onAddNewUser(createObserverContext(*performedBy.getAndUpdate(collection)),
+                                                          *user);
                  
                            status.addExtraSafeName("id", user->id());
                            status.addExtraSafeName("name", user->name());
@@ -175,8 +182,9 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const std::str
                                                      {
                                                          user.name() = newName;
                                                      });
-                           writeEvents().onChangeUser(createObserverContext(*performedBy.getAndUpdate(collection)),
-                                                      **it, User::ChangeType::Name);
+                           if ( ! Context::skipObservers())
+                               writeEvents().onChangeUser(createObserverContext(*performedBy.getAndUpdate(collection)),
+                                                          **it, User::ChangeType::Name);
                        });
     return status;
 }
@@ -209,8 +217,10 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, const std::str
                                                      {
                                                          user.info() = newInfo;
                                                      });
-                           writeEvents().onChangeUser(createObserverContext(*performedBy.getAndUpdate(collection)),
-                                                      **it, User::ChangeType::Info);
+
+                           if ( ! Context::skipObservers())
+                               writeEvents().onChangeUser(createObserverContext(*performedBy.getAndUpdate(collection)),
+                                                          **it, User::ChangeType::Info);
                        });
     return status;
 }
@@ -234,7 +244,10 @@ StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, std::ostream& outp
                                return;
                            }
                            //make sure the user is not deleted before being passed to the observers
-                           writeEvents().onDeleteUser(createObserverContext(*performedBy.getAndUpdate(collection)), **it);
+                           if ( ! Context::skipObservers())
+                               writeEvents().onDeleteUser(createObserverContext(*performedBy.getAndUpdate(collection)),
+                                                          **it);
+
                            collection.deleteUser(it);
                        });
     return status;

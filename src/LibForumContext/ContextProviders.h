@@ -46,6 +46,11 @@ namespace Forum
          */
         bool skipValidations();
 
+        /**
+         * Returns whether observer action should be skipped (e.g. for populating data in benchmarks)
+         */
+        bool skipObservers();
+
         enum class SortOrder
         {
             Ascending,

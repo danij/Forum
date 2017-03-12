@@ -72,7 +72,8 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreads(std::ostream& 
                           
                           writeDiscussionThreads(collection, by, output, currentUser.id());
 
-                          readEvents().onGetDiscussionThreads(createObserverContext(currentUser));
+                          if ( ! Context::skipObservers())
+                              readEvents().onGetDiscussionThreads(createObserverContext(currentUser));
                       });
     return StatusCode::OK;
 }
@@ -122,7 +123,8 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdTyp
                               status.disable();
                               writeSingleValueSafeName(output, "thread", thread);
                           }
-                          readEvents().onGetDiscussionThreadById(createObserverContext(currentUser), id);
+                          if ( ! Context::skipObservers())
+                              readEvents().onGetDiscussionThreadById(createObserverContext(currentUser), id);
                       });
     if (addUserToVisitedSinceLastEdit)
     {
@@ -166,8 +168,9 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const Id
                  
                           status.disable();
                           writeDiscussionThreads(user, by, output, currentUser.id());
-                 
-                          readEvents().onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
+
+                          if ( ! Context::skipObservers())
+                              readEvents().onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
                       });
     return status;
 }
@@ -197,8 +200,9 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(const I
                  
                           status.disable();
                           writeDiscussionThreads(tag, by, output, currentUser.id());
-                 
-                          readEvents().onGetDiscussionThreadsWithTag(createObserverContext(currentUser), tag);
+
+                          if ( ! Context::skipObservers())
+                              readEvents().onGetDiscussionThreadsWithTag(createObserverContext(currentUser), tag);
                       });
     return status;
 }
@@ -228,7 +232,8 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(cons
                          status.disable();
                          writeDiscussionThreads(category, by, output, currentUser.id());
 
-                         readEvents().onGetDiscussionThreadsOfCategory(createObserverContext(currentUser), category);
+                         if ( ! Context::skipObservers())
+                             readEvents().onGetDiscussionThreadsOfCategory(createObserverContext(currentUser), category);
                      });
     return status;
 }
@@ -264,8 +269,9 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const std::s
                                                                       {
                                                                         user.insertDiscussionThread(thread);
                                                                       });
-                 
-                           writeEvents().onAddNewDiscussionThread(createObserverContext(*createdBy), *thread);
+
+                           if ( ! Context::skipObservers())
+                               writeEvents().onAddNewDiscussionThread(createObserverContext(*createdBy), *thread);
                  
                            status.addExtraSafeName("id", thread->id());
                            status.addExtraSafeName("name", thread->name());
@@ -306,8 +312,9 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const Id
                                                                      thread.latestVisibleChange() = Context::getCurrentTime();
                                                                      updateLastUpdated(thread, user);
                                                                  });
-                           writeEvents().onChangeDiscussionThread(createObserverContext(*user), **it,
-                                                                  DiscussionThread::ChangeType::Name);
+                           if ( ! Context::skipObservers())
+                               writeEvents().onChangeDiscussionThread(createObserverContext(*user), **it,
+                                                                      DiscussionThread::ChangeType::Name);
                        });
     return status;
 }
@@ -332,8 +339,10 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(const IdType
                                return;
                            }
                            //make sure the thread is not deleted before being passed to the observers
-                           writeEvents().onDeleteDiscussionThread(
-                                   createObserverContext(*performedBy.getAndUpdate(collection)), **it);
+                           if ( ! Context::skipObservers())
+                               writeEvents().onDeleteDiscussionThread(
+                                       createObserverContext(*performedBy.getAndUpdate(collection)), **it);
+
                            collection.deleteDiscussionThread(it);
                        });
     return status;
@@ -376,7 +385,8 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                            auto& threadInto = **itInto;
                    
                            //make sure the thread is not deleted before being passed to the observers
-                           writeEvents().onMergeDiscussionThreads(createObserverContext(*user), threadFrom, threadInto);
+                           if ( ! Context::skipObservers())
+                               writeEvents().onMergeDiscussionThreads(createObserverContext(*user), threadFrom, threadInto);
                    
                            auto updateMessageCounts = [&collection](DiscussionThreadRef& threadRef, int_fast32_t difference)
                            {

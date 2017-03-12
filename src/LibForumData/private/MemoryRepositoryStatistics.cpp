@@ -26,8 +26,9 @@ StatusCode MemoryRepositoryStatistics::getEntitiesCount(std::ostream& output) co
                           count.nrOfDiscussionCategories = static_cast<uint_fast32_t>(collection.categoriesById().size());
                  
                           writeSingleValueSafeName(output, "count", count);
-                 
-                          readEvents().onGetEntitiesCount(createObserverContext(performedBy.get(collection, store())));
+
+                          if ( ! Context::skipObservers())
+                              readEvents().onGetEntitiesCount(createObserverContext(performedBy.get(collection, store())));
                       });
     return StatusCode::OK;
 }
