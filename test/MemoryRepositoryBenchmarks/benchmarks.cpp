@@ -183,15 +183,63 @@ void populateData(BenchmarkContext& context)
         context.currentTimestamp += 100;
     }
 
+    std::uniform_int_distribution<> userIdDistribution(0, userIds.size() - 1);
+    std::normal_distribution<float> messageSizedistribution(messageContentLengthMean, messageContentLengthStddev);
+    
+    auto config = Configuration::getGlobalConfig();
+
+    auto addMessage = [&](const std::string& threadId)
+    {
+        auto messageLength = static_cast<int_fast32_t>(messageSizedistribution(randomGenerator));
+        messageLength = std::max(config->discussionThreadMessage.minContentLength, messageLength);
+        messageLength = std::min(config->discussionThreadMessage.maxContentLength, messageLength);
+        messageLength = std::min(static_cast<decltype(messageLength)>(4095), messageLength);
+
+        execute(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, getRandomText(messageLength) });
+    };
+
     for (size_t i = 0; i < nrOfTags; i++)
     {
         tagIds.emplace_back(executeAndGetId(handler, Command::ADD_DISCUSSION_TAG, { "Tag" + std::to_string(i + 1) }));
         context.currentTimestamp += 100;
     }
+
     std::uniform_int_distribution<> tagIdDistribution(0, tagIds.size() - 1);
     std::uniform_int_distribution<> nrOfTagsPerCategoryDistribution(nrOfTagsPerCategoryMin, nrOfTagsPerCategoryMax);
     std::uniform_int_distribution<> nrOfTagsPerThreadDistribution(nrOfTagsPerThreadMin, nrOfTagsPerThreadMax);
-    
+
+    std::vector<std::tuple<std::string, std::string>> threadTagsToAdd;
+
+    for (size_t i = 0; i < nrOfThreads; i++)
+    {
+        Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
+        auto id = executeAndGetId(handler, Command::ADD_DISCUSSION_THREAD, { getRandomText(50) });
+
+        for (int j = 0, n = nrOfTagsPerThreadDistribution(randomGenerator); j < n; ++j)
+        {
+            threadTagsToAdd.push_back(std::make_tuple(tagIds[tagIdDistribution(randomGenerator)], id));
+        }
+
+        threadIds.emplace_back(id);
+        addMessage(id);
+
+        context.currentTimestamp += 10;
+    }
+    std::uniform_int_distribution<> threadIdDistribution(0, threadIds.size() - 1);
+
+    for (size_t i = 0; i < (nrOfMessages - nrOfThreads); i++)
+    {
+        Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
+        addMessage(threadIds[threadIdDistribution(randomGenerator)]);
+
+        context.currentTimestamp += 1;
+    }
+
+    for (auto& tuple : threadTagsToAdd)
+    {
+        execute(handler, Command::ADD_DISCUSSION_TAG_TO_THREAD, { std::get<0>(tuple), std::get<1>(tuple) });
+    }
+
     for (size_t i = 0; i < nrOfCategories; i++)
     {
         auto id = executeAndGetId(handler, Command::ADD_DISCUSSION_CATEGORY, { "Category" + std::to_string(i + 1) });
@@ -214,46 +262,6 @@ void populateData(BenchmarkContext& context)
         {
             addedParentChildRelationships += 1;
         }
-    }
-
-    std::uniform_int_distribution<> userIdDistribution(0, userIds.size() - 1);
-    std::normal_distribution<float> messageSizedistribution(messageContentLengthMean, messageContentLengthStddev);
-    
-    auto config = Configuration::getGlobalConfig();
-
-    auto addMessage = [&](const std::string& threadId)
-    {
-        auto messageLength = static_cast<int_fast32_t>(messageSizedistribution(randomGenerator));
-        messageLength = std::max(config->discussionThreadMessage.minContentLength, messageLength);
-        messageLength = std::min(config->discussionThreadMessage.maxContentLength, messageLength);
-        messageLength = std::min(static_cast<decltype(messageLength)>(4095), messageLength);
-
-        execute(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, getRandomText(messageLength) });
-    };
-
-    for (size_t i = 0; i < nrOfThreads; i++)
-    {
-        Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
-        auto id = executeAndGetId(handler, Command::ADD_DISCUSSION_THREAD, { getRandomText(50) });
-
-        for (int j = 0, n = nrOfTagsPerThreadDistribution(randomGenerator); j < n; ++j)
-        {
-            execute(handler, Command::ADD_DISCUSSION_TAG_TO_THREAD, { tagIds[tagIdDistribution(randomGenerator)], id });
-        }
-
-        threadIds.emplace_back(id);
-        addMessage(id);
-
-        context.currentTimestamp += 10;
-    }
-    std::uniform_int_distribution<> threadIdDistribution(0, threadIds.size() - 1);
-
-    for (size_t i = 0; i < (nrOfMessages - nrOfThreads); i++)
-    {
-        Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
-        addMessage(threadIds[threadIdDistribution(randomGenerator)]);
-
-        context.currentTimestamp += 1;
     }
 }
 
