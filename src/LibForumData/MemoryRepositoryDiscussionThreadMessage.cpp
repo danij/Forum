@@ -283,7 +283,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
                      
                            auto& createdBy = messageRef->createdBy();
                           
-                           auto threadUpdateFn = [&collection](DiscussionThreadRef& threadRef, bool insert)
+                           auto threadUpdateFn = [&collection](DiscussionThreadRef&& threadRef, bool insert)
                            {
                                threadRef->resetVisitorsSinceLastEdit();
                                threadRef->latestVisibleChange() = Context::getCurrentTime();
