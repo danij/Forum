@@ -23,10 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <string>
 
-using namespace std;
 using namespace Json;
 
-JsonWriter::JsonWriter(ostream& stream) : _stream(stream)
+JsonWriter::JsonWriter(std::ostream& stream) : _stream(stream)
 {
     _state.push({ false, false, false });
 }
@@ -46,7 +45,8 @@ JsonWriter& JsonWriter::startArray()
     if (isCommaNeeded())
     {
         _stream << ",[";
-    } else
+    }
+    else
     {
         _stream << '[';
     }
@@ -90,7 +90,7 @@ JsonWriter& JsonWriter::newProperty(const char* name)
     return *this;
 }
 
-JsonWriter& JsonWriter::newProperty(const string& name)
+JsonWriter& JsonWriter::newProperty(const std::string& name)
 {
     writeEscapedString(name.c_str(), name.length());
     _stream << ':';
@@ -103,7 +103,8 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name, std::size_t le
     if (isCommaNeeded())
     {
         _stream << ",\"";
-    } else
+    }
+    else
     {
         _stream << '"';
     }
@@ -113,18 +114,19 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name, std::size_t le
     return *this;
 }
 
-JsonWriter& JsonWriter::newPropertyWithSafeName(const string& name)
+JsonWriter& JsonWriter::newPropertyWithSafeName(const std::string& name)
 {
     if (isCommaNeeded())
     {
         _stream << ",\"";
-    } else
+    }
+    else
     {
         _stream << '"';
     }
-   _stream << name << "\":";
-   _state.top().propertyNameAdded = true;
-   return *this;
+    _stream << name << "\":";
+    _state.top().propertyNameAdded = true;
+    return *this;
 }
 
 static const unsigned char toEscape[128] = {
