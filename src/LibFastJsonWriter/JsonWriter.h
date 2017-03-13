@@ -70,10 +70,10 @@ namespace Json
             }
             else
             {
-                writeChar_('"');
+                writeChar('"');
             }
-            writeString_(value, length);
-            writeChar_('"');
+            writeString(value, length);
+            writeChar('"');
             return *this;
         }
 
@@ -219,7 +219,7 @@ namespace Json
             }
 
             ++digit;
-            writeString_(digit, bufferEnd - digit);
+            writeString(digit, bufferEnd - digit);
 
             return *this;
         };
@@ -228,12 +228,36 @@ namespace Json
         void writeString(const char(&value)[Size])
         {
             //ignore null terminator
-            writeString_(value, Size - 1);
+            writeString(value, Size - 1);
         }
 
         void writeString(const std::string& value)
         {
-            writeString_(value.c_str(), value.size());
+            writeString(value.c_str(), value.size());
+        }
+
+        void writeString(const char* value, size_t size)
+        {
+            if (vectorOutput_)
+            {
+                vectorOutput_->insert(vectorOutput_->end(), value, value + size);
+            }
+            else
+            {
+                streamOutput_->write(value, size);
+            }
+        }
+
+        void writeChar(char value)
+        {
+            if (vectorOutput_)
+            {
+                vectorOutput_->push_back(value);
+            }
+            else
+            {
+                *streamOutput_ << value;
+            }
         }
 
         friend JsonWriter& operator<<(JsonWriter& writer, const char* value);
@@ -246,9 +270,8 @@ namespace Json
             bool propertyNameAdded;
         };
 
-        std::function<void(char)> writeChar_;
-        std::function<void(const char*, size_t length)> writeString_;
-
+        std::vector<char>* vectorOutput_ = nullptr;
+        std::ostream* streamOutput_ = nullptr;
         std::stack<State, std::vector<State>> _state;
     };
 

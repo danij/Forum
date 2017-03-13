@@ -25,31 +25,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Json;
 
-JsonWriter::JsonWriter(std::ostream& stream)
+JsonWriter::JsonWriter(std::ostream& stream) : streamOutput_(&stream)
 {
-    writeChar_ = [&stream](char c)
-    {
-        stream << c;
-    };
-    writeString_ = [&stream](const char* str, size_t size)
-    {
-        stream.write(str, size);
-    };
-
     _state.push({ false, false, false });
 }
 
-JsonWriter::JsonWriter(std::vector<char>& vector)
+JsonWriter::JsonWriter(std::vector<char>& vector) : vectorOutput_(&vector)
 {
-    writeChar_ = [&vector](char c)
-    {
-        vector.push_back(c);
-    };
-    writeString_ = [&vector](const char* str, size_t size)
-    {
-        vector.insert(vector.end(), str, str + size);
-    };
-
     _state.push({ false, false, false });
 }
 
@@ -71,7 +53,7 @@ JsonWriter& JsonWriter::startArray()
     }
     else
     {
-        writeChar_('[');
+        writeChar('[');
     }
     _state.push({ true, false, false });
     return *this;
@@ -79,7 +61,7 @@ JsonWriter& JsonWriter::startArray()
 
 JsonWriter& JsonWriter::endArray()
 {
-    writeChar_(']');
+    writeChar(']');
     _state.pop();
     return *this;
 }
@@ -92,7 +74,7 @@ JsonWriter& JsonWriter::startObject()
     }
     else
     {
-        writeChar_('{');
+        writeChar('{');
     }
     _state.push({ true, false, false });
     return *this;
@@ -100,7 +82,7 @@ JsonWriter& JsonWriter::startObject()
 
 JsonWriter& JsonWriter::endObject()
 {
-    writeChar_('}');
+    writeChar('}');
     _state.pop();
     return *this;
 }
@@ -108,7 +90,7 @@ JsonWriter& JsonWriter::endObject()
 JsonWriter& JsonWriter::newProperty(const char* name)
 {
     writeEscapedString(name);
-    writeChar_(':');
+    writeChar(':');
     _state.top().propertyNameAdded = true;
     return *this;
 }
@@ -116,7 +98,7 @@ JsonWriter& JsonWriter::newProperty(const char* name)
 JsonWriter& JsonWriter::newProperty(const std::string& name)
 {
     writeEscapedString(name.c_str(), name.length());
-    writeChar_(':');
+    writeChar(':');
     _state.top().propertyNameAdded = true;
     return *this;
 }
@@ -129,9 +111,9 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name, std::size_t le
     }
     else
     {
-        writeChar_('"');
+        writeChar('"');
     }
-    writeString_(name, length);
+    writeString(name, length);
     writeString("\":");
     _state.top().propertyNameAdded = true;
     return *this;
@@ -145,7 +127,7 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const std::string& name)
     }
     else
     {
-        writeChar_('"');
+        writeChar('"');
     }
     writeString(name);
     writeString("\":");
@@ -178,7 +160,7 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
     }
     else
     {
-        writeChar_('"');
+        writeChar('"');
     }
 
     if (length == 0)
@@ -204,14 +186,14 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
                 if (directWriteFrom < value)
                 {
                     //flush previous characters that don't require escaping
-                    writeString_(directWriteFrom, value - directWriteFrom);
+                    writeString(directWriteFrom, value - directWriteFrom);
                 }
                 directWriteFrom = value + 1; //skip the current character as it needs escaping
                 if (r < 0xFF)
                 {
                     //we have a special character for the escape
                     twoCharEscapeBuffer[1] = static_cast<char>(r);
-                    writeString_(twoCharEscapeBuffer, 2);
+                    writeString(twoCharEscapeBuffer, 2);
                 }
                 else
                 {
@@ -219,7 +201,7 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
                     //simplified as we only escape control characters this way
                     sixCharEscapeBuffer[4] = hexDigits[c / 16];
                     sixCharEscapeBuffer[5] = hexDigits[c % 16];
-                    writeString_(sixCharEscapeBuffer, 6);
+                    writeString(sixCharEscapeBuffer, 6);
                 }
             }
         }
@@ -229,10 +211,10 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
     if (directWriteFrom < value)
     {
         //write remaining characters that don't require escaping
-        writeString_(directWriteFrom, value - directWriteFrom);
+        writeString(directWriteFrom, value - directWriteFrom);
     }
 
-    writeChar_('"');
+    writeChar('"');
 
     return *this;
 }
