@@ -15,7 +15,7 @@ using namespace Forum::Repository;
 #define COMMAND_HANDLER_METHOD(name) \
     StatusCode name(const std::vector<std::string>& parameters, OutStream& output)
 
-static thread_local std::vector<char> outputBuffer;
+static thread_local std::string outputBuffer;
 
 struct CommandHandler::CommandHandlerImpl
 {
@@ -595,16 +595,15 @@ WriteEvents& CommandHandler::writeEvents()
 
 CommandHandler::Result CommandHandler::handle(Command command, const std::vector<std::string>& parameters)
 {
-    CommandHandler::Result result;
+    StatusCode statusCode;
     if (command >= 0 && command < LAST_COMMAND)
     {
         outputBuffer.clear();
-        result.statusCode = impl_->handlers[command](parameters, outputBuffer);
-        result.output = { outputBuffer.data(), outputBuffer.size() };
+        statusCode = impl_->handlers[command](parameters, outputBuffer);
     }
     else
     {
-        result.statusCode = StatusCode::NOT_FOUND;
+        statusCode = StatusCode::NOT_FOUND;
     }
-    return result;
+    return { statusCode, outputBuffer };
 }

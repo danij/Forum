@@ -67,7 +67,7 @@ TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& han
     boost::property_tree::ptree result;
     if (output.output.size())
     {
-        std::istringstream stream(static_cast<std::string>(output.output));
+        std::istringstream stream(output.output);
         boost::property_tree::read_json(stream, result);
     }
 

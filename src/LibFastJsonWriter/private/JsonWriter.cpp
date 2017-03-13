@@ -30,7 +30,7 @@ JsonWriter::JsonWriter(std::ostream& stream) : streamOutput_(&stream)
     state_.push({ false, false, false });
 }
 
-JsonWriter::JsonWriter(std::vector<char>& vector) : vectorOutput_(&vector)
+JsonWriter::JsonWriter(std::string& string) : stringOutput_(&string)
 {
     state_.push({ false, false, false });
 }

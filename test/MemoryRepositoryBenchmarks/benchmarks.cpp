@@ -85,7 +85,7 @@ auto executeAndGetTree(CommandHandler& handler, Command command, std::vector<std
 
     if (output.output.size())
     {
-        std::stringstream stream(static_cast<std::string>(output.output));
+        std::stringstream stream(output.output);
         boost::property_tree::read_json(stream, result);
     }
     return result;

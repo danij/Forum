@@ -118,7 +118,7 @@ namespace Forum
             struct Result
             {
                 Repository::StatusCode statusCode;
-                boost::string_view output;
+                const std::string& output;
             };
 
             Result handle(Command command, const std::vector<std::string>& parameters);

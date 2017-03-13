@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <functional>
 #include <iostream>
 #include <stack>
+#include <string>
 #include <vector>
 
 namespace Json
@@ -29,7 +30,7 @@ namespace Json
     {
     public:
         explicit JsonWriter(std::ostream& stream);
-        explicit JsonWriter(std::vector<char>& vector);
+        explicit JsonWriter(std::string& stringBuffer);
 
         JsonWriter(const JsonWriter&) = delete;
         JsonWriter(JsonWriter&&) = default;
@@ -238,9 +239,9 @@ namespace Json
 
         void writeString(const char* value, size_t size)
         {
-            if (vectorOutput_)
+            if (stringOutput_)
             {
-                vectorOutput_->insert(vectorOutput_->end(), value, value + size);
+                stringOutput_->insert(stringOutput_->end(), value, value + size);
             }
             else
             {
@@ -250,9 +251,9 @@ namespace Json
 
         void writeChar(char value)
         {
-            if (vectorOutput_)
+            if (stringOutput_)
             {
-                vectorOutput_->push_back(value);
+                *stringOutput_ += value;
             }
             else
             {
@@ -270,7 +271,7 @@ namespace Json
             bool propertyNameAdded;
         };
 
-        std::vector<char>* vectorOutput_ = nullptr;
+        std::string* stringOutput_ = nullptr;
         std::ostream* streamOutput_ = nullptr;
         std::stack<State, std::vector<State>> state_;
     };

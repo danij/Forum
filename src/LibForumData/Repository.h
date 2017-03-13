@@ -55,7 +55,7 @@ namespace Forum
             MessageCount
         };
 
-        typedef std::vector<char> OutStream;
+        typedef std::string OutStream;
 
         /**
          * return StatusCode from repository methods so that the code can easily be converted to a HTTP code
