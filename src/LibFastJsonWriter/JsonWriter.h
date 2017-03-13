@@ -25,17 +25,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Json
 {
-    class JsonWriter
+    class JsonWriter final
     {
     public:
         explicit JsonWriter(std::ostream& stream);
         explicit JsonWriter(std::vector<char>& vector);
 
         JsonWriter(const JsonWriter&) = delete;
-
-        virtual ~JsonWriter();
+        JsonWriter(JsonWriter&&) = default;
 
         JsonWriter& operator=(const JsonWriter& other) = delete;
+        JsonWriter& operator=(JsonWriter&& other) = default;
 
         JsonWriter& null();
 
@@ -145,7 +145,7 @@ namespace Json
         bool isCommaNeeded()
         {
             bool result = false;
-            auto& state = _state.top();
+            auto& state = state_.top();
             if (state.enumerationStarted)
             {
                 if (state.commaRequired)
@@ -272,7 +272,7 @@ namespace Json
 
         std::vector<char>* vectorOutput_ = nullptr;
         std::ostream* streamOutput_ = nullptr;
-        std::stack<State, std::vector<State>> _state;
+        std::stack<State, std::vector<State>> state_;
     };
 
     template <typename T>

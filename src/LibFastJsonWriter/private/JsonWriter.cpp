@@ -27,16 +27,12 @@ using namespace Json;
 
 JsonWriter::JsonWriter(std::ostream& stream) : streamOutput_(&stream)
 {
-    _state.push({ false, false, false });
+    state_.push({ false, false, false });
 }
 
 JsonWriter::JsonWriter(std::vector<char>& vector) : vectorOutput_(&vector)
 {
-    _state.push({ false, false, false });
-}
-
-JsonWriter::~JsonWriter()
-{
+    state_.push({ false, false, false });
 }
 
 JsonWriter& JsonWriter::null()
@@ -55,14 +51,15 @@ JsonWriter& JsonWriter::startArray()
     {
         writeChar('[');
     }
-    _state.push({ true, false, false });
+    state_.push({ true, false, false });
     return *this;
 }
 
 JsonWriter& JsonWriter::endArray()
 {
     writeChar(']');
-    _state.pop();
+
+    state_.pop();
     return *this;
 }
 
@@ -76,14 +73,15 @@ JsonWriter& JsonWriter::startObject()
     {
         writeChar('{');
     }
-    _state.push({ true, false, false });
+    state_.push({ true, false, false });
     return *this;
 }
 
 JsonWriter& JsonWriter::endObject()
 {
     writeChar('}');
-    _state.pop();
+
+    state_.pop();
     return *this;
 }
 
@@ -91,7 +89,8 @@ JsonWriter& JsonWriter::newProperty(const char* name)
 {
     writeEscapedString(name);
     writeChar(':');
-    _state.top().propertyNameAdded = true;
+
+    state_.top().propertyNameAdded = true;
     return *this;
 }
 
@@ -99,7 +98,8 @@ JsonWriter& JsonWriter::newProperty(const std::string& name)
 {
     writeEscapedString(name.c_str(), name.length());
     writeChar(':');
-    _state.top().propertyNameAdded = true;
+
+    state_.top().propertyNameAdded = true;
     return *this;
 }
 
@@ -115,7 +115,8 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name, std::size_t le
     }
     writeString(name, length);
     writeString("\":");
-    _state.top().propertyNameAdded = true;
+
+    state_.top().propertyNameAdded = true;
     return *this;
 }
 
@@ -131,19 +132,19 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const std::string& name)
     }
     writeString(name);
     writeString("\":");
-    _state.top().propertyNameAdded = true;
+
+    state_.top().propertyNameAdded = true;
     return *this;
 }
 
-static const unsigned char toEscape[128] = {
+static const unsigned char toEscape[] =
+{
    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x62, 0x74, 0x6E, 0xFF, 0x66, 0x72, 0xFF, 0xFF,
    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
    0x00, 0x00, 0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2F,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5C, 0x00, 0x00, 0x00,
-   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5C, 0x00, 0x00, 0x00
 };
 static constexpr int toEscapeLength = sizeof(toEscape) / sizeof(toEscape[0]);
 
