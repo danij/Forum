@@ -170,23 +170,14 @@ namespace Json
 
         JsonWriter& writeEscapedString(const char* value, size_t length = 0);
 
-        constexpr int maxDigitsOfNumber(int numberOfBytes) noexcept
+        constexpr static int maxDigitsOfNumber(int numberOfBytes) noexcept
         {
-            switch (numberOfBytes * 8)
-            {
-                case 8:
-                    return 3;
-                case 16:
-                    return 5;
-                case 32:
-                    return 10;
-                case 64:
-                    return 20;
-                case 128:
-                    return 39;
-                default:
-                    return 128;
-            }
+            return 1 == numberOfBytes ? 3
+                : 2 == numberOfBytes ? 5
+                : 4 == numberOfBytes ? 10
+                : 8 == numberOfBytes ? 20
+                : 16 == numberOfBytes ? 39
+                : 128;
         }
 
         template<typename T>
