@@ -25,8 +25,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Json;
 
-JsonWriter::JsonWriter(std::ostream& stream) : _stream(stream)
+JsonWriter::JsonWriter(std::ostream& stream)
 {
+    writeChar_ = [&stream](char c)
+    {
+        stream << c;
+    };
+    writeString_ = [&stream](const char* str, size_t size)
+    {
+        stream.write(str, size);
+    };
+
+    _state.push({ false, false, false });
+}
+
+JsonWriter::JsonWriter(std::vector<char>& vector)
+{
+    writeChar_ = [&vector](char c)
+    {
+        vector.push_back(c);
+    };
+    writeString_ = [&vector](const char* str, size_t size)
+    {
+        vector.insert(vector.end(), str, str + size);
+    };
+
     _state.push({ false, false, false });
 }
 
@@ -36,7 +59,7 @@ JsonWriter::~JsonWriter()
 
 JsonWriter& JsonWriter::null()
 {
-    _stream << (isCommaNeeded() ? ",null" : "null");
+    if (isCommaNeeded()) writeString(",null"); else writeString("null");
     return *this;
 }
 
@@ -44,11 +67,11 @@ JsonWriter& JsonWriter::startArray()
 {
     if (isCommaNeeded())
     {
-        _stream << ",[";
+        writeString(",[");
     }
     else
     {
-        _stream << '[';
+        writeChar_('[');
     }
     _state.push({ true, false, false });
     return *this;
@@ -56,7 +79,7 @@ JsonWriter& JsonWriter::startArray()
 
 JsonWriter& JsonWriter::endArray()
 {
-    _stream << ']';
+    writeChar_(']');
     _state.pop();
     return *this;
 }
@@ -65,11 +88,11 @@ JsonWriter& JsonWriter::startObject()
 {
     if (isCommaNeeded())
     {
-        _stream << ",{";
+        writeString(",{");
     }
     else
     {
-        _stream << '{';
+        writeChar_('{');
     }
     _state.push({ true, false, false });
     return *this;
@@ -77,7 +100,7 @@ JsonWriter& JsonWriter::startObject()
 
 JsonWriter& JsonWriter::endObject()
 {
-    _stream << '}';
+    writeChar_('}');
     _state.pop();
     return *this;
 }
@@ -85,7 +108,7 @@ JsonWriter& JsonWriter::endObject()
 JsonWriter& JsonWriter::newProperty(const char* name)
 {
     writeEscapedString(name);
-    _stream << ':';
+    writeChar_(':');
     _state.top().propertyNameAdded = true;
     return *this;
 }
@@ -93,7 +116,7 @@ JsonWriter& JsonWriter::newProperty(const char* name)
 JsonWriter& JsonWriter::newProperty(const std::string& name)
 {
     writeEscapedString(name.c_str(), name.length());
-    _stream << ':';
+    writeChar_(':');
     _state.top().propertyNameAdded = true;
     return *this;
 }
@@ -102,14 +125,14 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name, std::size_t le
 {
     if (isCommaNeeded())
     {
-        _stream << ",\"";
+        writeString(",\"");
     }
     else
     {
-        _stream << '"';
+        writeChar_('"');
     }
-    _stream.write(name, length);
-    _stream << "\":";
+    writeString_(name, length);
+    writeString("\":");
     _state.top().propertyNameAdded = true;
     return *this;
 }
@@ -118,13 +141,14 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const std::string& name)
 {
     if (isCommaNeeded())
     {
-        _stream << ",\"";
+        writeString(",\"");
     }
     else
     {
-        _stream << '"';
+        writeChar_('"');
     }
-    _stream << name << "\":";
+    writeString(name);
+    writeString("\":");
     _state.top().propertyNameAdded = true;
     return *this;
 }
@@ -150,11 +174,11 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
 {
     if (isCommaNeeded())
     {
-        _stream << ",\"";
+        writeString(",\"");
     }
     else
     {
-        _stream << '"';
+        writeChar_('"');
     }
 
     if (length == 0)
@@ -180,14 +204,14 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
                 if (directWriteFrom < value)
                 {
                     //flush previous characters that don't require escaping
-                    _stream.write(directWriteFrom, value - directWriteFrom);
+                    writeString_(directWriteFrom, value - directWriteFrom);
                 }
                 directWriteFrom = value + 1; //skip the current character as it needs escaping
                 if (r < 0xFF)
                 {
                     //we have a special character for the escape
                     twoCharEscapeBuffer[1] = static_cast<char>(r);
-                    _stream.write(twoCharEscapeBuffer, 2);
+                    writeString_(twoCharEscapeBuffer, 2);
                 }
                 else
                 {
@@ -195,7 +219,7 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
                     //simplified as we only escape control characters this way
                     sixCharEscapeBuffer[4] = hexDigits[c / 16];
                     sixCharEscapeBuffer[5] = hexDigits[c % 16];
-                    _stream.write(sixCharEscapeBuffer, 6);
+                    writeString_(sixCharEscapeBuffer, 6);
                 }
             }
         }
@@ -205,10 +229,10 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
     if (directWriteFrom < value)
     {
         //write remaining characters that don't require escaping
-        _stream.write(directWriteFrom, value - directWriteFrom);
+        writeString_(directWriteFrom, value - directWriteFrom);
     }
 
-    _stream << '"';
+    writeChar_('"');
 
     return *this;
 }

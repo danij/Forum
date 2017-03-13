@@ -18,7 +18,7 @@ MemoryRepositoryUser::MemoryRepositoryUser(MemoryStoreRef store) : MemoryReposit
     validUserNameRegex(boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$"))
 {}
 
-StatusCode MemoryRepositoryUser::getUsers(std::ostream& output, RetrieveUsersBy by) const
+StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by) const
 {
     PerformedByWithLastSeenUpdateGuard performedBy;
 
@@ -57,7 +57,7 @@ StatusCode MemoryRepositoryUser::getUsers(std::ostream& output, RetrieveUsersBy 
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryUser::getUserById(const IdType& id, std::ostream& output) const
+StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output) const
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -83,7 +83,7 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, std::ostream& out
     return status;
 }
 
-StatusCode MemoryRepositoryUser::getUserByName(const std::string& name, std::ostream& output) const
+StatusCode MemoryRepositoryUser::getUserByName(const std::string& name, OutStream& output) const
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -110,7 +110,7 @@ StatusCode MemoryRepositoryUser::getUserByName(const std::string& name, std::ost
     return status;
 }
 
-StatusCode MemoryRepositoryUser::addNewUser(const std::string& name, std::ostream& output)
+StatusCode MemoryRepositoryUser::addNewUser(const std::string& name, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -150,7 +150,7 @@ StatusCode MemoryRepositoryUser::addNewUser(const std::string& name, std::ostrea
     return status;
 }
 
-StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const std::string& newName, std::ostream& output)
+StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const std::string& newName, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     auto config = getGlobalConfig();
@@ -189,7 +189,7 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const std::str
     return status;
 }
 
-StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, const std::string& newInfo, std::ostream& output)
+StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, const std::string& newInfo, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -225,7 +225,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, const std::str
     return status;
 }
 
-StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, std::ostream& output)
+StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)

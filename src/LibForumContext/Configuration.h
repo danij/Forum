@@ -57,6 +57,11 @@ namespace Forum
             int_fast16_t maxDescriptionLength = 1024;
         };
 
+        struct ServiceConfig
+        {
+            int_fast32_t serializationPerThreadBufferSize = 1 << 20; //1 MiByte buffer / thread
+        };
+
         struct Config
         {
             UserConfig user;
@@ -64,6 +69,7 @@ namespace Forum
             DiscussionThreadMessageConfig discussionThreadMessage;
             DiscussionTagConfig discussionTag;
             DiscussionCategoryConfig discussionCategory;
+            ServiceConfig service;
         };
 
         typedef std::shared_ptr<const Config> ConfigConstRef;

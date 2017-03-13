@@ -20,7 +20,7 @@ MemoryRepositoryDiscussionTag::MemoryRepositoryDiscussionTag(MemoryStoreRef stor
 }
 
 
-StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(std::ostream& output, RetrieveDiscussionTagsBy by) const
+StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, RetrieveDiscussionTagsBy by) const
 {
     PerformedByWithLastSeenUpdateGuard performedBy;
 
@@ -63,7 +63,7 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(std::ostream& output
 }
 
 
-StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const std::string& name, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const std::string& name, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -105,7 +105,8 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const std::string&
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& id, const std::string& newName, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& id, const std::string& newName,
+                                                                  OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id )
@@ -152,7 +153,8 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType& id, const std::string& blob, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType& id, const std::string& blob,
+                                                                    OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id )
@@ -185,7 +187,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
@@ -215,7 +217,7 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, 
 }
 
 StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType& tagId, const IdType& threadId, 
-                                                                   std::ostream& output)
+                                                                   OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! tagId || ! threadId)
@@ -269,7 +271,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
 }
 
 StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const IdType& tagId, const IdType& threadId, 
-                                                                        std::ostream& output)
+                                                                        OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! tagId || ! threadId)
@@ -319,7 +321,8 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const Id
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& fromId, const IdType& intoId, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& fromId, const IdType& intoId, 
+                                                              OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! fromId || ! intoId)

@@ -12,7 +12,7 @@ MemoryRepositoryStatistics::MemoryRepositoryStatistics(MemoryStoreRef store) : M
 {
 }
 
-StatusCode MemoryRepositoryStatistics::getEntitiesCount(std::ostream& output) const
+StatusCode MemoryRepositoryStatistics::getEntitiesCount(OutStream& output) const
 {
     PerformedByWithLastSeenUpdateGuard performedBy;
 

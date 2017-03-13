@@ -11,7 +11,7 @@ namespace Forum
     namespace Helpers
     {
         template <typename T, std::size_t Size>
-        void writeSingleValueSafeName(std::ostream& output, const char(&name)[Size], const T& value)
+        void writeSingleValueSafeName(Forum::Repository::OutStream& output, const char(&name)[Size], const T& value)
         {
             Json::JsonWriter writer(output);
             writer
@@ -20,7 +20,7 @@ namespace Forum
                 << Json::objEnd;
         }
 
-        inline void writeStatusCode(std::ostream& output, Repository::StatusCode code)
+        inline void writeStatusCode(Forum::Repository::OutStream& output, Repository::StatusCode code)
         {
             writeSingleValueSafeName(output, "status", code);
         }
@@ -81,8 +81,8 @@ namespace Forum
         
         template<typename Collection, typename InterceptorFn, std::size_t PropertyNameSize>
         void writeEntitiesWithPagination(const Collection& collection, const char(&propertyName)[PropertyNameSize],
-                                         std::ostream& output, int_fast32_t pageNumber, int_fast32_t pageSize,
-                                         bool ascending, InterceptorFn&& interceptor)
+                                         Forum::Repository::OutStream& output, int_fast32_t pageNumber,
+                                         int_fast32_t pageSize, bool ascending, InterceptorFn&& interceptor)
         {
             Json::JsonWriter writer(output);
             writer << Json::objStart;
@@ -100,7 +100,7 @@ namespace Forum
             /**
              * Initializes the helper with the stream to write to and the default status code
              */
-            StatusWriter(std::ostream& output, Repository::StatusCode defaultCode) :
+            StatusWriter(Forum::Repository::OutStream& output, Repository::StatusCode defaultCode) :
                     output_(output), statusCode_(defaultCode), enabled_(true)
             {}
 
@@ -152,7 +152,7 @@ namespace Forum
             }
 
         private:
-            std::ostream& output_;
+            Forum::Repository::OutStream& output_;
             Repository::StatusCode statusCode_;
             bool enabled_;
             int elementCount_ = 0;

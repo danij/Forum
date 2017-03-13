@@ -6,7 +6,7 @@
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
-StatusCode MetricsRepository::getVersion(std::ostream& output)
+StatusCode MetricsRepository::getVersion(OutStream& output)
 {
     writeSingleValueSafeName(output, "version", VERSION);
     return StatusCode::OK;

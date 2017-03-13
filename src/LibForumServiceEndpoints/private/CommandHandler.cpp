@@ -1,5 +1,5 @@
 #include "CommandHandler.h"
-
+#include "Configuration.h"
 #include "OutputHelpers.h"
 
 #include <memory>
@@ -7,16 +7,19 @@
 #include <boost/lexical_cast.hpp>
 
 using namespace Forum::Commands;
+using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
 #define COMMAND_HANDLER_METHOD(name) \
-    StatusCode name(const std::vector<std::string>& parameters, std::ostream& output)
+    StatusCode name(const std::vector<std::string>& parameters, OutStream& output)
+
+static thread_local std::vector<char> outputBuffer;
 
 struct CommandHandler::CommandHandlerImpl
 {
-    std::function<StatusCode(const std::vector<std::string>&, std::ostream&)> handlers[int(LAST_COMMAND)];
+    std::function<StatusCode(const std::vector<std::string>&, OutStream&)> handlers[int(LAST_COMMAND)];
     ObservableRepositoryRef observerRepository;
     UserRepositoryRef userRepository;
     DiscussionThreadRepositoryRef discussionThreadRepository;
@@ -26,7 +29,12 @@ struct CommandHandler::CommandHandlerImpl
     StatisticsRepositoryRef statisticsRepository;
     MetricsRepositoryRef metricsRepository;
 
-    static bool checkNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number)
+    CommandHandlerImpl()
+    {
+        outputBuffer.reserve(getGlobalConfig()->service.serializationPerThreadBufferSize);
+    }
+
+    static bool checkNumberOfParameters(const std::vector<std::string>& parameters, OutStream& output, size_t number)
     {
         if (parameters.size() != number)
         {
@@ -37,7 +45,7 @@ struct CommandHandler::CommandHandlerImpl
     }
 
     template<typename T>
-    static bool convertTo(const std::string& value, T& result, std::ostream& output)
+    static bool convertTo(const std::string& value, T& result, OutStream& output)
     {
         try
         {
@@ -51,7 +59,7 @@ struct CommandHandler::CommandHandlerImpl
         }
     }
 
-    static bool checkMinNumberOfParameters(const std::vector<std::string>& parameters, std::ostream& output, size_t number)
+    static bool checkMinNumberOfParameters(const std::vector<std::string>& parameters, OutStream& output, size_t number)
     {
         if (parameters.size() < number)
         {
@@ -585,11 +593,18 @@ WriteEvents& CommandHandler::writeEvents()
     return impl_->observerRepository->writeEvents();
 }
 
-StatusCode CommandHandler::handle(Command command, const std::vector<std::string>& parameters, std::ostream& output)
+CommandHandler::Result CommandHandler::handle(Command command, const std::vector<std::string>& parameters)
 {
+    CommandHandler::Result result;
     if (command >= 0 && command < LAST_COMMAND)
     {
-        return impl_->handlers[command](parameters, output);
+        outputBuffer.clear();
+        result.statusCode = impl_->handlers[command](parameters, outputBuffer);
+        result.output = { outputBuffer.data(), outputBuffer.size() };
     }
-    return StatusCode::NOT_FOUND;
+    else
+    {
+        result.statusCode = StatusCode::NOT_FOUND;
+    }
+    return result;
 }

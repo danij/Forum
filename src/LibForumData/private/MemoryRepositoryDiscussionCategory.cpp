@@ -20,7 +20,8 @@ MemoryRepositoryDiscussionCategory::MemoryRepositoryDiscussionCategory(MemorySto
 {
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(std::ostream& output, RetrieveDiscussionCategoriesBy by) const
+StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream& output,
+                                                                       RetrieveDiscussionCategoriesBy by) const
 {
     PerformedByWithLastSeenUpdateGuard performedBy;
 
@@ -62,7 +63,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(std::ostr
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(std::ostream& output) const
+StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(OutStream& output) const
 {
     PerformedByWithLastSeenUpdateGuard performedBy;
     collection().read([&](const EntityCollection& collection)
@@ -88,7 +89,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(s
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const IdType& id, std::ostream& output) const
+StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const IdType& id, OutStream& output) const
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
@@ -121,7 +122,8 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const I
 }
 
 
-StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const std::string& name, const IdType& parentId, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const std::string& name, const IdType& parentId,
+                                                                        OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -182,7 +184,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const st
 }
 
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(const IdType& id, const std::string& newName, 
-                                                                            std::ostream& output)
+                                                                            OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id )
@@ -230,8 +232,9 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescription(const IdType& id, const std::string& newDescription,
-                                                                                   std::ostream& output)
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescription(const IdType& id,
+                                                                                   const std::string& newDescription,
+                                                                                   OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id )
@@ -267,7 +270,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
 }
 
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(const IdType& id, const IdType& newParentId, 
-                                                                              std::ostream& output)
+                                                                              OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if (( ! id) || (id == newParentId))
@@ -344,7 +347,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(co
 
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOrder(const IdType& id, 
                                                                                     int_fast16_t newDisplayOrder,
-                                                                                    std::ostream& output)
+                                                                                    OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id )
@@ -383,7 +386,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(const IdType& id, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(const IdType& id, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
@@ -412,7 +415,8 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(const Id
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(const IdType& tagId, const IdType& categoryId, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(const IdType& tagId, const IdType& categoryId,
+                                                                          OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! tagId || ! categoryId)
@@ -470,7 +474,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(const 
 
 StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(const IdType& tagId, 
                                                                                const IdType& categoryId, 
-                                                                               std::ostream& output)
+                                                                               OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! tagId || ! categoryId)

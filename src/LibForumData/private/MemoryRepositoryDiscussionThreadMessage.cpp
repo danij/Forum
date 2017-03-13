@@ -22,7 +22,8 @@ MemoryRepositoryDiscussionThreadMessage::MemoryRepositoryDiscussionThreadMessage
 {
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesOfUserByCreated(const IdType& id, std::ostream& output) const
+StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesOfUserByCreated(const IdType& id,
+                                                                                               OutStream& output) const
 {
     StatusWriter status(output, StatusCode::OK);
     PerformedByWithLastSeenUpdateGuard performedBy;
@@ -64,7 +65,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(const IdType& threadId, 
                                                                                     const std::string& content,
-                                                                                    std::ostream& output)
+                                                                                    OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! threadId)
@@ -152,7 +153,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(const IdType& id, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(const IdType& id, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
@@ -183,7 +184,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(cons
 StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageContent(const IdType& id, 
                                                                                          const std::string& newContent,
                                                                                          const std::string& changeReason, 
-                                                                                         std::ostream& output)
+                                                                                         OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -247,7 +248,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(const IdType& messageId, 
                                                                                 const IdType& intoThreadId,
-                                                                                std::ostream& output)
+                                                                                OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! messageId || ! intoThreadId)
@@ -339,7 +340,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(const IdType& id, std::ostream& output, bool up)
+StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(const IdType& id, OutStream& output,
+                                                                                bool up)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
@@ -400,17 +402,17 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::upVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionThreadMessage::upVoteDiscussionThreadMessage(const IdType& id, OutStream& output)
 {
     return voteDiscussionThreadMessage(id, output, true);
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::downVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionThreadMessage::downVoteDiscussionThreadMessage(const IdType& id, OutStream& output)
 {
     return voteDiscussionThreadMessage(id, output, false);
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMessage(const IdType& id, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMessage(const IdType& id, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
@@ -456,7 +458,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
 }
 
 template<typename Collection>
-static void writeMessageComments(const Collection& collection, std::ostream& output)
+static void writeMessageComments(const Collection& collection, OutStream& output)
 {
     auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesCommentsPerPage;
     auto& displayContext = Context::getDisplayContext();
@@ -466,7 +468,7 @@ static void writeMessageComments(const Collection& collection, std::ostream& out
         [](const auto& c) { return c; });
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(std::ostream& output) const
+StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream& output) const
 {
     PerformedByWithLastSeenUpdateGuard performedBy;
 
@@ -481,7 +483,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(std::ostr
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussionThreadMessage(const IdType& id, 
-                                                                                                std::ostream& output) const
+                                                                                                OutStream& output) const
 {
     StatusWriter status(output, StatusCode::OK);
     PerformedByWithLastSeenUpdateGuard performedBy;
@@ -513,7 +515,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(const IdType& id, std::ostream& output) const
+StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(const IdType& id, OutStream& output) const
 {
     StatusWriter status(output, StatusCode::OK);
     PerformedByWithLastSeenUpdateGuard performedBy;
@@ -547,7 +549,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThreadMessage(const IdType& messageId, 
                                                                                         const std::string& content,
-                                                                                        std::ostream& output)
+                                                                                        OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! messageId)
@@ -607,7 +609,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
     return status;    
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(const IdType& id, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(const IdType& id, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)

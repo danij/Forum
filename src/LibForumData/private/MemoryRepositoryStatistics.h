@@ -11,7 +11,7 @@ namespace Forum
         public:
             explicit MemoryRepositoryStatistics(MemoryStoreRef store);
 
-            StatusCode getEntitiesCount(std::ostream& output) const override;
+            StatusCode getEntitiesCount(OutStream& output) const override;
         };
     }
 }

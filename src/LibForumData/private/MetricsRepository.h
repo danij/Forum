@@ -10,7 +10,7 @@ namespace Forum
     {
         class MetricsRepository : public IMetricsRepository, private boost::noncopyable
         {
-            virtual StatusCode getVersion(std::ostream& output) override;
+            virtual StatusCode getVersion(OutStream& output) override;
 
         };
     }

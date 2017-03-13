@@ -13,30 +13,30 @@ namespace Forum
             explicit MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store);
 
             StatusCode addNewDiscussionMessageInThread(const Entities::IdType& threadId,
-                                                       const std::string& content, std::ostream& output) override;
-            StatusCode deleteDiscussionMessage(const Entities::IdType& id, std::ostream& output) override;
+                                                       const std::string& content, OutStream& output) override;
+            StatusCode deleteDiscussionMessage(const Entities::IdType& id, OutStream& output) override;
             StatusCode changeDiscussionThreadMessageContent(const Entities::IdType& id, const std::string& newContent,
                                                             const std::string& changeReason, 
-                                                            std::ostream& output) override;
+                                                            OutStream& output) override;
             StatusCode moveDiscussionThreadMessage(const Entities::IdType& messageId, const Entities::IdType& intoThreadId, 
-                                                   std::ostream& output) override;
-            StatusCode upVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
-            StatusCode downVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
-            StatusCode resetVoteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output) override;
+                                                   OutStream& output) override;
+            StatusCode upVoteDiscussionThreadMessage(const Entities::IdType& id, OutStream& output) override;
+            StatusCode downVoteDiscussionThreadMessage(const Entities::IdType& id, OutStream& output) override;
+            StatusCode resetVoteDiscussionThreadMessage(const Entities::IdType& id, OutStream& output) override;
 
             StatusCode getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
-                                                                  std::ostream& output) const override;
+                                                                  OutStream& output) const override;
 
             StatusCode addCommentToDiscussionThreadMessage(const Entities::IdType& messageId, const std::string& content, 
-                                                           std::ostream& output) override;
-            StatusCode getMessageComments(std::ostream& output) const override;
+                                                           OutStream& output) override;
+            StatusCode getMessageComments(OutStream& output) const override;
             StatusCode getMessageCommentsOfDiscussionThreadMessage(const Entities::IdType& id, 
-                                                                   std::ostream& output) const override;
-            StatusCode getMessageCommentsOfUser(const Entities::IdType& id, std::ostream& output) const override;
-            StatusCode setMessageCommentToSolved(const Entities::IdType& id, std::ostream& output) override;
+                                                                   OutStream& output) const override;
+            StatusCode getMessageCommentsOfUser(const Entities::IdType& id, OutStream& output) const override;
+            StatusCode setMessageCommentToSolved(const Entities::IdType& id, OutStream& output) override;
 
         private:
-            StatusCode voteDiscussionThreadMessage(const Entities::IdType& id, std::ostream& output, bool up);
+            StatusCode voteDiscussionThreadMessage(const Entities::IdType& id, OutStream& output, bool up);
 
             boost::u32regex validDiscussionMessageContentRegex;
             boost::u32regex validDiscussionMessageCommentRegex;

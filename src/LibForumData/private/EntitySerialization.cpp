@@ -26,7 +26,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const EntitiesCount& value)
 
 JsonWriter& Json::operator<<(JsonWriter& writer, const IdType& id)
 {
-    return writer.writeSafeString(id);
+    return writer.writeSafeString(id.characters().data(), id.MaxCharacters);
 }
 
 JsonWriter& Json::operator<<(JsonWriter& writer, const User& user)

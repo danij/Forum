@@ -29,6 +29,7 @@ namespace Json
     {
     public:
         explicit JsonWriter(std::ostream& stream);
+        explicit JsonWriter(std::vector<char>& vector);
 
         JsonWriter(const JsonWriter&) = delete;
 
@@ -61,18 +62,18 @@ namespace Json
 
         JsonWriter& newPropertyWithSafeName(const std::string& name);
 
-        template <typename T>
-        JsonWriter& writeSafeString(const T& value)
+        JsonWriter& writeSafeString(const char* value, std::size_t length)
         {
             if (isCommaNeeded())
             {
-                _stream << ",\"";
+                writeString(",\"");
             }
             else
             {
-                _stream << '"';
+                writeChar_('"');
             }
-            _stream << value << '"';
+            writeString_(value, length);
+            writeChar_('"');
             return *this;
         }
 
@@ -80,11 +81,11 @@ namespace Json
         {
             if (isCommaNeeded())
             {
-                _stream << (value ? ",true" : ",false");
+                if (value) writeString(",true"); else writeString(",false");
             }
             else
             {
-                _stream << (value ? "true" : "false");
+                if (value) writeString("true"); else writeString("false");
             }
             return *this;
         }
@@ -218,10 +219,22 @@ namespace Json
             }
 
             ++digit;
-            _stream.write(digit, bufferEnd - digit);
+            writeString_(digit, bufferEnd - digit);
 
             return *this;
         };
+
+        template<std::size_t Size>
+        void writeString(const char(&value)[Size])
+        {
+            //ignore null terminator
+            writeString_(value, Size - 1);
+        }
+
+        void writeString(const std::string& value)
+        {
+            writeString_(value.c_str(), value.size());
+        }
 
         friend JsonWriter& operator<<(JsonWriter& writer, const char* value);
         friend JsonWriter& operator<<(JsonWriter& writer, const std::string& value);
@@ -233,7 +246,9 @@ namespace Json
             bool propertyNameAdded;
         };
 
-        std::ostream& _stream;
+        std::function<void(char)> writeChar_;
+        std::function<void(const char*, size_t length)> writeString_;
+
         std::stack<State, std::vector<State>> _state;
     };
 

@@ -22,7 +22,7 @@ MemoryRepositoryDiscussionThread::MemoryRepositoryDiscussionThread(MemoryStoreRe
 
 template<typename ThreadsCollection>
 static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscussionThreadsBy by, 
-                                   std::ostream& output, const IdType& currentUserId)
+                                   OutStream& output, const IdType& currentUserId)
 {
     BoolTemporaryChanger _(serializationSettings.visitedThreadSinceLastChange, false);
     BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
@@ -62,7 +62,7 @@ static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscu
     }
 }
 
-StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreads(std::ostream& output, RetrieveDiscussionThreadsBy by) const
+StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreads(OutStream& output, RetrieveDiscussionThreadsBy by) const
 {
     PerformedByWithLastSeenUpdateGuard performedBy;
 
@@ -78,7 +78,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreads(std::ostream& 
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdType& id, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdType& id, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -142,7 +142,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdTyp
 }
 
 
-StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const IdType& id, std::ostream& output,
+StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const IdType& id, OutStream& output,
                                                                         RetrieveDiscussionThreadsBy by) const
 {
     StatusWriter status(output, StatusCode::OK);
@@ -175,7 +175,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const Id
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(const IdType& id, std::ostream& output,
+StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(const IdType& id, OutStream& output,
                                                                          RetrieveDiscussionThreadsBy by) const
 {
     StatusWriter status(output, StatusCode::OK);
@@ -207,7 +207,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(const I
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(const IdType& id, std::ostream& output,
+StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(const IdType& id, OutStream& output,
                                                                             RetrieveDiscussionThreadsBy by) const
 {
     StatusWriter status(output, StatusCode::OK);
@@ -239,7 +239,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(cons
 }
 
 
-StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const std::string& name, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const std::string& name, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     
@@ -280,7 +280,8 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const std::s
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const IdType& id, const std::string& newName, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const IdType& id, const std::string& newName,
+                                                                        OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -319,7 +320,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const Id
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(const IdType& id, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(const IdType& id, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! id)
@@ -348,7 +349,8 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(const IdType
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType& fromId, const IdType& intoId, std::ostream& output)
+StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType& fromId, const IdType& intoId,
+                                                                    OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     if ( ! fromId || ! intoId)

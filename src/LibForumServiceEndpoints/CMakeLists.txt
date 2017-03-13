@@ -26,4 +26,5 @@ add_library(ForumServiceEndpoints SHARED
         ${HEADER_FILES})
 
 target_link_libraries(ForumServiceEndpoints
+        ForumContext
         ForumHelpers)

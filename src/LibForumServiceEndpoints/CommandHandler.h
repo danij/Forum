@@ -3,6 +3,7 @@
 #include "Repository.h"
 
 #include <boost/core/noncopyable.hpp>
+#include <boost/utility/string_view.hpp>
 
 #include <iosfwd>
 #include <functional>
@@ -114,8 +115,13 @@ namespace Forum
                            Repository::MetricsRepositoryRef metricsRepository);
             ~CommandHandler();
 
-            Repository::StatusCode handle(Command command, const std::vector<std::string>& parameters, 
-                                          std::ostream& output);
+            struct Result
+            {
+                Repository::StatusCode statusCode;
+                boost::string_view output;
+            };
+
+            Result handle(Command command, const std::vector<std::string>& parameters);
 
             Repository::ReadEvents& readEvents();
             Repository::WriteEvents& writeEvents();
