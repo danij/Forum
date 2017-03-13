@@ -78,28 +78,32 @@ auto createCommandHandler()
     return context;
 }
 
+auto executeAndGetTree(CommandHandler& handler, Command command, std::vector<std::string> parameters = {})
+{
+    auto output = handler.handle(command, parameters);
+    boost::property_tree::ptree result;
+
+    if (output.output.size())
+    {
+        std::stringstream stream(static_cast<std::string>(output.output));
+        boost::property_tree::read_json(stream, result);
+    }
+    return result;
+}
+
 std::string executeAndGetId(CommandHandler& handler, Command command, std::vector<std::string> parameters = {})
 {
-    std::stringstream stream;
-    handler.handle(command, parameters, stream);
-    boost::property_tree::ptree result;
-    boost::property_tree::read_json(stream, result);
-    return result.get<std::string>("id");
+    return executeAndGetTree(handler, command, parameters).get<std::string>("id");
 }
 
 bool executeAndGetOk(CommandHandler& handler, Command command, std::vector<std::string> parameters = {})
 {
-    std::stringstream stream;
-    handler.handle(command, parameters, stream);
-    boost::property_tree::ptree result;
-    boost::property_tree::read_json(stream, result);
-    return result.get<uint32_t>("status") == StatusCode::OK;
+    return executeAndGetTree(handler, command, parameters).get<uint32_t>("status") == StatusCode::OK;
 }
 
 inline void execute(CommandHandler& handler, Command command, std::vector<std::string> parameters = {})
 {
-    std::stringstream stream;
-    handler.handle(command, parameters, stream);
+    handler.handle(command, parameters);
 }
 
 const int nrOfUsers = 10000;
