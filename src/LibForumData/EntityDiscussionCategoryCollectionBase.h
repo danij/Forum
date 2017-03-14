@@ -62,13 +62,13 @@ namespace Forum
              * refreshing all indexes the category is registered in
              */
             virtual void modifyDiscussionCategory(DiscussionCategoryCollection::iterator iterator,
-                                                  std::function<void(DiscussionCategory&)>&& modifyFunction);
+                                                  std::function<void(DiscussionCategory&)>&& modifyFunction = {});
             /**
              * Enables a safe modification of a discussion category instance,
              * refreshing all indexes the category is registered in
              */
             void modifyDiscussionCategoryById(const IdType& id, 
-                                              std::function<void(DiscussionCategory&)>&& modifyFunction);
+                                              std::function<void(DiscussionCategory&)>&& modifyFunction = {});
             /**
              * Safely deletes a discussion category instance, removing it from all indexes it is registered in
              */

@@ -18,7 +18,7 @@ void UserCollectionBase::modifyUser(UserCollection::iterator iterator,
     }
     users_.modify(iterator, [&modifyFunction](const UserRef& user)
     {
-        if (user)
+        if (user && modifyFunction)
         {
             modifyFunction(*user);
         }
@@ -238,7 +238,7 @@ void DiscussionThreadMessageCollectionBase::modifyDiscussionThreadMessage(Discus
     }
     messages_.modify(iterator, [&modifyFunction](const DiscussionThreadMessageRef& message)
     {
-        if (message)
+        if (message && modifyFunction)
         {
             modifyFunction(*message);
         }
@@ -365,7 +365,7 @@ void DiscussionTagCollectionBase::modifyDiscussionTag(DiscussionTagCollection::i
     }
     tags_.modify(iterator, [&modifyFunction](const DiscussionTagRef& tag)
     {
-        if (tag)
+        if (tag && modifyFunction)
         {
             modifyFunction(*tag);
         }
@@ -437,7 +437,7 @@ void DiscussionCategoryCollectionBase::modifyDiscussionCategory(DiscussionCatego
     }
     categories_.modify(iterator, [&modifyFunction](const DiscussionCategoryRef& category)
     {
-        if (category)
+        if (category && modifyFunction)
         {
             modifyFunction(*category);
         }
@@ -500,7 +500,7 @@ void MessageCommentCollectionBase::modifyMessageComment(MessageCommentCollection
     }
     messageComments_.modify(iterator, [&modifyFunction](const MessageCommentRef& comment)
     {
-        if (comment)
+        if (comment && modifyFunction)
         {
             modifyFunction(*comment);
         }

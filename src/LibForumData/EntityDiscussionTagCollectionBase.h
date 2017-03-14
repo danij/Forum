@@ -56,12 +56,12 @@ namespace Forum
              * refreshing all indexes the tag is registered in
              */
             virtual void modifyDiscussionTag(DiscussionTagCollection::iterator iterator,
-                                             std::function<void(DiscussionTag&)>&& modifyFunction);
+                                             std::function<void(DiscussionTag&)>&& modifyFunction = {});
             /**
              * Enables a safe modification of a discussion tag instance,
              * refreshing all indexes the tag is registered in
              */
-            void modifyDiscussionTagById(const IdType& id, std::function<void(DiscussionTag&)>&& modifyFunction);
+            void modifyDiscussionTagById(const IdType& id, std::function<void(DiscussionTag&)>&& modifyFunction = {});
             /**
              * Safely deletes a discussion tag instance, removing it from all indexes it is registered in
              */
