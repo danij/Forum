@@ -17,6 +17,8 @@ using namespace Forum::Repository;
 
 static thread_local std::string outputBuffer;
 
+static const std::string emptyString;
+
 struct CommandHandler::CommandHandlerImpl
 {
     std::function<StatusCode(const std::vector<std::string>&, OutStream&)> handlers[int(LAST_COMMAND)];
@@ -233,7 +235,7 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT )
     {
         if ( ! checkMinNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        auto& changeReason = parameters.size() > 2 ? parameters[2] : "";
+        auto& changeReason = parameters.size() > 2 ? parameters[2] : emptyString;
         return discussionThreadMessageRepository->changeDiscussionThreadMessageContent(parameters[0], parameters[1], 
                                                                                        changeReason, output);
     }
@@ -376,7 +378,7 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_CATEGORY )
     {
         if ( ! checkMinNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        auto& parentId = parameters.size() > 1 ? parameters[1] : "";
+        auto& parentId = parameters.size() > 1 ? parameters[1] : emptyString;
         return discussionCategoryRepository->addNewDiscussionCategory(parameters[0], parentId, output);
     }
 
