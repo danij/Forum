@@ -11,8 +11,6 @@
 #include <boost/multi_index/ranked_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 
-#include <type_traits>
-
 namespace Forum
 {
     namespace Entities
@@ -31,14 +29,18 @@ namespace Forum
             struct DiscussionCategoryCollectionByDisplayOrderRootPriority {};
 
             struct DiscussionCategoryCollectionIndices : boost::multi_index::indexed_by<
+
                     boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionCategoryCollectionById>,
                             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionCategory::id>>,
+
                     boost::multi_index::ranked_unique<boost::multi_index::tag<DiscussionCategoryCollectionByName>,
                             const boost::multi_index::const_mem_fun<DiscussionCategory, const std::string&,
                                     &DiscussionCategory::name>, Helpers::StringAccentAndCaseInsensitiveLess>,
+
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionCategoryCollectionByMessageCount>,
                             const boost::multi_index::const_mem_fun<DiscussionCategory, int_fast32_t,
                                     &DiscussionCategory::messageCount>>,
+
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionCategoryCollectionByDisplayOrderRootPriority>,
                             const boost::multi_index::const_mem_fun<DiscussionCategory, int_fast16_t,
                                     &DiscussionCategory::displayOrderWithRootPriority>>

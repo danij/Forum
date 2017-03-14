@@ -22,10 +22,12 @@ namespace Forum
             struct MessageCommentCollectionByCreated {};
 
             struct DiscussionMessageCollectionIndices : boost::multi_index::indexed_by<
+
                     boost::multi_index::hashed_unique<boost::multi_index::tag<MessageCommentCollectionById>,
-                        const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &MessageComment::id>>,
+                            const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &MessageComment::id>>,
+                    
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<MessageCommentCollectionByCreated>,
-                        const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &MessageComment::created>>
+                            const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &MessageComment::created>>
             > {};
 
             typedef boost::multi_index_container<MessageCommentRef, DiscussionMessageCollectionIndices>

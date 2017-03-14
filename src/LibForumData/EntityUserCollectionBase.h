@@ -23,21 +23,27 @@ namespace Forum
             struct UserCollectionByMessageCount {};
 
             struct UserCollectionIndices : boost::multi_index::indexed_by<
+
                     boost::multi_index::hashed_unique<boost::multi_index::tag<UserCollectionById>,
-            const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &User::id>>,
-            boost::multi_index::ranked_unique<boost::multi_index::tag<UserCollectionByName>,
-                    const boost::multi_index::const_mem_fun<User, const std::string&, &User::name>,
-                    Helpers::StringAccentAndCaseInsensitiveLess>,
-            boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByCreated>,
-                    const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &User::created>>,
-            boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByLastSeen>,
-                    const boost::multi_index::const_mem_fun<User, Timestamp, &User::lastSeen>>,
-            boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByThreadCount>,
-                    const boost::multi_index::const_mem_fun<DiscussionThreadCollectionBase,
-                        std::result_of<decltype(&User::threadCount)(User*)>::type, &User::threadCount>>,
-            boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByMessageCount>,
-                    const boost::multi_index::const_mem_fun<DiscussionThreadMessageCollectionBase, 
-                        std::result_of<decltype(&User::messageCount)(User*)>::type, &User::messageCount>>
+                            const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &User::id>>,
+                    
+                    boost::multi_index::ranked_unique<boost::multi_index::tag<UserCollectionByName>,
+                            const boost::multi_index::const_mem_fun<User, const std::string&, &User::name>,
+                                Helpers::StringAccentAndCaseInsensitiveLess>,
+            
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByCreated>,
+                            const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &User::created>>,
+                    
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByLastSeen>,
+                            const boost::multi_index::const_mem_fun<User, Timestamp, &User::lastSeen>>,
+                    
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByThreadCount>,
+                            const boost::multi_index::const_mem_fun<DiscussionThreadCollectionBase,
+                                std::result_of<decltype(&User::threadCount)(User*)>::type, &User::threadCount>>,
+                    
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByMessageCount>,
+                            const boost::multi_index::const_mem_fun<DiscussionThreadMessageCollectionBase, 
+                                std::result_of<decltype(&User::messageCount)(User*)>::type, &User::messageCount>>
             > {};
 
             typedef boost::multi_index_container<UserRef, UserCollectionIndices> UserCollection;

@@ -11,7 +11,6 @@
 #include <boost/multi_index/ranked_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 
-#include <type_traits>
 
 namespace Forum
 {
@@ -30,11 +29,14 @@ namespace Forum
             struct DiscussionTagCollectionByMessageCount {};
 
             struct DiscussionTagCollectionIndices : boost::multi_index::indexed_by<
+
                     boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionTagCollectionById>,
                             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionTag::id>>,
+
                     boost::multi_index::ranked_unique<boost::multi_index::tag<DiscussionTagCollectionByName>,
                             const boost::multi_index::const_mem_fun<DiscussionTag, const std::string&,
                                     &DiscussionTag::name>, Helpers::StringAccentAndCaseInsensitiveLess>,
+
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionTagCollectionByMessageCount>,
                             const boost::multi_index::const_mem_fun<DiscussionTag, int_fast32_t,
                                     &DiscussionTag::messageCount>>

@@ -35,20 +35,25 @@ namespace Forum
             struct DiscussionThreadCollectionByMessageCount {};
 
             struct DiscussionThreadCollectionIndices : boost::multi_index::indexed_by<
+
                     boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionThreadCollectionById>,
                             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionThread::id>>,
+
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByName>,
                             const boost::multi_index::const_mem_fun<DiscussionThread, const std::string&,
                                     &DiscussionThread::name>, Helpers::StringAccentAndCaseInsensitiveLess>,
+
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByCreated>,
-                            const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp,
-                                    &DiscussionThread::created>>,
+                            const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &DiscussionThread::created>>,
+
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLastUpdated>,
                             const boost::multi_index::const_mem_fun<LastUpdatedMixin<User>, Timestamp, 
                                     &DiscussionThread::lastUpdated>>,
+
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLatestMessageCreated>,
                             const boost::multi_index::const_mem_fun<DiscussionThread, Timestamp,
                                     &DiscussionThread::latestMessageCreated>>,
+
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByMessageCount>,
                             const boost::multi_index::const_mem_fun<DiscussionThreadMessageCollectionBase,
                                     std::result_of<decltype(&DiscussionThread::messageCount)(DiscussionThread*)>::type,

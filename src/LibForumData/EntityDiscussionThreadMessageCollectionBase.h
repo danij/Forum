@@ -26,10 +26,12 @@ namespace Forum
             struct DiscussionThreadMessageCollectionByCreated {};
 
             struct DiscussionMessageCollectionIndices : boost::multi_index::indexed_by<
+
                     boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionThreadMessageCollectionById>,
-                        const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionThreadMessage::id>>,
+                            const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionThreadMessage::id>>,
+
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadMessageCollectionByCreated>,
-                        const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &DiscussionThreadMessage::created>>
+                            const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &DiscussionThreadMessage::created>>
             > {};
 
             typedef boost::multi_index_container<DiscussionThreadMessageRef, DiscussionMessageCollectionIndices>
