@@ -53,11 +53,11 @@ namespace Forum
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
              */
-            void modifyUser(UserCollection::iterator iterator, const std::function<void(User&)>& modifyFunction);
+            void modifyUser(UserCollection::iterator iterator, std::function<void(User&)>&& modifyFunction);
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
              */
-            void modifyUserById(const IdType& id, const std::function<void(User&)>& modifyFunction);
+            void modifyUserById(const IdType& id, std::function<void(User&)>&& modifyFunction);
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
              */

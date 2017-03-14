@@ -45,7 +45,7 @@ bool DiscussionCategory::insertDiscussionThread(const DiscussionThreadRef& threa
 }
 
 void DiscussionCategory::modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-                                                const std::function<void(DiscussionThread&)>& modifyFunction)
+                                                std::function<void(DiscussionThread&)>&& modifyFunction)
 {
     if (iterator == threads_.end())
     {
@@ -56,7 +56,8 @@ void DiscussionCategory::modifyDiscussionThread(DiscussionThreadCollection::iter
     {
         return;
     }
-    DiscussionThreadCollectionBase::modifyDiscussionThread(iterator, modifyFunction);
+    DiscussionThreadCollectionBase::modifyDiscussionThread(iterator, 
+                                                           std::forward<std::function<void(DiscussionThread&)>>(modifyFunction));
     executeOnCategoryAndAllParents(*this, [&](auto& category)
     {
         //update separate references of this category and all parents

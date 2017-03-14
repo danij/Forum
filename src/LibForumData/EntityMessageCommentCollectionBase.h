@@ -43,12 +43,12 @@ namespace Forum
              * refreshing all indexes the message is registered in
              */
             virtual void modifyMessageComment(MessageCommentCollection::iterator iterator,
-                                              const std::function<void(MessageComment&)>& modifyFunction);
+                                              std::function<void(MessageComment&)>&& modifyFunction);
             /**
              * Enables a safe modification of a message comment instance,
              * refreshing all indexes the message is registered in
              */
-            void modifyMessageCommentById(const IdType& id, const std::function<void(MessageComment&)>& modifyFunction);
+            void modifyMessageCommentById(const IdType& id, std::function<void(MessageComment&)>&& modifyFunction);
             /**
              * Safely deletes a message comment instance, removing it from all indexes it is registered in
              */

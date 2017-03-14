@@ -47,12 +47,13 @@ namespace Forum
              * refreshing all indexes the message is registered in
              */
             virtual void modifyDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator,
-                                                       const std::function<void(DiscussionThreadMessage&)>& modifyFunction);
+                                                       std::function<void(DiscussionThreadMessage&)>&& modifyFunction);
             /**
              * Enables a safe modification of a discussion message instance,
              * refreshing all indexes the message is registered in
              */
-            void modifyDiscussionThreadMessageById(const IdType& id, const std::function<void(DiscussionThreadMessage&)>& modifyFunction);
+            void modifyDiscussionThreadMessageById(const IdType& id, 
+                                                   std::function<void(DiscussionThreadMessage&)>&& modifyFunction);
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */

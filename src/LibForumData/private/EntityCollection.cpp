@@ -10,7 +10,7 @@ const UserRef Forum::Entities::AnonymousUser = std::make_shared<User>("<anonymou
 const IdType Forum::Entities::AnonymousUserId = AnonymousUser->id();
 
 void UserCollectionBase::modifyUser(UserCollection::iterator iterator,
-                                    const std::function<void(User&)>& modifyFunction)
+                                    std::function<void(User&)>&& modifyFunction)
 {
     if (iterator == users_.end())
     {
@@ -25,9 +25,9 @@ void UserCollectionBase::modifyUser(UserCollection::iterator iterator,
     });
 }
 
-void UserCollectionBase::modifyUserById(const IdType& id, const std::function<void(User&)>& modifyFunction)
+void UserCollectionBase::modifyUserById(const IdType& id, std::function<void(User&)>&& modifyFunction)
 {
-    return modifyUser(users_.get<UserCollectionById>().find(id), modifyFunction);
+    return modifyUser(users_.get<UserCollectionById>().find(id), std::forward<std::function<void(User&)>>(modifyFunction));
 }
 
 /**
@@ -125,7 +125,7 @@ bool DiscussionThreadCollectionBase::insertDiscussionThread(const DiscussionThre
 }
 
 void DiscussionThreadCollectionBase::modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-                                                            const std::function<void(DiscussionThread&)>& modifyFunction)
+                                                            std::function<void(DiscussionThread&)>&& modifyFunction)
 {
     if (iterator == threads_.end())
     {
@@ -133,7 +133,7 @@ void DiscussionThreadCollectionBase::modifyDiscussionThread(DiscussionThreadColl
     }
     threads_.modify(iterator, [&modifyFunction](const DiscussionThreadRef& thread)
     {
-        if (thread)
+        if (thread && modifyFunction)
         {
             modifyFunction(*thread);
         }
@@ -141,7 +141,7 @@ void DiscussionThreadCollectionBase::modifyDiscussionThread(DiscussionThreadColl
 }
 
 void EntityCollection::modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-                                              const std::function<void(DiscussionThread&)>& modifyFunction)
+                                              std::function<void(DiscussionThread&)>&& modifyFunction)
 {
     if (iterator == threads_.end())
     {
@@ -153,15 +153,17 @@ void EntityCollection::modifyDiscussionThread(DiscussionThreadCollection::iterat
         if (thread)
         {
             //allow reindexing of the subcollection containing only the threads of the current user
-            thread->createdBy().modifyDiscussionThreadById(thread->id(), modifyFunction);
+            thread->createdBy().modifyDiscussionThreadById(thread->id(),
+                                                           std::forward<std::function<void(DiscussionThread&)>>(modifyFunction));
         }
     });
 }
 
 void DiscussionThreadCollectionBase::modifyDiscussionThreadById(const IdType& id,
-                                                                const std::function<void(DiscussionThread&)>& modifyFunction)
+                                                                std::function<void(DiscussionThread&)>&& modifyFunction)
 {
-    modifyDiscussionThread(threads_.get<DiscussionThreadCollectionById>().find(id), modifyFunction);
+    modifyDiscussionThread(threads_.get<DiscussionThreadCollectionById>().find(id), 
+                           std::forward<std::function<void(DiscussionThread&)>>(modifyFunction));
 }
 
 DiscussionThreadRef DiscussionThreadCollectionBase::deleteDiscussionThread(DiscussionThreadCollection::iterator iterator)
@@ -228,7 +230,7 @@ DiscussionThreadRef DiscussionThreadCollectionBase::deleteDiscussionThreadById(c
 //
 
 void DiscussionThreadMessageCollectionBase::modifyDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator,
-                                                                          const std::function<void(DiscussionThreadMessage&)>& modifyFunction)
+                                                                          std::function<void(DiscussionThreadMessage&)>&& modifyFunction)
 {
     if (iterator == messages_.end())
     {
@@ -244,7 +246,7 @@ void DiscussionThreadMessageCollectionBase::modifyDiscussionThreadMessage(Discus
 }
 
 void EntityCollection::modifyDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator,
-                                                     const std::function<void(DiscussionThreadMessage&)>& modifyFunction)
+                                                     std::function<void(DiscussionThreadMessage&)>&& modifyFunction)
 {
     if (iterator == messages_.end())
     {
@@ -260,7 +262,8 @@ void EntityCollection::modifyDiscussionThreadMessage(DiscussionThreadMessageColl
             {
                 messageToModify.executeActionWithParentThreadIfAvailable([&](auto& parentThread)
                 {
-                    parentThread.modifyDiscussionThreadMessageById(messageToModify.id(), modifyFunction);
+                    parentThread.modifyDiscussionThreadMessageById(messageToModify.id(), 
+                                                                   std::forward<std::function<void(DiscussionThreadMessage&)>>(modifyFunction));
                 });
             });
         }
@@ -268,9 +271,10 @@ void EntityCollection::modifyDiscussionThreadMessage(DiscussionThreadMessageColl
 }
 
 void DiscussionThreadMessageCollectionBase::modifyDiscussionThreadMessageById(const IdType& id,
-                                                                              const std::function<void(DiscussionThreadMessage&)>& modifyFunction)
+                                                                              std::function<void(DiscussionThreadMessage&)>&& modifyFunction)
 {
-    modifyDiscussionThreadMessage(messages_.get<DiscussionThreadMessageCollectionById>().find(id), modifyFunction);
+    modifyDiscussionThreadMessage(messages_.get<DiscussionThreadMessageCollectionById>().find(id), 
+                                  std::forward<std::function<void(DiscussionThreadMessage&)>>(modifyFunction));
 }
 
 DiscussionThreadMessageRef DiscussionThreadMessageCollectionBase::deleteDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator)
@@ -353,7 +357,7 @@ DiscussionThreadMessageRef DiscussionThreadMessageCollectionBase::deleteDiscussi
 //
 
 void DiscussionTagCollectionBase::modifyDiscussionTag(DiscussionTagCollection::iterator iterator,
-                                                      const std::function<void(DiscussionTag&)>& modifyFunction)
+                                                      std::function<void(DiscussionTag&)>&& modifyFunction)
 {
     if (iterator == tags_.end())
     {
@@ -369,9 +373,10 @@ void DiscussionTagCollectionBase::modifyDiscussionTag(DiscussionTagCollection::i
 }
 
 void DiscussionTagCollectionBase::modifyDiscussionTagById(const IdType& id,
-    const std::function<void(DiscussionTag&)>& modifyFunction)
+                                                          std::function<void(DiscussionTag&)>&& modifyFunction)
 {
-    modifyDiscussionTag(tags_.get<DiscussionTagCollectionById>().find(id), modifyFunction);
+    modifyDiscussionTag(tags_.get<DiscussionTagCollectionById>().find(id), 
+                        std::forward<std::function<void(DiscussionTag&)>>(modifyFunction));
 }
 
 DiscussionTagRef DiscussionTagCollectionBase::deleteDiscussionTag(DiscussionTagCollection::iterator iterator)
@@ -424,7 +429,7 @@ DiscussionTagRef DiscussionTagCollectionBase::deleteDiscussionTagById(const IdTy
 //
 
 void DiscussionCategoryCollectionBase::modifyDiscussionCategory(DiscussionCategoryCollection::iterator iterator,
-    const std::function<void(DiscussionCategory&)>& modifyFunction)
+                                                                std::function<void(DiscussionCategory&)>&& modifyFunction)
 {
     if (iterator == categories_.end())
     {
@@ -440,9 +445,10 @@ void DiscussionCategoryCollectionBase::modifyDiscussionCategory(DiscussionCatego
 }
 
 void DiscussionCategoryCollectionBase::modifyDiscussionCategoryById(const IdType& id,
-    const std::function<void(DiscussionCategory&)>& modifyFunction)
+                                                                    std::function<void(DiscussionCategory&)>&& modifyFunction)
 {
-    modifyDiscussionCategory(categories_.get<DiscussionCategoryCollectionById>().find(id), modifyFunction);
+    modifyDiscussionCategory(categories_.get<DiscussionCategoryCollectionById>().find(id), 
+                             std::forward<std::function<void(DiscussionCategory&)>>(modifyFunction));
 }
 
 DiscussionCategoryRef DiscussionCategoryCollectionBase::deleteDiscussionCategory(DiscussionCategoryCollection::iterator iterator)
@@ -486,7 +492,7 @@ DiscussionCategoryRef DiscussionCategoryCollectionBase::deleteDiscussionCategory
 //
 
 void MessageCommentCollectionBase::modifyMessageComment(MessageCommentCollection::iterator iterator,
-                                                        const std::function<void(MessageComment&)>& modifyFunction)
+                                                        std::function<void(MessageComment&)>&& modifyFunction)
 {
     if (iterator == messageComments_.end())
     {
@@ -502,9 +508,10 @@ void MessageCommentCollectionBase::modifyMessageComment(MessageCommentCollection
 }
 
 void MessageCommentCollectionBase::modifyMessageCommentById(const IdType& id,
-                                                            const std::function<void(MessageComment&)>& modifyFunction)
+                                                            std::function<void(MessageComment&)>&& modifyFunction)
 {
-    modifyMessageComment(messageComments_.get<MessageCommentCollectionById>().find(id), modifyFunction);
+    modifyMessageComment(messageComments_.get<MessageCommentCollectionById>().find(id), 
+                         std::forward<std::function<void(MessageComment&)>>(modifyFunction));
 }
 
 MessageCommentRef MessageCommentCollectionBase::deleteMessageComment(MessageCommentCollection::iterator iterator)

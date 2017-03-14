@@ -34,7 +34,7 @@ struct CleanupFixture
 };
 
 template<typename Duration = std::chrono::microseconds, typename Action>
-auto countDuration(Action action)
+auto countDuration(Action&& action)
 {
 
     auto start = std::chrono::high_resolution_clock::now();

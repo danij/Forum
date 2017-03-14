@@ -33,7 +33,7 @@ namespace Forum
              * also taking other collections in which the thread might be registered into account
              */
             virtual void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-                                                const std::function<void(DiscussionThread&)>& modifyFunction) override;
+                                                std::function<void(DiscussionThread&)>&& modifyFunction) override;
             /**
              * Safely deletes a discussion thread instance,
              * also taking other collections in which the thread might be registered into account
@@ -45,7 +45,7 @@ namespace Forum
              * refreshing all indexes the message is registered in
              */
             virtual void modifyDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator,
-                                                 const std::function<void(DiscussionThreadMessage&)>& modifyFunction) override;
+                                                       std::function<void(DiscussionThreadMessage&)>&& modifyFunction) override;
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */

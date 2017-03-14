@@ -89,7 +89,7 @@ namespace Forum
 
             virtual bool insertDiscussionThread(const DiscussionThreadRef& thread) override;
             virtual void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-                                                const std::function<void(DiscussionThread&)>& modifyFunction) override;
+                                                std::function<void(DiscussionThread&)>&& modifyFunction) override;
             virtual DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
             void deleteDiscussionThreadIfNoOtherTagsReferenceIt(const DiscussionThreadRef& thread);
 

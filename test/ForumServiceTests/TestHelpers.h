@@ -59,7 +59,7 @@ namespace Forum
 
         struct ConfigChanger final : private boost::noncopyable
         {
-            explicit ConfigChanger(std::function<void(Configuration::Config&)> configChangeAction)
+            explicit ConfigChanger(std::function<void(Configuration::Config&)>&& configChangeAction)
             {
                 oldConfig_ = *Configuration::getGlobalConfig();
 

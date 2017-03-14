@@ -19,7 +19,7 @@ Timestamp Forum::Context::getCurrentTime()
     return getCurrentTimeCallback();
 }
 
-void Forum::Context::setCurrentTimeMockForCurrentThread(std::function<Timestamp()> callback)
+void Forum::Context::setCurrentTimeMockForCurrentThread(std::function<Timestamp()>&& callback)
 {
     getCurrentTimeCallback = callback;
 }
