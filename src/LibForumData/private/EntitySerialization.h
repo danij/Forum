@@ -7,7 +7,7 @@ namespace Json
 {
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::EntitiesCount& thread);
 
-    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::IdType& id);
+    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::UuidString& id);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::User& user);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionThreadMessage& thread);
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::MessageComment& messageComment);

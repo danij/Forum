@@ -2,7 +2,6 @@
 
 #include <boost/uuid/uuid.hpp>
 
-#include <array>
 #include <ostream>
 
 namespace Forum
@@ -18,11 +17,7 @@ namespace Forum
             UuidString(boost::uuids::uuid value);
             UuidString(const std::string& value);
 
-            static constexpr int MaxCharacters = 36;
-            typedef std::array<char, MaxCharacters> CharacterArrayType;
-
-            const boost::uuids::uuid&      value() const { return value_; }
-            const CharacterArrayType& characters() const { return characters_; }
+            const boost::uuids::uuid& value() const { return value_; }
 
             bool operator==(const UuidString& other) const
             {
@@ -54,10 +49,7 @@ namespace Forum
                 return value_ >= other.value_;
             }
 
-            explicit operator std::string() const
-            {
-                return std::string(characters_.data(), MaxCharacters);
-            }
+            explicit operator std::string() const;
 
             operator bool() const
             {
@@ -68,18 +60,11 @@ namespace Forum
 
         private:
             boost::uuids::uuid value_;
-            CharacterArrayType characters_;
         };
 
         inline std::size_t hash_value(const UuidString& value)
         {
             return hash_value(value.value());
-        }
-
-        inline std::ostream& operator<<(std::ostream& stream, const UuidString& uuidString)
-        {
-            stream.write(uuidString.characters().data(), UuidString::MaxCharacters);
-            return stream;
         }
     }
 }
