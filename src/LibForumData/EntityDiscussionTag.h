@@ -42,8 +42,8 @@ namespace Forum
 
             DiscussionTag() : notifyChangeFn_(&DiscussionTag::emptyNotifyChange) {  }
 
-            virtual bool insertDiscussionThread(const DiscussionThreadRef& thread) override;
-            virtual DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
+            bool insertDiscussionThread(const DiscussionThreadRef& thread) override;
+            DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
 
             bool addCategory(std::weak_ptr<DiscussionCategory> category)
             {

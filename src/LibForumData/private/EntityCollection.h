@@ -26,40 +26,40 @@ namespace Forum
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
              */
-            virtual UserRef deleteUser(UserCollection::iterator iterator) override;
+            UserRef deleteUser(UserCollection::iterator iterator) override;
 
             /**
              * Enables a safe modification of a discussion thread instance,
              * also taking other collections in which the thread might be registered into account
              */
-            virtual void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-                                                std::function<void(DiscussionThread&)>&& modifyFunction) override;
+            void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
+                                        std::function<void(DiscussionThread&)>&& modifyFunction) override;
             /**
              * Safely deletes a discussion thread instance,
              * also taking other collections in which the thread might be registered into account
              */
-            virtual DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
+            DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
 
             /**
              * Enables a safe modification of a discussion message instance,
              * refreshing all indexes the message is registered in
              */
-            virtual void modifyDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator,
-                                                       std::function<void(DiscussionThreadMessage&)>&& modifyFunction) override;
+            void modifyDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator,
+                                               std::function<void(DiscussionThreadMessage&)>&& modifyFunction) override;
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */
-            virtual DiscussionThreadMessageRef deleteDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator) override;
+            DiscussionThreadMessageRef deleteDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator) override;
 
             /**
             * Safely deletes a discussion tag instance, removing it from all indexes it is registered in
             */
-            virtual DiscussionTagRef deleteDiscussionTag(DiscussionTagCollection::iterator iterator) override;
+            DiscussionTagRef deleteDiscussionTag(DiscussionTagCollection::iterator iterator) override;
 
             /**
             * Safely deletes a discussion category instance, removing it from all indexes it is registered in
             */
-            virtual DiscussionCategoryRef deleteDiscussionCategory(DiscussionCategoryCollection::iterator iterator) override;
+            DiscussionCategoryRef deleteDiscussionCategory(DiscussionCategoryCollection::iterator iterator) override;
 
             auto& notifyTagChange() { return notifyTagChange_; }
             auto& notifyCategoryChange() { return notifyCategoryChange_; }

@@ -28,13 +28,13 @@ namespace Forum
              */
             void decreaseReferenceCount(const DiscussionThreadRef& thread);
             
-            virtual bool insertDiscussionThread(const DiscussionThreadRef& thread) override;
+            bool insertDiscussionThread(const DiscussionThreadRef& thread) override;
 
             /**
              * Removes a thread completely, even if the reference count is > 1 
              * Used when a thread is permanently deleted
              */
-            virtual DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
+            DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
 
         protected:
             int_fast32_t messageCount_ = 0;
