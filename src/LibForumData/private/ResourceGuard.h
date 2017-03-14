@@ -16,13 +16,15 @@ namespace Forum
         public:
             explicit ResourceGuard(std::shared_ptr<T> resource) : resource_(std::move(resource)) {}
 
-            void read(std::function<void(const T&)> action) const
+            template<typename TAction>
+            void read(TAction&& action) const
             {
                 std::shared_lock<decltype(mutex_)> lock(mutex_);
-                action(*resource_);
+                action(const_cast<const T&>(*resource_));
             }
 
-            void write(std::function<void(T&)> action)
+            template<typename TAction>
+            void write(TAction&& action)
             {
                 std::unique_lock<decltype(mutex_)> lock(mutex_);
                 action(*resource_);
