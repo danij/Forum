@@ -308,7 +308,7 @@ DiscussionThreadMessageRef EntityCollection::deleteDiscussionThreadMessage(Discu
     {
         if ( ! parentThread.aboutToBeDeleted())
         {
-            modifyDiscussionThreadById(parentThread.id(), [&](DiscussionThread& thread)
+            this->modifyDiscussionThreadById(parentThread.id(), [&](DiscussionThread& thread)
             {
                 thread.deleteDiscussionThreadMessageById(message->id());
                 thread.resetVisitorsSinceLastEdit();
@@ -318,7 +318,7 @@ DiscussionThreadMessageRef EntityCollection::deleteDiscussionThreadMessage(Discu
                 {
                     if (auto tagShared = tagWeak.lock())
                     {
-                        modifyDiscussionTagById(tagShared->id(), [&thread](auto& tag)
+                        this->modifyDiscussionTagById(tagShared->id(), [&thread](auto& tag)
                         {
                             tag.messageCount() -= 1;
                             //notify the thread collection of each tag that the thread has fewer messages
@@ -331,7 +331,7 @@ DiscussionThreadMessageRef EntityCollection::deleteDiscussionThreadMessage(Discu
                     if (auto categoryShared = categoryWeak.lock())
                     {
                         auto threadShared = thread.shared_from_this();
-                        modifyDiscussionCategoryById(categoryShared->id(), [&thread, &threadShared](auto& category)
+                        this->modifyDiscussionCategoryById(categoryShared->id(), [&thread, &threadShared](auto& category)
                         {
                             category.updateMessageCount(threadShared, -1);
                             //notify the thread collection of each category that the thread has fewer messages
