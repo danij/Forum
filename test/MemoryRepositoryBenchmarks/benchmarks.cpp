@@ -123,12 +123,18 @@ const int retries = 1000;
 std::random_device device;
 std::mt19937 randomGenerator(device());
 
+void showEntitySizes();
+
 void populateData(BenchmarkContext& context);
 void doBenchmarks(BenchmarkContext& context);
 
 int main()
 {
     CleanupFixture _;
+
+    std::cout << "Forum Entity Sizes:\n";
+    showEntitySizes();
+    std::cout << "=====\n";
 
     auto context = createCommandHandler();
 
@@ -158,6 +164,23 @@ int main()
     //std::getline(std::cin, line);
 
     doBenchmarks(context);
+}
+
+void showEntitySizes()
+{
+    std::cout << "Identifiable:                          " << sizeof(Entities::Identifiable) << '\n';
+    std::cout << "CreatedMixin:                          " << sizeof(Entities::CreatedMixin) << '\n';
+    std::cout << "LastUpdatedMixin<User>:                " << sizeof(Entities::LastUpdatedMixin<Entities::User>) << '\n';
+    std::cout << "User:                                  " << sizeof(Entities::User) << '\n';
+    std::cout << "UserCollectionBase:                    " << sizeof(Entities::UserCollectionBase) << '\n';
+    std::cout << "DiscussionThread:                      " << sizeof(Entities::DiscussionThread) << '\n';
+    std::cout << "DiscussionThreadCollectionBase:        " << sizeof(Entities::DiscussionThreadCollectionBase) << '\n';
+    std::cout << "DiscussionThreadMessage:               " << sizeof(Entities::DiscussionThreadMessage) << '\n';
+    std::cout << "DiscussionThreadMessageCollectionBase: " << sizeof(Entities::DiscussionThreadMessageCollectionBase) << '\n';
+    std::cout << "DiscussionTag:                         " << sizeof(Entities::DiscussionTag) << '\n';
+    std::cout << "DiscussionTagCollectionBase:           " << sizeof(Entities::DiscussionTagCollectionBase) << '\n';
+    std::cout << "DiscussionCategory:                    " << sizeof(Entities::DiscussionCategory) << '\n';
+    std::cout << "DiscussionCategoryCollectionBase:      " << sizeof(Entities::DiscussionCategoryCollectionBase) << '\n';
 }
 
 char* getRandomText(size_t size)
