@@ -88,8 +88,7 @@ static JsonWriter& writeVotes(JsonWriter& writer, const char(&name)[NameSize], c
 JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetails)
 {
     //does not currently start a new object
-    return writer << propertySafeName("ip", visitDetails.ip.get())
-                  << propertySafeName("userAgent", visitDetails.userAgent.get());
+    return writer << propertySafeName("ip", visitDetails.ip.get());
 }
 
 JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& message)

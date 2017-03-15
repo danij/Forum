@@ -103,24 +103,20 @@ namespace Forum
             Entities::IdType oldId_;
         };
 
-        struct IpUserAgentChanger final : private boost::noncopyable
+        struct IpChanger final : private boost::noncopyable
         {
-            IpUserAgentChanger(const std::string& newIp, const std::string& newUserAgent)
+            IpChanger(const std::string& newIp)
             {
                 oldIp_ = Context::getCurrentUserIpAddress();
                 Context::setCurrentUserIpAddress(newIp);
-                oldUserAgent_ = Context::getCurrentUserBrowserUserAgent();
-                Context::setCurrentUserBrowserUserAgent(newUserAgent);
             }
-            ~IpUserAgentChanger()
+            ~IpChanger()
             {
                 Context::setCurrentUserIpAddress(oldIp_);
-                Context::setCurrentUserBrowserUserAgent(oldUserAgent_);
             }
 
         private:
             std::string oldIp_;
-            std::string oldUserAgent_;
         };
     }
 }

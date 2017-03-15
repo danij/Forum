@@ -53,18 +53,6 @@ void Forum::Context::setCurrentUserIpAddress(const std::string& value)
     currentIpAddress = value;
 }
 
-static thread_local std::string currentUserAgent{};
-
-const std::string& Forum::Context::getCurrentUserBrowserUserAgent()
-{
-    return currentUserAgent;
-}
-
-void Forum::Context::setCurrentUserBrowserUserAgent(const std::string& value)
-{
-    currentUserAgent = value;
-}
-
 static thread_local DisplayContext displayContext = {};
 
 const DisplayContext& Forum::Context::getDisplayContext()

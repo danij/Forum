@@ -90,7 +90,6 @@ namespace Forum
         {
             entity.created() = Context::getCurrentTime();
             entity.creationDetails().ip = Context::getCurrentUserIpAddress();
-            entity.creationDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
         }
 
         template<typename ByType>
@@ -99,7 +98,6 @@ namespace Forum
         {
             entity.lastUpdated() = Context::getCurrentTime();
             entity.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();
-            entity.lastUpdatedDetails().userAgent = Context::getCurrentUserBrowserUserAgent();
             entity.lastUpdatedBy() = by;
         }
     }

@@ -28,11 +28,6 @@ namespace Forum
          */
         typedef boost::flyweight<std::string> IpType;
 
-        /**
-         * Representing a browser user agent
-         */
-        typedef boost::flyweight<std::string> UserAgentType;
-
         struct Identifiable
         {
             DECLARE_ABSTRACT_MANDATORY(Identifiable)
@@ -57,7 +52,6 @@ namespace Forum
         struct VisitDetails
         {
             IpType ip;
-            UserAgentType userAgent;
         };
 
         struct CreatedMixin

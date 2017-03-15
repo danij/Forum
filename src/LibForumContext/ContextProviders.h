@@ -32,16 +32,6 @@ namespace Forum
         void setCurrentUserIpAddress(const std::string& value);
 
         /**
-        * Returns the browser user agent of the current user executing an action
-        */
-        const std::string& getCurrentUserBrowserUserAgent();
-
-        /**
-        * Sets the browser user agent of the current user executing an action (thread-local)
-        */
-        void setCurrentUserBrowserUserAgent(const std::string& value);
-
-        /**
          * Returns whether validations should be skipped (e.g. for populating data in benchmarks)
          */
         bool skipValidations();
