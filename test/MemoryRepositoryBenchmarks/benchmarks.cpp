@@ -177,6 +177,8 @@ void showEntitySizes()
     std::cout << "DiscussionThreadCollectionBase:        " << sizeof(Entities::DiscussionThreadCollectionBase) << '\n';
     std::cout << "DiscussionThreadMessage:               " << sizeof(Entities::DiscussionThreadMessage) << '\n';
     std::cout << "DiscussionThreadMessageCollectionBase: " << sizeof(Entities::DiscussionThreadMessageCollectionBase) << '\n';
+    std::cout << "MessageComment:                        " << sizeof(Entities::MessageComment) << '\n';
+    std::cout << "MessageCommentCollectionBase:          " << sizeof(Entities::MessageCommentCollectionBase) << '\n';
     std::cout << "DiscussionTag:                         " << sizeof(Entities::DiscussionTag) << '\n';
     std::cout << "DiscussionTagCollectionBase:           " << sizeof(Entities::DiscussionTagCollectionBase) << '\n';
     std::cout << "DiscussionCategory:                    " << sizeof(Entities::DiscussionCategory) << '\n';
