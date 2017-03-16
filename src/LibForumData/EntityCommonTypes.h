@@ -5,8 +5,7 @@
 #include <cstdint>
 #include <memory>
 
-#include <boost/flyweight.hpp>
-
+#include "IpAddress.h"
 #include "TypeHelpers.h"
 
 namespace Forum
@@ -22,11 +21,6 @@ namespace Forum
          * Representing a timestamp as the number of seconds since the UNIX EPOCH
          */
         typedef int_fast64_t Timestamp;
-
-        /**
-         * Representing an IPv4 or IPv6 address
-         */
-        typedef boost::flyweight<std::string> IpType;
 
         struct Identifiable
         {
@@ -51,7 +45,7 @@ namespace Forum
 
         struct VisitDetails
         {
-            IpType ip;
+            Helpers::IpAddress ip;
         };
 
         struct CreatedMixin

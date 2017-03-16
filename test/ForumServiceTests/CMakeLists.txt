@@ -17,7 +17,8 @@ set(SOURCE_FILES
         ObserversTests.cpp
         DiscussionTagTests.cpp
         DiscussionCategoryTests.cpp
-        JsonSerializationTests.cpp)
+        JsonSerializationTests.cpp
+        IpAddressTests.cpp)
 
 set(HEADER_FILES
         TestHelpers.h

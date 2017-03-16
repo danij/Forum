@@ -88,7 +88,13 @@ static JsonWriter& writeVotes(JsonWriter& writer, const char(&name)[NameSize], c
 JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetails)
 {
     //does not currently start a new object
-    return writer << propertySafeName("ip", visitDetails.ip.get());
+    char buffer[IpAddress::MaxIPv6CharacterCount + 1];
+    writer.newPropertyWithSafeName("ip");
+
+    auto addressLength = visitDetails.ip.toString(buffer, std::extent<decltype(buffer)>::value);
+
+    writer.writeSafeString(buffer, addressLength);
+    return writer;
 }
 
 JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& message)

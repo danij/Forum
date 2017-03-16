@@ -10,7 +10,8 @@ find_package(ICU)
 set(SOURCE_FILES
         private/RandomGenerator.cpp
         private/StringHelpers.cpp
-        private/UuidString.cpp)
+        private/UuidString.cpp
+        private/IpAddress.cpp)
 
 set(HEADER_FILES
         OutputHelpers.h
@@ -18,7 +19,8 @@ set(HEADER_FILES
         StateHelpers.h
         StringHelpers.h
         TypeHelpers.h
-        UuidString.h)
+        UuidString.h
+        IpAddress.cpp)
 
 include_directories(
         .
