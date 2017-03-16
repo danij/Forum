@@ -20,7 +20,7 @@ set(HEADER_FILES
         StringHelpers.h
         TypeHelpers.h
         UuidString.h
-        IpAddress.cpp)
+        IpAddress.h)
 
 include_directories(
         .
