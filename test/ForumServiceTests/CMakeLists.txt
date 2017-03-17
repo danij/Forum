@@ -18,7 +18,8 @@ set(SOURCE_FILES
         DiscussionTagTests.cpp
         DiscussionCategoryTests.cpp
         JsonSerializationTests.cpp
-        IpAddressTests.cpp)
+        IpAddressTests.cpp
+        IdTests.cpp)
 
 set(HEADER_FILES
         TestHelpers.h
