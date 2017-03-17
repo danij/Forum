@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/uuid/uuid.hpp>
+#include <boost/utility/string_view.hpp>
 
 #include <ostream>
 
@@ -16,6 +17,7 @@ namespace Forum
             UuidString();
             UuidString(boost::uuids::uuid value);
             UuidString(const std::string& value);
+            UuidString(const boost::string_view& value);
 
             const boost::uuids::uuid& value() const { return value_; }
 

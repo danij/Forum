@@ -47,13 +47,26 @@ using namespace Forum;
 using namespace Forum::Commands;
 using namespace Forum::Repository;
 
+struct IdType
+{
+    std::array<char, 36> data;
+    operator std::string() const
+    {
+        return std::string(data.data(), data.size());
+    }
+    operator Entities::IdType() const
+    {
+        return Entities::IdType(boost::string_view(data.data(), data.size()));
+    }
+};
+
 struct BenchmarkContext
 {
     std::shared_ptr<CommandHandler> handler;
-    std::vector<std::string> userIds;
-    std::vector<std::string> threadIds;
-    std::vector<std::string> tagIds;
-    std::vector<std::string> categoryIds;
+    std::vector<IdType> userIds;
+    std::vector<IdType> threadIds;
+    std::vector<IdType> tagIds;
+    std::vector<IdType> categoryIds;
     Entities::Timestamp currentTimestamp = 1000;
 };
 
@@ -78,30 +91,24 @@ auto createCommandHandler()
     return context;
 }
 
-auto executeAndGetTree(CommandHandler& handler, Command command, std::vector<std::string> parameters = {})
+IdType executeAndGetId(CommandHandler& handler, Command command, const std::vector<std::string>& parameters = {})
 {
     auto output = handler.handle(command, parameters);
-    boost::property_tree::ptree result;
+    auto idStart = output.output.begin() + output.output.find("\"id\":\"") + 6;
 
-    if (output.output.size())
-    {
-        std::stringstream stream(output.output);
-        boost::property_tree::read_json(stream, result);
-    }
+    IdType result;
+    std::copy(idStart, idStart + result.data.size(), result.data.begin());
+
     return result;
 }
 
-std::string executeAndGetId(CommandHandler& handler, Command command, std::vector<std::string> parameters = {})
+bool executeAndGetOk(CommandHandler& handler, Command command, const std::vector<std::string>& parameters = {})
 {
-    return executeAndGetTree(handler, command, parameters).get<std::string>("id");
+    auto output = handler.handle(command, parameters);
+    return output.statusCode == StatusCode::OK;
 }
 
-bool executeAndGetOk(CommandHandler& handler, Command command, std::vector<std::string> parameters = {})
-{
-    return executeAndGetTree(handler, command, parameters).get<uint32_t>("status") == StatusCode::OK;
-}
-
-inline void execute(CommandHandler& handler, Command command, std::vector<std::string> parameters = {})
+inline void execute(CommandHandler& handler, Command command, const std::vector<std::string>& parameters = {})
 {
     handler.handle(command, parameters);
 }
@@ -185,19 +192,34 @@ void showEntitySizes()
     std::cout << "DiscussionCategoryCollectionBase:      " << sizeof(Entities::DiscussionCategoryCollectionBase) << '\n';
 }
 
-char* getRandomText(size_t size)
+std::string& getRandomText(std::string& buffer, size_t size)
 {
     static std::uniform_int_distribution<> lowercaseAsciiDistribution('a', 'z');
-    static char name[8192];
+    buffer.clear();
 
-    size = std::min(size, sizeof(name) / sizeof(name[0]) - 1);
     for (size_t i = 0; i < size; ++i)
     {
-        name[i] = static_cast<char>(lowercaseAsciiDistribution(randomGenerator));
+        buffer += static_cast<char>(lowercaseAsciiDistribution(randomGenerator));
     }
-    name[size] = 0;
 
-    return name;
+    return buffer;
+}
+
+void appendUInt(std::string& string, unsigned int value)
+{
+    char buffer[40];
+    auto start = std::end(buffer) - 1;
+
+    *start-- = '0' + (value % 10);
+
+    while (value > 9)
+    {
+        value /= 10;
+        *start-- = '0' + (value % 10);
+    }
+
+    start += 1;
+    string.insert(string.end(), start, std::end(buffer));
 }
 
 void populateData(BenchmarkContext& context)
@@ -211,9 +233,14 @@ void populateData(BenchmarkContext& context)
     auto getCurrentTimestamp = [&context]() { return context.currentTimestamp; };
     Context::setCurrentTimeMockForCurrentThread(getCurrentTimestamp);
 
-    for (size_t i = 0; i < nrOfUsers; i++)
+    std::string buffer;
+    buffer.reserve(8192);
+
+    for (unsigned int i = 0; i < nrOfUsers; i++)
     {
-        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { getRandomText(5) + std::to_string(i + 1) }));
+        auto name = getRandomText(buffer, 5);
+        appendUInt(name, i + 1);
+        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { name }));
         context.currentTimestamp += 100;
     }
 
@@ -222,14 +249,15 @@ void populateData(BenchmarkContext& context)
     
     auto config = Configuration::getGlobalConfig();
 
-    auto addMessage = [&](const std::string& threadId)
+
+    auto addMessage = [&](const IdType& threadId)
     {
         auto messageLength = static_cast<int_fast32_t>(messageSizedistribution(randomGenerator));
         messageLength = std::max(config->discussionThreadMessage.minContentLength, messageLength);
         messageLength = std::min(config->discussionThreadMessage.maxContentLength, messageLength);
         messageLength = std::min(static_cast<decltype(messageLength)>(4095), messageLength);
 
-        execute(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, getRandomText(messageLength) });
+        execute(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, getRandomText(buffer, messageLength) });
     };
 
     for (size_t i = 0; i < nrOfTags; i++)
@@ -242,12 +270,12 @@ void populateData(BenchmarkContext& context)
     std::uniform_int_distribution<> nrOfTagsPerCategoryDistribution(nrOfTagsPerCategoryMin, nrOfTagsPerCategoryMax);
     std::uniform_int_distribution<> nrOfTagsPerThreadDistribution(nrOfTagsPerThreadMin, nrOfTagsPerThreadMax);
 
-    std::vector<std::tuple<std::string, std::string>> threadTagsToAdd;
+    std::vector<std::tuple<IdType, IdType>> threadTagsToAdd;
 
     for (size_t i = 0; i < nrOfThreads; i++)
     {
         Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
-        auto id = executeAndGetId(handler, Command::ADD_DISCUSSION_THREAD, { getRandomText(50) });
+        auto id = executeAndGetId(handler, Command::ADD_DISCUSSION_THREAD, { getRandomText(buffer, 50) });
 
         for (int j = 0, n = nrOfTagsPerThreadDistribution(randomGenerator); j < n; ++j)
         {
@@ -327,23 +355,26 @@ void doBenchmarks(BenchmarkContext& context)
     std::uniform_int_distribution<> tagIdDistribution(0, tagIds.size() - 1);
     std::uniform_int_distribution<> categoryIdDistribution(0, categoryIds.size() - 1);
 
+    std::string buffer;
+    buffer.reserve(8192);
+
     std::cout << "Adding a new discussion thread: ";
     for (int i = 0; i < retries; ++i)
     {
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::ADD_DISCUSSION_THREAD, { getRandomText(50) });
+            execute(handler, Command::ADD_DISCUSSION_THREAD, { getRandomText(buffer, 50) });
         }) << " ";
         context.currentTimestamp += 10;
     }
     std::cout << '\n';
 
     std::cout << "Adding a new message to an existing discussion thread: ";
+    const std::string sampleMessage = "wmahcgobadxjrtbzoryzdskvxzidmjunsfjrajqljjtyhpgmhbtdrpqbkirlrowssftocsilbycloqxlhxpdlhnxnpxikkmbswckpoxijljjdqmfmdorehztywtcsvbcasnpksnwbmjztxoqxogfjmxwuymkhxzzjqtytmtqxdizxtjqqscczyhssnnucttrjdxzibrgihojzwcgsuwxboumqzqmlsjxxnclqpmsjkqsqvhgyzhpoyhtotilggkxyojwbefizlexbgtswxwjqjohlaeexzxcwtpikfluvqhxqsqlnamaytnmxtazzbvmdykeyvsihcpngnmnwchmpfzrwsjngtmykcyzazsbpmaymejmxjrjpcltdixesatxpstjffjwtsysswnyrzycamsimtzfqkickbohwgpsyvpbvuytoxrcicfzpiiaygoansusdymdelglbclljnpzhqzfsklepvdhtejdptwwpyxwibgjgvcylcdtzcoqzaouqgnobhmywvcskqcpmaquqzirymnfxvmmxyvvohzchiotnztbfocqsueriwedyyqwlimbqjcxvbxlfdorqoriehywuprfnubxdskvprfkpvgxyaqfnuuqpghpdypiuqmcmtslinlbobbqumrcbyoczdsajfhcsidgwsrfqmzasefyomizcuuqttioxxintwzrysjqqkpkyrawtxjvyaapmghpykwbnepfsozmngkwapmwqhketucpgxkfpmorssyjftqsytqchnnedgbgasqylszuqmeezsihxdqtqxgqndflxwetbkwwgontycfizbgyzefzqwcffqewaxdronkeitbwuujxkvvpdqrjyujbznpvtkibzpumyhtpfkxnabpookgqpkgrkjuznklokqwngtqumdmzttixjncjjqemsdhenlfmdqfpbbrvgzrhnqdzgaygbfwukljhwwvoddltjriuztdsolssyyosymqooeucdqqjbjgqzqdcbfataqjggjmjaroaaanjqdeesnfnjxagylhswcufxinzwvrxrpqhtbkzosukhfvvtfusklappmtkvvsrfohvdylvhggbsuempkyruiwhtzqelvwmnmdtbdtaqqgxrqyyivdrjjdxztpxgkseohgbjdqdtcpndm";
     for (int i = 0; i < retries; ++i)
     {
         Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
 
-        const char* sampleMessage = "wmahcgobadxjrtbzoryzdskvxzidmjunsfjrajqljjtyhpgmhbtdrpqbkirlrowssftocsilbycloqxlhxpdlhnxnpxikkmbswckpoxijljjdqmfmdorehztywtcsvbcasnpksnwbmjztxoqxogfjmxwuymkhxzzjqtytmtqxdizxtjqqscczyhssnnucttrjdxzibrgihojzwcgsuwxboumqzqmlsjxxnclqpmsjkqsqvhgyzhpoyhtotilggkxyojwbefizlexbgtswxwjqjohlaeexzxcwtpikfluvqhxqsqlnamaytnmxtazzbvmdykeyvsihcpngnmnwchmpfzrwsjngtmykcyzazsbpmaymejmxjrjpcltdixesatxpstjffjwtsysswnyrzycamsimtzfqkickbohwgpsyvpbvuytoxrcicfzpiiaygoansusdymdelglbclljnpzhqzfsklepvdhtejdptwwpyxwibgjgvcylcdtzcoqzaouqgnobhmywvcskqcpmaquqzirymnfxvmmxyvvohzchiotnztbfocqsueriwedyyqwlimbqjcxvbxlfdorqoriehywuprfnubxdskvprfkpvgxyaqfnuuqpghpdypiuqmcmtslinlbobbqumrcbyoczdsajfhcsidgwsrfqmzasefyomizcuuqttioxxintwzrysjqqkpkyrawtxjvyaapmghpykwbnepfsozmngkwapmwqhketucpgxkfpmorssyjftqsytqchnnedgbgasqylszuqmeezsihxdqtqxgqndflxwetbkwwgontycfizbgyzefzqwcffqewaxdronkeitbwuujxkvvpdqrjyujbznpvtkibzpumyhtpfkxnabpookgqpkgrkjuznklokqwngtqumdmzttixjncjjqemsdhenlfmdqfpbbrvgzrhnqdzgaygbfwukljhwwvoddltjriuztdsolssyyosymqooeucdqqjbjgqzqdcbfataqjggjmjaroaaanjqdeesnfnjxagylhswcufxinzwvrxrpqhtbkzosukhfvvtfusklappmtkvvsrfohvdylvhggbsuempkyruiwhtzqelvwmnmdtbdtaqqgxrqyyivdrjjdxztpxgkseohgbjdqdtcpndm";
         auto& threadId = threadIds[threadIdDistribution(randomGenerator)];
 
         std::cout << countDuration([&]()
@@ -483,7 +514,8 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREAD_BY_ID, { threadIds[threadIdDistribution(randomGenerator)] });
+            execute(handler, Command::GET_DISCUSSION_THREAD_BY_ID, 
+                    { threadIds[threadIdDistribution(randomGenerator)] });
         }) << " ";
     }
     std::cout << '\n';
