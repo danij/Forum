@@ -3,8 +3,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/utility/string_view.hpp>
 
-#include <ostream>
-
 namespace Forum
 {
     namespace Entities
