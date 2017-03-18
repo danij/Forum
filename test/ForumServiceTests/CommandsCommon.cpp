@@ -38,13 +38,13 @@ std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
 }
 
 TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command,
-                                      const std::vector<std::string>& parameters)
+                                      const std::vector<StringView>& parameters)
 {
     return std::get<0>(handlerToObjAndStatus(handler, command, parameters));
 }
 
 TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command, DisplaySettings displaySettings,
-                                      const std::vector<std::string>& parameters)
+                                      const std::vector<StringView>& parameters)
 {
     return std::get<0>(handlerToObjAndStatus(handler, command, displaySettings, parameters));
 }
@@ -60,7 +60,7 @@ TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command comman
 }
 
 TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& handler, Command command,
-                                                          const std::vector<std::string>& parameters)
+                                                          const std::vector<StringView>& parameters)
 {
     auto output = handler->handle(command, parameters);
 
@@ -76,7 +76,7 @@ TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& han
 
 TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& handler, Command command,
                                                           DisplaySettings displaySettings,
-                                                          const std::vector<std::string>& parameters)
+                                                          const std::vector<StringView>& parameters)
 {
     auto oldPageNumber = Context::getDisplayContext().pageNumber;
     auto oldSortOrder = Context::getDisplayContext().sortOrder;

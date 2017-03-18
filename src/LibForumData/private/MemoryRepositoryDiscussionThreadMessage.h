@@ -13,10 +13,10 @@ namespace Forum
             explicit MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store);
 
             StatusCode addNewDiscussionMessageInThread(const Entities::IdType& threadId,
-                                                       const std::string& content, OutStream& output) override;
+                                                       const StringView& content, OutStream& output) override;
             StatusCode deleteDiscussionMessage(const Entities::IdType& id, OutStream& output) override;
-            StatusCode changeDiscussionThreadMessageContent(const Entities::IdType& id, const std::string& newContent,
-                                                            const std::string& changeReason, 
+            StatusCode changeDiscussionThreadMessageContent(const Entities::IdType& id, const StringView& newContent,
+                                                            const StringView& changeReason, 
                                                             OutStream& output) override;
             StatusCode moveDiscussionThreadMessage(const Entities::IdType& messageId, const Entities::IdType& intoThreadId, 
                                                    OutStream& output) override;
@@ -27,7 +27,7 @@ namespace Forum
             StatusCode getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
                                                                   OutStream& output) const override;
 
-            StatusCode addCommentToDiscussionThreadMessage(const Entities::IdType& messageId, const std::string& content, 
+            StatusCode addCommentToDiscussionThreadMessage(const Entities::IdType& messageId, const StringView& content, 
                                                            OutStream& output) override;
             StatusCode getMessageComments(OutStream& output) const override;
             StatusCode getMessageCommentsOfDiscussionThreadMessage(const Entities::IdType& id, 

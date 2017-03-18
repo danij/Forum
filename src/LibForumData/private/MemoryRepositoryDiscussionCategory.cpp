@@ -122,7 +122,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const I
 }
 
 
-StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const std::string& name, const IdType& parentId,
+StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const StringView& name, const IdType& parentId,
                                                                         OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -141,9 +141,11 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const st
     collection().write([&](EntityCollection& collection)
                        {
                            const auto& createdBy = performedBy.getAndUpdate(collection);
+
+                           auto nameString = toString(name);
                            
                            auto& indexByName = collection.categories().get<EntityCollection::DiscussionCategoryCollectionByName>();
-                           if (indexByName.find(name) != indexByName.end())
+                           if (indexByName.find(nameString) != indexByName.end())
                            {
                                status = StatusCode::ALREADY_EXISTS;
                                return;
@@ -152,7 +154,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const st
                            auto category = std::make_shared<DiscussionCategory>();
                            category->notifyChange() = collection.notifyCategoryChange();
                            category->id() = generateUUIDString();
-                           category->name() = name;
+                           category->name() = std::move(nameString);
                            updateCreated(*category);
                  
                            auto setParentId = IdType::empty;
@@ -183,7 +185,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const st
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(const IdType& id, const std::string& newName, 
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(const IdType& id, const StringView& newName, 
                                                                             OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -211,8 +213,11 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
+
+                           auto newNameString = toString(newName);
+
                            auto& indexByName = collection.categories().get<EntityCollection::DiscussionCategoryCollectionByName>();
-                           if (indexByName.find(newName) != indexByName.end())
+                           if (indexByName.find(newNameString) != indexByName.end())
                            {
                                status = StatusCode::ALREADY_EXISTS;
                                return;
@@ -220,9 +225,9 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
                  
                            auto user = performedBy.getAndUpdate(collection);
                  
-                           collection.modifyDiscussionCategory(it, [&newName, &user](DiscussionCategory& category)
+                           collection.modifyDiscussionCategory(it, [&newNameString, &user](DiscussionCategory& category)
                                                                    {
-                                                                       category.name() = newName;
+                                                                       category.name() = std::move(newNameString);
                                                                        updateLastUpdated(category, user);
                                                                    });
                            if ( ! Context::skipObservers())
@@ -233,7 +238,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
 }
 
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescription(const IdType& id,
-                                                                                   const std::string& newDescription,
+                                                                                   const StringView& newDescription,
                                                                                    OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -259,7 +264,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
                            }
                            collection.modifyDiscussionCategory(it, [&newDescription](DiscussionCategory& category)
                                                                    {
-                                                                       category.description() = newDescription;
+                                                                       category.description() = toString(newDescription);
                                                                    });
 
                            if ( ! Context::skipObservers())

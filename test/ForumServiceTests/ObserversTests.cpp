@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_by_name_invokes_observer )
     auto handler = createCommandHandler();
 
     auto ___ = addHandler(handler->readEvents().onGetUserByName,
-                          [&](auto& _, auto& name) { nameToBeRetrieved = name; });
+                          [&](auto& _, auto& name) { nameToBeRetrieved = toString(name); });
 
     createUserAndGetId(handler, "SampleUser");
     handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "SampleUser" });
@@ -329,7 +329,7 @@ BOOST_AUTO_TEST_CASE( Modifying_the_content_of_a_discussion_message_invokes_obse
     auto ___ = addHandler(handler->writeEvents().onChangeDiscussionThreadMessage, 
                           [&](auto& _, auto& message, auto change)
                           {
-                              newContent = message.content();
+                              newContent = toString(message.content());
                               changeReason = message.lastUpdatedReason();
                               messageChange = change;
                           });

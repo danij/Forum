@@ -2,6 +2,7 @@
 
 #include "EntityCommonTypes.h"
 #include "EntityMessageCommentCollectionBase.h"
+#include "StringHelpers.h"
 
 #include <memory>
 #include <string>
@@ -24,14 +25,14 @@ namespace Forum
         {
             typedef int_fast32_t VoteScoreType;
 
-            const std::string&        content()             const { return content_; }
-                  std::string&        content()                   { return content_; }
-            const User&               createdBy()           const { return createdBy_; }
-                  User&               createdBy()                 { return createdBy_; }
-                                                            
-            auto                      upVotes()             const { return Helpers::toConst(upVotes_); }
-            auto                      downVotes()           const { return Helpers::toConst(downVotes_); }
-            VoteScoreType             voteScore()           const 
+                  StringView                 content()             const { return content_; }
+                  Helpers::ImmutableString&  content()                   { return content_; }
+            const User&                      createdBy()           const { return createdBy_; }
+                  User&                      createdBy()                 { return createdBy_; }
+                                                                   
+            auto                             upVotes()             const { return Helpers::toConst(upVotes_); }
+            auto                             downVotes()           const { return Helpers::toConst(downVotes_); }
+            VoteScoreType                    voteScore()           const 
                 { return static_cast<VoteScoreType>(upVotes_.size()) - static_cast<VoteScoreType>(downVotes_.size()); }
 
             int_fast32_t              solvedCommentsCount() const { return solvedCommentsCount_; }
@@ -90,7 +91,7 @@ namespace Forum
             }
 
         private:
-            std::string content_;
+            Helpers::ImmutableString content_;
             User& createdBy_;
             std::weak_ptr<DiscussionThread> parentThread_;
             int_fast32_t solvedCommentsCount_;

@@ -14,12 +14,12 @@ namespace Forum
             StatusCode getUsers(OutStream& output, RetrieveUsersBy by) const override;
 
             StatusCode getUserById(const Entities::IdType& id, OutStream& output) const override;
-            StatusCode getUserByName(const std::string& name, OutStream& output) const override;
+            StatusCode getUserByName(const StringView& name, OutStream& output) const override;
 
-            StatusCode addNewUser(const std::string& name, OutStream& output) override;
-            StatusCode changeUserName(const Entities::IdType& id, const std::string& newName, 
+            StatusCode addNewUser(const StringView& name, OutStream& output) override;
+            StatusCode changeUserName(const Entities::IdType& id, const StringView& newName, 
                                       OutStream& output) override;
-            StatusCode changeUserInfo(const Entities::IdType& id, const std::string& newInfo, 
+            StatusCode changeUserInfo(const Entities::IdType& id, const StringView& newInfo, 
                                       OutStream& output) override;
             StatusCode deleteUser(const Entities::IdType& id, OutStream& output) override;
 

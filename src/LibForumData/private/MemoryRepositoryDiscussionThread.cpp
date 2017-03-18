@@ -239,7 +239,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(cons
 }
 
 
-StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const std::string& name, OutStream& output)
+StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const StringView& name, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     
@@ -259,7 +259,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const std::s
                  
                            auto thread = std::make_shared<DiscussionThread>(*createdBy);
                            thread->id() = generateUUIDString();
-                           thread->name() = name;
+                           thread->name() = toString(name);
                            updateCreated(*thread);
                            thread->latestVisibleChange() = thread->lastUpdated() = thread->created();
                            
@@ -280,7 +280,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const std::s
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const IdType& id, const std::string& newName,
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const IdType& id, const StringView& newName,
                                                                         OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -309,7 +309,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const Id
                  
                            collection.modifyDiscussionThread(it, [&newName, &user](DiscussionThread& thread)
                                                                  {
-                                                                     thread.name() = newName;
+                                                                     thread.name() = toString(newName);
                                                                      thread.latestVisibleChange() = Context::getCurrentTime();
                                                                      updateLastUpdated(thread, user);
                                                                  });

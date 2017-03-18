@@ -64,7 +64,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
 
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(const IdType& threadId, 
-                                                                                    const std::string& content,
+                                                                                    const StringView& content,
                                                                                     OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -182,8 +182,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(cons
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageContent(const IdType& id, 
-                                                                                         const std::string& newContent,
-                                                                                         const std::string& changeReason, 
+                                                                                         const StringView& newContent,
+                                                                                         const StringView& changeReason, 
                                                                                          OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -227,7 +227,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
                            {
                                message.content() = newContent;
                                updateLastUpdated(message, {});
-                               message.lastUpdatedReason() = changeReason;
+                               message.lastUpdatedReason() = toString(changeReason);
                                if (&message.createdBy() != performedByPtr.get())
                                {
                                    message.lastUpdatedBy() = performedByPtr;
@@ -548,7 +548,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThreadMessage(const IdType& messageId, 
-                                                                                        const std::string& content,
+                                                                                        const StringView& content,
                                                                                         OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);

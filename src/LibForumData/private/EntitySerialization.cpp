@@ -102,10 +102,12 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& 
     writer
         << objStart
             << propertySafeName("id", message.id())
-            << propertySafeName("content", message.content())
             << propertySafeName("created", message.created())
             << propertySafeName("commentsCount", message.messageCommentCount())
             << propertySafeName("solvedCommentsCount", message.solvedCommentsCount());
+
+    auto content = message.content();
+    writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
 
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
     {
@@ -173,9 +175,11 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const MessageComment& comment)
     writer
         << objStart
         << propertySafeName("id", comment.id())
-        << propertySafeName("content", comment.content())
         << propertySafeName("created", comment.created())
         << propertySafeName("solved", comment.solved());
+
+    auto content = comment.content();
+    writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
 
     writeVisitDetails(writer, comment.creationDetails());
 

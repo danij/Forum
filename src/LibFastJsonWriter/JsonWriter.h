@@ -63,6 +63,8 @@ namespace Json
 
         JsonWriter& newPropertyWithSafeName(const std::string& name);
 
+        JsonWriter& writeEscapedString(const char* value, size_t length = 0);
+
         JsonWriter& writeSafeString(const char* value, std::size_t length)
         {
             if (isCommaNeeded())
@@ -167,8 +169,6 @@ namespace Json
             }
             return result;
         }
-
-        JsonWriter& writeEscapedString(const char* value, size_t length = 0);
 
         constexpr static int maxDigitsOfNumber(int numberOfBytes) noexcept
         {

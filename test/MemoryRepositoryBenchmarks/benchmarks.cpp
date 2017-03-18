@@ -50,9 +50,9 @@ using namespace Forum::Repository;
 struct IdType
 {
     std::array<char, 36> data;
-    operator std::string() const
+    operator StringView() const
     {
-        return std::string(data.data(), data.size());
+        return StringView(data.data(), data.size());
     }
     operator Entities::IdType() const
     {
@@ -91,7 +91,7 @@ auto createCommandHandler()
     return context;
 }
 
-IdType executeAndGetId(CommandHandler& handler, Command command, const std::vector<std::string>& parameters = {})
+IdType executeAndGetId(CommandHandler& handler, Command command, const std::vector<StringView>& parameters = {})
 {
     auto output = handler.handle(command, parameters);
     auto idStart = output.output.begin() + output.output.find("\"id\":\"") + 6;
@@ -102,13 +102,13 @@ IdType executeAndGetId(CommandHandler& handler, Command command, const std::vect
     return result;
 }
 
-bool executeAndGetOk(CommandHandler& handler, Command command, const std::vector<std::string>& parameters = {})
+bool executeAndGetOk(CommandHandler& handler, Command command, const std::vector<StringView>& parameters = {})
 {
     auto output = handler.handle(command, parameters);
     return output.statusCode == StatusCode::OK;
 }
 
-inline void execute(CommandHandler& handler, Command command, const std::vector<std::string>& parameters = {})
+inline void execute(CommandHandler& handler, Command command, const std::vector<StringView>& parameters = {})
 {
     handler.handle(command, parameters);
 }
@@ -192,7 +192,7 @@ void showEntitySizes()
     std::cout << "DiscussionCategoryCollectionBase:      " << sizeof(Entities::DiscussionCategoryCollectionBase) << '\n';
 }
 
-std::string& getRandomText(std::string& buffer, size_t size)
+StringView getRandomText(std::string& buffer, size_t size)
 {
     static std::uniform_int_distribution<> lowercaseAsciiDistribution('a', 'z');
     buffer.clear();
@@ -202,7 +202,7 @@ std::string& getRandomText(std::string& buffer, size_t size)
         buffer += static_cast<char>(lowercaseAsciiDistribution(randomGenerator));
     }
 
-    return buffer;
+    return StringView(buffer);
 }
 
 void appendUInt(std::string& string, unsigned int value)
@@ -238,9 +238,9 @@ void populateData(BenchmarkContext& context)
 
     for (unsigned int i = 0; i < nrOfUsers; i++)
     {
-        auto name = getRandomText(buffer, 5);
-        appendUInt(name, i + 1);
-        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { name }));
+        getRandomText(buffer, 5);
+        appendUInt(buffer, i + 1);
+        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { buffer }));
         context.currentTimestamp += 100;
     }
 

@@ -3,9 +3,7 @@
 #include "Repository.h"
 
 #include <boost/core/noncopyable.hpp>
-#include <boost/utility/string_view.hpp>
 
-#include <iosfwd>
 #include <functional>
 #include <vector>
 
@@ -121,7 +119,7 @@ namespace Forum
                 const std::string& output;
             };
 
-            Result handle(Command command, const std::vector<std::string>& parameters);
+            Result handle(Command command, const std::vector<StringView>& parameters);
 
             Repository::ReadEvents& readEvents();
             Repository::WriteEvents& writeEvents();

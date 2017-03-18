@@ -13,7 +13,7 @@ using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
 #define COMMAND_HANDLER_METHOD(name) \
-    StatusCode name(const std::vector<std::string>& parameters, OutStream& output)
+    StatusCode name(const std::vector<StringView>& parameters, OutStream& output)
 
 static thread_local std::string outputBuffer;
 
@@ -21,7 +21,7 @@ static const std::string emptyString;
 
 struct CommandHandler::CommandHandlerImpl
 {
-    std::function<StatusCode(const std::vector<std::string>&, OutStream&)> handlers[int(LAST_COMMAND)];
+    std::function<StatusCode(const std::vector<StringView>&, OutStream&)> handlers[int(LAST_COMMAND)];
     ObservableRepositoryRef observerRepository;
     UserRepositoryRef userRepository;
     DiscussionThreadRepositoryRef discussionThreadRepository;
@@ -36,7 +36,7 @@ struct CommandHandler::CommandHandlerImpl
         outputBuffer.reserve(getGlobalConfig()->service.serializationPerThreadBufferSize);
     }
 
-    static bool checkNumberOfParameters(const std::vector<std::string>& parameters, OutStream& output, size_t number)
+    static bool checkNumberOfParameters(const std::vector<StringView>& parameters, OutStream& output, size_t number)
     {
         if (parameters.size() != number)
         {
@@ -47,11 +47,11 @@ struct CommandHandler::CommandHandlerImpl
     }
 
     template<typename T>
-    static bool convertTo(const std::string& value, T& result, OutStream& output)
+    static bool convertTo(const StringView& value, T& result, OutStream& output)
     {
         try
         {
-            result = boost::lexical_cast<T>(value);
+            result = boost::lexical_cast<T>(value.data(), value.size());
             return true;
         }
         catch (...)
@@ -61,7 +61,7 @@ struct CommandHandler::CommandHandlerImpl
         }
     }
 
-    static bool checkMinNumberOfParameters(const std::vector<std::string>& parameters, OutStream& output, size_t number)
+    static bool checkMinNumberOfParameters(const std::vector<StringView>& parameters, OutStream& output, size_t number)
     {
         if (parameters.size() < number)
         {
@@ -595,7 +595,7 @@ WriteEvents& CommandHandler::writeEvents()
     return impl_->observerRepository->writeEvents();
 }
 
-CommandHandler::Result CommandHandler::handle(Command command, const std::vector<std::string>& parameters)
+CommandHandler::Result CommandHandler::handle(Command command, const std::vector<StringView>& parameters)
 {
     StatusCode statusCode;
     if (command >= 0 && command < LAST_COMMAND)

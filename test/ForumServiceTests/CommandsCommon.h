@@ -33,18 +33,18 @@ namespace Forum
         using TreeStatusTupleType = std::tuple<TreeType, Forum::Repository::StatusCode>;
 
         TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command, 
-                              const std::vector<std::string>& parameters);
+                              const std::vector<StringView>& parameters);
         TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command, 
-                              DisplaySettings displaySettings, const std::vector<std::string>& parameters);
+                              DisplaySettings displaySettings, const std::vector<StringView>& parameters);
         TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command);
         TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command, 
                               DisplaySettings displaySettings);
 
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command,
-                                                  const std::vector<std::string>& parameters);
+                                                  const std::vector<StringView>& parameters);
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command,
                                                   DisplaySettings displaySettings, 
-                                                  const std::vector<std::string>& parameters);
+                                                  const std::vector<StringView>& parameters);
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command);
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command,
                                                   DisplaySettings displaySettings);

@@ -83,16 +83,26 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
     return status;
 }
 
-StatusCode MemoryRepositoryUser::getUserByName(const std::string& name, OutStream& output) const
+StatusCode MemoryRepositoryUser::getUserByName(const StringView& name, OutStream& output) const
 {
     StatusWriter status(output, StatusCode::OK);
 
     PerformedByWithLastSeenUpdateGuard performedBy;
 
+    //keep a string around in order to avoid dynamic memory allocation on each call
+    //when converting from StringView to std::string in order to use index.find();
+
+    static thread_local std::string nameString;
+
+    if (countUTF8Characters(name) > getGlobalConfig()->user.maxNameLength)
+    {
+        return status = INVALID_PARAMETERS;
+    }
+    
     collection().read([&](const EntityCollection& collection)
                       {
                           const auto& index = collection.usersByName();
-                          auto it = index.find(name);
+                          auto it = index.find(toString(name, nameString));
                           if (it == index.end())
                           {
                               status = StatusCode::NOT_FOUND;
@@ -110,7 +120,7 @@ StatusCode MemoryRepositoryUser::getUserByName(const std::string& name, OutStrea
     return status;
 }
 
-StatusCode MemoryRepositoryUser::addNewUser(const std::string& name, OutStream& output)
+StatusCode MemoryRepositoryUser::addNewUser(const StringView& name, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -122,21 +132,24 @@ StatusCode MemoryRepositoryUser::addNewUser(const std::string& name, OutStream& 
         return status = validationCode;
     }
 
-    auto user = std::make_shared<User>();
-    user->id() = generateUUIDString();
-    user->name() = name;
-    updateCreated(*user);
-
     PerformedByWithLastSeenUpdateGuard performedBy;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto nameString = toString(name);
+
                            auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
-                           if (indexByName.find(name) != indexByName.end())
+                           if (indexByName.find(nameString) != indexByName.end())
                            {
                                status = StatusCode::ALREADY_EXISTS;
                                return;
                            }
+
+                           auto user = std::make_shared<User>();
+                           user->id() = generateUUIDString();
+                           user->name() = std::move(nameString);
+                           updateCreated(*user);
+
                            collection.users().insert(user);
 
                            if ( ! Context::skipObservers())
@@ -150,7 +163,7 @@ StatusCode MemoryRepositoryUser::addNewUser(const std::string& name, OutStream& 
     return status;
 }
 
-StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const std::string& newName, OutStream& output)
+StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const StringView& newName, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     auto config = getGlobalConfig();
@@ -172,15 +185,18 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const std::str
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
+
+                           auto newNameString = toString(newName);
+
                            auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
-                           if (indexByName.find(newName) != indexByName.end())
+                           if (indexByName.find(newNameString) != indexByName.end())
                            {
                                status = StatusCode::ALREADY_EXISTS;
                                return;
                            }
-                           collection.modifyUser(it, [&newName](User& user)
+                           collection.modifyUser(it, [&newNameString](User& user)
                                                      {
-                                                         user.name() = newName;
+                                                         user.name() = std::move(newNameString);
                                                      });
                            if ( ! Context::skipObservers())
                                writeEvents().onChangeUser(createObserverContext(*performedBy.getAndUpdate(collection)),
@@ -189,7 +205,7 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const std::str
     return status;
 }
 
-StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, const std::string& newInfo, OutStream& output)
+StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, const StringView& newInfo, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -215,7 +231,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, const std::str
                            }
                            collection.modifyUser(it, [&newInfo](User& user)
                                                      {
-                                                         user.info() = newInfo;
+                                                         user.info() = toString(newInfo);
                                                      });
 
                            if ( ! Context::skipObservers())

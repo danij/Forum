@@ -11,12 +11,12 @@ namespace Forum
         public:
             explicit MemoryRepositoryDiscussionCategory(MemoryStoreRef store);
 
-            StatusCode addNewDiscussionCategory(const std::string& name, const Entities::IdType& parentId,
+            StatusCode addNewDiscussionCategory(const StringView& name, const Entities::IdType& parentId,
                                                 OutStream& output) override;
-            StatusCode changeDiscussionCategoryName(const Entities::IdType& id, const std::string& newName,
+            StatusCode changeDiscussionCategoryName(const Entities::IdType& id, const StringView& newName,
                                                     OutStream& output) override;
             StatusCode changeDiscussionCategoryDescription(const Entities::IdType& id, 
-                                                           const std::string& newDescription,
+                                                           const StringView& newDescription,
                                                            OutStream& output) override;
             StatusCode changeDiscussionCategoryParent(const Entities::IdType& id, 
                                                       const Entities::IdType& newParentId,

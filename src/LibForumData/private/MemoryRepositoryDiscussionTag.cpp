@@ -63,7 +63,7 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
 }
 
 
-StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const std::string& name, OutStream& output)
+StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const StringView& name, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -81,8 +81,10 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const std::string&
                        {
                            const auto& createdBy = performedBy.getAndUpdate(collection);
                            
+                           auto nameString = toString(name);
+
                            auto& indexByName = collection.tags().get<EntityCollection::DiscussionTagCollectionByName>();
-                           if (indexByName.find(name) != indexByName.end())
+                           if (indexByName.find(nameString) != indexByName.end())
                            {
                                status = StatusCode::ALREADY_EXISTS;
                                return;
@@ -91,7 +93,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const std::string&
                            auto tag = std::make_shared<DiscussionTag>();
                            tag->notifyChange() = collection.notifyTagChange();
                            tag->id() = generateUUIDString();
-                           tag->name() = name;
+                           tag->name() = std::move(nameString);
                            updateCreated(*tag);
                  
                            collection.tags().insert(tag);
@@ -105,7 +107,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const std::string&
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& id, const std::string& newName,
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& id, const StringView& newName,
                                                                   OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -132,8 +134,11 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
+
+                           auto newNameString = toString(newName);
+
                            auto& indexByName = collection.tags().get<EntityCollection::DiscussionTagCollectionByName>();
-                           if (indexByName.find(newName) != indexByName.end())
+                           if (indexByName.find(newNameString) != indexByName.end())
                            {
                                status = StatusCode::ALREADY_EXISTS;
                                return;
@@ -141,9 +146,9 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
                  
                            auto user = performedBy.getAndUpdate(collection);
                  
-                           collection.modifyDiscussionTag(it, [&newName, &user](DiscussionTag& tag)
+                           collection.modifyDiscussionTag(it, [&newNameString, &user](DiscussionTag& tag)
                                                               {
-                                                                  tag.name() = newName;
+                                                                  tag.name() = std::move(newNameString);
                                                                   updateLastUpdated(tag, user);
                                                               });
                            if ( ! Context::skipObservers())
@@ -153,7 +158,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType& id, const std::string& blob,
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType& id, const StringView& blob,
                                                                     OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -161,7 +166,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
-    if (blob.size() > static_cast<std::string::size_type>(getGlobalConfig()->discussionTag.maxUiBlobSize))
+    if (blob.size() > static_cast<decltype(blob.size())>(getGlobalConfig()->discussionTag.maxUiBlobSize))
     {
         return status = StatusCode::VALUE_TOO_LONG;
     }
@@ -178,7 +183,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
                            }
                            collection.modifyDiscussionTag(it, [&blob](DiscussionTag& tag)
                                                               {
-                                                                  tag.uiBlob() = blob;
+                                                                  tag.uiBlob() = toString(blob);
                                                               });
                            if ( ! Context::skipObservers())
                                writeEvents().onChangeDiscussionTag(createObserverContext(*performedBy.getAndUpdate(collection)),

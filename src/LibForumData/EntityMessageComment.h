@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include "StringHelpers.h"
 
 namespace Forum
 {
@@ -20,8 +21,8 @@ namespace Forum
          */
         struct MessageComment final : public Identifiable, public CreatedMixin, private boost::noncopyable
         {
-            const std::string&                      content()       const { return content_; }
-                  std::string&                      content()             { return content_; }
+                  StringView                        content()       const { return content_; }
+                  Helpers::ImmutableString&         content()             { return content_; }
             const User&                             createdBy()     const { return createdBy_; }
                   User&                             createdBy()           { return createdBy_; }
                   bool                              solved()        const { return solved_; }
@@ -53,7 +54,7 @@ namespace Forum
             {}
 
         private:
-            std::string content_;
+            Helpers::ImmutableString content_;
             User& createdBy_;
             std::weak_ptr<DiscussionThreadMessage> parentMessage_;
             bool solved_;

@@ -75,7 +75,15 @@ UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
     return result;
 }
 
-StatusCode MemoryRepositoryBase::validateString(const std::string& string, 
+static bool u32regex_match(const StringView& s,
+                           const boost::u32regex& e,
+                           boost::match_flag_type flags = boost::match_default)
+{
+    boost::match_results<const char*> m;
+    return boost::BOOST_REGEX_DETAIL_NS::do_regex_match(s.begin(), s.end(), m, e, flags, static_cast<boost::mpl::int_<1> const*>(0));
+}
+
+StatusCode MemoryRepositoryBase::validateString(const StringView& string, 
                                                 boost::optional<const boost::u32regex&> regex,
                                                 EmptyStringValidation emptyValidation,
                                                 boost::optional<int_fast32_t> minimumLength, 
@@ -103,7 +111,7 @@ StatusCode MemoryRepositoryBase::validateString(const std::string& string,
 
     try
     {
-        if (regex && ! boost::u32regex_match(string, *regex, boost::match_flag_type::format_all))
+        if (regex && ! u32regex_match(string, *regex, boost::match_flag_type::format_all))
         {
             return StatusCode::INVALID_PARAMETERS;
         }

@@ -73,7 +73,7 @@ namespace Forum
                 INVALID_PARAMETERS_FOR_EMPTY_STRING
             };
 
-            static StatusCode validateString(const std::string& string, 
+            static StatusCode validateString(const StringView& string, 
                                              boost::optional<const boost::u32regex&> regex,
                                              EmptyStringValidation emptyValidation,
                                              boost::optional<int_fast32_t> minimumLength, 

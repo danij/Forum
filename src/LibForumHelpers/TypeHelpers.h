@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/utility/string_view.hpp>
+
 #include <memory>
 
 /**
@@ -25,6 +27,7 @@
 
 #define DECLARE_ABSTRACT_MANDATORY_NO_COPY(TypeName) DECLARE_INTERFACE_MANDATORY_NO_COPY(TypeName)
 
+typedef boost::string_view StringView;
 
 namespace Forum
 {
