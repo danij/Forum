@@ -90,9 +90,18 @@ auto createCommandHandler()
     return context;
 }
 
-IdType executeAndGetId(CommandHandler& handler, Command command, const std::vector<StringView>& parameters = {})
+/**
+ * Preserve the same vector of parameter so as to not reallocate memory for it each time
+ */
+static std::vector<StringView> parametersVector(10);
+
+IdType executeAndGetId(CommandHandler& handler, Command command, 
+                       const std::initializer_list<StringView>& parameters = {})
 {
-    auto output = handler.handle(command, parameters);
+    parametersVector.clear();
+    parametersVector.insert(parametersVector.end(), parameters.begin(), parameters.end());
+
+    auto output = handler.handle(command, parametersVector);
     auto idStart = output.output.begin() + output.output.find("\"id\":\"") + 6;
 
     IdType result;
@@ -101,15 +110,21 @@ IdType executeAndGetId(CommandHandler& handler, Command command, const std::vect
     return result;
 }
 
-bool executeAndGetOk(CommandHandler& handler, Command command, const std::vector<StringView>& parameters = {})
+bool executeAndGetOk(CommandHandler& handler, Command command, const std::initializer_list<StringView>& parameters = {})
 {
-    auto output = handler.handle(command, parameters);
+    parametersVector.clear();
+    parametersVector.insert(parametersVector.end(), parameters.begin(), parameters.end());
+
+    auto output = handler.handle(command, parametersVector);
     return output.statusCode == StatusCode::OK;
 }
 
-inline void execute(CommandHandler& handler, Command command, const std::vector<StringView>& parameters = {})
+inline void execute(CommandHandler& handler, Command command, const std::initializer_list<StringView>& parameters = {})
 {
-    handler.handle(command, parameters);
+    parametersVector.clear();
+    parametersVector.insert(parametersVector.end(), parameters.begin(), parameters.end());
+
+    handler.handle(command, parametersVector);
 }
 
 const int nrOfUsers = 10000;
