@@ -178,9 +178,12 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const St
                            if ( ! Context::skipObservers())
                                writeEvents().onAddNewDiscussionCategory(createObserverContext(*createdBy), *category);
                  
-                           status.addExtraSafeName("id", category->id());
-                           status.addExtraSafeName("name", category->name());
-                           status.addExtraSafeName("parentId", setParentId);
+                           status.writeNow([&](auto& writer)
+                                           {
+                                               writer << Json::propertySafeName("id", category->id());
+                                               writer << Json::propertySafeName("name", category->name());
+                                               writer << Json::propertySafeName("parentId", setParentId);
+                                           });
                        });
     return status;
 }

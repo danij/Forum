@@ -155,10 +155,13 @@ StatusCode MemoryRepositoryUser::addNewUser(const StringView& name, OutStream& o
                            if ( ! Context::skipObservers())
                                writeEvents().onAddNewUser(createObserverContext(*performedBy.getAndUpdate(collection)),
                                                           *user);
-                 
-                           status.addExtraSafeName("id", user->id());
-                           status.addExtraSafeName("name", user->name());
-                           status.addExtraSafeName("created", user->created());
+
+                           status.writeNow([&](auto& writer)
+                                           {
+                                               writer << Json::propertySafeName("id", user->id());
+                                               writer << Json::propertySafeName("name", user->name());
+                                               writer << Json::propertySafeName("created", user->created());
+                                           });
                        });
     return status;
 }

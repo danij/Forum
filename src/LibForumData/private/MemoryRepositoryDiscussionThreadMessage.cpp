@@ -146,9 +146,12 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                            if ( ! Context::skipObservers())
                                writeEvents().onAddNewDiscussionThreadMessage(createObserverContext(*createdBy), *message);
                  
-                           status.addExtraSafeName("id", message->id());
-                           status.addExtraSafeName("parentId", (*threadIt)->id());
-                           status.addExtraSafeName("created", message->created());
+                           status.writeNow([&](auto& writer)
+                                           {
+                                               writer << Json::propertySafeName("id", message->id());
+                                               writer << Json::propertySafeName("parentId", (*threadIt)->id());
+                                               writer << Json::propertySafeName("created", message->created());
+                                           });
                        });
     return status;
 }
@@ -602,9 +605,12 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
                                writeEvents().onAddCommentToDiscussionThreadMessage(createObserverContext(*createdBy),
                                                                                    *comment);
                  
-                           status.addExtraSafeName("id", comment->id());
-                           status.addExtraSafeName("messageId", (*messageIt)->id());
-                           status.addExtraSafeName("created", comment->created());
+                           status.writeNow([&](auto& writer)
+                                           {
+                                               writer << Json::propertySafeName("id", comment->id());
+                                               writer << Json::propertySafeName("messageId", (*messageIt)->id());
+                                               writer << Json::propertySafeName("created", comment->created());
+                                           });
                        });
     return status;    
 }

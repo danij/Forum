@@ -101,8 +101,11 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const StringView& 
                            if ( ! Context::skipObservers())
                                writeEvents().onAddNewDiscussionTag(createObserverContext(*createdBy), *tag);
                  
-                           status.addExtraSafeName("id", tag->id());
-                           status.addExtraSafeName("name", tag->name());
+                           status.writeNow([&](auto& writer)
+                                           {
+                                               writer << Json::propertySafeName("id", tag->id());
+                                               writer << Json::propertySafeName("name", tag->name());
+                                           });
                        });
     return status;
 }

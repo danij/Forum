@@ -273,9 +273,12 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const String
                            if ( ! Context::skipObservers())
                                writeEvents().onAddNewDiscussionThread(createObserverContext(*createdBy), *thread);
                  
-                           status.addExtraSafeName("id", thread->id());
-                           status.addExtraSafeName("name", thread->name());
-                           status.addExtraSafeName("created", thread->created());
+                           status.writeNow([&](auto& writer)
+                                           {
+                                               writer << Json::propertySafeName("id", thread->id());
+                                               writer << Json::propertySafeName("name", thread->name());
+                                               writer << Json::propertySafeName("created", thread->created());
+                                           });
                        });
     return status;
 }

@@ -110,13 +110,9 @@ namespace Forum
 
                 Json::JsonWriter writer(output_);
 
-                writer << Json::objStart;
-                writer << Json::propertySafeName("status", statusCode_);
-                for (int i = 0; i < elementCount_; ++i)
-                {
-                    extras_[i](writer);
-                }
-                writer << Json::objEnd;
+                writer << Json::objStart
+                       << Json::propertySafeName("status", statusCode_)
+                       << Json::objEnd;
             }
 
             /**
@@ -139,25 +135,27 @@ namespace Forum
                 return statusCode_;
             }
 
-            /**
-             * Adds extra information to be written
-             */
-            template <typename T>
-            void addExtraSafeName(const std::string& key, const T& value)
+            template<typename Action>
+            void writeNow(Action&& extra)
             {
-                extras_.at(elementCount_++) = [=](auto& writer)
-                                              {
-                                                  writer << Json::propertySafeName(key, value);
-                                              };
+                Json::JsonWriter writer(output_);
+
+                writer << Json::objStart;
+                writer << Json::propertySafeName("status", statusCode_);
+
+                extra(writer);
+
+                writer << Json::objEnd;
+
+                //prevent writing again on destructor call
+                enabled_ = false;
             }
 
         private:
-            Forum::Repository::OutStream& output_;
+            Repository::OutStream& output_;
             Repository::StatusCode statusCode_;
             bool enabled_;
             int elementCount_ = 0;
-            //maximum count should be adjusted if needed, the value is known at compile time
-            std::array<std::function<void(Json::JsonWriter&)>, 10> extras_;
         };
     }
 }
