@@ -20,6 +20,21 @@ BOOST_AUTO_TEST_CASE( Json_serialization_works_for_nulls )
     BOOST_REQUIRE_EQUAL("{\"prop1\":1,\"prop2\":null}", str);
 }
 
+BOOST_AUTO_TEST_CASE( Json_serialization_works_for_integers )
+{
+    std::stringstream stream;
+    JsonWriter writer(stream);
+
+    writer.startObject();
+    writer.newPropertyWithSafeName("prop1") << -1234;
+    writer.newPropertyWithSafeName("prop2") << 0;
+    writer.newPropertyWithSafeName("prop3") << 2147483647;
+    writer.endObject();
+
+    auto str = stream.str();
+    BOOST_REQUIRE_EQUAL("{\"prop1\":-1234,\"prop2\":0,\"prop3\":2147483647}", str);
+}
+
 BOOST_AUTO_TEST_CASE( Json_serialization_escapes_property_names )
 {
     std::stringstream stream;
