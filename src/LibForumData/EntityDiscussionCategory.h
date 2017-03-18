@@ -40,7 +40,6 @@ namespace Forum
                   int_fast32_t  threadTotalCount()  const { return totalThreads_.threadsById().size(); }
                   int_fast32_t  messageTotalCount() const { return totalThreads_.messageCount(); }
 
-            const std::weak_ptr<DiscussionCategory>& parentWeak() const { return parent_; }
                   std::weak_ptr<DiscussionCategory>& parentWeak()       { return parent_; }
 
                   auto          tags()         const { return Helpers::toConst(tags_); }
@@ -87,6 +86,24 @@ namespace Forum
                     return parentShared->hasAncestor(ancestor);
                 }
                 return false;
+            }
+
+            template<typename TAction>
+            void executeActionWithParentCategoryIfAvailable(TAction&& action) const
+            {
+                if (auto parentShared = parent_.lock())
+                {
+                    action(const_cast<const DiscussionCategory&>(*parentShared));
+                }
+            }
+
+            template<typename TAction>
+            void executeActionWithParentCategoryIfAvailable(TAction&& action)
+            {
+                if (auto parentShared = parent_.lock())
+                {
+                    action(*parentShared);
+                }
             }
 
             bool insertDiscussionThread(const DiscussionThreadRef& thread) override;

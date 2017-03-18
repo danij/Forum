@@ -709,10 +709,10 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_parent_invokes_observer )
     auto ___ = addHandler(handler->writeEvents().onChangeDiscussionCategory, 
                           [&](auto& _, auto& category, auto change)
                           {
-                              if (auto parent = category.parentWeak().lock())
+                              category.executeActionWithParentCategoryIfAvailable([&](auto& parent)
                               {
-                                  newParentId = static_cast<std::string>(parent->id());
-                              }
+                                  newParentId = static_cast<std::string>(parent.id());                                  
+                              });
                               categoryChange = change;
                           });
 

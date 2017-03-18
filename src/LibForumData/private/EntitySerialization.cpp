@@ -344,11 +344,11 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionCategory& categ
     }
     if ( ! serializationSettings.hideDiscussionCategoryParent)
     {
-        if (auto parentRef = category.parentWeak().lock())
+        category.executeActionWithParentCategoryIfAvailable([&](auto& parent)
         {
             BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
-            writer << propertySafeName("parent", *parentRef);
-        }
+            writer << propertySafeName("parent", parent);
+        });
     }
 
     writer

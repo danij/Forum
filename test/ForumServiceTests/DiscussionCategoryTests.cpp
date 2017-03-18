@@ -722,6 +722,31 @@ BOOST_AUTO_TEST_CASE( Discussion_categories_include_only_one_level_of_children_i
     BOOST_REQUIRE_EQUAL(0, parentCategory.children[0].children.size());
 }
 
+BOOST_AUTO_TEST_CASE( Discussion_categories_include_all_parent_levels_in_results )
+{
+    auto handler = createCommandHandler();
+    auto parentCategoryId = createDiscussionCategoryAndGetId(handler, "Parent");
+    auto childCategoryId = createDiscussionCategoryAndGetId(handler, "Child", parentCategoryId);
+    auto childChildCategoryId = createDiscussionCategoryAndGetId(handler, "ChildChild", childCategoryId);
+
+    auto childChildCategory = getCategory(handler, childChildCategoryId);
+
+    BOOST_REQUIRE_EQUAL(childChildCategoryId, childChildCategory.id);
+    BOOST_REQUIRE_EQUAL("ChildChild", childChildCategory.name);
+
+    BOOST_REQUIRE_EQUAL(0, childChildCategory.children.size());
+
+    BOOST_REQUIRE(childChildCategory.parent);
+    BOOST_REQUIRE_EQUAL(childCategoryId, childChildCategory.parent->id);
+    BOOST_REQUIRE_EQUAL("Child", childChildCategory.parent->name);
+
+    BOOST_REQUIRE(childChildCategory.parent->parent);
+    BOOST_REQUIRE_EQUAL(parentCategoryId, childChildCategory.parent->parent->id);
+    BOOST_REQUIRE_EQUAL("Parent", childChildCategory.parent->parent->name);
+
+    BOOST_REQUIRE( ! childChildCategory.parent->parent->parent);
+}
+
 BOOST_AUTO_TEST_CASE( Discussion_categories_include_tags_of_current_and_one_level_of_children_in_results )
 {
     auto handler = createCommandHandler();
