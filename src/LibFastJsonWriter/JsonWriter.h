@@ -20,9 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <functional>
 #include <iostream>
-#include <stack>
+#include <array>
 #include <string>
-#include <vector>
 
 namespace Json
 {
@@ -148,7 +147,7 @@ namespace Json
         bool isCommaNeeded()
         {
             bool result = false;
-            auto& state = state_.top();
+            auto& state = peekState();
             if (state.enumerationStarted)
             {
                 if (state.commaRequired)
@@ -262,9 +261,28 @@ namespace Json
             bool propertyNameAdded;
         };
 
+        State& peekState()
+        {
+            return stateStack_[stateIndex_];
+        }
+
+        void popState()
+        {
+            --stateIndex_;
+        }
+
+        void pushState(State state)
+        {
+            stateStack_[++stateIndex_] = state;
+        }
+
         std::string* stringOutput_ = nullptr;
         std::ostream* streamOutput_ = nullptr;
-        std::stack<State, std::vector<State>> state_;
+
+        constexpr static int MaxStateDepth = 30;
+
+        std::array<State, MaxStateDepth> stateStack_;
+        int stateIndex_ = -1;
     };
 
     template <typename T>

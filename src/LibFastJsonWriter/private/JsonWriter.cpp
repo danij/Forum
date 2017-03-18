@@ -18,8 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "JsonWriter.h"
 
-#include <iostream>
-#include <memory>
 #include <cstring>
 #include <string>
 
@@ -27,12 +25,12 @@ using namespace Json;
 
 JsonWriter::JsonWriter(std::ostream& stream) : streamOutput_(&stream)
 {
-    state_.push({ false, false, false });
+    pushState({ false, false, false });
 }
 
 JsonWriter::JsonWriter(std::string& string) : stringOutput_(&string)
 {
-    state_.push({ false, false, false });
+    pushState({ false, false, false });
 }
 
 JsonWriter& JsonWriter::null()
@@ -51,7 +49,7 @@ JsonWriter& JsonWriter::startArray()
     {
         writeChar('[');
     }
-    state_.push({ true, false, false });
+    pushState({ true, false, false });
     return *this;
 }
 
@@ -59,7 +57,7 @@ JsonWriter& JsonWriter::endArray()
 {
     writeChar(']');
 
-    state_.pop();
+    popState();
     return *this;
 }
 
@@ -73,7 +71,7 @@ JsonWriter& JsonWriter::startObject()
     {
         writeChar('{');
     }
-    state_.push({ true, false, false });
+    pushState({ true, false, false });
     return *this;
 }
 
@@ -81,7 +79,7 @@ JsonWriter& JsonWriter::endObject()
 {
     writeChar('}');
 
-    state_.pop();
+    popState();
     return *this;
 }
 
@@ -90,7 +88,7 @@ JsonWriter& JsonWriter::newProperty(const char* name)
     writeEscapedString(name);
     writeChar(':');
 
-    state_.top().propertyNameAdded = true;
+    peekState().propertyNameAdded = true;
     return *this;
 }
 
@@ -99,7 +97,7 @@ JsonWriter& JsonWriter::newProperty(const std::string& name)
     writeEscapedString(name.c_str(), name.length());
     writeChar(':');
 
-    state_.top().propertyNameAdded = true;
+    peekState().propertyNameAdded = true;
     return *this;
 }
 
@@ -116,7 +114,7 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name, std::size_t le
     writeString(name, length);
     writeString("\":");
 
-    state_.top().propertyNameAdded = true;
+    peekState().propertyNameAdded = true;
     return *this;
 }
 
@@ -133,7 +131,7 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const std::string& name)
     writeString(name);
     writeString("\":");
 
-    state_.top().propertyNameAdded = true;
+    peekState().propertyNameAdded = true;
     return *this;
 }
 
