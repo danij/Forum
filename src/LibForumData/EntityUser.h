@@ -16,8 +16,11 @@ namespace Forum
         * Stores a user that creates content
         * Repositories are responsible for updating the relationships between this message and other entities
         */
-        struct User final : public Identifiable, public CreatedMixin, public DiscussionThreadCollectionBase, 
-                            public DiscussionThreadMessageCollectionBase, public MessageCommentCollectionBase
+        struct User final : public Identifiable, 
+                            public CreatedMixin, 
+                            public DiscussionThreadCollectionBase<OrderedIndexForId>,
+                            public DiscussionThreadMessageCollectionBase<OrderedIndexForId>, 
+                            public MessageCommentCollectionBase<OrderedIndexForId>
         {
             const std::string& name()     const { return name_; }
                   std::string& name()           { return name_; }
@@ -50,7 +53,6 @@ namespace Forum
             std::string info_;
             Timestamp lastSeen_;
             std::set<DiscussionThreadMessageWeakRef, std::owner_less<DiscussionThreadMessageWeakRef>> votedMessages_;
-
         };
 
         typedef std::shared_ptr<User> UserRef;

@@ -20,8 +20,10 @@ namespace Forum
          * Repositories are responsible for updating the relationships between this message and other entities
          * When cloning a message, the repository needs to reintroduce it in all collections it was part of
          */
-        struct DiscussionThreadMessage final : public Identifiable, public CreatedMixin, public LastUpdatedMixin<User>,
-                                               public MessageCommentCollectionBase
+        struct DiscussionThreadMessage final : public Identifiable, 
+                                               public CreatedMixin, 
+                                               public LastUpdatedMixin<User>,
+                                               public MessageCommentCollectionBase<OrderedIndexForId>
         {
             typedef int_fast32_t VoteScoreType;
 

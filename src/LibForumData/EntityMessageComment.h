@@ -19,7 +19,9 @@ namespace Forum
          * Stores a comment to a discussion thread message
          * Does not get deleted if the message is deleted
          */
-        struct MessageComment final : public Identifiable, public CreatedMixin, private boost::noncopyable
+        struct MessageComment final : public Identifiable, 
+                                      public CreatedMixin, 
+                                      private boost::noncopyable
         {
                   StringView                        content()       const { return content_; }
                   Helpers::ImmutableString&         content()             { return content_; }

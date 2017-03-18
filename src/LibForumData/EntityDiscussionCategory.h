@@ -20,9 +20,11 @@ namespace Forum
         * The discussion category manages the message count and the total thread/message counts
         * when adding/removing threads and/or tags
         */
-        struct DiscussionCategory final : public Identifiable, public CreatedMixin, public LastUpdatedMixin<User>,
-                                          public std::enable_shared_from_this<DiscussionCategory>,
-                                          public DiscussionThreadCollectionBase
+        struct DiscussionCategory final : public Identifiable, 
+                                          public CreatedMixin, 
+                                          public LastUpdatedMixin<User>,
+                                          public DiscussionThreadCollectionBase<HashIndexForId>,
+                                          public std::enable_shared_from_this<DiscussionCategory>
         {
             const std::string&  name()         const { return name_; }
                   std::string&  name()               { return name_; }
@@ -119,14 +121,14 @@ namespace Forum
             std::string description_;
             int_fast16_t displayOrder_ = 0;
             int_fast32_t messageCount_ = 0;
-            DiscussionThreadRefCountedCollection totalThreads_;
+            DiscussionThreadRefCountedCollection<HashIndexForId> totalThreads_;
             std::weak_ptr<DiscussionCategory> parent_;
             //enable fast search of children, client can sort them on display order
             std::set<std::shared_ptr<DiscussionCategory>, std::owner_less<std::shared_ptr<DiscussionCategory>>> children_;
             std::set<DiscussionTagRef, std::owner_less<DiscussionTagRef>> tags_;
             NotifyChangeActionType notifyChangeFn_;
 
-            static void emptyNotifyChange(DiscussionCategory& categoty) { }
+            static void emptyNotifyChange(DiscussionCategory&) { }
         };
 
         typedef std::shared_ptr<DiscussionCategory> DiscussionCategoryRef;

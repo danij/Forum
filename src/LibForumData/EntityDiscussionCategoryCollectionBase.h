@@ -19,6 +19,7 @@ namespace Forum
          * Base class for storing a collection of discussion categories
          * Using multiple inheritance instead of composition in order to allow easier customization of modify/delete behavior
          */
+        template <typename IndexTypeForId>
         struct DiscussionCategoryCollectionBase : private boost::noncopyable
         {
             DECLARE_ABSTRACT_MANDATORY_NO_COPY(DiscussionCategoryCollectionBase);
@@ -28,9 +29,17 @@ namespace Forum
             struct DiscussionCategoryCollectionByMessageCount {};
             struct DiscussionCategoryCollectionByDisplayOrderRootPriority {};
 
+            template<typename IndexType, typename T1, typename T2>
+            struct IdIndexType : boost::multi_index::hashed_unique<T1, T2>
+            {};
+
+            template<typename T1, typename T2>
+            struct IdIndexType<OrderedIndexForId, T1, T2> : boost::multi_index::ranked_unique<T1, T2>
+            {};
+
             struct DiscussionCategoryCollectionIndices : boost::multi_index::indexed_by<
 
-                    boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionCategoryCollectionById>,
+                    IdIndexType<IndexTypeForId, boost::multi_index::tag<DiscussionCategoryCollectionById>,
                             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionCategory::id>>,
 
                     boost::multi_index::ranked_unique<boost::multi_index::tag<DiscussionCategoryCollectionByName>,
@@ -48,37 +57,87 @@ namespace Forum
 
             typedef boost::multi_index_container<DiscussionCategoryRef, DiscussionCategoryCollectionIndices>
                     DiscussionCategoryCollection;
+            typedef typename DiscussionCategoryCollection::iterator CategoryIdIteratorType;
 
-            auto& categories() { return categories_; }
-            auto  categoriesById() const
-                { return Helpers::toConst(categories_.get<DiscussionCategoryCollectionById>()); }
-            auto  categoriesByName() const
-                { return Helpers::toConst(categories_.get<DiscussionCategoryCollectionByName>()); }
-            auto  categoriesByMessageCount() const
-                { return Helpers::toConst(categories_.get<DiscussionCategoryCollectionByMessageCount>()); }
-            auto  categoriesByDisplayOrderRootPriority() const
-                { return Helpers::toConst(categories_.get<DiscussionCategoryCollectionByDisplayOrderRootPriority>()); }
+
+            auto& categories()
+            {
+                return categories_;
+            }
+
+            auto categoriesById() const
+            {
+                return Helpers::toConst(categories_.get<DiscussionCategoryCollectionById>());
+            }
+
+            auto categoriesByName() const
+            {
+                return Helpers::toConst(categories_.get<DiscussionCategoryCollectionByName>());
+            }
+
+            auto categoriesByMessageCount() const
+            {
+                return Helpers::toConst(categories_.get<DiscussionCategoryCollectionByMessageCount>());
+            }
+
+            auto categoriesByDisplayOrderRootPriority() const
+            {
+                return Helpers::toConst(categories_.get<DiscussionCategoryCollectionByDisplayOrderRootPriority>());
+            }
 
             /**
              * Enables a safe modification of a discussion category instance,
              * refreshing all indexes the category is registered in
              */
-            virtual void modifyDiscussionCategory(DiscussionCategoryCollection::iterator iterator,
-                                                  std::function<void(DiscussionCategory&)>&& modifyFunction = {});
+            virtual void modifyDiscussionCategory(CategoryIdIteratorType iterator,
+                                                  std::function<void(DiscussionCategory&)>&& modifyFunction = {})
+            {
+                if (iterator == categories_.end())
+                {
+                    return;
+                }
+                categories_.modify(iterator, [&modifyFunction](const DiscussionCategoryRef& category)
+                                             {
+                                                 if (category && modifyFunction)
+                                                 {
+                                                     modifyFunction(*category);
+                                                 }
+                                             });
+            }
+
             /**
              * Enables a safe modification of a discussion category instance,
              * refreshing all indexes the category is registered in
              */
             void modifyDiscussionCategoryById(const IdType& id, 
-                                              std::function<void(DiscussionCategory&)>&& modifyFunction = {});
+                                              std::function<void(DiscussionCategory&)>&& modifyFunction = {})
+            {
+                modifyDiscussionCategory(categories_.get<DiscussionCategoryCollectionById>().find(id),
+                                         std::forward<std::function<void(DiscussionCategory&)>>(modifyFunction));
+            }
+
             /**
              * Safely deletes a discussion category instance, removing it from all indexes it is registered in
              */
-            virtual DiscussionCategoryRef deleteDiscussionCategory(DiscussionCategoryCollection::iterator iterator);
+            virtual DiscussionCategoryRef deleteDiscussionCategory(CategoryIdIteratorType iterator)
+            {
+                DiscussionCategoryRef result;
+                if (iterator == categories_.end())
+                {
+                    return result;
+                }
+                result = *iterator;
+                categories_.erase(iterator);
+                return result;
+            }
+
             /**
              * Safely deletes a discussion category instance, removing it from all indexes it is registered in
              */
-            DiscussionCategoryRef deleteDiscussionCategoryById(const IdType& id);
+            DiscussionCategoryRef deleteDiscussionCategoryById(const IdType& id)
+            {
+                return deleteDiscussionCategory(categories_.get<DiscussionCategoryCollectionById>().find(id));
+            }
 
         protected:
             DiscussionCategoryCollection categories_;

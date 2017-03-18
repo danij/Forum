@@ -20,8 +20,11 @@ namespace Forum
         * Stores a discussion thread that contains messages
         * Repositories are responsible for updating the relationships between this message and other entities
         */
-        struct DiscussionThread final : public Identifiable, public CreatedMixin, public LastUpdatedMixin<User>,
-                                        public DiscussionThreadMessageCollectionBase, public IndicateDeletionInProgress,
+        struct DiscussionThread final : public Identifiable, 
+                                        public CreatedMixin, 
+                                        public LastUpdatedMixin<User>,
+                                        public DiscussionThreadMessageCollectionBase<OrderedIndexForId>,
+                                        public IndicateDeletionInProgress,
                                         public std::enable_shared_from_this<DiscussionThread>
         {
             const std::string& name()                      const { return name_; }

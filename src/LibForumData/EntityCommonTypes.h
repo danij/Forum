@@ -21,6 +21,16 @@ namespace Forum
          * Representing a timestamp as the number of seconds since the UNIX EPOCH
          */
         typedef int_fast64_t Timestamp;
+        
+        /**
+         * Specify that a collection is to order entities by id using a hash table
+         */
+        struct HashIndexForId {};
+
+        /**
+         * Specify that a colelction is to order entities by id using a tree
+         */
+        struct OrderedIndexForId {};
 
         struct Identifiable
         {

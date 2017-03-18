@@ -155,7 +155,8 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage
         << objEnd;
 }
 
-static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadCollectionBase& threads)
+template<typename IndexIdType>
+static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadCollectionBase<IndexIdType>& threads)
 {
     auto index = threads.threadsByLatestMessageCreated();
     if ( ! index.size())

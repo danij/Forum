@@ -18,8 +18,11 @@ namespace Forum
         * 
         * The tag manages the message count and also notifies any discussion categories when a thread is added or removed
         */
-        struct DiscussionTag final : public Identifiable, public CreatedMixin, public LastUpdatedMixin<User>,
-                                     public DiscussionThreadCollectionBase, public IndicateDeletionInProgress
+        struct DiscussionTag final : public Identifiable, 
+                                     public CreatedMixin, 
+                                     public LastUpdatedMixin<User>,
+                                     public DiscussionThreadCollectionBase<HashIndexForId>, 
+                                     public IndicateDeletionInProgress
         {
             const std::string&  name()           const { return name_; }
                   std::string&  name()                 { return name_; }

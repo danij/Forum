@@ -19,49 +19,52 @@ namespace Forum
          * Stores references to all entities present in memory
          * Upon deleting an entitie, the collection also removes the entity from any other collection if might have been part of
          */
-        struct EntityCollection : public UserCollectionBase, public DiscussionThreadCollectionBase,
-                                  public DiscussionThreadMessageCollectionBase, public MessageCommentCollectionBase,
-                                  public DiscussionTagCollectionBase, public DiscussionCategoryCollectionBase
+        struct EntityCollection : public UserCollectionBase<HashIndexForId>,
+                                  public DiscussionThreadCollectionBase<HashIndexForId>,
+                                  public DiscussionThreadMessageCollectionBase<HashIndexForId>, 
+                                  public MessageCommentCollectionBase<HashIndexForId>,
+                                  public DiscussionTagCollectionBase<HashIndexForId>,
+                                  public DiscussionCategoryCollectionBase<HashIndexForId>
         {
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
              */
-            UserRef deleteUser(UserCollection::iterator iterator) override;
+            UserRef deleteUser(UserIdIteratorType iterator) override;
 
             /**
              * Enables a safe modification of a discussion thread instance,
              * also taking other collections in which the thread might be registered into account
              */
-            void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
+            void modifyDiscussionThread(ThreadIdIteratorType iterator,
                                         std::function<void(DiscussionThread&)>&& modifyFunction) override;
             /**
              * Safely deletes a discussion thread instance,
              * also taking other collections in which the thread might be registered into account
              */
-            DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
+            DiscussionThreadRef deleteDiscussionThread(ThreadIdIteratorType iterator) override;
 
             /**
              * Enables a safe modification of a discussion message instance,
              * refreshing all indexes the message is registered in
              */
-            void modifyDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator,
+            void modifyDiscussionThreadMessage(MessageIdIteratorType iterator,
                                                std::function<void(DiscussionThreadMessage&)>&& modifyFunction) override;
             /**
              * Safely deletes a discussion message instance, removing it from all indexes it is registered in
              */
-            DiscussionThreadMessageRef deleteDiscussionThreadMessage(DiscussionThreadMessageCollection::iterator iterator) override;
+            DiscussionThreadMessageRef deleteDiscussionThreadMessage(MessageIdIteratorType iterator) override;
 
             /**
             * Safely deletes a discussion tag instance, removing it from all indexes it is registered in
             */
-            DiscussionTagRef deleteDiscussionTag(DiscussionTagCollection::iterator iterator) override;
+            DiscussionTagRef deleteDiscussionTag(TagIdIteratorType iterator) override;
 
             /**
             * Safely deletes a discussion category instance, removing it from all indexes it is registered in
             */
-            DiscussionCategoryRef deleteDiscussionCategory(DiscussionCategoryCollection::iterator iterator) override;
+            DiscussionCategoryRef deleteDiscussionCategory(CategoryIdIteratorType iterator) override;
 
-            auto& notifyTagChange() { return notifyTagChange_; }
+            auto& notifyTagChange()      { return notifyTagChange_; }
             auto& notifyCategoryChange() { return notifyCategoryChange_; }
 
             EntityCollection()
