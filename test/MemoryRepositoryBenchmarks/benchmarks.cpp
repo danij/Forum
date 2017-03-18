@@ -192,20 +192,47 @@ void showEntitySizes()
     std::cout << "DiscussionCategoryCollectionBase:      " << sizeof(Entities::DiscussionCategoryCollectionBase<Entities::OrderedIndexForId>) << '\n';
 }
 
-StringView getRandomText(std::string& buffer, size_t size)
+StringView getRandomText(char* buffer, size_t size)
 {
     static std::uniform_int_distribution<> lowercaseAsciiDistribution('a', 'z');
-    buffer.clear();
+
+    auto result = StringView(buffer, size);
 
     for (size_t i = 0; i < size; ++i)
     {
-        buffer += static_cast<char>(lowercaseAsciiDistribution(randomGenerator));
+        *buffer++ = static_cast<char>(lowercaseAsciiDistribution(randomGenerator));
     }
 
-    return StringView(buffer);
+    return result;
 }
 
-void appendUInt(std::string& string, unsigned int value)
+StringView getMessageText(char* buffer, size_t size)
+{
+    //randomness is not that important
+    static const char characters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    constexpr size_t charactersCount = std::extent<decltype(characters)>::value - 1;
+
+    static int startIndex = 0;
+    ++startIndex;
+
+    auto result = StringView(buffer, size);
+    auto offset = startIndex;
+
+    while (size > 0)
+    {
+        offset %= charactersCount;
+        auto toCopy = std::min(size, charactersCount - offset);
+
+        std::copy(characters + offset, characters + offset + toCopy, buffer);
+        buffer += toCopy;
+        offset += toCopy;
+        size -= toCopy;
+    }
+
+    return result;
+}
+
+size_t appendUInt(char* string, unsigned int value)
 {
     char buffer[40];
     auto start = std::end(buffer) - 1;
@@ -219,7 +246,10 @@ void appendUInt(std::string& string, unsigned int value)
     }
 
     start += 1;
-    string.insert(string.end(), start, std::end(buffer));
+
+    std::copy(start, std::end(buffer), string);
+
+    return std::end(buffer) - start;
 }
 
 void populateData(BenchmarkContext& context)
@@ -233,14 +263,13 @@ void populateData(BenchmarkContext& context)
     auto getCurrentTimestamp = [&context]() { return context.currentTimestamp; };
     Context::setCurrentTimeMockForCurrentThread(getCurrentTimestamp);
 
-    std::string buffer;
-    buffer.reserve(8192);
+    char buffer[8192];
 
     for (unsigned int i = 0; i < nrOfUsers; i++)
     {
         getRandomText(buffer, 5);
-        appendUInt(buffer, i + 1);
-        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { buffer }));
+        auto intSize = appendUInt(buffer + 5, i + 1);
+        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { StringView(buffer, 5 + intSize) }));
         context.currentTimestamp += 100;
     }
 
@@ -257,7 +286,7 @@ void populateData(BenchmarkContext& context)
         messageLength = std::min(config->discussionThreadMessage.maxContentLength, messageLength);
         messageLength = std::min(static_cast<decltype(messageLength)>(4095), messageLength);
 
-        execute(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, getRandomText(buffer, messageLength) });
+        execute(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, getMessageText(buffer, messageLength) });
     };
 
     for (size_t i = 0; i < nrOfTags; i++)
@@ -355,8 +384,7 @@ void doBenchmarks(BenchmarkContext& context)
     std::uniform_int_distribution<> tagIdDistribution(0, tagIds.size() - 1);
     std::uniform_int_distribution<> categoryIdDistribution(0, categoryIds.size() - 1);
 
-    std::string buffer;
-    buffer.reserve(8192);
+    char buffer[8192];
 
     std::cout << "Adding a new discussion thread: ";
     for (int i = 0; i < retries; ++i)
