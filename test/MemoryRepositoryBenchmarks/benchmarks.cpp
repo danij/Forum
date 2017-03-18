@@ -179,17 +179,17 @@ void showEntitySizes()
     std::cout << "CreatedMixin:                          " << sizeof(Entities::CreatedMixin) << '\n';
     std::cout << "LastUpdatedMixin<User>:                " << sizeof(Entities::LastUpdatedMixin<Entities::User>) << '\n';
     std::cout << "User:                                  " << sizeof(Entities::User) << '\n';
-    std::cout << "UserCollectionBase:                    " << sizeof(Entities::UserCollectionBase) << '\n';
+    std::cout << "UserCollectionBase:                    " << sizeof(Entities::UserCollectionBase<Entities::OrderedIndexForId>) << '\n';
     std::cout << "DiscussionThread:                      " << sizeof(Entities::DiscussionThread) << '\n';
-    std::cout << "DiscussionThreadCollectionBase:        " << sizeof(Entities::DiscussionThreadCollectionBase) << '\n';
+    std::cout << "DiscussionThreadCollectionBase:        " << sizeof(Entities::DiscussionThreadCollectionBase<Entities::OrderedIndexForId>) << '\n';
     std::cout << "DiscussionThreadMessage:               " << sizeof(Entities::DiscussionThreadMessage) << '\n';
-    std::cout << "DiscussionThreadMessageCollectionBase: " << sizeof(Entities::DiscussionThreadMessageCollectionBase) << '\n';
+    std::cout << "DiscussionThreadMessageCollectionBase: " << sizeof(Entities::DiscussionThreadMessageCollectionBase<Entities::OrderedIndexForId>) << '\n';
     std::cout << "MessageComment:                        " << sizeof(Entities::MessageComment) << '\n';
-    std::cout << "MessageCommentCollectionBase:          " << sizeof(Entities::MessageCommentCollectionBase) << '\n';
+    std::cout << "MessageCommentCollectionBase:          " << sizeof(Entities::MessageCommentCollectionBase<Entities::OrderedIndexForId>) << '\n';
     std::cout << "DiscussionTag:                         " << sizeof(Entities::DiscussionTag) << '\n';
-    std::cout << "DiscussionTagCollectionBase:           " << sizeof(Entities::DiscussionTagCollectionBase) << '\n';
+    std::cout << "DiscussionTagCollectionBase:           " << sizeof(Entities::DiscussionTagCollectionBase<Entities::OrderedIndexForId>) << '\n';
     std::cout << "DiscussionCategory:                    " << sizeof(Entities::DiscussionCategory) << '\n';
-    std::cout << "DiscussionCategoryCollectionBase:      " << sizeof(Entities::DiscussionCategoryCollectionBase) << '\n';
+    std::cout << "DiscussionCategoryCollectionBase:      " << sizeof(Entities::DiscussionCategoryCollectionBase<Entities::OrderedIndexForId>) << '\n';
 }
 
 StringView getRandomText(std::string& buffer, size_t size)
