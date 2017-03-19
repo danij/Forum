@@ -63,17 +63,17 @@ namespace Forum
 
             auto tagsById() const
             {
-                return Helpers::toConst(tags_.get<DiscussionTagCollectionById>());
+                return Helpers::toConst(tags_.template get<DiscussionTagCollectionById>());
             }
 
             auto tagsByName() const
             {
-                return Helpers::toConst(tags_.get<DiscussionTagCollectionByName>());
+                return Helpers::toConst(tags_.template get<DiscussionTagCollectionByName>());
             }
 
             auto tagsByMessageCount() const
             {
-                return Helpers::toConst(tags_.get<DiscussionTagCollectionByMessageCount>());
+                return Helpers::toConst(tags_.template get<DiscussionTagCollectionByMessageCount>());
             }
 
             /**
@@ -102,7 +102,7 @@ namespace Forum
              */
             void modifyDiscussionTagById(const IdType& id, std::function<void(DiscussionTag&)>&& modifyFunction = {})
             {
-                modifyDiscussionTag(tags_.get<DiscussionTagCollectionById>().find(id),
+                modifyDiscussionTag(tags_.template get<DiscussionTagCollectionById>().find(id),
                                     std::forward<std::function<void(DiscussionTag&)>>(modifyFunction));
             }
 
@@ -126,7 +126,7 @@ namespace Forum
              */
             DiscussionTagRef deleteDiscussionTagById(const IdType& id)
             {
-                return deleteDiscussionTag(tags_.get<DiscussionTagCollectionById>().find(id));
+                return deleteDiscussionTag(tags_.template get<DiscussionTagCollectionById>().find(id));
             }
 
         protected:

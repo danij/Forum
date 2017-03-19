@@ -18,12 +18,14 @@ namespace Forum
         {
             DECLARE_ABSTRACT_MANDATORY_NO_COPY(DiscussionThreadRefCountedCollection);
 
+            typedef typename DiscussionThreadCollectionBase<IndexTypeForId>::ThreadIdIteratorType ThreadIdIteratorType;
+
             int_fast32_t  messageCount() const { return messageCount_; }
             int_fast32_t& messageCount()       { return messageCount_; }
 
             const DiscussionThreadMessage* latestMessage() const
             {
-                auto index = threadsByLatestMessageCreated();
+                auto index = DiscussionThreadCollectionBase<IndexTypeForId>::threadsByLatestMessageCreated();
                 if ( ! index.size())
                 {
                     return nullptr;
@@ -53,7 +55,7 @@ namespace Forum
                     referenceCount_.erase(it);
                     if (thread)
                     {
-                        deleteDiscussionThreadById(thread->id());
+                        DiscussionThreadCollectionBase<IndexTypeForId>::deleteDiscussionThreadById(thread->id());
                     }
                 }
             }

@@ -67,22 +67,22 @@ namespace Forum
 
             auto categoriesById() const
             {
-                return Helpers::toConst(categories_.get<DiscussionCategoryCollectionById>());
+                return Helpers::toConst(categories_.template get<DiscussionCategoryCollectionById>());
             }
 
             auto categoriesByName() const
             {
-                return Helpers::toConst(categories_.get<DiscussionCategoryCollectionByName>());
+                return Helpers::toConst(categories_.template get<DiscussionCategoryCollectionByName>());
             }
 
             auto categoriesByMessageCount() const
             {
-                return Helpers::toConst(categories_.get<DiscussionCategoryCollectionByMessageCount>());
+                return Helpers::toConst(categories_.template get<DiscussionCategoryCollectionByMessageCount>());
             }
 
             auto categoriesByDisplayOrderRootPriority() const
             {
-                return Helpers::toConst(categories_.get<DiscussionCategoryCollectionByDisplayOrderRootPriority>());
+                return Helpers::toConst(categories_.template get<DiscussionCategoryCollectionByDisplayOrderRootPriority>());
             }
 
             /**
@@ -112,7 +112,7 @@ namespace Forum
             void modifyDiscussionCategoryById(const IdType& id, 
                                               std::function<void(DiscussionCategory&)>&& modifyFunction = {})
             {
-                modifyDiscussionCategory(categories_.get<DiscussionCategoryCollectionById>().find(id),
+                modifyDiscussionCategory(categories_.template get<DiscussionCategoryCollectionById>().find(id),
                                          std::forward<std::function<void(DiscussionCategory&)>>(modifyFunction));
             }
 
@@ -136,7 +136,7 @@ namespace Forum
              */
             DiscussionCategoryRef deleteDiscussionCategoryById(const IdType& id)
             {
-                return deleteDiscussionCategory(categories_.get<DiscussionCategoryCollectionById>().find(id));
+                return deleteDiscussionCategory(categories_.template get<DiscussionCategoryCollectionById>().find(id));
             }
 
         protected:

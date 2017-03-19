@@ -59,12 +59,12 @@ namespace Forum
 
             auto messagesById() const
             {
-                return Helpers::toConst(messages_.get<DiscussionThreadMessageCollectionById>());
+                return Helpers::toConst(messages_.template get<DiscussionThreadMessageCollectionById>());
             }
 
             auto messagesByCreated() const
             {
-                return Helpers::toConst(messages_.get<DiscussionThreadMessageCollectionByCreated>());
+                return Helpers::toConst(messages_.template get<DiscussionThreadMessageCollectionByCreated>());
             }
 
             /**
@@ -94,7 +94,7 @@ namespace Forum
             void modifyDiscussionThreadMessageById(const IdType& id, 
                                                    std::function<void(DiscussionThreadMessage&)>&& modifyFunction = {})
             {
-                modifyDiscussionThreadMessage(messages_.get<DiscussionThreadMessageCollectionById>().find(id),
+                modifyDiscussionThreadMessage(messages_.template get<DiscussionThreadMessageCollectionById>().find(id),
                                               std::forward<std::function<void(DiscussionThreadMessage&)>>(modifyFunction));
             }
 
@@ -118,7 +118,7 @@ namespace Forum
              */
             DiscussionThreadMessageRef deleteDiscussionThreadMessageById(const IdType& id)
             {
-                return deleteDiscussionThreadMessage(messages_.get<DiscussionThreadMessageCollectionById>().find(id));
+                return deleteDiscussionThreadMessage(messages_.template get<DiscussionThreadMessageCollectionById>().find(id));
             }
 
         protected:

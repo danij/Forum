@@ -59,12 +59,12 @@ namespace Forum
             typedef typename UserCollection::iterator UserIdIteratorType;            
 
             auto& users()                     { return users_; }
-            auto  usersById()           const { return Helpers::toConst(users_.get<UserCollectionById>()); }
-            auto  usersByName()         const { return Helpers::toConst(users_.get<UserCollectionByName>()); }
-            auto  usersByCreated()      const { return Helpers::toConst(users_.get<UserCollectionByCreated>()); }
-            auto  usersByLastSeen()     const { return Helpers::toConst(users_.get<UserCollectionByLastSeen>()); }
-            auto  usersByThreadCount()  const { return Helpers::toConst(users_.get<UserCollectionByThreadCount>()); }
-            auto  usersByMessageCount() const { return Helpers::toConst(users_.get<UserCollectionByMessageCount>()); }
+            auto  usersById()           const { return Helpers::toConst(users_.template get<UserCollectionById>()); }
+            auto  usersByName()         const { return Helpers::toConst(users_.template get<UserCollectionByName>()); }
+            auto  usersByCreated()      const { return Helpers::toConst(users_.template get<UserCollectionByCreated>()); }
+            auto  usersByLastSeen()     const { return Helpers::toConst(users_.template get<UserCollectionByLastSeen>()); }
+            auto  usersByThreadCount()  const { return Helpers::toConst(users_.template get<UserCollectionByThreadCount>()); }
+            auto  usersByMessageCount() const { return Helpers::toConst(users_.template get<UserCollectionByMessageCount>()); }
 
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
@@ -89,8 +89,8 @@ namespace Forum
              */
             void modifyUserById(const IdType& id, std::function<void(User&)>&& modifyFunction = {})
             {
-                return modifyUser(users_.get<UserCollectionById>().find(id), std::forward<std::function<void(User&)>>(modifyFunction));
-
+                return modifyUser(users_.template get<UserCollectionById>().find(id),
+                                  std::forward<std::function<void(User&)>>(modifyFunction));
             }
 
             /**
@@ -113,7 +113,7 @@ namespace Forum
              */
             UserRef deleteUserById(const IdType& id)
             {
-                return deleteUser(users_.get<UserCollectionById>().find(id));
+                return deleteUser(users_.template get<UserCollectionById>().find(id));
             }
 
         protected:

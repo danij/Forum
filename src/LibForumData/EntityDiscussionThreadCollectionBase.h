@@ -86,32 +86,32 @@ namespace Forum
 
             auto threadsById() const
             {
-                return Helpers::toConst(threads_.get<DiscussionThreadCollectionById>());
+                return Helpers::toConst(threads_.template get<DiscussionThreadCollectionById>());
             }
 
             auto threadsByName() const
             {
-                return Helpers::toConst(threads_.get<DiscussionThreadCollectionByName>());
+                return Helpers::toConst(threads_.template get<DiscussionThreadCollectionByName>());
             }
 
             auto threadsByCreated() const
             {
-                return Helpers::toConst(threads_.get<DiscussionThreadCollectionByCreated>());
+                return Helpers::toConst(threads_.template get<DiscussionThreadCollectionByCreated>());
             }
 
             auto threadsByLastUpdated() const
             {
-                return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLastUpdated>());
+                return Helpers::toConst(threads_.template get<DiscussionThreadCollectionByLastUpdated>());
             }
 
             auto threadsByLatestMessageCreated() const
             {
-                return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLatestMessageCreated>());
+                return Helpers::toConst(threads_.template get<DiscussionThreadCollectionByLatestMessageCreated>());
             }
 
             auto threadsByMessageCount() const
             {
-                return Helpers::toConst(threads_.get<DiscussionThreadCollectionByMessageCount>());
+                return Helpers::toConst(threads_.template get<DiscussionThreadCollectionByMessageCount>());
             }
 
             bool containsThread(const DiscussionThreadRef& thread) const
@@ -158,7 +158,7 @@ namespace Forum
             void modifyDiscussionThreadById(const IdType& id,
                                             std::function<void(DiscussionThread&)>&& modifyFunction = {})
             {
-                modifyDiscussionThread(threads_.get<DiscussionThreadCollectionById>().find(id),
+                modifyDiscussionThread(threads_.template get<DiscussionThreadCollectionById>().find(id),
                                        std::forward<std::function<void(DiscussionThread&)>>(modifyFunction));
             }
 
@@ -182,7 +182,7 @@ namespace Forum
              */
             DiscussionThreadRef deleteDiscussionThreadById(const IdType& id)
             {
-                return deleteDiscussionThread(threads_.get<DiscussionThreadCollectionById>().find(id));
+                return deleteDiscussionThread(threads_.template get<DiscussionThreadCollectionById>().find(id));
             }
 
         protected:

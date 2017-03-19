@@ -55,12 +55,12 @@ namespace Forum
 
             auto messageCommentsById() const
             {
-                return Helpers::toConst(messageComments_.get<MessageCommentCollectionById>());
+                return Helpers::toConst(messageComments_.template get<MessageCommentCollectionById>());
             }
 
             auto messageCommentsByCreated() const
             {
-                return Helpers::toConst(messageComments_.get<MessageCommentCollectionByCreated>());
+                return Helpers::toConst(messageComments_.template get<MessageCommentCollectionByCreated>());
             }
 
             /**
@@ -89,7 +89,7 @@ namespace Forum
              */
             void modifyMessageCommentById(const IdType& id, std::function<void(MessageComment&)>&& modifyFunction = {})
             {
-                modifyMessageComment(messageComments_.get<MessageCommentCollectionById>().find(id),
+                modifyMessageComment(messageComments_.template get<MessageCommentCollectionById>().find(id),
                                      std::forward<std::function<void(MessageComment&)>>(modifyFunction));
             }
 
@@ -113,7 +113,7 @@ namespace Forum
              */
             MessageCommentRef deleteMessageCommentById(const IdType& id)
             {
-                return deleteMessageComment(messageComments_.get<MessageCommentCollectionById>().find(id));
+                return deleteMessageComment(messageComments_.template get<MessageCommentCollectionById>().find(id));
             }
 
         protected:
