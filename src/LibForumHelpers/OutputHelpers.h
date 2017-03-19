@@ -155,7 +155,6 @@ namespace Forum
             Repository::OutStream& output_;
             Repository::StatusCode statusCode_;
             bool enabled_;
-            int elementCount_ = 0;
         };
     }
 }
