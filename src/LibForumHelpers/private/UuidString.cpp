@@ -18,6 +18,8 @@ static const int hexValues[] =
     0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
+constexpr static int nrOfHexValues = std::extent<decltype(hexValues)>::value;
+
 static const int uuidValuePositions[] = 
 {
     /* 8*/ 0, 1, 2, 3, 4, 5, 6, 7, 
@@ -36,8 +38,8 @@ static bool parseUuid(const char* data, size_t size, boost::uuids::uuid& destina
 
     for (int src = 0, dst = 0; dst < 16; src += 2, dst += 1)
     {
-        destination.data[dst] = hexValues[data[uuidValuePositions[src]]] << 4 
-                              | hexValues[data[uuidValuePositions[src + 1]]];
+        destination.data[dst] = hexValues[static_cast<uint8_t>(data[uuidValuePositions[src]]) % nrOfHexValues] << 4
+                              | hexValues[static_cast<uint8_t>(data[uuidValuePositions[src + 1]]) % nrOfHexValues];
     }
 
     return true;
