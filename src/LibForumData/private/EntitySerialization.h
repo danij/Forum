@@ -3,6 +3,8 @@
 #include "Entities.h"
 #include "JsonWriter.h"
 
+#include <boost/optional.hpp>
+
 namespace Json
 {
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::EntitiesCount& thread);
@@ -37,6 +39,7 @@ namespace Forum
             bool hideDiscussionCategoryParent = false;
             bool showDiscussionCategoryChildren = false;
             bool hideDiscussionCategoriesOfTags = false;
+            boost::optional<int> displayDiscussionCategoryParentRecursionDepth = boost::none;
 
             bool hideLatestMessage = false;
         };

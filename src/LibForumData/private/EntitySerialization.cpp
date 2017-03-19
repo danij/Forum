@@ -342,11 +342,19 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionCategory& categ
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryParent, true);
         writer << propertySafeName("children", enumerate(category.children().begin(), category.children().end()));
     }
-    if ( ! serializationSettings.hideDiscussionCategoryParent)
+
+    OptionalRevertToNoneChanger<decltype(serializationSettings.displayDiscussionCategoryParentRecursionDepth)::value_type> 
+            recursionDepthChanger(serializationSettings.displayDiscussionCategoryParentRecursionDepth, 0);
+
+    constexpr int maxDisplayDepth = 10;
+    auto& depth = *serializationSettings.displayDiscussionCategoryParentRecursionDepth;
+
+    if (( ! serializationSettings.hideDiscussionCategoryParent) && (depth < maxDisplayDepth))
     {
         category.executeActionWithParentCategoryIfAvailable([&](auto& parent)
         {
             BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
+            depth += 1;
             writer << propertySafeName("parent", parent);
         });
     }
