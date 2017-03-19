@@ -7,7 +7,7 @@ namespace Forum
 {
     namespace Helpers
     {
-        struct BoolTemporaryChanger
+        struct BoolTemporaryChanger final : private boost::noncopyable
         {
             BoolTemporaryChanger(bool& toChange, bool newValue) noexcept : toChange_(toChange)
             {
