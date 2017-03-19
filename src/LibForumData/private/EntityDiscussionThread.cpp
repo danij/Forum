@@ -11,7 +11,7 @@ DiscussionThreadMessage::VoteScoreType DiscussionThread::voteScore() const
 {
     if (messages_.size())
     {
-        return (*messagesById().begin())->voteScore();
+        return (*messagesByCreated().begin())->voteScore();
     }
     return 0;
 }
