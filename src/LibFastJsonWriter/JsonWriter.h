@@ -36,6 +36,8 @@ namespace Json
         JsonWriter& operator=(const JsonWriter& other) = delete;
         JsonWriter& operator=(JsonWriter&& other) = default;
 
+        constexpr static int MaxStateDepth = 30;
+
         JsonWriter& null();
 
         JsonWriter& startArray();
@@ -277,8 +279,6 @@ namespace Json
 
         std::string* stringOutput_ = nullptr;
         std::ostream* streamOutput_ = nullptr;
-
-        constexpr static int MaxStateDepth = 30;
 
         std::array<State, MaxStateDepth> stateStack_;
         int stateIndex_ = -1;

@@ -349,6 +349,9 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionCategory& categ
     constexpr int maxDisplayDepth = 10;
     auto& depth = *serializationSettings.displayDiscussionCategoryParentRecursionDepth;
 
+    static_assert((maxDisplayDepth * 2) < JsonWriter::MaxStateDepth,
+                  "JsonWriter cannot hold a large enough state to allow recursing to the maxDisplayPath");
+
     if (( ! serializationSettings.hideDiscussionCategoryParent) && (depth < maxDisplayDepth))
     {
         category.executeActionWithParentCategoryIfAvailable([&](auto& parent)
