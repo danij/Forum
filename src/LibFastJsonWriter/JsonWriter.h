@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <functional>
 #include <iostream>
 #include <array>
 #include <string>
@@ -263,7 +262,7 @@ namespace Json
 
         State& peekState()
         {
-            return stateStack_[stateIndex_];
+            return stateStack_.at(stateIndex_);
         }
 
         void popState()
@@ -273,7 +272,7 @@ namespace Json
 
         void pushState(State state)
         {
-            stateStack_[++stateIndex_] = state;
+            stateStack_.at(++stateIndex_) = state;
         }
 
         std::string* stringOutput_ = nullptr;
