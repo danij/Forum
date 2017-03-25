@@ -65,8 +65,7 @@ namespace Forum
 
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByMessageCount>,
                             const boost::multi_index::const_mem_fun<DiscussionThreadMessageCollectionBase<OrderedIndexForId>,
-                                    std::result_of<decltype(&DiscussionThread::messageCount)(DiscussionThread*)>::type,
-                                    &DiscussionThread::messageCount>>
+                                    size_t, &DiscussionThread::messageCount>>
             > {};
 
             typedef boost::multi_index_container<DiscussionThreadRef, DiscussionThreadCollectionIndices>
