@@ -29,10 +29,12 @@ BOOST_AUTO_TEST_CASE( Json_serialization_works_for_integers )
     writer.newPropertyWithSafeName("prop1") << -1234;
     writer.newPropertyWithSafeName("prop2") << 0;
     writer.newPropertyWithSafeName("prop3") << 2147483647;
+    writer.newPropertyWithSafeName("prop4") << static_cast<int8_t>(-128);
+    writer.newPropertyWithSafeName("prop5") << static_cast<int32_t>(-2147483648);
     writer.endObject();
 
     auto str = stream.str();
-    BOOST_REQUIRE_EQUAL("{\"prop1\":-1234,\"prop2\":0,\"prop3\":2147483647}", str);
+    BOOST_REQUIRE_EQUAL("{\"prop1\":-1234,\"prop2\":0,\"prop3\":2147483647,\"prop4\":-128,\"prop5\":-2147483648}", str);
 }
 
 BOOST_AUTO_TEST_CASE( Json_serialization_escapes_property_names )

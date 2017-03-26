@@ -183,6 +183,29 @@ namespace Json
         template<typename T>
         JsonWriter& writeNumber(T value, bool includeComma)
         {
+            //minimum integer values cannot be negated
+            if (std::numeric_limits<T>::is_signed && std::numeric_limits<T>::min() == value)
+            {
+                switch (sizeof(T))
+                {
+                case 1:
+                    writeString("-128");
+                    break;
+                case 2:
+                    writeString("-32768");
+                    break;
+                case 4:
+                    writeString("-2147483648");
+                    break;
+                case 8:
+                    writeString("-9223372036854775808");
+                    break;
+                default:
+                    break;
+                }
+                return *this;
+            }
+
             char digitsBuffer[maxDigitsOfNumber(sizeof(T)) + 3]; //extra space for sign and comma
 
             char* bufferEnd = digitsBuffer + (sizeof(digitsBuffer) / sizeof(digitsBuffer[0]));
