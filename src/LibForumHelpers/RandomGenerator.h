@@ -4,7 +4,7 @@
 
 namespace Forum
 {
-    namespace Repository
+    namespace Helpers
     {
         boost::uuids::uuid generateUUID();
         Entities::UuidString generateUUIDString();

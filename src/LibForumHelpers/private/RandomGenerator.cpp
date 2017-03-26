@@ -4,12 +4,12 @@
 
 static thread_local boost::uuids::random_generator localUUIDGenerator;
 
-boost::uuids::uuid Forum::Repository::generateUUID()
+boost::uuids::uuid Forum::Helpers::generateUUID()
 {
     return localUUIDGenerator();
 }
 
-Forum::Entities::UuidString Forum::Repository::generateUUIDString()
+Forum::Entities::UuidString Forum::Helpers::generateUUIDString()
 {
     return Entities::UuidString(generateUUID());
 }
