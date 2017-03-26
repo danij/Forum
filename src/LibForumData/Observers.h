@@ -71,6 +71,8 @@ namespace Forum
                                          const Entities::DiscussionThread& toThread)> onMergeDiscussionThreads;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage& message, 
                                          const Entities::DiscussionThread& intoThread)> onMoveDiscussionThreadMessage;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onSubscribeToDiscussionThread;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onUnsubscribeFromDiscussionThread;
 
             boost::signals2::signal<void(ObserverContext, 
                                          const Entities::DiscussionThreadMessage&)> onAddNewDiscussionThreadMessage;

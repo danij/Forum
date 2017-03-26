@@ -42,6 +42,8 @@ namespace Forum
 
                   auto         nrOfVisitorsSinceLastEdit() const { return visitorsSinceLastEdit_.size(); }
 
+                  auto&        subscribedUsers()                 { return subscribedUsers_; }
+
             DiscussionThreadMessage::VoteScoreType voteScore() const;
 
             Timestamp latestMessageCreated() const;
@@ -82,6 +84,7 @@ namespace Forum
             std::set<boost::uuids::uuid> visitorsSinceLastEdit_;
             std::set<std::weak_ptr<DiscussionTag>, std::owner_less<std::weak_ptr<DiscussionTag>>> tags_;
             std::set<std::weak_ptr<DiscussionCategory>, std::owner_less<std::weak_ptr<DiscussionCategory>>> categories_;
+            std::set<std::weak_ptr<User>, std::owner_less<std::weak_ptr<User>>> subscribedUsers_;
         };
 
         typedef std::shared_ptr<DiscussionThread> DiscussionThreadRef;

@@ -103,12 +103,13 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                            updateCreated(*message);
                  
                            collection.messages().insert(message);
-                           collection.modifyDiscussionThread(threadIt, [&collection, &message, &threadIt]
+                           collection.modifyDiscussionThread(threadIt, [&collection, &message, &threadIt, &createdBy]
                                (DiscussionThread& thread)
                                {
                                    thread.messages().insert(message);
                                    thread.resetVisitorsSinceLastEdit();
                                    thread.latestVisibleChange() = message->created();
+                                   thread.subscribedUsers().insert(createdBy);
                  
                                    for (auto& tagWeak : thread.tagsWeak())
                                    {
@@ -141,10 +142,15 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                            collection.modifyUserById(createdBy->id(), [&](User& user)
                                                                       {
                                                                           user.messages().insert(message);
+                                                                          user.subscribedThreads().insertDiscussionThread(*threadIt);
                                                                       });
 
                            if ( ! Context::skipObservers())
-                               writeEvents().onAddNewDiscussionThreadMessage(createObserverContext(*createdBy), *message);
+                           {
+                               auto& user = *createdBy;
+                               writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), **threadIt);
+                               writeEvents().onAddNewDiscussionThreadMessage(createObserverContext(user), *message);
+                           }
                  
                            status.writeNow([&](auto& writer)
                                            {

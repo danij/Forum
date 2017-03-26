@@ -220,6 +220,46 @@ struct CommandHandler::CommandHandlerImpl
                                                                       RetrieveDiscussionThreadsBy::MessageCount);
     }
 
+    COMMAND_HANDLER_METHOD( SUBSCRIBE_TO_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->subscribeToDiscussionThread(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( UNSUBSCRIBE_FROM_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->unsubscribeFromDiscussionThread(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output, 
+                                                                                RetrieveDiscussionThreadsBy::Name);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
+                                                                                RetrieveDiscussionThreadsBy::Created);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
+                                                                                RetrieveDiscussionThreadsBy::LastUpdated);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT )
+    {
+        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
+                                                                                RetrieveDiscussionThreadsBy::MessageCount);
+    }
+    
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
@@ -527,6 +567,12 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED);
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
     setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
+    setHandler(SUBSCRIBE_TO_THREAD);
+    setHandler(UNSUBSCRIBE_FROM_THREAD);
+    setHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_NAME);
+    setHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_CREATED);
+    setHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
+    setHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
 
     setHandler(ADD_DISCUSSION_THREAD_MESSAGE);
     setHandler(DELETE_DISCUSSION_THREAD_MESSAGE);

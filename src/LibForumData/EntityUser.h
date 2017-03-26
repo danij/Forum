@@ -16,19 +16,29 @@ namespace Forum
         * Stores a user that creates content
         * Repositories are responsible for updating the relationships between this message and other entities
         */
-        struct User final : public Identifiable, 
-                            public CreatedMixin, 
+        struct User final : public Identifiable,
+                            public CreatedMixin,
                             public DiscussionThreadCollectionBase<OrderedIndexForId>,
-                            public DiscussionThreadMessageCollectionBase<OrderedIndexForId>, 
+                            public DiscussionThreadMessageCollectionBase<OrderedIndexForId>,
                             public MessageCommentCollectionBase<OrderedIndexForId>
         {
-            const std::string& name()     const { return name_; }
-                  std::string& name()           { return name_; }
-            const std::string& info()     const { return info_; }
-                  std::string& info()           { return info_; }
-                  Timestamp    lastSeen() const { return lastSeen_; }
-                  Timestamp&   lastSeen()       { return lastSeen_; }
-            auto&              votedMessages()  { return votedMessages_; }
+            const std::string& name()        const { return name_; }
+                  std::string& name()              { return name_; }
+            const std::string& info()        const { return info_; }
+                  std::string& info()              { return info_; }
+                  Timestamp    lastSeen()    const { return lastSeen_; }
+                  Timestamp&   lastSeen()          { return lastSeen_; }
+            auto&              votedMessages()     { return votedMessages_; }
+
+            auto&              subscribedThreads() { return subscribedThreads_; }
+
+            auto subscribedThreadCount()                   const { return subscribedThreads_.threadCount(); }
+            auto subscribedThreadsById()                   const { return subscribedThreads_.threadsById(); }
+            auto subscribedThreadsByName()                 const { return subscribedThreads_.threadsByName(); }
+            auto subscribedThreadsByCreated()              const { return subscribedThreads_.threadsByCreated(); }
+            auto subscribedThreadsByLastUpdated()          const { return subscribedThreads_.threadsByLastUpdated(); }
+            auto subscribedThreadsByLatestMessageCreated() const { return subscribedThreads_.threadsByLatestMessageCreated(); }
+            auto subscribedThreadsByMessageCount()         const { return subscribedThreads_.threadsByMessageCount(); }
 
             enum ChangeType : uint32_t
             {
@@ -53,6 +63,7 @@ namespace Forum
             std::string info_;
             Timestamp lastSeen_;
             std::set<DiscussionThreadMessageWeakRef, std::owner_less<DiscussionThreadMessageWeakRef>> votedMessages_;
+            DiscussionThreadCollectionBase<OrderedIndexForId> subscribedThreads_;
         };
 
         typedef std::shared_ptr<User> UserRef;

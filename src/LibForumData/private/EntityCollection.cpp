@@ -52,6 +52,13 @@ UserRef EntityCollection::deleteUser(UserIdIteratorType iterator)
             }
         }
     }
+    //delete all subscriptions of this user
+    {
+        for (auto& threadRef : user->subscribedThreads().threads())
+        {
+            threadRef->subscribedUsers().erase(user);
+        }
+    }
     {
         //no need to delete the message from the user as we're deleting the whole user anyway
         BoolTemporaryChanger changer(alsoDeleteMessagesFromUser, false);
@@ -96,6 +103,13 @@ void EntityCollection::modifyDiscussionThread(ThreadIdIteratorType iterator,
             //allow reindexing of the subcollection containing only the threads of the current user
             thread->createdBy().modifyDiscussionThreadById(thread->id(),
                                                            std::forward<std::function<void(DiscussionThread&)>>(modifyFunction));
+            for (auto& userWeak : thread->subscribedUsers())
+            {
+                if (auto userShared = userWeak.lock())
+                {
+                    userShared->subscribedThreads().modifyDiscussionThreadById(thread->id());
+                }
+            }
         }
     });
 }
@@ -135,6 +149,13 @@ DiscussionThreadRef EntityCollection::deleteDiscussionThread(ThreadIdIteratorTyp
         if (auto tagShared = tagWeak.lock())
         {
             tagShared->deleteDiscussionThreadById(thread->id());
+        }
+    }
+    for (auto& userWeak : thread->subscribedUsers())
+    {
+        if (auto userShared = userWeak.lock())
+        {
+            userShared->subscribedThreads().deleteDiscussionThreadById(thread->id());
         }
     }
     return thread;

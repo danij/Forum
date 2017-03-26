@@ -22,6 +22,8 @@ namespace Forum
 
             StatusCode getDiscussionThreadsOfUser(const Entities::IdType& id, OutStream& output,
                                                   RetrieveDiscussionThreadsBy by) const override;
+            StatusCode getSubscribedDiscussionThreadsOfUser(const Entities::IdType& id, OutStream& output,
+                                                            RetrieveDiscussionThreadsBy by) const override;
 
             StatusCode getDiscussionThreadsWithTag(const Entities::IdType& id, OutStream& output,
                                                    RetrieveDiscussionThreadsBy by) const override;
@@ -35,6 +37,9 @@ namespace Forum
             StatusCode deleteDiscussionThread(const Entities::IdType& id, OutStream& output) override;
             StatusCode mergeDiscussionThreads(const Entities::IdType& fromId, const Entities::IdType& intoId, 
                                               OutStream& output) override;
+            StatusCode subscribeToDiscussionThread(const Entities::IdType& id, OutStream& output) override;
+            StatusCode unsubscribeFromDiscussionThread(const Entities::IdType& id, OutStream& output) override;
+
         private:
             boost::u32regex validDiscussionThreadNameRegex;
         };

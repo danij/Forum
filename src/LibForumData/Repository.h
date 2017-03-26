@@ -92,6 +92,8 @@ namespace Forum
 
             virtual StatusCode getDiscussionThreadsOfUser(const Entities::IdType& id, OutStream& output,
                                                           RetrieveDiscussionThreadsBy by) const = 0;
+            virtual StatusCode getSubscribedDiscussionThreadsOfUser(const Entities::IdType& id, OutStream& output,
+                                                                    RetrieveDiscussionThreadsBy by) const = 0;
 
             virtual StatusCode getDiscussionThreadsWithTag(const Entities::IdType& id, OutStream& output,
                                                            RetrieveDiscussionThreadsBy by) const = 0;
@@ -105,6 +107,8 @@ namespace Forum
             virtual StatusCode deleteDiscussionThread(const Entities::IdType& id, OutStream& output) = 0;
             virtual StatusCode mergeDiscussionThreads(const Entities::IdType& fromId, const Entities::IdType& intoId,
                                                       OutStream& output) = 0;
+            virtual StatusCode subscribeToDiscussionThread(const Entities::IdType& id, OutStream& output) = 0;
+            virtual StatusCode unsubscribeFromDiscussionThread(const Entities::IdType& id, OutStream& output) = 0;
         };
         typedef std::shared_ptr<IDiscussionThreadRepository> DiscussionThreadRepositoryRef;
 

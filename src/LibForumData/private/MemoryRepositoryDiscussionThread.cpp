@@ -20,9 +20,13 @@ MemoryRepositoryDiscussionThread::MemoryRepositoryDiscussionThread(MemoryStoreRe
 {    
 }
 
-template<typename ThreadsCollection>
-static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscussionThreadsBy by, 
-                                   OutStream& output, const IdType& currentUserId)
+template<typename ThreadsCollectionByName, typename ThreadsCollectionByCreated, typename ThreadsCollectionByLastUpdated,
+         typename ThreadsCollectionByMessageCount>
+static void writeDiscussionThreads(ThreadsCollectionByName&& collectionByName, 
+                                   ThreadsCollectionByCreated&& collectionByCreated,
+                                   ThreadsCollectionByLastUpdated&& collectionByLastUpdated,
+                                   ThreadsCollectionByMessageCount&& collectionByMessageCount,
+                                   RetrieveDiscussionThreadsBy by, OutStream& output, const IdType& currentUserId)
 {
     BoolTemporaryChanger _(serializationSettings.visitedThreadSinceLastChange, false);
     BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
@@ -44,22 +48,30 @@ static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscu
     switch (by)
     {
     case RetrieveDiscussionThreadsBy::Name:
-        writeEntitiesWithPagination(collection.threadsByName(), "threads", output, displayContext.pageNumber, 
+        writeEntitiesWithPagination(collectionByName, "threads", output, displayContext.pageNumber, 
             pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, writeInterceptor);
         break;
     case RetrieveDiscussionThreadsBy::Created:
-        writeEntitiesWithPagination(collection.threadsByCreated(), "threads", output, displayContext.pageNumber, 
+        writeEntitiesWithPagination(collectionByCreated, "threads", output, displayContext.pageNumber, 
             pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, writeInterceptor);
         break;
     case RetrieveDiscussionThreadsBy::LastUpdated:
-        writeEntitiesWithPagination(collection.threadsByLastUpdated(), "threads", output, displayContext.pageNumber, 
+        writeEntitiesWithPagination(collectionByLastUpdated, "threads", output, displayContext.pageNumber, 
             pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, writeInterceptor);
         break;
     case RetrieveDiscussionThreadsBy::MessageCount:
-        writeEntitiesWithPagination(collection.threadsByMessageCount(), "threads", output, displayContext.pageNumber, 
+        writeEntitiesWithPagination(collectionByMessageCount, "threads", output, displayContext.pageNumber, 
             pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, writeInterceptor);
         break;
     }
+}
+
+template<typename ThreadsCollection>
+static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscussionThreadsBy by,
+                                   OutStream& output, const IdType& currentUserId)
+{
+    writeDiscussionThreads(collection.threadsByName(), collection.threadsByCreated(), collection.threadsByLastUpdated(),
+                           collection.threadsByMessageCount(), by, output, currentUserId);
 }
 
 StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreads(OutStream& output, RetrieveDiscussionThreadsBy by) const
@@ -168,6 +180,42 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const Id
                  
                           status.disable();
                           writeDiscussionThreads(user, by, output, currentUser.id());
+
+                          if ( ! Context::skipObservers())
+                              readEvents().onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
+                      });
+    return status;
+}
+
+StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUser(const IdType& id, OutStream& output,
+                                                                                  RetrieveDiscussionThreadsBy by) const
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! id )
+    {
+        return status = StatusCode::INVALID_PARAMETERS;        
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, store());
+                          const auto& indexById = collection.usersById();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          auto& user = **it;
+                 
+                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                 
+                          status.disable();
+                          writeDiscussionThreads(user.subscribedThreadsByName(), user.subscribedThreadsByCreated(),
+                                                 user.subscribedThreadsByLastUpdated(), 
+                                                 user.subscribedThreadsByMessageCount(),
+                                                 by, output, currentUser.id());
 
                           if ( ! Context::skipObservers())
                               readEvents().onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
@@ -442,6 +490,80 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                            });
                            //this will also decrease the message count on the tags the thread was part of
                            collection.deleteDiscussionThread(itFrom);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(const IdType& id, OutStream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! id)
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+
+                           auto userRef = performedBy.getAndUpdate(collection);
+                           auto threadRef = *it;
+
+                           if ( ! (threadRef->subscribedUsers().insert(userRef).second))
+                           {
+                               status = StatusCode::NO_EFFECT;
+                               return;
+                           }
+                           
+                           userRef->subscribedThreads().insertDiscussionThread(threadRef);
+                           
+                           if ( ! Context::skipObservers())
+                               writeEvents().onSubscribeToDiscussionThread(createObserverContext(*userRef), **it);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(const IdType& id, OutStream& output)
+{
+    StatusWriter status(output, StatusCode::OK);
+    if ( ! id)
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+
+                           auto userRef = performedBy.getAndUpdate(collection);
+                           auto threadRef = *it;
+
+                           if (0 == threadRef->subscribedUsers().erase(userRef))
+                           {
+                               status = StatusCode::NO_EFFECT;
+                               return;
+                           }
+                           
+                           userRef->subscribedThreads().deleteDiscussionThreadById(threadRef->id());
+                           
+                           if ( ! Context::skipObservers())
+                               writeEvents().onUnsubscribeFromDiscussionThread(createObserverContext(*userRef), **it);
                        });
     return status;
 }
