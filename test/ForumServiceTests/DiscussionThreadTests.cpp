@@ -36,13 +36,14 @@ struct SerializedDiscussionThreadOrMessageUser
 
 struct SerializedLatestDiscussionThreadMessage
 {
+    std::string id;
     Timestamp created = 0;
     SerializedDiscussionThreadOrMessageUser createdBy;
 
     void populate(const boost::property_tree::ptree& tree)
     {
+        id = tree.get<std::string>("id");
         created = tree.get<Timestamp>("created");
-
         createdBy.populate(tree.get_child("createdBy"));
     }
 };

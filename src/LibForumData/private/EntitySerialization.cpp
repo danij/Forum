@@ -150,6 +150,7 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage
 {
     writer.newPropertyWithSafeName("latestMessage");
     writer << objStart
+        << propertySafeName("id", latestMessage.id())
         << propertySafeName("created", latestMessage.created())
         << propertySafeName("createdBy", latestMessage.createdBy())
         << objEnd;
