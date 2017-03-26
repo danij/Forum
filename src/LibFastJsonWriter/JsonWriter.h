@@ -181,7 +181,8 @@ namespace Json
         }
 
         template<typename T>
-        JsonWriter& writeNumber(T value, bool includeComma)
+        typename std::enable_if<std::numeric_limits<T>::is_integer, JsonWriter&>::type 
+            writeNumber(T value, bool includeComma)
         {
             //minimum integer values cannot be negated
             if (std::numeric_limits<T>::is_signed && std::numeric_limits<T>::min() == value)
