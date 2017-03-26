@@ -66,4 +66,24 @@ UuidString::operator std::string() const
     return to_string(value_);
 }
 
+static const char* hexCharsLowercase = "0123456789abcdef";
+
+void UuidString::toString(char* buffer) const
+{
+    auto data = value_.data;
+
+    for (size_t source = 0, destination = 0; source < boost::uuids::uuid::static_size(); ++source)
+    {
+        auto value = data[source];
+
+        buffer[destination++] = hexCharsLowercase[(value / 16) & 0xF];
+        buffer[destination++] = hexCharsLowercase[(value % 16) & 0xF];
+
+        if (8 == destination || 13 == destination || 18 == destination || 23 == destination)
+        {
+            buffer[destination++] = '-';
+        }
+    }
+}
+
 const UuidString UuidString::empty = {};

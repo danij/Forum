@@ -26,26 +26,11 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const EntitiesCount& value)
     return writer;
 }
 
-static const char* hexChars = "0123456789abcdef";
-
 JsonWriter& Json::operator<<(JsonWriter& writer, const UuidString& id)
 {
-    char buffer[boost::uuids::uuid::static_size() * 2 + 4];
+    char buffer[UuidString::StringRepresentationSize];
 
-    auto data = id.value().data;
-
-    for (size_t source = 0, destination = 0; source < boost::uuids::uuid::static_size(); ++source)
-    {
-        auto value = data[source];
-
-        buffer[destination++] = hexChars[(value / 16) & 0xF];
-        buffer[destination++] = hexChars[(value % 16) & 0xF];
-
-        if (8 == destination || 13 == destination || 18 == destination || 23 == destination)
-        {
-            buffer[destination++] = '-';
-        }
-    }
+    id.toString(buffer);
 
     return writer.writeSafeString(buffer, std::extent<decltype(buffer)>::value);
 }
