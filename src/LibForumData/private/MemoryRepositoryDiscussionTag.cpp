@@ -12,11 +12,18 @@ using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
+using namespace Forum::Authorization;
 
-MemoryRepositoryDiscussionTag::MemoryRepositoryDiscussionTag(MemoryStoreRef store)
+MemoryRepositoryDiscussionTag::MemoryRepositoryDiscussionTag(MemoryStoreRef store, 
+                                                             DiscussionTagAuthorizationRef authorization)
     : MemoryRepositoryBase(std::move(store)),
-    validDiscussionTagNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$"))
+    validDiscussionTagNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
+    authorization_(std::move(authorization))
 {
+    if ( ! authorization_)
+    {
+        throw std::runtime_error("Authorization implementation not provided");
+    }
 }
 
 
@@ -76,10 +83,11 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const StringView& 
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
-                           const auto& createdBy = performedBy.getAndUpdate(collection);
+                           auto currentUser = performedBy.getAndUpdate(collection);
                            
                            auto nameString = toString(name);
 
@@ -90,6 +98,13 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const StringView& 
                                return;
                            }
                  
+                           authorizationStatus = authorization_->addNewDiscussionTag(*currentUser, name);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
                            auto tag = std::make_shared<DiscussionTag>();
                            tag->notifyChange() = collection.notifyTagChange();
                            tag->id() = generateUUIDString();
@@ -99,7 +114,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const StringView& 
                            collection.tags().insert(tag);
 
                            if ( ! Context::skipObservers())
-                               writeEvents().onAddNewDiscussionTag(createObserverContext(*createdBy), *tag);
+                               writeEvents().onAddNewDiscussionTag(createObserverContext(*currentUser), *tag);
                  
                            status.writeNow([&](auto& writer)
                                            {
@@ -127,9 +142,12 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
         return status = validationCode;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -146,16 +164,21 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
                                status = StatusCode::ALREADY_EXISTS;
                                return;
                            }
-                 
-                           auto user = performedBy.getAndUpdate(collection);
-                 
-                           collection.modifyDiscussionTag(it, [&newNameString, &user](DiscussionTag& tag)
+                                  
+                           authorizationStatus = authorization_->changeDiscussionTagName(*currentUser, **it, newName);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
+                           collection.modifyDiscussionTag(it, [&newNameString, &currentUser](DiscussionTag& tag)
                                                               {
                                                                   tag.name() = std::move(newNameString);
-                                                                  updateLastUpdated(tag, user);
+                                                                  updateLastUpdated(tag, currentUser);
                                                               });
                            if ( ! Context::skipObservers())
-                               writeEvents().onChangeDiscussionTag(createObserverContext(*user), **it,
+                               writeEvents().onChangeDiscussionTag(createObserverContext(*currentUser), **it,
                                                                    DiscussionTag::ChangeType::Name);
                        });
     return status;
@@ -174,9 +197,12 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
         return status = StatusCode::VALUE_TOO_LONG;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -184,12 +210,20 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
+
+                           authorizationStatus = authorization_->changeDiscussionTagUiBlob(*currentUser, **it, blob);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
                            collection.modifyDiscussionTag(it, [&blob](DiscussionTag& tag)
                                                               {
                                                                   tag.uiBlob() = toString(blob);
                                                               });
                            if ( ! Context::skipObservers())
-                               writeEvents().onChangeDiscussionTag(createObserverContext(*performedBy.getAndUpdate(collection)),
+                               writeEvents().onChangeDiscussionTag(createObserverContext(*currentUser),
                                                                    **it, DiscussionTag::ChangeType::UIBlob);
                        });
     return status;
@@ -204,9 +238,12 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, 
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -214,10 +251,17 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, 
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
+                           
+                           authorizationStatus = authorization_->deleteDiscussionTag(*currentUser, **it);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
                            //make sure the tag is not deleted before being passed to the observers
                            if ( ! Context::skipObservers())
-                               writeEvents().onDeleteDiscussionTag(
-                                       createObserverContext(*performedBy.getAndUpdate(collection)), **it);
+                               writeEvents().onDeleteDiscussionTag(createObserverContext(*currentUser), **it);
 
                            collection.deleteDiscussionTag(it);
                        });
@@ -234,9 +278,12 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
                            auto tagIt = tagIndexById.find(tagId);
                            if (tagIt == tagIndexById.end())
@@ -258,6 +305,13 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
                            auto& threadRef = *threadIt;
                            auto& thread = **threadIt;
                  
+                           authorizationStatus = authorization_->addDiscussionTagToThread(*currentUser, tag, thread);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
                            //the number of tags associated to a thread is much smaller than 
                            //the number of threads associated to a tag, so search the tag in the thread
                            if ( ! thread.addTag(tagRef))
@@ -267,13 +321,11 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
                                return;
                            }
                  
-                           auto user = performedBy.getAndUpdate(collection);
-                 
                            tag.insertDiscussionThread(threadRef);
-                           updateLastUpdated(thread, user);
+                           updateLastUpdated(thread, currentUser);
 
                            if ( ! Context::skipObservers())
-                               writeEvents().onAddDiscussionTagToThread(createObserverContext(*user), tag, thread);
+                               writeEvents().onAddDiscussionTagToThread(createObserverContext(*currentUser), tag, thread);
                        });
     return status;
 }
@@ -288,9 +340,12 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const Id
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
                            auto tagIt = tagIndexById.find(tagId);
                            if (tagIt == tagIndexById.end())
@@ -311,6 +366,13 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const Id
                            auto& tag = **tagIt;
                            auto& thread = **threadIt;
                  
+                           authorizationStatus = authorization_->removeDiscussionTagFromThread(*currentUser, tag, thread);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+                           
                            if ( ! thread.removeTag(tagRef))
                            {
                                //tag was not added to the thread
@@ -318,13 +380,11 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const Id
                                return;
                            }
                  
-                           auto user = performedBy.getAndUpdate(collection);
-                 
                            tag.deleteDiscussionThreadById(threadId);
-                           updateLastUpdated(thread, user);
+                           updateLastUpdated(thread, currentUser);
 
                            if ( ! Context::skipObservers())
-                               writeEvents().onRemoveDiscussionTagFromThread(createObserverContext(*user), tag, thread);
+                               writeEvents().onRemoveDiscussionTagFromThread(createObserverContext(*currentUser), tag, thread);
                        });
     return status;
 }
@@ -343,9 +403,12 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& from
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
                            auto itFrom = indexById.find(fromId);
                            if (itFrom == indexById.end())
@@ -360,19 +423,25 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& from
                                return;
                            }
                    
-                           auto user = performedBy.getAndUpdate(collection);
                            auto& tagFrom = **itFrom;
                            auto& tagIntoRef = *itInto;
                            auto& tagInto = **itInto;
                    
+                           authorizationStatus = authorization_->mergeDiscussionTags(*currentUser, tagFrom, tagInto);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
                            //make sure the tag is not deleted before being passed to the observers
                            if ( ! Context::skipObservers())
-                               writeEvents().onMergeDiscussionTags(createObserverContext(*user), tagFrom, tagInto);
+                               writeEvents().onMergeDiscussionTags(createObserverContext(*currentUser), tagFrom, tagInto);
                            
                            for (auto& thread : tagFrom.threads())
                            {
                                thread->addTag(tagIntoRef);
-                               updateLastUpdated(*thread, user);
+                               updateLastUpdated(*thread, currentUser);
                                tagInto.insertDiscussionThread(thread);
                            }
                            for (auto& categoryWeak : tagFrom.categoriesWeak())
@@ -380,11 +449,11 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& from
                                if (auto category = categoryWeak.lock())
                                {
                                    category->addTag(tagIntoRef);
-                                   updateLastUpdated(*category, user);
+                                   updateLastUpdated(*category, currentUser);
                                }
                            }
                    
-                           updateLastUpdated(tagInto, user);
+                           updateLastUpdated(tagInto, currentUser);
                    
                            collection.deleteDiscussionTag(itFrom);
                        });

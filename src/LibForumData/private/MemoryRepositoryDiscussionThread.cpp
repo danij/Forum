@@ -13,11 +13,18 @@ using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
+using namespace Forum::Authorization;
 
-MemoryRepositoryDiscussionThread::MemoryRepositoryDiscussionThread(MemoryStoreRef store)
+MemoryRepositoryDiscussionThread::MemoryRepositoryDiscussionThread(MemoryStoreRef store, 
+                                                                   DiscussionThreadAuthorizationRef authorization)
     : MemoryRepositoryBase(std::move(store)),
-    validDiscussionThreadNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$"))
-{    
+    validDiscussionThreadNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
+    authorization_(std::move(authorization))
+{
+    if ( ! authorization_)
+    {
+        throw std::runtime_error("Authorization implementation not provided");
+    }
 }
 
 template<typename ThreadsCollectionByName, typename ThreadsCollectionByCreated, typename ThreadsCollectionByLastUpdated,
@@ -95,12 +102,15 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdTyp
     StatusWriter status(output, StatusCode::OK);
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
+
     bool addUserToVisitedSinceLastEdit = false;
     IdType userId{};
 
     collection().read([&](const EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, store());
+
                           const auto& index = collection.threadsById();
                           auto it = index.find(id);
                           if (it == index.end())
@@ -108,33 +118,40 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdTyp
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
-                          else
+
+                          auto& thread = **it;
+
+                          authorizationStatus = authorization_->getDiscussionThreadById(currentUser, thread);
+                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
                           {
-                              auto& thread = **it;
-                              thread.visited().fetch_add(1);
-                 
-                              if (currentUser.id() != AnonymousUserId)
-                              if ( ! thread.hasVisitedSinceLastEdit(currentUser.id()))
-                              {
-                                  addUserToVisitedSinceLastEdit = true;
-                                  userId = currentUser.id();
-                              }
-                 
-                              auto& displayContext = Context::getDisplayContext();
-                              if (displayContext.checkNotChangedSince > 0)
-                              {
-                                  if (thread.latestVisibleChange() <= displayContext.checkNotChangedSince)
-                                  {
-                                      status = StatusCode::NOT_UPDATED_SINCE_LAST_CHECK;
-                                      return;
-                                  }
-                              }
-                 
-                              BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageParentThread, true);
-                              BoolTemporaryChanger __(serializationSettings.hideVisitedThreadSinceLastChange, true);
-                              status.disable();
-                              writeSingleValueSafeName(output, "thread", thread);
+                              status = authorizationStatus.code;
+                              return;
                           }
+
+                          thread.visited().fetch_add(1);
+             
+                          if (currentUser.id() != AnonymousUserId)
+                          if ( ! thread.hasVisitedSinceLastEdit(currentUser.id()))
+                          {
+                              addUserToVisitedSinceLastEdit = true;
+                              userId = currentUser.id();
+                          }
+             
+                          auto& displayContext = Context::getDisplayContext();
+                          if (displayContext.checkNotChangedSince > 0)
+                          {
+                              if (thread.latestVisibleChange() <= displayContext.checkNotChangedSince)
+                              {
+                                  status = StatusCode::NOT_UPDATED_SINCE_LAST_CHECK;
+                                  return;
+                              }
+                          }
+             
+                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageParentThread, true);
+                          BoolTemporaryChanger __(serializationSettings.hideVisitedThreadSinceLastChange, true);
+                          status.disable();
+                          writeSingleValueSafeName(output, "thread", thread);
+                          
                           if ( ! Context::skipObservers())
                               readEvents().onGetDiscussionThreadById(createObserverContext(currentUser), id);
                       });
@@ -163,10 +180,12 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const Id
         return status = StatusCode::INVALID_PARAMETERS;        
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, store());
+
                           const auto& indexById = collection.usersById();
                           auto it = indexById.find(id);
                           if (it == indexById.end())
@@ -175,6 +194,13 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const Id
                               return;
                           }
                           auto& user = **it;
+
+                          authorizationStatus = authorization_->getDiscussionThreadsOfUser(currentUser, user);
+                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          {
+                              status = authorizationStatus.code;
+                              return;
+                          }
                  
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                  
@@ -196,10 +222,12 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
         return status = StatusCode::INVALID_PARAMETERS;        
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, store());
+
                           const auto& indexById = collection.usersById();
                           auto it = indexById.find(id);
                           if (it == indexById.end())
@@ -209,6 +237,13 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
                           }
                           auto& user = **it;
                  
+                          authorizationStatus = authorization_->getSubscribedDiscussionThreadsOfUser(currentUser, user);
+                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          {
+                              status = authorizationStatus.code;
+                              return;
+                          }
+
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
                  
                           status.disable();
@@ -232,10 +267,12 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(const I
         return status = StatusCode::INVALID_PARAMETERS;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, store());
+
                           const auto& indexById = collection.tagsById();
                           auto it = indexById.find(id);
                           if (it == indexById.end())
@@ -245,6 +282,13 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(const I
                           }
                  
                           auto& tag = **it;
+
+                          authorizationStatus = authorization_->getDiscussionThreadsWithTag(currentUser, tag);
+                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          {
+                              status = authorizationStatus.code;
+                              return;
+                          }
                  
                           status.disable();
                           writeDiscussionThreads(tag, by, output, currentUser.id());
@@ -264,10 +308,12 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(cons
         return status = StatusCode::INVALID_PARAMETERS;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
                      {
                          auto& currentUser = performedBy.get(collection, store());
+
                          const auto& indexById = collection.categoriesById();
                          auto it = indexById.find(id);
                          if (it == indexById.end())
@@ -276,6 +322,13 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(cons
                              return;
                          }
                          auto& category = **it;
+
+                         authorizationStatus = authorization_->getDiscussionThreadsOfCategory(currentUser, category);
+                         if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                         {
+                             status = authorizationStatus.code;
+                             return;
+                         }
 
                          status.disable();
                          writeDiscussionThreads(category, by, output, currentUser.id());
@@ -300,12 +353,20 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const String
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
-                           const auto& createdBy = performedBy.getAndUpdate(collection);
+                           auto currentUser = performedBy.getAndUpdate(collection);
                  
-                           auto thread = std::make_shared<DiscussionThread>(*createdBy);
+                           authorizationStatus = authorization_->addNewDiscussionThread(*currentUser, name);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
+                           auto thread = std::make_shared<DiscussionThread>(*currentUser);
                            thread->id() = generateUUIDString();
                            thread->name() = toString(name);
                            updateCreated(*thread);
@@ -313,13 +374,13 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const String
                            
                            collection.insertDiscussionThread(thread);
                  
-                           collection.modifyUserById(createdBy->id(), [&](User& user)
+                           collection.modifyUserById(currentUser->id(), [&](User& user)
                                                                       {
                                                                         user.insertDiscussionThread(thread);
                                                                       });
 
                            if ( ! Context::skipObservers())
-                               writeEvents().onAddNewDiscussionThread(createObserverContext(*createdBy), *thread);
+                               writeEvents().onAddNewDiscussionThread(createObserverContext(*currentUser), *thread);
                  
                            status.writeNow([&](auto& writer)
                                            {
@@ -344,9 +405,12 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const Id
         return status = validationCode;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& indexById = collection.threads()
                                    .get<EntityCollection::DiscussionThreadCollectionById>();
                            auto it = indexById.find(id);
@@ -355,17 +419,22 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const Id
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                 
-                           auto user = performedBy.getAndUpdate(collection);
-                 
-                           collection.modifyDiscussionThread(it, [&newName, &user](DiscussionThread& thread)
+                                  
+                           authorizationStatus = authorization_->changeDiscussionThreadName(*currentUser, **it, newName);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+                           
+                           collection.modifyDiscussionThread(it, [&newName, &currentUser](DiscussionThread& thread)
                                                                  {
                                                                      thread.name() = toString(newName);
                                                                      thread.latestVisibleChange() = Context::getCurrentTime();
-                                                                     updateLastUpdated(thread, user);
+                                                                     updateLastUpdated(thread, currentUser);
                                                                  });
                            if ( ! Context::skipObservers())
-                               writeEvents().onChangeDiscussionThread(createObserverContext(*user), **it,
+                               writeEvents().onChangeDiscussionThread(createObserverContext(*currentUser), **it,
                                                                       DiscussionThread::ChangeType::Name);
                        });
     return status;
@@ -380,9 +449,12 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(const IdType
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -390,10 +462,17 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(const IdType
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
+
+                           authorizationStatus = authorization_->deleteDiscussionThread(*currentUser, **it);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
                            //make sure the thread is not deleted before being passed to the observers
                            if ( ! Context::skipObservers())
-                               writeEvents().onDeleteDiscussionThread(
-                                       createObserverContext(*performedBy.getAndUpdate(collection)), **it);
+                               writeEvents().onDeleteDiscussionThread(createObserverContext(*currentUser), **it);
 
                            collection.deleteDiscussionThread(it);
                        });
@@ -414,9 +493,12 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
                            auto itFrom = indexById.find(fromId);
                            if (itFrom == indexById.end())
@@ -431,15 +513,23 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                                return;
                            }
                    
-                           auto user = performedBy.getAndUpdate(collection);
                            auto threadFromRef = *itFrom;
                            auto& threadFrom = **itFrom;
                            auto threadIntoRef = *itInto;
                            auto& threadInto = **itInto;
                    
+                           authorizationStatus = authorization_->mergeDiscussionThreads(*currentUser, threadFrom, 
+                                                                                        threadInto);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
                            //make sure the thread is not deleted before being passed to the observers
                            if ( ! Context::skipObservers())
-                               writeEvents().onMergeDiscussionThreads(createObserverContext(*user), threadFrom, threadInto);
+                               writeEvents().onMergeDiscussionThreads(createObserverContext(*currentUser), 
+                                                                      threadFrom, threadInto);
                    
                            auto updateMessageCounts = [&collection](DiscussionThreadRef& threadRef, int_fast32_t difference)
                            {
@@ -468,13 +558,12 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                                                category.modifyDiscussionThreadById(threadRef->id());
                                            });
                                    }
-                               }
-                   
+                               }                   
                            };
                    
                            collection.modifyDiscussionThread(itInto, [&](DiscussionThread& thread)
                            {
-                               updateLastUpdated(thread, user);
+                               updateLastUpdated(thread, currentUser);
                                thread.latestVisibleChange() = thread.lastUpdated();
                    
                                for (auto& message : threadFrom.messages())
@@ -503,9 +592,12 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(const I
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -514,19 +606,25 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(const I
                                return;
                            }
 
-                           auto userRef = performedBy.getAndUpdate(collection);
                            auto threadRef = *it;
 
-                           if ( ! (threadRef->subscribedUsers().insert(userRef).second))
+                           authorizationStatus = authorization_->subscribeToDiscussionThread(*currentUser, *threadRef);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
+                           if ( ! (threadRef->subscribedUsers().insert(currentUser).second))
                            {
                                status = StatusCode::NO_EFFECT;
                                return;
                            }
                            
-                           userRef->subscribedThreads().insertDiscussionThread(threadRef);
+                           currentUser->subscribedThreads().insertDiscussionThread(threadRef);
                            
                            if ( ! Context::skipObservers())
-                               writeEvents().onSubscribeToDiscussionThread(createObserverContext(*userRef), **it);
+                               writeEvents().onSubscribeToDiscussionThread(createObserverContext(*currentUser), **it);
                        });
     return status;
 }
@@ -540,9 +638,12 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(con
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -551,19 +652,25 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(con
                                return;
                            }
 
-                           auto userRef = performedBy.getAndUpdate(collection);
                            auto threadRef = *it;
 
-                           if (0 == threadRef->subscribedUsers().erase(userRef))
+                           authorizationStatus = authorization_->unsubscribeFromDiscussionThread(*currentUser, *threadRef);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
+                           if (0 == threadRef->subscribedUsers().erase(currentUser))
                            {
                                status = StatusCode::NO_EFFECT;
                                return;
                            }
                            
-                           userRef->subscribedThreads().deleteDiscussionThreadById(threadRef->id());
+                           currentUser->subscribedThreads().deleteDiscussionThreadById(threadRef->id());
                            
                            if ( ! Context::skipObservers())
-                               writeEvents().onUnsubscribeFromDiscussionThread(createObserverContext(*userRef), **it);
+                               writeEvents().onUnsubscribeFromDiscussionThread(createObserverContext(*currentUser), **it);
                        });
     return status;
 }

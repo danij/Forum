@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MemoryRepositoryCommon.h"
+#include "Authorization.h"
 
 namespace Forum
 {
@@ -9,7 +10,7 @@ namespace Forum
         class MemoryRepositoryUser final : public MemoryRepositoryBase, public IUserRepository
         {
         public:
-            explicit MemoryRepositoryUser(MemoryStoreRef store);
+            explicit MemoryRepositoryUser(MemoryStoreRef store, Authorization::UserAuthorizationRef authorization);
 
             StatusCode getUsers(OutStream& output, RetrieveUsersBy by) const override;
 
@@ -25,6 +26,7 @@ namespace Forum
 
         private:
             boost::u32regex validUserNameRegex;
+            Authorization::UserAuthorizationRef authorization_;
         };
     }
 }

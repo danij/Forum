@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MemoryRepositoryCommon.h"
+#include "Authorization.h"
 
 namespace Forum
 {
@@ -10,7 +11,8 @@ namespace Forum
                                                               public IDiscussionThreadMessageRepository
         {
         public:
-            explicit MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store);
+            explicit MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store,
+                                                             Authorization::DiscussionThreadMessageAuthorizationRef authorization);
 
             StatusCode addNewDiscussionMessageInThread(const Entities::IdType& threadId,
                                                        const StringView& content, OutStream& output) override;
@@ -41,6 +43,7 @@ namespace Forum
             boost::u32regex validDiscussionMessageContentRegex;
             boost::u32regex validDiscussionMessageCommentRegex;
             boost::u32regex validDiscussionMessageChangeReasonRegex;
+            Authorization::DiscussionThreadMessageAuthorizationRef authorization_;
         };
     }
 }

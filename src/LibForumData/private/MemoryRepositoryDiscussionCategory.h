@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MemoryRepositoryCommon.h"
+#include "Authorization.h"
 
 namespace Forum
 {
@@ -9,7 +10,8 @@ namespace Forum
         class MemoryRepositoryDiscussionCategory final : public MemoryRepositoryBase, public IDiscussionCategoryRepository
         {
         public:
-            explicit MemoryRepositoryDiscussionCategory(MemoryStoreRef store);
+            explicit MemoryRepositoryDiscussionCategory(MemoryStoreRef store,
+                                                        Authorization::DiscussionCategoryAuthorizationRef authorization);
 
             StatusCode addNewDiscussionCategory(const StringView& name, const Entities::IdType& parentId,
                                                 OutStream& output) override;
@@ -38,6 +40,7 @@ namespace Forum
                                                        OutStream& output) override;
         private:
             boost::u32regex validDiscussionCategoryNameRegex;
+            Authorization::DiscussionCategoryAuthorizationRef authorization_;
         };
     }
 }

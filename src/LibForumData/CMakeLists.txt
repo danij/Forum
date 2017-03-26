@@ -25,6 +25,7 @@ set(SOURCE_FILES
 set(HEADER_FILES
         ../Version.h
         Repository.h
+        Authorization.h
         Observers.h
         Entities.h
         ConstCollectionAdapter.h

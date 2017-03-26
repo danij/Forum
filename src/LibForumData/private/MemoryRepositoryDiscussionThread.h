@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MemoryRepositoryCommon.h"
+#include "Authorization.h"
 
 namespace Forum
 {
@@ -9,7 +10,8 @@ namespace Forum
         class MemoryRepositoryDiscussionThread final : public MemoryRepositoryBase, public IDiscussionThreadRepository
         {
         public:
-            explicit MemoryRepositoryDiscussionThread(MemoryStoreRef store);
+            explicit MemoryRepositoryDiscussionThread(MemoryStoreRef store,
+                                                      Authorization::DiscussionThreadAuthorizationRef authorization);
          
             StatusCode getDiscussionThreads(OutStream& output, RetrieveDiscussionThreadsBy by) const override;
 
@@ -42,6 +44,7 @@ namespace Forum
 
         private:
             boost::u32regex validDiscussionThreadNameRegex;
+            Authorization::DiscussionThreadAuthorizationRef authorization_;
         };
     }
 }

@@ -2,9 +2,7 @@
 
 #include "JsonWriter.h"
 #include "Repository.h"
-
-#include <iosfwd>
-#include <array>
+#include "Authorization.h"
 
 namespace Forum
 {
@@ -127,6 +125,22 @@ namespace Forum
             StatusWriter& operator=(Repository::StatusCode newCode)
             {
                 statusCode_ = newCode;
+                return *this;
+            }
+
+            StatusWriter& operator=(Authorization::AuthorizationStatusCode newCode)
+            {
+                switch (newCode)
+                {
+                case Authorization::AuthorizationStatusCode::NOT_ALLOWED:
+                    statusCode_ = Repository::StatusCode::UNAUTHORIZED;
+                    break;
+                case Authorization::AuthorizationStatusCode::THROTTLED:
+                    statusCode_ = Repository::StatusCode::THROTTLED;
+                    break;
+                default:
+                    statusCode_ = Repository::StatusCode::OK;
+                }
                 return *this;
             }
 

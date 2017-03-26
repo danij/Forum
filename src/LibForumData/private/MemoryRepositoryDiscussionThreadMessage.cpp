@@ -13,13 +13,20 @@ using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
+using namespace Forum::Authorization;
 
-MemoryRepositoryDiscussionThreadMessage::MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store)
+MemoryRepositoryDiscussionThreadMessage::MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store, 
+                                                                                 DiscussionThreadMessageAuthorizationRef authorization)
     : MemoryRepositoryBase(std::move(store)),
     validDiscussionMessageContentRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
     validDiscussionMessageCommentRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
-    validDiscussionMessageChangeReasonRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$"))
+    validDiscussionMessageChangeReasonRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
+    authorization_(std::move(authorization))
 {
+    if ( ! authorization_)
+    {
+        throw std::runtime_error("Authorization implementation not provided");
+    }
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesOfUserByCreated(const IdType& id,
@@ -27,6 +34,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
 {
     StatusWriter status(output, StatusCode::OK);
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     if ( ! id)
     {
@@ -35,11 +43,20 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
 
     collection().read([&](const EntityCollection& collection)
     {
+        auto& currentUser = performedBy.get(collection, store());
+
         const auto& indexById = collection.usersById();
         auto it = indexById.find(id);
         if (it == indexById.end())
         {
             status = StatusCode::NOT_FOUND;
+            return;
+        }
+
+        authorizationStatus = authorization_->getDiscussionThreadMessagesOfUserByCreated(currentUser, **it);
+        if (AuthorizationStatusCode::OK != authorizationStatus.code)
+        {
+            status = authorizationStatus.code;
             return;
         }
 
@@ -56,8 +73,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
             displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& m) { return m; });
 
         if ( ! Context::skipObservers())
-            readEvents().onGetDiscussionThreadMessagesOfUser(createObserverContext(performedBy.get(collection, store())),
-                                                             **it);
+            readEvents().onGetDiscussionThreadMessagesOfUser(createObserverContext(currentUser), **it);
     });
     return status;
 }
@@ -83,9 +99,12 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
         return status = validationCode;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& threadIndex = collection.threads();
                            auto threadIt = threadIndex.find(threadId);
                            if (threadIt == threadIndex.end())
@@ -94,22 +113,28 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                return;
                            }
                  
-                           const auto& createdBy = performedBy.getAndUpdate(collection);
-                 
-                           auto message = std::make_shared<DiscussionThreadMessage>(*createdBy);
+                           authorizationStatus = authorization_->addNewDiscussionMessageInThread(*currentUser, 
+                                                                                                 **threadIt, content);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
+                           auto message = std::make_shared<DiscussionThreadMessage>(*currentUser);
                            message->id() = generateUUIDString();
                            message->parentThread() = *threadIt;
                            message->content() = content;
                            updateCreated(*message);
                  
                            collection.messages().insert(message);
-                           collection.modifyDiscussionThread(threadIt, [&collection, &message, &threadIt, &createdBy]
+                           collection.modifyDiscussionThread(threadIt, [&collection, &message, &threadIt, &currentUser]
                                (DiscussionThread& thread)
                                {
                                    thread.messages().insert(message);
                                    thread.resetVisitorsSinceLastEdit();
                                    thread.latestVisibleChange() = message->created();
-                                   thread.subscribedUsers().insert(createdBy);
+                                   thread.subscribedUsers().insert(currentUser);
                  
                                    for (auto& tagWeak : thread.tagsWeak())
                                    {
@@ -139,7 +164,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                    }
                                });
                  
-                           collection.modifyUserById(createdBy->id(), [&](User& user)
+                           collection.modifyUserById(currentUser->id(), [&](User& user)
                                                                       {
                                                                           user.messages().insert(message);
                                                                           user.subscribedThreads().insertDiscussionThread(*threadIt);
@@ -147,7 +172,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
 
                            if ( ! Context::skipObservers())
                            {
-                               auto& user = *createdBy;
+                               auto& user = *currentUser;
                                writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), **threadIt);
                                writeEvents().onAddNewDiscussionThreadMessage(createObserverContext(user), *message);
                            }
@@ -170,9 +195,12 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(cons
         return status = StatusCode::INVALID_PARAMETERS;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
-
+    AuthorizationStatus authorizationStatus;
+    
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& indexById = collection.messages().get<EntityCollection::DiscussionThreadMessageCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -180,10 +208,17 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(cons
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
+
+                           authorizationStatus = authorization_->deleteDiscussionMessage(*currentUser, **it);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
                            //make sure the message is not deleted before being passed to the observers
                            if ( ! Context::skipObservers())
-                               writeEvents().onDeleteDiscussionThreadMessage(
-                                       createObserverContext(*performedBy.getAndUpdate(collection)), **it);
+                               writeEvents().onDeleteDiscussionThreadMessage(createObserverContext(*currentUser), **it);
 
                            collection.deleteDiscussionThreadMessage(it);
                        });
@@ -219,9 +254,12 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
         return status = reasonValidationCode;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& indexById = collection.messages()
                                    .get<EntityCollection::DiscussionThreadMessageCollectionById>();
                            auto it = indexById.find(id);
@@ -230,16 +268,24 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                           auto performedByPtr = performedBy.getAndUpdate(collection);
-                 
+                           
+                           authorizationStatus = authorization_->changeDiscussionThreadMessageContent(*currentUser, 
+                                                                                                      **it, newContent, 
+                                                                                                      changeReason);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
                            collection.modifyDiscussionThreadMessage(it, [&](DiscussionThreadMessage& message)
                            {
                                message.content() = newContent;
                                updateLastUpdated(message, {});
                                message.lastUpdatedReason() = toString(changeReason);
-                               if (&message.createdBy() != performedByPtr.get())
+                               if (&message.createdBy() != currentUser.get())
                                {
-                                   message.lastUpdatedBy() = performedByPtr;
+                                   message.lastUpdatedBy() = currentUser;
                                }
                                message.executeActionWithParentThreadIfAvailable([&](auto& thread)
                                    {
@@ -249,7 +295,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
                            });
 
                            if ( ! Context::skipObservers())
-                               writeEvents().onChangeDiscussionThreadMessage(createObserverContext(*performedByPtr), **it,
+                               writeEvents().onChangeDiscussionThreadMessage(createObserverContext(*currentUser), **it,
                                                                              DiscussionThreadMessage::ChangeType::Content);
                        });
     return status;
@@ -265,9 +311,12 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
         return status = StatusCode::INVALID_PARAMETERS;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& messagesIndexById = collection.messages().get<EntityCollection::DiscussionThreadMessageCollectionById>();
                            auto messageIt = messagesIndexById.find(messageId);
                            if (messageIt == messagesIndexById.end())
@@ -292,11 +341,19 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
                                status = StatusCode::NO_EFFECT;
                                return;
                            }
+                           
+                           authorizationStatus = authorization_->moveDiscussionThreadMessage(*currentUser, *messageRef, 
+                                                                                             *threadIntoRef);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
                      
                            //make sure the message is not deleted before being passed to the observers
                            if ( ! Context::skipObservers())
-                               writeEvents().onMoveDiscussionThreadMessage(
-                                   createObserverContext(*performedBy.getAndUpdate(collection)), *messageRef, *threadIntoRef);
+                               writeEvents().onMoveDiscussionThreadMessage(createObserverContext(*currentUser), 
+                                                                           *messageRef, *threadIntoRef);
 
                            auto threadUpdateFn = [&collection](DiscussionThreadRef&& threadRef, bool insert)
                            {
@@ -362,6 +419,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
         return status = StatusCode::NOT_ALLOWED;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -389,7 +447,23 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
                                status = StatusCode::NO_EFFECT;
                                return;
                            }
-                 
+
+                           if (up)
+                           {
+                               authorizationStatus = authorization_->upVoteDiscussionThreadMessage(*currentUser, 
+                                                                                                   *messageRef);
+                           }
+                           else
+                           {
+                               authorizationStatus = authorization_->downVoteDiscussionThreadMessage(*currentUser, 
+                                                                                                     *messageRef);
+                           }
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
                            auto timestamp = Context::getCurrentTime();
                            currentUser->registerVote(messageRef);
                  
@@ -433,6 +507,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
         return status = StatusCode::NOT_ALLOWED;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -450,6 +525,13 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
                            if (&message.createdBy() == currentUser.get())
                            {
                                status = StatusCode::NOT_ALLOWED;
+                               return;
+                           }
+
+                           authorizationStatus = authorization_->resetVoteDiscussionThreadMessage(*currentUser, **it);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
                                return;
                            }
                
@@ -479,16 +561,26 @@ static void writeMessageComments(const Collection& collection, OutStream& output
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream& output) const
 {
+    StatusWriter status(output, StatusCode::OK);
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
                       {
+                          auto& currentUser = performedBy.get(collection, store());
+
+                          authorizationStatus = authorization_->getMessageComments(currentUser);
+                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          {
+                              status = authorizationStatus.code;
+                              return;
+                          }
+
                           writeMessageComments(collection.messageCommentsByCreated(), output);
                           if ( ! Context::skipObservers())
-                              readEvents().onGetMessageComments(createObserverContext(performedBy.get(collection,
-                                                                                                      store())));
+                              readEvents().onGetMessageComments(createObserverContext(currentUser));
                       });
-    return StatusCode::OK;
+    return status;
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussionThreadMessage(const IdType& id, 
@@ -496,6 +588,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
 {
     StatusWriter status(output, StatusCode::OK);
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     if ( ! id)
     {
@@ -504,6 +597,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
 
     collection().read([&](const EntityCollection& collection)
                       {
+                          auto& currentUser = performedBy.get(collection, store());
+
                           const auto& indexById = collection.messagesById();
                           auto it = indexById.find(id);
                           if (it == indexById.end())
@@ -513,13 +608,20 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
                           }
                           auto& message = **it;
                       
+                          authorizationStatus = authorization_->getMessageCommentsOfDiscussionThreadMessage(currentUser, 
+                                                                                                            message);
+                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          {
+                              status = authorizationStatus.code;
+                              return;
+                          }
+
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentMessage, true);
                       
                           writeMessageComments(message.messageCommentsByCreated(), output);
 
                           if ( ! Context::skipObservers())
-                              readEvents().onGetMessageCommentsOfMessage(
-                                      createObserverContext(performedBy.get(collection, store())), message);
+                              readEvents().onGetMessageCommentsOfMessage(createObserverContext(currentUser), message);
                       });
     return status;
 }
@@ -528,6 +630,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
 {
     StatusWriter status(output, StatusCode::OK);
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     if ( ! id)
     {
@@ -536,6 +639,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
 
     collection().read([&](const EntityCollection& collection)
                       {
+                          auto& currentUser = performedBy.get(collection, store());
+
                           const auto& indexById = collection.usersById();
                           auto it = indexById.find(id);
                           if (it == indexById.end())
@@ -545,13 +650,19 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
                           }
                           auto& user = **it;
                   
+                          authorizationStatus = authorization_->getMessageCommentsOfUser(currentUser, user);
+                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          {
+                              status = authorizationStatus.code;
+                              return;
+                          }
+
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentUser, true);
                           
                           writeMessageComments(user.messageCommentsByCreated(), output);
 
                           if ( ! Context::skipObservers())
-                              readEvents().onGetMessageCommentsOfUser(
-                                      createObserverContext(performedBy.get(collection, store())), user);
+                              readEvents().onGetMessageCommentsOfUser(createObserverContext(currentUser), user);
                       });
     return status;
 }
@@ -576,9 +687,12 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
         return status = validationCode;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
                            auto& messageIndex = collection.messages();
                            auto messageIt = messageIndex.find(messageId);
                            if (messageIt == messageIndex.end())
@@ -586,10 +700,17 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                 
-                           const auto& createdBy = performedBy.getAndUpdate(collection);
-                 
-                           auto comment = std::make_shared<MessageComment>(*createdBy);
+                                  
+                           authorizationStatus = authorization_->addCommentToDiscussionThreadMessage(*currentUser, 
+                                                                                                     **messageIt,
+                                                                                                     content);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
+                           auto comment = std::make_shared<MessageComment>(*currentUser);
                            comment->id() = generateUUIDString();
                            comment->content() = content;
                            updateCreated(*comment);
@@ -602,13 +723,13 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
                                    message.messageComments().insert(comment);
                                });
                  
-                           collection.modifyUserById(createdBy->id(), [&](User& user)
-                                                                      {
-                                                                          user.messageComments().insert(comment);
-                                                                      });
+                           collection.modifyUserById(currentUser->id(), [&](User& user)
+                                                                        {
+                                                                            user.messageComments().insert(comment);
+                                                                        });
 
                            if ( ! Context::skipObservers())
-                               writeEvents().onAddCommentToDiscussionThreadMessage(createObserverContext(*createdBy),
+                               writeEvents().onAddCommentToDiscussionThreadMessage(createObserverContext(*currentUser),
                                                                                    *comment);
                  
                            status.writeNow([&](auto& writer)
@@ -633,6 +754,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(co
         return status = StatusCode::NOT_ALLOWED;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -647,6 +769,13 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(co
                            }
                            auto& comment = **it;
                  
+                           authorizationStatus = authorization_->setMessageCommentToSolved(*currentUser, comment);
+                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           {
+                               status = authorizationStatus.code;
+                               return;
+                           }
+
                            if ( ! comment.solved())
                            {
                                status = StatusCode::NO_EFFECT;
@@ -654,11 +783,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(co
                            }
                  
                            comment.solved() = true;
-                           comment.executeActionWithParentMessageIfAvailable(
-                               [&](DiscussionThreadMessage& message)
-                               {
-                                   message.solvedCommentsCount() += 1;
-                               });
+                           comment.executeActionWithParentMessageIfAvailable([&](DiscussionThreadMessage& message)
+                                                                             {
+                                                                                 message.solvedCommentsCount() += 1;
+                                                                             });
 
                            if ( ! Context::skipObservers())
                                writeEvents().onSolveDiscussionThreadMessageComment(createObserverContext(*currentUser),
