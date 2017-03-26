@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
     auto ___ = addHandler(handler->readEvents().onGetUsers, 
                           [&](auto& _) { observerCalledNTimes += 1; });
 
-    Forum::Commands::Command commands[] =
+    Forum::Commands::View views[] =
     {
         Forum::Commands::GET_USERS_BY_NAME,
         Forum::Commands::GET_USERS_BY_CREATED,
@@ -64,15 +64,15 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
 
     SortOrder sortOrders[] = { SortOrder::Ascending, SortOrder::Descending };
 
-    for (auto command : commands)
+    for (auto view : views)
     {
         for (auto sortOrder : sortOrders)
         {
-            handlerToObj(handler, command, sortOrder);
+            handlerToObj(handler, view, sortOrder);
         }
     }
 
-    auto nrOfCalls = std::extent<decltype(commands)>::value * std::extent<decltype(sortOrders)>::value;
+    auto nrOfCalls = std::extent<decltype(views)>::value * std::extent<decltype(sortOrders)>::value;
     BOOST_REQUIRE_EQUAL(nrOfCalls, observerCalledNTimes);
 }
 
@@ -560,7 +560,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_tags_invokes_obs
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
 
-    Forum::Commands::Command commands[] =
+    Forum::Commands::View views[] =
     {
         Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
         Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED,
@@ -568,10 +568,10 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_tags_invokes_obs
         Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT
     };
 
-    for (auto command : commands)
+    for (auto view : views)
         for (auto sortOrder : { SortOrder::Ascending, SortOrder::Descending })
         {
-            handlerToObj(handler, command, sortOrder, { tagId });
+            handlerToObj(handler, view, sortOrder, { tagId });
         }
 
     BOOST_REQUIRE_EQUAL(8, observerCalledNTimes);
@@ -801,7 +801,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_categories_invok
 
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Category");
 
-    Forum::Commands::Command commands[] =
+    Forum::Commands::View views[] =
     {
         Forum::Commands::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
         Forum::Commands::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED,
@@ -809,10 +809,10 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_categories_invok
         Forum::Commands::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT
     };
 
-    for (auto command : commands)
+    for (auto view : views)
         for (auto sortOrder : { SortOrder::Ascending, SortOrder::Descending })
         {
-            handlerToObj(handler, command, sortOrder, { categoryId });
+            handlerToObj(handler, view, sortOrder, { categoryId });
         }
 
     BOOST_REQUIRE_EQUAL(8, observerCalledNTimes);

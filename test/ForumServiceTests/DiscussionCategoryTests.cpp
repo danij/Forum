@@ -212,9 +212,9 @@ static bool serializedDiscussionCategoryByDisplayOrderLess(const SerializedDiscu
     return first.displayOrder < second.displayOrder;
 }
 
-auto getCategories(Forum::Commands::CommandHandlerRef handler, Forum::Commands::Command command)
+auto getCategories(Forum::Commands::CommandHandlerRef handler, Forum::Commands::View view)
 {
-    return deserializeCategories(handlerToObj(handler, command).get_child("categories"));
+    return deserializeCategories(handlerToObj(handler, view).get_child("categories"));
 }
 
 auto getCategory(Forum::Commands::CommandHandlerRef handler, std::string id)
@@ -851,7 +851,7 @@ BOOST_AUTO_TEST_CASE( Discussion_categories_recursively_include_total_thread_and
     BOOST_REQUIRE_EQUAL(27, categories[1].messageTotalCount);
 }
 
-static Forum::Commands::Command GetDiscussionThreadsOfCategoryCommands[] =
+static Forum::Commands::View GetDiscussionThreadsOfCategoryViews[] =
 {
     Forum::Commands::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
     Forum::Commands::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED,
@@ -862,7 +862,7 @@ static Forum::Commands::Command GetDiscussionThreadsOfCategoryCommands[] =
 BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_an_invalid_category_fails )
 {
     auto handler = createCommandHandler();
-    for (auto command : GetDiscussionThreadsOfCategoryCommands)
+    for (auto command : GetDiscussionThreadsOfCategoryViews)
     {
         assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler, command, { "bogus id" }));
     }
@@ -871,7 +871,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_an_invalid_category_fails
 BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_an_unknown_category_returns_not_found )
 {
     auto handler = createCommandHandler();
-    for (auto command : GetDiscussionThreadsOfCategoryCommands)
+    for (auto command : GetDiscussionThreadsOfCategoryViews)
     {
         assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, command, { sampleValidIdString }));
     }
@@ -882,7 +882,7 @@ BOOST_AUTO_TEST_CASE( Discussion_categories_have_no_threads_attached_by_default 
     auto handler = createCommandHandler();
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Foo");
 
-    for (auto command : GetDiscussionThreadsOfCategoryCommands)
+    for (auto command : GetDiscussionThreadsOfCategoryViews)
     {
         auto threads = deserializeThreads(handlerToObj(handler, command, { categoryId }).get_child("threads"));
         BOOST_REQUIRE_EQUAL(0, threads.size());
@@ -992,7 +992,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_attached_to_one_category_can_be_retriev
     };
 
     int index = 0;
-    for (auto command : GetDiscussionThreadsOfCategoryCommands)
+    for (auto command : GetDiscussionThreadsOfCategoryViews)
         for (auto sortOrder : { SortOrder::Ascending, SortOrder::Descending })
         {
             auto threads = deserializeThreads(handlerToObj(handler, command, sortOrder, { categoryId })

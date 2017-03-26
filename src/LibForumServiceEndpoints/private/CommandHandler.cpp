@@ -21,7 +21,9 @@ static const std::string emptyString;
 
 struct CommandHandler::CommandHandlerImpl
 {
-    std::function<StatusCode(const std::vector<StringView>&, OutStream&)> handlers[int(LAST_COMMAND)];
+    std::function<StatusCode(const std::vector<StringView>&, OutStream&)> commandHandlers[int(LAST_COMMAND)];
+    std::function<StatusCode(const std::vector<StringView>&, OutStream&)> viewHandlers[int(LAST_VIEW)];
+
     ObservableRepositoryRef observerRepository;
     UserRepositoryRef userRepository;
     DiscussionThreadRepositoryRef discussionThreadRepository;
@@ -517,10 +519,13 @@ struct CommandHandler::CommandHandlerImpl
 };
 
 
-#define setHandler(command) \
-    impl_->handlers[command] = [&](auto& parameters, auto& output) { return impl_->command(parameters, output); }
+#define setCommandHandler(command) \
+    impl_->commandHandlers[command] = [&](auto& parameters, auto& output) { return impl_->command(parameters, output); }
 
-CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository, 
+#define setViewHandler(command) \
+    impl_->viewHandlers[command] = [&](auto& parameters, auto& output) { return impl_->command(parameters, output); }
+
+CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     UserRepositoryRef userRepository,
     DiscussionThreadRepositoryRef discussionThreadRepository,
     DiscussionThreadMessageRepositoryRef discussionThreadMessageRepository,
@@ -538,89 +543,98 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     impl_->statisticsRepository = statisticsRepository;
     impl_->metricsRepository = metricsRepository;
 
-    setHandler(SHOW_VERSION);
-    setHandler(COUNT_ENTITIES);
+    setCommandHandler(ADD_USER);
+    setCommandHandler(CHANGE_USER_NAME);
+    setCommandHandler(CHANGE_USER_INFO);
+    setCommandHandler(DELETE_USER);
 
-    setHandler(ADD_USER);
-    setHandler(GET_USERS_BY_NAME);
-    setHandler(GET_USERS_BY_CREATED);
-    setHandler(GET_USERS_BY_LAST_SEEN);
-    setHandler(GET_USERS_BY_THREAD_COUNT);
-    setHandler(GET_USERS_BY_MESSAGE_COUNT);
-    setHandler(GET_USER_BY_ID);
-    setHandler(GET_USER_BY_NAME);
-    setHandler(CHANGE_USER_NAME);
-    setHandler(CHANGE_USER_INFO);
-    setHandler(DELETE_USER);
+    setCommandHandler(ADD_DISCUSSION_THREAD);
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_NAME);
+    setCommandHandler(DELETE_DISCUSSION_THREAD);
+    setCommandHandler(MERGE_DISCUSSION_THREADS);
 
-    setHandler(ADD_DISCUSSION_THREAD);
-    setHandler(GET_DISCUSSION_THREADS_BY_NAME);
-    setHandler(GET_DISCUSSION_THREADS_BY_CREATED);
-    setHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED);
-    setHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
-    setHandler(GET_DISCUSSION_THREAD_BY_ID);
-    setHandler(CHANGE_DISCUSSION_THREAD_NAME);
-    setHandler(DELETE_DISCUSSION_THREAD);
-    setHandler(MERGE_DISCUSSION_THREADS);
+    setCommandHandler(ADD_DISCUSSION_THREAD_MESSAGE);
+    setCommandHandler(DELETE_DISCUSSION_THREAD_MESSAGE);
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT);
+    setCommandHandler(MOVE_DISCUSSION_THREAD_MESSAGE);
 
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
-    setHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
-    setHandler(SUBSCRIBE_TO_THREAD);
-    setHandler(UNSUBSCRIBE_FROM_THREAD);
-    setHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_NAME);
-    setHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_CREATED);
-    setHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
-    setHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
+    setCommandHandler(UP_VOTE_DISCUSSION_THREAD_MESSAGE);
+    setCommandHandler(DOWN_VOTE_DISCUSSION_THREAD_MESSAGE);
+    setCommandHandler(RESET_VOTE_DISCUSSION_THREAD_MESSAGE);
 
-    setHandler(ADD_DISCUSSION_THREAD_MESSAGE);
-    setHandler(DELETE_DISCUSSION_THREAD_MESSAGE);
-    setHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT);
-    setHandler(MOVE_DISCUSSION_THREAD_MESSAGE);
-    setHandler(UP_VOTE_DISCUSSION_THREAD_MESSAGE);
-    setHandler(DOWN_VOTE_DISCUSSION_THREAD_MESSAGE);
-    setHandler(RESET_VOTE_DISCUSSION_THREAD_MESSAGE);
+    setCommandHandler(SUBSCRIBE_TO_THREAD);
+    setCommandHandler(UNSUBSCRIBE_FROM_THREAD);
 
-    setHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED);
+    setCommandHandler(ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE);
+    setCommandHandler(SET_MESSAGE_COMMENT_SOLVED);
 
-    setHandler(ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE);
-    setHandler(GET_MESSAGE_COMMENTS);
-    setHandler(GET_MESSAGE_COMMENTS_OF_DISCUSSION_THREAD_MESSAGE);
-    setHandler(GET_MESSAGE_COMMENTS_OF_USER);
-    setHandler(SET_MESSAGE_COMMENT_SOLVED);
+    setCommandHandler(ADD_DISCUSSION_TAG);
+    setCommandHandler(CHANGE_DISCUSSION_TAG_NAME);
+    setCommandHandler(CHANGE_DISCUSSION_TAG_UI_BLOB);
+    setCommandHandler(DELETE_DISCUSSION_TAG);
+    setCommandHandler(ADD_DISCUSSION_TAG_TO_THREAD);
+    setCommandHandler(REMOVE_DISCUSSION_TAG_FROM_THREAD);
+    setCommandHandler(MERGE_DISCUSSION_TAG_INTO_OTHER_TAG);
 
+    setCommandHandler(ADD_DISCUSSION_CATEGORY);
+    setCommandHandler(CHANGE_DISCUSSION_CATEGORY_NAME);
+    setCommandHandler(CHANGE_DISCUSSION_CATEGORY_DESCRIPTION);
+    setCommandHandler(CHANGE_DISCUSSION_CATEGORY_PARENT);
+    setCommandHandler(CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER);
+    setCommandHandler(DELETE_DISCUSSION_CATEGORY);
+    setCommandHandler(ADD_DISCUSSION_TAG_TO_CATEGORY);
+    setCommandHandler(REMOVE_DISCUSSION_TAG_FROM_CATEGORY);
 
-    setHandler(ADD_DISCUSSION_TAG);
-    setHandler(GET_DISCUSSION_TAGS_BY_NAME);
-    setHandler(GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT);
-    setHandler(CHANGE_DISCUSSION_TAG_NAME);
-    setHandler(CHANGE_DISCUSSION_TAG_UI_BLOB);
-    setHandler(DELETE_DISCUSSION_TAG);
-    setHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME);
-    setHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED);
-    setHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED);
-    setHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT);
-    setHandler(ADD_DISCUSSION_TAG_TO_THREAD);
-    setHandler(REMOVE_DISCUSSION_TAG_FROM_THREAD);
-    setHandler(MERGE_DISCUSSION_TAG_INTO_OTHER_TAG);
+    setViewHandler(SHOW_VERSION);
+    setViewHandler(COUNT_ENTITIES);
 
-    setHandler(ADD_DISCUSSION_CATEGORY);
-    setHandler(GET_DISCUSSION_CATEGORY_BY_ID);
-    setHandler(GET_DISCUSSION_CATEGORIES_BY_NAME);
-    setHandler(GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT);
-    setHandler(GET_DISCUSSION_CATEGORIES_FROM_ROOT);
-    setHandler(CHANGE_DISCUSSION_CATEGORY_NAME);
-    setHandler(CHANGE_DISCUSSION_CATEGORY_DESCRIPTION);
-    setHandler(CHANGE_DISCUSSION_CATEGORY_PARENT);
-    setHandler(CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER);
-    setHandler(DELETE_DISCUSSION_CATEGORY);
-    setHandler(ADD_DISCUSSION_TAG_TO_CATEGORY);
-    setHandler(REMOVE_DISCUSSION_TAG_FROM_CATEGORY);
-    setHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME);
-    setHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED);
-    setHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED);
-    setHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT);
+    setViewHandler(GET_USERS_BY_NAME);
+    setViewHandler(GET_USERS_BY_CREATED);
+    setViewHandler(GET_USERS_BY_LAST_SEEN);
+    setViewHandler(GET_USERS_BY_THREAD_COUNT);
+    setViewHandler(GET_USERS_BY_MESSAGE_COUNT);
+    setViewHandler(GET_USER_BY_ID);
+    setViewHandler(GET_USER_BY_NAME);
+
+    setViewHandler(GET_DISCUSSION_THREADS_BY_NAME);
+    setViewHandler(GET_DISCUSSION_THREADS_BY_CREATED);
+    setViewHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
+    setViewHandler(GET_DISCUSSION_THREAD_BY_ID);
+
+    setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME);
+    setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED);
+    setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
+
+    setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_NAME);
+    setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_CREATED);
+    setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
+    setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
+
+    setViewHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED);
+
+    setViewHandler(GET_MESSAGE_COMMENTS);
+    setViewHandler(GET_MESSAGE_COMMENTS_OF_DISCUSSION_THREAD_MESSAGE);
+    setViewHandler(GET_MESSAGE_COMMENTS_OF_USER);
+
+    setViewHandler(GET_DISCUSSION_TAGS_BY_NAME);
+    setViewHandler(GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT);
+
+    setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME);
+    setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED);
+    setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT);
+
+    setViewHandler(GET_DISCUSSION_CATEGORY_BY_ID);
+    setViewHandler(GET_DISCUSSION_CATEGORIES_BY_NAME);
+    setViewHandler(GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT);
+    setViewHandler(GET_DISCUSSION_CATEGORIES_FROM_ROOT);
+
+    setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME);
+    setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED);
+    setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT);
 }
 
 CommandHandler::~CommandHandler()
@@ -647,11 +661,26 @@ CommandHandler::Result CommandHandler::handle(Command command, const std::vector
     if (command >= 0 && command < LAST_COMMAND)
     {
         outputBuffer.clear();
-        statusCode = impl_->handlers[command](parameters, outputBuffer);
+        statusCode = impl_->commandHandlers[command](parameters, outputBuffer);
     }
     else
     {
         statusCode = StatusCode::NOT_FOUND;
     }
     return { statusCode, outputBuffer };
+}
+
+CommandHandler::Result CommandHandler::handle(View view, const std::vector<StringView>& parameters)
+{
+    StatusCode statusCode;
+    if (view >= 0 && view < LAST_VIEW)
+    {
+        outputBuffer.clear();
+        statusCode = impl_->viewHandlers[view](parameters, outputBuffer);
+    }
+    else
+    {
+        statusCode = StatusCode::NOT_FOUND;
+    }
+    return{ statusCode, outputBuffer };
 }

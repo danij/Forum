@@ -112,6 +112,77 @@ TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& han
 }
 
 
+TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, View view,
+                                      const std::vector<StringView>& parameters)
+{
+    return std::get<0>(handlerToObjAndStatus(handler, view, parameters));
+}
+
+TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, View view, DisplaySettings displaySettings,
+                                      const std::vector<StringView>& parameters)
+{
+    return std::get<0>(handlerToObjAndStatus(handler, view, displaySettings, parameters));
+}
+
+TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, View view)
+{
+    return std::get<0>(handlerToObjAndStatus(handler, view));
+}
+
+TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, View view, DisplaySettings displaySettings)
+{
+    return std::get<0>(handlerToObjAndStatus(handler, view, displaySettings));
+}
+
+TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& handler, View view,
+                                                          const std::vector<StringView>& parameters)
+{
+    auto output = handler->handle(view, parameters);
+
+    boost::property_tree::ptree result;
+    if (output.output.size())
+    {
+        std::istringstream stream(output.output);
+        boost::property_tree::read_json(stream, result);
+    }
+
+    return std::make_tuple(result, output.statusCode);
+}
+
+TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& handler, View view,
+                                                          DisplaySettings displaySettings,
+                                                          const std::vector<StringView>& parameters)
+{
+    auto oldPageNumber = Context::getDisplayContext().pageNumber;
+    auto oldSortOrder = Context::getDisplayContext().sortOrder;
+    auto oldCheckNotChangedSince = Context::getDisplayContext().checkNotChangedSince;
+
+    auto _ = createDisposer([oldPageNumber]() { Context::getMutableDisplayContext().pageNumber = oldPageNumber; });
+    auto __ = createDisposer([oldSortOrder]() { Context::getMutableDisplayContext().sortOrder = oldSortOrder; });
+    auto ___ = createDisposer([oldCheckNotChangedSince]()
+    {
+        Context::getMutableDisplayContext().checkNotChangedSince = oldCheckNotChangedSince;
+    });
+
+    Context::getMutableDisplayContext().pageNumber = displaySettings.pageNumber;
+    Context::getMutableDisplayContext().sortOrder = displaySettings.sortOrder;
+    Context::getMutableDisplayContext().checkNotChangedSince = displaySettings.checkNotChangedSince;
+
+    return handlerToObjAndStatus(handler, view, parameters);
+}
+
+TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& handler, View view)
+{
+    return handlerToObjAndStatus(handler, view, DisplaySettings{});
+}
+
+TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& handler, View view,
+                                                          DisplaySettings displaySettings)
+{
+    return handlerToObjAndStatus(handler, view, displaySettings, {});
+}
+
+
 std::string Forum::Helpers::createUserAndGetId(CommandHandlerRef& handler, const std::string& name)
 {
     auto result = handlerToObj(handler, Command::ADD_USER, { name });

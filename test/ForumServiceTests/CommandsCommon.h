@@ -49,6 +49,23 @@ namespace Forum
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command,
                                                   DisplaySettings displaySettings);
 
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::View view, 
+                              const std::vector<StringView>& parameters);
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::View view, 
+                              DisplaySettings displaySettings, const std::vector<StringView>& parameters);
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::View view);
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::View view, 
+                              DisplaySettings displaySettings);
+
+        TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::View view,
+                                                  const std::vector<StringView>& parameters);
+        TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::View view,
+                                                  DisplaySettings displaySettings, 
+                                                  const std::vector<StringView>& parameters);
+        TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::View view);
+        TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::View view,
+                                                  DisplaySettings displaySettings);
+
         std::string createUserAndGetId(Commands::CommandHandlerRef& handler, const std::string& name);
         std::string createDiscussionThreadAndGetId(Commands::CommandHandlerRef& handler, const std::string& name);
         std::string createDiscussionMessageAndGetId(Commands::CommandHandlerRef& handler,

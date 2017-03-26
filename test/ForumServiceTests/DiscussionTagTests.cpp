@@ -275,7 +275,7 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_tags_can_no_longer_be_retrieved )
     BOOST_REQUIRE_EQUAL("Ghi", tags[1].name);
 }
 
-static Forum::Commands::Command GetDiscussionThreadWithTagCommands[] =
+static Forum::Commands::View GetDiscussionThreadWithTagViews[] =
 {
     Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
     Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED,
@@ -286,7 +286,7 @@ static Forum::Commands::Command GetDiscussionThreadWithTagCommands[] =
 BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_an_invalid_tag_fails )
 {
     auto handler = createCommandHandler();
-    for (auto command : GetDiscussionThreadWithTagCommands)
+    for (auto command : GetDiscussionThreadWithTagViews)
     {
         assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler, command, { "bogus id" }));
     }
@@ -295,7 +295,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_an_invalid_tag_fails )
 BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_an_unknown_tag_returns_not_found )
 {
     auto handler = createCommandHandler();
-    for (auto command : GetDiscussionThreadWithTagCommands)
+    for (auto command : GetDiscussionThreadWithTagViews)
     {
         assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, command, { sampleValidIdString }));
     }
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_have_no_tags_attached_by_default )
     auto handler = createCommandHandler();
     auto tagId = createDiscussionTagAndGetId(handler, "Foo");
 
-    for (auto command : GetDiscussionThreadWithTagCommands)
+    for (auto command : GetDiscussionThreadWithTagViews)
     {
         auto threads = deserializeThreads(handlerToObj(handler, command, { tagId }).get_child("threads"));
         BOOST_REQUIRE_EQUAL(0, threads.size());
@@ -527,7 +527,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_attached_to_one_tag_can_be_retrieved_so
     };
 
     int index = 0;
-    for (auto command : GetDiscussionThreadWithTagCommands)
+    for (auto command : GetDiscussionThreadWithTagViews)
         for (auto sortOrder : { SortOrder::Ascending, SortOrder::Descending })
         {
             auto threads = deserializeThreads(handlerToObj(handler, command, sortOrder, { tagId })
