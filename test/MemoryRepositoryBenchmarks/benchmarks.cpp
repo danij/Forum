@@ -119,7 +119,8 @@ bool executeAndGetOk(CommandHandler& handler, Command command, const std::initia
     return output.statusCode == StatusCode::OK;
 }
 
-inline void execute(CommandHandler& handler, Command command, const std::initializer_list<StringView>& parameters = {})
+template<typename CommandType>
+inline void execute(CommandHandler& handler, CommandType command, const std::initializer_list<StringView>& parameters = {})
 {
     parametersVector.clear();
     parametersVector.insert(parametersVector.end(), parameters.begin(), parameters.end());
@@ -438,7 +439,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_USERS_BY_NAME);
+            execute(handler, View::GET_USERS_BY_NAME);
         }) << " ";
     }
     std::cout << '\n';
@@ -451,7 +452,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_USERS_BY_NAME);
+            execute(handler, View::GET_USERS_BY_NAME);
         }) << " ";
     }
     std::cout << '\n';
@@ -464,7 +465,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_USERS_BY_LAST_SEEN);
+            execute(handler, View::GET_USERS_BY_LAST_SEEN);
         }) << " ";
     }
     std::cout << '\n';
@@ -477,7 +478,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_USERS_BY_LAST_SEEN);
+            execute(handler, View::GET_USERS_BY_LAST_SEEN);
         }) << " ";
     }
     std::cout << '\n';
@@ -491,7 +492,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREADS_BY_NAME);
+            execute(handler, View::GET_DISCUSSION_THREADS_BY_NAME);
         }) << " ";
     }
     std::cout << '\n';
@@ -504,7 +505,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREADS_BY_NAME);
+            execute(handler, View::GET_DISCUSSION_THREADS_BY_NAME);
         }) << " ";
     }
     std::cout << '\n';
@@ -518,7 +519,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
+            execute(handler, View::GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
         }) << " ";
     }
     std::cout << '\n';
@@ -531,7 +532,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
+            execute(handler, View::GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
         }) << " ";
     }
     std::cout << '\n';
@@ -545,7 +546,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
+            execute(handler, View::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
                     { userIds[userIdDistribution(randomGenerator)] });
         }) << " ";
     }
@@ -559,7 +560,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREAD_BY_ID, 
+            execute(handler, View::GET_DISCUSSION_THREAD_BY_ID,
                     { threadIds[threadIdDistribution(randomGenerator)] });
         }) << " ";
     }
@@ -574,7 +575,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
+            execute(handler, View::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
                     { tagIds[tagIdDistribution(randomGenerator)] });
         }) << " ";
     }
@@ -588,7 +589,7 @@ void doBenchmarks(BenchmarkContext& context)
 
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
+            execute(handler, View::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
                     { categoryIds[categoryIdDistribution(randomGenerator)] });
         }) << " ";
     }
