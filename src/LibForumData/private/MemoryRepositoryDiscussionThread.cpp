@@ -576,6 +576,16 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                    
                                //remove all message references from the thread so they don't get deleted
                                threadFrom.messages().clear();
+
+                               //update subscriptions
+                               for (auto& userWeak : threadFromRef->subscribedUsers())
+                               {
+                                   if (auto userShared = userWeak.lock())
+                                   {
+                                       userShared->subscribedThreads().insertDiscussionThread(threadIntoRef);
+                                       thread.subscribedUsers().insert(userWeak);
+                                   }
+                               }
                            });
                            //this will also decrease the message count on the tags the thread was part of
                            collection.deleteDiscussionThread(itFrom);
