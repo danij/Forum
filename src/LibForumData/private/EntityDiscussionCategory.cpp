@@ -44,7 +44,7 @@ bool DiscussionCategory::insertDiscussionThread(const DiscussionThreadRef& threa
     return true;
 }
 
-void DiscussionCategory::modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
+void DiscussionCategory::modifyDiscussionThread(ThreadIdIteratorType iterator,
                                                 std::function<void(DiscussionThread&)>&& modifyFunction)
 {
     if (iterator == threads_.end())
@@ -56,8 +56,8 @@ void DiscussionCategory::modifyDiscussionThread(DiscussionThreadCollection::iter
     {
         return;
     }
-    DiscussionThreadCollectionBase::modifyDiscussionThread(iterator, 
-                                                           std::forward<std::function<void(DiscussionThread&)>>(modifyFunction));
+    DiscussionThreadCollectionBase::modifyDiscussionThread(iterator,
+                                                           std::forward<decltype(modifyFunction)>(modifyFunction));
     executeOnCategoryAndAllParents(*this, [&](auto& category)
     {
         //update separate references of this category and all parents
@@ -65,7 +65,7 @@ void DiscussionCategory::modifyDiscussionThread(DiscussionThreadCollection::iter
     });
 }
 
-DiscussionThreadRef DiscussionCategory::deleteDiscussionThread(DiscussionThreadCollection::iterator iterator)
+DiscussionThreadRef DiscussionCategory::deleteDiscussionThread(ThreadIdIteratorType iterator)
 {
     DiscussionThreadRef result;
     if ( ! ((result = DiscussionThreadCollectionBase::deleteDiscussionThread(iterator))))

@@ -107,9 +107,12 @@ namespace Forum
             }
 
             bool insertDiscussionThread(const DiscussionThreadRef& thread) override;
-            void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-                                        std::function<void(DiscussionThread&)>&& modifyFunction = {}) override;
-            DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
+
+            void modifyDiscussionThread(ThreadIdIteratorType iterator,
+                                        std::function<void(DiscussionThread&)>&& modifyFunction) override;
+
+            DiscussionThreadRef deleteDiscussionThread(ThreadIdIteratorType iterator) override;
+
             void deleteDiscussionThreadIfNoOtherTagsReferenceIt(const DiscussionThreadRef& thread);
 
             //strong links are more elaborate and propagate changes
