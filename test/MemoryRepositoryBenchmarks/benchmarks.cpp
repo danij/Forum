@@ -45,6 +45,7 @@ auto countDuration(Action&& action)
 using namespace Forum;
 using namespace Forum::Commands;
 using namespace Forum::Repository;
+using namespace Forum::Authorization;
 
 struct IdType
 {
@@ -71,14 +72,17 @@ struct BenchmarkContext
 
 auto createCommandHandler()
 {
+    auto authorization = std::make_shared<AllowAllAuthorization>();
+
     auto store = std::make_shared<MemoryStore>(std::make_shared<Entities::EntityCollection>());
-    auto userRepository = std::make_shared<MemoryRepositoryUser>(store);
-    auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store);
-    auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store);
-    auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store);
-    auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store);
-    auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store);
-    auto metricsRepository = std::make_shared<MetricsRepository>();
+
+    auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization);
+    auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization);
+    auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, authorization);
+    auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
+    auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store, authorization);
+    auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store, authorization);
+    auto metricsRepository = std::make_shared<MetricsRepository>(store, authorization);
 
     ObservableRepositoryRef observableRepository = userRepository;
 
