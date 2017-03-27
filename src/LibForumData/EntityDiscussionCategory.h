@@ -108,7 +108,7 @@ namespace Forum
 
             bool insertDiscussionThread(const DiscussionThreadRef& thread) override;
             void modifyDiscussionThread(DiscussionThreadCollection::iterator iterator,
-                                        std::function<void(DiscussionThread&)>&& modifyFunction) override;
+                                        std::function<void(DiscussionThread&)>&& modifyFunction = {}) override;
             DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
             void deleteDiscussionThreadIfNoOtherTagsReferenceIt(const DiscussionThreadRef& thread);
 
