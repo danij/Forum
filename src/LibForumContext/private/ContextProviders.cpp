@@ -88,3 +88,35 @@ bool& Forum::Context::mutableSkipObservers()
 {
     return skipObserversValue;
 }
+
+static std::unique_ptr<IIOServiceProvider> ioServiceProvider;
+
+IIOServiceProvider& Forum::Context::getIOServiceProvider()
+{
+    return *ioServiceProvider;
+}
+
+void Forum::Context::setIOServiceProvider(std::unique_ptr<IIOServiceProvider>&& provider)
+{
+    if (ioServiceProvider)
+    {
+        throw std::runtime_error("The IOSErviceProvider should only be set once");
+    }
+    ioServiceProvider = std::move(provider);
+}
+
+static std::unique_ptr<ApplicationEventCollection> applicationEvents;
+
+ApplicationEventCollection& Forum::Context::getApplicationEvents()
+{
+    return *applicationEvents;
+}
+
+void Forum::Context::setApplicationEventCollection(std::unique_ptr<ApplicationEventCollection>&& collection)
+{
+    if (applicationEvents)
+    {
+        throw std::runtime_error("The ApplicationEventCollection should only be set once");
+    }
+    applicationEvents = std::move(collection);
+}

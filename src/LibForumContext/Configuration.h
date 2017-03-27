@@ -60,6 +60,7 @@ namespace Forum
         struct ServiceConfig
         {
             int_fast32_t serializationPerThreadBufferSize = 1 << 20; //1 MiByte buffer / thread
+            int_fast16_t numberOfIOServiceThreads = 4;
         };
 
         struct Config

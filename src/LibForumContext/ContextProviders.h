@@ -1,6 +1,10 @@
 #pragma once
 
 #include "EntityCommonTypes.h"
+#include "TypeHelpers.h"
+
+#include <boost/asio/io_service.hpp>
+#include <boost/signals2/signal.hpp>
 
 namespace Forum
 {
@@ -56,5 +60,27 @@ namespace Forum
 
         const DisplayContext& getDisplayContext();
         DisplayContext& getMutableDisplayContext();
+
+        class IIOServiceProvider
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IIOServiceProvider)
+
+            virtual boost::asio::io_service& getIOService() = 0;
+            virtual void waitForStop() = 0;
+            virtual void stop() = 0;
+        };
+
+        IIOServiceProvider& getIOServiceProvider();
+        void setIOServiceProvider(std::unique_ptr<IIOServiceProvider>&& provider);
+
+        struct ApplicationEventCollection
+        {
+            boost::signals2::signal<void()> onApplicationStart;
+            boost::signals2::signal<void()> beforeApplicationStop;
+        };
+
+        ApplicationEventCollection& getApplicationEvents();
+        void setApplicationEventCollection(std::unique_ptr<ApplicationEventCollection>&& collection);
     }
 }
