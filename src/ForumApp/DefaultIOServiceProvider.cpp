@@ -8,6 +8,7 @@ DefaultIOServiceProvider::DefaultIOServiceProvider() : stopping_(false)
     auto nrOfThreads = Configuration::getGlobalConfig()->service.numberOfIOServiceThreads;
     if (nrOfThreads < 1) nrOfThreads = 1;
 
+    threads_.reserve(nrOfThreads);
     for (decltype(nrOfThreads) i = 0; i < nrOfThreads; ++i)
     {
         threads_.emplace_back([&]() { service_.run(); });
