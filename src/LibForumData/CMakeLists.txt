@@ -42,6 +42,7 @@ set(HEADER_FILES
         EntityDiscussionThreadRefCountedCollection.h
         EntityMessageCommentCollectionBase.h
         EntityDiscussionTag.h
+        EntityDiscussionCategory.h
 
         private/ResourceGuard.h
         private/EntitySerialization.h
