@@ -43,6 +43,7 @@ namespace Forum
                   auto         nrOfVisitorsSinceLastEdit() const { return visitorsSinceLastEdit_.size(); }
 
                   auto&        subscribedUsers()                 { return subscribedUsers_; }
+                  auto         subscribedUsersCount()      const { return subscribedUsers_.size(); }
 
             DiscussionThreadMessage::VoteScoreType voteScore() const;
 
