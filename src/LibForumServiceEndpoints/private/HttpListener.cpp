@@ -13,7 +13,6 @@ HttpListener::HttpListener(boost::asio::io_service& ioService)
 
 void HttpListener::startListening()
 {
-
     auto config = Configuration::getGlobalConfig();
     //TODO: error checking
     boost::asio::ip::tcp::endpoint endpoint
@@ -40,10 +39,7 @@ void HttpListener::stopListening()
 
 void HttpListener::startAccept()
 {
-    acceptor_.async_accept(socket_, [&](auto ec)
-    {
-        this->onAccept(ec);
-    });
+    acceptor_.async_accept(socket_, [&](auto ec) { this->onAccept(ec); });
 }
 
 void HttpListener::onAccept(boost::system::error_code ec)
