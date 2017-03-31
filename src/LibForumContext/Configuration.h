@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 
 namespace Forum
 {
@@ -61,6 +62,8 @@ namespace Forum
         {
             int_fast32_t serializationPerThreadBufferSize = 1 << 20; //1 MiByte buffer / thread
             int_fast16_t numberOfIOServiceThreads = 4;
+            std::string listenIPAddress = "127.0.0.1";
+            uint16_t listenPort = 8081;
         };
 
         struct Config

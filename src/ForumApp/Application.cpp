@@ -13,6 +13,8 @@ Application::Application(int argc, const char* argv[])
 {
     setApplicationEventCollection(std::make_unique<ApplicationEventCollection>());
     setIOServiceProvider(std::make_unique<DefaultIOServiceProvider>());
+
+    httpListener_ = std::make_unique<HttpListener>(getIOServiceProvider().getIOService());
 }
 
 int Application::run()
@@ -20,9 +22,14 @@ int Application::run()
     auto& events = getApplicationEvents();
 
     events.onApplicationStart();
+    
+    httpListener_->startListening();
 
+    getIOServiceProvider().start();
     getIOServiceProvider().waitForStop();
     
+    httpListener_->stopListening();
+
     events.beforeApplicationStop();
     
     cleanup();

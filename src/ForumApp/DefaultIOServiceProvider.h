@@ -17,6 +17,7 @@ namespace Forum
             DefaultIOServiceProvider();
 
             boost::asio::io_service& getIOService() override;
+            void start() override;
             void waitForStop() override;
             void stop() override;
 

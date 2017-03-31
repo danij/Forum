@@ -1,6 +1,10 @@
 #pragma once
 
+#include "HttpListener.h"
+
 #include <boost/noncopyable.hpp>
+
+#include <memory>
 
 namespace Forum
 {
@@ -12,5 +16,7 @@ namespace Forum
 
     private:
         void cleanup();
+
+        std::unique_ptr<Network::HttpListener> httpListener_;
     };
 }

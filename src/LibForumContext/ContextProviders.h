@@ -67,6 +67,7 @@ namespace Forum
             DECLARE_INTERFACE_MANDATORY(IIOServiceProvider)
 
             virtual boost::asio::io_service& getIOService() = 0;
+            virtual void start() = 0;
             virtual void waitForStop() = 0;
             virtual void stop() = 0;
         };

@@ -9,15 +9,22 @@ DefaultIOServiceProvider::DefaultIOServiceProvider() : stopping_(false)
     if (nrOfThreads < 1) nrOfThreads = 1;
 
     threads_.reserve(nrOfThreads);
-    for (decltype(nrOfThreads) i = 0; i < nrOfThreads; ++i)
-    {
-        threads_.emplace_back([&]() { service_.run(); });
-    }
 }
 
 boost::asio::io_service& DefaultIOServiceProvider::getIOService()
 {
     return service_;
+}
+
+void DefaultIOServiceProvider::start()
+{
+    for (decltype(threads_.capacity()) i = 0; i < threads_.capacity(); ++i)
+    {
+        threads_.emplace_back([&]
+        {
+            service_.run();
+        });
+    }
 }
 
 void DefaultIOServiceProvider::waitForStop()
