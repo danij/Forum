@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "Configuration.h"
 #include "ContextProviders.h"
 #include "DefaultIOServiceProvider.h"
 #include "StringHelpers.h"
@@ -8,13 +9,23 @@
 using namespace Forum;
 using namespace Forum::Context;
 using namespace Forum::Network;
+using namespace Http;
 
 Application::Application(int argc, const char* argv[])
 {
     setApplicationEventCollection(std::make_unique<ApplicationEventCollection>());
     setIOServiceProvider(std::make_unique<DefaultIOServiceProvider>());
 
-    httpListener_ = std::make_unique<HttpListener>(getIOServiceProvider().getIOService());
+    auto forumConfig = Configuration::getGlobalConfig();
+    
+    HttpListener::Configuration httpConfig;
+    httpConfig.numberOfIOServiceThreads = forumConfig->service.numberOfIOServiceThreads;
+    httpConfig.numberOfReadBuffers = forumConfig->service.numberOfReadBuffers;
+    httpConfig.numberOfWriteBuffers = forumConfig->service.numberOfWriteBuffers;
+    httpConfig.listenIPAddress = forumConfig->service.listenIPAddress;
+    httpConfig.listenPort = forumConfig->service.listenPort;
+
+    httpListener_ = std::make_unique<HttpListener>(httpConfig, getIOServiceProvider().getIOService());
 }
 
 int Application::run()

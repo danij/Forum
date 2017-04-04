@@ -17,6 +17,6 @@ namespace Forum
     private:
         void cleanup();
 
-        std::unique_ptr<Network::HttpListener> httpListener_;
+        std::unique_ptr<Http::HttpListener> httpListener_;
     };
 }
