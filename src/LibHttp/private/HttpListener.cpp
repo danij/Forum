@@ -30,8 +30,7 @@ struct HttpConnection final : std::enable_shared_from_this<HttpConnection>, priv
     {
         if (ec == boost::asio::error::eof)
         {
-            //TODO: notify parser that no more input is comming (HTTP/1.0)
-            //check if all the required input has been received
+            //connection closed, nothing more to do regarding this connection
             return;
         }
         if (ec)
@@ -52,12 +51,49 @@ struct HttpConnection final : std::enable_shared_from_this<HttpConnection>, priv
             return;
         }
 
-        startReading();
+        if (parser_ == Parser::ParseResult::FINISHED)
+        {
+            //finished reading everything needed for the current request, so process it
+            auto& request = parser_.request();
+            //TODO get reply and send it            
+            boost::asio::async_write(socket_, boost::asio::buffer(static_cast<void*>(nullptr), 0), boost::asio::transfer_all(),
+                [p = shared_from_this()](auto& ec, auto bytesTransfered) { p->onResponseWritten(ec, bytesTransfered); });
+        }
+        else
+        {
+            startReading();            
+        }
     }
 
     bool onReadBody(char* buffer, size_t size)
     {
         return true;
+    }
+
+    void onResponseWritten(const boost::system::error_code& ec, size_t bytesTransfered)
+    {
+        if (ec)
+        {
+            //connection closed or error occured, nothing more to do regarding this connection
+            return;
+        }
+
+        if (parser_.request().keepConnectionAlive)
+        {
+            parser_.reset();
+            startReading();
+        }
+        else
+        {
+            try
+            {
+                socket_.shutdown(boost::asio::socket_base::shutdown_both);
+                socket_.close();
+            }
+            catch (...)
+            {
+            }
+        }
     }
 
 private:

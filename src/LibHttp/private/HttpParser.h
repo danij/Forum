@@ -26,9 +26,10 @@ namespace Http
 
     struct HttpRequest
     {
-        HttpMethod method;
+        HttpMethod method = HttpMethod::UNKNOWN;
         StringView path; //points to an address inside the header buffer
-        int_fast8_t versionMajor, versionMinor;
+        int_fast8_t versionMajor = 1, versionMinor = 0;
+        bool keepConnectionAlive = false;
     };
 
     class Parser final : private boost::noncopyable
@@ -49,6 +50,11 @@ namespace Http
 
         Parser& process(char* buffer, size_t size);
 
+        /**
+         * Resets the state of the parser, making it ready to start processing a new request
+         */
+        void reset();
+
         operator ParseResult() const
         {
             return valid_
@@ -65,7 +71,7 @@ namespace Http
         
         typedef void (Parser::*ParserFn)(char* buffer, size_t size);
 
-        void parseMethod(char* buffer, size_t size);
+        void parseVerb(char* buffer, size_t size);
         void parsePath(char* buffer, size_t size);
         void parseVersion(char* buffer, size_t size);
         void parseNewLine(char* buffer, size_t size);
@@ -90,5 +96,6 @@ namespace Http
         StringView parseCurrentHeaderName_;
         char* parseHeaderValueStartsAt_;
         StringView parseCurrentHeaderValue_;
+        size_t expectedContentLength_;
     };
 }

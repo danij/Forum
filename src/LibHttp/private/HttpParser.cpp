@@ -4,9 +4,9 @@ using namespace Http;
 
 Parser::Parser(char* headerBuffer, size_t headerBufferSize, PushBodyBytesFn pushBodyBytes, void* pushBodyBytesState)
     : headerBuffer_(headerBuffer), headerBufferSize_(headerBufferSize), headerSize_(0), pushBodyBytes_(pushBodyBytes),
-      pushBodyBytesState_(pushBodyBytesState), valid_(true), finished_(false), currentParser_(&Parser::parseMethod),
+      pushBodyBytesState_(pushBodyBytesState), valid_(true), finished_(false), currentParser_(&Parser::parseVerb),
       parsePathStartsAt_(headerBuffer_), parseVersionStartsAt_(headerBuffer_), parseHeaderNameStartsAt_(nullptr), 
-      parseHeaderValueStartsAt_(nullptr)
+      parseHeaderValueStartsAt_(nullptr), expectedContentLength_(0)
 {
 }
 
@@ -14,7 +14,7 @@ Parser& Parser::process(char* buffer, size_t size)
 {
     if (finished_)
     {
-        //no more parsing necesarry
+        //no more parsing necessary
         return *this;
     }
     if ( ! valid_)
@@ -25,6 +25,22 @@ Parser& Parser::process(char* buffer, size_t size)
 
     (this->*currentParser_)(buffer, size);
     return *this;
+}
+
+void Parser::reset()
+{
+    headerSize_ = {};
+    request_ = {};
+    valid_ = true;
+    finished_ = false;
+    currentParser_ = &Parser::parseVerb;
+    parsePathStartsAt_ = {};
+    parseVersionStartsAt_ = {};
+    parseHeaderNameStartsAt_ = {};
+    parseCurrentHeaderName_ = {};
+    parseHeaderValueStartsAt_ = {};
+    parseCurrentHeaderValue_ = {};
+    expectedContentLength_ = {};
 }
 
 /**
@@ -53,16 +69,16 @@ static bool copyUntil(char toSearch, char*& buffer, size_t& size, bool& valid,
     return true;
 }
 
-HttpMethod parseHttpMethod(char* buffer, size_t size)
+HttpMethod parseHttpVerb(char* buffer, size_t size)
 {
     return HttpMethod::GET;
 }
 
-void Parser::parseMethod(char* buffer, size_t size)
+void Parser::parseVerb(char* buffer, size_t size)
 {
     if ( ! copyUntil(' ', buffer, size, valid_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
-    request_.method = parseHttpMethod(headerBuffer_, headerSize_ - 1);
+    request_.method = parseHttpVerb(headerBuffer_, headerSize_ - 1);
     if (HttpMethod::UNKNOWN == request_.method)
     {
         valid_ = false;
@@ -145,6 +161,7 @@ void Parser::parseNewLine(char* buffer, size_t size)
         if (request_.method == HttpMethod::GET || request_.method == HttpMethod::DELETE)
         {
             finished_ = true;
+            return;
         }
         else
         {
@@ -231,5 +248,9 @@ void Parser::parseHeaderValue(char* buffer, size_t size)
 void Parser::parseBody(char* buffer, size_t size)
 {
     //TODO: chunked encoding
-    pushBodyBytes_(buffer, size, pushBodyBytesState_);
+    if ( ! pushBodyBytes_(buffer, size, pushBodyBytesState_))
+    {
+        //no more room to store the request body
+        valid_ = false;
+    }
 }
