@@ -82,20 +82,20 @@ namespace Http
 
         char* headerBuffer_;
         size_t headerBufferSize_;
-        size_t headerSize_;
+        size_t headerSize_ = 0;
         PushBodyBytesFn pushBodyBytes_;
         void* pushBodyBytesState_;
         HttpRequest request_;
 
-        bool valid_;
-        bool finished_;
-        ParserFn currentParser_;
+        bool valid_ = true;
+        bool finished_ = false;
+        ParserFn currentParser_ = &Parser::parseVerb;
         char* parsePathStartsAt_;
         char* parseVersionStartsAt_;
         char* parseHeaderNameStartsAt_;
         StringView parseCurrentHeaderName_;
         char* parseHeaderValueStartsAt_;
         StringView parseCurrentHeaderValue_;
-        size_t expectedContentLength_;
+        size_t expectedContentLength_ = 0;
     };
 }

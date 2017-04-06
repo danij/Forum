@@ -18,10 +18,9 @@ static bool matchStringUpperOrLower(const char* source, size_t size, const char*
 }
 
 Parser::Parser(char* headerBuffer, size_t headerBufferSize, PushBodyBytesFn pushBodyBytes, void* pushBodyBytesState)
-    : headerBuffer_(headerBuffer), headerBufferSize_(headerBufferSize), headerSize_(0), pushBodyBytes_(pushBodyBytes),
-      pushBodyBytesState_(pushBodyBytesState), valid_(true), finished_(false), currentParser_(&Parser::parseVerb),
-      parsePathStartsAt_(headerBuffer_), parseVersionStartsAt_(headerBuffer_), parseHeaderNameStartsAt_(nullptr), 
-      parseHeaderValueStartsAt_(nullptr), expectedContentLength_(0)
+    : headerBuffer_(headerBuffer), headerBufferSize_(headerBufferSize), pushBodyBytes_(pushBodyBytes),
+      pushBodyBytesState_(pushBodyBytesState), parsePathStartsAt_(headerBuffer_), parseVersionStartsAt_(headerBuffer_),
+      parseHeaderNameStartsAt_(headerBuffer_), parseHeaderValueStartsAt_(headerBuffer_)
 {
 }
 
