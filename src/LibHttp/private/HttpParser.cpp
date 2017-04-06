@@ -2,6 +2,21 @@
 
 using namespace Http;
 
+/**
+ * Matches a string against another one
+ * @pre source must point to size characters, against must point to 2 * size characters
+ * @param against A string where each character appears as both upper and lower case (e.g. HhEeLlLlO  WwOoRrLlDd)
+ */
+static bool matchStringUpperOrLower(const char* source, size_t size, const char* against)
+{
+    char result = 0;
+    for (size_t iSource = 0, iAgainst = 0; iSource < size; ++iSource, iAgainst += 2)
+    {
+        result |= (source[iSource] ^ against[iAgainst]) & (source[iSource] ^ against[iAgainst + 1]);
+    }
+    return result == 0;
+}
+
 Parser::Parser(char* headerBuffer, size_t headerBufferSize, PushBodyBytesFn pushBodyBytes, void* pushBodyBytesState)
     : headerBuffer_(headerBuffer), headerBufferSize_(headerBufferSize), headerSize_(0), pushBodyBytes_(pushBodyBytes),
       pushBodyBytesState_(pushBodyBytesState), valid_(true), finished_(false), currentParser_(&Parser::parseVerb),
@@ -69,17 +84,35 @@ static bool copyUntil(char toSearch, char*& buffer, size_t& size, bool& valid,
     return true;
 }
 
-HttpMethod parseHttpVerb(char* buffer, size_t size)
+HttpVerb parseHttpVerb(char* buffer, size_t size)
 {
-    return HttpMethod::GET;
+    if (3 == size)
+    {
+        if (matchStringUpperOrLower(buffer, size, "GgEeTt")) return HttpVerb::GET;
+        if (matchStringUpperOrLower(buffer, size, "PpUuTt")) return HttpVerb::PUT;
+    }
+    if (4 == size)
+    {
+        if (matchStringUpperOrLower(buffer, size, "PpOoSsTt")) return HttpVerb::POST;
+    }
+    if (5 == size)
+    {
+        if (matchStringUpperOrLower(buffer, size, "PpAaTtCcHh")) return HttpVerb::PATCH;
+    }
+    if (6 == size)
+    {
+        if (matchStringUpperOrLower(buffer, size, "DdEeLlEeTtEe")) return HttpVerb::DELETE;
+    }
+
+    return HttpVerb::UNKNOWN;
 }
 
 void Parser::parseVerb(char* buffer, size_t size)
 {
     if ( ! copyUntil(' ', buffer, size, valid_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
-    request_.method = parseHttpVerb(headerBuffer_, headerSize_ - 1);
-    if (HttpMethod::UNKNOWN == request_.method)
+    request_.verb = parseHttpVerb(headerBuffer_, headerSize_ - 1);
+    if (HttpVerb::UNKNOWN == request_.verb)
     {
         valid_ = false;
         return;
@@ -158,7 +191,7 @@ void Parser::parseNewLine(char* buffer, size_t size)
 
     if ((headerSize_ > 4) && (headerBuffer_[headerSize_ - 3] == '\n') && (headerBuffer_[headerSize_ - 4] == '\r'))
     {
-        if (request_.method == HttpMethod::GET || request_.method == HttpMethod::DELETE)
+        if (request_.verb == HttpVerb::GET || request_.verb == HttpVerb::DELETE)
         {
             finished_ = true;
             return;

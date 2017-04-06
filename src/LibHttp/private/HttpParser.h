@@ -14,7 +14,7 @@ namespace Http
 #undef DELETE
 #endif
 
-    enum class HttpMethod
+    enum class HttpVerb
     {
         UNKNOWN,
         GET,
@@ -26,7 +26,7 @@ namespace Http
 
     struct HttpRequest
     {
-        HttpMethod method = HttpMethod::UNKNOWN;
+        HttpVerb verb = HttpVerb::UNKNOWN;
         StringView path; //points to an address inside the header buffer
         int_fast8_t versionMajor = 1, versionMinor = 0;
         bool keepConnectionAlive = false;
