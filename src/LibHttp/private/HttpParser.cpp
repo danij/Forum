@@ -159,7 +159,7 @@ void Parser::parseVersion(char* buffer, size_t size)
     {
         request_.versionMinor = 0;
     }
-    if (parseVersionStartsAt_[7] == '1')
+    else if (parseVersionStartsAt_[7] == '1')
     {
         request_.versionMinor = 1;
     }
