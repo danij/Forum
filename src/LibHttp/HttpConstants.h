@@ -48,101 +48,14 @@ namespace Http
         Bad_Gateway = 502,
         Service_Unavailable = 503,
         Gateway_Timeout = 504,
-        HTTP_Version_Not_Supported = 505
+        HTTP_Version_Not_Supported = 505,
+
+        HTTP_STATUS_CODES_COUNT
     };
 
     typedef boost::string_view StringView;
 
-    inline StringView getStatusCodeString(HttpStatusCode code)
-    {
-        switch (code)
-        {
-        case Continue:
-            return{ "Continue", 8 };
-        case Switching_Protocols:
-            return{ "Switching Protocols", 19 };
-        case OK:
-            return{ "OK", 2 };
-        case Created:
-            return{ "Created", 7 };
-        case Accepted:
-            return{ "Accepted", 8 };
-        case Non_Authoritative_Information:
-            return{ "Non-Authoritative Information", 29 };
-        case No_Content:
-            return{ "No Content", 10 };
-        case Reset_Content:
-            return{ "Reset Content", 13 };
-        case Partial_Content:
-            return{ "Partial Content", 15 };
-        case Multiple_Choices:
-            return{ "Multiple Choices", 16 };
-        case Moved_Permanently:
-            return{ "Moved Permanently", 17 };
-        case Found:
-            return{ "Found", 5 };
-        case See_Other:
-            return{ "See Other", 9 };
-        case Not_Modified:
-            return{ "Not Modified", 12 };
-        case Use_Proxy:
-            return{ "Use Proxy", 9 };
-        case Temporary_Redirect:
-            return{ "Temporary Redirect", 18 };
-        case Bad_Request:
-            return{ "Bad Request", 11 };
-        case Unauthorized:
-            return{ "Unauthorized", 12 };
-        case Payment_Required:
-            return{ "Payment Required", 16 };
-        case Forbidden:
-            return{ "Forbidden", 9 };
-        case Not_Found:
-            return{ "Not Found", 9 };
-        case Method_Not_Allowed:
-            return{ "Method Not Allowed", 18 };
-        case Not_Acceptable:
-            return{ "Not Acceptable", 14 };
-        case Proxy_Authentication_Required:
-            return{ "Proxy Authentication Required", 29 };
-        case Request_Timeout:
-            return{ "Request Timeout", 15 };
-        case Conflict:
-            return{ "Conflict", 8 };
-        case Gone:
-            return{ "Gone", 4 };
-        case Length_Required:
-            return{ "Length Required", 15 };
-        case Precondition_Failed:
-            return{ "Precondition Failed", 19 };
-        case Payload_Too_Large:
-            return{ "Payload Too Large", 17 };
-        case URI_Too_Long:
-            return{ "URI Too Long", 12 };
-        case Unsupported_Media_Type:
-            return{ "Unsupported Media Type", 22 };
-        case Range_Not_Satisfiable:
-            return{ "Range Not Satisfiable", 21 };
-        case Expectation_Failed:
-            return{ "Expectation Failed", 18 };
-        case Upgrade_Required:
-            return{ "Upgrade Required", 16 };
-        case Internal_Server_Error:
-            return{ "Internal Server Error", 21 };
-        case Not_Implemented:
-            return{ "Not Implemented", 15 };
-        case Bad_Gateway:
-            return{ "Bad Gateway", 11 };
-        case Service_Unavailable:
-            return{ "Service Unavailable", 19 };
-        case Gateway_Timeout:
-            return{ "Gateway Timeout", 15 };
-        case HTTP_Version_Not_Supported:
-            return{ "HTTP Version Not Supported", 26 };
-        default:
-            return{ "Unknown", 0 };
-        }
-    }
+    StringView getStatusCodeString(HttpStatusCode code);
 
     //Standard and common non-standard headers extracted from 
     //https://www.w3.org/Protocols/rfc2616/rfc2616.html and https://en.wikipedia.org/wiki/List_of_HTTP_header_fields
