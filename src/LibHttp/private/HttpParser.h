@@ -1,5 +1,7 @@
 #pragma once
 
+#include "HttpConstants.h"
+
 #include <cstddef>
 #include <cstdint>
 
@@ -25,11 +27,12 @@ namespace Http
     };   
 
     struct HttpRequest
-    {
+    {//StringViews point to addresses inside the header buffer
         HttpVerb verb = HttpVerb::UNKNOWN;
-        StringView path; //points to an address inside the header buffer
+        StringView path;
         int_fast8_t versionMajor = 1, versionMinor = 0;
         bool keepConnectionAlive = false;
+        StringView headers[HttpHeader::HTTP_HEADERS_COUNT];
     };
 
     class Parser final : private boost::noncopyable

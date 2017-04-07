@@ -1,27 +1,17 @@
 #include "HttpParser.h"
+#include "StringMatching.h"
+
+#include <cassert>
 
 using namespace Http;
-
-/**
- * Matches a string against another one
- * @pre source must point to size characters, against must point to 2 * size characters
- * @param against A string where each character appears as both upper and lower case (e.g. HhEeLlLlO  WwOoRrLlDd)
- */
-static bool matchStringUpperOrLower(const char* source, size_t size, const char* against)
-{
-    char result = 0;
-    for (size_t iSource = 0, iAgainst = 0; iSource < size; ++iSource, iAgainst += 2)
-    {
-        result |= (source[iSource] ^ against[iAgainst]) & (source[iSource] ^ against[iAgainst + 1]);
-    }
-    return result == 0;
-}
 
 Parser::Parser(char* headerBuffer, size_t headerBufferSize, PushBodyBytesFn pushBodyBytes, void* pushBodyBytesState)
     : headerBuffer_(headerBuffer), headerBufferSize_(headerBufferSize), pushBodyBytes_(pushBodyBytes),
       pushBodyBytesState_(pushBodyBytesState), parsePathStartsAt_(headerBuffer_), parseVersionStartsAt_(headerBuffer_),
       parseHeaderNameStartsAt_(headerBuffer_), parseHeaderValueStartsAt_(headerBuffer_)
 {
+    assert(headerBuffer);
+    assert(pushBodyBytes);
 }
 
 Parser& Parser::process(char* buffer, size_t size)
@@ -83,26 +73,24 @@ static bool copyUntil(char toSearch, char*& buffer, size_t& size, bool& valid,
     return true;
 }
 
-HttpVerb parseHttpVerb(char* buffer, size_t size)
+static HttpVerb parseHttpVerb(char* buffer, size_t size)
 {
-    if (3 == size)
+    switch (size)
     {
-        if (matchStringUpperOrLower(buffer, size, "GgEeTt")) return HttpVerb::GET;
-        if (matchStringUpperOrLower(buffer, size, "PpUuTt")) return HttpVerb::PUT;
+    case 3:
+        if (matchStringUpperOrLower(buffer, "GgEeTt")) return HttpVerb::GET;
+        if (matchStringUpperOrLower(buffer, "PpUuTt")) return HttpVerb::PUT;
+        break;
+    case 4:
+        if (matchStringUpperOrLower(buffer, "PpOoSsTt")) return HttpVerb::POST;
+        break;
+    case 5:
+        if (matchStringUpperOrLower(buffer, "PpAaTtCcHh")) return HttpVerb::PATCH;
+        break;
+    case 6:
+        if (matchStringUpperOrLower(buffer, "DdEeLlEeTtEe")) return HttpVerb::DELETE;
+        break;
     }
-    if (4 == size)
-    {
-        if (matchStringUpperOrLower(buffer, size, "PpOoSsTt")) return HttpVerb::POST;
-    }
-    if (5 == size)
-    {
-        if (matchStringUpperOrLower(buffer, size, "PpAaTtCcHh")) return HttpVerb::PATCH;
-    }
-    if (6 == size)
-    {
-        if (matchStringUpperOrLower(buffer, size, "DdEeLlEeTtEe")) return HttpVerb::DELETE;
-    }
-
     return HttpVerb::UNKNOWN;
 }
 
@@ -271,6 +259,11 @@ void Parser::parseHeaderValue(char* buffer, size_t size)
                                           headerBuffer_ + headerSize_ - 1 - parseHeaderValueStartsAt_);
 
     currentParser_ = &Parser::parseNewLine;
+    auto currentHeader = matchHttpHeader(parseCurrentHeaderName_.data(), parseCurrentHeaderName_.size());
+    if (currentHeader)
+    {
+        request_.headers[currentHeader] = parseCurrentHeaderValue_;
+    }
     if (size)
     {
         (this->*currentParser_)(buffer, size);

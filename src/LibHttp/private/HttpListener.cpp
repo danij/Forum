@@ -1,7 +1,6 @@
 #include "HttpListener.h"
 #include "ConstantBuffer.h"
 #include "HttpParser.h"
-#include "HttpConstants.h"
 
 #include <boost/pool/pool_alloc.hpp>
 
