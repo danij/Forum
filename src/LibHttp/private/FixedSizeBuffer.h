@@ -115,6 +115,16 @@ namespace Http
         }
 
         /**
+         * Returns the size of data stored in the buffers
+         */
+        size_t size() const
+        {
+            if (latestBuffer_ < 0) return 0;
+
+            return latestBuffer_ * BufferSize + usedBytesInLatestBuffer_;
+        }
+
+        /**
          * Reads the data in the buffers by invoking a callback for each individual buffer.
          * The callback must accept a buffer and its size
          */
