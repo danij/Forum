@@ -281,15 +281,22 @@ void Parser::onFinishedParsingHeaders()
 void Parser::interpretImportantHeaders()
 {
     expectedContentLength_ = 0;
-    auto contentLengthString = request_.headers[Content_Length];
+    auto contentLengthString = request_.headers[HttpHeader::Content_Length];
 
     if ( ! boost::conversion::try_lexical_convert(contentLengthString.data(), contentLengthString.size(), expectedContentLength_))
     {
         expectedContentLength_ = 0;
     }
 
-    auto connectionHeaderString = request_.headers[Connection];
+    auto connectionHeaderString = request_.headers[HttpHeader::Connection];
     request_.keepConnectionAlive = matchStringUpperOrLower(connectionHeaderString.data(), 
                                                            connectionHeaderString.size(), 
                                                            "kKeEeEpP--aAlLiIvVeE");
+
+    if (request_.headers[HttpHeader::Expect].size())
+    {
+        //no need to support such requests for the moment
+        valid_ = false;
+        errorCode_ = HttpStatusCode::Expectation_Failed;
+    }
 }
