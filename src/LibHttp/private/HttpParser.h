@@ -41,8 +41,8 @@ namespace Http
         //returns true if there is still room for more bytes
         typedef bool(*PushBodyBytesFn)(char* buffer, size_t bufferSize, void* state);
 
-        explicit Parser(char* headerBuffer, size_t headerBufferSize, PushBodyBytesFn pushBodyBytes, 
-                        void* pushBodyBytesState);
+        explicit Parser(char* headerBuffer, size_t headerBufferSize, size_t maxBodyLength,
+                        PushBodyBytesFn pushBodyBytes, void* pushBodyBytesState);
 
         enum ParseResult
         {
@@ -88,6 +88,9 @@ namespace Http
         void parseHeaderValue(char* buffer, size_t size);
         void parseBody(char* buffer, size_t size);
 
+        void onFinishedParsingHeaders();
+        void interpretImportantHeaders();
+
         char* headerBuffer_;
         size_t headerBufferSize_;
         size_t headerSize_ = 0;
@@ -106,5 +109,7 @@ namespace Http
         char* parseHeaderValueStartsAt_;
         StringView parseCurrentHeaderValue_;
         size_t expectedContentLength_ = 0;
+        size_t maxContentLength_;
+        size_t requestBodyBytesProcessed_ = 0;
     };
 }

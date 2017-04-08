@@ -2,13 +2,16 @@
 #include "StringMatching.h"
 
 #include <cassert>
+#include <boost/lexical_cast/try_lexical_convert.hpp>
 
 using namespace Http;
 
-Parser::Parser(char* headerBuffer, size_t headerBufferSize, PushBodyBytesFn pushBodyBytes, void* pushBodyBytesState)
+Parser::Parser(char* headerBuffer, size_t headerBufferSize, size_t maxContentLength,
+               PushBodyBytesFn pushBodyBytes, void* pushBodyBytesState)
     : headerBuffer_(headerBuffer), headerBufferSize_(headerBufferSize), pushBodyBytes_(pushBodyBytes),
-      pushBodyBytesState_(pushBodyBytesState), parsePathStartsAt_(headerBuffer_), parseVersionStartsAt_(headerBuffer_),
-      parseHeaderNameStartsAt_(headerBuffer_), parseHeaderValueStartsAt_(headerBuffer_)
+      pushBodyBytesState_(pushBodyBytesState), parsePathStartsAt_(headerBuffer_), 
+      parseVersionStartsAt_(headerBuffer_), parseHeaderNameStartsAt_(headerBuffer_),
+      parseHeaderValueStartsAt_(headerBuffer_), maxContentLength_(maxContentLength)
 {
     assert(headerBuffer);
     assert(pushBodyBytes);
@@ -183,6 +186,7 @@ void Parser::parseNewLine(char* buffer, size_t size)
 
     if ((headerSize_ > 4) && (headerBuffer_[headerSize_ - 3] == '\n') && (headerBuffer_[headerSize_ - 4] == '\r'))
     {
+        onFinishedParsingHeaders();
         if (request_.verb == HttpVerb::GET || request_.verb == HttpVerb::DELETE)
         {
             finished_ = true;
@@ -279,10 +283,43 @@ void Parser::parseHeaderValue(char* buffer, size_t size)
 void Parser::parseBody(char* buffer, size_t size)
 {
     //TODO: chunked encoding
+    if (expectedContentLength_ > maxContentLength_)
+    {
+        valid_ = false;
+        errorCode_ = HttpStatusCode::Payload_Too_Large;
+        return;
+    }
+
     if ( ! pushBodyBytes_(buffer, size, pushBodyBytesState_))
     {
         //no more room to store the request body
         valid_ = false;
         errorCode_ = HttpStatusCode::Payload_Too_Large;
     }
+    requestBodyBytesProcessed_ += size;
+    if (requestBodyBytesProcessed_ >= expectedContentLength_)
+    {
+        finished_ = true;
+    }
+}
+
+void Parser::onFinishedParsingHeaders()
+{
+    interpretImportantHeaders();
+}
+
+void Parser::interpretImportantHeaders()
+{
+    expectedContentLength_ = 0;
+    auto contentLengthString = request_.headers[Content_Length];
+
+    if ( ! boost::conversion::try_lexical_convert(contentLengthString.data(), contentLengthString.size(), expectedContentLength_))
+    {
+        expectedContentLength_ = 0;
+    }
+
+    auto connectionHeaderString = request_.headers[Connection];
+    request_.keepConnectionAlive = matchStringUpperOrLower(connectionHeaderString.data(), 
+                                                           connectionHeaderString.size(), 
+                                                           "kKeEeEpP--aAlLiIvVeE");
 }

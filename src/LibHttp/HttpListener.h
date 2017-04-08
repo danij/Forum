@@ -24,17 +24,21 @@ namespace Http
         ~HttpListener();
 
         /**
-         * Each request is only allocated 1 buffer
+         * Each request needs at least one buffer; the request header must fit into one buffer to avoid fragmentation
          */
         static constexpr size_t ReadBufferSize = 4096;
+        /**
+         * The body of a request can occupy at most this amount of buffers
+         */
+        static constexpr size_t MaximumBuffersForRequestBody = 100;
+        /**
+         * The maximum size of a request body
+         */
+        static constexpr size_t MaxRequestBodyLength = ReadBufferSize * MaximumBuffersForRequestBody;
         /**
          * Each response can request multiple buffers 
          */
         static constexpr size_t WriteBufferSize = 16384;
-        /**
-         * Maximum number of bytes which the HTTP header is allowed to ocupy
-         */
-        static constexpr size_t MaxHeaderSize = 16384;
 
         void startListening();
         void stopListening();
