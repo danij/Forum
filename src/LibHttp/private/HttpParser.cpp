@@ -52,7 +52,7 @@ void Parser::reset()
  * Checks if there is enough room in the buffer
  * @return true if the character was reached, false otherwise
  */
-static bool copyUntil(char toSearch, char*& buffer, size_t& size, bool& valid,
+static bool copyUntil(char toSearch, char*& buffer, size_t& size, bool& valid, HttpStatusCode& errorCode,
                       char* headerBuffer, size_t& headerSize, size_t headerBufferSize)
 {
     bool continueLoop = true;
@@ -62,6 +62,7 @@ static bool copyUntil(char toSearch, char*& buffer, size_t& size, bool& valid,
         if (headerSize >= headerBufferSize)
         {
             valid = false;
+            errorCode = HttpStatusCode::Payload_Too_Large;
             return false;
         }
         if (toSearch == *buffer) continueLoop = false;
@@ -96,7 +97,7 @@ static HttpVerb parseHttpVerb(char* buffer, size_t size)
 
 void Parser::parseVerb(char* buffer, size_t size)
 {
-    if ( ! copyUntil(' ', buffer, size, valid_, headerBuffer_, headerSize_, headerBufferSize_)) return;
+    if ( ! copyUntil(' ', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
     request_.verb = parseHttpVerb(headerBuffer_, headerSize_ - 1);
     if (HttpVerb::UNKNOWN == request_.verb)
@@ -115,7 +116,7 @@ void Parser::parseVerb(char* buffer, size_t size)
 
 void Parser::parsePath(char* buffer, size_t size)
 {
-    if ( ! copyUntil(' ', buffer, size, valid_, headerBuffer_, headerSize_, headerBufferSize_)) return;
+    if ( ! copyUntil(' ', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
     request_.path = StringView(parsePathStartsAt_, headerBuffer_ + headerSize_ - 1 - parsePathStartsAt_);
 
@@ -129,17 +130,19 @@ void Parser::parsePath(char* buffer, size_t size)
 
 void Parser::parseVersion(char* buffer, size_t size)
 {
-    if ( ! copyUntil('\r', buffer, size, valid_, headerBuffer_, headerSize_, headerBufferSize_)) return;
+    if ( ! copyUntil('\r', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
     auto versionSize = headerBuffer_ + headerSize_ - 1 - parseVersionStartsAt_;
     if (versionSize != 8) //e.g. HTTP/1.1
     {
         valid_ = false;
+        errorCode_ = HttpStatusCode::HTTP_Version_Not_Supported;
         return;
     }
     if (parseVersionStartsAt_[5] != '1')
     {
         valid_ = false;
+        errorCode_ = HttpStatusCode::HTTP_Version_Not_Supported;
         return;
     }
     request_.versionMajor = 1;
@@ -154,6 +157,7 @@ void Parser::parseVersion(char* buffer, size_t size)
     else
     {
         valid_ = false;
+        errorCode_ = HttpStatusCode::HTTP_Version_Not_Supported;
         return;
     }
     currentParser_ = &Parser::parseNewLine;
@@ -171,6 +175,7 @@ void Parser::parseNewLine(char* buffer, size_t size)
         (headerSize_ < 1) || (headerBuffer_[headerSize_ - 1] != '\r'))
     {
         valid_ = false;
+        errorCode_ = HttpStatusCode::Payload_Too_Large;
         return;
     }
     headerBuffer_[headerSize_++] = '\n';
@@ -206,6 +211,7 @@ void Parser::parseHeaderName(char* buffer, size_t size)
         if (headerSize_ >= headerBufferSize_)
         {
             valid_ = false;
+            errorCode_ = HttpStatusCode::Payload_Too_Large;
             return;
         }
         ++buffer;
@@ -215,7 +221,7 @@ void Parser::parseHeaderName(char* buffer, size_t size)
     }
     else
     {
-        if ( ! copyUntil(':', buffer, size, valid_, headerBuffer_, headerSize_, headerBufferSize_)) return;
+        if ( ! copyUntil(':', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
         parseCurrentHeaderName_ = StringView(parseHeaderNameStartsAt_, 
                                              headerBuffer_ + headerSize_ - 1 - parseHeaderNameStartsAt_);
@@ -253,7 +259,7 @@ void Parser::parseHeaderSpacing(char* buffer, size_t size)
 
 void Parser::parseHeaderValue(char* buffer, size_t size)
 {
-    if ( ! copyUntil('\r', buffer, size, valid_, headerBuffer_, headerSize_, headerBufferSize_)) return;
+    if ( ! copyUntil('\r', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
     parseCurrentHeaderValue_ = StringView(parseHeaderValueStartsAt_, 
                                           headerBuffer_ + headerSize_ - 1 - parseHeaderValueStartsAt_);
@@ -277,5 +283,6 @@ void Parser::parseBody(char* buffer, size_t size)
     {
         //no more room to store the request body
         valid_ = false;
+        errorCode_ = HttpStatusCode::Payload_Too_Large;
     }
 }

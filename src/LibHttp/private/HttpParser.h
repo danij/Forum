@@ -65,6 +65,11 @@ namespace Http
                 : INVALID_INPUT;
         }
 
+        HttpStatusCode errorCode() const
+        {
+            return errorCode_;
+        }
+
         const HttpRequest& request() const
         {
             return request_;
@@ -92,6 +97,7 @@ namespace Http
 
         bool valid_ = true;
         bool finished_ = false;
+        HttpStatusCode errorCode_ = HttpStatusCode::Bad_Request;
         ParserFn currentParser_ = &Parser::parseVerb;
         char* parsePathStartsAt_;
         char* parseVersionStartsAt_;

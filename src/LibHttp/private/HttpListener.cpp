@@ -1,6 +1,7 @@
 #include "HttpListener.h"
 #include "ConstantBuffer.h"
 #include "HttpParser.h"
+#include "HttpResponseBuilder.h"
 
 #include <boost/pool/pool_alloc.hpp>
 
@@ -47,7 +48,16 @@ struct HttpConnection final : std::enable_shared_from_this<HttpConnection>, priv
         if (parser_.process(readBuffer_.data(), bytesTransfered) == Parser::ParseResult::INVALID_INPUT)
         {
             //invalid input
-            //TODO send error reply
+            //reuse the input buffer for sending the error code
+            auto responseSize = buildSimpleResponseFromStatusCode(parser_.errorCode(),
+                parser_.request().versionMajor, parser_.request().versionMinor, readBuffer_.data());
+
+            boost::asio::async_write(socket_, boost::asio::buffer(readBuffer_.data(), responseSize), 
+                                     boost::asio::transfer_all(),
+                                     [p = shared_from_this()](auto& ec, auto bytesTransfered)
+                                     {
+                                         p->onResponseWritten(ec, bytesTransfered);
+                                     });
             return;
         }
 
