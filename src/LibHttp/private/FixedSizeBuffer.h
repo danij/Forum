@@ -9,13 +9,14 @@
 
 namespace Http
 {
-    template<size_t BufferSize>
-    class FixedSizeBufferManager final : boost::noncopyable
+    template<size_t BufferSize, size_t AlignSpecifier = 1>
+    class FixedSizeBufferPool final : boost::noncopyable
     {
     public:
         struct Buffer
         {
-            std::array<char, BufferSize> data;
+            char alignas(AlignSpecifier) data[BufferSize];
+            static constexpr size_t size = BufferSize;
         };
 
         struct BringBackBuffer final
@@ -25,12 +26,12 @@ namespace Http
                 if (manager) manager->returnBuffer(toReturn);
             }
 
-            FixedSizeBufferManager* manager;
+            FixedSizeBufferPool* manager;
         };
 
         typedef std::unique_ptr<Buffer, BringBackBuffer> LeasedBufferType;
 
-        explicit FixedSizeBufferManager(size_t maxBufferCount) :
+        explicit FixedSizeBufferPool(size_t maxBufferCount) :
             maxBufferCount_(maxBufferCount), numberOfUsedBuffers(0),
             buffers_(std::make_unique<Buffer[]>(maxBufferCount)),
             availableIndexes_(std::make_unique<size_t[]>(maxBufferCount))
@@ -41,19 +42,38 @@ namespace Http
             }
         }
         
-        LeasedBufferType leaseBuffer()
+        /**
+         * Returns a buffer which must be manually returned to the pool
+         */
+        Buffer* leaseBufferForManualRelease()
         {
             std::lock_guard<decltype(mutex_)> lock(mutex_);
             if (numberOfUsedBuffers >= maxBufferCount_)
             {
                 return {};
-            }
-            return{ &buffers_[availableIndexes_[numberOfUsedBuffers++]], { this } };
+            } 
+            return &buffers_[availableIndexes_[numberOfUsedBuffers++]];
         }
 
-    private:
+        /**
+         * Returns a buffer that automatically returns to the pool on destruction
+         */
+        LeasedBufferType leaseBuffer()
+        {
+            return{ leaseBufferForManualRelease() , { this } };
+        }
+
+        void returnBuffer(void* dataPtr)
+        {
+            returnBuffer(reinterpret_cast<Buffer*>(reinterpret_cast<char*>(dataPtr) - offsetof(Buffer, data)));
+        }
+
         void returnBuffer(Buffer* value)
         {
+            if (nullptr == value)
+            {
+                return;
+            }
             size_t index = value - &buffers_[0];
             if (index >= maxBufferCount_)
             {
@@ -68,6 +88,7 @@ namespace Http
             availableIndexes_[--numberOfUsedBuffers] = index;
         }
 
+    private:
         const size_t maxBufferCount_;
         size_t numberOfUsedBuffers;
         std::unique_ptr<Buffer[]> buffers_;
@@ -75,11 +96,45 @@ namespace Http
         std::mutex mutex_;
     };
 
+    template<typename T>
+    class FixedSizeObjectPool final : boost::noncopyable
+    {
+    public:
+        explicit FixedSizeObjectPool(size_t maxBufferCount) : bufferPool_(maxBufferCount)
+        {           
+        }
+        
+        template<typename ...Args>
+        T* getObject(Args&& ...constructorArgs)
+        {
+            auto buffer = bufferPool_.leaseBufferForManualRelease();
+            if (nullptr == buffer)
+            {
+                return nullptr;
+            }
+            return new (buffer->data) T(std::forward<Args>(constructorArgs)...);
+        }
+
+        void returnObject(T* value)
+        {
+            if (nullptr == value)
+            {
+                return;
+            }
+            value->~T();
+            bufferPool_.returnBuffer(value);
+        }
+
+    private:
+        FixedSizeBufferPool<sizeof(T), alignof(T)> bufferPool_;
+    };
+
+
     template<size_t BufferSize, size_t MaxNrOfBuffers>
     class ReadWriteBufferArray final : private boost::noncopyable
     {
     public:
-        explicit ReadWriteBufferArray(FixedSizeBufferManager<BufferSize>& bufferManager) : bufferManager_(bufferManager)
+        explicit ReadWriteBufferArray(FixedSizeBufferPool<BufferSize>& bufferPool) : bufferPool_(bufferPool)
         {}
 
         /**
@@ -96,7 +151,7 @@ namespace Http
                 if (latestBuffer_ >= 0 && (remainingSpaceInCurrentBuffer >= size))
                 {
                     //enough room in current buffer
-                    std::copy(input, input + size, buffers_[latestBuffer_]->data.data() + usedBytesInLatestBuffer_);
+                    std::copy(input, input + size, buffers_[latestBuffer_]->data + usedBytesInLatestBuffer_);
                     usedBytesInLatestBuffer_ += size;
                     return true;
                 }
@@ -111,7 +166,7 @@ namespace Http
                     remainingSpaceInCurrentBuffer = BufferSize;
                 }
                 auto toCopy = std::min(remainingSpaceInCurrentBuffer, size);
-                std::copy(input, input + toCopy, buffers_[latestBuffer_]->data.data() + usedBytesInLatestBuffer_);
+                std::copy(input, input + toCopy, buffers_[latestBuffer_]->data + usedBytesInLatestBuffer_);
                 input += toCopy;
                 size -= toCopy;
                 usedBytesInLatestBuffer_ += toCopy;
@@ -158,7 +213,7 @@ namespace Http
             {
                 return false;
             }
-            auto buffer = bufferManager_.leaseBuffer();
+            auto buffer = bufferPool_.leaseBuffer();
             if ( ! buffer)
             {
                 return false;
@@ -168,8 +223,8 @@ namespace Http
             return true;
         }
 
-        typename FixedSizeBufferManager<BufferSize>::LeasedBufferType buffers_[MaxNrOfBuffers];
-        FixedSizeBufferManager<BufferSize>& bufferManager_;
+        typename FixedSizeBufferPool<BufferSize>::LeasedBufferType buffers_[MaxNrOfBuffers];
+        FixedSizeBufferPool<BufferSize>& bufferPool_;
 
         int latestBuffer_ = -1;
         size_t usedBytesInLatestBuffer_ = 0;

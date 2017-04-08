@@ -46,6 +46,9 @@ namespace Http
     private:
         void startAccept();
         void onAccept(boost::system::error_code ec);
+
+        friend struct HttpConnection;
+        void release(HttpConnection* connection);
         
         struct HttpListenerImpl;
         HttpListenerImpl* impl_;

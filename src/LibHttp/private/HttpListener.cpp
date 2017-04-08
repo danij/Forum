@@ -7,17 +7,18 @@
 
 using namespace Http;
 
-typedef FixedSizeBufferManager<HttpListener::ReadBufferSize> ReadBufferManagerType;
-typedef FixedSizeBufferManager<HttpListener::ReadBufferSize>::LeasedBufferType ReadBufferType;
-typedef FixedSizeBufferManager<HttpListener::WriteBufferSize>::LeasedBufferType WriteBufferType;
+typedef FixedSizeBufferPool<HttpListener::ReadBufferSize> ReadBufferManagerType;
+typedef FixedSizeBufferPool<HttpListener::ReadBufferSize>::LeasedBufferType ReadBufferType;
+typedef FixedSizeBufferPool<HttpListener::WriteBufferSize>::LeasedBufferType WriteBufferType;
 typedef ReadWriteBufferArray<HttpListener::ReadBufferSize, HttpListener::MaximumBuffersForRequestBody> RequestBodyBufferType;
 
-struct HttpConnection final : std::enable_shared_from_this<HttpConnection>, private boost::noncopyable
+struct Http::HttpConnection final : private boost::noncopyable
 {
-    explicit HttpConnection(boost::asio::ip::tcp::socket&& socket, ReadBufferType&& headerBuffer, 
+    explicit HttpConnection(HttpListener& listener, boost::asio::ip::tcp::socket&& socket, ReadBufferType&& headerBuffer, 
                             ReadBufferManagerType& readBufferManager)
-        : socket_(std::move(socket)), headerBuffer_(std::move(headerBuffer)), requestBodyBuffer_(readBufferManager),
-          parser_(headerBuffer_->data.data(), headerBuffer_->data.size(), HttpListener::MaxRequestBodyLength,
+        : listener_(listener), socket_(std::move(socket)), headerBuffer_(std::move(headerBuffer)), 
+          requestBodyBuffer_(readBufferManager), parser_(headerBuffer_->data, headerBuffer_->size, 
+          HttpListener::MaxRequestBodyLength,
               [](auto buffer, auto size, auto state)
               {
                   return reinterpret_cast<HttpConnection*>(state)->onReadBody(buffer, size);
@@ -27,7 +28,7 @@ struct HttpConnection final : std::enable_shared_from_this<HttpConnection>, priv
     void startReading()
     {
         boost::asio::async_read(socket_, boost::asio::buffer(readBuffer_), boost::asio::transfer_at_least(1),
-            [p = shared_from_this()](auto& ec, auto bytesTransfered) { p->onRead(ec, bytesTransfered); });
+            HttpConnectionReadCallback{ this });
     }
 
     void onRead(const boost::system::error_code& ec, size_t bytesTransfered)
@@ -35,16 +36,19 @@ struct HttpConnection final : std::enable_shared_from_this<HttpConnection>, priv
         if (ec == boost::asio::error::eof)
         {
             //connection closed, nothing more to do regarding this connection
+            listener_.release(this);
             return;
         }
         if (ec)
         {
             auto msg = ec.message();
             //TODO: handle error
+            listener_.release(this);
             return;
         }
         if (0 == bytesTransfered)
         {
+            listener_.release(this);
             return;
         }
         
@@ -65,7 +69,7 @@ struct HttpConnection final : std::enable_shared_from_this<HttpConnection>, priv
             writeStatusCode(HttpStatusCode::OK);
 
             //boost::asio::async_write(socket_, boost::asio::buffer(static_cast<void*>(nullptr), 0), boost::asio::transfer_all(),
-            //    [p = shared_from_this()](auto& ec, auto bytesTransfered) { p->onResponseWritten(ec, bytesTransfered); });
+            //    HttpConnectionResponseWrittenCallback{ this });
         }
         else
         {
@@ -84,12 +88,8 @@ struct HttpConnection final : std::enable_shared_from_this<HttpConnection>, priv
         auto responseSize = buildSimpleResponseFromStatusCode(code,
             parser_.request().versionMajor, parser_.request().versionMinor, readBuffer_.data());
 
-        boost::asio::async_write(socket_, boost::asio::buffer(readBuffer_.data(), responseSize), 
-                                 boost::asio::transfer_all(),
-                                 [p = shared_from_this()](auto& ec, auto bytesTransfered)
-                                 {
-                                     p->onResponseWritten(ec, bytesTransfered);
-                                 });
+        boost::asio::async_write(socket_, boost::asio::buffer(readBuffer_.data(), responseSize),
+                                 boost::asio::transfer_all(), HttpConnectionResponseWrittenCallback{ this });
     }
 
     void onResponseWritten(const boost::system::error_code& ec, size_t bytesTransfered)
@@ -97,6 +97,7 @@ struct HttpConnection final : std::enable_shared_from_this<HttpConnection>, priv
         if (ec)
         {
             //connection closed or error occured, nothing more to do regarding this connection
+            listener_.release(this);
             return;
         }
 
@@ -115,10 +116,31 @@ struct HttpConnection final : std::enable_shared_from_this<HttpConnection>, priv
             catch (...)
             {
             }
+            listener_.release(this);
         }
     }
 
 private:
+
+    struct HttpConnectionReadCallback
+    {
+        void operator()(const boost::system::error_code& ec, size_t bytesTransfered)
+        {
+            connection->onRead(ec, bytesTransfered);
+        }
+        HttpConnection* connection;
+    };
+
+    struct HttpConnectionResponseWrittenCallback
+    {
+        void operator()(const boost::system::error_code& ec, size_t bytesTransfered)
+        {
+            connection->onResponseWritten(ec, bytesTransfered);
+        }
+        HttpConnection* connection;
+    };
+
+    HttpListener& listener_;
     boost::asio::ip::tcp::socket socket_;
     ReadBufferType headerBuffer_;
     RequestBodyBufferType requestBodyBuffer_;
@@ -130,11 +152,12 @@ private:
 struct HttpListener::HttpListenerImpl
 {
     HttpListenerImpl(Configuration&& config, boost::asio::io_service& ioService)
-        : config(std::move(config)), ioService(ioService), acceptor(ioService), socket(ioService)
+        : config(std::move(config)), ioService(ioService), acceptor(ioService), socket(ioService),
+          connectionPool(config.numberOfReadBuffers)
     {
-        readBuffers = std::make_unique<FixedSizeBufferManager<ReadBufferSize>>(
+        readBuffers = std::make_unique<FixedSizeBufferPool<ReadBufferSize>>(
                 static_cast<size_t>(config.numberOfReadBuffers));
-        writeBuffers = std::make_unique<FixedSizeBufferManager<WriteBufferSize>>(
+        writeBuffers = std::make_unique<FixedSizeBufferPool<WriteBufferSize>>(
                 static_cast<size_t>(config.numberOfWriteBuffers));
     }
 
@@ -144,8 +167,9 @@ struct HttpListener::HttpListenerImpl
     boost::asio::ip::tcp::acceptor acceptor;
     boost::asio::ip::tcp::socket socket;
 
-    std::unique_ptr<FixedSizeBufferManager<ReadBufferSize>> readBuffers;
-    std::unique_ptr<FixedSizeBufferManager<WriteBufferSize>> writeBuffers;
+    std::unique_ptr<FixedSizeBufferPool<ReadBufferSize>> readBuffers;
+    std::unique_ptr<FixedSizeBufferPool<WriteBufferSize>> writeBuffers;
+    FixedSizeObjectPool<HttpConnection> connectionPool;
 };
 
 HttpListener::HttpListener(Configuration config, boost::asio::io_service& ioService)
@@ -205,16 +229,19 @@ void HttpListener::onAccept(boost::system::error_code ec)
 
     auto headerBuffer = impl_->readBuffers->leaseBuffer();
 
-    if ( ! headerBuffer)
+    if (headerBuffer)
     {
-        //no more buffers available
-        return;
+        auto connection = impl_->connectionPool.getObject(*this, std::move(impl_->socket), std::move(headerBuffer),
+                                                          *impl_->readBuffers);
+        if (nullptr != connection)
+        {
+            connection->startReading();
+        }
     }
-    
-    //TODO: better memory management based on reuse
-    auto connection = std::make_shared<HttpConnection>(std::move(impl_->socket), std::move(headerBuffer),
-                                                       *impl_->readBuffers);
-    connection->startReading();
-
     startAccept();
+}
+
+void HttpListener::release(HttpConnection* connection)
+{
+    impl_->connectionPool.returnObject(connection);
 }
