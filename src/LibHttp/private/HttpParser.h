@@ -39,7 +39,7 @@ namespace Http
     {
     public:
         //returns true if there is still room for more bytes
-        typedef bool(*PushBodyBytesFn)(char* buffer, size_t bufferSize, void* state);
+        typedef bool(*PushBodyBytesFn)(const char* buffer, size_t bufferSize, void* state);
 
         explicit Parser(char* headerBuffer, size_t headerBufferSize, size_t maxBodyLength,
                         PushBodyBytesFn pushBodyBytes, void* pushBodyBytesState);
