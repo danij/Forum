@@ -24,13 +24,10 @@ Parser& Parser::process(char* buffer, size_t size)
         //no more parsing necessary
         return *this;
     }
-    if ( ! valid_)
+    while ((size > 0) && valid_)//once the input contains errors, it will always contain them
     {
-        //once the input contains errors, it will always contain them
-        return *this;
+        (this->*currentParser_)(buffer, size);
     }
-
-    (this->*currentParser_)(buffer, size);
     return *this;
 }
 
@@ -98,7 +95,7 @@ static HttpVerb parseHttpVerb(char* buffer, size_t size)
     return HttpVerb::UNKNOWN;
 }
 
-void Parser::parseVerb(char* buffer, size_t size)
+void Parser::parseVerb(char*& buffer, size_t& size)
 {
     if ( ! copyUntil(' ', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
@@ -111,13 +108,9 @@ void Parser::parseVerb(char* buffer, size_t size)
 
     currentParser_ = &Parser::parsePath;
     parsePathStartsAt_ = headerBuffer_ + headerSize_;
-    if (size)
-    {
-        (this->*currentParser_)(buffer, size);
-    }
 }
 
-void Parser::parsePath(char* buffer, size_t size)
+void Parser::parsePath(char*& buffer, size_t& size)
 {
     if ( ! copyUntil(' ', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
@@ -125,13 +118,9 @@ void Parser::parsePath(char* buffer, size_t size)
 
     currentParser_ = &Parser::parseVersion;
     parseVersionStartsAt_ = headerBuffer_ + headerSize_;
-    if (size)
-    {
-        (this->*currentParser_)(buffer, size);
-    }
 }
 
-void Parser::parseVersion(char* buffer, size_t size)
+void Parser::parseVersion(char*& buffer, size_t& size)
 {
     if ( ! copyUntil('\r', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
@@ -164,13 +153,9 @@ void Parser::parseVersion(char* buffer, size_t size)
         return;
     }
     currentParser_ = &Parser::parseNewLine;
-    if (size)
-    {
-        (this->*currentParser_)(buffer, size);
-    }
 }
 
-void Parser::parseNewLine(char* buffer, size_t size)
+void Parser::parseNewLine(char*& buffer, size_t& size)
 {
     if (0 == size) return;
     //\r was already added by previous steps
@@ -202,13 +187,9 @@ void Parser::parseNewLine(char* buffer, size_t size)
         currentParser_ = &Parser::parseHeaderName;
         parseHeaderNameStartsAt_ = headerBuffer_ + headerSize_;
     }
-    if (size)
-    {
-        (this->*currentParser_)(buffer, size);
-    }
 }
 
-void Parser::parseHeaderName(char* buffer, size_t size)
+void Parser::parseHeaderName(char*& buffer, size_t& size)
 {
     if (size && *buffer == '\r')
     {
@@ -232,13 +213,9 @@ void Parser::parseHeaderName(char* buffer, size_t size)
 
         currentParser_ = &Parser::parseHeaderSpacing;
     }
-    if (size)
-    {
-        (this->*currentParser_)(buffer, size);
-    }
 }
 
-void Parser::parseHeaderSpacing(char* buffer, size_t size)
+void Parser::parseHeaderSpacing(char*& buffer, size_t& size)
 {
     while (true)
     {
@@ -255,13 +232,9 @@ void Parser::parseHeaderSpacing(char* buffer, size_t size)
     }
     currentParser_ = &Parser::parseHeaderValue;
     parseHeaderValueStartsAt_ = headerBuffer_ + headerSize_;
-    if (size)
-    {
-        (this->*currentParser_)(buffer, size);
-    }
 }
 
-void Parser::parseHeaderValue(char* buffer, size_t size)
+void Parser::parseHeaderValue(char*& buffer, size_t& size)
 {
     if ( ! copyUntil('\r', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
@@ -274,13 +247,9 @@ void Parser::parseHeaderValue(char* buffer, size_t size)
     {
         request_.headers[currentHeader] = parseCurrentHeaderValue_;
     }
-    if (size)
-    {
-        (this->*currentParser_)(buffer, size);
-    }
 }
 
-void Parser::parseBody(char* buffer, size_t size)
+void Parser::parseBody(char*& buffer, size_t& size)
 {
     //TODO: chunked encoding
     if (expectedContentLength_ > maxContentLength_)

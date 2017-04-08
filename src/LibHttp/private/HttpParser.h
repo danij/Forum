@@ -77,16 +77,16 @@ namespace Http
 
     private:
         
-        typedef void (Parser::*ParserFn)(char* buffer, size_t size);
+        typedef void (Parser::*ParserFn)(char*& buffer, size_t& size);
 
-        void parseVerb(char* buffer, size_t size);
-        void parsePath(char* buffer, size_t size);
-        void parseVersion(char* buffer, size_t size);
-        void parseNewLine(char* buffer, size_t size);
-        void parseHeaderName(char* buffer, size_t size);
-        void parseHeaderSpacing(char* buffer, size_t size);
-        void parseHeaderValue(char* buffer, size_t size);
-        void parseBody(char* buffer, size_t size);
+        void          parseVerb(char*& buffer, size_t& size);
+        void          parsePath(char*& buffer, size_t& size);
+        void       parseVersion(char*& buffer, size_t& size);
+        void       parseNewLine(char*& buffer, size_t& size);
+        void    parseHeaderName(char*& buffer, size_t& size);
+        void parseHeaderSpacing(char*& buffer, size_t& size);
+        void   parseHeaderValue(char*& buffer, size_t& size);
+        void          parseBody(char*& buffer, size_t& size);
 
         void onFinishedParsingHeaders();
         void interpretImportantHeaders();
