@@ -118,4 +118,7 @@ namespace Http
         size_t maxContentLength_;
         size_t requestBodyBytesProcessed_ = 0;
     };
+
+    size_t decodeUrlEncodingInPlace(char* value, size_t size);
+    StringView viewAfterDecodingUrlEncodingInPlace(char* value, size_t size);
 }

@@ -305,7 +305,7 @@ void Parser::interpretImportantHeaders()
 void Parser::interpretPathString()
 {
     int state = 0;
-    auto pathStart = request_.path.data();
+    auto pathStart = parsePathStartsAt_;
     char c;
     int keyStart = 0, keyEnd = 0, valueStart = 0, valueEnd = 0;
     for (int i = 0, n = request_.path.size(); i < n; ++i)
@@ -316,7 +316,7 @@ void Parser::interpretPathString()
         case 0: //path
             if (('?' == c) || ((i + 1) == n))
             {
-                request_.path = StringView(request_.path.data(), i);
+                request_.path = viewAfterDecodingUrlEncodingInPlace(parsePathStartsAt_, i);
                 state = 1;
                 keyStart = keyEnd = i + 1;
             }
@@ -334,9 +334,11 @@ void Parser::interpretPathString()
             {
                 valueEnd = i;
                 request_.queryPairs[request_.nrOfQueryPairs].first = 
-                        StringView(keyEnd > keyStart ? pathStart + keyStart : nullptr, keyEnd - keyStart);
+                        viewAfterDecodingUrlEncodingInPlace(keyEnd > keyStart ? pathStart + keyStart : nullptr, 
+                                                            keyEnd - keyStart + 1);
                 request_.queryPairs[request_.nrOfQueryPairs].second = 
-                        StringView(valueEnd > valueStart ? pathStart + valueStart : nullptr, valueEnd - valueStart);
+                        viewAfterDecodingUrlEncodingInPlace(valueEnd > valueStart ? pathStart + valueStart : nullptr, 
+                                                            valueEnd - valueStart + 1);
                 request_.nrOfQueryPairs += 1;
                 keyStart = keyEnd = i + 1;
                 state = 1;
@@ -344,4 +346,56 @@ void Parser::interpretPathString()
             break;
         }
     }
+}
+
+static const int hexValues[] =
+{
+    0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
+    0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+size_t Http::decodeUrlEncodingInPlace(char* value, size_t size)
+{
+    if (nullptr == value) return 0;
+
+    const char* source = value;
+    uint8_t* destination = reinterpret_cast<uint8_t*>(value);
+
+    while (size)
+    {
+        if (*source == '%')
+        {
+            if (size > 2)
+            {
+                *destination = hexValues[static_cast<uint8_t>(source[1])] * 16 +
+                               hexValues[static_cast<uint8_t>(source[2])];
+                size -= 2;
+                source += 2;
+            }
+            else
+            {
+                break;
+            }
+        }
+        else
+        {
+            *destination = *source;
+        }
+        --size;
+        ++destination;
+        ++source;
+    }
+
+    return reinterpret_cast<char*>(destination) - value;
+}
+
+StringView Http::viewAfterDecodingUrlEncodingInPlace(char* value, size_t size)
+{
+    return StringView(value, decodeUrlEncodingInPlace(value, size));
 }
