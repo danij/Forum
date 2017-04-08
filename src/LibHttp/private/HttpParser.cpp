@@ -24,7 +24,7 @@ Parser& Parser::process(char* buffer, size_t size)
         //no more parsing necessary
         return *this;
     }
-    while ((size > 0) && valid_)//once the input contains errors, it will always contain them
+    while ((size > 0) && valid_ && ! finished_)//once the input contains errors, it will always contain them
     {
         (this->*currentParser_)(buffer, size);
     }
