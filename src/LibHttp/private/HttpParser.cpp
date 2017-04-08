@@ -1,5 +1,5 @@
 #include "HttpParser.h"
-#include "StringMatching.h"
+#include "StringHelpers.h"
 
 #include <cassert>
 #include <boost/lexical_cast/try_lexical_convert.hpp>
