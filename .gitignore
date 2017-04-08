@@ -31,6 +31,8 @@
 *.out
 *.app
 *build*
+!*build*.h
+!*build*.cpp
 Debug
 Release
 
