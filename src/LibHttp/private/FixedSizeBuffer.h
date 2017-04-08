@@ -18,7 +18,17 @@ namespace Http
             std::array<char, BufferSize> data;
         };
 
-        typedef std::unique_ptr<Buffer, std::function<void(Buffer*)>> LeasedBufferType;
+        struct BringBackBuffer final
+        {
+            void operator()(Buffer* toReturn) 
+            {
+                if (manager) manager->returnBuffer(toReturn);
+            }
+
+            FixedSizeBufferManager* manager;
+        };
+
+        typedef std::unique_ptr<Buffer, BringBackBuffer> LeasedBufferType;
 
         explicit FixedSizeBufferManager(size_t maxBufferCount) :
             maxBufferCount_(maxBufferCount), numberOfUsedBuffers(0),
@@ -38,11 +48,7 @@ namespace Http
             {
                 return {};
             }
-            return 
-            {
-                &buffers_[availableIndexes_[numberOfUsedBuffers++]],
-                [this](auto buffer) { this->returnBuffer(buffer); } 
-            };
+            return{ &buffers_[availableIndexes_[numberOfUsedBuffers++]], { this } };
         }
 
     private:
