@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 
 #include <boost/noncopyable.hpp>
 #include <boost/utility/string_view.hpp>
@@ -33,6 +34,10 @@ namespace Http
         int_fast8_t versionMajor = 1, versionMinor = 0;
         bool keepConnectionAlive = false;
         StringView headers[HttpHeader::HTTP_HEADERS_COUNT];
+
+        static constexpr size_t MaxQueryPairs = 64;
+        std::pair<StringView, StringView> queryPairs[MaxQueryPairs];
+        size_t nrOfQueryPairs = 0;
     };
 
     class Parser final : private boost::noncopyable
@@ -90,6 +95,7 @@ namespace Http
 
         void onFinishedParsingHeaders();
         void interpretImportantHeaders();
+        void interpretPathString();
 
         char* headerBuffer_;
         size_t headerBufferSize_;

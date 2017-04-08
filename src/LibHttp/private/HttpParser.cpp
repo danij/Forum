@@ -115,6 +115,7 @@ void Parser::parsePath(char*& buffer, size_t& size)
     if ( ! copyUntil(' ', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
     request_.path = StringView(parsePathStartsAt_, headerBuffer_ + headerSize_ - 1 - parsePathStartsAt_);
+    interpretPathString();
 
     currentParser_ = &Parser::parseVersion;
     parseVersionStartsAt_ = headerBuffer_ + headerSize_;
@@ -298,5 +299,49 @@ void Parser::interpretImportantHeaders()
         //no need to support such requests for the moment
         valid_ = false;
         errorCode_ = HttpStatusCode::Expectation_Failed;
+    }
+}
+
+void Parser::interpretPathString()
+{
+    int state = 0;
+    auto pathStart = request_.path.data();
+    char c;
+    int keyStart = 0, keyEnd = 0, valueStart = 0, valueEnd = 0;
+    for (int i = 0, n = request_.path.size(); i < n; ++i)
+    {
+        c = request_.path[i];
+        switch (state)
+        {
+        case 0: //path
+            if (('?' == c) || ((i + 1) == n))
+            {
+                request_.path = StringView(request_.path.data(), i);
+                state = 1;
+                keyStart = keyEnd = i + 1;
+            }
+            break;
+        case 1: //query string key
+            if ('=' == c)
+            {
+                keyEnd = i;
+                state = 2;
+                valueStart = valueEnd = i + 1;
+            }
+            break;
+        case 2: //query string value
+            if (('&' == c) || ((i + 1) == n))
+            {
+                valueEnd = i;
+                request_.queryPairs[request_.nrOfQueryPairs].first = 
+                        StringView(keyEnd > keyStart ? pathStart + keyStart : nullptr, keyEnd - keyStart);
+                request_.queryPairs[request_.nrOfQueryPairs].second = 
+                        StringView(valueEnd > valueStart ? pathStart + valueStart : nullptr, valueEnd - valueStart);
+                request_.nrOfQueryPairs += 1;
+                keyStart = keyEnd = i + 1;
+                state = 1;
+            }
+            break;
+        }
     }
 }
