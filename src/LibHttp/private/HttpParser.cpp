@@ -266,6 +266,7 @@ void Parser::parseBody(char*& buffer, size_t& size)
         errorCode_ = HttpStatusCode::Payload_Too_Large;
     }
     requestBodyBytesProcessed_ += size;
+    size = 0;
     if (requestBodyBytesProcessed_ >= expectedContentLength_)
     {
         finished_ = true;
