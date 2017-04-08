@@ -51,16 +51,12 @@ struct CommandHandler::CommandHandlerImpl
     template<typename T>
     static bool convertTo(const StringView& value, T& result, OutStream& output)
     {
-        try
-        {
-            result = boost::lexical_cast<T>(value.data(), value.size());
-            return true;
-        }
-        catch (...)
+        if ( ! boost::conversion::try_lexical_convert(value.data(), value.size(), result))
         {
             writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
-            return false;
+            return false;            
         }
+        return true;
     }
 
     static bool checkMinNumberOfParameters(const std::vector<StringView>& parameters, OutStream& output, size_t number)
