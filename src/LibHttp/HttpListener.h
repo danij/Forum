@@ -44,10 +44,12 @@ namespace Http
         void stopListening();
 
     private:
+        
         void startAccept();
-        void onAccept(boost::system::error_code ec);
+        friend struct HttpListenerOnAcceptCallback;
+        void onAccept(const boost::system::error_code& ec);
 
-        friend struct HttpConnection;
+        friend struct HttpConnection;        
         void release(HttpConnection* connection);
         
         struct HttpListenerImpl;

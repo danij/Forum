@@ -210,12 +210,22 @@ void HttpListener::stopListening()
     });
 }
 
+struct Http::HttpListenerOnAcceptCallback
+{
+    void operator()(const boost::system::error_code& ec)
+    {
+        listener->onAccept(ec);
+    }
+    HttpListener* listener;
+};
+
+
 void HttpListener::startAccept()
 {
-    impl_->acceptor.async_accept(impl_->socket, [&](auto ec) { this->onAccept(ec); });
+    impl_->acceptor.async_accept(impl_->socket, HttpListenerOnAcceptCallback{ this });
 }
 
-void HttpListener::onAccept(boost::system::error_code ec)
+void HttpListener::onAccept(const boost::system::error_code& ec)
 {
     if ( ! impl_->acceptor.is_open())
     {
