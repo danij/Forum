@@ -2,6 +2,9 @@
 #include "StringHelpers.h"
 
 #include <cassert>
+#include <limits>
+#include <type_traits>
+
 #include <boost/lexical_cast/try_lexical_convert.hpp>
 
 using namespace Http;
@@ -362,6 +365,9 @@ static const int hexValues[] =
 
 size_t Http::decodeUrlEncodingInPlace(char* value, size_t size)
 {
+    static_assert(std::extent<decltype(hexValues)>::value > std::numeric_limits<uint8_t>::max(), 
+                  "The hexValues array is too small");
+
     if (nullptr == value) return 0;
 
     const char* source = value;
