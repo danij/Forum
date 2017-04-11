@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HttpListener.h"
+#include "HttpRouter.h"
 
 #include <boost/noncopyable.hpp>
 
@@ -17,6 +18,7 @@ namespace Forum
     private:
         void cleanup();
 
+        std::unique_ptr<Http::HttpRouter> httpRouter_;
         std::unique_ptr<Http::HttpListener> httpListener_;
     };
 }

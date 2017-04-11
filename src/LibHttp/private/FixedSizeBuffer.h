@@ -6,6 +6,8 @@
 #include <mutex>
 
 #include <boost/noncopyable.hpp>
+#include <boost/asio/buffer.hpp>
+#include <boost/iterator/iterator_facade.hpp>
 
 namespace Http
 {
@@ -161,6 +163,7 @@ namespace Http
                     if ( ! requestNewBuffer())
                     {
                         //no more room available
+                        notEnoughRoom_ = true;
                         return false;
                     }
                     remainingSpaceInCurrentBuffer = BufferSize;
@@ -185,6 +188,11 @@ namespace Http
             return latestBuffer_ * BufferSize + usedBytesInLatestBuffer_;
         }
 
+        bool notEnoughRoom() const
+        {
+            return notEnoughRoom_;
+        }
+
         /**
          * Reads the data in the buffers by invoking a callback for each individual buffer.
          * The callback must accept a buffer and its size
@@ -206,6 +214,91 @@ namespace Http
             callback(buffers_[latestBuffer_]->data.data(), usedBytesInLatestBuffer_);
         }
 
+
+        typedef typename FixedSizeBufferPool<BufferSize>::LeasedBufferType BufferType;
+
+        // implement the boost asio ConstBufferSequence concept
+
+        struct ConstBufferWrapper
+        {
+            explicit ConstBufferWrapper(const ReadWriteBufferArray* bufferArray) : bufferArray_(bufferArray)
+            {}
+
+            typedef boost::asio::const_buffer value_type;
+
+            struct const_iterator : public boost::iterator_facade<const_iterator, value_type,
+                boost::bidirectional_traversal_tag>
+            {
+                const_iterator() : bufferArray_(nullptr), currentIndex_(0)
+                {}
+
+                explicit const_iterator(const ReadWriteBufferArray* bufferArray, size_t startIndex)
+                    : bufferArray_(bufferArray), currentIndex_(startIndex)
+                {}
+
+            private:
+                friend class boost::iterator_core_access;
+                void increment()
+                {
+                    ++currentIndex_;
+                }
+
+                void decrement()
+                {
+                    --currentIndex_;
+                }
+
+                bool equal(const const_iterator& other) const
+                {
+                    return (bufferArray_ == other.bufferArray_) && (currentIndex_ == other.currentIndex_);
+                }
+
+                auto distance_to(const const_iterator& other) const
+                {
+                    if (bufferArray_ != other.bufferArray_)
+                    {
+                        return 0;
+                    }
+                    return currentIndex_ - other.currentIndex_;
+                }
+
+                value_type dereference() const
+                {
+                    if ((bufferArray_->latestBuffer_ < 0) || (currentIndex_ > bufferArray_->latestBuffer_))
+                    {
+                        return boost::asio::const_buffer(nullptr, 0);
+                    }
+                    if (currentIndex_ < bufferArray_->latestBuffer_)
+                    {
+                        return boost::asio::const_buffer(bufferArray_->buffers_[currentIndex_]->data, BufferSize);
+                    }
+                    return boost::asio::const_buffer(bufferArray_->buffers_[currentIndex_]->data,
+                        bufferArray_->usedBytesInLatestBuffer_);
+                }
+
+                const ReadWriteBufferArray* bufferArray_;
+                int currentIndex_;
+            };
+
+            const_iterator begin() const
+            {
+                return const_iterator(bufferArray_, 0);
+            }
+
+            const_iterator end() const
+            {
+                return const_iterator(bufferArray_, std::max(bufferArray_->latestBuffer_, 0) + 1);
+            }
+
+        private:   
+            const ReadWriteBufferArray* bufferArray_;
+        };
+
+        ConstBufferWrapper constBufferWrapper() const
+        {
+            return ConstBufferWrapper(this);
+        }
+
     private:
         bool requestNewBuffer()
         {
@@ -223,10 +316,11 @@ namespace Http
             return true;
         }
 
-        typename FixedSizeBufferPool<BufferSize>::LeasedBufferType buffers_[MaxNrOfBuffers];
+        BufferType buffers_[MaxNrOfBuffers];
         FixedSizeBufferPool<BufferSize>& bufferPool_;
 
         int latestBuffer_ = -1;
         size_t usedBytesInLatestBuffer_ = 0;
+        bool notEnoughRoom_ = false;
     };
 }

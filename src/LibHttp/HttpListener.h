@@ -1,13 +1,15 @@
 #pragma once
 
-#include <boost/noncopyable.hpp>
-#include <boost/asio.hpp>
-
 #include <cstdint>
 #include <string>
 
+#include <boost/noncopyable.hpp>
+#include <boost/asio.hpp>
+
 namespace Http
 {
+    class HttpRouter;
+
     class HttpListener final : private boost::noncopyable
     {
     public:
@@ -19,8 +21,8 @@ namespace Http
             std::string listenIPAddress;
             uint16_t listenPort;
         };
-
-        explicit HttpListener(Configuration config, boost::asio::io_service& ioService);
+        
+        explicit HttpListener(Configuration config, HttpRouter& router, boost::asio::io_service& ioService);
         ~HttpListener();
 
         /**
@@ -36,12 +38,18 @@ namespace Http
          */
         static constexpr size_t MaxRequestBodyLength = ReadBufferSize * MaximumBuffersForRequestBody;
         /**
+        * The response can occupy at most this amount of buffers
+        */
+        static constexpr size_t MaximumBuffersForResponse = 256;
+        /**
          * Each response can request multiple buffers 
          */
-        static constexpr size_t WriteBufferSize = 16384;
+        static constexpr size_t WriteBufferSize = 8192;
 
         void startListening();
         void stopListening();
+
+        HttpRouter& router();
 
     private:
         

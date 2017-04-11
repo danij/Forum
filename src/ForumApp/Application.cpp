@@ -25,7 +25,9 @@ Application::Application(int argc, const char* argv[])
     httpConfig.listenIPAddress = forumConfig->service.listenIPAddress;
     httpConfig.listenPort = forumConfig->service.listenPort;
 
-    httpListener_ = std::make_unique<HttpListener>(httpConfig, getIOServiceProvider().getIOService());
+    httpRouter_ = std::make_unique<HttpRouter>();
+    
+    httpListener_ = std::make_unique<HttpListener>(httpConfig, *httpRouter_, getIOServiceProvider().getIOService());
 }
 
 int Application::run()
