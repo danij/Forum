@@ -244,7 +244,7 @@ namespace Http
             typedef boost::asio::const_buffer value_type;
 
             struct const_iterator : public boost::iterator_facade<const_iterator, value_type,
-                boost::random_access_traversal_tag>
+                                                                  boost::random_access_traversal_tag, value_type>
             {
                 const_iterator() : bufferArray_(nullptr), currentIndex_(0)
                 {}
