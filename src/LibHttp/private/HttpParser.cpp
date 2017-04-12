@@ -117,8 +117,9 @@ void Parser::parsePath(char*& buffer, size_t& size)
 {
     if ( ! copyUntil(' ', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
-    request_.path = StringView(parsePathStartsAt_, headerBuffer_ + headerSize_ - 1 - parsePathStartsAt_);
+    request_.path = StringView(parsePathStartsAt_, headerBuffer_ + headerSize_ - parsePathStartsAt_);
     interpretPathString();
+    trimLeadingChar(request_.path, '/');
 
     currentParser_ = &Parser::parseVersion;
     parseVersionStartsAt_ = headerBuffer_ + headerSize_;
@@ -143,7 +144,7 @@ void Parser::parseVersion(char*& buffer, size_t& size)
     }
     request_.versionMajor = 1;
     if (parseVersionStartsAt_[7] == '0')
-    {
+    {        
         request_.versionMinor = 0;
     }
     else if (parseVersionStartsAt_[7] == '1')
@@ -338,10 +339,10 @@ void Parser::interpretPathString()
                 valueEnd = i;
                 request_.queryPairs[request_.nrOfQueryPairs].first = 
                         viewAfterDecodingUrlEncodingInPlace(keyEnd > keyStart ? pathStart + keyStart : nullptr, 
-                                                            keyEnd - keyStart + 1);
+                                                            keyEnd - keyStart);
                 request_.queryPairs[request_.nrOfQueryPairs].second = 
                         viewAfterDecodingUrlEncodingInPlace(valueEnd > valueStart ? pathStart + valueStart : nullptr, 
-                                                            valueEnd - valueStart + 1);
+                                                            valueEnd - valueStart);
                 request_.nrOfQueryPairs += 1;
                 keyStart = keyEnd = i + 1;
                 state = 1;

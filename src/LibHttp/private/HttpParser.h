@@ -19,12 +19,14 @@ namespace Http
 
     enum class HttpVerb
     {
-        UNKNOWN,
+        UNKNOWN = 0,
         GET,
         POST,
         PUT,
         PATCH,
-        DELETE
+        DELETE,
+
+        HTTP_VERBS_COUNT
     };   
 
     struct HttpRequest
