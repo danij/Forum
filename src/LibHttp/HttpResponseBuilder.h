@@ -26,6 +26,11 @@ namespace Http
 
         HttpResponseBuilder(WriteFn writeFn, void* writeState);
 
+        void reset()
+        {
+            protocolState_ = ProtocolState::NothingWritten;
+        }
+
         void writeResponseCode(int majorVersion, int minorVersion, HttpStatusCode code);
         void writeHeader(StringView name, StringView value);
         void writeHeader(StringView name, int value);

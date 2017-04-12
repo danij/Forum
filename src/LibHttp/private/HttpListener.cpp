@@ -70,7 +70,7 @@ struct Http::HttpConnection final : private boost::noncopyable
         {
             //finished reading everything needed for the current request, so process it
             auto& request = parser_.request();
-            keepConnectionAlive_ = false;// parser_.request().keepConnectionAlive;
+            keepConnectionAlive_ = parser_.request().keepConnectionAlive;
 
             listener_.router().forward(request, responseBuilder_);
 
@@ -117,6 +117,8 @@ struct Http::HttpConnection final : private boost::noncopyable
         if (keepConnectionAlive_)
         {
             parser_.reset();
+            responseBuffer_.reset();
+            responseBuilder_.reset();
             startReading();
         }
         else

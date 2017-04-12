@@ -194,6 +194,23 @@ namespace Http
         }
 
         /**
+         * Enables reuse of the object instance
+         */
+        void reset()
+        {
+            if (latestBuffer_ >= 0)
+            {
+                for (int i = 0; i <= latestBuffer_; ++i)
+                {
+                    buffers_[i] = {};
+                }
+            }
+            latestBuffer_ = -1;
+            usedBytesInLatestBuffer_ = 0;
+            notEnoughRoom_ = false;
+        }
+
+        /**
          * Reads the data in the buffers by invoking a callback for each individual buffer.
          * The callback must accept a buffer and its size
          */
