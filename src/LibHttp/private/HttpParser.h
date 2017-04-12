@@ -33,7 +33,7 @@ namespace Http
         StringView path;
         int_fast8_t versionMajor = 1, versionMinor = 0;
         bool keepConnectionAlive = false;
-        StringView headers[HttpHeader::HTTP_HEADERS_COUNT];
+        StringView headers[Request::HttpHeader::HTTP_HEADERS_COUNT];
 
         static constexpr size_t MaxQueryPairs = 64;
         std::pair<StringView, StringView> queryPairs[MaxQueryPairs];

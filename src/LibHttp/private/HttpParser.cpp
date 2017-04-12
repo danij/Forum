@@ -246,7 +246,7 @@ void Parser::parseHeaderValue(char*& buffer, size_t& size)
                                           headerBuffer_ + headerSize_ - 1 - parseHeaderValueStartsAt_);
 
     currentParser_ = &Parser::parseNewLine;
-    auto currentHeader = matchHttpHeader(parseCurrentHeaderName_.data(), parseCurrentHeaderName_.size());
+    auto currentHeader = Request::matchHttpHeader(parseCurrentHeaderName_.data(), parseCurrentHeaderName_.size());
     if (currentHeader)
     {
         request_.headers[currentHeader] = parseCurrentHeaderValue_;
@@ -285,19 +285,19 @@ void Parser::onFinishedParsingHeaders()
 void Parser::interpretImportantHeaders()
 {
     expectedContentLength_ = 0;
-    auto contentLengthString = request_.headers[HttpHeader::Content_Length];
+    auto contentLengthString = request_.headers[Request::HttpHeader::Content_Length];
 
     if ( ! boost::conversion::try_lexical_convert(contentLengthString.data(), contentLengthString.size(), expectedContentLength_))
     {
         expectedContentLength_ = 0;
     }
 
-    auto connectionHeaderString = request_.headers[HttpHeader::Connection];
+    auto connectionHeaderString = request_.headers[Request::HttpHeader::Connection];
     request_.keepConnectionAlive = matchStringUpperOrLower(connectionHeaderString.data(), 
                                                            connectionHeaderString.size(), 
                                                            "kKeEeEpP--aAlLiIvVeE");
 
-    if (request_.headers[HttpHeader::Expect].size())
+    if (request_.headers[Request::HttpHeader::Expect].size())
     {
         //no need to support such requests for the moment
         valid_ = false;
