@@ -227,7 +227,7 @@ namespace Http
             typedef boost::asio::const_buffer value_type;
 
             struct const_iterator : public boost::iterator_facade<const_iterator, value_type,
-                boost::bidirectional_traversal_tag>
+                boost::random_access_traversal_tag>
             {
                 const_iterator() : bufferArray_(nullptr), currentIndex_(0)
                 {}
@@ -253,18 +253,23 @@ namespace Http
                     return (bufferArray_ == other.bufferArray_) && (currentIndex_ == other.currentIndex_);
                 }
 
+                void advance(int n)
+                {
+                    currentIndex_ += n;
+                }
+
                 auto distance_to(const const_iterator& other) const
                 {
                     if (bufferArray_ != other.bufferArray_)
                     {
                         return 0;
                     }
-                    return currentIndex_ - other.currentIndex_;
+                    return other.currentIndex_ - currentIndex_;
                 }
 
                 value_type dereference() const
                 {
-                    if ((bufferArray_->latestBuffer_ < 0) || (currentIndex_ > bufferArray_->latestBuffer_))
+                    if ((currentIndex_ < 0) || (bufferArray_->latestBuffer_ < 0) || (currentIndex_ > bufferArray_->latestBuffer_))
                     {
                         return boost::asio::const_buffer(nullptr, 0);
                     }
