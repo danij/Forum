@@ -139,250 +139,79 @@ static int hashHeaderName(const char* text, size_t size)
     ) % coefficients[3];
 }
 
-static HttpHeader match_5(const char* value, size_t size)
+template<size_t Size>
+static constexpr size_t getExpectedSize(const char (&value)[Size])
 {
-    return ((size == 7) && matchStringUpperOrLower(value, "wWaArRnNiInNgG")) ? HttpHeader::Warning : HttpHeader::UnknownHeader;
+    return (Size - 1) / 2;
 }
-static HttpHeader match_8(const char* value, size_t size)
-{
-    return ((size == 15) && matchStringUpperOrLower(value, "aAcCcCeEpPtT--lLaAnNgGuUaAgGeE")) ? HttpHeader::Accept_Language : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_11(const char* value, size_t size)
-{
-    return ((size == 7) && matchStringUpperOrLower(value, "eExXpPiIrReEsS")) ? HttpHeader::Expires : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_12(const char* value, size_t size)
-{
-    return ((size == 15) && matchStringUpperOrLower(value, "aAcCcCeEpPtT--eEnNcCoOdDiInNgG")) ? HttpHeader::Accept_Encoding : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_18(const char* value, size_t size)
-{
-    return ((size == 22) && matchStringUpperOrLower(value, "xX--hHtTtTpP--mMeEtThHoOdD--oOvVeErRrRiIdDeE")) ? HttpHeader::X_Http_Method_Override : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_22(const char* value, size_t size)
-{
-    return ((size == 7) && matchStringUpperOrLower(value, "rReEfFeErReErR")) ? HttpHeader::Referer : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_24(const char* value, size_t size)
-{
-    return ((size == 7) && matchStringUpperOrLower(value, "tTrRaAiIlLeErR")) ? HttpHeader::Trailer : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_29(const char* value, size_t size)
-{
-    return ((size == 8) && matchStringUpperOrLower(value, "iIfF--rRaAnNgGeE")) ? HttpHeader::If_Range : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_35(const char* value, size_t size)
-{
-    return ((size == 8) && matchStringUpperOrLower(value, "iIfF--mMaAtTcChH")) ? HttpHeader::If_Match : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_41(const char* value, size_t size)
-{
-    return ((size == 15) && matchStringUpperOrLower(value, "fFrRoOnNtT--eEnNdD--hHtTtTpPsS")) ? HttpHeader::Front_End_Https : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_50(const char* value, size_t size)
-{
-    return ((size == 8) && matchStringUpperOrLower(value, "lLoOcCaAtTiIoOnN")) ? HttpHeader::Location : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_52(const char* value, size_t size)
-{
-    return ((size == 16) && matchStringUpperOrLower(value, "cCoOnNtTeEnNtT--lLaAnNgGuUaAgGeE")) ? HttpHeader::Content_Language : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_53(const char* value, size_t size)
-{
-    return ((size == 11) && matchStringUpperOrLower(value, "cCoOnNtTeEnNtT--mMdD55")) ? HttpHeader::Content_MD5 : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_56(const char* value, size_t size)
-{
-    return ((size == 16) && matchStringUpperOrLower(value, "cCoOnNtTeEnNtT--eEnNcCoOdDiInNgG")) ? HttpHeader::Content_Encoding : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_57(const char* value, size_t size)
-{
-    return ((size == 15) && matchStringUpperOrLower(value, "xX--fFoOrRwWaArRdDeEdD--fFoOrR")) ? HttpHeader::X_Forwarded_For : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_70(const char* value, size_t size)
-{
-    return ((size == 16) && matchStringUpperOrLower(value, "cCoOnNtTeEnNtT--lLoOcCaAtTiIoOnN")) ? HttpHeader::Content_Location : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_71(const char* value, size_t size)
-{
-    return ((size == 16) && matchStringUpperOrLower(value, "xX--cCoOrRrReElLaAtTiIoOnN--iIdD")) ? HttpHeader::X_Correlation_ID : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_72(const char* value, size_t size)
-{
-    return ((size == 16) && matchStringUpperOrLower(value, "wWwWwW--aAuUtThHeEnNtTiIcCaAtTeE")) ? HttpHeader::WWW_Authenticate : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_79(const char* value, size_t size)
-{
-    return ((size == 16) && matchStringUpperOrLower(value, "xX--rReEqQuUeEsStTeEdD--wWiItThH")) ? HttpHeader::X_Requested_With : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_83(const char* value, size_t size)
-{
-    return ((size == 16) && matchStringUpperOrLower(value, "pPrRoOxXyY--cCoOnNnNeEcCtTiIoOnN")) ? HttpHeader::Proxy_Connection : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_95(const char* value, size_t size)
-{
-    return ((size == 2) && matchStringUpperOrLower(value, "tTeE")) ? HttpHeader::TE : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_100(const char* value, size_t size)
-{
-    return ((size == 17) && matchStringUpperOrLower(value, "iIfF--mMoOdDiIfFiIeEdD--sSiInNcCeE")) ? HttpHeader::If_Modified_Since : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_103(const char* value, size_t size)
-{
-    return ((size == 16) && matchStringUpperOrLower(value, "xX--fFoOrRwWaArRdDeEdD--hHoOsStT")) ? HttpHeader::X_Forwarded_Host : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_115(const char* value, size_t size)
-{
-    return ((size == 17) && matchStringUpperOrLower(value, "tTrRaAnNsSfFeErR--eEnNcCoOdDiInNgG")) ? HttpHeader::Transfer_Encoding : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_118(const char* value, size_t size)
-{
-    return ((size == 3) && matchStringUpperOrLower(value, "aAgGeE")) ? HttpHeader::Age : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_125(const char* value, size_t size)
-{
-    return ((size == 10) && matchStringUpperOrLower(value, "cCoOnNnNeEcCtTiIoOnN")) ? HttpHeader::Connection : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_131(const char* value, size_t size)
-{
-    return ((size == 3) && matchStringUpperOrLower(value, "vViIaA")) ? HttpHeader::Via : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_135(const char* value, size_t size)
-{
-    return ((size == 17) && matchStringUpperOrLower(value, "xX--fFoOrRwWaArRdDeEdD--pPrRoOtToO")) ? HttpHeader::X_Forwarded_Proto : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_149(const char* value, size_t size)
-{
-    return ((size == 18) && matchStringUpperOrLower(value, "pPrRoOxXyY--aAuUtThHeEnNtTiIcCaAtTeE")) ? HttpHeader::Proxy_Authenticate : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_151(const char* value, size_t size)
-{
-    return ((size == 3) && matchStringUpperOrLower(value, "dDnNtT")) ? HttpHeader::DNT : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_155(const char* value, size_t size)
-{
-    return ((size == 10) && matchStringUpperOrLower(value, "uUsSeErR--aAgGeEnNtT")) ? HttpHeader::User_Agent : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_163(const char* value, size_t size)
-{
-    return ((size == 4) && matchStringUpperOrLower(value, "dDaAtTeE")) ? HttpHeader::Date : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_168(const char* value, size_t size)
-{
-    return ((size == 4) && matchStringUpperOrLower(value, "eEtTaAgG")) ? HttpHeader::ETag : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_181(const char* value, size_t size)
-{
-    return ((size == 4) && matchStringUpperOrLower(value, "fFrRoOmM")) ? HttpHeader::From : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_184(const char* value, size_t size)
-{
-    return ((size == 19) && matchStringUpperOrLower(value, "iIfF--uUnNmMoOdDiIfFiIeEdD--sSiInNcCeE")) ? HttpHeader::If_Unmodified_Since : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_190(const char* value, size_t size)
-{
-    return ((size == 11) && matchStringUpperOrLower(value, "rReEtTrRyY--aAfFtTeErR")) ? HttpHeader::Retry_After : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_191(const char* value, size_t size)
-{
-    return ((size == 12) && matchStringUpperOrLower(value, "cCoOnNtTeEnNtT--tTyYpPeE")) ? HttpHeader::Content_Type : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_197(const char* value, size_t size)
-{
-    return ((size == 4) && matchStringUpperOrLower(value, "hHoOsStT")) ? HttpHeader::Host : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_209(const char* value, size_t size)
-{
-    return ((size == 19) && matchStringUpperOrLower(value, "pPrRoOxXyY--aAuUtThHoOrRiIzZaAtTiIoOnN")) ? HttpHeader::Proxy_Authorization : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_210(const char* value, size_t size)
-{
-    return ((size == 12) && matchStringUpperOrLower(value, "xX--rReEqQuUeEsStT--iIdD")) ? HttpHeader::X_Request_ID : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_219(const char* value, size_t size)
-{
-    return ((size == 5) && matchStringUpperOrLower(value, "rRaAnNgGeE")) ? HttpHeader::Range : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_221(const char* value, size_t size)
-{
-    return ((size == 4) && matchStringUpperOrLower(value, "vVaArRyY")) ? HttpHeader::Vary : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_229(const char* value, size_t size)
-{
-    return ((size == 12) && matchStringUpperOrLower(value, "mMaAxX--fFoOrRwWaArRdDsS")) ? HttpHeader::Max_Forwards : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_230(const char* value, size_t size)
-{
-    return ((size == 12) && matchStringUpperOrLower(value, "xX--cCsSrRfF--tToOkKeEnN")) ? HttpHeader::X_Csrf_Token : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_233(const char* value, size_t size)
-{
-    return ((size == 13) && matchStringUpperOrLower(value, "cCoOnNtTeEnNtT--rRaAnNgGeE")) ? HttpHeader::Content_Range : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_238(const char* value, size_t size)
-{
-    return ((size == 5) && matchStringUpperOrLower(value, "aAlLlLoOwW")) ? HttpHeader::Allow : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_240(const char* value, size_t size)
-{
-    return ((size == 13) && matchStringUpperOrLower(value, "lLaAsStT--mMoOdDiIfFiIeEdD")) ? HttpHeader::Last_Modified : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_245(const char* value, size_t size)
-{
-    return ((size == 13) && matchStringUpperOrLower(value, "iIfF--nNoOnNeE--mMaAtTcChH")) ? HttpHeader::If_None_Match : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_247(const char* value, size_t size)
-{
-    return ((size == 13) && matchStringUpperOrLower(value, "cCaAcChHeE--cCoOnNtTrRoOlL")) ? HttpHeader::Cache_Control : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_249(const char* value, size_t size)
-{
-    return ((size == 13) && matchStringUpperOrLower(value, "aAuUtThHoOrRiIzZaAtTiIoOnN")) ? HttpHeader::Authorization : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_251(const char* value, size_t size)
-{
-    return ((size == 6) && matchStringUpperOrLower(value, "pPrRaAgGmMaA")) ? HttpHeader::Pragma : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_254(const char* value, size_t size)
-{
-    return ((size == 13) && matchStringUpperOrLower(value, "xX--wWaApP--pPrRoOfFiIlLeE")) ? HttpHeader::X_Wap_Profile : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_259(const char* value, size_t size)
-{
-    return ((size == 13) && matchStringUpperOrLower(value, "aAcCcCeEpPtT--rRaAnNgGeEsS")) ? HttpHeader::Accept_Ranges : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_273(const char* value, size_t size)
-{
-    return ((size == 6) && matchStringUpperOrLower(value, "xX--uUiIdDhH")) ? HttpHeader::X_UIDH : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_274(const char* value, size_t size)
-{
-    return ((size == 6) && matchStringUpperOrLower(value, "aAcCcCeEpPtT")) ? HttpHeader::Accept : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_278(const char* value, size_t size)
-{
-    return ((size == 6) && matchStringUpperOrLower(value, "eExXpPeEcCtT")) ? HttpHeader::Expect : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_281(const char* value, size_t size)
-{
-    return ((size == 14) && matchStringUpperOrLower(value, "cCoOnNtTeEnNtT--lLeEnNgGtThH")) ? HttpHeader::Content_Length : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_288(const char* value, size_t size)
-{
-    return ((size == 6) && matchStringUpperOrLower(value, "sSeErRvVeErR")) ? HttpHeader::Server : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_294(const char* value, size_t size)
-{
-    return ((size == 14) && matchStringUpperOrLower(value, "xX--aAtTtT--dDeEvViIcCeEiIdD")) ? HttpHeader::X_ATT_DeviceId : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_303(const char* value, size_t size)
-{
-    return ((size == 14) && matchStringUpperOrLower(value, "aAcCcCeEpPtT--cChHaArRsSeEtT")) ? HttpHeader::Accept_Charset : HttpHeader::UnknownHeader;
-}
-static HttpHeader match_306(const char* value, size_t size)
-{
-    return ((size == 7) && matchStringUpperOrLower(value, "uUpPgGrRaAdDeE")) ? HttpHeader::Upgrade : HttpHeader::UnknownHeader;
-}
+
+#define HEADER_COMPARER(hash, string, result) \
+    static HttpHeader match_##hash(const char* value, size_t size) \
+    { \
+        return ((size == getExpectedSize(string)) && matchStringUpperOrLower(value, string)) ? result : HttpHeader::UnknownHeader; \
+    }
+
+HEADER_COMPARER(5, "wWaArRnNiInNgG", HttpHeader::Warning)
+HEADER_COMPARER(8, "aAcCcCeEpPtT--lLaAnNgGuUaAgGeE", HttpHeader::Accept_Language)
+HEADER_COMPARER(11, "eExXpPiIrReEsS", HttpHeader::Expires)
+HEADER_COMPARER(12, "aAcCcCeEpPtT--eEnNcCoOdDiInNgG", HttpHeader::Accept_Encoding)
+HEADER_COMPARER(18, "xX--hHtTtTpP--mMeEtThHoOdD--oOvVeErRrRiIdDeE", HttpHeader::X_Http_Method_Override)
+HEADER_COMPARER(22, "rReEfFeErReErR", HttpHeader::Referer)
+HEADER_COMPARER(24, "tTrRaAiIlLeErR", HttpHeader::Trailer)
+HEADER_COMPARER(29, "iIfF--rRaAnNgGeE", HttpHeader::If_Range)
+HEADER_COMPARER(35, "iIfF--mMaAtTcChH", HttpHeader::If_Match)
+HEADER_COMPARER(41, "fFrRoOnNtT--eEnNdD--hHtTtTpPsS", HttpHeader::Front_End_Https)
+HEADER_COMPARER(50, "lLoOcCaAtTiIoOnN", HttpHeader::Location)
+HEADER_COMPARER(52, "cCoOnNtTeEnNtT--lLaAnNgGuUaAgGeE", HttpHeader::Content_Language)
+HEADER_COMPARER(53, "cCoOnNtTeEnNtT--mMdD55", HttpHeader::Content_MD5)
+HEADER_COMPARER(56, "cCoOnNtTeEnNtT--eEnNcCoOdDiInNgG", HttpHeader::Content_Encoding)
+HEADER_COMPARER(57, "xX--fFoOrRwWaArRdDeEdD--fFoOrR", HttpHeader::X_Forwarded_For)
+HEADER_COMPARER(70, "cCoOnNtTeEnNtT--lLoOcCaAtTiIoOnN", HttpHeader::Content_Location)
+HEADER_COMPARER(71, "xX--cCoOrRrReElLaAtTiIoOnN--iIdD", HttpHeader::X_Correlation_ID)
+HEADER_COMPARER(72, "wWwWwW--aAuUtThHeEnNtTiIcCaAtTeE", HttpHeader::WWW_Authenticate)
+HEADER_COMPARER(79, "xX--rReEqQuUeEsStTeEdD--wWiItThH", HttpHeader::X_Requested_With)
+HEADER_COMPARER(83, "pPrRoOxXyY--cCoOnNnNeEcCtTiIoOnN", HttpHeader::Proxy_Connection)
+HEADER_COMPARER(95, "tTeE", HttpHeader::TE)
+HEADER_COMPARER(100, "iIfF--mMoOdDiIfFiIeEdD--sSiInNcCeE", HttpHeader::If_Modified_Since)
+HEADER_COMPARER(103, "xX--fFoOrRwWaArRdDeEdD--hHoOsStT", HttpHeader::X_Forwarded_Host)
+HEADER_COMPARER(115, "tTrRaAnNsSfFeErR--eEnNcCoOdDiInNgG", HttpHeader::Transfer_Encoding)
+HEADER_COMPARER(118, "aAgGeE", HttpHeader::Age)
+HEADER_COMPARER(125, "cCoOnNnNeEcCtTiIoOnN", HttpHeader::Connection)
+HEADER_COMPARER(131, "vViIaA", HttpHeader::Via)
+HEADER_COMPARER(135, "xX--fFoOrRwWaArRdDeEdD--pPrRoOtToO", HttpHeader::X_Forwarded_Proto)
+HEADER_COMPARER(149, "pPrRoOxXyY--aAuUtThHeEnNtTiIcCaAtTeE", HttpHeader::Proxy_Authenticate)
+HEADER_COMPARER(151, "dDnNtT", HttpHeader::DNT)
+HEADER_COMPARER(155, "uUsSeErR--aAgGeEnNtT", HttpHeader::User_Agent)
+HEADER_COMPARER(163, "dDaAtTeE", HttpHeader::Date)
+HEADER_COMPARER(168, "eEtTaAgG", HttpHeader::ETag)
+HEADER_COMPARER(181, "fFrRoOmM", HttpHeader::From)
+HEADER_COMPARER(184, "iIfF--uUnNmMoOdDiIfFiIeEdD--sSiInNcCeE", HttpHeader::If_Unmodified_Since)
+HEADER_COMPARER(190, "rReEtTrRyY--aAfFtTeErR", HttpHeader::Retry_After)
+HEADER_COMPARER(191, "cCoOnNtTeEnNtT--tTyYpPeE", HttpHeader::Content_Type)
+HEADER_COMPARER(197, "hHoOsStT", HttpHeader::Host)
+HEADER_COMPARER(209, "pPrRoOxXyY--aAuUtThHoOrRiIzZaAtTiIoOnN", HttpHeader::Proxy_Authorization)
+HEADER_COMPARER(210, "xX--rReEqQuUeEsStT--iIdD", HttpHeader::X_Request_ID)
+HEADER_COMPARER(219, "rRaAnNgGeE", HttpHeader::Range)
+HEADER_COMPARER(221, "vVaArRyY", HttpHeader::Vary)
+HEADER_COMPARER(229, "mMaAxX--fFoOrRwWaArRdDsS", HttpHeader::Max_Forwards)
+HEADER_COMPARER(230, "xX--cCsSrRfF--tToOkKeEnN", HttpHeader::X_Csrf_Token)
+HEADER_COMPARER(233, "cCoOnNtTeEnNtT--rRaAnNgGeE", HttpHeader::Content_Range)
+HEADER_COMPARER(238, "aAlLlLoOwW", HttpHeader::Allow)
+HEADER_COMPARER(240, "lLaAsStT--mMoOdDiIfFiIeEdD", HttpHeader::Last_Modified)
+HEADER_COMPARER(245, "iIfF--nNoOnNeE--mMaAtTcChH", HttpHeader::If_None_Match)
+HEADER_COMPARER(247, "cCaAcChHeE--cCoOnNtTrRoOlL", HttpHeader::Cache_Control)
+HEADER_COMPARER(249, "aAuUtThHoOrRiIzZaAtTiIoOnN", HttpHeader::Authorization)
+HEADER_COMPARER(251, "pPrRaAgGmMaA", HttpHeader::Pragma)
+HEADER_COMPARER(254, "xX--wWaApP--pPrRoOfFiIlLeE", HttpHeader::X_Wap_Profile)
+HEADER_COMPARER(259, "aAcCcCeEpPtT--rRaAnNgGeEsS", HttpHeader::Accept_Ranges)
+HEADER_COMPARER(273, "xX--uUiIdDhH", HttpHeader::X_UIDH)
+HEADER_COMPARER(274, "aAcCcCeEpPtT", HttpHeader::Accept)
+HEADER_COMPARER(278, "eExXpPeEcCtT", HttpHeader::Expect)
+HEADER_COMPARER(281, "cCoOnNtTeEnNtT--lLeEnNgGtThH", HttpHeader::Content_Length)
+HEADER_COMPARER(288, "sSeErRvVeErR", HttpHeader::Server)
+HEADER_COMPARER(294, "xX--aAtTtT--dDeEvViIcCeEiIdD", HttpHeader::X_ATT_DeviceId)
+HEADER_COMPARER(303, "aAcCcCeEpPtT--cChHaArRsSeEtT", HttpHeader::Accept_Charset)
+HEADER_COMPARER(306, "uUpPgGrRaAdDeE", HttpHeader::Upgrade)
 
 typedef HttpHeader (*MatchFunction)(const char* value, size_t size);
 
