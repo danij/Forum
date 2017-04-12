@@ -90,7 +90,7 @@ namespace Forum
              * refreshing all indexes the category is registered in
              */
             virtual void modifyDiscussionCategory(CategoryIdIteratorType iterator,
-                                                  std::function<void(DiscussionCategory&)>&& modifyFunction = {})
+                                                  std::function<void(DiscussionCategory&)>&& modifyFunction)
             {
                 if (iterator == categories_.end())
                 {
@@ -110,7 +110,7 @@ namespace Forum
              * refreshing all indexes the category is registered in
              */
             void modifyDiscussionCategoryById(const IdType& id, 
-                                              std::function<void(DiscussionCategory&)>&& modifyFunction = {})
+                                              std::function<void(DiscussionCategory&)>&& modifyFunction)
             {
                 modifyDiscussionCategory(categories_.template get<DiscussionCategoryCollectionById>().find(id),
                                          std::forward<std::function<void(DiscussionCategory&)>>(modifyFunction));

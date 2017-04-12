@@ -81,7 +81,7 @@ namespace Forum
              * refreshing all indexes the tag is registered in
              */
             virtual void modifyDiscussionTag(TagIdIteratorType iterator,
-                                             std::function<void(DiscussionTag&)>&& modifyFunction = {})
+                                             std::function<void(DiscussionTag&)>&& modifyFunction)
             {
                 if (iterator == tags_.end())
                 {
@@ -100,7 +100,7 @@ namespace Forum
              * Enables a safe modification of a discussion tag instance,
              * refreshing all indexes the tag is registered in
              */
-            void modifyDiscussionTagById(const IdType& id, std::function<void(DiscussionTag&)>&& modifyFunction = {})
+            void modifyDiscussionTagById(const IdType& id, std::function<void(DiscussionTag&)>&& modifyFunction)
             {
                 modifyDiscussionTag(tags_.template get<DiscussionTagCollectionById>().find(id),
                                     std::forward<std::function<void(DiscussionTag&)>>(modifyFunction));

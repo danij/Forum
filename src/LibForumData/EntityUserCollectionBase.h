@@ -69,7 +69,7 @@ namespace Forum
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
              */
-            void modifyUser(UserIdIteratorType iterator, std::function<void(User&)>&& modifyFunction = {})
+            void modifyUser(UserIdIteratorType iterator, std::function<void(User&)>&& modifyFunction)
             {
                 if (iterator == users_.end())
                 {
@@ -87,7 +87,7 @@ namespace Forum
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
              */
-            void modifyUserById(const IdType& id, std::function<void(User&)>&& modifyFunction = {})
+            void modifyUserById(const IdType& id, std::function<void(User&)>&& modifyFunction)
             {
                 return modifyUser(users_.template get<UserCollectionById>().find(id),
                                   std::forward<std::function<void(User&)>>(modifyFunction));

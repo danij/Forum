@@ -107,7 +107,7 @@ void EntityCollection::modifyDiscussionThread(ThreadIdIteratorType iterator,
             {
                 if (auto userShared = userWeak.lock())
                 {
-                    userShared->subscribedThreads().modifyDiscussionThreadById(thread->id());
+                    userShared->subscribedThreads().modifyDiscussionThreadById(thread->id(), {});
                 }
             }
         }
@@ -225,7 +225,7 @@ DiscussionThreadMessageRef EntityCollection::deleteDiscussionThreadMessage(Messa
                         {
                             tag.messageCount() -= 1;
                             //notify the thread collection of each tag that the thread has fewer messages
-                            tag.modifyDiscussionThreadById(thread.id());
+                            tag.modifyDiscussionThreadById(thread.id(), {});
                         });
                     }
                 }
@@ -238,7 +238,7 @@ DiscussionThreadMessageRef EntityCollection::deleteDiscussionThreadMessage(Messa
                         {
                             category.updateMessageCount(threadShared, -1);
                             //notify the thread collection of each category that the thread has fewer messages
-                            category.modifyDiscussionThreadById(thread.id());
+                            category.modifyDiscussionThreadById(thread.id(), {});
                         });
                     }
                 }

@@ -135,7 +135,7 @@ namespace Forum
              * refreshing all indexes the thread is registered in
              */
             virtual void modifyDiscussionThread(ThreadIdIteratorType iterator,
-                                                std::function<void(DiscussionThread&)>&& modifyFunction = {})
+                                                std::function<void(DiscussionThread&)>&& modifyFunction)
             {
                 if (iterator == threads_.end())
                 {
@@ -155,7 +155,7 @@ namespace Forum
              * refreshing all indexes the thread is registered in
              */
             void modifyDiscussionThreadById(const IdType& id,
-                                            std::function<void(DiscussionThread&)>&& modifyFunction = {})
+                                            std::function<void(DiscussionThread&)>&& modifyFunction)
             {
                 modifyDiscussionThread(threads_.template get<DiscussionThreadCollectionById>().find(id),
                                        std::forward<std::function<void(DiscussionThread&)>>(modifyFunction));

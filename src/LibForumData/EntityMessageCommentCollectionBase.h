@@ -68,7 +68,7 @@ namespace Forum
              * refreshing all indexes the message is registered in
              */
             virtual void modifyMessageComment(MessageCommentIdIteratorType iterator,
-                                              std::function<void(MessageComment&)>&& modifyFunction = {})
+                                              std::function<void(MessageComment&)>&& modifyFunction)
             {
                 if (iterator == messageComments_.end())
                 {
@@ -87,7 +87,7 @@ namespace Forum
              * Enables a safe modification of a message comment instance,
              * refreshing all indexes the message is registered in
              */
-            void modifyMessageCommentById(const IdType& id, std::function<void(MessageComment&)>&& modifyFunction = {})
+            void modifyMessageCommentById(const IdType& id, std::function<void(MessageComment&)>&& modifyFunction)
             {
                 modifyMessageComment(messageComments_.template get<MessageCommentCollectionById>().find(id),
                                      std::forward<std::function<void(MessageComment&)>>(modifyFunction));

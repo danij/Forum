@@ -145,7 +145,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                                {
                                                    tag.messageCount() += 1;
                                                    //notify the thread collection of each tag that the thread has a new message
-                                                   tag.modifyDiscussionThreadById(thread.id());
+                                                   tag.modifyDiscussionThreadById(thread.id(), {});
                                                });
                                        }
                                    }
@@ -158,7 +158,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                                {
                                                    category.updateMessageCount(*threadIt, 1);
                                                    //notify the thread collection of each category that the thread has a new message
-                                                   category.modifyDiscussionThreadById(thread.id());
+                                                   category.modifyDiscussionThreadById(thread.id(), {});
                                                });
                                        }
                                    }

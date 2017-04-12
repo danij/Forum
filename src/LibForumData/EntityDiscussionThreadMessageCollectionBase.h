@@ -72,7 +72,7 @@ namespace Forum
              * refreshing all indexes the message is registered in
              */
             virtual void modifyDiscussionThreadMessage(MessageIdIteratorType iterator,
-                                                       std::function<void(DiscussionThreadMessage&)>&& modifyFunction = {})
+                                                       std::function<void(DiscussionThreadMessage&)>&& modifyFunction)
             {
                 if (iterator == messages_.end())
                 {
@@ -92,7 +92,7 @@ namespace Forum
              * refreshing all indexes the message is registered in
              */
             void modifyDiscussionThreadMessageById(const IdType& id, 
-                                                   std::function<void(DiscussionThreadMessage&)>&& modifyFunction = {})
+                                                   std::function<void(DiscussionThreadMessage&)>&& modifyFunction)
             {
                 modifyDiscussionThreadMessage(messages_.template get<DiscussionThreadMessageCollectionById>().find(id),
                                               std::forward<std::function<void(DiscussionThreadMessage&)>>(modifyFunction));

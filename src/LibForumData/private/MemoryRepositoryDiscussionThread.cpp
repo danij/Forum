@@ -542,7 +542,7 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                                            {
                                                tag.messageCount() += difference;
                                                //notify the thread collection of each tag that the thread has new messages
-                                               tag.modifyDiscussionThreadById(threadRef->id());
+                                               tag.modifyDiscussionThreadById(threadRef->id(), {});
                                            });
                                    }
                                }
@@ -552,10 +552,10 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                                    {
                                        collection.modifyDiscussionCategoryById(categoryShared->id(),
                                            [&threadRef, difference](auto& category)
-                                           {
-                                               category.updateMessageCount(threadRef, difference);
-                                               //notify the thread collection of each category that the thread has new messages
-                                               category.modifyDiscussionThreadById(threadRef->id());
+                                       {
+                                           category.updateMessageCount(threadRef, difference);
+                                           //notify the thread collection of each category that the thread has new messages
+                                           category.modifyDiscussionThreadById(threadRef->id(), {});
                                            });
                                    }
                                }                   
