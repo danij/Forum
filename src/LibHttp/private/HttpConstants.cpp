@@ -113,9 +113,9 @@ static int hashHeaderName(const char* text, size_t size)
     static int coefficients[] = { 1, 2, 42, 307 };
     return 
     (
-        charLower[static_cast<uint8_t>(text[0])]        * coefficients[0] +
-        charLower[static_cast<uint8_t>(text[size - 1])] * coefficients[1] +
-        (size % maxHeaderNameSize)                      * coefficients[2]
+        CharToLower[static_cast<uint8_t>(text[0])]        * coefficients[0] +
+        CharToLower[static_cast<uint8_t>(text[size - 1])] * coefficients[1] +
+        (size % maxHeaderNameSize)                        * coefficients[2]
     ) % coefficients[3];
 }
 

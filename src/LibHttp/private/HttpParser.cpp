@@ -354,8 +354,8 @@ void Parser::interpretPathString()
 
 size_t Http::decodeUrlEncodingInPlace(char* value, size_t size)
 {
-    static_assert(std::extent<decltype(hexValues)>::value > std::numeric_limits<uint8_t>::max(), 
-                  "The hexValues array is too small");
+    static_assert(std::extent<decltype(HexParsingValues)>::value > std::numeric_limits<uint8_t>::max(), 
+                  "The HexParsingValues array is too small");
 
     if (nullptr == value) return 0;
 
@@ -368,8 +368,8 @@ size_t Http::decodeUrlEncodingInPlace(char* value, size_t size)
         {
             if (size > 2)
             {
-                *destination = hexValues[static_cast<uint8_t>(source[1])] * 16 +
-                               hexValues[static_cast<uint8_t>(source[2])];
+                *destination = HexParsingValues[static_cast<uint8_t>(source[1])] * 16 +
+                               HexParsingValues[static_cast<uint8_t>(source[2])];
                 size -= 2;
                 source += 2;
             }

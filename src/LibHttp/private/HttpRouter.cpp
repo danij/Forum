@@ -25,7 +25,7 @@ void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& respon
     auto tempPathLength = std::min(request.path.size(), MaxRouteSize);
 
     std::transform(request.path.begin(), request.path.begin() + tempPathLength, tempPath,
-                   [](char c) { return static_cast<char>(charLower[c]); });
+                   [](char c) { return static_cast<char>(CharToLower[c]); });
 
     if (tempPath[tempPathLength - 1] != '/')
     {

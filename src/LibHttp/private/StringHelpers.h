@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <type_traits>
 
 namespace Http
 {
@@ -59,7 +60,7 @@ namespace Http
         view.remove_prefix(toRemove);
     }
 
-    static constexpr uint8_t charLower[] =
+    static constexpr uint8_t CharToLower[] =
     {
         0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,
         16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31,
@@ -79,7 +80,7 @@ namespace Http
         240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255
     };
     
-    static const int hexValues[] =
+    static const int HexParsingValues[] =
     {
         0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
@@ -91,9 +92,9 @@ namespace Http
         0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
 
-    static const char hexToStringUpperCase[] = "0123456789ABCDEF";
+    static const char HexToStringUpperCase[] = "0123456789ABCDEF";
 
-    static const bool reservedCharactersForUrlEncoding[] = 
+    static const bool ReservedCharactersForUrlEncoding[] = 
     {
         true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
         true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
@@ -122,7 +123,7 @@ namespace Http
     template<size_t Size>
     StringView urlEncode(StringView input, char (&output)[Size])
     {
-        static_assert(std::extent<decltype(reservedCharactersForUrlEncoding)>::value > 255, 
+        static_assert(std::extent<decltype(ReservedCharactersForUrlEncoding)>::value > 255, 
                       "Not enough entries in reservedCharactersForUrlEncoding");
         if ((input.size() * 3) > Size)
         {
@@ -132,11 +133,11 @@ namespace Http
         for (auto c : input)
         {
             auto unsignedC = static_cast<uint8_t>(c);
-            if (reservedCharactersForUrlEncoding[static_cast<uint8_t>(unsignedC)])
+            if (ReservedCharactersForUrlEncoding[static_cast<uint8_t>(unsignedC)])
             {
                 *currentOutput++ = '%';
-                *currentOutput++ = hexToStringUpperCase[unsignedC / 16];
-                *currentOutput++ = hexToStringUpperCase[unsignedC % 16];
+                *currentOutput++ = HexToStringUpperCase[unsignedC / 16];
+                *currentOutput++ = HexToStringUpperCase[unsignedC % 16];
             }
             else
             {
