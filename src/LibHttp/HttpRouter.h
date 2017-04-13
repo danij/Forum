@@ -49,6 +49,11 @@ namespace Http
          */
         void addRoute(StringView pathLowerCase, HttpVerb verb, HandlerFn&& handler);
 
+        /**
+         * Registers a route to be used if no other route matches
+         */
+        void setDefaultRoute(HandlerFn&& handler);
+
     private:
 
         struct StringViewByLengthGreater
@@ -61,5 +66,7 @@ namespace Http
 
         typedef std::map<StringView, HandlerFn, StringViewByLengthGreater> MapType;
         MapType routes_[FirstIndexMaxValue][static_cast<size_t>(HttpVerb::HTTP_VERBS_COUNT)];
+
+        HandlerFn defaultRoute_;
     };
 }

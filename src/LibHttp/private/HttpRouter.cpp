@@ -49,7 +49,7 @@ void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& respon
             {
                 if (pair.second)
                 {
-                    pair.second(Http::RequestState(request, response, currentPath.size()));
+                    pair.second(RequestState(request, response, currentPath.size()));
                 }
                 routeFound = true;
                 break;
@@ -58,12 +58,24 @@ void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& respon
     }
     if ( ! routeFound)
     {
-        writeNotFound(request, response);
+        if (defaultRoute_)
+        {
+            defaultRoute_(RequestState(request, response, 0));
+        }
+        else
+        {
+            writeNotFound(request, response);            
+        }
     }
 }
 
 void HttpRouter::addRoute(StringView pathLowerCase, HttpVerb verb, HandlerFn&& handler)
 {
     routes_[getFirstIndexForRoutes(pathLowerCase.data(), pathLowerCase.length())][static_cast<size_t>(verb)].emplace(pathLowerCase, handler);
+}
+
+void HttpRouter::setDefaultRoute(HandlerFn&& handler)
+{
+    defaultRoute_ = std::move(handler);
 }
 
