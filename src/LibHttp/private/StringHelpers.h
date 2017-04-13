@@ -78,4 +78,84 @@ namespace Http
         224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239,
         240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255
     };
+    
+    static const int hexValues[] =
+    {
+        0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
+        0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+
+    static const char hexToStringUpperCase[] = "0123456789ABCDEF";
+
+    static const bool reservedCharactersForUrlEncoding[] = 
+    {
+        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, true,
+        false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true,
+        true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, false,
+        true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, true,
+        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+    };
+
+    static constexpr size_t MaxUrlEncodingInputSize = 2000;
+
+    /**
+     * Performes URL encoding leaving out only unreserved characters 
+     * as listed under https://tools.ietf.org/html/rfc3986#section-2.3
+     */
+    template<size_t Size>
+    StringView urlEncode(StringView input, char (&output)[Size])
+    {
+        static_assert(std::extent<decltype(reservedCharactersForUrlEncoding)>::value > 255, 
+                      "Not enough entries in reservedCharactersForUrlEncoding");
+        if ((input.size() * 3) > Size)
+        {
+            return{};
+        }
+        char* currentOutput = output;
+        for (auto c : input)
+        {
+            auto unsignedC = static_cast<uint8_t>(c);
+            if (reservedCharactersForUrlEncoding[static_cast<uint8_t>(unsignedC)])
+            {
+                *currentOutput++ = '%';
+                *currentOutput++ = hexToStringUpperCase[unsignedC / 16];
+                *currentOutput++ = hexToStringUpperCase[unsignedC % 16];
+            }
+            else
+            {
+                *currentOutput++ = c;
+            }
+        }
+
+        return StringView(output, currentOutput - output);
+    }
+
+    /**
+     * Performes URL encoding on an input string of maximum MaxUrlEncodingInputSize characters.
+     * Use the result as soon as possible, calling the function again will overrite the result
+     * 
+     * @return A view to a thread-local buffer. 
+     */
+    inline StringView urlEncode(StringView input)
+    {
+        static thread_local char output[MaxUrlEncodingInputSize * 3];
+        return urlEncode(input, output);
+    }
 }
