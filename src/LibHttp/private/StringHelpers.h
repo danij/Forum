@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 #include <type_traits>
 
 namespace Http
@@ -94,6 +95,49 @@ namespace Http
 
     static const char HexToStringUpperCase[] = "0123456789ABCDEF";
 
+    inline size_t decodeUrlEncodingInPlace(char* value, size_t size)
+    {
+        static_assert(std::extent<decltype(HexParsingValues)>::value > std::numeric_limits<uint8_t>::max(),
+                      "The HexParsingValues array is too small");
+
+        if (nullptr == value) return 0;
+
+        const char* source = value;
+        uint8_t* destination = reinterpret_cast<uint8_t*>(value);
+
+        while (size)
+        {
+            if (*source == '%')
+            {
+                if (size > 2)
+                {
+                    *destination = HexParsingValues[static_cast<uint8_t>(source[1])] * 16 +
+                        HexParsingValues[static_cast<uint8_t>(source[2])];
+                    size -= 2;
+                    source += 2;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                *destination = *source;
+            }
+            --size;
+            ++destination;
+            ++source;
+        }
+
+        return reinterpret_cast<char*>(destination) - value;
+    }
+
+    inline StringView viewAfterDecodingUrlEncodingInPlace(char* value, size_t size)
+    {
+        return StringView(value, decodeUrlEncodingInPlace(value, size));
+    }
+    
     static const bool ReservedCharactersForUrlEncoding[] = 
     {
         true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
@@ -123,7 +167,7 @@ namespace Http
     template<size_t Size>
     StringView urlEncode(StringView input, char (&output)[Size])
     {
-        static_assert(std::extent<decltype(ReservedCharactersForUrlEncoding)>::value > 255, 
+        static_assert(std::extent<decltype(ReservedCharactersForUrlEncoding)>::value > std::numeric_limits<uint8_t>::max(),
                       "Not enough entries in reservedCharactersForUrlEncoding");
         if ((input.size() * 3) > Size)
         {
