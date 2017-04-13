@@ -5,6 +5,7 @@
 #include <cstddef>
 
 #include <boost/noncopyable.hpp>
+#include "HttpParser.h"
 
 namespace Http
 {
@@ -32,6 +33,7 @@ namespace Http
         }
 
         void writeResponseCode(int majorVersion, int minorVersion, HttpStatusCode code);
+        void writeResponseCode(const HttpRequest& request, HttpStatusCode code);
         void writeHeader(StringView name, StringView value);
         void writeHeader(StringView name, int value);
 

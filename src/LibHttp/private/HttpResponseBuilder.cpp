@@ -72,6 +72,11 @@ void HttpResponseBuilder::writeResponseCode(int majorVersion, int minorVersion, 
     protocolState_ = ProtocolState::ResponseCodeWritten;
 }
 
+void HttpResponseBuilder::writeResponseCode(const HttpRequest& request, HttpStatusCode code)
+{
+    writeResponseCode(request.versionMajor, request.versionMinor, code);
+}
+
 void HttpResponseBuilder::writeHeader(StringView name, StringView value)
 {
     assert(ProtocolState::ResponseCodeWritten == protocolState_);
