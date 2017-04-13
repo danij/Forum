@@ -2,6 +2,7 @@
 #include "StringHelpers.h"
 
 #include <algorithm>
+#include <cstdint>
 
 using namespace Http;
 
@@ -19,6 +20,12 @@ static void writeNotFound(const HttpRequest& request, HttpResponseBuilder& respo
     response.writeBodyAndContentLength(reply, std::extent<decltype(reply)>::value - 1);
 }
 
+static uint8_t getFirstIndexForRoutes(const char* path, size_t length)
+{
+    auto firstChar = length > 0 ? static_cast<uint8_t>(path[0]) : 0;
+    return firstChar % HttpRouter::FirstIndexMaxValue;
+}
+
 void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& response)
 {
     char tempPath[MaxRouteSize + 1];
@@ -31,9 +38,9 @@ void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& respon
     {
         tempPath[tempPathLength++] = '/';
     }
-
+    
     bool routeFound = false;
-    for (auto& pair : routes_[static_cast<size_t>(request.verb)])
+    for (auto& pair : routes_[getFirstIndexForRoutes(tempPath, tempPathLength)][static_cast<size_t>(request.verb)])
     {
         auto& currentPath = pair.first;
         if (currentPath.size() <= tempPathLength)
@@ -57,6 +64,6 @@ void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& respon
 
 void HttpRouter::addRoute(StringView pathLowerCase, HttpVerb verb, HandlerFn&& handler)
 {
-    routes_[static_cast<size_t>(verb)].emplace(pathLowerCase, handler);
+    routes_[getFirstIndexForRoutes(pathLowerCase.data(), pathLowerCase.length())][static_cast<size_t>(verb)].emplace(pathLowerCase, handler);
 }
 

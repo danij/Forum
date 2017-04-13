@@ -35,7 +35,8 @@ namespace Http
 
         typedef std::function<void(RequestState)> HandlerFn;
 
-        constexpr static size_t MaxRouteSize = 128;
+        static constexpr size_t MaxRouteSize = 128;
+        static constexpr size_t FirstIndexMaxValue = 128;
 
         /**
          * Registers a route with a maximum size of MaxRouteSize.
@@ -58,6 +59,7 @@ namespace Http
             }
         };
 
-        std::map<StringView, HandlerFn, StringViewByLengthGreater> routes_[static_cast<size_t>(HttpVerb::HTTP_VERBS_COUNT)];
+        typedef std::map<StringView, HandlerFn, StringViewByLengthGreater> MapType;
+        MapType routes_[FirstIndexMaxValue][static_cast<size_t>(HttpVerb::HTTP_VERBS_COUNT)];
     };
 }
