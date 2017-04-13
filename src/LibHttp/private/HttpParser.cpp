@@ -1,5 +1,5 @@
 #include "HttpParser.h"
-#include "StringHelpers.h"
+#include "HttpStringHelpers.h"
 
 #include <cassert>
 #include <limits>
