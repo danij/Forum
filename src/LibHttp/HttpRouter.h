@@ -33,7 +33,7 @@ namespace Http
     public:
         void forward(const HttpRequest& request, HttpResponseBuilder& response);
 
-        typedef std::function<void(RequestState)> HandlerFn;
+        typedef std::function<void(RequestState&)> HandlerFn;
 
         static constexpr size_t MaxRouteSize = 128;
         static constexpr size_t FirstIndexMaxValue = 128;
