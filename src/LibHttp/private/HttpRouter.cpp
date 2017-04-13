@@ -8,7 +8,26 @@ using namespace Http;
 
 void RequestState::extractExtraPathParts(size_t nrOfPathCharactersUsedInRoute)
 {
-    //TODO
+    auto currentPartStartIndex = nrOfPathCharactersUsedInRoute;
+    auto path = request.path.data();
+
+    for (auto i = nrOfPathCharactersUsedInRoute, n = request.path.size(); i < n; ++i)
+    {
+        if (nrOfExtraPathParts >= (MaxExtraPathParts - 1))
+        {
+            return;
+        }
+        if (path[i] == '/')
+        {
+            extraPathParts[nrOfExtraPathParts++] = StringView(path + currentPartStartIndex, i - currentPartStartIndex);
+            currentPartStartIndex = i + 1;
+        }
+    }
+    auto lastPartLength = request.path.size() - currentPartStartIndex;
+    if ((lastPartLength > 0) && (lastPartLength <= request.path.size()))
+    {
+        extraPathParts[nrOfExtraPathParts++] = StringView(path + currentPartStartIndex, lastPartLength);
+    }
 }
 
 static void writeNotFound(const HttpRequest& request, HttpResponseBuilder& response)
