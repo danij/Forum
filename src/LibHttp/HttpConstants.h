@@ -4,6 +4,23 @@
 
 namespace Http
 {
+
+#ifdef DELETE
+#undef DELETE
+#endif
+
+    enum class HttpVerb
+    {
+        UNKNOWN = 0,
+        GET,
+        POST,
+        PUT,
+        PATCH,
+        DELETE,
+
+        HTTP_VERBS_COUNT
+    };
+
     //Status codes extracted from https://tools.ietf.org/html/rfc7231
     enum HttpStatusCode
     {

@@ -1,47 +1,13 @@
 #pragma once
 
 #include "HttpConstants.h"
-
-#include <cstddef>
-#include <cstdint>
-#include <utility>
+#include "HttpRequest.h"
 
 #include <boost/noncopyable.hpp>
 #include <boost/utility/string_view.hpp>
 
 namespace Http
 {
-    typedef boost::string_view StringView;
-
-#ifdef DELETE
-#undef DELETE
-#endif
-
-    enum class HttpVerb
-    {
-        UNKNOWN = 0,
-        GET,
-        POST,
-        PUT,
-        PATCH,
-        DELETE,
-
-        HTTP_VERBS_COUNT
-    };   
-
-    struct HttpRequest
-    {//StringViews point to addresses inside the header buffer
-        HttpVerb verb = HttpVerb::UNKNOWN;
-        StringView path;
-        int_fast8_t versionMajor = 1, versionMinor = 0;
-        bool keepConnectionAlive = false;
-        StringView headers[Request::HttpHeader::HTTP_HEADERS_COUNT];
-
-        static constexpr size_t MaxQueryPairs = 64;
-        std::pair<StringView, StringView> queryPairs[MaxQueryPairs];
-        size_t nrOfQueryPairs = 0;
-    };
-
     class Parser final : private boost::noncopyable
     {
     public:

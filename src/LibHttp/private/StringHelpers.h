@@ -4,8 +4,12 @@
 #include <limits>
 #include <type_traits>
 
+#include <boost/utility/string_view.hpp>
+
 namespace Http
 {
+    typedef boost::string_view StringView;
+
     /**
      * Matches a string against another one, optionally ignoring case
      * 

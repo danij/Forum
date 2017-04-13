@@ -13,7 +13,7 @@ void RequestState::extractExtraPathParts(size_t nrOfPathCharactersUsedInRoute)
 
 static void writeNotFound(const HttpRequest& request, HttpResponseBuilder& response)
 {
-    response.writeResponseCode(request.versionMajor, request.versionMinor, HttpStatusCode::Not_Found);
+    response.writeResponseCode(request, HttpStatusCode::Not_Found);
 
     static const char reply[] = "No resource was found for the provided path.";
 
