@@ -21,7 +21,7 @@ namespace Http
         HTTP_VERBS_COUNT
     };
 
-    //Status codes extracted from https://tools.ietf.org/html/rfc7231
+    //Status codes extracted from https://tools.ietf.org/html/rfc7231 and https://tools.ietf.org/html/rfc6585
     enum HttpStatusCode
     {
         UnknownStatusCode = 0,
@@ -60,12 +60,16 @@ namespace Http
         Range_Not_Satisfiable = 416,
         Expectation_Failed = 417,
         Upgrade_Required = 426,
+        Precondition_Required = 428,
+        Too_Many_Requests = 429,
+        Request_Header_Fields_Too_Large = 431,
         Internal_Server_Error = 500,
         Not_Implemented = 501,
         Bad_Gateway = 502,
         Service_Unavailable = 503,
         Gateway_Timeout = 504,
         HTTP_Version_Not_Supported = 505,
+        Network_Authentication_Required = 511,
 
         HTTP_STATUS_CODES_COUNT
     };

@@ -81,6 +81,7 @@ static StringView statusCodes[] =
     { "Payload Too Large", 17 },{ "URI Too Long", 12 },{ "Unsupported Media Type", 22 },{ "Range Not Satisfiable", 21 },
     { "Expectation Failed", 18 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
     { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Upgrade Required", 16 },
+    { "Unknown", 7 },{ "Precondition Required", 21 },{ "Too Many Requests", 17 },{ "Unknown", 7 },{ "Request Header Fields Too Large", 31 },
     { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
     { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
     { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
@@ -92,10 +93,9 @@ static StringView statusCodes[] =
     { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
     { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
     { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Internal Server Error", 21 },{ "Not Implemented", 15 },{ "Bad Gateway", 11 },
-    { "Service Unavailable", 19 },{ "Gateway Timeout", 15 },{ "HTTP Version Not Supported", 26 },
-
+    { "Unknown", 7 },{ "Unknown", 7 },{ "Internal Server Error", 21 },{ "Not Implemented", 15 },{ "Bad Gateway", 11 },
+    { "Service Unavailable", 19 },{ "Gateway Timeout", 15 },{ "HTTP Version Not Supported", 26 },{ "Unknown", 7 },
+    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Network Authentication Required", 31 }
 };
 
 StringView Http::getStatusCodeString(HttpStatusCode code)
