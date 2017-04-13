@@ -4,6 +4,7 @@
 #include <limits>
 #include <type_traits>
 
+#include <boost/lexical_cast.hpp>
 #include <boost/utility/string_view.hpp>
 
 namespace Http
@@ -46,6 +47,21 @@ namespace Http
             return false;
         }
         return matchStringUpperOrLower(source, against);
+    }
+
+    template<size_t AgainstSize>
+    bool matchStringUpperOrLower(StringView view, const char(&against)[AgainstSize])
+    {
+        return matchStringUpperOrLower(view.data(), view.size(), against);
+    }
+
+    template<typename T>
+    void fromStringOrDefault(StringView view, T& toChange, T defaultValue)
+    {
+        if ( ! boost::conversion::try_lexical_convert(view.data(), view.size(), toChange))
+        {
+            toChange = defaultValue;
+        }
     }
 
     inline void trimLeadingChar(StringView& view, char toTrim)
