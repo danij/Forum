@@ -271,11 +271,18 @@ void HttpListener::onAccept(const boost::system::error_code& ec)
 
     if (headerBuffer)
     {
-        auto connection = impl_->connectionPool.getObject(*this, std::move(impl_->socket), std::move(headerBuffer),
-                                                          *impl_->readBuffers, *impl_->writeBuffers);
-        if (nullptr != connection)
+        try
         {
-            connection->startReading();
+            auto connection = impl_->connectionPool.getObject(*this, std::move(impl_->socket), std::move(headerBuffer),
+                                                              *impl_->readBuffers, *impl_->writeBuffers);
+            if (nullptr != connection)
+            {
+                connection->startReading();
+            }
+        }
+        catch(...)
+        {
+            //TODO: log error
         }
     }
     startAccept();
