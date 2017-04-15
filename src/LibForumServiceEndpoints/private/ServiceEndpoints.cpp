@@ -39,11 +39,9 @@ Http::HttpStatusCode commandStatusToHttpStatus(Repository::StatusCode code)
 //reserve space for the parameter views up-front so that no reallocations should occur when handling invididual requests
 static thread_local std::vector<StringView> currentParameters{ 128 };
 
-static void updateContextForRequest(const Http::RequestState& requestState)
+static void updateContextForRequest(const Http::HttpRequest& request)
 {
-    Context::setCurrentUserIpAddress(requestState.remoteAddress);
-
-    auto& request = requestState.request;
+    Context::setCurrentUserIpAddress(request.remoteAddress);
 
     auto& displayContext = Context::getMutableDisplayContext();
     displayContext.sortOrder = Context::SortOrder::Ascending;
@@ -74,7 +72,7 @@ void AbstractEndpoint::handleDefault(Http::RequestState& requestState, View view
     assert(nullptr != executeCommand);
 
     currentParameters.clear();
-    updateContextForRequest(requestState);
+    updateContextForRequest(requestState.request);
     
     auto result = executeCommand(requestState, commandHandler_, view, command, currentParameters);
 

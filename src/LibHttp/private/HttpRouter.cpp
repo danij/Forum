@@ -45,8 +45,7 @@ static uint8_t getFirstIndexForRoutes(const char* path, size_t length)
     return firstChar % HttpRouter::FirstIndexMaxValue;
 }
 
-void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& response,
-                         const boost::asio::ip::address& remoteAddress)
+void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& response)
 {
     char tempPath[MaxRouteSize + 1];
     auto tempPathLength = std::min(request.path.size(), MaxRouteSize);
@@ -69,7 +68,7 @@ void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& respon
             {
                 if (pair.second)
                 {
-                    RequestState state(request, response, currentPath.size(), remoteAddress);
+                    RequestState state(request, response, currentPath.size());
                     pair.second(state);
                 }
                 routeFound = true;
@@ -81,7 +80,7 @@ void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& respon
     {
         if (defaultRoute_)
         {
-            RequestState state(request, response, 0, remoteAddress);
+            RequestState state(request, response, 0);
             defaultRoute_(state);
         }
         else

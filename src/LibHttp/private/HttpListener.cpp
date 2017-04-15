@@ -85,13 +85,12 @@ struct Http::HttpConnection final : private boost::noncopyable
 
             //add remote endpoint
             boost::system::error_code getAddressCode;
-            boost::asio::ip::address remoteAddress{};
             auto remoteEndpoint = socket_.remote_endpoint(getAddressCode);
             if ( ! getAddressCode)
             {
-                remoteAddress = remoteEndpoint.address();
+                request.remoteAddress = remoteEndpoint.address();
             }
-            listener_.router().forward(request, responseBuilder_, remoteAddress);
+            listener_.router().forward(request, responseBuilder_);
 
             if ((0 == responseBuffer_.size()) || responseBuffer_.notEnoughRoom())
             {
