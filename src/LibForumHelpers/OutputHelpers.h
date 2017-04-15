@@ -8,7 +8,7 @@ namespace Forum
 {
     namespace Helpers
     {
-        template <typename T, std::size_t Size>
+        template <typename T, size_t Size>
         void writeSingleValueSafeName(Forum::Repository::OutStream& output, const char(&name)[Size], const T& value)
         {
             Json::JsonWriter writer(output);
@@ -23,7 +23,7 @@ namespace Forum
             writeSingleValueSafeName(output, "status", code);
         }
 
-        template<typename Collection, typename InterceptorFn, std::size_t PropertyNameSize>
+        template<typename Collection, typename InterceptorFn, size_t PropertyNameSize>
         void writeEntitiesWithPagination(const Collection& collection, const char(&propertyName)[PropertyNameSize],
                                          Json::JsonWriter& writer, int_fast32_t pageNumber, int_fast32_t pageSize,
                                          bool ascending, InterceptorFn&& interceptor)
@@ -77,7 +77,7 @@ namespace Forum
             writer << Json::arrayEnd;
         }
         
-        template<typename Collection, typename InterceptorFn, std::size_t PropertyNameSize>
+        template<typename Collection, typename InterceptorFn, size_t PropertyNameSize>
         void writeEntitiesWithPagination(const Collection& collection, const char(&propertyName)[PropertyNameSize],
                                          Forum::Repository::OutStream& output, int_fast32_t pageNumber,
                                          int_fast32_t pageSize, bool ascending, InterceptorFn&& interceptor)

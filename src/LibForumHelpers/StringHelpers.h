@@ -99,7 +99,7 @@ namespace Forum
             }
 
             std::unique_ptr<char[]> ptr_;
-            std::size_t size_ = 0;
+            size_t size_ = 0;
         };
     }
 }

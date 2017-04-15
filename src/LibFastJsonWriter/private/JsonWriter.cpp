@@ -101,7 +101,7 @@ JsonWriter& JsonWriter::newProperty(const std::string& name)
     return *this;
 }
 
-JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name, std::size_t length)
+JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name, size_t length)
 {
     if (isCommaNeeded())
     {

@@ -53,9 +53,9 @@ namespace Json
 
         JsonWriter& newProperty(const std::string& name);
 
-        JsonWriter& newPropertyWithSafeName(const char* name, std::size_t length);
+        JsonWriter& newPropertyWithSafeName(const char* name, size_t length);
 
-        template<std::size_t Length>
+        template<size_t Length>
         JsonWriter& newPropertyWithSafeName(const char(&name)[Length])
         {
             //ignore null terminator
@@ -66,7 +66,7 @@ namespace Json
 
         JsonWriter& writeEscapedString(const char* value, size_t length = 0);
 
-        JsonWriter& writeSafeString(const char* value, std::size_t length)
+        JsonWriter& writeSafeString(const char* value, size_t length)
         {
             if (isCommaNeeded())
             {
@@ -241,7 +241,7 @@ namespace Json
             return *this;
         };
 
-        template<std::size_t Size>
+        template<size_t Size>
         void writeString(const char(&value)[Size])
         {
             //ignore null terminator
@@ -402,7 +402,7 @@ namespace Json
         { }
     };
 
-    template<typename T1, std::size_t T1Size, typename T2>
+    template<typename T1, size_t T1Size, typename T2>
     struct JsonWriterManipulatorPropertySafeNameArray
     {
         const T1(&argument1)[T1Size];
@@ -419,7 +419,7 @@ namespace Json
         return manipulator.function(writer, manipulator.argument1, manipulator.argument2);
     }
 
-    template<typename T1, std::size_t T1Size, typename T2>
+    template<typename T1, size_t T1Size, typename T2>
     JsonWriter& operator<<(JsonWriter& writer, JsonWriterManipulatorPropertySafeNameArray<T1, T1Size, T2> manipulator)
     {
         writer.newPropertyWithSafeName<T1Size>(manipulator.argument1) << manipulator.argument2;
@@ -455,7 +455,7 @@ namespace Json
                                                                          value);
     }
 
-    template<std::size_t StringSize, typename ValueType>
+    template<size_t StringSize, typename ValueType>
     JsonWriterManipulatorPropertySafeNameArray<const char, StringSize, ValueType> propertySafeName(const char(&name)[StringSize],
                                                                                                    const ValueType& value)
     {

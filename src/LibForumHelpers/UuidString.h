@@ -73,7 +73,7 @@ namespace Forum
             boost::uuids::uuid value_;
         };
 
-        inline std::size_t hash_value(const UuidString& value)
+        inline size_t hash_value(const UuidString& value)
         {
             return hash_value(value.value());
         }
