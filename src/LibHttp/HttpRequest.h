@@ -5,6 +5,7 @@
 #include "HttpConstants.h"
 #include "HttpStringHelpers.h"
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <utility>
@@ -23,5 +24,8 @@ namespace Http
         static constexpr size_t MaxQueryPairs = 64;
         std::pair<StringView, StringView> queryPairs[MaxQueryPairs];
         size_t nrOfQueryPairs = 0;
+
+        std::array<StringView, Buffer::MaximumBuffersForRequestBody> requestContentBuffers;
+        size_t nrOfRequestContentBuffers = 0;
     };
 }

@@ -48,6 +48,11 @@ namespace Http
             return request_;
         }
 
+        HttpRequest& mutableRequest()
+        {
+            return request_;
+        }
+
     private:
         
         typedef void (Parser::*ParserFn)(char*& buffer, size_t& size);

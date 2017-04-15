@@ -6,12 +6,12 @@
 
 using namespace Http;
 
-typedef FixedSizeBufferPool<HttpListener::ReadBufferSize> ReadBufferPoolType;
-typedef FixedSizeBufferPool<HttpListener::ReadBufferSize>::LeasedBufferType ReadBufferType;
-typedef FixedSizeBufferPool<HttpListener::WriteBufferSize> WriteBufferPoolType;
-typedef FixedSizeBufferPool<HttpListener::WriteBufferSize>::LeasedBufferType WriteBufferType;
-typedef ReadWriteBufferArray<HttpListener::ReadBufferSize, HttpListener::MaximumBuffersForRequestBody> RequestBodyBufferType;
-typedef ReadWriteBufferArray<HttpListener::WriteBufferSize, HttpListener::MaximumBuffersForResponse> ResponseBufferType;
+typedef FixedSizeBufferPool<Buffer::ReadBufferSize> ReadBufferPoolType;
+typedef FixedSizeBufferPool<Buffer::ReadBufferSize>::LeasedBufferType ReadBufferType;
+typedef FixedSizeBufferPool<Buffer::WriteBufferSize> WriteBufferPoolType;
+typedef FixedSizeBufferPool<Buffer::WriteBufferSize>::LeasedBufferType WriteBufferType;
+typedef ReadWriteBufferArray<Buffer::ReadBufferSize, Buffer::MaximumBuffersForRequestBody> RequestBodyBufferType;
+typedef ReadWriteBufferArray<Buffer::WriteBufferSize, Buffer::MaximumBuffersForResponse> ResponseBufferType;
 
 static void writeToBuffer(const char* data, size_t size, void* state)
 {
@@ -25,7 +25,7 @@ struct Http::HttpConnection final : private boost::noncopyable
         : listener_(listener), socket_(std::move(socket)), headerBuffer_(std::move(headerBuffer)), 
           requestBodyBuffer_(readBufferPool), responseBuffer_(writeBufferPool), 
           responseBuilder_(writeToBuffer, &responseBuffer_),
-          parser_(headerBuffer_->data, headerBuffer_->size, HttpListener::MaxRequestBodyLength, 
+          parser_(headerBuffer_->data, headerBuffer_->size, Buffer::MaxRequestBodyLength, 
               [](auto buffer, auto size, auto state)
               {
                   return reinterpret_cast<HttpConnection*>(state)->onReadBody(buffer, size);
@@ -69,9 +69,21 @@ struct Http::HttpConnection final : private boost::noncopyable
         if (parser_ == Parser::ParseResult::FINISHED)
         {
             //finished reading everything needed for the current request, so process it
-            auto& request = parser_.request();
+            auto& request = parser_.mutableRequest();
             keepConnectionAlive_ = parser_.request().keepConnectionAlive;
 
+            //add references to request content buffers
+            for (auto buffer : requestBodyBuffer_.constBufferWrapper())
+            {
+                if (request.nrOfRequestContentBuffers >= request.requestContentBuffers.size())
+                {
+                    break;
+                }
+                request.requestContentBuffers[request.nrOfRequestContentBuffers++] =
+                    StringView(boost::asio::buffer_cast<const char*>(buffer), boost::asio::buffer_size(buffer));
+            }
+
+            //add remote endpoint
             boost::system::error_code getAddressCode;
             boost::asio::ip::address remoteAddress{};
             auto remoteEndpoint = socket_.remote_endpoint(getAddressCode);

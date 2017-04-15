@@ -210,28 +210,6 @@ namespace Http
             notEnoughRoom_ = false;
         }
 
-        /**
-         * Reads the data in the buffers by invoking a callback for each individual buffer.
-         * The callback must accept a buffer and its size
-         */
-        template<typename Fn>        
-        void readAllData(Fn&& callback)
-        {
-            if (latestBuffer_ < 0)
-            {
-                //nothing written
-                return;
-            }
-            for (int i = 0; i < latestBuffer_; ++i)
-            {
-                //full buffers
-                callback(buffers_[i]->data.data(), BufferSize);
-            }
-            //latest possible partial full buffer
-            callback(buffers_[latestBuffer_]->data.data(), usedBytesInLatestBuffer_);
-        }
-
-
         typedef typename FixedSizeBufferPool<BufferSize>::LeasedBufferType BufferType;
 
         // implement the boost asio ConstBufferSequence concept
