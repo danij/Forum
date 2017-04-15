@@ -24,7 +24,7 @@ IpAddress::IpAddress(const boost::asio::ip::address& value)
     }
 }
 
-void IpAddress::parse(const char* string)
+IpAddress::IpAddress(const char* string)
 {
     boost::system::error_code ec;
     auto address = boost::asio::ip::address::from_string(string, ec);

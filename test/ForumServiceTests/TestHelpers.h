@@ -108,7 +108,7 @@ namespace Forum
             IpChanger(const std::string& newIp)
             {
                 oldIp_ = Context::getCurrentUserIpAddress();
-                Context::setCurrentUserIpAddress(newIp);
+                Context::setCurrentUserIpAddress(newIp.c_str());
             }
             ~IpChanger()
             {
@@ -116,7 +116,7 @@ namespace Forum
             }
 
         private:
-            std::string oldIp_;
+            IpAddress oldIp_;
         };
     }
 }

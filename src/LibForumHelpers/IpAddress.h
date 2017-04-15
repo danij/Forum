@@ -20,6 +20,7 @@ namespace Forum
 
             IpAddress();
             IpAddress(const boost::asio::ip::address& value);
+            IpAddress(const char* string);
 
             IpAddress(const IpAddress&) = default;
             IpAddress(IpAddress&&) = default;
@@ -33,7 +34,6 @@ namespace Forum
                     && data_.int32[1] == 0;
             }
 
-            void parse(const char* string);
             
             /**
              * Writes the string representation of the address to a buffer and returns the amount of bytes written
