@@ -1,11 +1,28 @@
 #include "IpAddress.h"
 
-#include <boost/asio/ip/address.hpp>
-
 #include <algorithm>
 #include <cassert>
 
 using namespace Forum::Helpers;
+
+IpAddress::IpAddress()
+{
+    data_.int32[0] = data_.int32[1] = data_.int32[2] = data_.int32[3] = 0;
+}
+
+IpAddress::IpAddress(const boost::asio::ip::address& value)
+{
+    if (value.is_v4())
+    {
+        auto bytes = value.to_v4().to_bytes();
+        std::copy(bytes.begin(), bytes.end(), data_.bytes);
+    }
+    else if (value.is_v6())
+    {
+        auto bytes = value.to_v6().to_bytes();
+        std::copy(bytes.begin(), bytes.end(), data_.bytes);
+    }
+}
 
 void IpAddress::parse(const char* string)
 {

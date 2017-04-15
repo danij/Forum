@@ -7,19 +7,27 @@
 #include <map>
 #include <tuple>
 
+#include <boost/asio/ip/address.hpp>
+
+#ifdef DELETE
+#undef DELETE
+#endif
+
 namespace Http
 {
     struct RequestState
     {
-        RequestState(const HttpRequest& request, HttpResponseBuilder& response, size_t nrOfPathCharactersUsedInRoute)
-            : request(request), response(response)
+        RequestState(const HttpRequest& request, HttpResponseBuilder& response, size_t nrOfPathCharactersUsedInRoute,
+                     const boost::asio::ip::address& remoteAddress)
+            : request(request), response(response), remoteAddress(remoteAddress)
         {
             extractExtraPathParts(nrOfPathCharactersUsedInRoute);
         }
 
         const HttpRequest& request;
         HttpResponseBuilder& response;
-        
+        boost::asio::ip::address remoteAddress;
+
         static constexpr size_t MaxExtraPathParts = 32;
         StringView extraPathParts[MaxExtraPathParts];
         size_t nrOfExtraPathParts = 0;
@@ -31,7 +39,8 @@ namespace Http
     class HttpRouter final : private boost::noncopyable
     {
     public:
-        void forward(const HttpRequest& request, HttpResponseBuilder& response);
+        void forward(const HttpRequest& request, HttpResponseBuilder& response,
+                     const boost::asio::ip::address& remoteAddress);
 
         typedef std::function<void(RequestState&)> HandlerFn;
 

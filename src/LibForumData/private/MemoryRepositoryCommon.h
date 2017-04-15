@@ -89,7 +89,7 @@ namespace Forum
         inline void updateCreated(Entities::CreatedMixin& entity)
         {
             entity.created() = Context::getCurrentTime();
-            entity.creationDetails().ip.parse(Context::getCurrentUserIpAddress().c_str());
+            entity.creationDetails().ip = Context::getCurrentUserIpAddress();
         }
 
         template<typename ByType>
@@ -97,7 +97,7 @@ namespace Forum
                                const typename Entities::LastUpdatedMixin<ByType>::ByTypeRef& by)
         {
             entity.lastUpdated() = Context::getCurrentTime();
-            entity.lastUpdatedDetails().ip.parse(Context::getCurrentUserIpAddress().c_str());
+            entity.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();
             entity.lastUpdatedBy() = by;
         }
     }

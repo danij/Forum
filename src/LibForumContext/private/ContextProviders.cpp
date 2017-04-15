@@ -5,6 +5,7 @@
 
 using namespace Forum::Context;
 using namespace Forum::Entities;
+using namespace Forum::Helpers;
 
 Timestamp getTimeSinceEpoch()
 {
@@ -41,14 +42,14 @@ void Forum::Context::setCurrentUserId(const IdType& value)
     currentUser = value;
 }
 
-static thread_local std::string currentIpAddress{};
+static thread_local IpAddress currentIpAddress = {};
 
-const std::string& Forum::Context::getCurrentUserIpAddress()
+const IpAddress& Forum::Context::getCurrentUserIpAddress()
 {
     return currentIpAddress;
 }
 
-void Forum::Context::setCurrentUserIpAddress(const std::string& value)
+void Forum::Context::setCurrentUserIpAddress(const IpAddress& value)
 {
     currentIpAddress = value;
 }

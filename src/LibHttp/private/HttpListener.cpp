@@ -25,7 +25,7 @@ struct Http::HttpConnection final : private boost::noncopyable
         : listener_(listener), socket_(std::move(socket)), headerBuffer_(std::move(headerBuffer)), 
           requestBodyBuffer_(readBufferPool), responseBuffer_(writeBufferPool), 
           responseBuilder_(writeToBuffer, &responseBuffer_),
-          parser_(headerBuffer_->data, headerBuffer_->size, HttpListener::MaxRequestBodyLength,
+          parser_(headerBuffer_->data, headerBuffer_->size, HttpListener::MaxRequestBodyLength, 
               [](auto buffer, auto size, auto state)
               {
                   return reinterpret_cast<HttpConnection*>(state)->onReadBody(buffer, size);
@@ -72,7 +72,14 @@ struct Http::HttpConnection final : private boost::noncopyable
             auto& request = parser_.request();
             keepConnectionAlive_ = parser_.request().keepConnectionAlive;
 
-            listener_.router().forward(request, responseBuilder_);
+            boost::system::error_code getAddressCode;
+            boost::asio::ip::address remoteAddress{};
+            auto remoteEndpoint = socket_.remote_endpoint(getAddressCode);
+            if ( ! getAddressCode)
+            {
+                remoteAddress = remoteEndpoint.address();
+            }
+            listener_.router().forward(request, responseBuilder_, remoteAddress);
 
             if ((0 == responseBuffer_.size()) || responseBuffer_.notEnoughRoom())
             {

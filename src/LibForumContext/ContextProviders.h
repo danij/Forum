@@ -2,6 +2,7 @@
 
 #include "EntityCommonTypes.h"
 #include "TypeHelpers.h"
+#include "IpAddress.h"
 
 #include <boost/asio/io_service.hpp>
 #include <boost/signals2/signal.hpp>
@@ -28,12 +29,12 @@ namespace Forum
         /**
          * Returns the IP address of the current user executing an action
          */
-        const std::string& getCurrentUserIpAddress();
+        const Helpers::IpAddress& getCurrentUserIpAddress();
 
         /**
         * Sets the IP address of the current user executing an action (thread-local)
         */
-        void setCurrentUserIpAddress(const std::string& value);
+        void setCurrentUserIpAddress(const Helpers::IpAddress& value);
 
         /**
          * Returns whether validations should be skipped (e.g. for populating data in benchmarks)

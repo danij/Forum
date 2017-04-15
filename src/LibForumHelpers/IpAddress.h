@@ -3,14 +3,28 @@
 #include <cstdint>
 #include <cstddef>
 
+#include <boost/asio/ip/address.hpp>
+
+#ifdef DELETE
+#undef DELETE
+#endif
+
 namespace Forum
 {
     namespace Helpers
     {
-        struct IpAddress
+        struct IpAddress final
         {
             constexpr static int MaxIPv4CharacterCount = 15;
             constexpr static int MaxIPv6CharacterCount = 39;
+
+            IpAddress();
+            IpAddress(const boost::asio::ip::address& value);
+
+            IpAddress(const IpAddress&) = default;
+            IpAddress(IpAddress&&) = default;
+            IpAddress& operator=(const IpAddress&) = default;
+            IpAddress& operator=(IpAddress&&) = default;
 
             bool isv4() const noexcept
             {
@@ -20,7 +34,7 @@ namespace Forum
             }
 
             void parse(const char* string);
-
+            
             /**
              * Writes the string representation of the address to a buffer and returns the amount of bytes written
              */
