@@ -3,108 +3,54 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
 using namespace Http;
 
 static StringView statusCodes[] = 
 {
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Continue", 8 },{ "Switching Protocols", 19 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "OK", 2 },{ "Created", 7 },{ "Accepted", 8 },{ "Non-Authoritative Information", 29 },
-    { "No Content", 10 },{ "Reset Content", 13 },{ "Partial Content", 15 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Multiple Choices", 16 },{ "Moved Permanently", 17 },{ "Found", 5 },{ "See Other", 9 },
-    { "Not Modified", 12 },{ "Use Proxy", 9 },{ "Unknown", 7 },{ "Temporary Redirect", 18 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Bad Request", 11 },{ "Unauthorized", 12 },{ "Payment Required", 16 },{ "Forbidden", 9 },
-    { "Not Found", 9 },{ "Method Not Allowed", 18 },{ "Not Acceptable", 14 },{ "Proxy Authentication Required", 29 },
-    { "Request Timeout", 15 },{ "Conflict", 8 },{ "Gone", 4 },{ "Length Required", 15 },{ "Precondition Failed", 19 },
-    { "Payload Too Large", 17 },{ "URI Too Long", 12 },{ "Unsupported Media Type", 22 },{ "Range Not Satisfiable", 21 },
-    { "Expectation Failed", 18 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Upgrade Required", 16 },
-    { "Unknown", 7 },{ "Precondition Required", 21 },{ "Too Many Requests", 17 },{ "Unknown", 7 },{ "Request Header Fields Too Large", 31 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Internal Server Error", 21 },{ "Not Implemented", 15 },{ "Bad Gateway", 11 },
-    { "Service Unavailable", 19 },{ "Gateway Timeout", 15 },{ "HTTP Version Not Supported", 26 },{ "Unknown", 7 },
-    { "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Unknown", 7 },{ "Network Authentication Required", 31 }
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, { "Continue", 8 }, { "Switching Protocols", 19 }, {}, {}, {}, 
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, { "OK", 2 }, { "Created", 7 }, { "Accepted", 8 }, 
+    { "Non-Authoritative Information", 29 }, { "No Content", 10 }, { "Reset Content", 13 }, { "Partial Content", 15 }, 
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, { "Multiple Choices", 16 }, { "Moved Permanently", 17 }, { "Found", 5 }, { "See Other", 9 },
+    { "Not Modified", 12 }, { "Use Proxy", 9 }, {}, { "Temporary Redirect", 18 }, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    { "Bad Request", 11 }, { "Unauthorized", 12 }, { "Payment Required", 16 }, { "Forbidden", 9 }, { "Not Found", 9 },
+    { "Method Not Allowed", 18 }, { "Not Acceptable", 14 }, { "Proxy Authentication Required", 29 },
+    { "Request Timeout", 15 }, { "Conflict", 8 }, { "Gone", 4 }, { "Length Required", 15 },
+    { "Precondition Failed", 19 }, { "Payload Too Large", 17 }, { "URI Too Long", 12 },
+    { "Unsupported Media Type", 22 }, { "Range Not Satisfiable", 21 }, { "Expectation Failed", 18 }, {}, {}, {}, {}, 
+    {}, {}, {}, {}, { "Upgrade Required", 16 }, {}, { "Precondition Required", 21 }, { "Too Many Requests", 17 }, {}, 
+    { "Request Header Fields Too Large", 31 }, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, 
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, 
+    { "Internal Server Error", 21 }, { "Not Implemented", 15 }, { "Bad Gateway", 11 }, { "Service Unavailable", 19 }, 
+    { "Gateway Timeout", 15 }, { "HTTP Version Not Supported", 26 }, {}, {}, {}, {}, {},
+    { "Network Authentication Required", 31 }
 };
 
 StringView Http::getStatusCodeString(HttpStatusCode code)
 {
+    static_assert(std::extent<decltype(statusCodes)>::value >= (HTTP_STATUS_CODES_COUNT - 1),
+                  "statusCodes array is not big enough");
+
+    StringView result;
     if (code > 0 && code < HttpStatusCode::HTTP_STATUS_CODES_COUNT)
     {
-        return statusCodes[code];
+        result = statusCodes[code];
     }
-    return statusCodes[0];
+    return result.size() ? result : StringView("Unknown", 7);
 }
 
 static int hashHeaderName(const char* text, size_t size)
