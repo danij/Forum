@@ -2,6 +2,8 @@
 #include "ContextProviders.h"
 #include "HttpStringHelpers.h"
 
+#include <vector>
+
 using namespace Forum;
 using namespace Forum::Commands;
 using namespace Forum::Helpers;
@@ -65,6 +67,29 @@ static void updateContextForRequest(const Http::HttpRequest& request)
     }
 }
 
+static thread_local std::vector<char> currentRequestContent(Http::Buffer::MaxRequestBodyLength);
+
+static StringView getPointerToEntireRequestBody(const Http::HttpRequest& request)
+{
+    if (request.nrOfRequestContentBuffers < 1)
+    {
+        return{};
+    }
+    if (request.nrOfRequestContentBuffers < 2)
+    {
+        return request.requestContentBuffers[0];
+    }
+
+    currentRequestContent.clear();
+
+    for (size_t i = 0; i < request.nrOfRequestContentBuffers; ++i)
+    {
+        auto& buffer = request.requestContentBuffers [i];
+        currentRequestContent.insert(currentRequestContent.end(), buffer.begin(), buffer.end());
+    }
+
+    return StringView(currentRequestContent.data(), currentRequestContent.size());
+}
 
 void AbstractEndpoint::handleDefault(Http::RequestState& requestState, View view, Command command,
                                      ExecuteCommandFn executeCommand)
