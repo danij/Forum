@@ -135,6 +135,7 @@ struct Http::HttpConnection final : private boost::noncopyable
         if (keepConnectionAlive_)
         {
             parser_.reset();
+            requestBodyBuffer_.reset();
             responseBuffer_.reset();
             responseBuilder_.reset();
             startReading();
