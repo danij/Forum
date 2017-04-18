@@ -186,7 +186,6 @@ void UsersEndpoint::getUserById(Http::RequestState& requestState)
                   [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
                      std::vector<StringView>& parameters)
     {
-        auto& request = requestState.request;
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_USER_BY_ID, parameters);
     });
@@ -198,9 +197,54 @@ void UsersEndpoint::getUserByName(Http::RequestState& requestState)
                   [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
                      std::vector<StringView>& parameters)
     {
-        auto& request = requestState.request;
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_USER_BY_NAME, parameters);
+    });
+}
+
+void UsersEndpoint::add(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::ADD_USER, parameters);
+    });
+}
+
+void UsersEndpoint::remove(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::DELETE_USER, parameters);
+    });
+}
+
+void UsersEndpoint::changeName(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_USER_NAME, parameters);
+    });
+}
+
+void UsersEndpoint::changeInfo(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_USER_INFO, parameters);
     });
 }
 
@@ -394,6 +438,98 @@ void DiscussionThreadsEndpoint::getSubscribedThreadsOfUser(Http::RequestState& r
     });
 }
 
+void DiscussionThreadsEndpoint::add(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::ADD_DISCUSSION_THREAD, parameters);
+    });
+}
+
+void DiscussionThreadsEndpoint::remove(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::DELETE_DISCUSSION_THREAD, parameters);
+    });
+}
+
+void DiscussionThreadsEndpoint::changeName(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_DISCUSSION_THREAD_NAME, parameters);
+    });
+}
+
+void DiscussionThreadsEndpoint::merge(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::MERGE_DISCUSSION_THREADS, parameters);
+    });
+}
+
+void DiscussionThreadsEndpoint::subscribe(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::SUBSCRIBE_TO_THREAD, parameters);
+    });
+}
+
+void DiscussionThreadsEndpoint::unsubscribe(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::UNSUBSCRIBE_FROM_THREAD, parameters);
+    });
+}
+
+void DiscussionThreadsEndpoint::addTag(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[1]);
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::ADD_DISCUSSION_TAG_TO_THREAD, parameters);
+    });
+}
+
+void DiscussionThreadsEndpoint::removeTag(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[1]);
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::REMOVE_DISCUSSION_TAG_FROM_THREAD, parameters);
+    });
+}
+
 DiscussionThreadMessagesEndpoint::DiscussionThreadMessagesEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
 {
 }
@@ -404,7 +540,6 @@ void DiscussionThreadMessagesEndpoint::getThreadMessagesOfUser(Http::RequestStat
                   [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
                      std::vector<StringView>& parameters)
     {
-        auto& request = requestState.request;
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, parameters);
     });
@@ -421,7 +556,6 @@ void DiscussionThreadMessagesEndpoint::getCommentsOfMessage(Http::RequestState& 
                   [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
                      std::vector<StringView>& parameters)
     {
-        auto& request = requestState.request;
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_MESSAGE_COMMENTS_OF_DISCUSSION_THREAD_MESSAGE, parameters);
     });
@@ -433,9 +567,114 @@ void DiscussionThreadMessagesEndpoint::getCommentsOfUser(Http::RequestState& req
                   [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
                      std::vector<StringView>& parameters)
     {
-        auto& request = requestState.request;
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_MESSAGE_COMMENTS_OF_USER, parameters);
+    });
+}
+
+void DiscussionThreadMessagesEndpoint::add(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::ADD_USER, parameters);
+    });
+}
+
+void DiscussionThreadMessagesEndpoint::remove(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::DELETE_DISCUSSION_THREAD_MESSAGE, parameters);
+    });
+}
+
+void DiscussionThreadMessagesEndpoint::changeContent(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, parameters);
+    });
+}
+
+void DiscussionThreadMessagesEndpoint::move(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::MOVE_DISCUSSION_THREAD_MESSAGE, parameters);
+    });
+}
+
+void DiscussionThreadMessagesEndpoint::upVote(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::UP_VOTE_DISCUSSION_THREAD_MESSAGE, parameters);
+    });
+}
+
+void DiscussionThreadMessagesEndpoint::downVote(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::DOWN_VOTE_DISCUSSION_THREAD_MESSAGE, parameters);
+    });
+}
+
+void DiscussionThreadMessagesEndpoint::resetVote(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::RESET_VOTE_DISCUSSION_THREAD_MESSAGE, parameters);
+    });
+}
+
+void DiscussionThreadMessagesEndpoint::addComment(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE, parameters);
+    });
+}
+
+void DiscussionThreadMessagesEndpoint::setCommentSolved(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::SET_MESSAGE_COMMENT_SOLVED, parameters);
     });
 }
 
@@ -466,6 +705,64 @@ void DiscussionTagsEndpoint::getAll(Http::RequestState& requestState)
             }
         }
         return commandHandler.handle(view, parameters);
+    });
+}
+
+void DiscussionTagsEndpoint::add(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::ADD_DISCUSSION_TAG, parameters);
+    });
+}
+
+void DiscussionTagsEndpoint::remove(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::DELETE_DISCUSSION_TAG, parameters);
+    });
+}
+
+void DiscussionTagsEndpoint::changeName(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_DISCUSSION_TAG_NAME, parameters);
+    });
+}
+
+void DiscussionTagsEndpoint::changeUiBlob(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_DISCUSSION_TAG_UI_BLOB, parameters);
+    });
+}
+
+void DiscussionTagsEndpoint::merge(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG, parameters);
     });
 }
 
@@ -510,8 +807,101 @@ void DiscussionCategoriesEndpoint::getCategoryById(Http::RequestState& requestSt
         [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
             std::vector<StringView>& parameters)
     {
-        auto& request = requestState.request;
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_DISCUSSION_CATEGORY_BY_ID, parameters);
+    });
+}
+
+void DiscussionCategoriesEndpoint::add(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::ADD_DISCUSSION_CATEGORY, parameters);
+    });
+}
+
+void DiscussionCategoriesEndpoint::remove(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::DELETE_DISCUSSION_CATEGORY, parameters);
+    });
+}
+
+void DiscussionCategoriesEndpoint::changeName(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_DISCUSSION_CATEGORY_NAME, parameters);
+    });
+}
+
+void DiscussionCategoriesEndpoint::changeDescription(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_DISCUSSION_CATEGORY_DESCRIPTION, parameters);
+    });
+}
+
+void DiscussionCategoriesEndpoint::changeParent(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_DISCUSSION_CATEGORY_PARENT, parameters);
+    });
+}
+
+void DiscussionCategoriesEndpoint::changeDisplayOrder(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER, parameters);
+    });
+}
+
+void DiscussionCategoriesEndpoint::addTag(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[1]);
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::ADD_DISCUSSION_TAG_TO_CATEGORY, parameters);
+    });
+}
+
+void DiscussionCategoriesEndpoint::removeTag(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {}, 
+                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
+                     std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[1]);
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, parameters);
     });
 }
