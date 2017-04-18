@@ -45,7 +45,7 @@ void ServiceEndpointManager::registerRoutes(Http::HttpRouter& router)
     
     router.addRoute("users/", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->usersEndpoint.getAll(state);});
-    router.addRoute("users/id/", Http::HttpVerb::GET,
+    router.addRoute("users/id", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->usersEndpoint.getUserById(state);});
     router.addRoute("users/name/", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->usersEndpoint.getUserByName(state);});
@@ -60,7 +60,7 @@ void ServiceEndpointManager::registerRoutes(Http::HttpRouter& router)
 
     router.addRoute("threads/", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->threadsEndpoint.getAll(state);});
-    router.addRoute("threads/", Http::HttpVerb::GET,
+    router.addRoute("threads/id", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->threadsEndpoint.getThreadById(state);});
     router.addRoute("threads/user/", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->threadsEndpoint.getThreadsOfUser(state);});
