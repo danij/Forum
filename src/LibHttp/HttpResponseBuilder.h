@@ -1,11 +1,14 @@
 #pragma once
 
 #include "HttpConstants.h"
+#include "HttpRequest.h"
 
 #include <cstddef>
+#include <cstdint>
+#include <ctime>
 
 #include <boost/noncopyable.hpp>
-#include "HttpParser.h"
+#include <boost/optional.hpp>
 
 namespace Http
 {
@@ -19,6 +22,52 @@ namespace Http
      */
     size_t buildSimpleResponseFromStatusCode(HttpStatusCode code, int_fast8_t majorVersion, int_fast8_t minorVersion,
                                              char* buffer);
+
+    struct CookieExtra
+    {
+        CookieExtra& expiresAt(time_t value)
+        {
+            expires = value;
+            return *this;
+        }
+
+        CookieExtra& maxAge(uint32_t seconds)
+        {
+            cookieMaxAge = seconds;
+            return *this;
+        }
+
+        CookieExtra& domain(StringView value)
+        {
+            cookieDomain = value;
+            return *this;
+        }
+
+        CookieExtra& path(StringView value)
+        {
+            cookiePath = value;
+            return *this;
+        }
+
+        CookieExtra& secure(bool value)
+        {
+            isSecure = value;
+            return *this;
+        }
+
+        CookieExtra& httpOnly(bool value)
+        {
+            isHttpOnly = value;
+            return *this;
+        }
+        
+        boost::optional<time_t> expires;
+        boost::optional<uint32_t> cookieMaxAge;
+        StringView cookieDomain;
+        StringView cookiePath;
+        bool isSecure = false;
+        bool isHttpOnly = false;
+    };
 
     class HttpResponseBuilder final : private boost::noncopyable
     {
@@ -53,6 +102,14 @@ namespace Http
         void writeHeader(const char(&name)[NameSize], const char (&value)[ValueSize])
         {
             writeHeader(StringView(name, NameSize - 1), StringView(value, ValueSize - 1));
+        }
+
+        void writeCookie(StringView name, StringView value, CookieExtra extra = {});
+
+        template<size_t NameSize>
+        void writeCookie(const char(&name)[NameSize], StringView value, CookieExtra extra = {})
+        {
+            writeCookie(StringView(name, NameSize - 1), value, std::move(extra));
         }
 
         void writeBody(const char* value, size_t length);

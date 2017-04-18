@@ -94,6 +94,11 @@ void HttpResponseBuilder::writeHeader(StringView name, int value)
     writeHeader(name, StringView(buffer, written));
 }
 
+void HttpResponseBuilder::writeCookie(StringView name, StringView value, CookieExtra extra)
+{
+    //TODO
+}
+
 void HttpResponseBuilder::writeBody(const char* value, size_t length)
 {
     assert(ProtocolState::ResponseCodeWritten == protocolState_);
