@@ -40,6 +40,7 @@ void Parser::reset()
     request_ = {};
     valid_ = true;
     finished_ = false;
+    errorCode_ = HttpStatusCode::Bad_Request;
     currentParser_ = &Parser::parseVerb;
     parsePathStartsAt_ = {};
     parseVersionStartsAt_ = {};
@@ -47,7 +48,8 @@ void Parser::reset()
     parseCurrentHeaderName_ = {};
     parseHeaderValueStartsAt_ = {};
     parseCurrentHeaderValue_ = {};
-    expectedContentLength_ = {};
+    expectedContentLength_ = 0;
+    requestBodyBytesProcessed_ = 0;
 }
 
 /**
