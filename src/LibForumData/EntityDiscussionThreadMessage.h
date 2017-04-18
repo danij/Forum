@@ -22,7 +22,7 @@ namespace Forum
          */
         struct DiscussionThreadMessage final : public Identifiable, 
                                                public CreatedMixin, 
-                                               public LastUpdatedMixin<User>,
+                                               public LastUpdatedMixinWithBy<User>,
                                                public MessageCommentCollectionBase<OrderedIndexForId>
         {
             typedef int_fast32_t VoteScoreType;

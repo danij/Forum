@@ -22,7 +22,7 @@ namespace Forum
         */
         struct DiscussionCategory final : public Identifiable, 
                                           public CreatedMixin, 
-                                          public LastUpdatedMixin<User>,
+                                          public LastUpdatedMixinWithBy<User>,
                                           public DiscussionThreadCollectionBase<HashIndexForId>,
                                           public std::enable_shared_from_this<DiscussionCategory>
         {

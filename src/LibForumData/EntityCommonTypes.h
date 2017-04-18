@@ -73,7 +73,6 @@ namespace Forum
             VisitDetails creationDetails_;
         };
 
-        template<typename ByType>
         struct LastUpdatedMixin
         {
             DECLARE_ABSTRACT_MANDATORY(LastUpdatedMixin)
@@ -86,6 +85,17 @@ namespace Forum
                         
                   std::string   lastUpdatedReason()  const { return lastUpdatedReason_; }
                   std::string&  lastUpdatedReason()        { return lastUpdatedReason_; }
+
+        private:
+            Timestamp lastUpdated_ = 0;
+            VisitDetails lastUpdatedDetails_;
+            std::string lastUpdatedReason_;
+        };
+
+        template<typename ByType>
+        struct LastUpdatedMixinWithBy : public LastUpdatedMixin
+        {
+            DECLARE_ABSTRACT_MANDATORY(LastUpdatedMixinWithBy)
 
             std::weak_ptr<ByType>& lastUpdatedBy() { return lastUpdatedBy_; }
 
@@ -101,10 +111,7 @@ namespace Forum
             typedef std::weak_ptr<ByType> ByTypeRef;
 
         private:
-            Timestamp lastUpdated_ = 0;
-            VisitDetails lastUpdatedDetails_;
             ByTypeRef lastUpdatedBy_;
-            std::string lastUpdatedReason_;
         };
     }
 }

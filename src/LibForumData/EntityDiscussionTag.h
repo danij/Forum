@@ -20,7 +20,7 @@ namespace Forum
         */
         struct DiscussionTag final : public Identifiable, 
                                      public CreatedMixin, 
-                                     public LastUpdatedMixin<User>,
+                                     public LastUpdatedMixinWithBy<User>,
                                      public DiscussionThreadCollectionBase<HashIndexForId>, 
                                      public IndicateDeletionInProgress
         {

@@ -22,7 +22,7 @@ namespace Forum
         */
         struct DiscussionThread final : public Identifiable, 
                                         public CreatedMixin, 
-                                        public LastUpdatedMixin<User>,
+                                        public LastUpdatedMixinWithBy<User>,
                                         public DiscussionThreadMessageCollectionBase<OrderedIndexForId>,
                                         public IndicateDeletionInProgress,
                                         public std::enable_shared_from_this<DiscussionThread>
