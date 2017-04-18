@@ -197,7 +197,7 @@ void showEntitySizes()
     std::cout << "----                                   -----\n";
     std::cout << "Identifiable                           " << std::setw(5) << sizeof(Entities::Identifiable) << '\n';
     std::cout << "CreatedMixin                           " << std::setw(5) << sizeof(Entities::CreatedMixin) << '\n';
-    std::cout << "LastUpdatedMixin<User>                 " << std::setw(5) << sizeof(Entities::LastUpdatedMixin<Entities::User>) << '\n';
+    std::cout << "LastUpdatedMixin<User>                 " << std::setw(5) << sizeof(Entities::LastUpdatedMixinWithBy<Entities::User>) << '\n';
     std::cout << "User                                   " << std::setw(5) << sizeof(Entities::User) << '\n';
     std::cout << "UserCollectionBase                     " << std::setw(5) << sizeof(Entities::UserCollectionBase<Entities::OrderedIndexForId>) << '\n';
     std::cout << "DiscussionThread                       " << std::setw(5) << sizeof(Entities::DiscussionThread) << '\n';
