@@ -22,7 +22,8 @@ static const std::string emptyString;
 template<typename Collection>
 auto countNonEmpty(const Collection& collection)
 {
-    return std::count_if(collection.begin(), collection.end(), [](auto& view) { return view.size() > 0; });
+    return static_cast<size_t>(std::count_if(collection.begin(), collection.end(), 
+                               [](auto& view) { return view.size() > 0; }));
 }
 
 struct CommandHandler::CommandHandlerImpl
