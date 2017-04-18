@@ -19,6 +19,12 @@ static thread_local std::string outputBuffer;
 
 static const std::string emptyString;
 
+template<typename Collection>
+auto countNonEmpty(const Collection& collection)
+{
+    return std::count_if(collection.begin(), collection.end(), [](auto& view) { return view.size() > 0; });
+}
+
 struct CommandHandler::CommandHandlerImpl
 {
     std::function<StatusCode(const std::vector<StringView>&, OutStream&)> commandHandlers[int(LAST_COMMAND)];
@@ -40,7 +46,7 @@ struct CommandHandler::CommandHandlerImpl
 
     static bool checkNumberOfParameters(const std::vector<StringView>& parameters, OutStream& output, size_t number)
     {
-        if (parameters.size() != number)
+        if (countNonEmpty(parameters) != number)
         {
             writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
             return false;
@@ -61,7 +67,7 @@ struct CommandHandler::CommandHandlerImpl
 
     static bool checkMinNumberOfParameters(const std::vector<StringView>& parameters, OutStream& output, size_t number)
     {
-        if (parameters.size() < number)
+        if (countNonEmpty(parameters) < number)
         {
             writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
             return false;
