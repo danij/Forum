@@ -20,6 +20,7 @@ namespace Http
             int_fast32_t numberOfWriteBuffers;
             std::string listenIPAddress;
             uint16_t listenPort;
+            int_fast16_t connectionTimeoutSeconds;
         };
         
         explicit HttpListener(Configuration config, HttpRouter& router, boost::asio::io_service& ioService);

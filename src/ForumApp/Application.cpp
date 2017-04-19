@@ -41,6 +41,7 @@ Application::Application(int argc, const char* argv[])
     httpConfig.numberOfWriteBuffers = forumConfig->service.numberOfWriteBuffers;
     httpConfig.listenIPAddress = forumConfig->service.listenIPAddress;
     httpConfig.listenPort = forumConfig->service.listenPort;
+    httpConfig.connectionTimeoutSeconds = forumConfig->service.connectionTimeoutSeconds;
 
     httpRouter_ = std::make_unique<HttpRouter>();
     endpointManager_ = std::make_unique<ServiceEndpointManager>(*commandHandler_);
