@@ -65,6 +65,17 @@ static void updateContextForRequest(const Http::HttpRequest& request)
             displayContext.sortOrder = Context::SortOrder::Descending;
         }
     }
+
+    for (size_t i = 0; i < request.nrOfCookies; ++i)
+    {
+        auto& name = request.cookies[i].first;
+        auto& value = request.cookies[i].second;
+
+        if (Http::matchStringUpperOrLower(name, "tTeEmMpPuUsSeErRiIdD"))
+        {
+            Context::setCurrentUserId(value);
+        }
+    }
 }
 
 static thread_local std::vector<char> currentRequestContent(Http::Buffer::MaxRequestBodyLength);
