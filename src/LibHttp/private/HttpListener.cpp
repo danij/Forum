@@ -18,6 +18,18 @@ static void writeToBuffer(const char* data, size_t size, void* state)
     reinterpret_cast<ResponseBufferType*>(state)->write(data, size);
 }
 
+static void closeSocket(boost::asio::ip::tcp::socket& socket)
+{
+    try
+    {
+        socket.shutdown(boost::asio::socket_base::shutdown_both);
+        socket.close();
+    }
+    catch (...)
+    {
+    }
+}
+
 struct Http::HttpConnection final : private boost::noncopyable
 {
     explicit HttpConnection(HttpListener& listener, boost::asio::ip::tcp::socket&& socket, ReadBufferType&& headerBuffer, 
@@ -142,14 +154,7 @@ struct Http::HttpConnection final : private boost::noncopyable
         }
         else
         {
-            try
-            {
-                socket_.shutdown(boost::asio::socket_base::shutdown_both);
-                socket_.close();
-            }
-            catch (...)
-            {
-            }
+            closeSocket(socket_);
             listener_.release(this);
         }
     }
@@ -279,24 +284,26 @@ void HttpListener::onAccept(const boost::system::error_code& ec)
         return;
     }
 
+    auto closeConnection = true;
+
     auto headerBuffer = impl_->readBuffers->leaseBuffer();
 
     if (headerBuffer)
     {
-        try
+        auto connection = impl_->connectionPool.getObject(*this, std::move(impl_->socket), std::move(headerBuffer),
+                                                            *impl_->readBuffers, *impl_->writeBuffers);
+        if (nullptr != connection)
         {
-            auto connection = impl_->connectionPool.getObject(*this, std::move(impl_->socket), std::move(headerBuffer),
-                                                              *impl_->readBuffers, *impl_->writeBuffers);
-            if (nullptr != connection)
-            {
-                connection->startReading();
-            }
-        }
-        catch(...)
-        {
-            //TODO: log error
+            closeConnection = false;
+            connection->startReading();
         }
     }
+
+    if (closeConnection)
+    {
+        closeSocket(impl_->socket);
+    }
+
     startAccept();
 }
 
