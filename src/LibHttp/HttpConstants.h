@@ -127,6 +127,7 @@ namespace Http
             Content_MD5,
             Content_Range,
             Content_Type,
+            Cookie,
             Date,
             DNT,
             ETag,

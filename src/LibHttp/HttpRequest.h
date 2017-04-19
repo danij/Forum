@@ -32,6 +32,10 @@ namespace Http
         std::pair<StringView, StringView> queryPairs[MaxQueryPairs];
         size_t nrOfQueryPairs = 0;
 
+        static constexpr size_t MaxCookies = 32;
+        std::pair<StringView, StringView> cookies[MaxCookies];
+        size_t nrOfCookies = 0;
+
         std::array<StringView, Buffer::MaximumBuffersForRequestBody> requestContentBuffers;
         size_t nrOfRequestContentBuffers = 0;
     };

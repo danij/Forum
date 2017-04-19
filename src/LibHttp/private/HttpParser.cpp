@@ -306,6 +306,8 @@ void Parser::interpretImportantHeaders()
         valid_ = false;
         errorCode_ = HttpStatusCode::Expectation_Failed;
     }
+
+    interpretCookies(request_.headers[Request::HttpHeader::Cookie]);
 }
 
 void Parser::interpretPathString()
@@ -348,6 +350,74 @@ void Parser::interpretPathString()
                 request_.nrOfQueryPairs += 1;
                 keyStart = keyEnd = i + 1;
                 state = 1;
+            }
+            break;
+        }
+    }
+}
+
+void Parser::interpretCookies(StringView value)
+{
+    int state = 0;
+    auto cookieStart = const_cast<char*>(value.data());
+    int nameStart = 0, nameEnd = 0, valueStart = 0, valueEnd = 0;
+
+    for (int i = 0, n = value.size(); i < n; ++i)
+    {
+        auto c = value[i];
+
+        switch (state)
+        {
+        case 0: //name
+            if ('=' == c)
+            {
+                nameEnd = i;
+                state = 1;
+                valueStart = valueEnd = i + 1;
+            }
+            else if ((';' == c) || ((i + 1) == n))
+            {
+                //no name, just a value
+                valueEnd = i;
+                if ((i + 1) == n)
+                {
+                    valueEnd += 1;
+                }
+                while (cookieStart[valueStart] == ' ') valueStart += 1;
+                while (cookieStart[valueEnd - 1] == ' ') valueEnd -= 1;
+
+                request_.cookies[request_.nrOfCookies].first = {};
+                request_.cookies[request_.nrOfCookies].second =
+                    viewAfterDecodingUrlEncodingInPlace(valueEnd > valueStart ? cookieStart + valueStart : nullptr,
+                        valueEnd - valueStart);
+
+                request_.nrOfCookies += 1;
+                nameStart = nameEnd = valueStart = valueEnd = i + 1;
+                state = 0;
+            }
+            break;
+        case 1: //value
+            if ((';' == c) || ((i + 1) == n))
+            {
+                valueEnd = i;
+                if ((i + 1) == n)
+                {
+                    valueEnd += 1;
+                }
+                while (cookieStart[nameStart] == ' ') nameStart += 1;
+                while (cookieStart[nameEnd - 1] == ' ') nameEnd -= 1;
+                while (cookieStart[valueStart] == ' ') valueStart += 1;
+                while (cookieStart[valueEnd - 1] == ' ') valueEnd -= 1;
+
+                request_.cookies[request_.nrOfCookies].first = 
+                        viewAfterDecodingUrlEncodingInPlace(nameEnd > nameStart ? cookieStart + nameStart : nullptr, 
+                                                            nameEnd - nameStart);
+                request_.cookies[request_.nrOfCookies].second =
+                        viewAfterDecodingUrlEncodingInPlace(valueEnd > valueStart ? cookieStart + valueStart : nullptr, 
+                                                            valueEnd - valueStart);
+                request_.nrOfCookies += 1;
+                nameStart = nameEnd = valueStart = valueEnd = i + 1;
+                state = 0;
             }
             break;
         }

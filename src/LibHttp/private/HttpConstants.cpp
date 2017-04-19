@@ -125,6 +125,7 @@ HEADER_COMPARER(233, "cCoOnNtTeEnNtT--rRaAnNgGeE", Request::HttpHeader::Content_
 HEADER_COMPARER(238, "aAlLlLoOwW", Request::HttpHeader::Allow)
 HEADER_COMPARER(240, "lLaAsStT--mMoOdDiIfFiIeEdD", Request::HttpHeader::Last_Modified)
 HEADER_COMPARER(245, "iIfF--nNoOnNeE--mMaAtTcChH", Request::HttpHeader::If_None_Match)
+HEADER_COMPARER(246, "cCoOoOkKiIeE", Request::HttpHeader::Cookie)
 HEADER_COMPARER(247, "cCaAcChHeE--cCoOnNtTrRoOlL", Request::HttpHeader::Cache_Control)
 HEADER_COMPARER(249, "aAuUtThHoOrRiIzZaAtTiIoOnN", Request::HttpHeader::Authorization)
 HEADER_COMPARER(251, "pPrRaAgGmMaA", Request::HttpHeader::Pragma)
@@ -167,7 +168,7 @@ static MatchFunction matchFunctionTable[] =
     match_210, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, match_219,
     nullptr, match_221, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, match_229,
     match_230, nullptr, nullptr, match_233, nullptr, nullptr, nullptr, nullptr, match_238, nullptr,
-    match_240, nullptr, nullptr, nullptr, nullptr, match_245, nullptr, match_247, nullptr, match_249,
+    match_240, nullptr, nullptr, nullptr, nullptr, match_245, match_246, match_247, nullptr, match_249,
     nullptr, match_251, nullptr, nullptr, match_254, nullptr, nullptr, nullptr, nullptr, match_259,
     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
     nullptr, nullptr, nullptr, match_273, match_274, nullptr, nullptr, nullptr, match_278, nullptr,
