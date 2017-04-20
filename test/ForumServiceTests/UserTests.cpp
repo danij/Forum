@@ -375,6 +375,21 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name_case_and_accent_insensitive
     BOOST_REQUIRE_EQUAL("HélĹǬ", user.get<std::string>("user.name"));
 }
 
+BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name_even_if_using_a_different_normalization_form )
+{
+    //"HélĹǬ" as UTF-8
+    const char nameFormC[] = { 72, -61, -87, 108, -60, -71, -57, -84, 0 };
+    const char nameFormD[] = { 72, 101, -52, -127, 108, 76, -52, -127, 79, -52, -88, -52, -124, 0 };
+
+    auto handler = createCommandHandler();
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_USER, { nameFormC }));
+
+    auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { nameFormD });
+
+    BOOST_REQUIRE( ! isIdEmpty(user.get<std::string>("user.id")));
+    BOOST_REQUIRE_EQUAL(nameFormC, user.get<std::string>("user.name"));
+}
+
 BOOST_AUTO_TEST_CASE( Modifying_a_user_name_succeds )
 {
     auto handler = createCommandHandler();
