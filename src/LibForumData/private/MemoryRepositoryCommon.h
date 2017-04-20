@@ -8,7 +8,6 @@
 
 #include <boost/core/noncopyable.hpp>
 #include <boost/optional.hpp>
-#include <boost/regex/icu.hpp>
 
 namespace Forum
 {
@@ -73,11 +72,28 @@ namespace Forum
                 INVALID_PARAMETERS_FOR_EMPTY_STRING
             };
 
-            static StatusCode validateString(const StringView& string, 
-                                             boost::optional<const boost::u32regex&> regex,
+            static StatusCode validateString(StringView string, 
                                              EmptyStringValidation emptyValidation,
                                              boost::optional<int_fast32_t> minimumLength, 
                                              boost::optional<int_fast32_t> maximumLength);
+
+            template<typename Fn>
+            static StatusCode validateString(StringView string, 
+                                             EmptyStringValidation emptyValidation,
+                                             boost::optional<int_fast32_t> minimumLength, 
+                                             boost::optional<int_fast32_t> maximumLength,
+                                             Fn&& extraValidation)
+            {
+                auto initialResult = validateString(string, emptyValidation, minimumLength, maximumLength);
+                if (StatusCode::OK != initialResult)
+                {
+                    return initialResult;
+                }
+                return extraValidation(string) ? StatusCode::OK : StatusCode::INVALID_PARAMETERS;
+            }
+
+            static bool doesNotContainLeadingOrTrailingWhitespace(StringView& input);
+
             MemoryStoreRef store_;
         };
 

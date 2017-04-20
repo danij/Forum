@@ -17,11 +17,7 @@ using namespace Forum::Authorization;
 
 MemoryRepositoryDiscussionThreadMessage::MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store, 
                                                                                  DiscussionThreadMessageAuthorizationRef authorization)
-    : MemoryRepositoryBase(std::move(store)),
-    validDiscussionMessageContentRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
-    validDiscussionMessageCommentRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
-    validDiscussionMessageChangeReasonRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
-    authorization_(std::move(authorization))
+    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization))
 {
     if ( ! authorization_)
     {
@@ -90,9 +86,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
     }
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(content, validDiscussionMessageContentRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto validationCode = validateString(content, INVALID_PARAMETERS_FOR_EMPTY_STRING,
                                          config->discussionThreadMessage.minContentLength, 
-                                         config->discussionThreadMessage.maxContentLength);
+                                         config->discussionThreadMessage.maxContentLength,
+                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
 
     if (validationCode != StatusCode::OK)
     {
@@ -234,10 +231,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
 
     auto config = getGlobalConfig();
 
-    auto contentValidationCode = validateString(newContent, validDiscussionMessageContentRegex, 
-                                                INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto contentValidationCode = validateString(newContent, INVALID_PARAMETERS_FOR_EMPTY_STRING,
                                                 config->discussionThreadMessage.minContentLength, 
-                                                config->discussionThreadMessage.maxContentLength);
+                                                config->discussionThreadMessage.maxContentLength,
+                                                &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (contentValidationCode != StatusCode::OK)
     {
         return status = contentValidationCode;
@@ -245,10 +242,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
 
     auto reasonEmptyValidation = 0 == config->discussionThreadMessage.minChangeReasonLength
                                  ? ALLOW_EMPTY_STRING : INVALID_PARAMETERS_FOR_EMPTY_STRING;
-    auto reasonValidationCode = validateString(newContent, validDiscussionMessageChangeReasonRegex,
-                                               reasonEmptyValidation,
+    auto reasonValidationCode = validateString(newContent, reasonEmptyValidation,
                                                config->discussionThreadMessage.minChangeReasonLength, 
-                                               config->discussionThreadMessage.maxChangeReasonLength);
+                                               config->discussionThreadMessage.maxChangeReasonLength,
+                                               &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (reasonValidationCode != StatusCode::OK)
     {
         return status = reasonValidationCode;
@@ -678,10 +675,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
     }
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(content, validDiscussionMessageCommentRegex,
-                                         INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto validationCode = validateString(content, INVALID_PARAMETERS_FOR_EMPTY_STRING,
                                          config->discussionThreadMessage.minCommentLength,
-                                         config->discussionThreadMessage.maxCommentLength);
+                                         config->discussionThreadMessage.maxCommentLength,
+                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;

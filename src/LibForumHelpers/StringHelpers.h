@@ -3,6 +3,7 @@
 #include "TypeHelpers.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -12,21 +13,69 @@ namespace Forum
     namespace Helpers
     {
         /**
+         * Returns whether the character is the first byte in a sequence composing a UTF-8 encoded string
+         */
+        inline auto isFirstByteInUTF8Sequence(char c)
+        {
+            auto s = static_cast<uint8_t>(c);
+            return s < 0b10000000 || s >= 0b11000000;
+        }
+
+        /**
          * Returns the number of characters from a valid UTF-8 input
          */
         template<typename It>
         auto countUTF8Characters(It begin, It end)
         {
-            return static_cast<int_fast32_t>(std::count_if(begin, end, [](auto c)
-            {
-                auto v = static_cast<uint8_t>(c);
-                return v < 0b10000000 || v >= 0b11000000;
-            }));
+            return static_cast<int_fast32_t>(std::count_if(begin, end, isFirstByteInUTF8Sequence));
         }
 
         inline auto countUTF8Characters(StringView view)
         {
             return countUTF8Characters(view.begin(), view.end());
+        }
+
+        inline size_t nrOfBytesForUTF8Character(char c)
+        {
+            auto u = static_cast<uint8_t>(c);
+            switch (u >> 4)
+            {
+            case 0b1110:
+                return 3;
+            case 0b1111:
+                return 4;
+            default:
+                if ((u >> 5) == 0b110)
+                {
+                    return 2;
+                }
+                return 1;
+            }
+        }
+
+        inline auto getFirstCharacterInUTF8Array(StringView view)
+        {
+            if (view.size() < 1)
+            {
+                return view;
+            }
+            return StringView(view.data(), std::min(nrOfBytesForUTF8Character(view[0]), view.size()));
+        }
+
+        inline auto getLastCharacterInUTF8Array(StringView view)
+        {
+            if (view.size() < 1)
+            {
+                return view;
+            }
+            for (int i = view.size() - 1; i >= 0; --i)
+            {
+                if (isFirstByteInUTF8Sequence(view[i]))
+                {
+                    return StringView(view.data() + i, view.size() - i);
+                }
+            }
+            return StringView{};
         }
 
         /**

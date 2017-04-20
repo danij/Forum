@@ -17,9 +17,7 @@ using namespace Forum::Authorization;
 
 MemoryRepositoryDiscussionThread::MemoryRepositoryDiscussionThread(MemoryStoreRef store, 
                                                                    DiscussionThreadAuthorizationRef authorization)
-    : MemoryRepositoryBase(std::move(store)),
-    validDiscussionThreadNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
-    authorization_(std::move(authorization))
+    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization))
 {
     if ( ! authorization_)
     {
@@ -345,8 +343,10 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const String
     StatusWriter status(output, StatusCode::OK);
     
     auto config = getGlobalConfig();
-    auto validationCode = validateString(name, validDiscussionThreadNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->discussionThread.minNameLength, config->discussionThread.maxNameLength);
+    auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->discussionThread.minNameLength, 
+                                         config->discussionThread.maxNameLength,
+                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -398,8 +398,10 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const Id
     StatusWriter status(output, StatusCode::OK);
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(newName, validDiscussionThreadNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->discussionThread.minNameLength, config->discussionThread.maxNameLength);
+    auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->discussionThread.minNameLength, 
+                                         config->discussionThread.maxNameLength,
+                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;

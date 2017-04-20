@@ -43,7 +43,6 @@ namespace Forum
             StatusCode unsubscribeFromDiscussionThread(const Entities::IdType& id, OutStream& output) override;
 
         private:
-            boost::u32regex validDiscussionThreadNameRegex;
             Authorization::DiscussionThreadAuthorizationRef authorization_;
         };
     }

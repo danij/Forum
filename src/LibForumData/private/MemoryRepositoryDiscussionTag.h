@@ -30,7 +30,6 @@ namespace Forum
             StatusCode mergeDiscussionTags(const Entities::IdType& fromId, const Entities::IdType& intoId,
                                            OutStream& output) override;
         private:
-            boost::u32regex validDiscussionTagNameRegex;
             Authorization::DiscussionTagAuthorizationRef authorization_;
         };
     }

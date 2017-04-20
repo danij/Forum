@@ -25,7 +25,6 @@ namespace Forum
             StatusCode deleteUser(const Entities::IdType& id, OutStream& output) override;
 
         private:
-            boost::u32regex validUserNameRegex;
             Authorization::UserAuthorizationRef authorization_;
         };
     }

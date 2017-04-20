@@ -17,9 +17,7 @@ using namespace Forum::Authorization;
 
 MemoryRepositoryDiscussionCategory::MemoryRepositoryDiscussionCategory(MemoryStoreRef store, 
                                                                        DiscussionCategoryAuthorizationRef authorization)
-    : MemoryRepositoryBase(std::move(store)),
-    validDiscussionCategoryNameRegex(boost::make_u32regex("^[^[:space:]]+.*[^[:space:]]+$")),
-    authorization_(std::move(authorization))
+    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization))
 {
     if ( ! authorization_)
     {
@@ -155,9 +153,10 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const St
     StatusWriter status(output, StatusCode::OK);
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(name, validDiscussionCategoryNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
                                          config->discussionCategory.minNameLength, 
-                                         config->discussionCategory.maxNameLength);
+                                         config->discussionCategory.maxNameLength,
+                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -234,9 +233,10 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
     }
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(newName, validDiscussionCategoryNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
                                          config->discussionCategory.minNameLength,
-                                         config->discussionCategory.maxNameLength);
+                                         config->discussionCategory.maxNameLength,
+                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;

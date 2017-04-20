@@ -5,6 +5,12 @@
 #include "EntitySerialization.h"
 #include "OutputHelpers.h"
 
+#include <algorithm>
+#include <type_traits>
+
+#include <unicode/uchar.h>
+#include <unicode/ustring.h>
+
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -75,16 +81,7 @@ UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
     return result;
 }
 
-static bool u32regex_match(const StringView& s,
-                           const boost::u32regex& e,
-                           boost::match_flag_type flags = boost::match_default)
-{
-    boost::match_results<const char*> m;
-    return boost::BOOST_REGEX_DETAIL_NS::do_regex_match(s.begin(), s.end(), m, e, flags, static_cast<boost::mpl::int_<1> const*>(0));
-}
-
-StatusCode MemoryRepositoryBase::validateString(const StringView& string, 
-                                                boost::optional<const boost::u32regex&> regex,
+StatusCode MemoryRepositoryBase::validateString(StringView string, 
                                                 EmptyStringValidation emptyValidation,
                                                 boost::optional<int_fast32_t> minimumLength, 
                                                 boost::optional<int_fast32_t> maximumLength)
@@ -109,17 +106,39 @@ StatusCode MemoryRepositoryBase::validateString(const StringView& string,
         return StatusCode::VALUE_TOO_SHORT;
     }
 
-    try
+    return StatusCode::OK;
+}
+
+bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView& input)
+{
+    if (input.size() < 1)
     {
-        if (regex && ! u32regex_match(string, *regex, boost::match_flag_type::format_all))
-        {
-            return StatusCode::INVALID_PARAMETERS;
-        }
-    }
-    catch (...)
-    {
-        return StatusCode::INVALID_PARAMETERS;
+        return true;
     }
 
-    return StatusCode::OK;
+    char firstLastUtf8[2 * 4];
+    UChar temp[2 * 4];
+    UChar32 u32Buffer[2];
+
+    int32_t written;
+    UErrorCode errorCode{};
+
+    auto firstCharView = getFirstCharacterInUTF8Array(input);
+    auto lastCharView = getLastCharacterInUTF8Array(input);
+
+    auto nrOfFirstCharBytes = std::min(4u, firstCharView.size());
+    auto nrOfLastCharBytes = std::min(4u, lastCharView.size());
+
+    std::copy(firstCharView.data(), firstCharView.data() + nrOfFirstCharBytes, firstLastUtf8);
+    std::copy(lastCharView.data(), lastCharView.data() + nrOfLastCharBytes, firstLastUtf8 + nrOfFirstCharBytes);
+
+    auto u16Chars = u_strFromUTF8(temp, std::extent<decltype(temp)>::value, &written,
+                                  firstLastUtf8, nrOfFirstCharBytes + nrOfLastCharBytes, &errorCode);
+    if (U_FAILURE(errorCode)) return false;
+    
+    errorCode = {};
+    auto u32Chars = u_strToUTF32(u32Buffer, 2, &written, u16Chars, written, &errorCode);
+    if (U_FAILURE(errorCode)) return false;
+
+    return (u_isUWhiteSpace(u32Chars[0]) == FALSE) && (u_isUWhiteSpace(u32Chars[1]) == FALSE);
 }

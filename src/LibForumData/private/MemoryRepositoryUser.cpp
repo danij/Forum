@@ -8,6 +8,9 @@
 #include "StateHelpers.h"
 #include "StringHelpers.h"
 
+#include <unicode/ustring.h>
+#include <unicode/uchar.h>
+
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -15,9 +18,49 @@ using namespace Forum::Helpers;
 using namespace Forum::Repository;
 using namespace Forum::Authorization;
 
+static bool isValidUserName(StringView input)
+{
+    //"^[[:alnum:]]+[ _-]*[[:alnum:]]+$"
+    if (input.size() < 1)
+    {
+        return false;
+    }
+
+    static constexpr size_t MaxU16Chars = 2048;
+    static constexpr size_t MaxU32Chars = MaxU16Chars / 2;
+    UChar u16Buffer[MaxU16Chars];
+    UChar32 u32Buffer[MaxU32Chars];
+
+    int32_t written;
+    UErrorCode errorCode{};
+
+    auto u16Chars = u_strFromUTF8(u16Buffer, MaxU16Chars, &written, input.data(), input.size(), &errorCode);
+    if (U_FAILURE(errorCode)) return false;
+
+    errorCode = {};
+    auto u32Chars = u_strToUTF32(u32Buffer, MaxU32Chars, &written, u16Chars, written, &errorCode);
+    if (U_FAILURE(errorCode)) return false;
+
+    if ((u_isalnum(u32Chars[0]) == FALSE) || (u_isalnum(u32Chars[written - 1]) == FALSE))
+    {
+        return false;
+    }
+
+    for (int i = 1; i < written - 1; ++i)
+    {
+        if (' ' == u32Chars[i]) continue;
+        if ('_' == u32Chars[i]) continue;
+        if ('-' == u32Chars[i]) continue;
+        if (u_isalnum(u32Chars[i])) continue;
+
+        return false;
+    }
+
+    return true;
+}
+
 MemoryRepositoryUser::MemoryRepositoryUser(MemoryStoreRef store, UserAuthorizationRef authorization) 
-    : MemoryRepositoryBase(std::move(store)), validUserNameRegex(boost::make_u32regex("^[[:alnum:]]+[ _-]*[[:alnum:]]+$")),
-    authorization_(std::move(authorization))
+    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization))
 {
     if ( ! authorization_)
     {
@@ -163,8 +206,9 @@ StatusCode MemoryRepositoryUser::addNewUser(const StringView& name, OutStream& o
     StatusWriter status(output, StatusCode::OK);
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(name, validUserNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING, 
-                                         config->user.minNameLength, config->user.maxNameLength);
+    auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING, 
+                                         config->user.minNameLength, config->user.maxNameLength,
+                                         isValidUserName);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -217,8 +261,9 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const StringVi
 {
     StatusWriter status(output, StatusCode::OK);
     auto config = getGlobalConfig();
-    auto validationCode = validateString(newName, validUserNameRegex, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->user.minNameLength, config->user.maxNameLength);
+    auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->user.minNameLength, config->user.maxNameLength,
+                                         isValidUserName);
 
     if (validationCode != StatusCode::OK)
     {
@@ -270,7 +315,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, const StringVi
     StatusWriter status(output, StatusCode::OK);
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(newInfo, boost::none, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto validationCode = validateString(newInfo, INVALID_PARAMETERS_FOR_EMPTY_STRING,
                                          config->user.minInfoLength, config->user.maxInfoLength);
 
     if (validationCode != StatusCode::OK)

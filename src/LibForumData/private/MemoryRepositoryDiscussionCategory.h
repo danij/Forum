@@ -39,7 +39,6 @@ namespace Forum
                                                        const Entities::IdType& categoryId, 
                                                        OutStream& output) override;
         private:
-            boost::u32regex validDiscussionCategoryNameRegex;
             Authorization::DiscussionCategoryAuthorizationRef authorization_;
         };
     }

@@ -40,9 +40,6 @@ namespace Forum
         private:
             StatusCode voteDiscussionThreadMessage(const Entities::IdType& id, OutStream& output, bool up);
 
-            boost::u32regex validDiscussionMessageContentRegex;
-            boost::u32regex validDiscussionMessageCommentRegex;
-            boost::u32regex validDiscussionMessageChangeReasonRegex;
             Authorization::DiscussionThreadMessageAuthorizationRef authorization_;
         };
     }
