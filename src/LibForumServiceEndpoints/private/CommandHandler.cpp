@@ -96,32 +96,29 @@ struct CommandHandler::CommandHandlerImpl
         outputBuffer.reserve(getGlobalConfig()->service.serializationPerThreadBufferSize);
     }
 
-    static bool checkNumberOfParameters(const std::vector<StringView>& parameters, OutStream& output, size_t number)
+    static bool checkNumberOfParameters(const std::vector<StringView>& parameters, size_t number)
     {
         if (countNonEmpty(parameters) != number)
         {
-            writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
             return false;
         }
         return true;
     }
 
     template<typename T>
-    static bool convertTo(const StringView& value, T& result, OutStream& output)
+    static bool convertTo(const StringView& value, T& result)
     {
         if ( ! boost::conversion::try_lexical_convert(value.data(), value.size(), result))
         {
-            writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
             return false;            
         }
         return true;
     }
 
-    static bool checkMinNumberOfParameters(const std::vector<StringView>& parameters, OutStream& output, size_t number)
+    static bool checkMinNumberOfParameters(const std::vector<StringView>& parameters, size_t number)
     {
         if (countNonEmpty(parameters) < number)
         {
-            writeStatusCode(output, StatusCode::INVALID_PARAMETERS);
             return false;
         }
         return true;
@@ -139,7 +136,7 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( ADD_USER )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
         return userRepository->addNewUser(normalizedParam, output);
@@ -172,13 +169,13 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( GET_USER_BY_ID )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return userRepository->getUserById(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_USER_BY_NAME )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
         return userRepository->getUserByName(normalizedParam, output);
@@ -186,7 +183,7 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_NAME )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
         return userRepository->changeUserName(parameters[0], normalizedParam, output);
@@ -194,7 +191,7 @@ struct CommandHandler::CommandHandlerImpl
     
     COMMAND_HANDLER_METHOD( CHANGE_USER_INFO )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
         return userRepository->changeUserInfo(parameters[0], normalizedParam, output);
@@ -202,7 +199,7 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( DELETE_USER )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return userRepository->deleteUser(parameters[0], output);
     }
 
@@ -228,7 +225,7 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
         return discussionThreadRepository->addNewDiscussionThread(normalizedParam, output);
@@ -236,13 +233,13 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREAD_BY_ID )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadById(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_NAME )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
         return discussionThreadRepository->changeDiscussionThreadName(parameters[0], normalizedParam, output);
@@ -250,87 +247,87 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_THREAD )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->deleteDiscussionThread(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( MERGE_DISCUSSION_THREADS )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         return discussionThreadRepository->mergeDiscussionThreads(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_NAME )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
                                                                       RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_CREATED )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
                                                                       RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
                                                                       RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
                                                                       RetrieveDiscussionThreadsBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( SUBSCRIBE_TO_THREAD )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->subscribeToDiscussionThread(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( UNSUBSCRIBE_FROM_THREAD )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->unsubscribeFromDiscussionThread(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_NAME )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output, 
                                                                                 RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_CREATED )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
                                                                                 RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
                                                                                 RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
                                                                                 RetrieveDiscussionThreadsBy::MessageCount);
     }
     
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD_MESSAGE )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->addNewDiscussionMessageInThread(parameters[0], normalizedParam, output);
@@ -338,13 +335,13 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_THREAD_MESSAGE )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->deleteDiscussionMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT )
     {
-        if ( ! checkMinNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkMinNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         auto& changeReason = parameters.size() > 2 ? parameters[2] : emptyString;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
@@ -354,37 +351,37 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( MOVE_DISCUSSION_THREAD_MESSAGE )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->moveDiscussionThreadMessage(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( UP_VOTE_DISCUSSION_THREAD_MESSAGE )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->upVoteDiscussionThreadMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( DOWN_VOTE_DISCUSSION_THREAD_MESSAGE )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->downVoteDiscussionThreadMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( RESET_VOTE_DISCUSSION_THREAD_MESSAGE )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->resetVoteDiscussionThreadMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->addCommentToDiscussionThreadMessage(parameters[0], normalizedParam, output);
@@ -397,25 +394,25 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS_OF_DISCUSSION_THREAD_MESSAGE )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->getMessageCommentsOfDiscussionThreadMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS_OF_USER )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->getMessageCommentsOfUser(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( SET_MESSAGE_COMMENT_SOLVED )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->setMessageCommentToSolved(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
         return discussionTagRepository->addNewDiscussionTag(normalizedParam, output);
@@ -433,7 +430,7 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_NAME )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
         return discussionTagRepository->changeDiscussionTagName(parameters[0], normalizedParam, output);
@@ -441,61 +438,61 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_UI_BLOB )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         return discussionTagRepository->changeDiscussionTagUiBlob(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_TAG )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionTagRepository->deleteDiscussionTag(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::MessageCount);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG_TO_THREAD )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         return discussionTagRepository->addDiscussionTagToThread(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( REMOVE_DISCUSSION_TAG_FROM_THREAD )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         return discussionTagRepository->removeDiscussionTagFromThread(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( MERGE_DISCUSSION_TAG_INTO_OTHER_TAG )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         return discussionTagRepository->mergeDiscussionTags(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_CATEGORY )
     {
-        if ( ! checkMinNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkMinNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         auto& parentId = parameters.size() > 1 ? parameters[1] : emptyString;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
@@ -504,7 +501,7 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORY_BY_ID )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionCategoryRepository->getDiscussionCategoryById(parameters[0], output);
     }
 
@@ -525,7 +522,7 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_NAME )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
         return discussionCategoryRepository->changeDiscussionCategoryName(parameters[0], normalizedParam, output);
@@ -533,66 +530,66 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_DESCRIPTION )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         return discussionCategoryRepository->changeDiscussionCategoryDescription(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_PARENT )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         return discussionCategoryRepository->changeDiscussionCategoryParent(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         int_fast16_t newDisplayOrder{ 0 };
-        if ( ! convertTo(parameters[1], newDisplayOrder, output)) return INVALID_PARAMETERS;
+        if ( ! convertTo(parameters[1], newDisplayOrder)) return INVALID_PARAMETERS;
         return discussionCategoryRepository->changeDiscussionCategoryDisplayOrder(parameters[0], newDisplayOrder, output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_CATEGORY )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionCategoryRepository->deleteDiscussionCategory(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG_TO_CATEGORY )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         return discussionCategoryRepository->addDiscussionTagToCategory(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( REMOVE_DISCUSSION_TAG_FROM_CATEGORY )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         return discussionCategoryRepository->removeDiscussionTagFromCategory(parameters[0], parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
                                                                           RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
                                                                           RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
                                                                           RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT )
     {
-        if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
                                                                           RetrieveDiscussionThreadsBy::MessageCount);
     }
@@ -747,6 +744,10 @@ CommandHandler::Result CommandHandler::handle(Command command, const std::vector
     {
         statusCode = StatusCode::NOT_FOUND;
     }
+    if (outputBuffer.size() < 1)
+    {
+        writeStatusCode(outputBuffer, statusCode);
+    }
     return { statusCode, outputBuffer };
 }
 
@@ -761,6 +762,10 @@ CommandHandler::Result CommandHandler::handle(View view, const std::vector<Strin
     else
     {
         statusCode = StatusCode::NOT_FOUND;
+    }
+    if (outputBuffer.size() < 1)
+    {
+        writeStatusCode(outputBuffer, statusCode);
     }
     return{ statusCode, outputBuffer };
 }
