@@ -1,16 +1,29 @@
 #include "StringHelpers.h"
 
-#include <boost/locale.hpp>
-#include <boost/locale/collator.hpp>
 #include <memory>
 #include <mutex>
+#include <stdexcept>
 
-struct LocaleCache
+#include <boost/noncopyable.hpp>
+
+#include <unicode/ucol.h>
+
+struct LocaleCache final : private boost::noncopyable
 {
-    const boost::locale::generator localeGenerator;
-    const std::locale en_US_UTF8Locale{ localeGenerator("en_US.UTF-8") };
-    const boost::locale::comparator<char> stringPrimaryComparator{ en_US_UTF8Locale,
-                                                                  boost::locale::collator_base::level_type::primary };
+    std::unique_ptr<UCollator, decltype(&ucol_close)> collator {nullptr, ucol_close};
+
+    LocaleCache()
+    {
+        UErrorCode errorCode{};
+        collator.reset(ucol_open("en_US", &errorCode));
+        
+        if (U_FAILURE(errorCode))
+        {
+            throw std::runtime_error("Unable to load collation!");
+        }
+
+        ucol_setStrength(collator.get(), UCollationStrength::UCOL_PRIMARY);
+    }
 };
 
 static std::unique_ptr<LocaleCache> localeCache;
@@ -27,7 +40,9 @@ Forum::Helpers::StringAccentAndCaseInsensitiveLess::StringAccentAndCaseInsensiti
 bool Forum::Helpers::StringAccentAndCaseInsensitiveLess::operator()(const std::string& lhs,
                                                                     const std::string& rhs) const
 {
-    return localeCache->stringPrimaryComparator(lhs, rhs);
+    UErrorCode errorCode{};
+    auto result = ucol_strcollUTF8(localeCache->collator.get(), lhs.data(), lhs.size(), rhs.data(), rhs.size(), &errorCode);
+    return UCOL_LESS == result;
 }
 
 void Forum::Helpers::cleanupStringHelpers()
