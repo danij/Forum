@@ -2,9 +2,13 @@
 #include "Configuration.h"
 #include "OutputHelpers.h"
 
+#include <cstddef>
 #include <memory>
 
 #include <boost/lexical_cast.hpp>
+
+#include <unicode/ustring.h>
+#include <unicode/unorm2.h>
 
 using namespace Forum::Commands;
 using namespace Forum::Configuration;
@@ -24,6 +28,53 @@ auto countNonEmpty(const Collection& collection)
 {
     return static_cast<size_t>(std::count_if(collection.begin(), collection.end(), 
                                [](auto& view) { return view.size() > 0; }));
+}
+
+static constexpr size_t NormalizeBuffer16MaxChars = 2 << 20;
+static constexpr size_t NormalizeBuffer8MaxChars = 2 * NormalizeBuffer16MaxChars;
+
+static thread_local std::unique_ptr<UChar[]> normalizeBuffer16Before(new UChar[NormalizeBuffer16MaxChars]);
+static thread_local std::unique_ptr<UChar[]> normalizeBuffer16After(new UChar[NormalizeBuffer16MaxChars]);
+static thread_local std::unique_ptr<char[]> normalizeBuffer8(new char[NormalizeBuffer8MaxChars]);
+
+/**
+ * Performs a Unicode NFC normalization on a UTF-8 encoded string and returns a view also to a UTF-8 encoded string
+ * If an error occurs or the input contains invalid characters, an empty view is returned
+ */
+static StringView normalize(StringView input)
+{
+    int32_t chars16Written = 0, chars8Written = 0;
+    UErrorCode errorCode{};
+    auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before.get(), NormalizeBuffer16MaxChars, &chars16Written, 
+                                      input.data(), input.size(), &errorCode);
+    if (U_FAILURE(errorCode))
+    {
+        return{};
+    }
+
+    errorCode = {};
+    auto normalizer = unorm2_getNFCInstance(&errorCode);
+    if (U_FAILURE(errorCode))
+    {
+        return{};
+    }
+
+    errorCode = {};
+    auto chars16NormalizedWritten = unorm2_normalize(normalizer, u8to16Result, chars16Written, 
+                                                     normalizeBuffer16After.get(), NormalizeBuffer16MaxChars, &errorCode);
+    if (U_FAILURE(errorCode))
+    {
+        return{};
+    }
+
+    errorCode = {};
+    auto u16to8Result = u_strToUTF8(normalizeBuffer8.get(), NormalizeBuffer8MaxChars, &chars8Written, 
+                                    normalizeBuffer16After.get(), chars16NormalizedWritten, &errorCode);
+    if (U_FAILURE(errorCode))
+    {
+        return{};
+    }
+    return StringView(u16to8Result, chars8Written);
 }
 
 struct CommandHandler::CommandHandlerImpl
@@ -89,7 +140,9 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( ADD_USER )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return userRepository->addNewUser(parameters[0], output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        return userRepository->addNewUser(normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_NAME )
@@ -126,19 +179,25 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( GET_USER_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return userRepository->getUserByName(parameters[0], output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        return userRepository->getUserByName(normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return userRepository->changeUserName(parameters[0], parameters[1], output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        return userRepository->changeUserName(parameters[0], normalizedParam, output);
     }
     
     COMMAND_HANDLER_METHOD( CHANGE_USER_INFO )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return userRepository->changeUserInfo(parameters[0], parameters[1], output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        return userRepository->changeUserInfo(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_USER )
@@ -170,7 +229,9 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return discussionThreadRepository->addNewDiscussionThread(parameters[0], output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        return discussionThreadRepository->addNewDiscussionThread(normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREAD_BY_ID )
@@ -182,7 +243,9 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return discussionThreadRepository->changeDiscussionThreadName(parameters[0], parameters[1], output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        return discussionThreadRepository->changeDiscussionThreadName(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_THREAD )
@@ -268,7 +331,9 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return discussionThreadMessageRepository->addNewDiscussionMessageInThread(parameters[0], parameters[1], output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        return discussionThreadMessageRepository->addNewDiscussionMessageInThread(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_THREAD_MESSAGE )
@@ -281,7 +346,9 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkMinNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
         auto& changeReason = parameters.size() > 2 ? parameters[2] : emptyString;
-        return discussionThreadMessageRepository->changeDiscussionThreadMessageContent(parameters[0], parameters[1], 
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        return discussionThreadMessageRepository->changeDiscussionThreadMessageContent(parameters[0], normalizedParam,
                                                                                        changeReason, output);
     }
 
@@ -318,7 +385,9 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return discussionThreadMessageRepository->addCommentToDiscussionThreadMessage(parameters[0], parameters[1], output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        return discussionThreadMessageRepository->addCommentToDiscussionThreadMessage(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS )
@@ -347,7 +416,9 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_TAG )
     {
         if ( ! checkNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
-        return discussionTagRepository->addNewDiscussionTag(parameters[0], output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        return discussionTagRepository->addNewDiscussionTag(normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_NAME )
@@ -363,7 +434,9 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return discussionTagRepository->changeDiscussionTagName(parameters[0], parameters[1], output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        return discussionTagRepository->changeDiscussionTagName(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_UI_BLOB )
@@ -424,7 +497,9 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkMinNumberOfParameters(parameters, output, 1)) return INVALID_PARAMETERS;
         auto& parentId = parameters.size() > 1 ? parameters[1] : emptyString;
-        return discussionCategoryRepository->addNewDiscussionCategory(parameters[0], parentId, output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        return discussionCategoryRepository->addNewDiscussionCategory(normalizedParam, parentId, output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORY_BY_ID )
@@ -451,7 +526,9 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, output, 2)) return INVALID_PARAMETERS;
-        return discussionCategoryRepository->changeDiscussionCategoryName(parameters[0], parameters[1], output);
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        return discussionCategoryRepository->changeDiscussionCategoryName(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_DESCRIPTION )
