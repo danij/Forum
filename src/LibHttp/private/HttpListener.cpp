@@ -255,7 +255,7 @@ struct HttpListener::HttpListenerImpl
     std::unique_ptr<ReadBufferPoolType> readBuffers;
     std::unique_ptr<WriteBufferPoolType> writeBuffers;
     FixedSizeObjectPool<HttpConnection> connectionPool;
-    std::atomic_int64_t nrOfCurrentlyOpenConnections = 0;
+    std::atomic<std::int64_t> nrOfCurrentlyOpenConnections{0};
     TimeoutManager<boost::asio::ip::tcp::socket> timeoutManager;
 };
 
