@@ -72,8 +72,8 @@ namespace Http
 
             auto& index = collection_.template get<TimeoutManagerCollectionByExpirationTime>();
 
-            auto& it = index.begin();
-            auto& upperBound = index.upper_bound(at);
+            auto it = index.begin();
+            auto upperBound = index.upper_bound(at);
 
             while (it != upperBound)
             {
