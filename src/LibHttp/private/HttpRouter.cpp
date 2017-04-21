@@ -7,6 +7,10 @@
 
 using namespace Http;
 
+const size_t HttpRouter::MaxRouteSize;
+const size_t HttpRouter::FirstIndexMaxValue;
+
+
 void RequestState::extractExtraPathParts(size_t nrOfPathCharactersUsedInRoute)
 {
     auto currentPartStartIndex = nrOfPathCharactersUsedInRoute;
