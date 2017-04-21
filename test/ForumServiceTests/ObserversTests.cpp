@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_by_name_invokes_observer )
     auto handler = createCommandHandler();
 
     auto ___ = addHandler(handler->readEvents().onGetUserByName,
-                          [&](auto& _, auto& name) { nameToBeRetrieved = toString(name); });
+                          [&](auto& _, auto name) { nameToBeRetrieved = toString(name); });
 
     createUserAndGetId(handler, "SampleUser");
     handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "SampleUser" });
