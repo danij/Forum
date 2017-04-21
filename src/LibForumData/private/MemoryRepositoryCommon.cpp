@@ -121,8 +121,8 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
     auto firstCharView = getFirstCharacterInUTF8Array(input);
     auto lastCharView = getLastCharacterInUTF8Array(input);
 
-    auto nrOfFirstCharBytes = std::min(4u, firstCharView.size());
-    auto nrOfLastCharBytes = std::min(4u, lastCharView.size());
+    auto nrOfFirstCharBytes = std::min(static_cast<StringView::size_type>(4), firstCharView.size());
+    auto nrOfLastCharBytes = std::min(static_cast<StringView::size_type>(4), lastCharView.size());
 
     std::copy(firstCharView.data(), firstCharView.data() + nrOfFirstCharBytes, firstLastUtf8);
     std::copy(lastCharView.data(), lastCharView.data() + nrOfLastCharBytes, firstLastUtf8 + nrOfFirstCharBytes);
