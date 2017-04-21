@@ -129,17 +129,8 @@ namespace Forum
 
             struct Result
             {
-                Result(Repository::StatusCode status_code, const std::string& output)
-                    : statusCode(status_code), output(output)
-                {
-                }
-                Result(const Result&) = default;
-                Result(Result&&) = default;
-                Result& operator=(const Result&) = default;
-                Result& operator=(Result&&) = default;
-
                 Repository::StatusCode statusCode;
-                const std::string& output;
+                StringView output;
             };
 
             Result handle(Command command, const std::vector<StringView>& parameters);

@@ -24,17 +24,17 @@ namespace Forum
                                      public DiscussionThreadCollectionBase<HashIndexForId>, 
                                      public IndicateDeletionInProgress
         {
-            const std::string&  name()           const { return name_; }
-                  std::string&  name()                 { return name_; }
+            StringView    name()           const { return name_; }
+            std::string&  name()                 { return name_; }
                                                  
-            const std::string&  uiBlob()         const { return uiBlob_; }
-                  std::string&  uiBlob()               { return uiBlob_; }
-                                                
-                  int_fast32_t  messageCount()   const { return messageCount_; }
-                  int_fast32_t& messageCount()         { return messageCount_; }
-                  
-                  auto          categories()     const { return Helpers::toConst(categories_); }
-                  auto&         categoriesWeak()       { return categories_; }
+            StringView    uiBlob()         const { return uiBlob_; }
+            std::string&  uiBlob()               { return uiBlob_; }
+                                          
+            int_fast32_t  messageCount()   const { return messageCount_; }
+            int_fast32_t& messageCount()         { return messageCount_; }
+            
+            auto          categories()     const { return Helpers::toConst(categories_); }
+            auto&         categoriesWeak()       { return categories_; }
 
             enum ChangeType : uint32_t
             {

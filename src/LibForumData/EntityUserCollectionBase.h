@@ -37,7 +37,7 @@ namespace Forum
                             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &User::id>>,
 
                     boost::multi_index::ranked_unique<boost::multi_index::tag<UserCollectionByName>,
-                            const boost::multi_index::const_mem_fun<User, const std::string&, &User::name>,
+                            const boost::multi_index::const_mem_fun<User, StringView, &User::name>,
                                 Helpers::StringAccentAndCaseInsensitiveLess>,
 
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByCreated>,

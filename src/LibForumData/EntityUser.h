@@ -22,15 +22,15 @@ namespace Forum
                             public DiscussionThreadMessageCollectionBase<OrderedIndexForId>,
                             public MessageCommentCollectionBase<OrderedIndexForId>
         {
-            const std::string& name()        const { return name_; }
-                  std::string& name()              { return name_; }
-            const std::string& info()        const { return info_; }
-                  std::string& info()              { return info_; }
-                  Timestamp    lastSeen()    const { return lastSeen_; }
-                  Timestamp&   lastSeen()          { return lastSeen_; }
-            auto&              votedMessages()     { return votedMessages_; }
+            StringView   name()        const { return name_; }
+            std::string& name()              { return name_; }
+            StringView   info()        const { return info_; }
+            std::string& info()              { return info_; }
+            Timestamp    lastSeen()    const { return lastSeen_; }
+            Timestamp&   lastSeen()          { return lastSeen_; }
+            auto&        votedMessages()     { return votedMessages_; }
 
-            auto&              subscribedThreads() { return subscribedThreads_; }
+            auto&        subscribedThreads() { return subscribedThreads_; }
 
             auto subscribedThreadCount()                   const { return subscribedThreads_.threadCount(); }
             auto subscribedThreadsById()                   const { return subscribedThreads_.threadsById(); }
@@ -51,7 +51,7 @@ namespace Forum
             /**
              * Only used to construct the anonymous user
              */
-            explicit User(const std::string& name) : name_(name), lastSeen_(0) {}
+            explicit User(StringView name) : name_(name.data(), name.size()), lastSeen_(0) {}
 
             void registerVote(const DiscussionThreadMessageRef& message)
             {

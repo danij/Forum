@@ -23,6 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <limits>
 #include <string>
 
+#include <boost/utility/string_view.hpp>
+
 namespace Json
 {
     class JsonWriter final
@@ -66,6 +68,11 @@ namespace Json
 
         JsonWriter& writeEscapedString(const char* value, size_t length = 0);
 
+        JsonWriter& writeEscapedString(boost::string_view value)
+        {
+            return writeEscapedString(value.data(), value.size());
+        }
+
         JsonWriter& writeSafeString(const char* value, size_t length)
         {
             if (isCommaNeeded())
@@ -80,6 +87,12 @@ namespace Json
             writeChar('"');
             return *this;
         }
+
+        JsonWriter& writeSafeString(boost::string_view value)
+        {
+            return writeSafeString(value.data(), value.size());
+        }
+
 
         JsonWriter& operator<<(bool value)
         {
@@ -323,6 +336,11 @@ namespace Json
     inline JsonWriter& operator<<(JsonWriter& writer, const std::string& value)
     {
         return writer.writeEscapedString(value.c_str(), value.length());
+    }
+
+    inline JsonWriter& operator<<(JsonWriter& writer, boost::string_view value)
+    {
+        return writer.writeEscapedString(value);
     }
 
     inline JsonWriter& operator<<(JsonWriter& writer, JsonWriter& (* manipulator)(JsonWriter&))

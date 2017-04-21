@@ -27,7 +27,7 @@ namespace Forum
                                         public IndicateDeletionInProgress,
                                         public std::enable_shared_from_this<DiscussionThread>
         {
-            const std::string& name()                      const { return name_; }
+                  StringView   name()                      const { return name_; }
                   std::string& name()                            { return name_; }
             const User&        createdBy()                 const { return createdBy_; }
                   User&        createdBy()                       { return createdBy_; }

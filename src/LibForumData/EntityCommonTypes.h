@@ -83,7 +83,7 @@ namespace Forum
             const VisitDetails& lastUpdatedDetails() const { return lastUpdatedDetails_; }
                   VisitDetails& lastUpdatedDetails()       { return lastUpdatedDetails_; }
                         
-                  std::string   lastUpdatedReason()  const { return lastUpdatedReason_; }
+                  StringView    lastUpdatedReason()  const { return lastUpdatedReason_; }
                   std::string&  lastUpdatedReason()        { return lastUpdatedReason_; }
 
         private:

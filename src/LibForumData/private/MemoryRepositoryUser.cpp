@@ -163,11 +163,6 @@ StatusCode MemoryRepositoryUser::getUserByName(const StringView& name, OutStream
     PerformedByWithLastSeenUpdateGuard performedBy;
     AuthorizationStatus authorizationStatus;
 
-    //keep a string around in order to avoid dynamic memory allocation on each call
-    //when converting from StringView to std::string in order to use index.find();
-
-    static thread_local std::string nameString;
-
     if (countUTF8Characters(name) > getGlobalConfig()->user.maxNameLength)
     {
         return status = INVALID_PARAMETERS;
@@ -178,7 +173,7 @@ StatusCode MemoryRepositoryUser::getUserByName(const StringView& name, OutStream
                           auto& currentUser = performedBy.get(collection, store());
 
                           const auto& index = collection.usersByName();
-                          auto it = index.find(toString(name, nameString));
+                          auto it = index.find(name);
                           if (it == index.end())
                           {
                               status = StatusCode::NOT_FOUND;

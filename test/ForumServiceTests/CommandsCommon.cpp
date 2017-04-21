@@ -71,7 +71,8 @@ TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& han
     boost::property_tree::ptree result;
     if (output.output.size())
     {
-        std::istringstream stream(output.output);
+        auto str = toString(output.output);
+        std::istringstream stream(str);
         boost::property_tree::read_json(stream, result);
     }
 
@@ -142,7 +143,8 @@ TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& han
     boost::property_tree::ptree result;
     if (output.output.size())
     {
-        std::istringstream stream(output.output);
+        auto str = toString(output.output);
+        std::istringstream stream(str);
         boost::property_tree::read_json(stream, result);
     }
 

@@ -26,29 +26,29 @@ namespace Forum
                                           public DiscussionThreadCollectionBase<HashIndexForId>,
                                           public std::enable_shared_from_this<DiscussionCategory>
         {
-            const std::string&  name()         const { return name_; }
-                  std::string&  name()               { return name_; }
-                                
-            const std::string&  description()  const { return description_; }
-                  std::string&  description()        { return description_; }
+            StringView    name()              const { return name_; }
+            std::string&  name()                    { return name_; }
+                                              
+            StringView    description()       const { return description_; }
+            std::string&  description()             { return description_; }
+                                              
+            int_fast16_t  displayOrder()      const { return displayOrder_; }
+            int_fast16_t& displayOrder()            { return displayOrder_; }
+                                              
+            int_fast32_t  messageCount()      const { return messageCount_; }
 
-                  int_fast16_t  displayOrder() const { return displayOrder_; }
-                  int_fast16_t& displayOrder()       { return displayOrder_; }
+            int_fast32_t  threadTotalCount()  const { return totalThreads_.threadsById().size(); }
+            int_fast32_t  messageTotalCount() const { return totalThreads_.messageCount(); }
 
-                  int_fast32_t  messageCount() const { return messageCount_; }
+            auto&         parentWeak()              { return parent_; }
 
-                  int_fast32_t  threadTotalCount()  const { return totalThreads_.threadsById().size(); }
-                  int_fast32_t  messageTotalCount() const { return totalThreads_.messageCount(); }
+            auto          tags()              const { return Helpers::toConst(tags_); }
+            auto&         tags()                    { return tags_; }
+                                              
+            auto          children()          const { return Helpers::toConst(children_); }
+            auto&         children()                { return children_; }
 
-                  std::weak_ptr<DiscussionCategory>& parentWeak()       { return parent_; }
-
-                  auto          tags()         const { return Helpers::toConst(tags_); }
-                  auto&         tags()               { return tags_; }
-
-                  auto          children()     const { return Helpers::toConst(children_); }
-                  auto&         children()           { return children_; }
-
-            bool isRootCategory()              const { return parent_.expired(); }
+            bool isRootCategory()             const { return parent_.expired(); }
 
             int_fast16_t displayOrderWithRootPriority() const
             {

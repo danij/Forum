@@ -87,20 +87,12 @@ namespace Forum
         struct StringAccentAndCaseInsensitiveLess
         {
             StringAccentAndCaseInsensitiveLess();
-            bool operator()(const std::string& lhs, const std::string& rhs) const;
+            bool operator()(StringView lhs, StringView rhs) const;
         };
         
         inline std::string toString(const StringView& view)
         {
             return std::string(view.data(), view.size());
-        }
-
-        inline std::string& toString(const StringView& view, std::string& buffer)
-        {
-            buffer.clear();
-            buffer.insert(buffer.end(), view.begin(), view.end());
-
-            return buffer;
         }
         
         /**

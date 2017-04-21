@@ -37,8 +37,7 @@ Forum::Helpers::StringAccentAndCaseInsensitiveLess::StringAccentAndCaseInsensiti
     });
 }
 
-bool Forum::Helpers::StringAccentAndCaseInsensitiveLess::operator()(const std::string& lhs,
-                                                                    const std::string& rhs) const
+bool Forum::Helpers::StringAccentAndCaseInsensitiveLess::operator()(StringView lhs, StringView rhs) const
 {
     UErrorCode errorCode{};
     auto result = ucol_strcollUTF8(localeCache->collator.get(), lhs.data(), lhs.size(), rhs.data(), rhs.size(), &errorCode);
