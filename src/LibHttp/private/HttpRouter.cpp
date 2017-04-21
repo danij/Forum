@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <type_traits>
 
 using namespace Http;
 
@@ -50,8 +51,10 @@ void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& respon
     char tempPath[MaxRouteSize + 1];
     auto tempPathLength = std::min(request.path.size(), MaxRouteSize);
 
+    static_assert(std::extent<decltype(CharToLower)>::value > 255, "CharToLower is not big enough");
+
     std::transform(request.path.begin(), request.path.begin() + tempPathLength, tempPath,
-                   [](char c) { return static_cast<char>(CharToLower[c]); });
+                   [](char c) { return static_cast<char>(CharToLower[static_cast<uint8_t>(c)]); });
 
     if (tempPath[tempPathLength - 1] != '/')
     {
