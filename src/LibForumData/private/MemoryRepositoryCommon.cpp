@@ -86,11 +86,6 @@ StatusCode MemoryRepositoryBase::validateString(StringView string,
                                                 boost::optional<int_fast32_t> minimumLength, 
                                                 boost::optional<int_fast32_t> maximumLength)
 {
-    if (Context::skipValidations())
-    {
-        return StatusCode::OK;
-    }
-
     if ((INVALID_PARAMETERS_FOR_EMPTY_STRING == emptyValidation) && string.empty())
     {
         return StatusCode::INVALID_PARAMETERS;

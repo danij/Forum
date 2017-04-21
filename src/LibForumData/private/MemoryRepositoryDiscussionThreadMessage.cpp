@@ -68,8 +68,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
         writeEntitiesWithPagination(messages, "messages", output, displayContext.pageNumber, pageSize,
             displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& m) { return m; });
 
-        if ( ! Context::skipObservers())
-            readEvents().onGetDiscussionThreadMessagesOfUser(createObserverContext(currentUser), **it);
+        readEvents().onGetDiscussionThreadMessagesOfUser(createObserverContext(currentUser), **it);
     });
     return status;
 }
@@ -167,12 +166,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                                                           user.subscribedThreads().insertDiscussionThread(*threadIt);
                                                                       });
 
-                           if ( ! Context::skipObservers())
-                           {
-                               auto& user = *currentUser;
-                               writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), **threadIt);
-                               writeEvents().onAddNewDiscussionThreadMessage(createObserverContext(user), *message);
-                           }
+                           auto& user = *currentUser;
+                           writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), **threadIt);
+                           writeEvents().onAddNewDiscussionThreadMessage(createObserverContext(user), *message);
                  
                            status.writeNow([&](auto& writer)
                                            {
@@ -214,8 +210,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(cons
                            }
 
                            //make sure the message is not deleted before being passed to the observers
-                           if ( ! Context::skipObservers())
-                               writeEvents().onDeleteDiscussionThreadMessage(createObserverContext(*currentUser), **it);
+                           writeEvents().onDeleteDiscussionThreadMessage(createObserverContext(*currentUser), **it);
 
                            collection.deleteDiscussionThreadMessage(it);
                        });
@@ -291,9 +286,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
                                    });
                            });
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onChangeDiscussionThreadMessage(createObserverContext(*currentUser), **it,
-                                                                             DiscussionThreadMessage::ChangeType::Content);
+                           writeEvents().onChangeDiscussionThreadMessage(createObserverContext(*currentUser), **it,
+                                                                         DiscussionThreadMessage::ChangeType::Content);
                        });
     return status;
 }
@@ -348,9 +342,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
                            }
                      
                            //make sure the message is not deleted before being passed to the observers
-                           if ( ! Context::skipObservers())
-                               writeEvents().onMoveDiscussionThreadMessage(createObserverContext(*currentUser), 
-                                                                           *messageRef, *threadIntoRef);
+                           writeEvents().onMoveDiscussionThreadMessage(createObserverContext(*currentUser), 
+                                                                       *messageRef, *threadIntoRef);
 
                            auto threadUpdateFn = [&collection](DiscussionThreadRef&& threadRef, bool insert)
                            {
@@ -467,16 +460,14 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
                            if (up)
                            {
                                message.addUpVote(std::move(userWeak), timestamp);
-                               if ( ! Context::skipObservers())
-                                   writeEvents().onDiscussionThreadMessageUpVote(createObserverContext(*currentUser),
-                                                                                 message);
+                               writeEvents().onDiscussionThreadMessageUpVote(createObserverContext(*currentUser),
+                                                                             message);
                            }
                            else
                            {
                                message.addDownVote(std::move(userWeak), timestamp);
-                               if ( ! Context::skipObservers())
-                                   writeEvents().onDiscussionThreadMessageDownVote(createObserverContext(*currentUser),
-                                                                                   message);
+                               writeEvents().onDiscussionThreadMessageDownVote(createObserverContext(*currentUser),
+                                                                               message);
                            }
                        });
     return status;
@@ -538,9 +529,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
                                return;
                            }
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onDiscussionThreadMessageResetVote(createObserverContext(*currentUser),
-                                                                                message);
+                           writeEvents().onDiscussionThreadMessageResetVote(createObserverContext(*currentUser),
+                                                                            message);
                        });
     return status;
 }
@@ -574,8 +564,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream
                           }
 
                           writeMessageComments(collection.messageCommentsByCreated(), output);
-                          if ( ! Context::skipObservers())
-                              readEvents().onGetMessageComments(createObserverContext(currentUser));
+                          readEvents().onGetMessageComments(createObserverContext(currentUser));
                       });
     return status;
 }
@@ -617,8 +606,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
                       
                           writeMessageComments(message.messageCommentsByCreated(), output);
 
-                          if ( ! Context::skipObservers())
-                              readEvents().onGetMessageCommentsOfMessage(createObserverContext(currentUser), message);
+                          readEvents().onGetMessageCommentsOfMessage(createObserverContext(currentUser), message);
                       });
     return status;
 }
@@ -658,8 +646,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
                           
                           writeMessageComments(user.messageCommentsByCreated(), output);
 
-                          if ( ! Context::skipObservers())
-                              readEvents().onGetMessageCommentsOfUser(createObserverContext(currentUser), user);
+                          readEvents().onGetMessageCommentsOfUser(createObserverContext(currentUser), user);
                       });
     return status;
 }
@@ -725,9 +712,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
                                                                             user.messageComments().insert(comment);
                                                                         });
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onAddCommentToDiscussionThreadMessage(createObserverContext(*currentUser),
-                                                                                   *comment);
+                           writeEvents().onAddCommentToDiscussionThreadMessage(createObserverContext(*currentUser),
+                                                                               *comment);
                  
                            status.writeNow([&](auto& writer)
                                            {
@@ -785,9 +771,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(co
                                                                                  message.solvedCommentsCount() += 1;
                                                                              });
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onSolveDiscussionThreadMessageComment(createObserverContext(*currentUser),
-                                                                                   comment);
+                           writeEvents().onSolveDiscussionThreadMessageComment(createObserverContext(*currentUser),
+                                                                               comment);
                        });
     return status;    
 }

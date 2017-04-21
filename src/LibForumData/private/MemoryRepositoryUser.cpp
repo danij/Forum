@@ -115,8 +115,7 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
             break;
         }
 
-        if ( ! Context::skipObservers())
-            readEvents().onGetUsers(createObserverContext(currentUser));
+        readEvents().onGetUsers(createObserverContext(currentUser));
     });
     return status;
 }
@@ -150,8 +149,7 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
                           status.disable();
                           writeSingleValueSafeName(output, "user", **it);
                           
-                          if ( ! Context::skipObservers())
-                              readEvents().onGetUserById(createObserverContext(currentUser), id);
+                          readEvents().onGetUserById(createObserverContext(currentUser), id);
                       });
     return status;
 }
@@ -190,8 +188,7 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                           status.disable();
                           writeSingleValueSafeName(output, "user", **it);
 
-                          if ( ! Context::skipObservers())
-                              readEvents().onGetUserByName(createObserverContext(currentUser), name);
+                          readEvents().onGetUserByName(createObserverContext(currentUser), name);
                       });
     return status;
 }
@@ -239,8 +236,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, OutStream& output)
 
                            collection.users().insert(user);
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onAddNewUser(createObserverContext(*currentUser), *user);
+                           writeEvents().onAddNewUser(createObserverContext(*currentUser), *user);
 
                            status.writeNow([&](auto& writer)
                                            {
@@ -298,9 +294,7 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView new
                                                      {
                                                          user.name() = std::move(newNameString);
                                                      });
-                           if ( ! Context::skipObservers())
-                               writeEvents().onChangeUser(createObserverContext(*currentUser),
-                                                          **it, User::ChangeType::Name);
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), **it, User::ChangeType::Name);
                        });
     return status;
 }
@@ -345,9 +339,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView new
                                                          user.info() = toString(newInfo);
                                                      });
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onChangeUser(createObserverContext(*currentUser),
-                                                          **it, User::ChangeType::Info);
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), **it, User::ChangeType::Info);
                        });
     return status;
 }
@@ -382,8 +374,7 @@ StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
                            }
 
                            //make sure the user is not deleted before being passed to the observers
-                           if ( ! Context::skipObservers())
-                               writeEvents().onDeleteUser(createObserverContext(*currentUser), **it);
+                           writeEvents().onDeleteUser(createObserverContext(*currentUser), **it);
 
                            collection.deleteUser(it);
                        });

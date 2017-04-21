@@ -62,7 +62,7 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
             }
         }
 
-        if ( ! Context::skipObservers()) readEvents().onGetDiscussionTags(createObserverContext(currentUser));
+        readEvents().onGetDiscussionTags(createObserverContext(currentUser));
     });
     return StatusCode::OK;
 }
@@ -113,8 +113,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
                  
                            collection.tags().insert(tag);
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onAddNewDiscussionTag(createObserverContext(*currentUser), *tag);
+                           writeEvents().onAddNewDiscussionTag(createObserverContext(*currentUser), *tag);
                  
                            status.writeNow([&](auto& writer)
                                            {
@@ -179,9 +178,8 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
                                                                   tag.name() = std::move(newNameString);
                                                                   updateLastUpdated(tag, currentUser);
                                                               });
-                           if ( ! Context::skipObservers())
-                               writeEvents().onChangeDiscussionTag(createObserverContext(*currentUser), **it,
-                                                                   DiscussionTag::ChangeType::Name);
+                           writeEvents().onChangeDiscussionTag(createObserverContext(*currentUser), **it,
+                                                               DiscussionTag::ChangeType::Name);
                        });
     return status;
 }
@@ -224,9 +222,8 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
                                                               {
                                                                   tag.uiBlob() = toString(blob);
                                                               });
-                           if ( ! Context::skipObservers())
-                               writeEvents().onChangeDiscussionTag(createObserverContext(*currentUser),
-                                                                   **it, DiscussionTag::ChangeType::UIBlob);
+                           writeEvents().onChangeDiscussionTag(createObserverContext(*currentUser),
+                                                               **it, DiscussionTag::ChangeType::UIBlob);
                        });
     return status;
 }
@@ -262,8 +259,7 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, 
                            }
 
                            //make sure the tag is not deleted before being passed to the observers
-                           if ( ! Context::skipObservers())
-                               writeEvents().onDeleteDiscussionTag(createObserverContext(*currentUser), **it);
+                           writeEvents().onDeleteDiscussionTag(createObserverContext(*currentUser), **it);
 
                            collection.deleteDiscussionTag(it);
                        });
@@ -326,8 +322,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
                            tag.insertDiscussionThread(threadRef);
                            updateLastUpdated(thread, currentUser);
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onAddDiscussionTagToThread(createObserverContext(*currentUser), tag, thread);
+                           writeEvents().onAddDiscussionTagToThread(createObserverContext(*currentUser), tag, thread);
                        });
     return status;
 }
@@ -385,8 +380,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const Id
                            tag.deleteDiscussionThreadById(threadId);
                            updateLastUpdated(thread, currentUser);
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onRemoveDiscussionTagFromThread(createObserverContext(*currentUser), tag, thread);
+                           writeEvents().onRemoveDiscussionTagFromThread(createObserverContext(*currentUser), tag, thread);
                        });
     return status;
 }
@@ -437,8 +431,7 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& from
                            }
 
                            //make sure the tag is not deleted before being passed to the observers
-                           if ( ! Context::skipObservers())
-                               writeEvents().onMergeDiscussionTags(createObserverContext(*currentUser), tagFrom, tagInto);
+                           writeEvents().onMergeDiscussionTags(createObserverContext(*currentUser), tagFrom, tagInto);
                            
                            for (auto& thread : tagFrom.threads())
                            {

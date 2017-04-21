@@ -66,30 +66,6 @@ DisplayContext& Forum::Context::getMutableDisplayContext()
     return displayContext;
 }
 
-static bool skipValidationsValue = false;
-
-bool Forum::Context::skipValidations()
-{
-    return skipValidationsValue;
-}
-
-bool& Forum::Context::mutableSkipValidations()
-{
-    return skipValidationsValue;
-}
-
-static bool skipObserversValue = false;
-
-bool Forum::Context::skipObservers()
-{
-    return skipObserversValue;
-}
-
-bool& Forum::Context::mutableSkipObservers()
-{
-    return skipObserversValue;
-}
-
 static std::unique_ptr<IIOServiceProvider> ioServiceProvider;
 
 IIOServiceProvider& Forum::Context::getIOServiceProvider()

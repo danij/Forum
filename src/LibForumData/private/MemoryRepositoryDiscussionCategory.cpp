@@ -63,7 +63,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
             }
         }
 
-        if ( ! Context::skipObservers()) readEvents().onGetDiscussionCategories(createObserverContext(currentUser));
+        readEvents().onGetDiscussionCategories(createObserverContext(currentUser));
     });
     return StatusCode::OK;
 }
@@ -101,8 +101,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
                           status.disable();
                           writeSingleValueSafeName(output, "categories", Json::enumerate(indexBegin, indexRootEnd));
 
-                          if ( ! Context::skipObservers())
-                              readEvents().onGetRootDiscussionCategories(createObserverContext(currentUser));
+                          readEvents().onGetRootDiscussionCategories(createObserverContext(currentUser));
                       });
     return status;
 }
@@ -140,8 +139,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const I
                           BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
                           writeSingleValueSafeName(output, "category", **it);
 
-                          if ( ! Context::skipObservers())
-                              readEvents().onGetDiscussionCategory(createObserverContext(currentUser), **it);
+                          readEvents().onGetDiscussionCategory(createObserverContext(currentUser), **it);
                       });
     return status;
 }
@@ -210,8 +208,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                  
                            collection.categories().insert(category);
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onAddNewDiscussionCategory(createObserverContext(*currentUser), *category);
+                           writeEvents().onAddNewDiscussionCategory(createObserverContext(*currentUser), *category);
                  
                            status.writeNow([&](auto& writer)
                                            {
@@ -277,9 +274,8 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
                                                                        category.name() = std::move(newNameString);
                                                                        updateLastUpdated(category, currentUser);
                                                                    });
-                           if ( ! Context::skipObservers())
-                               writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), **it,
-                                                                        DiscussionCategory::ChangeType::Name);
+                           writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), **it,
+                                                                    DiscussionCategory::ChangeType::Name);
                        });
     return status;
 }
@@ -326,9 +322,8 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
                                                                        category.description() = toString(newDescription);
                                                                    });
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser),
-                                                                        **it, DiscussionCategory::ChangeType::Description);
+                           writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser),
+                                                                    **it, DiscussionCategory::ChangeType::Description);
                        });
     return status;
 }
@@ -418,9 +413,8 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(co
                                category->recalculateTotals();
                            }
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), thread,
-                                                                        DiscussionCategory::ChangeType::Parent);
+                           writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), thread,
+                                                                    DiscussionCategory::ChangeType::Parent);
                        });
     return status;
 }
@@ -469,9 +463,8 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
                                                                    updateLastUpdated(category, currentUser);
                                                                });
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), **it,
-                                                                        DiscussionCategory::ChangeType::DisplayOrder);
+                           writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), **it,
+                                                                    DiscussionCategory::ChangeType::DisplayOrder);
                        });
     return status;
 }
@@ -507,8 +500,7 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(const Id
                            }
 
                            //make sure the category is not deleted before being passed to the observers
-                           if ( ! Context::skipObservers())
-                               writeEvents().onDeleteDiscussionCategory(createObserverContext(*currentUser), **it);
+                           writeEvents().onDeleteDiscussionCategory(createObserverContext(*currentUser), **it);
 
                            collection.deleteDiscussionCategory(it);
                        });
@@ -574,9 +566,8 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(const 
                                                                                updateLastUpdated(category, currentUser);
                                                                            });
 
-                           if ( ! Context::skipObservers())
-                               writeEvents().onAddDiscussionTagToCategory(createObserverContext(*currentUser), 
-                                                                          tag, category);
+                           writeEvents().onAddDiscussionTagToCategory(createObserverContext(*currentUser), 
+                                                                      tag, category);
                        });
     return status;
 }
@@ -639,9 +630,8 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(c
                                                                                category.removeTag(tagRef);
                                                                                updateLastUpdated(category, currentUser);
                                                                            });
-                           if ( ! Context::skipObservers())
-                               writeEvents().onRemoveDiscussionTagFromCategory(createObserverContext(*currentUser), 
-                                                                               tag, category);
+                           writeEvents().onRemoveDiscussionTagFromCategory(createObserverContext(*currentUser), 
+                                                                           tag, category);
                        });
     return status;
 }

@@ -36,16 +36,6 @@ namespace Forum
         */
         void setCurrentUserIpAddress(const Helpers::IpAddress& value);
 
-        /**
-         * Returns whether validations should be skipped (e.g. for populating data in benchmarks)
-         */
-        bool skipValidations();
-
-        /**
-         * Returns whether observer action should be skipped (e.g. for populating data in benchmarks)
-         */
-        bool skipObservers();
-
         enum class SortOrder
         {
             Ascending,

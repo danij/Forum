@@ -47,8 +47,7 @@ StatusCode MemoryRepositoryStatistics::getEntitiesCount(OutStream& output) const
                  
                           writeSingleValueSafeName(output, "count", count);
 
-                          if ( ! Context::skipObservers())
-                              readEvents().onGetEntitiesCount(createObserverContext(currentUser));
+                          readEvents().onGetEntitiesCount(createObserverContext(currentUser));
                       });
     return status;
 }

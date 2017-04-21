@@ -162,11 +162,7 @@ int main()
 
     auto context = createCommandHandler();
 
-    Context::mutableSkipValidations() = true;
-    Context::mutableSkipObservers() = true;
     std::cout << "Populate duration: " << countDuration<std::chrono::milliseconds>([&]() { populateData(context); }) << " ms\n";
-    Context::mutableSkipValidations() = false;
-    Context::mutableSkipObservers() = false;
 
     std::cout << "=====\n";
     std::cout << "Forum Memory Repository Benchmarks\n";
