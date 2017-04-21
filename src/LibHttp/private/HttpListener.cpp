@@ -33,7 +33,7 @@ static void closeSocket(boost::asio::ip::tcp::socket& socket)
     }
 }
 
-struct Http::HttpConnection final : private boost::noncopyable
+struct Http::HttpListener::HttpConnection final : private boost::noncopyable
 {
     explicit HttpConnection(HttpListener& listener, boost::asio::ip::tcp::socket&& socket, ReadBufferType&& headerBuffer, 
                             ReadBufferPoolType& readBufferPool, WriteBufferPoolType& writeBufferPool,
@@ -47,7 +47,7 @@ struct Http::HttpConnection final : private boost::noncopyable
                   return reinterpret_cast<HttpConnection*>(state)->onReadBody(buffer, size);
               }, this)
     {
-        timeoutManager.addExpireIn(&socket_, timeoutManager.defaultTimeout());
+        timeoutManager_.addExpireIn(&socket_, timeoutManager.defaultTimeout());
     }
 
     auto& socket()
