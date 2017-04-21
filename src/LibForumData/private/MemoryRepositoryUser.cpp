@@ -18,6 +18,11 @@ using namespace Forum::Helpers;
 using namespace Forum::Repository;
 using namespace Forum::Authorization;
 
+static constexpr size_t MaxNrOfUserNameChars16 = 65536;
+static constexpr size_t MaxNrOfUserNameChars32 = MaxNrOfUserNameChars16 / 2;
+static thread_local std::unique_ptr<UChar[]> validUserNameBuffer16(new UChar[MaxNrOfUserNameChars16]);
+static thread_local std::unique_ptr<UChar32[]> validUserNameBuffer32(new UChar32[MaxNrOfUserNameChars32]);
+
 static bool isValidUserName(StringView input)
 {
     //"^[[:alnum:]]+[ _-]*[[:alnum:]]+$"
@@ -26,19 +31,16 @@ static bool isValidUserName(StringView input)
         return false;
     }
 
-    static constexpr size_t MaxU16Chars = 2048;
-    static constexpr size_t MaxU32Chars = MaxU16Chars / 2;
-    UChar u16Buffer[MaxU16Chars];
-    UChar32 u32Buffer[MaxU32Chars];
-
     int32_t written;
     UErrorCode errorCode{};
 
-    auto u16Chars = u_strFromUTF8(u16Buffer, MaxU16Chars, &written, input.data(), input.size(), &errorCode);
+    auto u16Chars = u_strFromUTF8Lenient(validUserNameBuffer16.get(), MaxNrOfUserNameChars16, &written, 
+                                         input.data(), input.size(), &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     errorCode = {};
-    auto u32Chars = u_strToUTF32(u32Buffer, MaxU32Chars, &written, u16Chars, written, &errorCode);
+    auto u32Chars = u_strToUTF32(validUserNameBuffer32.get(), MaxNrOfUserNameChars32, &written, 
+                                 u16Chars, written, &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     if ((u_isalnum(u32Chars[0]) == FALSE) || (u_isalnum(u32Chars[written - 1]) == FALSE))
