@@ -282,6 +282,7 @@ void HttpListener::startListening()
     };
 
     impl_->acceptor.open(endpoint.protocol());
+    impl_->acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
     impl_->acceptor.bind(endpoint);
     impl_->acceptor.listen();
 
