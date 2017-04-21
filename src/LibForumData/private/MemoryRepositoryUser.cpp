@@ -156,7 +156,7 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
     return status;
 }
 
-StatusCode MemoryRepositoryUser::getUserByName(const StringView& name, OutStream& output) const
+StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& output) const
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -196,7 +196,7 @@ StatusCode MemoryRepositoryUser::getUserByName(const StringView& name, OutStream
     return status;
 }
 
-StatusCode MemoryRepositoryUser::addNewUser(const StringView& name, OutStream& output)
+StatusCode MemoryRepositoryUser::addNewUser(StringView name, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -252,7 +252,7 @@ StatusCode MemoryRepositoryUser::addNewUser(const StringView& name, OutStream& o
     return status;
 }
 
-StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const StringView& newName, OutStream& output)
+StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView newName, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     auto config = getGlobalConfig();
@@ -305,7 +305,7 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, const StringVi
     return status;
 }
 
-StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, const StringView& newInfo, OutStream& output)
+StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView newInfo, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 

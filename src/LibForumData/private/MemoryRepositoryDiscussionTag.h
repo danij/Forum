@@ -15,10 +15,10 @@ namespace Forum
 
             StatusCode getDiscussionTags(OutStream& output, RetrieveDiscussionTagsBy by) const override;
             
-            StatusCode addNewDiscussionTag(const StringView& name, OutStream& output) override;
-            StatusCode changeDiscussionTagName(const Entities::IdType& id, const StringView& newName,
+            StatusCode addNewDiscussionTag(StringView name, OutStream& output) override;
+            StatusCode changeDiscussionTagName(const Entities::IdType& id, StringView newName,
                                                OutStream& output) override;
-            StatusCode changeDiscussionTagUiBlob(const Entities::IdType& id, const StringView& blob,
+            StatusCode changeDiscussionTagUiBlob(const Entities::IdType& id, StringView blob,
                                                  OutStream& output) override;
             StatusCode deleteDiscussionTag(const Entities::IdType& id, OutStream& output) override;
             

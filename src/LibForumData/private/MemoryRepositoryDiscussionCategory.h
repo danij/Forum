@@ -13,12 +13,12 @@ namespace Forum
             explicit MemoryRepositoryDiscussionCategory(MemoryStoreRef store,
                                                         Authorization::DiscussionCategoryAuthorizationRef authorization);
 
-            StatusCode addNewDiscussionCategory(const StringView& name, const Entities::IdType& parentId,
+            StatusCode addNewDiscussionCategory(StringView name, const Entities::IdType& parentId,
                                                 OutStream& output) override;
-            StatusCode changeDiscussionCategoryName(const Entities::IdType& id, const StringView& newName,
+            StatusCode changeDiscussionCategoryName(const Entities::IdType& id, StringView newName,
                                                     OutStream& output) override;
             StatusCode changeDiscussionCategoryDescription(const Entities::IdType& id, 
-                                                           const StringView& newDescription,
+                                                           StringView newDescription,
                                                            OutStream& output) override;
             StatusCode changeDiscussionCategoryParent(const Entities::IdType& id, 
                                                       const Entities::IdType& newParentId,

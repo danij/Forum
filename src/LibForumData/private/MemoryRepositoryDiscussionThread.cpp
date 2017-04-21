@@ -338,7 +338,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(cons
 }
 
 
-StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const StringView& name, OutStream& output)
+StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView name, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
     
@@ -392,7 +392,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(const String
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const IdType& id, const StringView& newName,
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const IdType& id, StringView newName,
                                                                         OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);

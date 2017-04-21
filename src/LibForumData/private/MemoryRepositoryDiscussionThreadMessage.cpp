@@ -76,7 +76,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
 
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(const IdType& threadId, 
-                                                                                    const StringView& content,
+                                                                                    StringView content,
                                                                                     OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -223,8 +223,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(cons
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageContent(const IdType& id, 
-                                                                                         const StringView& newContent,
-                                                                                         const StringView& changeReason, 
+                                                                                         StringView newContent,
+                                                                                         StringView changeReason, 
                                                                                          OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -665,7 +665,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThreadMessage(const IdType& messageId, 
-                                                                                        const StringView& content,
+                                                                                        StringView content,
                                                                                         OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);

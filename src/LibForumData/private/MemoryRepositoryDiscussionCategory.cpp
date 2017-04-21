@@ -147,7 +147,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const I
 }
 
 
-StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const StringView& name, const IdType& parentId,
+StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringView name, const IdType& parentId,
                                                                         OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -223,7 +223,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(const St
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(const IdType& id, const StringView& newName, 
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(const IdType& id, StringView newName, 
                                                                             OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -285,7 +285,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
 }
 
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescription(const IdType& id,
-                                                                                   const StringView& newDescription,
+                                                                                   StringView newDescription,
                                                                                    OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);

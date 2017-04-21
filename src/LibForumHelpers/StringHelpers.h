@@ -90,7 +90,7 @@ namespace Forum
             bool operator()(StringView lhs, StringView rhs) const;
         };
         
-        inline std::string toString(const StringView& view)
+        inline std::string toString(StringView view)
         {
             return std::string(view.data(), view.size());
         }
@@ -111,12 +111,12 @@ namespace Forum
             ImmutableString& operator=(ImmutableString&&) = default;
             
             
-            ImmutableString(const StringView& view)
+            ImmutableString(StringView view)
             {
                 copyFrom(view);
             }
 
-            ImmutableString& operator=(const StringView& view)
+            ImmutableString& operator=(StringView view)
             {
                 copyFrom(view);
                 return *this;
@@ -129,7 +129,7 @@ namespace Forum
 
         private:
 
-            void copyFrom(const StringView& view)
+            void copyFrom(StringView view)
             {
                 if (view.size())
                 {

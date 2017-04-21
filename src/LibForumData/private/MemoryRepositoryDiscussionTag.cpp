@@ -68,7 +68,7 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
 }
 
 
-StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const StringView& name, OutStream& output)
+StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
 
@@ -125,7 +125,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(const StringView& 
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& id, const StringView& newName,
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& id, StringView newName,
                                                                   OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
@@ -186,7 +186,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType& id, const StringView& blob,
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType& id, StringView blob,
                                                                     OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);

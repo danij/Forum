@@ -72,12 +72,12 @@ namespace Forum
             virtual StatusCode getUsers(OutStream& output, RetrieveUsersBy by) const = 0;
 
             virtual StatusCode getUserById(const Entities::IdType& id, OutStream& output) const = 0;
-            virtual StatusCode getUserByName(const StringView& name, OutStream& output) const = 0;
+            virtual StatusCode getUserByName(StringView name, OutStream& output) const = 0;
 
-            virtual StatusCode addNewUser(const StringView& name, OutStream& output) = 0;
-            virtual StatusCode changeUserName(const Entities::IdType& id, const StringView& newName,
+            virtual StatusCode addNewUser(StringView name, OutStream& output) = 0;
+            virtual StatusCode changeUserName(const Entities::IdType& id, StringView newName,
                                               OutStream& output) = 0;
-            virtual StatusCode changeUserInfo(const Entities::IdType& id, const StringView& newInfo,
+            virtual StatusCode changeUserInfo(const Entities::IdType& id, StringView newInfo,
                                               OutStream& output) = 0;
             virtual StatusCode deleteUser(const Entities::IdType& id, OutStream& output) = 0;
         };
@@ -103,8 +103,8 @@ namespace Forum
             virtual StatusCode getDiscussionThreadsOfCategory(const Entities::IdType& id, OutStream& output,
                                                               RetrieveDiscussionThreadsBy by) const = 0;
 
-            virtual StatusCode addNewDiscussionThread(const StringView& name, OutStream& output) = 0;
-            virtual StatusCode changeDiscussionThreadName(const Entities::IdType& id, const StringView& newName,
+            virtual StatusCode addNewDiscussionThread(StringView name, OutStream& output) = 0;
+            virtual StatusCode changeDiscussionThreadName(const Entities::IdType& id, StringView newName,
                                                           OutStream& output) = 0;
             virtual StatusCode deleteDiscussionThread(const Entities::IdType& id, OutStream& output) = 0;
             virtual StatusCode mergeDiscussionThreads(const Entities::IdType& fromId, const Entities::IdType& intoId,
@@ -129,10 +129,10 @@ namespace Forum
             virtual StatusCode getMessageCommentsOfUser(const Entities::IdType& id,  OutStream& output) const = 0;
 
             virtual StatusCode addNewDiscussionMessageInThread(const Entities::IdType& threadId,
-                                                               const StringView& content, OutStream& output) = 0;
+                                                               StringView content, OutStream& output) = 0;
             virtual StatusCode deleteDiscussionMessage(const Entities::IdType& id, OutStream& output) = 0;
-            virtual StatusCode changeDiscussionThreadMessageContent(const Entities::IdType& id, const StringView& newContent,
-                                                                    const StringView& changeReason, OutStream& output) = 0;
+            virtual StatusCode changeDiscussionThreadMessageContent(const Entities::IdType& id, StringView newContent,
+                                                                    StringView changeReason, OutStream& output) = 0;
             virtual StatusCode moveDiscussionThreadMessage(const Entities::IdType& messageId, 
                                                            const Entities::IdType& intoThreadId, OutStream& output) = 0;
             virtual StatusCode upVoteDiscussionThreadMessage(const Entities::IdType& id, OutStream& output) = 0;
@@ -140,7 +140,7 @@ namespace Forum
             virtual StatusCode resetVoteDiscussionThreadMessage(const Entities::IdType& id, OutStream& output) = 0;
 
             virtual StatusCode addCommentToDiscussionThreadMessage(const Entities::IdType& messageId, 
-                                                                   const StringView& content, OutStream& output) = 0;
+                                                                   StringView content, OutStream& output) = 0;
             virtual StatusCode setMessageCommentToSolved(const Entities::IdType& id, OutStream& output) = 0;
         };
         typedef std::shared_ptr<IDiscussionThreadMessageRepository> DiscussionThreadMessageRepositoryRef;
@@ -153,10 +153,10 @@ namespace Forum
 
             virtual StatusCode getDiscussionTags(OutStream& output, RetrieveDiscussionTagsBy by) const = 0;
 
-            virtual StatusCode addNewDiscussionTag(const StringView& name, OutStream& output) = 0;
-            virtual StatusCode changeDiscussionTagName(const Entities::IdType& id, const StringView& newName,
+            virtual StatusCode addNewDiscussionTag(StringView name, OutStream& output) = 0;
+            virtual StatusCode changeDiscussionTagName(const Entities::IdType& id, StringView newName,
                                                        OutStream& output) = 0;
-            virtual StatusCode changeDiscussionTagUiBlob(const Entities::IdType& id, const StringView& blob,
+            virtual StatusCode changeDiscussionTagUiBlob(const Entities::IdType& id, StringView blob,
                                                          OutStream& output) = 0;
             virtual StatusCode deleteDiscussionTag(const Entities::IdType& id, OutStream& output) = 0;
             virtual StatusCode addDiscussionTagToThread(const Entities::IdType& tagId, const Entities::IdType& threadId, 
@@ -178,12 +178,12 @@ namespace Forum
             virtual StatusCode getDiscussionCategories(OutStream& output, RetrieveDiscussionCategoriesBy by) const = 0;
             virtual StatusCode getDiscussionCategoriesFromRoot(OutStream& output) const = 0;
 
-            virtual StatusCode addNewDiscussionCategory(const StringView& name, const Entities::IdType& parentId, 
+            virtual StatusCode addNewDiscussionCategory(StringView name, const Entities::IdType& parentId, 
                                                         OutStream& output) = 0;
-            virtual StatusCode changeDiscussionCategoryName(const Entities::IdType& id, const StringView& newName,
+            virtual StatusCode changeDiscussionCategoryName(const Entities::IdType& id, StringView newName,
                                                             OutStream& output) = 0;
             virtual StatusCode changeDiscussionCategoryDescription(const Entities::IdType& id, 
-                                                                   const StringView& newDescription,
+                                                                   StringView newDescription,
                                                                    OutStream& output) = 0;
             virtual StatusCode changeDiscussionCategoryParent(const Entities::IdType& id, 
                                                               const Entities::IdType& newParentId,

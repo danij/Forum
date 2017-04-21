@@ -106,7 +106,7 @@ struct CommandHandler::CommandHandlerImpl
     }
 
     template<typename T>
-    static bool convertTo(const StringView& value, T& result)
+    static bool convertTo(StringView value, T& result)
     {
         if ( ! boost::conversion::try_lexical_convert(value.data(), value.size(), result))
         {

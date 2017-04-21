@@ -15,10 +15,10 @@ namespace Forum
                                                              Authorization::DiscussionThreadMessageAuthorizationRef authorization);
 
             StatusCode addNewDiscussionMessageInThread(const Entities::IdType& threadId,
-                                                       const StringView& content, OutStream& output) override;
+                                                       StringView content, OutStream& output) override;
             StatusCode deleteDiscussionMessage(const Entities::IdType& id, OutStream& output) override;
-            StatusCode changeDiscussionThreadMessageContent(const Entities::IdType& id, const StringView& newContent,
-                                                            const StringView& changeReason, 
+            StatusCode changeDiscussionThreadMessageContent(const Entities::IdType& id, StringView newContent,
+                                                            StringView changeReason, 
                                                             OutStream& output) override;
             StatusCode moveDiscussionThreadMessage(const Entities::IdType& messageId, const Entities::IdType& intoThreadId, 
                                                    OutStream& output) override;
@@ -29,7 +29,7 @@ namespace Forum
             StatusCode getDiscussionThreadMessagesOfUserByCreated(const Entities::IdType& id,
                                                                   OutStream& output) const override;
 
-            StatusCode addCommentToDiscussionThreadMessage(const Entities::IdType& messageId, const StringView& content, 
+            StatusCode addCommentToDiscussionThreadMessage(const Entities::IdType& messageId, StringView content, 
                                                            OutStream& output) override;
             StatusCode getMessageComments(OutStream& output) const override;
             StatusCode getMessageCommentsOfDiscussionThreadMessage(const Entities::IdType& id, 

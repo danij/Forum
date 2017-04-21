@@ -34,11 +34,11 @@ namespace Forum
             virtual AuthorizationStatus getUserByName(const Entities::User& currentUser,
                                                       const Entities::User& user) const = 0;
 
-            virtual AuthorizationStatus addNewUser(const Entities::User& currentUser, const StringView& name) const = 0;
+            virtual AuthorizationStatus addNewUser(const Entities::User& currentUser, StringView name) const = 0;
             virtual AuthorizationStatus changeUserName(const Entities::User& currentUser, 
-                                                       const Entities::User& user, const StringView& newName) const = 0;
+                                                       const Entities::User& user, StringView newName) const = 0;
             virtual AuthorizationStatus changeUserInfo(const Entities::User& currentUser, 
-                                                       const Entities::User& user, const StringView& newInfo) const = 0;
+                                                       const Entities::User& user, StringView newInfo) const = 0;
             virtual AuthorizationStatus deleteUser(const Entities::User& currentUser, 
                                                    const Entities::User& user) const = 0;
         };
@@ -66,10 +66,10 @@ namespace Forum
                                                                        const Entities::DiscussionCategory& category) const = 0;
 
             virtual AuthorizationStatus addNewDiscussionThread(const Entities::User& currentUser, 
-                                                               const StringView& name) const = 0;
+                                                               StringView name) const = 0;
             virtual AuthorizationStatus changeDiscussionThreadName(const Entities::User& currentUser, 
                                                                    const Entities::DiscussionThread& thread, 
-                                                                   const StringView& newName) const = 0;
+                                                                   StringView newName) const = 0;
             virtual AuthorizationStatus deleteDiscussionThread(const Entities::User& currentUser, 
                                                                const Entities::DiscussionThread& thread) const = 0;
             virtual AuthorizationStatus mergeDiscussionThreads(const Entities::User& currentUser, 
@@ -99,13 +99,13 @@ namespace Forum
                                         
             virtual AuthorizationStatus addNewDiscussionMessageInThread(const Entities::User& currentUser, 
                                                                         const Entities::DiscussionThread& thread,
-                                                                        const StringView& content) const = 0;
+                                                                        StringView content) const = 0;
             virtual AuthorizationStatus deleteDiscussionMessage(const Entities::User& currentUser, 
                                                                 const Entities::DiscussionThreadMessage& message) const = 0;
             virtual AuthorizationStatus changeDiscussionThreadMessageContent(const Entities::User& currentUser, 
                                                                              const Entities::DiscussionThreadMessage& message, 
-                                                                             const StringView& newContent,
-                                                                             const StringView& changeReason) const = 0;
+                                                                             StringView newContent,
+                                                                             StringView changeReason) const = 0;
             virtual AuthorizationStatus moveDiscussionThreadMessage(const Entities::User& currentUser, 
                                                                     const Entities::DiscussionThreadMessage& message,
                                                                     const Entities::DiscussionThread& intoThread) const = 0;
@@ -118,7 +118,7 @@ namespace Forum
                                         
             virtual AuthorizationStatus addCommentToDiscussionThreadMessage(const Entities::User& currentUser, 
                                                                             const Entities::DiscussionThreadMessage& message,
-                                                                            const StringView& content) const = 0;
+                                                                            StringView content) const = 0;
             virtual AuthorizationStatus setMessageCommentToSolved(const Entities::User& currentUser, 
                                                                   const Entities::MessageComment& comment) const = 0;
         };
@@ -133,13 +133,13 @@ namespace Forum
             virtual AuthorizationStatus getDiscussionTags(const Entities::User& currentUser) const = 0;
 
             virtual AuthorizationStatus addNewDiscussionTag(const Entities::User& currentUser, 
-                                                            const StringView& name) const = 0;
+                                                            StringView name) const = 0;
             virtual AuthorizationStatus changeDiscussionTagName(const Entities::User& currentUser, 
                                                                 const Entities::DiscussionTag& tag, 
-                                                                const StringView& newName) const = 0;
+                                                                StringView newName) const = 0;
             virtual AuthorizationStatus changeDiscussionTagUiBlob(const Entities::User& currentUser, 
                                                                   const Entities::DiscussionTag& tag, 
-                                                                  const StringView& blob) const = 0;
+                                                                  StringView blob) const = 0;
             virtual AuthorizationStatus deleteDiscussionTag(const Entities::User& currentUser, 
                                                             const Entities::DiscussionTag& tag) const = 0;
             virtual AuthorizationStatus addDiscussionTagToThread(const Entities::User& currentUser, 
@@ -166,14 +166,14 @@ namespace Forum
             virtual AuthorizationStatus getDiscussionCategoriesFromRoot(const Entities::User& currentUser) const = 0;
 
             virtual AuthorizationStatus addNewDiscussionCategory(const Entities::User& currentUser, 
-                                                                 const StringView& name, 
+                                                                 StringView name, 
                                                                  const Entities::DiscussionCategoryRef& parent) const = 0;
             virtual AuthorizationStatus changeDiscussionCategoryName(const Entities::User& currentUser, 
                                                                      const Entities::DiscussionCategory& category, 
-                                                                     const StringView& newName) const = 0;
+                                                                     StringView newName) const = 0;
             virtual AuthorizationStatus changeDiscussionCategoryDescription(const Entities::User& currentUser, 
                                                                             const Entities::DiscussionCategory& category,
-                                                                            const StringView& newDescription) const = 0;
+                                                                            StringView newDescription) const = 0;
             virtual AuthorizationStatus changeDiscussionCategoryParent(const Entities::User& currentUser, 
                                                                        const Entities::DiscussionCategory& category,
                                                                        const Entities::DiscussionCategoryRef& newParent) const = 0;
@@ -226,11 +226,11 @@ namespace Forum
             AuthorizationStatus getUserByName(const Entities::User& currentUser,
                                               const Entities::User& user) const override { return {}; }
 
-            AuthorizationStatus addNewUser(const Entities::User& currentUser, const StringView& name) const override { return {}; }
+            AuthorizationStatus addNewUser(const Entities::User& currentUser, StringView name) const override { return {}; }
             AuthorizationStatus changeUserName(const Entities::User& currentUser, 
-                                               const Entities::User& user, const StringView& newName) const override { return {}; }
+                                               const Entities::User& user, StringView newName) const override { return {}; }
             AuthorizationStatus changeUserInfo(const Entities::User& currentUser, 
-                                               const Entities::User& user, const StringView& newInfo) const override { return {}; }
+                                               const Entities::User& user, StringView newInfo) const override { return {}; }
             AuthorizationStatus deleteUser(const Entities::User& currentUser, 
                                            const Entities::User& user) const override { return {}; }
             
@@ -250,10 +250,10 @@ namespace Forum
                                                                const Entities::DiscussionCategory& category) const override { return {}; }
 
             AuthorizationStatus addNewDiscussionThread(const Entities::User& currentUser, 
-                                                       const StringView& name) const override { return {}; }
+                                                       StringView name) const override { return {}; }
             AuthorizationStatus changeDiscussionThreadName(const Entities::User& currentUser, 
                                                            const Entities::DiscussionThread& thread, 
-                                                           const StringView& newName) const override { return {}; }
+                                                           StringView newName) const override { return {}; }
             AuthorizationStatus deleteDiscussionThread(const Entities::User& currentUser, 
                                                        const Entities::DiscussionThread& thread) const override { return {}; }
             AuthorizationStatus mergeDiscussionThreads(const Entities::User& currentUser, 
@@ -275,13 +275,13 @@ namespace Forum
                                 
             AuthorizationStatus addNewDiscussionMessageInThread(const Entities::User& currentUser, 
                                                                 const Entities::DiscussionThread& thread,
-                                                                const StringView& content) const override { return {}; }
+                                                                StringView content) const override { return {}; }
             AuthorizationStatus deleteDiscussionMessage(const Entities::User& currentUser, 
                                                         const Entities::DiscussionThreadMessage& message) const override { return {}; }
             AuthorizationStatus changeDiscussionThreadMessageContent(const Entities::User& currentUser, 
                                                                      const Entities::DiscussionThreadMessage& message, 
-                                                                     const StringView& newContent,
-                                                                     const StringView& changeReason) const override { return {}; }
+                                                                     StringView newContent,
+                                                                     StringView changeReason) const override { return {}; }
             AuthorizationStatus moveDiscussionThreadMessage(const Entities::User& currentUser, 
                                                             const Entities::DiscussionThreadMessage& message,
                                                             const Entities::DiscussionThread& intoThread) const override { return {}; }
@@ -294,20 +294,20 @@ namespace Forum
                                 
             AuthorizationStatus addCommentToDiscussionThreadMessage(const Entities::User& currentUser, 
                                                                     const Entities::DiscussionThreadMessage& message,
-                                                                    const StringView& content) const override { return {}; }
+                                                                    StringView content) const override { return {}; }
             AuthorizationStatus setMessageCommentToSolved(const Entities::User& currentUser, 
                                                           const Entities::MessageComment& comment) const override { return {}; }
 
             AuthorizationStatus getDiscussionTags(const Entities::User& currentUser) const override { return {}; }
 
             AuthorizationStatus addNewDiscussionTag(const Entities::User& currentUser, 
-                                                    const StringView& name) const override { return {}; }
+                                                    StringView name) const override { return {}; }
             AuthorizationStatus changeDiscussionTagName(const Entities::User& currentUser, 
                                                         const Entities::DiscussionTag& tag, 
-                                                        const StringView& newName) const override { return {}; }
+                                                        StringView newName) const override { return {}; }
             AuthorizationStatus changeDiscussionTagUiBlob(const Entities::User& currentUser, 
                                                           const Entities::DiscussionTag& tag, 
-                                                          const StringView& blob) const override { return {}; }
+                                                          StringView blob) const override { return {}; }
             AuthorizationStatus deleteDiscussionTag(const Entities::User& currentUser, 
                                                     const Entities::DiscussionTag& tag) const override { return {}; }
             AuthorizationStatus addDiscussionTagToThread(const Entities::User& currentUser, 
@@ -326,14 +326,14 @@ namespace Forum
             AuthorizationStatus getDiscussionCategoriesFromRoot(const Entities::User& currentUser) const override { return {}; }
 
             AuthorizationStatus addNewDiscussionCategory(const Entities::User& currentUser, 
-                                                         const StringView& name, 
+                                                         StringView name, 
                                                          const Entities::DiscussionCategoryRef& parent) const override { return {}; }
             AuthorizationStatus changeDiscussionCategoryName(const Entities::User& currentUser, 
                                                              const Entities::DiscussionCategory& category, 
-                                                             const StringView& newName) const override { return {}; }
+                                                             StringView newName) const override { return {}; }
             AuthorizationStatus changeDiscussionCategoryDescription(const Entities::User& currentUser, 
                                                                     const Entities::DiscussionCategory& category,
-                                                                    const StringView& newDescription) const override { return {}; }
+                                                                    StringView newDescription) const override { return {}; }
             AuthorizationStatus changeDiscussionCategoryParent(const Entities::User& currentUser, 
                                                                const Entities::DiscussionCategory& category,
                                                                const Entities::DiscussionCategoryRef& newParent) const override { return {}; }
