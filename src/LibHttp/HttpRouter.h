@@ -1,6 +1,6 @@
 #pragma once
 
-#include "HttpParser.h"
+#include "HttpRequest.h"
 #include "HttpResponseBuilder.h"
 
 #include <functional>
