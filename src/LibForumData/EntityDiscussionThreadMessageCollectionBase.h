@@ -67,6 +67,11 @@ namespace Forum
                 return Helpers::toConst(messages_.template get<DiscussionThreadMessageCollectionByCreated>());
             }
 
+            virtual void insertMessage(DiscussionThreadMessageRef message)
+            {
+                messages_.insert(std::move(message));
+            }
+
             /**
              * Enables a safe modification of a discussion message instance,
              * refreshing all indexes the message is registered in
