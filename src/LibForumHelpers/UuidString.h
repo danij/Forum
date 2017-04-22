@@ -18,7 +18,7 @@ namespace Forum
             UuidString(const boost::string_view& value);
 
             /**
-             * How many characters are needed to represent the string represation (without null terminator)
+             * How many characters are needed to store the string representation (without null terminator)
              */
             static constexpr size_t StringRepresentationSize = boost::uuids::uuid::static_size() * 2 + 4;
 
