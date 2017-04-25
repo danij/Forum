@@ -45,9 +45,9 @@ namespace Forum
                   auto&        subscribedUsers()                 { return subscribedUsers_; }
                   auto         subscribedUsersCount()      const { return subscribedUsers_.size(); }
 
-            DiscussionThreadMessage::VoteScoreType voteScore() const;
+                  Timestamp    latestMessageCreated()      const { return latestMessageCreated_; }
 
-            Timestamp latestMessageCreated() const;
+            DiscussionThreadMessage::VoteScoreType voteScore() const;
 
             /**
              * Thread-safe reference to the number of times the thread was visited.
@@ -62,7 +62,13 @@ namespace Forum
                 Name
             };
 
-            explicit DiscussionThread(User& createdBy) : createdBy_(createdBy), latestVisibleChange_(0), visited_(0) {};
+            explicit DiscussionThread(User& createdBy)
+                    : createdBy_(createdBy), latestVisibleChange_(0), latestMessageCreated_(0), visited_(0) {};
+
+            void insertMessage(DiscussionThreadMessageRef message) override;
+            void modifyDiscussionThreadMessage(MessageIdIteratorType iterator,
+                                               std::function<void(DiscussionThreadMessage&)>&& modifyFunction) override;
+            DiscussionThreadMessageRef deleteDiscussionThreadMessage(MessageIdIteratorType iterator) override;
 
             void addVisitorSinceLastEdit(const IdType& userId);
             bool hasVisitedSinceLastEdit(const IdType& userId) const;
@@ -75,12 +81,17 @@ namespace Forum
             bool removeCategory(const std::weak_ptr<DiscussionCategory>& category);
 
         private:
+            void refreshLatestMessageCreated();
+
             std::string name_;
             User& createdBy_;
             //store the timestamp of the latest visibile change in order to be able to 
             //detect when to return a status that nothing has changed since a provided timestamp
             //Note: do not use as index in collection, the indexes would not always be updated
             Timestamp latestVisibleChange_;
+            //store the timestamp of the latest message in the collection that was created
+            //as it's expensive to retrieve it every time
+            Timestamp latestMessageCreated_;
             mutable std::atomic_int_fast64_t visited_;
             std::set<boost::uuids::uuid> visitorsSinceLastEdit_;
             std::set<std::weak_ptr<DiscussionTag>, std::owner_less<std::weak_ptr<DiscussionTag>>> tags_;

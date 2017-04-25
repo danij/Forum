@@ -7,15 +7,20 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost REQUIRED COMPONENTS system)
 
 set(SOURCE_FILES
-        private/CommandHandler.cpp)
+        private/CommandHandler.cpp
+        private/ServiceEndpointManager.cpp
+        private/ServiceEndpoints.cpp)
 
 set(HEADER_FILES
-        CommandHandler.h)
+        CommandHandler.h
+        ServiceEndpointManager.h
+        private/ServiceEndpoints.h)
 
 include_directories(
         .
         ../.
         ../LibFastJsonWriter
+        ../LibHttp
         ../LibForumContext
         ../LibForumHelpers
         ../LibForumData
@@ -26,5 +31,7 @@ add_library(ForumServiceEndpoints SHARED
         ${HEADER_FILES})
 
 target_link_libraries(ForumServiceEndpoints
+        Http
         ForumContext
-        ForumHelpers)
+        ForumHelpers
+        ${Boost_LIBRARIES})

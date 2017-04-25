@@ -123,11 +123,11 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                            message->content() = content;
                            updateCreated(*message);
                  
-                           collection.messages().insert(message);
+                           collection.insertMessage(message);
                            collection.modifyDiscussionThread(threadIt, [&collection, &message, &threadIt, &currentUser]
                                (DiscussionThread& thread)
                                {
-                                   thread.messages().insert(message);
+                                   thread.insertMessage(message);
                                    thread.resetVisitorsSinceLastEdit();
                                    thread.latestVisibleChange() = message->created();
                                    thread.subscribedUsers().insert(currentUser);
@@ -162,7 +162,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                  
                            collection.modifyUserById(currentUser->id(), [&](User& user)
                                                                       {
-                                                                          user.messages().insert(message);
+                                                                          user.insertMessage(message);
                                                                           user.subscribedThreads().insertDiscussionThread(*threadIt);
                                                                       });
 
@@ -379,7 +379,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
                            collection.modifyDiscussionThread(itInto, [&collection, &messageRef, &threadUpdateFn]
                                (DiscussionThread& thread)
                                {
-                                   thread.messages().insert(messageRef);
+                                   thread.insertMessage(messageRef);
                                    threadUpdateFn(thread.shared_from_this(), true);
                                });
                  

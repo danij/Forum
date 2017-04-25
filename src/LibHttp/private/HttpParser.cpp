@@ -307,7 +307,8 @@ void Parser::interpretImportantHeaders()
         errorCode_ = HttpStatusCode::Expectation_Failed;
     }
 
-    interpretCookies(request_.headers[Request::HttpHeader::Cookie]);
+    auto cookieValue = request_.headers[Request::HttpHeader::Cookie];
+    interpretCookies(const_cast<char*>(cookieValue.data()), cookieValue.size());
 }
 
 void Parser::interpretPathString()
@@ -356,13 +357,13 @@ void Parser::interpretPathString()
     }
 }
 
-void Parser::interpretCookies(StringView value)
+void Parser::interpretCookies(char* value, size_t size)
 {
     int state = 0;
-    auto cookieStart = const_cast<char*>(value.data());
+    auto cookieStart = value;
     int nameStart = 0, nameEnd = 0, valueStart = 0, valueEnd = 0;
 
-    for (int i = 0, n = value.size(); i < n; ++i)
+    for (int i = 0; i < size; ++i)
     {
         auto c = value[i];
 
@@ -375,11 +376,11 @@ void Parser::interpretCookies(StringView value)
                 state = 1;
                 valueStart = valueEnd = i + 1;
             }
-            else if ((';' == c) || ((i + 1) == n))
+            else if ((';' == c) || ((i + 1) == size))
             {
                 //no name, just a value
                 valueEnd = i;
-                if ((i + 1) == n)
+                if ((i + 1) == size)
                 {
                     valueEnd += 1;
                 }
@@ -397,10 +398,10 @@ void Parser::interpretCookies(StringView value)
             }
             break;
         case 1: //value
-            if ((';' == c) || ((i + 1) == n))
+            if ((';' == c) || ((i + 1) == size))
             {
                 valueEnd = i;
-                if ((i + 1) == n)
+                if ((i + 1) == size)
                 {
                     valueEnd += 1;
                 }

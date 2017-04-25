@@ -303,7 +303,6 @@ void DiscussionThreadsEndpoint::getThreadById(Http::RequestState& requestState)
                   [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __, 
                      std::vector<StringView>& parameters)
     {
-        auto& request = requestState.request;
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_DISCUSSION_THREAD_BY_ID, parameters);
     });

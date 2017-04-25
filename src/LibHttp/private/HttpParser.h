@@ -69,7 +69,7 @@ namespace Http
         void onFinishedParsingHeaders();
         void interpretImportantHeaders();
         void interpretPathString();
-        void interpretCookies(StringView value);
+        void interpretCookies(char* value, size_t size);
 
         char* headerBuffer_;
         size_t headerBufferSize_;

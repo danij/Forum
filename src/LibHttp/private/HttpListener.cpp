@@ -33,7 +33,7 @@ static void closeSocket(boost::asio::ip::tcp::socket& socket)
     }
 }
 
-struct Http::HttpConnection final : private boost::noncopyable
+struct Http::HttpListener::HttpConnection final : private boost::noncopyable
 {
     explicit HttpConnection(HttpListener& listener, boost::asio::ip::tcp::socket&& socket, ReadBufferType&& headerBuffer, 
                             ReadBufferPoolType& readBufferPool, WriteBufferPoolType& writeBufferPool,
@@ -47,7 +47,7 @@ struct Http::HttpConnection final : private boost::noncopyable
                   return reinterpret_cast<HttpConnection*>(state)->onReadBody(buffer, size);
               }, this)
     {
-        timeoutManager.addExpireIn(&socket_, timeoutManager.defaultTimeout());
+        timeoutManager_.addExpireIn(&socket_, timeoutManager.defaultTimeout());
     }
 
     auto& socket()
@@ -255,7 +255,7 @@ struct HttpListener::HttpListenerImpl
     std::unique_ptr<ReadBufferPoolType> readBuffers;
     std::unique_ptr<WriteBufferPoolType> writeBuffers;
     FixedSizeObjectPool<HttpConnection> connectionPool;
-    std::atomic_int64_t nrOfCurrentlyOpenConnections = 0;
+    std::atomic<std::int64_t> nrOfCurrentlyOpenConnections{0};
     TimeoutManager<boost::asio::ip::tcp::socket> timeoutManager;
 };
 
@@ -282,6 +282,7 @@ void HttpListener::startListening()
     };
 
     impl_->acceptor.open(endpoint.protocol());
+    impl_->acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
     impl_->acceptor.bind(endpoint);
     impl_->acceptor.listen();
 

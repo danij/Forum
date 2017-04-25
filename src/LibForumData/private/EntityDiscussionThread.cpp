@@ -4,6 +4,8 @@
 #include "Configuration.h"
 #include "ContextProviders.h"
 
+#include <algorithm>
+
 using namespace Forum;
 using namespace Forum::Entities;
 
@@ -14,6 +16,41 @@ DiscussionThreadMessage::VoteScoreType DiscussionThread::voteScore() const
         return (*messagesByCreated().begin())->voteScore();
     }
     return 0;
+}
+
+void DiscussionThread::insertMessage(DiscussionThreadMessageRef message)
+{
+    DiscussionThreadMessageCollectionBase<OrderedIndexForId>::insertMessage(message);
+    if (message)
+    {
+        latestMessageCreated_ = std::max(latestMessageCreated_, message->created());
+    }
+}
+
+void DiscussionThread::modifyDiscussionThreadMessage(MessageIdIteratorType iterator,
+                                                     std::function<void(DiscussionThreadMessage&)>&& modifyFunction)
+{
+    DiscussionThreadMessageCollectionBase<OrderedIndexForId>::modifyDiscussionThreadMessage(iterator, std::move(modifyFunction));
+    refreshLatestMessageCreated();
+}
+
+DiscussionThreadMessageRef DiscussionThread::deleteDiscussionThreadMessage(MessageIdIteratorType iterator)
+{
+    auto result = DiscussionThreadMessageCollectionBase<OrderedIndexForId>::deleteDiscussionThreadMessage(iterator);
+    refreshLatestMessageCreated();
+    return result;
+}
+
+void DiscussionThread::refreshLatestMessageCreated()
+{
+    auto& index = messages_.template get<DiscussionThreadMessageCollectionByCreated>();
+    auto it = index.rbegin();
+    if (it == index.rend() || nullptr == *it)
+    {
+        latestMessageCreated_ = 0;
+        return;
+    }
+    latestMessageCreated_ = (*it)->created();
 }
 
 void DiscussionThread::addVisitorSinceLastEdit(const IdType& userId)
@@ -58,14 +95,4 @@ bool DiscussionThread::removeCategory(const std::weak_ptr<DiscussionCategory>& c
 {
     latestVisibleChange() = Context::getCurrentTime();
     return categories_.erase(category) > 0;
-}
-
-Timestamp DiscussionThread::latestMessageCreated() const
-{
-    auto index = messagesByCreated();
-    if ( ! index.size())
-    {
-        return 0;
-    }
-    return (*index.rbegin())->created();
 }

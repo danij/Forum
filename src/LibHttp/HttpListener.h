@@ -37,7 +37,8 @@ namespace Http
         friend struct HttpListenerOnAcceptCallback;
         void onAccept(const boost::system::error_code& ec);
 
-        friend struct HttpConnection;        
+        struct HttpConnection;
+        friend struct HttpConnection;
         void release(HttpConnection* connection);
         
         struct HttpListenerImpl;

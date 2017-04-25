@@ -1,6 +1,6 @@
 #pragma once
 
-#include "HttpParser.h"
+#include "HttpRequest.h"
 #include "HttpResponseBuilder.h"
 
 #include <functional>
@@ -35,8 +35,8 @@ namespace Http
 
         typedef std::function<void(RequestState&)> HandlerFn;
 
-        static constexpr size_t MaxRouteSize = 128;
-        static constexpr size_t FirstIndexMaxValue = 128;
+        static const size_t MaxRouteSize = 128;
+        static const size_t FirstIndexMaxValue = 128;
 
         /**
          * Registers a route with a maximum size of MaxRouteSize.

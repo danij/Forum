@@ -560,7 +560,7 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                    
                                for (auto& message : threadFrom.messages())
                                {
-                                   thread.messages().insert(message);
+                                   thread.insertMessage(message);
                                }
                    
                                updateMessageCounts(threadFromRef, - static_cast<int_fast32_t>(threadFrom.messages().size()));

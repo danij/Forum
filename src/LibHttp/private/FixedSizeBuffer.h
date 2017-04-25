@@ -17,7 +17,7 @@ namespace Http
     public:
         struct Buffer
         {
-            char alignas(AlignSpecifier) data[BufferSize];
+            alignas(AlignSpecifier) char data[BufferSize];
             static constexpr size_t size = BufferSize;
         };
 
