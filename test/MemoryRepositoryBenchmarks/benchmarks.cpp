@@ -18,6 +18,7 @@
 #include "CommandHandler.h"
 #include "Configuration.h"
 #include "StringHelpers.h"
+#include "EventObserver.h"
 
 #include <boost/property_tree/json_parser.hpp>
 
@@ -46,6 +47,7 @@ using namespace Forum;
 using namespace Forum::Commands;
 using namespace Forum::Repository;
 using namespace Forum::Authorization;
+using namespace Forum::Persistence;
 
 struct IdType
 {
@@ -68,6 +70,7 @@ struct BenchmarkContext
     std::vector<IdType> tagIds;
     std::vector<IdType> categoryIds;
     Entities::Timestamp currentTimestamp = 1000;
+    std::shared_ptr<EventObserver> persistenceObserver;
 };
 
 auto createCommandHandler()
@@ -90,6 +93,9 @@ auto createCommandHandler()
     context.handler = std::make_shared<CommandHandler>(observableRepository, userRepository, discussionThreadRepository,
         discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository,
         statisticsRepository, metricsRepository);
+
+    context.persistenceObserver = std::make_shared<EventObserver>(observableRepository->readEvents(), 
+                                                                  observableRepository->writeEvents());
 
     return context;
 }

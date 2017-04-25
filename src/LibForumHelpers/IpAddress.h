@@ -34,6 +34,9 @@ namespace Forum
                     && data_.int32[1] == 0;
             }
 
+            const uint8_t* data() const { return data_.bytes; }
+
+            static size_t dataSize() { return 16;  }
             
             /**
              * Writes the string representation of the address to a buffer and returns the amount of bytes written
