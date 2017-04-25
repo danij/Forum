@@ -99,7 +99,8 @@ namespace Forum
 
         inline ObserverContext_ createObserverContext(PerformedByType performedBy)
         {
-            return ObserverContext_(performedBy, Context::getCurrentTime(), Context::getDisplayContext());
+            return ObserverContext_(performedBy, Context::getCurrentTime(), Context::getDisplayContext(), 
+                                    Context::getCurrentUserIpAddress());
         }
 
         inline void updateCreated(Entities::CreatedMixin& entity)

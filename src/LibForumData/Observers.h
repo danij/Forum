@@ -17,10 +17,11 @@ namespace Forum
             PerformedByType performedBy;
             const Entities::Timestamp timestamp;
             const Context::DisplayContext displayContext;
+            const Helpers::IpAddress ipAddress;
 
             ObserverContext_(PerformedByType performedBy, Entities::Timestamp timestamp, 
-                            Context::DisplayContext displayContext) :
-                    performedBy(performedBy), timestamp(timestamp), displayContext(displayContext)
+                            Context::DisplayContext displayContext, Helpers::IpAddress ipAddress) :
+                    performedBy(performedBy), timestamp(timestamp), displayContext(displayContext), ipAddress(ipAddress)
             {
             }
         };
