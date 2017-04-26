@@ -45,7 +45,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         auto totalSize = std::accumulate(parts, parts + nrOfParts, 0, [](uint32_t total, BlobPart& part)
         {
            return total + part.totalSize();
-        }) + sizeof(EventType) + 2 * sizeof(uint16_t); //store eventType + event version + context version
+        }) + sizeof(EventType) + sizeof(version) + sizeof(ContextVersion);
 
         auto blob = Blob::create(totalSize);
 
@@ -53,11 +53,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         *reinterpret_cast<EventType*>(buffer) = eventType;
         buffer += sizeof(eventType);
 
-        *reinterpret_cast<uint16_t*>(buffer) = version;
-        buffer += sizeof(uint16_t);
+        *reinterpret_cast<std::add_pointer<decltype(version)>::type>(buffer) = version;
+        buffer += sizeof(version);
 
-        *reinterpret_cast<uint16_t*>(buffer) = ContextVersion;
-        buffer += sizeof(uint16_t);
+        *reinterpret_cast<std::add_pointer<std::remove_const<decltype(ContextVersion)>::type>::type>(buffer) = ContextVersion;
+        buffer += sizeof(ContextVersion);
 
         for (size_t i = 0; i < nrOfParts; ++i)
         {
