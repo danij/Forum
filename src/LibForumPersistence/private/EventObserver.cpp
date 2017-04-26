@@ -39,7 +39,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     }
 
     static constexpr uint16_t ContextVersion = 1;
-
+    
     void recordBlob(EventType eventType, uint16_t version, BlobPart* parts, size_t nrOfParts)
     {
         auto totalSize = std::accumulate(parts, parts + nrOfParts, 0, [](uint32_t total, BlobPart& part)
@@ -316,7 +316,8 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(message.content().data()), message.content().size(), true }
+            { reinterpret_cast<const char*>(message.content().data()), message.content().size(), true },
+            { reinterpret_cast<const char*>(message.lastUpdatedReason().data()), message.lastUpdatedReason().size(), true }
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1, parts, std::extent<decltype(parts)>::value);
