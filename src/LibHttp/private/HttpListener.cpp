@@ -110,7 +110,7 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
             //add remote endpoint
             if (trustIpFromXForwardedFor_)
             {
-                static char nullTerminatedAddressBuffer[128];
+                static thread_local char nullTerminatedAddressBuffer[128];
                 auto xForwardedFor = request.headers[Http::Request::X_Forwarded_For];
                 auto toCopy = std::min(std::extent<decltype(nullTerminatedAddressBuffer)>::value - 1, xForwardedFor.size());
                 std::copy(xForwardedFor.data(), xForwardedFor.data() + toCopy, nullTerminatedAddressBuffer);
