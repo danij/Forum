@@ -72,6 +72,11 @@ namespace Forum
             bool trustIpFromXForwardedFor = false;
         };
 
+        struct LoggingConfig
+        {
+            std::string settingsFile = "log.settings";
+        };
+
         struct Config
         {
             UserConfig user;
@@ -80,6 +85,7 @@ namespace Forum
             DiscussionTagConfig discussionTag;
             DiscussionCategoryConfig discussionCategory;
             ServiceConfig service;
+            LoggingConfig logging;
         };
 
         typedef std::shared_ptr<const Config> ConfigConstRef;

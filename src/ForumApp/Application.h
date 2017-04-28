@@ -18,8 +18,11 @@ namespace Forum
         int run();
 
     private:
-        void cleanup();
+        void cleanup();        
+        void validateConfiguration();
         void createCommandHandler();
+        void initializeHttp();
+        void initializeLogging();
 
         std::unique_ptr<Http::HttpRouter> httpRouter_;
         std::unique_ptr<Http::HttpListener> httpListener_;
