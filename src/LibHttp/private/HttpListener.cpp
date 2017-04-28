@@ -33,14 +33,15 @@ static void closeSocket(boost::asio::ip::tcp::socket& socket)
     }
 }
 
-struct Http::HttpListener::HttpConnection final : private boost::noncopyable
+struct HttpListener::HttpConnection final : private boost::noncopyable
 {
     explicit HttpConnection(HttpListener& listener, boost::asio::ip::tcp::socket&& socket, ReadBufferType&& headerBuffer, 
                             ReadBufferPoolType& readBufferPool, WriteBufferPoolType& writeBufferPool,
-                            TimeoutManager<boost::asio::ip::tcp::socket>& timeoutManager)
+                            TimeoutManager<boost::asio::ip::tcp::socket>& timeoutManager, bool trustIpFromXForwardedFor)
         : listener_(listener), socket_(std::move(socket)), headerBuffer_(std::move(headerBuffer)), 
           requestBodyBuffer_(readBufferPool), responseBuffer_(writeBufferPool), 
-          responseBuilder_(writeToBuffer, &responseBuffer_), timeoutManager_(timeoutManager),
+          responseBuilder_(writeToBuffer, &responseBuffer_), timeoutManager_(timeoutManager), 
+          trustIpFromXForwardedFor_(trustIpFromXForwardedFor),
           parser_(headerBuffer_->data, headerBuffer_->size, Buffer::MaxRequestBodyLength, 
               [](auto buffer, auto size, auto state)
               {
@@ -107,12 +108,31 @@ struct Http::HttpListener::HttpConnection final : private boost::noncopyable
             }
 
             //add remote endpoint
-            boost::system::error_code getAddressCode;
-            auto remoteEndpoint = socket_.remote_endpoint(getAddressCode);
-            if ( ! getAddressCode)
+            if (trustIpFromXForwardedFor_)
             {
-                request.remoteAddress = remoteEndpoint.address();
+                static char nullTerminatedAddressBuffer[128];
+                auto xForwardedFor = request.headers[Http::Request::X_Forwarded_For];
+                auto toCopy = std::min(std::extent<decltype(nullTerminatedAddressBuffer)>::value - 1, xForwardedFor.size());
+                std::copy(xForwardedFor.data(), xForwardedFor.data() + toCopy, nullTerminatedAddressBuffer);
+                nullTerminatedAddressBuffer[toCopy + 1] = 0;
+
+                boost::system::error_code parseAddressCode;
+                auto address = boost::asio::ip::address::from_string(nullTerminatedAddressBuffer, parseAddressCode);
+                if ( ! parseAddressCode)
+                {
+                    request.remoteAddress = address;
+                }
             }
+            else
+            {
+                boost::system::error_code getAddressCode;
+                auto remoteEndpoint = socket_.remote_endpoint(getAddressCode);
+                if ( ! getAddressCode)
+                {
+                    request.remoteAddress = remoteEndpoint.address();
+                }
+            }
+
             listener_.router().forward(request, responseBuilder_);
 
             if ((0 == responseBuffer_.size()) || responseBuffer_.notEnoughRoom())
@@ -200,6 +220,7 @@ private:
     TimeoutManager<boost::asio::ip::tcp::socket>& timeoutManager_;
     Parser parser_;
     bool keepConnectionAlive_ = false;
+    bool trustIpFromXForwardedFor_ = false;
 };
 
 struct HttpListener::HttpListenerImpl
@@ -340,7 +361,7 @@ void HttpListener::onAccept(const boost::system::error_code& ec)
     {
         auto connection = impl_->connectionPool.getObject(*this, std::move(impl_->socket), std::move(headerBuffer),
                                                           *impl_->readBuffers, *impl_->writeBuffers, 
-                                                          impl_->timeoutManager);
+                                                          impl_->timeoutManager, impl_->config.trustIpFromXForwardedFor);
         if (nullptr != connection)
         {
             closeConnection = false;

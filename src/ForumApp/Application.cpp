@@ -42,6 +42,7 @@ Application::Application(int argc, const char* argv[])
     httpConfig.listenIPAddress = forumConfig->service.listenIPAddress;
     httpConfig.listenPort = forumConfig->service.listenPort;
     httpConfig.connectionTimeoutSeconds = forumConfig->service.connectionTimeoutSeconds;
+    httpConfig.trustIpFromXForwardedFor = forumConfig->service.trustIpFromXForwardedFor;
 
     httpRouter_ = std::make_unique<HttpRouter>();
     endpointManager_ = std::make_unique<ServiceEndpointManager>(*commandHandler_);

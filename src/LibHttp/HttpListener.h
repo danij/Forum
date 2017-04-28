@@ -21,6 +21,7 @@ namespace Http
             std::string listenIPAddress;
             uint16_t listenPort;
             int_fast16_t connectionTimeoutSeconds;
+            bool trustIpFromXForwardedFor;
         };
         
         explicit HttpListener(Configuration config, HttpRouter& router, boost::asio::io_service& ioService);
