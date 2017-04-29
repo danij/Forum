@@ -141,7 +141,9 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
                               return;
                           }
 
-                          authorizationStatus = authorization_->getUserById(currentUser, **it);
+                          auto& user = **it;
+
+                          authorizationStatus = authorization_->getUserById(currentUser, user);
                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
                           {
                               status = authorizationStatus.code;
@@ -149,9 +151,9 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
                           }
 
                           status.disable();
-                          writeSingleValueSafeName(output, "user", **it);
+                          writeSingleValueSafeName(output, "user", user);
                           
-                          readEvents().onGetUserById(createObserverContext(currentUser), id);
+                          readEvents().onGetUserById(createObserverContext(currentUser), user);
                       });
     return status;
 }

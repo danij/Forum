@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_by_id_invokes_observer )
     auto handler = createCommandHandler();
 
     auto ___ = addHandler(handler->readEvents().onGetUserById,
-                          [&](auto& _, auto& id) { idToBeRetrieved = static_cast<std::string>(id); });
+                          [&](auto& _, auto& user) { idToBeRetrieved = static_cast<std::string>(user.id()); });
 
     auto userId = createUserAndGetId(handler, "User");
     handlerToObj(handler, Forum::Commands::GET_USER_BY_ID, { userId });
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_by_id_invokes_observer )
     auto handler = createCommandHandler();
 
     auto ___ = addHandler(handler->readEvents().onGetDiscussionThreadById, 
-                          [&](auto& _, auto& id) { idOfThread = static_cast<std::string>(id); });
+                          [&](auto& _, auto& thread) { idOfThread = static_cast<std::string>(thread.id()); });
 
     auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId });

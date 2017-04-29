@@ -149,7 +149,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdTyp
                           status.disable();
                           writeSingleValueSafeName(output, "thread", thread);
                           
-                          readEvents().onGetDiscussionThreadById(createObserverContext(currentUser), id);
+                          readEvents().onGetDiscussionThreadById(createObserverContext(currentUser), thread);
                       });
     if (addUserToVisitedSinceLastEdit)
     {
