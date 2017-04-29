@@ -16,12 +16,12 @@
 #include "MemoryRepositoryStatistics.h"
 #include "MetricsRepository.h"
 
+#include "Logging.h"
 #include "Version.h"
 
 #include <fstream>
 #include <iostream>
 
-#include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/from_stream.hpp>
 
 using namespace Forum;
@@ -40,7 +40,7 @@ Application::Application(int argc, const char* argv[])
 
     initializeLogging();
 
-    BOOST_LOG_TRIVIAL(info) << "Starting Forum Backend v" << VERSION;
+    FORUM_LOG_INFO << "Starting Forum Backend v" << VERSION;
 
     initializeHttp();
 }
