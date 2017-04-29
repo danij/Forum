@@ -1,9 +1,14 @@
 #include "EventObserver.h"
 #include "PersistenceBlob.h"
 
-#include <vector>
+#include <atomic>
+#include <chrono>
+#include <map>
+#include <mutex>
 #include <numeric>
+#include <thread>
 #include <type_traits>
+#include <vector>
 
 using namespace Forum;
 using namespace Forum::Persistence;
@@ -25,7 +30,7 @@ struct BlobPart
 struct EventObserver::EventObserverImpl final : private boost::noncopyable
 {
     EventObserverImpl(ReadEvents& readEvents, WriteEvents& writeEvents)
-        : readEvents(readEvents), writeEvents(writeEvents)
+        : readEvents(readEvents), writeEvents(writeEvents), timerThread([this]() {this->timerLoop();})
     {
         bindObservers();
     }
@@ -35,6 +40,22 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         for (auto& connection : connections)
         {
             connection.disconnect();
+        }
+        stopTimerThread = true;
+        timerThread.join();
+    }
+
+    void timerLoop()
+    {
+        while ( ! stopTimerThread)
+        {
+            if (timerThreadCurrentIncrement >= updateThreadVisitedEveryIncrement)
+            {
+                updateThreadVisited();
+                timerThreadCurrentIncrement = 0;
+            }
+            std::this_thread::sleep_for(timerThreadCheckEverySeconds);
+            ++timerThreadCurrentIncrement;
         }
     }
 
@@ -105,18 +126,29 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         connections.push_back(writeEvents.           onDeleteDiscussionCategory.connect([this](auto context, auto& category)                   { this->onDeleteDiscussionCategory(context, category); }));
         connections.push_back(writeEvents.         onAddDiscussionTagToCategory.connect([this](auto context, auto& tag, auto& category)        { this->onAddDiscussionTagToCategory(context, tag, category); }));
         connections.push_back(writeEvents.    onRemoveDiscussionTagFromCategory.connect([this](auto context, auto& tag, auto& category)        { this->onRemoveDiscussionTagFromCategory(context, tag, category); }));
+
+        connections.push_back(readEvents.             onGetDiscussionThreadById.connect([this](auto context, auto& thread)                     { this->onGetDiscussionThreadById(context, thread); }));
+
     }
 
     static constexpr size_t UuidSize = boost::uuids::uuid::static_size();
+    typedef int64_t PersistentTimestampType;
+    static constexpr PersistentTimestampType ZeroTimestamp = 0;
+    static const Helpers::IpAddress ZeroIpAddress;
 
 #define ADD_CONTEXT_BLOB_PARTS \
     { reinterpret_cast<const char*>(&contextTimestamp), sizeof(contextTimestamp), false }, \
     { reinterpret_cast<const char*>(&context.performedBy.id().value().data), UuidSize, false }, \
     { reinterpret_cast<const char*>(context.ipAddress.data()), context.ipAddress.dataSize(), false }
-    
+
+#define ADD_EMPTY_CONTEXT_BLOB_PARTS \
+    { reinterpret_cast<const char*>(&ZeroTimestamp), sizeof(ZeroTimestamp), false }, \
+    { reinterpret_cast<const char*>(&UuidString::empty.value().data), UuidSize, false }, \
+    { reinterpret_cast<const char*>(ZeroIpAddress.data()), ZeroIpAddress.dataSize(), false }
+        
     void onAddNewUser(ObserverContext context, const User& user)
     {
-        int64_t contextTimestamp = context.timestamp; //make sure the size is fixed for serialization
+        PersistentTimestampType contextTimestamp = context.timestamp; //make sure the size is fixed for serialization
         BlobPart parts[] = 
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -142,7 +174,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onChangeUserName(ObserverContext context, const User& user)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -155,7 +187,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onChangeUserInfo(ObserverContext context, const User& user)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -168,7 +200,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onDeleteUser(ObserverContext context, const User& user)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -180,7 +212,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onAddNewDiscussionThread(ObserverContext context, const DiscussionThread& thread)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -204,7 +236,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onChangeDiscussionThreadName(ObserverContext context, const DiscussionThread& thread)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -217,7 +249,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onDeleteDiscussionThread(ObserverContext context, const DiscussionThread& thread)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -230,7 +262,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onMergeDiscussionThreads(ObserverContext context, const DiscussionThread& fromThread, 
                                   const DiscussionThread& toThread)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -244,7 +276,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onMoveDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message, 
                                        const DiscussionThread& intoThread)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -257,7 +289,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onSubscribeToDiscussionThread(ObserverContext context, const DiscussionThread& thread)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -269,7 +301,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onUnsubscribeFromDiscussionThread(ObserverContext context, const DiscussionThread& thread)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -281,7 +313,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onAddNewDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         UuidString parentThreadId = {};
         message.executeActionWithParentThreadIfAvailable([&parentThreadId](auto& thread)
         {
@@ -311,7 +343,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onChangeDiscussionThreadMessageContentContent(ObserverContext context, const DiscussionThreadMessage& message)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -325,7 +357,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onDeleteDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -337,7 +369,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onDiscussionThreadMessageUpVote(ObserverContext context, const DiscussionThreadMessage& message)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -349,7 +381,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onDiscussionThreadMessageDownVote(ObserverContext context, const DiscussionThreadMessage& message)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -361,7 +393,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onDiscussionThreadMessageResetVote(ObserverContext context, const DiscussionThreadMessage& message)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -373,7 +405,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onAddCommentToDiscussionThreadMessage(ObserverContext context, const MessageComment& comment)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         UuidString parentMessageId = {};
         comment.executeActionWithParentMessageIfAvailable([&parentMessageId](auto& message)
         {
@@ -392,7 +424,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onSolveDiscussionThreadMessageComment(ObserverContext context, const MessageComment& comment)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -404,7 +436,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onAddNewDiscussionTag(ObserverContext context, const DiscussionTag& tag)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -430,7 +462,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onChangeDiscussionTagName(ObserverContext context, const DiscussionTag& tag)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -443,7 +475,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onChangeDiscussionTagUIBlob(ObserverContext context, const DiscussionTag& tag)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -456,7 +488,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     
     void onDeleteDiscussionTag(ObserverContext context, const DiscussionTag& tag)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -468,7 +500,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onAddDiscussionTagToThread(ObserverContext context, const DiscussionTag& tag, const DiscussionThread& thread)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -481,7 +513,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onRemoveDiscussionTagFromThread(ObserverContext context, const DiscussionTag& tag, const DiscussionThread& thread)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -494,7 +526,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onMergeDiscussionTags(ObserverContext context, const DiscussionTag& fromTag, const DiscussionTag& toTag)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -507,7 +539,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onAddNewDiscussionCategory(ObserverContext context, const DiscussionCategory& category)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         UuidString parentCategoryId = {};
         category.executeActionWithParentCategoryIfAvailable([&parentCategoryId](auto& parentCategory)
         {
@@ -547,7 +579,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onChangeDiscussionCategoryName(ObserverContext context, const DiscussionCategory& category)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -560,7 +592,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onChangeDiscussionCategoryDescription(ObserverContext context, const DiscussionCategory& category)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -573,7 +605,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onChangeDiscussionCategoryDisplayOrder(ObserverContext context, const DiscussionCategory& category)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         int16_t displayOrder = category.displayOrder();
         BlobPart parts[] =
         {
@@ -587,7 +619,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onChangeDiscussionCategoryParent(ObserverContext context, const DiscussionCategory& category)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         UuidString parentCategoryId = {};
         category.executeActionWithParentCategoryIfAvailable([&parentCategoryId](auto& parentCategory)
         {
@@ -606,7 +638,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void onDeleteDiscussionCategory(ObserverContext context, const DiscussionCategory& category)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -619,7 +651,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onAddDiscussionTagToCategory(ObserverContext context, const DiscussionTag& tag, 
                                       const DiscussionCategory& category)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -633,7 +665,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onRemoveDiscussionTagFromCategory(ObserverContext context, const DiscussionTag& tag, 
                                            const DiscussionCategory& category)
     {
-        int64_t contextTimestamp = context.timestamp;
+        PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -643,11 +675,53 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
         recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
     }
+    
+    void onGetDiscussionThreadById(ObserverContext context, const DiscussionThread& thread)
+    {
+        std::lock_guard<decltype(threadVisitedMutex)> lock(threadVisitedMutex);
+
+        auto& id = thread.id();
+        auto it = cachedNrOfThreadVisits.find(id);
+        if (it != cachedNrOfThreadVisits.end())
+        {
+            ++it->second;
+        }
+        else
+        {
+            cachedNrOfThreadVisits.insert(std::make_pair(id, 1));
+        }
+    }
+
+    void updateThreadVisited()
+    {
+        std::lock_guard<decltype(threadVisitedMutex)> lock(threadVisitedMutex);
+
+        for (auto& pair : cachedNrOfThreadVisits)
+        {            
+            BlobPart parts[] =
+            {
+                ADD_EMPTY_CONTEXT_BLOB_PARTS,
+                { reinterpret_cast<const char*>(&pair.first.value().data), UuidSize, false },
+                { reinterpret_cast<const char*>(&pair.second), sizeof(pair.second), false },
+            };
+            
+            recordBlob(EventType::INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS, 1, parts, std::extent<decltype(parts)>::value);
+        }
+    }
 
     ReadEvents& readEvents;
     WriteEvents& writeEvents;
     std::vector<boost::signals2::connection> connections;
+    std::thread timerThread;
+    std::atomic_bool stopTimerThread = false;
+    static constexpr std::chrono::seconds timerThreadCheckEverySeconds{ 1 };
+    static constexpr uint32_t updateThreadVisitedEveryIncrement = 30;
+    uint32_t timerThreadCurrentIncrement = 0;
+    std::mutex threadVisitedMutex;
+    std::map<IdType, uint32_t> cachedNrOfThreadVisits;
 };
+
+const Helpers::IpAddress EventObserver::EventObserverImpl::ZeroIpAddress{};
 
 EventObserver::EventObserver(ReadEvents& readEvents, WriteEvents& writeEvents)
     : impl_(new EventObserverImpl(readEvents, writeEvents))
