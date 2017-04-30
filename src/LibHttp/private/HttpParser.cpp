@@ -363,7 +363,7 @@ void Parser::interpretCookies(char* value, size_t size)
     auto cookieStart = value;
     int nameStart = 0, nameEnd = 0, valueStart = 0, valueEnd = 0;
 
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
     {
         auto c = value[i];
 
