@@ -77,6 +77,14 @@ namespace Forum
             std::string settingsFile = "log.settings";
         };
 
+        struct PersistenceConfig
+        {
+            std::string inputFolder = "";
+            std::string outputFolder = "";
+            bool validateChecksum = true;
+            int_fast32_t createNewOutputFileEverySeconds = 3600 * 24;
+        };
+
         struct Config
         {
             UserConfig user;
@@ -86,6 +94,7 @@ namespace Forum
             DiscussionCategoryConfig discussionCategory;
             ServiceConfig service;
             LoggingConfig logging;
+            PersistenceConfig persistence;
         };
 
         typedef std::shared_ptr<const Config> ConfigConstRef;

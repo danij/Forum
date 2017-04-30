@@ -11,7 +11,7 @@
 using namespace Forum;
 using namespace Forum::Persistence;
 
-FileAppender::FileAppender(boost::filesystem::path destinationFolder, time_t refreshEverySeconds)
+FileAppender::FileAppender(const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
     : destinationFolder_(destinationFolder), refreshEverySeconds_(refreshEverySeconds), lastFileNameCreatedAt_(0)
 {
     if ( ! boost::filesystem::is_directory(destinationFolder))
@@ -32,6 +32,11 @@ static constexpr uint8_t Padding[8] = { 0 };
 
 void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
 {
+    if (nrOfBlobs < 1)
+    {
+        return;
+    }
+
     updateCurrentFileIfNeeded();
 
     auto file = fopen(currentFileName_.c_str(), "ab");
@@ -47,7 +52,7 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
     {
         auto& blob = blobs[i];
         auto blobSize = static_cast<uint32_t>(blob.size);
-        auto blobCRC32 = crc32(blob.buffer.get(), blob.size);
+        auto blobCRC32 = crc32(blob.buffer, blob.size);
         //TODO: check errors
 
         auto prefix = prefixBuffer;
@@ -59,7 +64,7 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
 
         fwrite(prefixBuffer, 1, prefixSize, file);
 
-        fwrite(blob.buffer.get(), 1, blobSize, file); 
+        fwrite(blob.buffer, 1, blobSize, file); 
 
         auto blobSizeMultiple8 = (blobSize / 8) * 8;
         if (blobSizeMultiple8 < blobSize)

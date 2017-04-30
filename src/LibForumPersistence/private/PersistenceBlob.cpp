@@ -2,19 +2,18 @@
 
 using namespace Forum::Persistence;
 
-void Forum::Persistence::freeBlob(char* buffer)
+Blob::Blob() : buffer(nullptr), size(0)
 {
-    if (buffer)
-    {
-        delete[] buffer;
-    }
 }
 
-Blob Blob::create(size_t size)
+Blob::Blob(size_t size) : buffer(new char[size]), size(size)
 {
-    return
+}
+
+void Blob::free(Blob& blob)
+{
+    if (blob.buffer)
     {
-        std::shared_ptr<char>(new char[size], freeBlob),
-        size
-    };
+        delete[] blob.buffer;
+    }
 }

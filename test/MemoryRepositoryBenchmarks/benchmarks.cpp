@@ -95,7 +95,8 @@ auto createCommandHandler()
         statisticsRepository, metricsRepository);
 
     context.persistenceObserver = std::make_shared<EventObserver>(observableRepository->readEvents(), 
-                                                                  observableRepository->writeEvents());
+                                                                  observableRepository->writeEvents(), 
+                                                                  boost::filesystem::current_path(), 3600);
 
     return context;
 }

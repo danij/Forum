@@ -4,6 +4,7 @@
 #include "HttpRouter.h"
 #include "CommandHandler.h"
 #include "ServiceEndpointManager.h"
+#include "EventObserver.h"
 
 #include <boost/noncopyable.hpp>
 
@@ -28,5 +29,6 @@ namespace Forum
         std::unique_ptr<Http::HttpListener> httpListener_;
         std::unique_ptr<Commands::CommandHandler> commandHandler_;
         std::unique_ptr<Commands::ServiceEndpointManager> endpointManager_;
+        std::unique_ptr<Persistence::EventObserver> persistenceObserver_;
     };
 }

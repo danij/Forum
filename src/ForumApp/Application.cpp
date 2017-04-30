@@ -29,6 +29,7 @@ using namespace Forum::Authorization;
 using namespace Forum::Commands;
 using namespace Forum::Context;
 using namespace Forum::Network;
+using namespace Forum::Persistence;
 using namespace Forum::Repository;
 
 using namespace Http;
@@ -96,14 +97,30 @@ void Application::createCommandHandler()
 
     ObservableRepositoryRef observableRepository = userRepository;
 
-    commandHandler_ = std::make_unique<Commands::CommandHandler>(observableRepository, 
-                                                                 userRepository, 
-                                                                 discussionThreadRepository,
-                                                                 discussionThreadMessageRepository, 
-                                                                 discussionTagRepository, 
-                                                                 discussionCategoryRepository,
-                                                                 statisticsRepository, 
-                                                                 metricsRepository);
+    commandHandler_ = std::make_unique<CommandHandler>(observableRepository, 
+                                                       userRepository, 
+                                                       discussionThreadRepository,
+                                                       discussionThreadMessageRepository, 
+                                                       discussionTagRepository, 
+                                                       discussionCategoryRepository,
+                                                       statisticsRepository, 
+                                                       metricsRepository);
+
+    auto forumConfig = Configuration::getGlobalConfig();
+    auto& persistenceConfig = forumConfig->persistence;
+
+    try
+    {
+        persistenceObserver_ = std::make_unique<EventObserver>(observableRepository->readEvents(),
+                                                               observableRepository->writeEvents(),
+                                                               persistenceConfig.outputFolder, 
+                                                               persistenceConfig.createNewOutputFileEverySeconds);
+    }
+    catch(std::exception& ex)
+    {
+        FORUM_LOG_FATAL << "Cannot create persistence observer: " << ex.what();
+        std::exit(1);
+    }
 }
 
 void Application::initializeHttp()

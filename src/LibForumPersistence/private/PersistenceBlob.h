@@ -2,20 +2,25 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <memory>
 
 namespace Forum
 {
     namespace Persistence
     {
-        void freeBlob(char* buffer);
-
         struct Blob
         {
-            std::shared_ptr<char> buffer;
+            Blob();
+            explicit Blob(size_t size);
+            ~Blob() = default;
+            Blob(const Blob&) = default;
+            Blob(Blob&&) = default;
+            Blob& operator=(const Blob&) = default;
+            Blob& operator=(Blob&&) = default;
+            
+            char* buffer; //storing raw pointer so that Blob can be placed in a boost lockfree queue
             size_t size;
 
-            static Blob create(size_t size);
+            static void free(Blob& blob);
         };
 
         enum EventType : uint32_t

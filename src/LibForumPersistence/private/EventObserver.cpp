@@ -1,5 +1,7 @@
 #include "EventObserver.h"
 #include "PersistenceBlob.h"
+#include "FileAppender.h"
+#include "Logging.h"
 
 #include <atomic>
 #include <chrono>
@@ -9,6 +11,8 @@
 #include <thread>
 #include <type_traits>
 #include <vector>
+
+#include <boost/lockfree/queue.hpp>
 
 using namespace Forum;
 using namespace Forum::Persistence;
@@ -27,11 +31,85 @@ struct BlobPart
     }
 };
 
+class EventCollector final : private boost::noncopyable
+{
+public:
+    EventCollector(const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
+        : appender_(destinationFolder, refreshEverySeconds)
+    {
+        writeThread_ = std::thread([this]() { this->writeLoop(); });
+    }
+
+    ~EventCollector()
+    {
+        stopWriteThread_ = true;
+        blobInQueueCondition_.notify_one();
+        writeThread_.join();
+    }
+
+    void addToQueue(const Blob& blob)
+    {
+        bool loggedWarning = false;
+        while ( ! queue_.bounded_push(blob))
+        {
+            if ( ! loggedWarning)
+            {
+                FORUM_LOG_WARNING << "Persistence queue is full";
+                loggedWarning = true;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(400));
+        }
+        blobInQueueCondition_.notify_one();
+    }
+
+private:
+
+    void writeLoop()
+    {
+        while ( ! stopWriteThread_)
+        {
+            std::unique_lock<decltype(conditionMutex_)> lock(conditionMutex_);
+            blobInQueueCondition_.wait(lock, [this]() { return ! queue_.empty() || stopWriteThread_; });
+            writeBlobsInQueue();
+        }
+        writeBlobsInQueue();
+    }
+
+    void writeBlobsInQueue()
+    {
+        static thread_local Blob blobsToWrite[MaxBlobsInQueue];
+        Blob* blobs = blobsToWrite;
+
+        size_t nrOfBlobsToWrite = 0;
+        queue_.consume_all([&blobs, &nrOfBlobsToWrite](Blob blob)
+        {
+            blobsToWrite[nrOfBlobsToWrite++] = blob;
+        });
+
+        appender_.append(blobsToWrite, nrOfBlobsToWrite);
+
+        for (size_t i = 0; i < nrOfBlobsToWrite; ++i)
+        {
+            Blob::free(blobsToWrite[i]);
+        }
+    }
+
+    FileAppender appender_;
+    static constexpr size_t MaxBlobsInQueue = 10000;
+    boost::lockfree::queue<Blob, boost::lockfree::capacity<MaxBlobsInQueue>> queue_;
+    std::thread writeThread_;
+    std::atomic_bool stopWriteThread_ = false;
+    std::condition_variable blobInQueueCondition_;
+    std::mutex conditionMutex_;
+};
+
 struct EventObserver::EventObserverImpl final : private boost::noncopyable
 {
-    EventObserverImpl(ReadEvents& readEvents, WriteEvents& writeEvents)
-        : readEvents(readEvents), writeEvents(writeEvents), timerThread([this]() {this->timerLoop();})
+    EventObserverImpl(ReadEvents& readEvents, WriteEvents& writeEvents, 
+                      const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
+        : readEvents(readEvents), writeEvents(writeEvents), collector(destinationFolder, refreshEverySeconds)
     {
+        timerThread = std::thread([this]() {this->timerLoop();});
         bindObservers();
     }
 
@@ -68,9 +146,9 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
            return total + part.totalSize();
         }) + sizeof(EventType) + sizeof(version) + sizeof(ContextVersion);
 
-        auto blob = Blob::create(totalSize);
+        auto blob = Blob(totalSize);
 
-        char* buffer = blob.buffer.get();
+        char* buffer = blob.buffer;
         *reinterpret_cast<EventType*>(buffer) = eventType;
         buffer += sizeof(eventType);
 
@@ -93,6 +171,8 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
                 buffer = std::copy(part.address, part.address + part.size, buffer);
             }
         }
+
+        collector.addToQueue(blob);
     }
 
     void bindObservers()
@@ -712,6 +792,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     ReadEvents& readEvents;
     WriteEvents& writeEvents;
     std::vector<boost::signals2::connection> connections;
+    EventCollector collector;
     std::thread timerThread;
     std::atomic_bool stopTimerThread = false;
     static constexpr std::chrono::seconds timerThreadCheckEverySeconds{ 1 };
@@ -723,8 +804,9 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
 const Helpers::IpAddress EventObserver::EventObserverImpl::ZeroIpAddress{};
 
-EventObserver::EventObserver(ReadEvents& readEvents, WriteEvents& writeEvents)
-    : impl_(new EventObserverImpl(readEvents, writeEvents))
+EventObserver::EventObserver(ReadEvents& readEvents, WriteEvents& writeEvents, 
+                             const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
+    : impl_(new EventObserverImpl(readEvents, writeEvents, destinationFolder, refreshEverySeconds))
 {
 }
 
