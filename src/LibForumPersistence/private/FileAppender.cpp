@@ -67,16 +67,16 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
 
         fwrite(blob.buffer, 1, blobSize, file);
 
-        if (ferror(file))
-        {
-            FORUM_LOG_ERROR << "Could not persist blob to file";
-        }
-
         auto blobSizeMultiple8 = (blobSize / 8) * 8;
         if (blobSizeMultiple8 < blobSize)
         {
             auto paddingNeeded = 8 - (blobSize - blobSizeMultiple8);
             fwrite(Padding, 1, paddingNeeded, file);
+        }
+        
+        if (ferror(file))
+        {
+            FORUM_LOG_ERROR << "Could not persist blob to file";
         }
     }
     fclose(file);
