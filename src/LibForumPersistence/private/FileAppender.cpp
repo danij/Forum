@@ -1,4 +1,5 @@
 #include "FileAppender.h"
+#include "Logging.h"
 
 #include <cstdio>
 #include <cstddef>
@@ -42,6 +43,7 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
     auto file = fopen(currentFileName_.c_str(), "ab");
     if ( ! file)
     {
+        FORUM_LOG_ERROR << "Could not open file for writing: " << currentFileName_;
         return;
     }
 
@@ -53,7 +55,6 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
         auto& blob = blobs[i];
         auto blobSize = static_cast<uint32_t>(blob.size);
         auto blobCRC32 = crc32(blob.buffer, blob.size);
-        //TODO: check errors
 
         auto prefix = prefixBuffer;
         *reinterpret_cast<std::add_pointer<std::remove_const<decltype(MagicPrefix)>::type>::type>(prefix) = MagicPrefix;
@@ -64,7 +65,12 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
 
         fwrite(prefixBuffer, 1, prefixSize, file);
 
-        fwrite(blob.buffer, 1, blobSize, file); 
+        fwrite(blob.buffer, 1, blobSize, file);
+
+        if (ferror(file))
+        {
+            FORUM_LOG_ERROR << "Could not persist blob to file";
+        }
 
         auto blobSizeMultiple8 = (blobSize / 8) * 8;
         if (blobSizeMultiple8 < blobSize)
