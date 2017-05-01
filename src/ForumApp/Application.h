@@ -22,6 +22,7 @@ namespace Forum
         void cleanup();        
         void validateConfiguration();
         void createCommandHandler();
+        void importEvents();
         void initializeHttp();
         void initializeLogging();
 

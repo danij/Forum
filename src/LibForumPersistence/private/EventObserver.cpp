@@ -1,5 +1,6 @@
 #include "EventObserver.h"
 #include "PersistenceBlob.h"
+#include "PersistenceFormat.h"
 #include "FileAppender.h"
 #include "Logging.h"
 
@@ -137,14 +138,14 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         }
     }
 
-    static constexpr uint16_t ContextVersion = 1;
+    static constexpr EventContextVersionType ContextVersion = 1;
     
-    void recordBlob(EventType eventType, uint16_t version, BlobPart* parts, size_t nrOfParts)
+    void recordBlob(EventType eventType, EventVersionType version, BlobPart* parts, size_t nrOfParts)
     {
         auto totalSize = std::accumulate(parts, parts + nrOfParts, 0, [](uint32_t total, BlobPart& part)
         {
            return total + part.totalSize();
-        }) + sizeof(EventType) + sizeof(version) + sizeof(ContextVersion);
+        }) + EventHeaderSize;
 
         auto blob = Blob(totalSize);
 

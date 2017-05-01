@@ -6,7 +6,6 @@
 
 #include "Authorization.h"
 
-#include <unicode/uclean.h>
 #include "MemoryRepositoryCommon.h"
 #include "MemoryRepositoryUser.h"
 #include "MemoryRepositoryDiscussionThread.h"
@@ -17,7 +16,10 @@
 #include "MetricsRepository.h"
 
 #include "Logging.h"
+#include "EventImporter.h"
 #include "Version.h"
+
+#include <unicode/uclean.h>
 
 #include <fstream>
 #include <iostream>
@@ -42,6 +44,12 @@ Application::Application(int argc, const char* argv[])
     initializeLogging();
 
     FORUM_LOG_INFO << "Starting Forum Backend v" << VERSION;
+
+    createCommandHandler();
+    FORUM_LOG_INFO << "Initialized command handlers";
+
+    FORUM_LOG_INFO << "Starting import of persisted events";
+    importEvents();
 
     initializeHttp();
 }
@@ -123,12 +131,20 @@ void Application::createCommandHandler()
     }
 }
 
+void Application::importEvents()
+{
+    auto forumConfig = Configuration::getGlobalConfig();
+    auto& persistenceConfig = forumConfig->persistence;
+
+    EventImporter importer(persistenceConfig.validateChecksum);
+    auto importStatistic = importer.import(persistenceConfig.inputFolder);
+    FORUM_LOG_INFO << "Finished importing " << importStatistic.importedBlobs << " events out of " 
+                                            << importStatistic.readBlobs << " blobs read";
+}
+
 void Application::initializeHttp()
 {
     auto forumConfig = Configuration::getGlobalConfig();
-    createCommandHandler();
-
-    //load data before starting to serve HTTP requests
 
     HttpListener::Configuration httpConfig;
     httpConfig.numberOfIOServiceThreads = forumConfig->service.numberOfIOServiceThreads;

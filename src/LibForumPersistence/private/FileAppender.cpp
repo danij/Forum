@@ -1,4 +1,5 @@
 #include "FileAppender.h"
+#include "PersistenceFormat.h"
 #include "Logging.h"
 
 #include <cstdio>
@@ -6,8 +7,6 @@
 #include <chrono>
 #include <stdexcept>
 #include <string>
-
-#include <boost/crc.hpp>
 
 using namespace Forum;
 using namespace Forum::Persistence;
@@ -21,14 +20,6 @@ FileAppender::FileAppender(const boost::filesystem::path& destinationFolder, tim
     }
 }
 
-static uint32_t crc32(const char* buffer, size_t size)
-{
-    boost::crc_32_type hash;
-    hash.process_bytes(buffer, size);
-    return hash.checksum();
-}
-
-static constexpr uint64_t MagicPrefix = 0xFFFFFFFFFFFFFFFF;
 static constexpr uint8_t Padding[8] = { 0 };
 
 void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
@@ -53,7 +44,7 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
     for (size_t i = 0; i < nrOfBlobs; ++i)
     {
         auto& blob = blobs[i];
-        auto blobSize = static_cast<uint32_t>(blob.size);
+        auto blobSize = static_cast<BlobSizeType>(blob.size);
         auto blobCRC32 = crc32(blob.buffer, blob.size);
 
         auto prefix = prefixBuffer;
@@ -67,10 +58,9 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
 
         fwrite(blob.buffer, 1, blobSize, file);
 
-        auto blobSizeMultiple8 = (blobSize / 8) * 8;
-        if (blobSizeMultiple8 < blobSize)
+        auto paddingNeeded = blobPaddingRequired(blobSize);
+        if (paddingNeeded)
         {
-            auto paddingNeeded = 8 - (blobSize - blobSizeMultiple8);
             fwrite(Padding, 1, paddingNeeded, file);
         }
         
