@@ -50,7 +50,8 @@ from disk and replied to fill the repositories.
 
 ### Library Dependencies
 
-* Boost C++ libraries compiled with ICU support
+* [Boost C++ libraries](http://www.boost.org/)
+* [International Components for Unicode](http://site.icu-project.org/)
 
 ### Building
 
