@@ -243,7 +243,6 @@ void HttpResponseBuilder::writeCookie(StringView name, StringView value, CookieE
     *buffer++ = '\n';
 
     write(extraBuffer, buffer - extraBuffer);
-    //TODO
 }
 
 void HttpResponseBuilder::writeBody(const char* value, size_t length)
