@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <ctime>
 #include <limits>
 #include <type_traits>
 
@@ -160,36 +161,32 @@ namespace Http
     
     static const bool ReservedCharactersForUrlEncoding[] = 
     {
-        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-        true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, true,
-        false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true,
-        true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-        false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, false,
-        true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-        false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, true,
-        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
-        true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true,
+         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, false, false,  true,
+        false, false, false, false, false, false, false, false, false, false,  true,  true,  true,  true,  true,  true,
+         true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false, false,  true,  true,  true,  true, false,
+         true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false, false, false, false,  true,  true,  true, false,  true,
+         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
     };
 
-    static constexpr size_t MaxUrlEncodingInputSize = 2000;
+    static constexpr size_t MaxPercentEncodingInputSize = 2000;
+    static constexpr size_t MaxPercentEncodingOutputSize = MaxPercentEncodingInputSize * 3;
 
-    /**
-     * Performes URL encoding leaving out only unreserved characters 
-     * as listed under https://tools.ietf.org/html/rfc3986#section-2.3
-     */
-    template<size_t Size>
-    StringView urlEncode(StringView input, char (&output)[Size])
+    template<size_t OutputSize, size_t TableSize>
+    StringView percentEncode(StringView input, char (&output)[OutputSize], const bool (&table)[TableSize])
     {
-        static_assert(std::extent<decltype(ReservedCharactersForUrlEncoding)>::value > std::numeric_limits<uint8_t>::max(),
-                      "Not enough entries in reservedCharactersForUrlEncoding");
-        if ((input.size() * 3) > Size)
+        static_assert(TableSize > std::numeric_limits<uint8_t>::max(), "Not enough entries in table");
+        if ((input.size() * 3) > OutputSize)
         {
             return{};
         }
@@ -197,7 +194,7 @@ namespace Http
         for (auto c : input)
         {
             auto unsignedC = static_cast<uint8_t>(c);
-            if (ReservedCharactersForUrlEncoding[static_cast<uint8_t>(unsignedC)])
+            if (table[static_cast<uint8_t>(unsignedC)])
             {
                 *currentOutput++ = '%';
                 *currentOutput++ = HexToStringUpperCase[unsignedC / 16];
@@ -213,14 +210,98 @@ namespace Http
     }
 
     /**
-     * Performes URL encoding on an input string of maximum MaxUrlEncodingInputSize characters.
+     * Performes URL encoding leaving out only unreserved characters 
+     * as listed under https://tools.ietf.org/html/rfc3986#section-2.3
+     */
+    template<size_t Size>
+    StringView urlEncode(StringView input, char (&output)[Size])
+    {
+        return percentEncode(input, output, ReservedCharactersForUrlEncoding);
+    }
+
+    /**
+    * Performes percent encoding on an input string of maximum MaxPercentEncodingInputSize characters.
+    * Use the result as soon as possible, calling the function again will overrite the result
+    *
+    * @return A view to a thread-local buffer.
+    */
+    template<size_t TableSize>
+    StringView percentEncode(StringView input, const bool (&table)[TableSize])
+    {
+        static thread_local char output[MaxPercentEncodingOutputSize];
+        return percentEncode(input, output, table);
+    }
+
+    /**
+     * Performes URL encoding on an input string of maximum MaxPercentEncodingInputSize characters.
      * Use the result as soon as possible, calling the function again will overrite the result
      * 
      * @return A view to a thread-local buffer. 
      */
     inline StringView urlEncode(StringView input)
     {
-        static thread_local char output[MaxUrlEncodingInputSize * 3];
+        static thread_local char output[MaxPercentEncodingOutputSize];
         return urlEncode(input, output);
+    }
+
+    /**
+     * Writes a date string as expected by the HTTP protocol, e.g. Tue, 18 Apr 2017 09:00:00 GMT
+     * The functions doesn't check bounds, the output buffer must be large enough
+     * 
+     * @return The amount of characters written
+     */
+    inline size_t writeHttpDateGMT(time_t value, char* output)
+    {
+        //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date
+        static const char DayNames[][4] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+        static const char MonthNames[][4] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+        std::tm time;
+#if defined(_WIN32) || defined (WIN32)
+        if (0 != gmtime_s(&time, &value))
+        {
+            return 0;
+        }
+#else
+        //gmtime is not guaranteed to be thread-safe
+        if (nullptr == gmtime_r(&value, &time))
+        {
+            return 0;
+        }
+#endif
+        char* currentOutput = output;
+
+        currentOutput = std::copy(DayNames[time.tm_wday], DayNames[time.tm_wday] + 3, currentOutput);
+        *currentOutput++ = ',';
+        *currentOutput++ = ' ';
+
+        *currentOutput++ = '0' + (time.tm_mday / 10);
+        *currentOutput++ = '0' + (time.tm_mday % 10);
+        *currentOutput++ = ' ';
+
+        currentOutput = std::copy(MonthNames[time.tm_mon], MonthNames[time.tm_mon] + 3, currentOutput);
+        *currentOutput++ = ' ';
+
+        auto year = 1900 + time.tm_year;
+        *currentOutput++ = '0' + (year / 1000);
+        *currentOutput++ = '0' + ((year % 1000) / 100);
+        *currentOutput++ = '0' + ((year % 100) / 10);
+        *currentOutput++ = '0' + (year % 10);
+        *currentOutput++ = ' ';
+
+        *currentOutput++ = '0' + (time.tm_hour / 10);
+        *currentOutput++ = '0' + (time.tm_hour % 10);
+        *currentOutput++ = ':';
+        *currentOutput++ = '0' + (time.tm_min / 10);
+        *currentOutput++ = '0' + (time.tm_min % 10);
+        *currentOutput++ = ':';
+        *currentOutput++ = '0' + (time.tm_sec / 10);
+        *currentOutput++ = '0' + (time.tm_sec % 10);
+        *currentOutput++ = ' ';
+        *currentOutput++ = 'G';
+        *currentOutput++ = 'M';
+        *currentOutput++ = 'T';
+
+        return currentOutput - output;
     }
 }

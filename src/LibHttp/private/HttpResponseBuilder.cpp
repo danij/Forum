@@ -94,8 +94,155 @@ void HttpResponseBuilder::writeHeader(StringView name, int value)
     writeHeader(name, StringView(buffer, written));
 }
 
+//based on information from http://www.ietf.org/rfc/rfc6265.txt
+static const bool ReservedCharactersForCookies[] =
+{
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
+     true, false,  true, false, false, false, false, false, false, false, false, false,  true, false, false, false, 
+    false, false, false, false, false, false, false, false, false, false, false,  true, false,  true, false, false, 
+    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 
+    false, false, false, false, false, false, false, false, false, false, false, false,  true, false, false, false, 
+    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 
+    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,  true, 
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true
+};
+
+static const bool ReservedCharactersForUrlEncodingWithoutSlash[] = 
+{
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, false, false, false,
+    false, false, false, false, false, false, false, false, false, false,  true,  true,  true,  true,  true,  true,
+     true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+    false, false, false, false, false, false, false, false, false, false, false,  true,  true,  true,  true, false,
+     true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+    false, false, false, false, false, false, false, false, false, false, false,  true,  true,  true, false,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+};
+
 void HttpResponseBuilder::writeCookie(StringView name, StringView value, CookieExtra extra)
 {
+    assert(name.length() < MaxPercentEncodingInputSize);
+    assert(value.length() < MaxPercentEncodingInputSize);
+    assert(extra.cookieDomain.length() < MaxPercentEncodingInputSize);
+    assert(extra.cookiePath.length() < MaxPercentEncodingInputSize);
+
+    assert(ProtocolState::ResponseCodeWritten == protocolState_);
+    write("Set-Cookie: ");
+    write(percentEncode(name, ReservedCharactersForCookies));
+    write("=");
+    write(percentEncode(value, ReservedCharactersForCookies));
+
+    char extraBuffer[MaxPercentEncodingOutputSize * 2 + 256];
+    char* buffer = extraBuffer;
+
+    if (extra.expires)
+    {
+        *buffer++ = ';';
+        *buffer++ = ' ';
+        *buffer++ = 'E';
+        *buffer++ = 'x';
+        *buffer++ = 'p';
+        *buffer++ = 'i';
+        *buffer++ = 'r';
+        *buffer++ = 'e';
+        *buffer++ = 's';
+        *buffer++ = '=';
+
+        buffer += writeHttpDateGMT(*extra.expires, buffer);
+    }
+
+    if (extra.cookieMaxAge)
+    {
+        *buffer++ = ';';
+        *buffer++ = ' ';
+        *buffer++ = 'M';
+        *buffer++ = 'a';
+        *buffer++ = 'x';
+        *buffer++ = '-';
+        *buffer++ = 'A';
+        *buffer++ = 'g';
+        *buffer++ = 'e';
+        *buffer++ = '=';
+
+        buffer += sprintf(buffer, "%u", *extra.cookieMaxAge);
+    }
+
+    if (extra.cookieDomain.length())
+    {
+        *buffer++ = ';';
+        *buffer++ = ' ';
+        *buffer++ = 'D';
+        *buffer++ = 'o';
+        *buffer++ = 'm';
+        *buffer++ = 'a';
+        *buffer++ = 'i';
+        *buffer++ = 'n';
+        *buffer++ = '=';
+
+        auto encodedDomain = urlEncode(extra.cookieDomain);
+        buffer = std::copy(encodedDomain.begin(), encodedDomain.end(), buffer);
+    }
+
+    if (extra.cookiePath.length())
+    {
+        *buffer++ = ';';
+        *buffer++ = ' ';
+        *buffer++ = 'P';
+        *buffer++ = 'a';
+        *buffer++ = 't';
+        *buffer++ = 'h';
+        *buffer++ = '=';
+
+        auto encodedPath = percentEncode(extra.cookiePath, ReservedCharactersForUrlEncodingWithoutSlash);
+        buffer = std::copy(encodedPath.begin(), encodedPath.end(), buffer);
+    }
+
+    if (extra.isSecure)
+    {
+        *buffer++ = ';';
+        *buffer++ = ' ';
+        *buffer++ = 'S';
+        *buffer++ = 'e';
+        *buffer++ = 'c';
+        *buffer++ = 'u';
+        *buffer++ = 'r';
+        *buffer++ = 'e';
+    }
+
+    if (extra.isHttpOnly)
+    {
+        *buffer++ = ';';
+        *buffer++ = ' ';
+        *buffer++ = 'H';
+        *buffer++ = 't';
+        *buffer++ = 't';
+        *buffer++ = 'p';
+        *buffer++ = 'O';
+        *buffer++ = 'n';
+        *buffer++ = 'l';
+        *buffer++ = 'y';
+    }
+
+    *buffer++ = '\r';
+    *buffer++ = '\n';
+
+    write(extraBuffer, buffer - extraBuffer);
     //TODO
 }
 
