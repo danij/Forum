@@ -17,9 +17,11 @@ Text content is stored as UTF-8 and is compared using Unicode awareness whenever
 
 ## Architecture
 
+[Long version](doc/Architecture.md)
+
 ### Service
 
-The backend will provide a RESTful API over HTTP/1.1 for retrieving and updating entities, represented using JSON. 
+The backend provides a [RESTful API](doc/API.md) over HTTP/1.1 for retrieving and updating entities, represented using JSON. 
 Supporting HATEOAS is not among the goals of the application.
   
 Serving static files will not be among the responsibilities of the backend service, but of dedicated HTTPDs. 
