@@ -166,7 +166,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
                 *reinterpret_cast<std::add_pointer<decltype(BlobPart::size)>::type>(buffer) = part.size;
                 buffer += sizeof(part.size);
             }
-            if ((part.size > 0))
+            if (part.size > 0)
             {
                 buffer = std::copy(part.address, part.address + part.size, buffer);
             }
