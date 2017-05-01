@@ -8,7 +8,7 @@ The backend supports the following:
 
 * Users that create content
 * Discussion threads composed of messages
-* Discussion tags for classifying discussion threads by the subject their subject
+* Discussion tags for classifying discussion threads
 * Hierarchical discussion categories for grouping together threads that share the same tags
 * Access control (_not yet implemented_) 
 
