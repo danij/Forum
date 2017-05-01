@@ -88,7 +88,7 @@ void FileAppender::updateCurrentFileIfNeeded()
         std::chrono::system_clock::now().time_since_epoch()).count();
     if ((lastFileNameCreatedAt_ + refreshEverySeconds_) < now)
     {
-        auto newFile = "output-" + std::to_string(now);
+        auto newFile = "forum-" + std::to_string(now) + ".events";
         currentFileName_ = (destinationFolder_ / newFile).string();
         lastFileNameCreatedAt_ = now;
     }
