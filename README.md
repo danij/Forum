@@ -17,7 +17,7 @@ Text content is stored as UTF-8 and is compared using Unicode awareness whenever
 
 ## Architecture
 
-[Long version](doc/Architecture.md)
+[Long version](doc/Architecture&Details.md)
 
 ### Service
 

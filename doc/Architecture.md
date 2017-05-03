@@ -1,1 +1,0 @@
-# Fast Forum Backend – Architecture

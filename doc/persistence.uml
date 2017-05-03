@@ -1,0 +1,21 @@
+@startuml
+
+"Memory Repository" as MemoryRepository -> "Event Observer" as EventObserver : DiscussionThread created
+
+EventObserver -> EventObserver : create DiscussionThreadEventBlob
+
+EventObserver -> "Event Queue" as EventQueue : enqueue DiscussionThreadEventBlob 
+EventQueue --> EventObserver
+
+EventObserver -> "Persistence Thread" as PersistenceThread : notify of new blob in queue
+PersistenceThread --> EventObserver
+
+EventObserver --> MemoryRepository
+
+PersistenceThread -> EventQueue : dequeue all blobs
+EventQueue --> PersistenceThread : blobs
+
+PersistenceThread -> "Filesystem Appender" as FileAppender : append blobs
+FileAppender --> PersistenceThread
+
+@enduml

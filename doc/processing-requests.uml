@@ -1,0 +1,35 @@
+@startuml
+
+User -> "I/O service thread" as IO : TCP handshake
+IO --> User : TCP handshake
+
+IO -> "HTTP Listener" as HTTPListener : user connected
+HTTPListener -> IO : read byts
+
+User -> HTTPListener : GET /users
+
+HTTPListener -> "HTTP Parser" as HTTPParser : process bytes
+HTTPParser --> HTTPListener : request complete
+
+HTTPListener -> "HTTP Router" as HTTPRouter : forward request
+HTTPRouter -> Endpoint : GET /users
+
+Endpoint -> "Command Handler" as CommandHandler : GET_USERS_BY_NAME
+CommandHandler -> IUserRepository : getUsers(output, BY_NAME)
+
+IUserRepository -> IUserAuthorization : getUsers()
+IUserAuthorization --> IUserRepository : action allowed
+
+IUserRepository -> EntityCollection : usersByName()
+EntityCollection --> IUserRepository : page of users
+
+IUserRepository -> JsonWriter : serialize users to buffer
+JsonWriter --> IUserRepository : json output
+
+IUserRepository --> CommandHandler : json output
+CommandHandler --> Endpoint : json output
+Endpoint --> HTTPRouter : HTTP/1.1 200 OK, json body
+HTTPRouter --> IO: HTTP/1.1 200 OK, json body
+IO --> User:  HTTP/1.1 200 OK, json body
+
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+
+actor user1
+actor user2
+actor user3
+
+node HTTPServer [
+HTTP Server
+---
+Static Files
+....
+Reverse Proxy
+]
+
+node Main [
+Main Backend Service
+]
+
+node Auth [
+Authentication Service
+]
+
+node Attachments [
+Attachments Service
+]
+
+user1 -- HTTPServer
+user2 -- HTTPServer
+user3 -- HTTPServer
+
+HTTPServer -- Main
+HTTPServer -- Auth
+HTTPServer -- Attachments
+
+@enduml
