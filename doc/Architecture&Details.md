@@ -163,9 +163,6 @@ affecting clients and without requiring root privileges if a port > 1024 is chos
 The responsibility of handling secure connections is also delegated to the reverse proxy server, thus avoiding 
 reinventing the wheel in such delicate areas.
 
-HTTP-related security features, like the ones recommended by [OWASP](https://www.owasp.org/index.php/Main_Page) will be
-implemented after building the authentication pipeline.
-
 The persistence mechanism allows using different folders for reading and writing. This enables:
 * Granting read-only access to the source folder;
 * Granting write-only access to the destination folder.
