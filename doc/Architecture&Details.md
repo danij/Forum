@@ -88,7 +88,10 @@ Once the parser returns to the listener that all the bytes that make up the requ
 The endpoint interprets various request query parameters and/or cookies and issues a request to a command handler, 
   passing in the id of the command requested and a vector of parameters in the form of strings. 
   
-The command handler validates the number of parameters required for each command and forwards the request to a repository
+The command handler validates the number of parameters required for each command. String inputs are expected to be UTF-8
+ (without BOM). If invalid UTF-8 is found, the request is rejected. String parameters are normalized to NFC form.
+
+The request is then forwarded the request to a repository
  together with a thread local output buffer.
  
 The repository (in memory) constructs a JSON output in the buffer provided and returns a status code. The JSON output is 
