@@ -2,8 +2,8 @@
 
 ## Persistence
 
-- [ ] Return flag if import was successful or not
-- [ ] Stop application if import unsuccessful
+- [X] Return flag if import was successful or not
+- [X] Stop application if import unsuccessful
 - [ ] Implement IDirectWriteRepository for populating the memory repository directly without validations
 - [ ] Use IDirectWriteRepository for importing events read from persistent storage
 
@@ -13,7 +13,7 @@
 
 ## Configuration
 
-- [ ] Read configuration entries from file on application startup
+- [X] Read configuration entries from file on application startup
 - [ ] Add endpoint for changing configuration entries via HTTP and persisting them to disk
 
 ## Authorization
@@ -30,7 +30,7 @@
 
 - [ ] Implement authentication as a different service with OpenID Connect
 - [ ] Add context entry for current authentication
-- [ ] Link users to authentication 
+- [X] Link users to authentication 
 
 ## Attachments
 
