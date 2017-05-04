@@ -197,9 +197,14 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
     return status;
 }
 
-StatusCode MemoryRepositoryUser::addNewUser(StringView name, OutStream& output)
+StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, OutStream& output)
 {
     StatusWriter status(output, StatusCode::OK);
+
+    if (auth.size() < 1)
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
 
     auto config = getGlobalConfig();
     auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING, 
@@ -215,6 +220,15 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, OutStream& output)
 
     collection().write([&](EntityCollection& collection)
                        {
+                           auto authString = toString(auth);
+
+                           auto& indexByAuth = collection.users().get<EntityCollection::UserCollectionByAuth>();
+                           if (indexByAuth.find(authString) != indexByAuth.end())
+                           {
+                               status = StatusCode::USER_WITH_SAME_AUTH_ALREADY_EXISTS;
+                               return;
+                           }
+
                            auto nameString = toString(name);
 
                            auto currentUser = performedBy.getAndUpdate(collection);
@@ -235,6 +249,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, OutStream& output)
 
                            auto user = std::make_shared<User>();
                            user->id() = generateUUIDString();
+                           user->auth() = std::move(authString);
                            user->name() = std::move(nameString);
                            updateCreated(*user);
 

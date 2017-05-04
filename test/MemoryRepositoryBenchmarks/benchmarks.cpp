@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -131,7 +132,7 @@ bool executeAndGetOk(CommandHandler& handler, Command command, const std::initia
 }
 
 template<typename CommandType>
-inline void execute(CommandHandler& handler, CommandType command, const std::initializer_list<StringView>& parameters = {})
+void execute(CommandHandler& handler, CommandType command, const std::initializer_list<StringView>& parameters = {})
 {
     parametersVector.clear();
     parametersVector.insert(parametersVector.end(), parameters.begin(), parameters.end());
@@ -153,6 +154,8 @@ const float messageContentLengthMean = 1000;
 const float messageContentLengthStddev = 200;
 const int retries = 1000;
 
+static std::atomic_int currentAuthNumber = 1;
+
 std::random_device device;
 std::mt19937 randomGenerator(device());
 
@@ -160,6 +163,11 @@ void showEntitySizes();
 
 void populateData(BenchmarkContext& context);
 void doBenchmarks(BenchmarkContext& context);
+
+std::string getNewAuth()
+{
+    return std::string("auth-") + std::to_string(currentAuthNumber++);
+}
 
 int main()
 {
@@ -294,7 +302,7 @@ void populateData(BenchmarkContext& context)
     {
         getRandomText(buffer, 5);
         auto intSize = appendUInt(buffer + 5, i + 1);
-        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { StringView(buffer, 5 + intSize) }));
+        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { StringView(buffer, 5 + intSize), getNewAuth() }));
         context.currentTimestamp += 100;
     }
 
@@ -398,7 +406,7 @@ void doBenchmarks(BenchmarkContext& context)
     {
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::ADD_USER, { "User" + std::to_string(i + 1) });
+            execute(handler, Command::ADD_USER, { "User" + std::to_string(i + 1), getNewAuth() });
         }) << " ";
         context.currentTimestamp += 100;
     }

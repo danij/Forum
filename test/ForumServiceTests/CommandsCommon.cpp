@@ -9,6 +9,7 @@
 #include "MemoryRepositoryStatistics.h"
 #include "MetricsRepository.h"
 #include "TestHelpers.h"
+#include "RandomGenerator.h"
 
 #include <boost/property_tree/json_parser.hpp>
 
@@ -184,10 +185,14 @@ TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& han
     return handlerToObjAndStatus(handler, view, displaySettings, {});
 }
 
+TreeType Forum::Helpers::createUser(CommandHandlerRef& handler, const std::string& name)
+{
+    return handlerToObj(handler, Command::ADD_USER, { name, static_cast<std::string>(generateUUIDString()) });
+}
 
 std::string Forum::Helpers::createUserAndGetId(CommandHandlerRef& handler, const std::string& name)
 {
-    auto result = handlerToObj(handler, Command::ADD_USER, { name });
+    auto result = createUser(handler, name);
     return result.get<std::string>("id");
 }
 

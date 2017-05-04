@@ -21,6 +21,7 @@ Http::HttpStatusCode commandStatusToHttpStatus(Repository::StatusCode code)
     //case Repository::VALUE_TOO_LONG: break;
     //case Repository::VALUE_TOO_SHORT: break;
     //case Repository::ALREADY_EXISTS: break;
+    //case Repository::USER_WITH_SAME_AUTH_ALREADY_EXISTS: break;
     //case Repository::NOT_FOUND: break;
     //case Repository::NO_EFFECT: break;
     case Repository::CIRCULAR_REFERENCE_NOT_ALLOWED: 

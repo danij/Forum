@@ -233,6 +233,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false }, \
+            { reinterpret_cast<const char*>(user.auth().data()), user.auth().size(), true }, \
             { reinterpret_cast<const char*>(user.name().data()), user.name().size(), true }, \
         };
 

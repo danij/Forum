@@ -66,6 +66,7 @@ namespace Forum
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::View view,
                                                   DisplaySettings displaySettings);
 
+        TreeType createUser(Commands::CommandHandlerRef& handler, const std::string& name);
         std::string createUserAndGetId(Commands::CommandHandlerRef& handler, const std::string& name);
         std::string createDiscussionThreadAndGetId(Commands::CommandHandlerRef& handler, const std::string& name);
         std::string createDiscussionMessageAndGetId(Commands::CommandHandlerRef& handler,

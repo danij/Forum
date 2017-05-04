@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_invokes_observer )
     auto ___ = addHandler(handler->writeEvents().onAddNewUser, 
                           [&](auto& _, auto& newUser) { newUserName = toString(newUser.name()); });
 
-    handlerToObj(handler, Forum::Commands::ADD_USER, { "Foo" });
+    createUserAndGetId(handler, "Foo");
     BOOST_REQUIRE_EQUAL("Foo", newUserName);
 }
 
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_name_invokes_observer )
                               userChange = change;
                           });
 
-    handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" });
+    createUserAndGetId(handler, "Abc");
     auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
     auto userId = user.get<std::string>("user.id");
 
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_invokes_observer )
     auto ___ = addHandler(handler->writeEvents().onDeleteUser,
                           [&](auto& _, auto& user) { deletedUserName = toString(user.name()); });
 
-    handlerToObj(handler, Forum::Commands::ADD_USER, { "Abc" });
+    createUserAndGetId(handler, "Abc");
     auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
     auto userId = user.get<std::string>("user.id");
 

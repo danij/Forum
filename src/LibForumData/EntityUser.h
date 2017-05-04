@@ -22,6 +22,8 @@ namespace Forum
                             public DiscussionThreadMessageCollectionBase<OrderedIndexForId>,
                             public MessageCommentCollectionBase<OrderedIndexForId>
         {
+      const std::string& auth()        const { return auth_; }
+            std::string& auth()              { return auth_; }
             StringView   name()        const { return name_; }
             std::string& name()              { return name_; }
             StringView   info()        const { return info_; }
@@ -59,6 +61,7 @@ namespace Forum
             }
 
         private:
+            std::string auth_;
             std::string name_;
             std::string info_;
             Timestamp lastSeen_;

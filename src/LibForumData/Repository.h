@@ -25,7 +25,8 @@ namespace Forum
             NOT_ALLOWED,
             NOT_UPDATED_SINCE_LAST_CHECK,
             UNAUTHORIZED,
-            THROTTLED
+            THROTTLED,
+            USER_WITH_SAME_AUTH_ALREADY_EXISTS
         };
 
         enum class RetrieveUsersBy
@@ -74,7 +75,7 @@ namespace Forum
             virtual StatusCode getUserById(const Entities::IdType& id, OutStream& output) const = 0;
             virtual StatusCode getUserByName(StringView name, OutStream& output) const = 0;
 
-            virtual StatusCode addNewUser(StringView name, OutStream& output) = 0;
+            virtual StatusCode addNewUser(StringView name, StringView auth, OutStream& output) = 0;
             virtual StatusCode changeUserName(const Entities::IdType& id, StringView newName,
                                               OutStream& output) = 0;
             virtual StatusCode changeUserInfo(const Entities::IdType& id, StringView newInfo,

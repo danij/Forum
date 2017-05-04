@@ -136,10 +136,10 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( ADD_USER )
     {
-        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
-        return userRepository->addNewUser(normalizedParam, output);
+        return userRepository->addNewUser(normalizedParam, parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_NAME )

@@ -17,6 +17,7 @@ namespace Forum
             DECLARE_ABSTRACT_MANDATORY_NO_COPY(UserCollectionBase)
 
             struct UserCollectionById {};
+            struct UserCollectionByAuth {};
             struct UserCollectionByName {};
             struct UserCollectionByCreated {};
             struct UserCollectionByLastSeen {};
@@ -35,6 +36,9 @@ namespace Forum
 
                     IdIndexType<IndexTypeForId, boost::multi_index::tag<UserCollectionById>,
                             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &User::id>>,
+
+                    boost::multi_index::hashed_non_unique<boost::multi_index::tag<UserCollectionByAuth>,
+                            const boost::multi_index::const_mem_fun<User, const std::string&, &User::auth>>,
 
                     boost::multi_index::ranked_unique<boost::multi_index::tag<UserCollectionByName>,
                             const boost::multi_index::const_mem_fun<User, StringView, &User::name>,
@@ -60,6 +64,7 @@ namespace Forum
 
             auto& users()                     { return users_; }
             auto  usersById()           const { return Helpers::toConst(users_.template get<UserCollectionById>()); }
+            auto  usersByAuth()         const { return Helpers::toConst(users_.template get<UserCollectionByAuth>()); }
             auto  usersByName()         const { return Helpers::toConst(users_.template get<UserCollectionByName>()); }
             auto  usersByCreated()      const { return Helpers::toConst(users_.template get<UserCollectionByCreated>()); }
             auto  usersByLastSeen()     const { return Helpers::toConst(users_.template get<UserCollectionByLastSeen>()); }
