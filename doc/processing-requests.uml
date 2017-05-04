@@ -1,20 +1,44 @@
 @startuml
 
-User -> "I/O service thread" as IO : TCP handshake
+actor User
+participant "I/O service thread" as IO
+participant "HTTP Listener" as HTTPListener
+participant "HTTP Parser" as HTTPParser
+participant "HTTP Router" as HTTPRouter
+participant Endpoint
+participant "Command Handler" as CommandHandler
+participant IUserRepository
+participant IUserAuthorization
+participant EntityCollection
+participant JsonWriter
+
+activate IO
+activate HTTPListener
+activate HTTPRouter
+activate Endpoint
+activate CommandHandler
+activate IUserRepository
+activate IUserAuthorization
+activate EntityCollection
+
+User -> IO : TCP handshake
+activate User
 IO --> User : TCP handshake
 
-IO -> "HTTP Listener" as HTTPListener : user connected
+IO -> HTTPListener : user connected
 HTTPListener -> IO : read byts
 
 User -> HTTPListener : GET /users
 
-HTTPListener -> "HTTP Parser" as HTTPParser : process bytes
+HTTPListener -> HTTPParser : process bytes
+activate HTTPParser
 HTTPParser --> HTTPListener : request complete
+deactivate HTTPParser
 
-HTTPListener -> "HTTP Router" as HTTPRouter : forward request
+HTTPListener -> HTTPRouter : forward request
 HTTPRouter -> Endpoint : GET /users
 
-Endpoint -> "Command Handler" as CommandHandler : GET_USERS_BY_NAME
+Endpoint -> CommandHandler : GET_USERS_BY_NAME
 CommandHandler -> IUserRepository : getUsers(output, BY_NAME)
 
 IUserRepository -> IUserAuthorization : getUsers()
@@ -24,12 +48,15 @@ IUserRepository -> EntityCollection : usersByName()
 EntityCollection --> IUserRepository : page of users
 
 IUserRepository -> JsonWriter : serialize users to buffer
+activate JsonWriter
 JsonWriter --> IUserRepository : json output
+deactivate JsonWriter
 
 IUserRepository --> CommandHandler : json output
 CommandHandler --> Endpoint : json output
 Endpoint --> HTTPRouter : HTTP/1.1 200 OK, json body
 HTTPRouter --> IO: HTTP/1.1 200 OK, json body
 IO --> User:  HTTP/1.1 200 OK, json body
+deactivate User
 
 @enduml
