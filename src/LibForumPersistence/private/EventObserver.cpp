@@ -213,7 +213,6 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     }
 
     static constexpr size_t UuidSize = boost::uuids::uuid::static_size();
-    typedef int64_t PersistentTimestampType;
     static constexpr PersistentTimestampType ZeroTimestamp = 0;
     static const Helpers::IpAddress ZeroIpAddress;
 

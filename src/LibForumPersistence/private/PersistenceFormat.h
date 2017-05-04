@@ -17,6 +17,8 @@ namespace Forum
         typedef uint16_t EventVersionType;
         typedef uint16_t EventContextVersionType;
 
+        typedef int64_t PersistentTimestampType;
+
         enum EventType : uint32_t
         {
             UNKNOWN = 0,
