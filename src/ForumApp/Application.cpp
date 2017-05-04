@@ -25,6 +25,9 @@
 #include <iostream>
 
 #include <boost/log/utility/setup/from_stream.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
 
 using namespace Forum;
 using namespace Forum::Authorization;
@@ -36,8 +39,19 @@ using namespace Forum::Repository;
 
 using namespace Http;
 
-Application::Application(int argc, const char* argv[])
+bool Application::initialize(const std::string& configurationFileName)
 {
+    try
+    {
+        std::ifstream input(configurationFileName);
+        Configuration::loadGlobalConfigFromStream(input);
+    }
+    catch(std::exception& ex)
+    {
+        std::cerr << "Error loading configuration: " << ex.what() << '\n';
+        return false;
+    }
+
     setApplicationEventCollection(std::make_unique<ApplicationEventCollection>());
     setIOServiceProvider(std::make_unique<DefaultIOServiceProvider>());
 
@@ -52,10 +66,69 @@ Application::Application(int argc, const char* argv[])
     importEvents();
 
     initializeHttp();
+
+    return true;
 }
 
-int Application::run()
+int Application::run(int argc, const char* argv[])
 {
+    boost::program_options::options_description options("Available options");
+    options.add_options()
+            ("help", "Display available options")
+            ("version", "Display the current version")
+            ("config", boost::program_options::value<std::string>(), "Specify the location of the configuration file");
+
+    boost::program_options::variables_map arguments;
+
+    try
+    {
+        boost::program_options::store(boost::program_options::parse_command_line(argc, argv, options), arguments);
+        boost::program_options::notify(arguments);
+    }
+    catch (std::exception& ex)
+    {
+        std::cerr << "Invalid command line: " << ex.what() << '\n';
+        return 1;
+    }
+
+    if (arguments.count("help"))
+    {
+        std::cout << options << '\n';
+        return 1;
+    }
+
+    if (arguments.count("version"))
+    {
+        std::cout << "Forum Backend v" << VERSION << '\n';
+        return 1;
+    }
+
+    if (arguments.count("config") < 1)
+    {
+        std::cerr << "Specifying a configuration file is required for starting the service\n";
+        return 1;
+    }
+
+    auto configFileName = arguments["config"].as<std::string>();
+
+    if ( ! boost::filesystem::exists(configFileName))
+    {
+        std::cerr << "The configuration file '" << configFileName << "' does not exist!\n";
+        return 1;
+    }
+
+    if ( ! boost::filesystem::is_regular_file(configFileName))
+    {
+        std::cerr << "The configuration file '" << configFileName << "' is not a regular file!\n";
+        return 1;
+    }
+
+    if ( ! initialize(configFileName))
+    {
+        std::cerr << "Initialization failed!\n";
+        return 1;
+    }
+
     auto& events = getApplicationEvents();
 
     events.onApplicationStart();

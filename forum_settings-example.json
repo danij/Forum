@@ -1,0 +1,62 @@
+{
+	"user": {
+		"minNameLength": 3,
+		"maxNameLength": 20,
+		"minInfoLength": 0,
+		"maxInfoLength": 1024,
+		"lastSeenUpdatePrecision": 300,
+		"maxUsersPerPage": 20
+	},
+
+	"discussionThread": {
+		"minNameLength": 3,
+		"maxNameLength": 128,
+		"maxUsersInVisitedSinceLastChange": 1024,
+		"maxThreadsPerPage": 25
+	},
+
+	"discussionThreadMessage": {
+		"minContentLength": 5,
+		"maxContentLength": 65535,
+		"minChangeReasonLength": 0,
+		"maxChangeReasonLength": 64,
+		"maxMessagesPerPage": 20,
+		"minCommentLength": 3,
+		"maxCommentLength": 1024,
+		"maxMessagesCommentsPerPage": 20
+	},
+
+	"discussionTag": {
+		"minNameLength": 2,
+		"maxNameLength": 128,
+		"maxUiBlobSize": 10000
+	},
+
+	"discussionCategory": {
+		"minNameLength": 2,
+		"maxNameLength": 128,
+		"maxDescriptionLength": 1024
+	},
+
+	"service": {
+		"serializationPerThreadBufferSize": 2097152,
+		"numberOfIOServiceThreads": 4,
+		"numberOfReadBuffers": 8192,
+		"numberOfWriteBuffers": 8192,
+		"listenIPAddress": "127.0.0.1",
+		"listenPort": 8081,
+		"connectionTimeoutSeconds": 20,
+		"trustIpFromXForwardedFor": false
+	},
+
+	"logging": {
+		"settingsFile": "log.settings"
+	},
+
+	"persistence": {
+		"inputFolder": "/mnt/forum/input",
+		"outputFolder": "/mnt/forum/output",
+		"validateChecksum": true,
+		"createNewOutputFileEverySeconds": 86400
+	}
+}

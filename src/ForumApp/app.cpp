@@ -2,7 +2,7 @@
 
 int main(int argc, const char* argv[])
 {
-    Forum::Application app(argc, argv);
+    Forum::Application app;
 
-    return app.run();
+    return app.run(argc, argv);
 }

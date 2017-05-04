@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iosfwd>
 #include <memory>
 #include <string>
 
@@ -110,5 +111,11 @@ namespace Forum
          * Newer calls to getGlobalConfig() will receive the new configuration.
          */
         void setGlobalConfig(const Config& value);
+
+        /**
+         * Loads the configuration data from a stream and sets it globally.
+         * Any exception is thrown up the call stack
+         */
+        void loadGlobalConfigFromStream(std::ifstream& stream);
     }
 }

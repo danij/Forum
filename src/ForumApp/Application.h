@@ -9,17 +9,18 @@
 #include <boost/noncopyable.hpp>
 
 #include <memory>
+#include <string>
 
 namespace Forum
 {
     class Application final : boost::noncopyable
     {
     public:
-        Application(int argc, const char* argv[]);
-        int run();
+        int run(int argc, const char* argv[]);
 
     private:
-        void cleanup();        
+        void cleanup();
+        bool initialize(const std::string& configurationFileName);
         void validateConfiguration();
         void createCommandHandler();
         void importEvents();
