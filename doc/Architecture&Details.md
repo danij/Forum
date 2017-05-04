@@ -80,7 +80,7 @@ Processing HTTP requests occurs as in the following diagram:
 ![diagram](processing-requests.png)
 
 HTTP requests are first accepted using the [Boost.Asio](http://www.boost.org/doc/libs/1_64_0/doc/html/boost_asio.html)
- networking library. An HTTP listener reads input from the socket and passes it to a HTTP parser. 
+ networking library. A HTTP listener reads input from the socket and passes it to a HTTP parser. 
  
 Once the parser returns to the listener that all the bytes that make up the request have been processed, the HTTP request
  is forwarded to a router. The router examines the request path and verb and forwards it to a request endpoint callback.
