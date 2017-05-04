@@ -24,6 +24,12 @@ namespace Forum
             }
         };
 
+        struct ImportResult
+        {
+            ImportStatistic statistic;
+            bool success = true;
+        };
+
         class EventImporter final : private boost::noncopyable
         {
         public:
@@ -36,7 +42,7 @@ namespace Forum
              * 
              * @return Number of events imported
              */
-            ImportStatistic import(const boost::filesystem::path& sourcePath);
+            ImportResult import(const boost::filesystem::path& sourcePath);
 
         private:
             struct EventImporterImpl;

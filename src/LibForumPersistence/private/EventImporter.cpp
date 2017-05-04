@@ -311,7 +311,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         return {};
     }
 
-    ImportStatistic importFile(const std::string& fileName)
+    ImportResult importFile(const std::string& fileName)
     {
         FORUM_LOG_INFO << "Imporing events from: " << fileName;
 
@@ -331,9 +331,9 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
     }
 
-    ImportStatistic iterateBlobsInFile(const char* data, size_t size)
+    ImportResult iterateBlobsInFile(const char* data, size_t size)
     {
-        ImportStatistic statistic{};
+        ImportResult result{};
 
         while (size > 0)
         {
@@ -358,6 +358,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             if (size < blobSizeWithPadding)
             {
                 FORUM_LOG_ERROR << "Not enough bytes remaining in file for a full event blob";
+                result.success = false;
                 break;
             }
 
@@ -367,21 +368,22 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
                 if (calculatedChecksum != storedChecksum)
                 {
                     FORUM_LOG_ERROR << "Checksum mismatch in event blob: " << calculatedChecksum << " != " << storedChecksum;
+                    result.success = false;
                     break;
                 }
             }
 
-            statistic.readBlobs += 1;            
+            result.statistic.readBlobs += 1;
             if (processEvent(data, blobSize))
             {
-                statistic.importedBlobs += 1;
+                result.statistic.importedBlobs += 1;
             }
 
             data += blobSizeWithPadding;
             size -= blobSizeWithPadding;
         }
         
-        return statistic;
+        return result;
     }
 
     bool processEvent(const char* data, size_t size)
@@ -438,7 +440,7 @@ EventImporter::~EventImporter()
     }
 }
 
-ImportStatistic EventImporter::import(const boost::filesystem::path& sourcePath)
+ImportResult EventImporter::import(const boost::filesystem::path& sourcePath)
 {
     std::map<time_t, std::string> eventFileNames;
     std::regex eventFileMatcher("^forum-(\\d+).events$", std::regex_constants::icase);
@@ -464,8 +466,17 @@ ImportStatistic EventImporter::import(const boost::filesystem::path& sourcePath)
         }
     });
 
-    return std::accumulate(eventFileNames.begin(), eventFileNames.end(), ImportStatistic{}, [this](auto& previous, auto& pair)
+
+    ImportResult result{};
+    for (auto& pair : eventFileNames)
     {
-        return previous + impl_->importFile(pair.second);
-    });
+        auto currentResult = impl_->importFile(pair.second);
+        if ( ! currentResult.success)
+        {
+            break;
+        }
+        result.statistic = result.statistic + currentResult.statistic;
+    }
+
+    return result;
 }

@@ -137,9 +137,17 @@ void Application::importEvents()
     auto& persistenceConfig = forumConfig->persistence;
 
     EventImporter importer(persistenceConfig.validateChecksum);
-    auto importStatistic = importer.import(persistenceConfig.inputFolder);
-    FORUM_LOG_INFO << "Finished importing " << importStatistic.importedBlobs << " events out of " 
-                                            << importStatistic.readBlobs << " blobs read";
+    auto result = importer.import(persistenceConfig.inputFolder);
+    if (result.success)
+    {
+        FORUM_LOG_INFO << "Finished importing " << result.statistic.importedBlobs << " events out of " 
+                                                << result.statistic.readBlobs << " blobs read";
+    }
+    else
+    {
+        FORUM_LOG_ERROR << "Import failed!";
+        std::exit(2);
+    }
 }
 
 void Application::initializeHttp()
