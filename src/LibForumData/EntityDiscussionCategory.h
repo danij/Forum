@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AuthorizationPrivileges.h"
 #include "EntityCommonTypes.h"
 #include "EntityDiscussionThreadCollectionBase.h"
 #include "EntityDiscussionTag.h"
@@ -24,6 +25,7 @@ namespace Forum
                                           public CreatedMixin, 
                                           public LastUpdatedMixinWithBy<User>,
                                           public DiscussionThreadCollectionBase<HashIndexForId>,
+                                          public Authorization::DiscussionCategoryPrivilegeStore,
                                           public std::enable_shared_from_this<DiscussionCategory>
         {
             StringView    name()              const { return name_; }
@@ -57,6 +59,8 @@ namespace Forum
                 return isRootCategory() ? std::numeric_limits<int_fast16_t>::min() + displayOrder_ : displayOrder_;
             }
 
+            Authorization::PrivilegeValueType getDiscussionCategoryPrivilege(Authorization::DiscussionCategoryPrivilege privilege) const override;
+
             enum ChangeType : uint32_t
             {
                 None = 0,
@@ -66,7 +70,8 @@ namespace Forum
                 Parent
             };
 
-            DiscussionCategory() : notifyChangeFn_(&DiscussionCategory::emptyNotifyChange) { }
+            explicit DiscussionCategory(Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
+                : notifyChangeFn_(&DiscussionCategory::emptyNotifyChange), forumWidePrivileges_(forumWidePrivileges_) { }
 
             bool addChild(std::shared_ptr<DiscussionCategory> category)
             {
@@ -147,6 +152,7 @@ namespace Forum
             std::set<std::shared_ptr<DiscussionCategory>, std::owner_less<std::shared_ptr<DiscussionCategory>>> children_;
             std::set<DiscussionTagRef, std::owner_less<DiscussionTagRef>> tags_;
             NotifyChangeActionType notifyChangeFn_;
+            Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
 
             static void emptyNotifyChange(DiscussionCategory&) { }
         };

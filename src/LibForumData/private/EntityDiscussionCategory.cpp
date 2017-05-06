@@ -3,6 +3,7 @@
 
 using namespace Forum;
 using namespace Forum::Entities;
+using namespace Forum::Authorization;
 
 static void executeOnAllCategoryParents(DiscussionCategory& category, std::function<void(DiscussionCategory&)>&& fn)
 {
@@ -179,4 +180,11 @@ void DiscussionCategory::recalculateTotals()
             totalThreads_.insertDiscussionThread(thread);
         }
     });
+}
+
+PrivilegeValueType DiscussionCategory::getDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege) const
+{
+    return MinimumPrivilegeValue(
+        DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege(privilege),
+        forumWidePrivileges_.getDiscussionCategoryPrivilege(privilege));
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AuthorizationPrivileges.h"
 #include "EntityCommonTypes.h"
 #include "EntityDiscussionThreadCollectionBase.h"
 
@@ -22,7 +23,8 @@ namespace Forum
                                      public CreatedMixin, 
                                      public LastUpdatedMixinWithBy<User>,
                                      public DiscussionThreadCollectionBase<HashIndexForId>, 
-                                     public IndicateDeletionInProgress
+                                     public IndicateDeletionInProgress,
+                                     public Authorization::DiscussionTagPrivilegeStore
         {
             StringView    name()           const { return name_; }
             std::string&  name()                 { return name_; }
@@ -36,6 +38,11 @@ namespace Forum
             auto          categories()     const { return Helpers::toConst(categories_); }
             auto&         categoriesWeak()       { return categories_; }
 
+            Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(Authorization::DiscussionThreadMessagePrivilege privilege) const override;
+            Authorization::PrivilegeValueType getDiscussionThreadPrivilege(Authorization::DiscussionThreadPrivilege privilege) const override;
+            Authorization::PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege) const override;
+            Authorization::PrivilegeValueType getDiscussionTagPrivilege(Authorization::DiscussionTagPrivilege privilege) const override;
+
             enum ChangeType : uint32_t
             {
                 None = 0,
@@ -43,7 +50,8 @@ namespace Forum
                 UIBlob
             };
 
-            DiscussionTag() : notifyChangeFn_(&DiscussionTag::emptyNotifyChange) {  }
+            explicit DiscussionTag(Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
+                : notifyChangeFn_(&DiscussionTag::emptyNotifyChange), forumWidePrivileges_(forumWidePrivileges) {  }
 
             bool insertDiscussionThread(const DiscussionThreadRef& thread) override;
             DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
@@ -67,6 +75,7 @@ namespace Forum
             int_fast32_t messageCount_ = 0;
             std::set<std::weak_ptr<DiscussionCategory>, std::owner_less<std::weak_ptr<DiscussionCategory>>> categories_;
             NotifyChangeActionType notifyChangeFn_;
+            Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
 
             static void emptyNotifyChange(DiscussionTag& tag) { }
         };

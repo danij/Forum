@@ -8,6 +8,7 @@
 
 using namespace Forum;
 using namespace Forum::Entities;
+using namespace Forum::Authorization;
 
 DiscussionThreadMessage::VoteScoreType DiscussionThread::voteScore() const
 {
@@ -16,6 +17,47 @@ DiscussionThreadMessage::VoteScoreType DiscussionThread::voteScore() const
         return (*messagesByCreated().begin())->voteScore();
     }
     return 0;
+}
+
+PrivilegeValueType DiscussionThread::getDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege) const
+{
+    auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
+    for (auto& tagWeak : tags_)
+    {
+        if (auto tagShared = tagWeak.lock())
+        {
+            result = MinimumPrivilegeValue(result, tagShared->getDiscussionThreadMessagePrivilege(privilege));
+        }
+    }
+    return result;
+}
+
+PrivilegeValueType DiscussionThread::getDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege) const
+{
+    auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege);
+    for (auto& tagWeak : tags_)
+    {
+        if (auto tagShared = tagWeak.lock())
+        {
+            result = MinimumPrivilegeValue(result, tagShared->getDiscussionThreadPrivilege(privilege));
+        }
+    }
+    return result;
+}
+
+PrivilegeDefaultDurationType DiscussionThread::getDiscussionThreadMessageDefaultPrivilegeDuration(DiscussionThreadMessageDefaultPrivilegeDuration privilege) const
+{
+    auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadMessageDefaultPrivilegeDuration(privilege);
+    if (result) return result;
+
+    for (auto& tagWeak : tags_)
+    {
+        if (auto tagShared = tagWeak.lock())
+        {
+            result = MaximumPrivilegeDefaultDuration(result, tagShared->getDiscussionThreadMessageDefaultPrivilegeDuration(privilege));
+        }
+    }
+    return result;
 }
 
 void DiscussionThread::insertMessage(DiscussionThreadMessageRef message)

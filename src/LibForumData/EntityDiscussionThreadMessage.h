@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AuthorizationPrivileges.h"
 #include "EntityCommonTypes.h"
 #include "EntityMessageCommentCollectionBase.h"
 #include "StringHelpers.h"
@@ -23,7 +24,8 @@ namespace Forum
         struct DiscussionThreadMessage final : public Identifiable, 
                                                public CreatedMixin, 
                                                public LastUpdatedMixinWithBy<User>,
-                                               public MessageCommentCollectionBase<OrderedIndexForId>
+                                               public MessageCommentCollectionBase<OrderedIndexForId>,
+                                               public Authorization::DiscussionThreadMessagePrivilegeStore
         {
             typedef int_fast32_t VoteScoreType;
 
@@ -41,6 +43,16 @@ namespace Forum
             int_fast32_t&             solvedCommentsCount()       { return solvedCommentsCount_; }
 
             std::weak_ptr<DiscussionThread>& parentThread()       { return parentThread_; }
+
+            Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(Authorization::DiscussionThreadMessagePrivilege privilege) const override
+            {
+                auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
+                executeActionWithParentThreadIfAvailable([&result, privilege](auto& parentThread)
+                {
+                    result = Authorization::MinimumPrivilegeValue(result, parentThread.getDiscussionThreadMessagePrivilege(privilege));
+                });
+                return result;
+            }
 
             template<typename TAction>
             void executeActionWithParentThreadIfAvailable(TAction&& action) const

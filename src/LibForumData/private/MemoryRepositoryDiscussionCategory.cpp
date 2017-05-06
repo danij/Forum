@@ -186,7 +186,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                                return;
                            }
                  
-                           auto category = std::make_shared<DiscussionCategory>();
+                           auto category = std::make_shared<DiscussionCategory>(collection);
                            category->notifyChange() = collection.notifyCategoryChange();
                            category->id() = generateUUIDString();
                            category->name() = std::move(nameString);

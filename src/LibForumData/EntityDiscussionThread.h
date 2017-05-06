@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AuthorizationPrivileges.h"
 #include "EntityCommonTypes.h"
 #include "EntityDiscussionThreadMessageCollectionBase.h"
 
@@ -25,6 +26,7 @@ namespace Forum
                                         public LastUpdatedMixinWithBy<User>,
                                         public DiscussionThreadMessageCollectionBase<OrderedIndexForId>,
                                         public IndicateDeletionInProgress,
+                                        public Authorization::DiscussionThreadPrivilegeStore,
                                         public std::enable_shared_from_this<DiscussionThread>
         {
                   StringView   name()                      const { return name_; }
@@ -48,6 +50,10 @@ namespace Forum
                   Timestamp    latestMessageCreated()      const { return latestMessageCreated_; }
 
             DiscussionThreadMessage::VoteScoreType voteScore() const;
+
+            Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(Authorization::DiscussionThreadMessagePrivilege privilege) const override;
+            Authorization::PrivilegeValueType getDiscussionThreadPrivilege(Authorization::DiscussionThreadPrivilege privilege) const override;
+            Authorization::PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege) const override;
 
             /**
              * Thread-safe reference to the number of times the thread was visited.

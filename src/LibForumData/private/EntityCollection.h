@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AuthorizationPrivileges.h"
 #include "EntityDiscussionThreadMessageCollectionBase.h"
 #include "EntityMessageCommentCollectionBase.h"
 #include "EntityDiscussionThreadCollectionBase.h"
@@ -24,7 +25,8 @@ namespace Forum
                                   public DiscussionThreadMessageCollectionBase<HashIndexForId>, 
                                   public MessageCommentCollectionBase<HashIndexForId>,
                                   public DiscussionTagCollectionBase<HashIndexForId>,
-                                  public DiscussionCategoryCollectionBase<HashIndexForId>
+                                  public DiscussionCategoryCollectionBase<HashIndexForId>,
+                                  public Authorization::ForumWidePrivilegeStore
         {
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in

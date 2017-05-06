@@ -105,7 +105,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
                                return;
                            }
 
-                           auto tag = std::make_shared<DiscussionTag>();
+                           auto tag = std::make_shared<DiscussionTag>(collection);
                            tag->notifyChange() = collection.notifyTagChange();
                            tag->id() = generateUUIDString();
                            tag->name() = std::move(nameString);
