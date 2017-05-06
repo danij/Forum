@@ -184,7 +184,7 @@ void DiscussionCategory::recalculateTotals()
 
 PrivilegeValueType DiscussionCategory::getDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege) const
 {
-    return MinimumPrivilegeValue(
+    return minimumPrivilegeValue(
         DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege(privilege),
         forumWidePrivileges_.getDiscussionCategoryPrivilege(privilege));
 }

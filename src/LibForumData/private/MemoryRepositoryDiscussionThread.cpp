@@ -379,7 +379,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
                                            ForumWideDefaultPrivilegeDuration::CHANGE_DISCUSSION_THREAD_NAME));
                            if (changePrivilegeDuration > 0)
                            {
-                               auto privilege = DiscussionThreadPrivilege::CHANGE_DISCUSSION_THREAD_NAME;
+                               auto privilege = DiscussionThreadPrivilege::CHANGE_NAME;
                                auto valueNeeded = optionalOrZero(collection.getDiscussionThreadPrivilege(privilege));
 
                                if (valueNeeded > 0)
@@ -396,7 +396,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
                                            ForumWideDefaultPrivilegeDuration::DELETE_DISCUSSION_THREAD));
                            if (deletePrivilegeDuration > 0)
                            {
-                               auto privilege = DiscussionThreadPrivilege::DELETE_DISCUSSION_THREAD;
+                               auto privilege = DiscussionThreadPrivilege::DELETE;
                                auto valueNeeded = optionalOrZero(collection.getDiscussionThreadPrivilege(privilege));
 
                                if (valueNeeded)

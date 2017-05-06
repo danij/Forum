@@ -162,10 +162,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                    //add privileges for the user that created the message
                                    auto changePrivilegeDuration = optionalOrZero(
                                            thread.getDiscussionThreadMessageDefaultPrivilegeDuration(
-                                                   DiscussionThreadMessageDefaultPrivilegeDuration::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT));
+                                                   DiscussionThreadMessageDefaultPrivilegeDuration::CHANGE_CONTENT));
                                    if (changePrivilegeDuration > 0)
                                    {
-                                       auto privilege = DiscussionThreadMessagePrivilege::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT;
+                                       auto privilege = DiscussionThreadMessagePrivilege::CHANGE_CONTENT;
                                        auto valueNeeded = optionalOrZero(thread.getDiscussionThreadMessagePrivilege(privilege));
                                        
                                        if (valueNeeded > 0)
@@ -179,10 +179,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
 
                                    auto deletePrivilegeDuration = optionalOrZero(
                                            thread.getDiscussionThreadMessageDefaultPrivilegeDuration(
-                                                   DiscussionThreadMessageDefaultPrivilegeDuration::DELETE_DISCUSSION_THREAD_MESSAGE));
+                                                   DiscussionThreadMessageDefaultPrivilegeDuration::DELETE));
                                    if (deletePrivilegeDuration > 0)
                                    {
-                                       auto privilege = DiscussionThreadMessagePrivilege::DELETE_DISCUSSION_THREAD_MESSAGE;
+                                       auto privilege = DiscussionThreadMessagePrivilege::DELETE;
                                        auto valueNeeded = optionalOrZero(thread.getDiscussionThreadMessagePrivilege(privilege));
 
                                        if (valueNeeded)
@@ -509,10 +509,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
                            {
                                auto resetVotePrivilegeDuration = optionalOrZero(
                                    thread->getDiscussionThreadMessageDefaultPrivilegeDuration(
-                                       DiscussionThreadMessageDefaultPrivilegeDuration::RESET_VOTE_DISCUSSION_THREAD_MESSAGE));
+                                       DiscussionThreadMessageDefaultPrivilegeDuration::RESET_VOTE));
                                if (resetVotePrivilegeDuration > 0)
                                {
-                                   auto privilege = DiscussionThreadMessagePrivilege::RESET_VOTE_DISCUSSION_THREAD_MESSAGE;
+                                   auto privilege = DiscussionThreadMessagePrivilege::RESET_VOTE;
                                    auto valueNeeded = optionalOrZero(thread->getDiscussionThreadMessagePrivilege(privilege));
                                    if (valueNeeded > 0)
                                    {

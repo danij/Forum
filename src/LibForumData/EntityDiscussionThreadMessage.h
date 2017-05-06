@@ -49,7 +49,7 @@ namespace Forum
                 auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
                 executeActionWithParentThreadIfAvailable([&result, privilege](auto& parentThread)
                 {
-                    result = Authorization::MinimumPrivilegeValue(result, parentThread.getDiscussionThreadMessagePrivilege(privilege));
+                    result = Authorization::minimumPrivilegeValue(result, parentThread.getDiscussionThreadMessagePrivilege(privilege));
                 });
                 return result;
             }

@@ -16,75 +16,76 @@ namespace Forum
 
         enum class DiscussionThreadMessagePrivilege : EnumIntType
         {
-            VIEW_DISCUSSION_THREAD_MESSAGE,
-            UP_VOTE_DISCUSSION_THREAD_MESSAGE,
-            DOWN_VOTE_DISCUSSION_THREAD_MESSAGE,
-            RESET_VOTE_DISCUSSION_THREAD_MESSAGE,
-            ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE,
-            SET_COMMENT_TO_SOLVED_IN_DISCUSSION_THREAD_MESSAGE,
+            VIEW,
+            VIEW_CREATOR_USER,
+            VIEW_IP_ADDRESS,
+            UP_VOTE,
+            DOWN_VOTE,
+            RESET_VOTE,
+            ADD_COMMENT,
+            SET_COMMENT_TO_SOLVED,
             GET_MESSAGE_COMMENTS,
-            CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
-            DELETE_DISCUSSION_THREAD_MESSAGE,
+            CHANGE_CONTENT,
+            DELETE,
             MOVE_DISCUSSION_MESSAGE,
 
-            ADJUST_DISCUSSION_THREAD_MESSAGE_PRIVILEGE,
+            ADJUST_PRIVILEGE,
 
             COUNT
         };
-        
+
         enum class DiscussionThreadMessageDefaultPrivilegeDuration : EnumIntType
         {
-            RESET_VOTE_DISCUSSION_THREAD_MESSAGE,
-            CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT,
-            DELETE_DISCUSSION_THREAD_MESSAGE,
+            RESET_VOTE,
+            CHANGE_CONTENT,
+            DELETE,
 
             COUNT
         };
 
         enum class DiscussionThreadPrivilege : EnumIntType
         {
-            VIEW_DISCUSSION_THREAD,
+            VIEW,
             SUBSCRIBE_TO_THREAD,
             UNSUBSCRIBE_FROM_THREAD,
-            ADD_MESSAGE_TO_DISCUSSION_THREAD,
-            CHANGE_DISCUSSION_THREAD_NAME,
-            ADD_TAG_TO_DISCUSSION_THREAD,
-            REMOVE_TAG_TO_DISCUSSION_THREAD,
-            DELETE_DISCUSSION_THREAD,
-            MERGE_DISCUSSION_THREADS,
-            
-            ADJUST_DISCUSSION_THREAD_PRIVILEGE,
+            ADD_MESSAGE,
+            CHANGE_NAME,
+            ADD_TAG,
+            REMOVE_TAG,
+            DELETE,
+            MERGE,
+
+            ADJUST_PRIVILEGE,
 
             COUNT
         };
 
         enum class DiscussionTagPrivilege : EnumIntType
         {
-            VIEW_DISCUSSION_TAG,
-            GET_DISCUSSION_THREADS_OF_TAG,
-            GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER,
-            CHANGE_DISCUSSION_TAG_NAME,
-            CHANGE_DISCUSSION_TAG_UIBLOB,
-            DELETE_DISCUSSION_TAG,
-            MERGE_DISCUSSION_TAGS,
-            
-            ADJUST_DISCUSSION_TAG_PRIVILEGE,
+            VIEW,
+            GET_DISCUSSION_THREADS,
+            CHANGE_NAME,
+            CHANGE_UIBLOB,
+            DELETE,
+            MERGE,
+
+            ADJUST_PRIVILEGE,
 
             COUNT
         };
-        
+
         enum class DiscussionCategoryPrivilege : EnumIntType
         {
-            VIEW_DISCUSSION_CATEGORY,
-            CHANGE_DISCUSSION_CATEGORY_NAME,
-            CHANGE_DISCUSSION_CATEGORY_DESCRIPTION,
-            CHANGE_DISCUSSION_CATEGORY_PARENT,
-            CHANGE_DISCUSSION_CATEGORY_DISPLAYORDER,
-            ADD_TAG_TO_DISCUSSION_CATEGORY,
-            REMOVE_TAG_FROM_DISCUSSION_CATEGORY,
-            DELETE_DISCUSSION_CATEGORY,
+            VIEW,
+            CHANGE_NAME,
+            CHANGE_DESCRIPTION,
+            CHANGE_PARENT,
+            CHANGE_DISPLAYORDER,
+            ADD_TAG,
+            REMOVE_TAG,
+            DELETE,
 
-            ADJUST_DISCUSSION_CATEGORY_PRIVILEGE,
+            ADJUST_PRIVILEGE,
 
             COUNT
         };
@@ -97,6 +98,7 @@ namespace Forum
             GET_USER_INFO,
             GET_DISCUSSION_THREADS_OF_USER,
             GET_DISCUSSION_THREAD_MESSAGES_OF_USER,
+            GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER,
             GET_ALL_DISCUSSION_CATEGORIES,
             GET_DISCUSSION_CATEGORIES_FROM_ROOT,
             GET_ALL_DISCUSSION_TAGS,
@@ -134,7 +136,7 @@ namespace Forum
             return value ? *value : 0;
         }
 
-        inline PrivilegeValueType MinimumPrivilegeValue(PrivilegeValueType first, PrivilegeValueType second)
+        inline PrivilegeValueType minimumPrivilegeValue(PrivilegeValueType first, PrivilegeValueType second)
         {
             if ( ! first) return second;
             if ( ! second) return first;
@@ -142,7 +144,7 @@ namespace Forum
             return std::min(*first, *second);
         }
 
-        inline PrivilegeValueType MaximumPrivilegeValue(PrivilegeValueType first, PrivilegeValueType second)
+        inline PrivilegeValueType maximumPrivilegeValue(PrivilegeValueType first, PrivilegeValueType second)
         {
             if ( ! first) return second;
             if ( ! second) return first;
@@ -150,8 +152,8 @@ namespace Forum
             return std::max(*first, *second);
         }
 
-        inline PrivilegeDefaultDurationType MinimumPrivilegeDefaultDuration(PrivilegeDefaultDurationType first, 
-                                                                            PrivilegeDefaultDurationType second)
+        inline PrivilegeDefaultDurationType minimumPrivilegeDefaultDuration(PrivilegeDefaultDurationType first,
+            PrivilegeDefaultDurationType second)
         {
             if ( ! first) return second;
             if ( ! second) return first;
@@ -159,8 +161,8 @@ namespace Forum
             return std::min(*first, *second);
         }
 
-        inline PrivilegeDefaultDurationType MaximumPrivilegeDefaultDuration(PrivilegeDefaultDurationType first, 
-                                                                            PrivilegeDefaultDurationType second)
+        inline PrivilegeDefaultDurationType maximumPrivilegeDefaultDuration(PrivilegeDefaultDurationType first,
+            PrivilegeDefaultDurationType second)
         {
             if ( ! first) return second;
             if ( ! second) return first;
@@ -168,13 +170,12 @@ namespace Forum
             return std::max(*first, *second);
         }
 
-        class DiscussionThreadMessagePrivilegeStore
+        struct DiscussionThreadMessagePrivilegeStore
         {
-        public:
             DECLARE_ABSTRACT_MANDATORY(DiscussionThreadMessagePrivilegeStore)
 
-            void setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege, 
-                                                     PrivilegeValueIntType value)
+            void setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege,
+                PrivilegeValueIntType value)
             {
                 if (privilege < DiscussionThreadMessagePrivilege::COUNT)
                 {
@@ -196,13 +197,12 @@ namespace Forum
                 [static_cast<EnumIntType>(DiscussionThreadMessagePrivilege::COUNT)];
         };
 
-       class DiscussionThreadPrivilegeStore : public DiscussionThreadMessagePrivilegeStore
+        struct DiscussionThreadPrivilegeStore : public DiscussionThreadMessagePrivilegeStore
         {
-        public:
             DECLARE_ABSTRACT_MANDATORY(DiscussionThreadPrivilegeStore)
 
-            void setDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege, 
-                                              PrivilegeValueIntType value)
+            void setDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege,
+                PrivilegeValueIntType value)
             {
                 if (privilege < DiscussionThreadPrivilege::COUNT)
                 {
@@ -220,7 +220,7 @@ namespace Forum
             }
 
             void setDiscussionThreadMessageDefaultPrivilegeDuration(DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                                                                    PrivilegeDefaultDurationIntType value)
+                PrivilegeDefaultDurationIntType value)
             {
                 if (privilege < DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)
                 {
@@ -246,9 +246,8 @@ namespace Forum
                 [static_cast<EnumIntType>(DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)];
         };
 
-        class DiscussionTagPrivilegeStore : public DiscussionThreadPrivilegeStore
+        struct DiscussionTagPrivilegeStore : public DiscussionThreadPrivilegeStore
         {
-        public:
             DECLARE_ABSTRACT_MANDATORY(DiscussionTagPrivilegeStore)
 
             void setDiscussionTagPrivilege(DiscussionTagPrivilege privilege, PrivilegeValueIntType value)
@@ -273,9 +272,8 @@ namespace Forum
                 [static_cast<EnumIntType>(DiscussionTagPrivilege::COUNT)];
         };
 
-        class DiscussionCategoryPrivilegeStore
+        struct DiscussionCategoryPrivilegeStore
         {
-        public:
             DECLARE_ABSTRACT_MANDATORY(DiscussionCategoryPrivilegeStore)
 
             void setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value)
@@ -300,9 +298,8 @@ namespace Forum
                 [static_cast<EnumIntType>(DiscussionCategoryPrivilege::COUNT)];
         };
 
-        class ForumWidePrivilegeStore : public DiscussionTagPrivilegeStore, public DiscussionCategoryPrivilegeStore
+        struct ForumWidePrivilegeStore : public DiscussionTagPrivilegeStore, public DiscussionCategoryPrivilegeStore
         {
-        public:
             DECLARE_ABSTRACT_MANDATORY(ForumWidePrivilegeStore)
 
             void setForumWidePrivilege(ForumWidePrivilege privilege, PrivilegeValueIntType value)
@@ -323,7 +320,7 @@ namespace Forum
             }
 
             void setForumWideDefaultPrivilegeDuration(ForumWideDefaultPrivilegeDuration privilege,
-                                                      PrivilegeDefaultDurationIntType value)
+                PrivilegeDefaultDurationIntType value)
             {
                 if (privilege < ForumWideDefaultPrivilegeDuration::COUNT)
                 {
@@ -341,7 +338,7 @@ namespace Forum
             }
 
         private:
-            PrivilegeValueType forumWidePrivileges_ [static_cast<EnumIntType>(ForumWidePrivilege::COUNT)];
+            PrivilegeValueType forumWidePrivileges_[static_cast<EnumIntType>(ForumWidePrivilege::COUNT)];
             PrivilegeDefaultDurationType forumWideDefaultPrivilegeDuration_
                 [static_cast<EnumIntType>(ForumWideDefaultPrivilegeDuration::COUNT)];
         };

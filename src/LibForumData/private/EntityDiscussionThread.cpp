@@ -26,7 +26,7 @@ PrivilegeValueType DiscussionThread::getDiscussionThreadMessagePrivilege(Discuss
     {
         if (auto tagShared = tagWeak.lock())
         {
-            result = MinimumPrivilegeValue(result, tagShared->getDiscussionThreadMessagePrivilege(privilege));
+            result = minimumPrivilegeValue(result, tagShared->getDiscussionThreadMessagePrivilege(privilege));
         }
     }
     return result;
@@ -39,7 +39,7 @@ PrivilegeValueType DiscussionThread::getDiscussionThreadPrivilege(DiscussionThre
     {
         if (auto tagShared = tagWeak.lock())
         {
-            result = MinimumPrivilegeValue(result, tagShared->getDiscussionThreadPrivilege(privilege));
+            result = minimumPrivilegeValue(result, tagShared->getDiscussionThreadPrivilege(privilege));
         }
     }
     return result;
@@ -54,7 +54,7 @@ PrivilegeDefaultDurationType DiscussionThread::getDiscussionThreadMessageDefault
     {
         if (auto tagShared = tagWeak.lock())
         {
-            result = MaximumPrivilegeDefaultDuration(result, tagShared->getDiscussionThreadMessageDefaultPrivilegeDuration(privilege));
+            result = maximumPrivilegeDefaultDuration(result, tagShared->getDiscussionThreadMessageDefaultPrivilegeDuration(privilege));
         }
     }
     return result;
