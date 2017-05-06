@@ -27,9 +27,11 @@ namespace Forum
             DELETE_DISCUSSION_THREAD_MESSAGE,
             MOVE_DISCUSSION_MESSAGE,
 
+            ADJUST_DISCUSSION_THREAD_MESSAGE_PRIVILEGE,
+
             COUNT
         };
-
+        
         enum class DiscussionThreadMessageDefaultPrivilegeDuration : EnumIntType
         {
             RESET_VOTE_DISCUSSION_THREAD_MESSAGE,
@@ -51,13 +53,7 @@ namespace Forum
             DELETE_DISCUSSION_THREAD,
             MERGE_DISCUSSION_THREADS,
             
-            COUNT
-        };
-
-        enum class DiscussionThreadDefaultPrivilegeDuration : EnumIntType
-        {
-            CHANGE_DISCUSSION_THREAD_NAME,
-            DELETE_DISCUSSION_THREAD,
+            ADJUST_DISCUSSION_THREAD_PRIVILEGE,
 
             COUNT
         };
@@ -72,6 +68,8 @@ namespace Forum
             DELETE_DISCUSSION_TAG,
             MERGE_DISCUSSION_TAGS,
             
+            ADJUST_DISCUSSION_TAG_PRIVILEGE,
+
             COUNT
         };
         
@@ -85,6 +83,8 @@ namespace Forum
             ADD_TAG_TO_DISCUSSION_CATEGORY,
             REMOVE_TAG_FROM_DISCUSSION_CATEGORY,
             DELETE_DISCUSSION_CATEGORY,
+
+            ADJUST_DISCUSSION_CATEGORY_PRIVILEGE,
 
             COUNT
         };
@@ -109,6 +109,16 @@ namespace Forum
             CHANGE_ANY_USER_NAME,
             CHANGE_ANY_USER_INFO,
             DELETE_ANY_USER,
+
+            ADJUST_FORUM_WIDE_PRIVILEGE,
+
+            COUNT
+        };
+
+        enum class ForumWideDefaultPrivilegeDuration : EnumIntType
+        {
+            CHANGE_DISCUSSION_THREAD_NAME,
+            DELETE_DISCUSSION_THREAD,
 
             COUNT
         };
@@ -166,7 +176,7 @@ namespace Forum
                 }
             }
 
-            virtual PrivilegeValueType getDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege)
+            virtual PrivilegeValueType getDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege) const
             {
                 if (privilege < DiscussionThreadMessagePrivilege::COUNT)
                 {
@@ -175,29 +185,9 @@ namespace Forum
                 return{};
             }
 
-            void setDiscussionThreadMessageDefaultPrivilegeDuration(DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                                                                    PrivilegeDefaultDurationIntType value)
-            {
-                if (privilege < DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)
-                {
-                    discussionThreadMessagePrivileges_[static_cast<EnumIntType>(privilege)] = value;
-                }
-            }
-
-            virtual PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(DiscussionThreadMessageDefaultPrivilegeDuration privilege)
-            {
-                if (privilege < DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)
-                {
-                    return discussionThreadMessageDefaultPrivilegeDuration_[static_cast<EnumIntType>(privilege)];
-                }
-                return{};
-            }
-
         private:
             PrivilegeValueType discussionThreadMessagePrivileges_
                 [static_cast<EnumIntType>(DiscussionThreadMessagePrivilege::COUNT)];
-            PrivilegeDefaultDurationType discussionThreadMessageDefaultPrivilegeDuration_
-                [static_cast<EnumIntType>(DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)];
         };
 
        class DiscussionThreadPrivilegeStore : public DiscussionThreadMessagePrivilegeStore
@@ -214,7 +204,7 @@ namespace Forum
                 }
             }
 
-            virtual PrivilegeValueType getDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege)
+            virtual PrivilegeValueType getDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege) const
             {
                 if (privilege < DiscussionThreadPrivilege::COUNT)
                 {
@@ -223,20 +213,20 @@ namespace Forum
                 return{};
             }
 
-            void setDiscussionThreadDefaultPrivilegeDuration(DiscussionThreadDefaultPrivilegeDuration privilege,
-                                                             PrivilegeDefaultDurationIntType value)
+            void setDiscussionThreadMessageDefaultPrivilegeDuration(DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                                                                    PrivilegeDefaultDurationIntType value)
             {
-                if (privilege < DiscussionThreadDefaultPrivilegeDuration::COUNT)
+                if (privilege < DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)
                 {
-                    discussionThreadPrivileges_[static_cast<EnumIntType>(privilege)] = value;
+                    discussionThreadMessageDefaultPrivilegeDuration_[static_cast<EnumIntType>(privilege)] = value;
                 }
             }
 
-            virtual PrivilegeDefaultDurationType getDiscussionThreadDefaultPrivilegeDuration(DiscussionThreadDefaultPrivilegeDuration privilege)
+            virtual PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(DiscussionThreadMessageDefaultPrivilegeDuration privilege) const
             {
-                if (privilege < DiscussionThreadDefaultPrivilegeDuration::COUNT)
+                if (privilege < DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)
                 {
-                    return discussionThreadDefaultPrivilegeDuration_[static_cast<EnumIntType>(privilege)];
+                    return discussionThreadMessageDefaultPrivilegeDuration_[static_cast<EnumIntType>(privilege)];
                 }
                 return{};
             }
@@ -244,8 +234,10 @@ namespace Forum
         private:
             PrivilegeValueType discussionThreadPrivileges_
                 [static_cast<EnumIntType>(DiscussionThreadPrivilege::COUNT)];
-            PrivilegeDefaultDurationType discussionThreadDefaultPrivilegeDuration_
-                [static_cast<EnumIntType>(DiscussionThreadDefaultPrivilegeDuration::COUNT)];
+            //default privilege durations for messages are stored on the parent thread
+            //as the messages don't have settings the moment they are created
+            PrivilegeDefaultDurationType discussionThreadMessageDefaultPrivilegeDuration_
+                [static_cast<EnumIntType>(DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)];
         };
 
         class DiscussionTagPrivilegeStore : public DiscussionThreadPrivilegeStore
@@ -261,7 +253,7 @@ namespace Forum
                 }
             }
 
-            virtual PrivilegeValueType getDiscussionTagPrivilege(DiscussionTagPrivilege privilege)
+            virtual PrivilegeValueType getDiscussionTagPrivilege(DiscussionTagPrivilege privilege) const
             {
                 if (privilege < DiscussionTagPrivilege::COUNT)
                 {
@@ -288,7 +280,7 @@ namespace Forum
                 }
             }
 
-            virtual PrivilegeValueType getDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege)
+            virtual PrivilegeValueType getDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege) const
             {
                 if (privilege < DiscussionCategoryPrivilege::COUNT)
                 {
@@ -315,7 +307,7 @@ namespace Forum
                 }
             }
 
-            virtual PrivilegeValueType getDForumWidePrivilege(ForumWidePrivilege privilege)
+            virtual PrivilegeValueType getForumWidePrivilege(ForumWidePrivilege privilege) const
             {
                 if (privilege < ForumWidePrivilege::COUNT)
                 {
@@ -324,8 +316,28 @@ namespace Forum
                 return{};
             }
 
+            void setForumWideDefaultPrivilegeDuration(ForumWideDefaultPrivilegeDuration privilege,
+                                                      PrivilegeDefaultDurationIntType value)
+            {
+                if (privilege < ForumWideDefaultPrivilegeDuration::COUNT)
+                {
+                    forumWideDefaultPrivilegeDuration_[static_cast<EnumIntType>(privilege)] = value;
+                }
+            }
+
+            virtual PrivilegeDefaultDurationType getForumWideDefaultPrivilegeDuration(ForumWideDefaultPrivilegeDuration privilege) const
+            {
+                if (privilege < ForumWideDefaultPrivilegeDuration::COUNT)
+                {
+                    return forumWideDefaultPrivilegeDuration_[static_cast<EnumIntType>(privilege)];
+                }
+                return{};
+            }
+
         private:
             PrivilegeValueType forumWidePrivileges_ [static_cast<EnumIntType>(ForumWidePrivilege::COUNT)];
+            PrivilegeDefaultDurationType forumWideDefaultPrivilegeDuration_
+                [static_cast<EnumIntType>(ForumWideDefaultPrivilegeDuration::COUNT)];
         };
     }
 }
