@@ -128,6 +128,12 @@ namespace Forum
         typedef time_t PrivilegeDefaultDurationIntType;
         typedef boost::optional<PrivilegeDefaultDurationIntType> PrivilegeDefaultDurationType;
 
+        template<typename T>
+        T optionalOrZero(boost::optional<T> value)
+        {
+            return value ? *value : 0;
+        }
+
         inline PrivilegeValueType MinimumPrivilegeValue(PrivilegeValueType first, PrivilegeValueType second)
         {
             if ( ! first) return second;

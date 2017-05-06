@@ -158,6 +158,41 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                                });
                                        }
                                    }
+
+                                   //add privileges for the user that created the message
+                                   auto changePrivilegeDuration = optionalOrZero(
+                                           thread.getDiscussionThreadMessageDefaultPrivilegeDuration(
+                                                   DiscussionThreadMessageDefaultPrivilegeDuration::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT));
+                                   if (changePrivilegeDuration > 0)
+                                   {
+                                       auto privilege = DiscussionThreadMessagePrivilege::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT;
+                                       auto valueNeeded = optionalOrZero(thread.getDiscussionThreadMessagePrivilege(privilege));
+                                       
+                                       if (valueNeeded > 0)
+                                       {
+                                           auto expiresAt = message->created() + changePrivilegeDuration;
+
+                                           collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
+                                                   currentUser->id(), message->id(), privilege, valueNeeded, expiresAt);
+                                       }
+                                   }
+
+                                   auto deletePrivilegeDuration = optionalOrZero(
+                                           thread.getDiscussionThreadMessageDefaultPrivilegeDuration(
+                                                   DiscussionThreadMessageDefaultPrivilegeDuration::DELETE_DISCUSSION_THREAD_MESSAGE));
+                                   if (deletePrivilegeDuration > 0)
+                                   {
+                                       auto privilege = DiscussionThreadMessagePrivilege::DELETE_DISCUSSION_THREAD_MESSAGE;
+                                       auto valueNeeded = optionalOrZero(thread.getDiscussionThreadMessagePrivilege(privilege));
+
+                                       if (valueNeeded)
+                                       {
+                                           auto expiresAt = message->created() + changePrivilegeDuration;
+
+                                           collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
+                                                   currentUser->id(), message->id(), privilege, valueNeeded, expiresAt);
+                                       }
+                                   }
                                });
                  
                            collection.modifyUserById(currentUser->id(), [&](User& user)
@@ -468,6 +503,25 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
                                message.addDownVote(std::move(userWeak), timestamp);
                                writeEvents().onDiscussionThreadMessageDownVote(createObserverContext(*currentUser),
                                                                                message);
+                           }
+
+                           if (auto thread = message.parentThread().lock())
+                           {
+                               auto resetVotePrivilegeDuration = optionalOrZero(
+                                   thread->getDiscussionThreadMessageDefaultPrivilegeDuration(
+                                       DiscussionThreadMessageDefaultPrivilegeDuration::RESET_VOTE_DISCUSSION_THREAD_MESSAGE));
+                               if (resetVotePrivilegeDuration > 0)
+                               {
+                                   auto privilege = DiscussionThreadMessagePrivilege::RESET_VOTE_DISCUSSION_THREAD_MESSAGE;
+                                   auto valueNeeded = optionalOrZero(thread->getDiscussionThreadMessagePrivilege(privilege));
+                                   if (valueNeeded > 0)
+                                   {
+                                       auto expiresAt = timestamp + resetVotePrivilegeDuration;
+
+                                       collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
+                                               currentUser->id(), message.id(), privilege, valueNeeded, expiresAt);
+                                   }
+                               }
                            }
                        });
     return status;

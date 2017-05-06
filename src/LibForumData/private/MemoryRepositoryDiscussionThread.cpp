@@ -369,9 +369,44 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
                            collection.insertDiscussionThread(thread);
                  
                            collection.modifyUserById(currentUser->id(), [&](User& user)
-                                                                      {
-                                                                        user.insertDiscussionThread(thread);
-                                                                      });
+                                                                        {
+                                                                            user.insertDiscussionThread(thread);
+                                                                        });
+
+                           //add privileges for the user that created the message
+                           auto changePrivilegeDuration = optionalOrZero(
+                                   collection.getForumWideDefaultPrivilegeDuration(
+                                           ForumWideDefaultPrivilegeDuration::CHANGE_DISCUSSION_THREAD_NAME));
+                           if (changePrivilegeDuration > 0)
+                           {
+                               auto privilege = DiscussionThreadPrivilege::CHANGE_DISCUSSION_THREAD_NAME;
+                               auto valueNeeded = optionalOrZero(collection.getDiscussionThreadPrivilege(privilege));
+
+                               if (valueNeeded > 0)
+                               {
+                                   auto expiresAt = thread->created() + changePrivilegeDuration;
+
+                                   collection.grantedPrivileges().grantDiscussionThreadPrivilege(
+                                       currentUser->id(), thread->id(), privilege, valueNeeded, expiresAt);
+                               }
+                           }
+
+                           auto deletePrivilegeDuration = optionalOrZero(
+                                   collection.getForumWideDefaultPrivilegeDuration(
+                                           ForumWideDefaultPrivilegeDuration::DELETE_DISCUSSION_THREAD));
+                           if (deletePrivilegeDuration > 0)
+                           {
+                               auto privilege = DiscussionThreadPrivilege::DELETE_DISCUSSION_THREAD;
+                               auto valueNeeded = optionalOrZero(collection.getDiscussionThreadPrivilege(privilege));
+
+                               if (valueNeeded)
+                               {
+                                   auto expiresAt = thread->created() + changePrivilegeDuration;
+
+                                   collection.grantedPrivileges().grantDiscussionThreadPrivilege(
+                                       currentUser->id(), thread->id(), privilege, valueNeeded, expiresAt);
+                               }
+                           }
 
                            writeEvents().onAddNewDiscussionThread(createObserverContext(*currentUser), *thread);
                  

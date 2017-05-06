@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AuthorizationPrivileges.h"
+#include "AuthorizationGrantedPrivilegeStore.h"
 #include "EntityDiscussionThreadMessageCollectionBase.h"
 #include "EntityMessageCommentCollectionBase.h"
 #include "EntityDiscussionThreadCollectionBase.h"
@@ -81,9 +82,13 @@ namespace Forum
                 };
             }
 
+            const auto& grantedPrivileges() const { return grantedPrivileges_; }
+                  auto& grantedPrivileges()       { return grantedPrivileges_; }
+
         private:
             DiscussionTag::NotifyChangeActionType notifyTagChange_;
             DiscussionCategory::NotifyChangeActionType notifyCategoryChange_;
+            Authorization::GrantedPrivilegeStore grantedPrivileges_;
         };
         typedef std::shared_ptr<EntityCollection> EntityCollectionRef;
 
