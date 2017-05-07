@@ -131,6 +131,9 @@ namespace Forum
         typedef time_t PrivilegeDefaultDurationIntType;
         typedef boost::optional<PrivilegeDefaultDurationIntType> PrivilegeDefaultDurationType;
 
+        static constexpr PrivilegeValueIntType MinPrivilegeValue = -32000;
+        static constexpr PrivilegeValueIntType MaxPrivilegeValue = 32000;
+
         template<typename T>
         T optionalOrZero(boost::optional<T> value)
         {

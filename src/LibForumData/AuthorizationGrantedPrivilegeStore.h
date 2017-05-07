@@ -50,20 +50,22 @@ namespace Forum
                                          ForumWidePrivilege privilege, 
                                          PrivilegeValueIntType value, time_t expiresAt);
 
-            bool isAllowed(const Entities::User& user, const Entities::DiscussionThreadMessage& message, 
-                           DiscussionThreadMessagePrivilege privilege, time_t now) const;
+            //isAllowed returns the privilege level with which access was granted or empty if not allowed
+
+            PrivilegeValueType isAllowed(const Entities::User& user, const Entities::DiscussionThreadMessage& message, 
+                                         DiscussionThreadMessagePrivilege privilege, time_t now) const;
             
-            bool isAllowed(const Entities::User& user, const Entities::DiscussionThread& thread,
-                           DiscussionThreadPrivilege privilege, time_t now) const;
+            PrivilegeValueType isAllowed(const Entities::User& user, const Entities::DiscussionThread& thread,
+                                         DiscussionThreadPrivilege privilege, time_t now) const;
             
-            bool isAllowed(const Entities::User& user, const Entities::DiscussionTag& tag,
-                           DiscussionTagPrivilege privilege, time_t now) const;
+            PrivilegeValueType isAllowed(const Entities::User& user, const Entities::DiscussionTag& tag,
+                                         DiscussionTagPrivilege privilege, time_t now) const;
             
-            bool isAllowed(const Entities::User& user, const Entities::DiscussionCategory& category,
-                           DiscussionCategoryPrivilege privilege, time_t now) const;
+            PrivilegeValueType isAllowed(const Entities::User& user, const Entities::DiscussionCategory& category,
+                                         DiscussionCategoryPrivilege privilege, time_t now) const;
             
-            bool isAllowed(const Entities::User& user, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
-                           ForumWidePrivilege privilege, time_t now) const;
+            PrivilegeValueType isAllowed(const Entities::User& user, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+                                         ForumWidePrivilege privilege, time_t now) const;
 
             void computeDiscussionThreadMessageVisibilityAllowed(DiscussionThreadMessagePrivilegeCheck* items,
                                                                  size_t nrOfItems, time_t now);

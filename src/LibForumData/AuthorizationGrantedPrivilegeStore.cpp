@@ -69,8 +69,16 @@ void GrantedPrivilegeStore::updateDiscussionThreadMessagePrivilege(const Entitie
     updateDiscussionThreadMessagePrivilege(user.id(), {}, now, privilege, positiveValue, negativeValue);
 }
 
-bool GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionThreadMessage& message, 
-                                      DiscussionThreadMessagePrivilege privilege, time_t now) const
+static PrivilegeValueType isAllowed(PrivilegeValueType positive, PrivilegeValueType negative, PrivilegeValueType required)
+{
+    auto effectivePrivilegeValue = getEffectivePrivilegeValue(positive, negative);
+    auto requiredPrivilegeValue = optionalOrZero(required);
+
+    return (effectivePrivilegeValue >= requiredPrivilegeValue) ? effectivePrivilegeValue : PrivilegeValueType{};
+}
+
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionThreadMessage& message,
+                                                    DiscussionThreadMessagePrivilege privilege, time_t now) const
 {
     PrivilegeValueType positive, negative;
     updateDiscussionThreadMessagePrivilege(user.id(), message.id(), now, privilege, positive, negative);
@@ -80,14 +88,11 @@ bool GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionThreadMe
         updateDiscussionThreadMessagePrivilege(user, thread, now, privilege, positive, negative);
     });
 
-    auto effectivePrivilegeValue = getEffectivePrivilegeValue(positive, negative);
-    auto requiredPrivilegeValue = optionalOrZero(message.getDiscussionThreadMessagePrivilege(privilege));
-
-    return effectivePrivilegeValue > requiredPrivilegeValue;
+    return ::isAllowed(positive, negative, message.getDiscussionThreadMessagePrivilege(privilege));
 }
 
-bool GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionThread& thread, 
-                                      DiscussionThreadPrivilege privilege, time_t now) const
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionThread& thread,
+                                                    DiscussionThreadPrivilege privilege, time_t now) const
 {
     PrivilegeValueType positive, negative;
     updateDiscussionThreadPrivilege(user.id(), thread.id(), now, privilege, positive, negative);
@@ -102,51 +107,39 @@ bool GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionThread& 
 
     updateDiscussionThreadPrivilege(user.id(), {}, now, privilege, positive, negative);
 
-    auto effectivePrivilegeValue = getEffectivePrivilegeValue(positive, negative);
-    auto requiredPrivilegeValue = optionalOrZero(thread.getDiscussionThreadPrivilege(privilege));
-
-    return effectivePrivilegeValue > requiredPrivilegeValue;
+    return ::isAllowed(positive, negative, thread.getDiscussionThreadPrivilege(privilege));
 }
 
-bool GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionTag& tag, 
-                                      DiscussionTagPrivilege privilege, time_t now) const
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionTag& tag,
+                                                    DiscussionTagPrivilege privilege, time_t now) const
 {
     PrivilegeValueType positive, negative;
     updateDiscussionTagPrivilege(user.id(), tag.id(), now, privilege, positive, negative);
 
     updateDiscussionTagPrivilege(user.id(), {}, now, privilege, positive, negative);
 
-    auto effectivePrivilegeValue = getEffectivePrivilegeValue(positive, negative);
-    auto requiredPrivilegeValue = optionalOrZero(tag.getDiscussionTagPrivilege(privilege));
-
-    return effectivePrivilegeValue > requiredPrivilegeValue;
+    return ::isAllowed(positive, negative, tag.getDiscussionTagPrivilege(privilege));
 }
 
-bool GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionCategory& category, 
-                                      DiscussionCategoryPrivilege privilege, time_t now) const
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionCategory& category,
+                                                    DiscussionCategoryPrivilege privilege, time_t now) const
 {
     PrivilegeValueType positive, negative;
     updateDiscussionCategoryPrivilege(user.id(), category.id(), now, privilege, positive, negative);
 
     updateDiscussionCategoryPrivilege(user.id(), {}, now, privilege, positive, negative);
 
-    auto effectivePrivilegeValue = getEffectivePrivilegeValue(positive, negative);
-    auto requiredPrivilegeValue = optionalOrZero(category.getDiscussionCategoryPrivilege(privilege));
-
-    return effectivePrivilegeValue > requiredPrivilegeValue;
+    return ::isAllowed(positive, negative, category.getDiscussionCategoryPrivilege(privilege));
 }
 
-bool GrantedPrivilegeStore::isAllowed(const User& user, const ForumWidePrivilegeStore& forumWidePrivilegeStore, 
-                                      ForumWidePrivilege privilege, time_t now) const
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+                                                    ForumWidePrivilege privilege, time_t now) const
 {
     PrivilegeValueType positive, negative;
 
     updateForumWidePrivilege(user.id(), {}, now, privilege, positive, negative);
 
-    auto effectivePrivilegeValue = getEffectivePrivilegeValue(positive, negative);
-    auto requiredPrivilegeValue = optionalOrZero(forumWidePrivilegeStore.getForumWidePrivilege(privilege));
-
-    return effectivePrivilegeValue > requiredPrivilegeValue;
+    return ::isAllowed(positive, negative, forumWidePrivilegeStore.getForumWidePrivilege(privilege));
 }
 
 void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(DiscussionThreadMessagePrivilegeCheck* items, 
@@ -206,11 +199,8 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
             auto positive = maximumPrivilegeValue(messageLevelPositive, threadLevelPositive);
             auto negative = minimumPrivilegeValue(messageLevelNegative, threadLevelNegative);
 
-            auto effectivePrivilegeValue = getEffectivePrivilegeValue(positive, negative);
-            auto requiredPrivilegeValue = optionalOrZero(
-                    item.message.getDiscussionThreadMessagePrivilege(privilege, threadLevelRequired));
-
-            *boolToUpdate = effectivePrivilegeValue > requiredPrivilegeValue;
+            *boolToUpdate = static_cast<bool>(
+                    ::isAllowed(positive, negative, item.message.getDiscussionThreadMessagePrivilege(privilege, threadLevelRequired)));
         }
     }
 }
