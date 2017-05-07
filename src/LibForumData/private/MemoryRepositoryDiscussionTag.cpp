@@ -27,18 +27,15 @@ MemoryRepositoryDiscussionTag::MemoryRepositoryDiscussionTag(MemoryStoreRef stor
 
 StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, RetrieveDiscussionTagsBy by) const
 {
-    StatusWriter status(output, StatusCode::OK);    
+    StatusWriter status(output);    
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
     {
         auto& currentUser = performedBy.get(collection, store());
 
-        authorizationStatus = authorization_->getDiscussionTags(currentUser);
-        if (AuthorizationStatus::OK != authorizationStatus)
+        if ( ! (status = authorization_->getDiscussionTags(currentUser)))
         {
-            status = authorizationStatus;
             return;
         }
 
@@ -83,7 +80,7 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
 
 StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
 
     auto config = getGlobalConfig();
     auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
@@ -96,7 +93,6 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -111,10 +107,8 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
                                return;
                            }
                  
-                           authorizationStatus = authorization_->addNewDiscussionTag(*currentUser, name);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->addNewDiscussionTag(*currentUser, name)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -140,7 +134,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
 StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& id, StringView newName,
                                                                   OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! id )
     {
         return status = StatusCode::INVALID_PARAMETERS;
@@ -156,7 +150,6 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
         return status = validationCode;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -179,10 +172,8 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
                                return;
                            }
                                   
-                           authorizationStatus = authorization_->changeDiscussionTagName(*currentUser, **it, newName);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->changeDiscussionTagName(*currentUser, **it, newName)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -200,7 +191,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
 StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType& id, StringView blob,
                                                                     OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! id )
     {
         return status = StatusCode::INVALID_PARAMETERS;
@@ -210,7 +201,6 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
         return status = StatusCode::VALUE_TOO_LONG;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -224,10 +214,8 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
                                return;
                            }
 
-                           authorizationStatus = authorization_->changeDiscussionTagUiBlob(*currentUser, **it, blob);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->changeDiscussionTagUiBlob(*currentUser, **it, blob)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -243,14 +231,13 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
 
 StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! id)
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -264,10 +251,8 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, 
                                return;
                            }
                            
-                           authorizationStatus = authorization_->deleteDiscussionTag(*currentUser, **it);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->deleteDiscussionTag(*currentUser, **it)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -282,14 +267,13 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, 
 StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType& tagId, const IdType& threadId, 
                                                                    OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! tagId || ! threadId)
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -316,10 +300,8 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
                            auto& threadRef = *threadIt;
                            auto& thread = **threadIt;
                  
-                           authorizationStatus = authorization_->addDiscussionTagToThread(*currentUser, tag, thread);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->addDiscussionTagToThread(*currentUser, tag, thread)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -343,14 +325,13 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
 StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const IdType& tagId, const IdType& threadId, 
                                                                         OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! tagId || ! threadId)
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -376,10 +357,8 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const Id
                            auto& tag = **tagIt;
                            auto& thread = **threadIt;
                  
-                           authorizationStatus = authorization_->removeDiscussionTagFromThread(*currentUser, tag, thread);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->removeDiscussionTagFromThread(*currentUser, tag, thread)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
                            
@@ -401,7 +380,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const Id
 StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& fromId, const IdType& intoId, 
                                                               OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! fromId || ! intoId)
     {
         return status = StatusCode::INVALID_PARAMETERS;
@@ -412,7 +391,6 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& from
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -436,10 +414,8 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& from
                            auto& tagIntoRef = *itInto;
                            auto& tagInto = **itInto;
                    
-                           authorizationStatus = authorization_->mergeDiscussionTags(*currentUser, tagFrom, tagInto);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->mergeDiscussionTags(*currentUser, tagFrom, tagInto)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 

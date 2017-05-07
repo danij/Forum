@@ -4,6 +4,8 @@
 #include "Repository.h"
 #include "Authorization.h"
 
+#include <cassert>
+
 namespace Forum
 {
     namespace Helpers
@@ -98,8 +100,8 @@ namespace Forum
             /**
              * Initializes the helper with the stream to write to and the default status code
              */
-            StatusWriter(Forum::Repository::OutStream& output, Repository::StatusCode defaultCode) :
-                    output_(output), statusCode_(defaultCode), enabled_(true)
+            StatusWriter(Repository::OutStream& output) :
+                    output_(output), statusCode_(Repository::StatusCode::UNAUTHORIZED), enabled_(true)
             {}
 
             ~StatusWriter()
@@ -119,6 +121,7 @@ namespace Forum
              */
             void disable()
             {
+                assert(*this);
                 enabled_ = false;
             }
 
@@ -142,6 +145,11 @@ namespace Forum
                     statusCode_ = Repository::StatusCode::OK;
                 }
                 return *this;
+            }
+
+            operator bool() const 
+            {
+                return Repository::StatusCode::OK == statusCode_;
             }
 
             operator Repository::StatusCode() const

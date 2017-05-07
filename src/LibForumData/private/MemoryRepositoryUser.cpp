@@ -72,19 +72,16 @@ MemoryRepositoryUser::MemoryRepositoryUser(MemoryStoreRef store, UserAuthorizati
 
 StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by) const
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
     {
         auto& currentUser = performedBy.get(collection, store());
 
-        authorizationStatus = authorization_->getUsers(currentUser);
-        if (AuthorizationStatus::OK != authorizationStatus)
+        if ( ! (status = authorization_->getUsers(currentUser)))
         {
-            status = authorizationStatus;
             return;
         }
 
@@ -124,10 +121,9 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
 
 StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output) const
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
                       {
@@ -143,10 +139,8 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
 
                           auto& user = **it;
 
-                          authorizationStatus = authorization_->getUserById(currentUser, user);
-                          if (AuthorizationStatus::OK != authorizationStatus)
+                          if ( ! (status = authorization_->getUserById(currentUser, user)))
                           {
-                              status = authorizationStatus;
                               return;
                           }
 
@@ -160,10 +154,9 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
 
 StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& output) const
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     if (countUTF8Characters(name) > getGlobalConfig()->user.maxNameLength)
     {
@@ -182,10 +175,8 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                               return;
                           }
 
-                          authorizationStatus = authorization_->getUserByName(currentUser, **it);
-                          if (AuthorizationStatus::OK != authorizationStatus)
+                          if ( ! (status = authorization_->getUserByName(currentUser, **it)))
                           {
-                              status = authorizationStatus;
                               return;
                           }
 
@@ -199,7 +190,7 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
 
 StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
 
     if (auth.size() < 1)
     {
@@ -216,7 +207,6 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -240,10 +230,8 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                return;
                            }
 
-                           authorizationStatus = authorization_->addNewUser(*currentUser, name);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->addNewUser(*currentUser, name)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -269,7 +257,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
 
 StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView newName, OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     auto config = getGlobalConfig();
     auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
                                          config->user.minNameLength, config->user.maxNameLength,
@@ -280,7 +268,6 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView new
         return status = validationCode;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -294,10 +281,8 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView new
                                return;
                            }
 
-                           authorizationStatus = authorization_->changeUserName(*currentUser, **it, newName);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->changeUserName(*currentUser, **it, newName)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -320,7 +305,7 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView new
 
 StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView newInfo, OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
 
     auto config = getGlobalConfig();
     auto validationCode = validateString(newInfo, INVALID_PARAMETERS_FOR_EMPTY_STRING,
@@ -332,7 +317,6 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView new
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -346,10 +330,8 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView new
                                return;
                            }
 
-                           authorizationStatus = authorization_->changeUserInfo(*currentUser, **it, newInfo);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->changeUserInfo(*currentUser, **it, newInfo)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -365,13 +347,12 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView new
 
 StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! id)
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -385,10 +366,8 @@ StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
                                return;
                            }
 
-                           authorizationStatus = authorization_->deleteUser(*currentUser, **it);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->deleteUser(*currentUser, **it)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 

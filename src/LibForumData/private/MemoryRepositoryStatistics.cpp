@@ -20,19 +20,16 @@ MemoryRepositoryStatistics::MemoryRepositoryStatistics(MemoryStoreRef store, Sta
 
 StatusCode MemoryRepositoryStatistics::getEntitiesCount(OutStream& output) const
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const Entities::EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, store());
                       
-                          authorizationStatus = authorization_->getEntitiesCount(currentUser);
-                          if (AuthorizationStatus::OK != authorizationStatus)
+                          if ( ! (status = authorization_->getEntitiesCount(currentUser)))
                           {
-                              status = authorizationStatus;
                               return;
                           }
                       

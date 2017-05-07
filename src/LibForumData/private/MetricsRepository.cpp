@@ -19,19 +19,15 @@ MetricsRepository::MetricsRepository(MemoryStoreRef store, MetricsAuthorizationR
 
 StatusCode MetricsRepository::getVersion(OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
-
+    StatusWriter status(output);
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const Entities::EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, store());
                       
-                          authorizationStatus = authorization_->getVersion(currentUser);
-                          if (AuthorizationStatus::OK != authorizationStatus)
+                          if ( ! (status = authorization_->getVersion(currentUser)))
                           {
-                              status = authorizationStatus;
                               return;
                           }
                       

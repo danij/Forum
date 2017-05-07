@@ -28,18 +28,15 @@ MemoryRepositoryDiscussionCategory::MemoryRepositoryDiscussionCategory(MemorySto
 StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream& output,
                                                                        RetrieveDiscussionCategoriesBy by) const
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
     {
         auto& currentUser = performedBy.get(collection, store());
 
-        authorizationStatus = authorization_->getDiscussionCategories(currentUser);
-        if (AuthorizationStatus::OK != authorizationStatus)
+        if ( ! (status = authorization_->getDiscussionCategories(currentUser)))
         {
-            status = authorizationStatus;
             return;
         }
 
@@ -83,19 +80,16 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
 
 StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(OutStream& output) const
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, store());
 
-                          authorizationStatus = authorization_->getDiscussionCategoriesFromRoot(currentUser);
-                          if (AuthorizationStatus::OK != authorizationStatus)
+                          if ( ! (status = authorization_->getDiscussionCategoriesFromRoot(currentUser)))
                           {
-                              status = authorizationStatus;
                               return;
                           }
 
@@ -121,13 +115,12 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
 
 StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const IdType& id, OutStream& output) const
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! id)
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
                       {
@@ -141,10 +134,8 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const I
                               return;
                           }
 
-                          authorizationStatus = authorization_->getDiscussionCategoryById(currentUser, **it);
-                          if (AuthorizationStatus::OK != authorizationStatus)
+                          if ( ! (status = authorization_->getDiscussionCategoryById(currentUser, **it)))
                           {
-                              status = authorizationStatus;
                               return;
                           }
 
@@ -161,7 +152,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const I
 StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringView name, const IdType& parentId,
                                                                         OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
 
     auto config = getGlobalConfig();
     auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
@@ -174,7 +165,6 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -192,10 +182,8 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                            auto& indexById = collection.categories().get<EntityCollection::DiscussionCategoryCollectionById>();
                            auto parentIt = indexById.find(parentId);
 
-                           authorizationStatus = authorization_->addNewDiscussionCategory(*currentUser, name, *parentIt);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->addNewDiscussionCategory(*currentUser, name, *parentIt)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
                  
@@ -236,7 +224,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(const IdType& id, StringView newName, 
                                                                             OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! id )
     {
         return status = StatusCode::INVALID_PARAMETERS;
@@ -252,7 +240,6 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
         return status = validationCode;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -274,11 +261,9 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
                                status = StatusCode::ALREADY_EXISTS;
                                return;
                            }
-                                  
-                           authorizationStatus = authorization_->changeDiscussionCategoryName(*currentUser, **it, newName);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           
+                           if ( ! (status = authorization_->changeDiscussionCategoryName(*currentUser, **it, newName)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -297,7 +282,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
                                                                                    StringView newDescription,
                                                                                    OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! id )
     {
         return status = StatusCode::INVALID_PARAMETERS;
@@ -308,7 +293,6 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
         return status = StatusCode::VALUE_TOO_LONG;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -322,11 +306,8 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
                                return;
                            }
 
-                           authorizationStatus = authorization_->changeDiscussionCategoryDescription(*currentUser, **it,
-                                                                                                     newDescription);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->changeDiscussionCategoryDescription(*currentUser, **it, newDescription)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -344,13 +325,12 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(const IdType& id, const IdType& newParentId, 
                                                                               OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if (( ! id) || (id == newParentId))
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -392,10 +372,8 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(co
                                currentParentId = currentParent->id();
                            }
                            
-                           authorizationStatus = authorization_->changeDiscussionCategoryParent(*currentUser, **it, newParentRef);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->changeDiscussionCategoryParent(*currentUser, **it, newParentRef)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -436,7 +414,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
                                                                                     int_fast16_t newDisplayOrder,
                                                                                     OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! id )
     {
         return status = StatusCode::INVALID_PARAMETERS;
@@ -447,7 +425,6 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
         return status = StatusCode::INVALID_PARAMETERS;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -461,11 +438,8 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
                                return;
                            }
                  
-                           authorizationStatus = authorization_->changeDiscussionCategoryDisplayOrder(*currentUser, **it, 
-                                                                                                      newDisplayOrder);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->changeDiscussionCategoryDisplayOrder(*currentUser, **it, newDisplayOrder)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -484,14 +458,13 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
 
 StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(const IdType& id, OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! id)
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -505,10 +478,8 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(const Id
                                return;
                            }
 
-                           authorizationStatus = authorization_->deleteDiscussionCategory(*currentUser, **it);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->deleteDiscussionCategory(*currentUser, **it)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -523,14 +494,13 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(const Id
 StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(const IdType& tagId, const IdType& categoryId,
                                                                           OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! tagId || ! categoryId)
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -556,11 +526,9 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(const 
                            auto& tag = **tagIt;
                            auto& categoryRef = *categoryIt;
                            auto& category = **categoryIt;
-                 
-                           authorizationStatus = authorization_->addDiscussionTagToCategory(*currentUser, tag, category);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           
+                           if ( ! (status = authorization_->addDiscussionTagToCategory(*currentUser, tag, category)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
@@ -589,14 +557,13 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(c
                                                                                const IdType& categoryId, 
                                                                                OutStream& output)
 {
-    StatusWriter status(output, StatusCode::OK);
+    StatusWriter status(output);
     if ( ! tagId || ! categoryId)
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    AuthorizationStatus authorizationStatus;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -623,10 +590,8 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(c
                            auto& categoryRef = *categoryIt;
                            auto& category = **categoryIt;
                            
-                           authorizationStatus = authorization_->removeDiscussionTagFromCategory(*currentUser, tag, category);
-                           if (AuthorizationStatus::OK != authorizationStatus)
+                           if ( ! (status = authorization_->removeDiscussionTagFromCategory(*currentUser, tag, category)))
                            {
-                               status = authorizationStatus;
                                return;
                            }
 
