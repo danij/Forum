@@ -19,6 +19,7 @@ namespace Forum
             VIEW,
             VIEW_CREATOR_USER,
             VIEW_IP_ADDRESS,
+            VIEW_VOTES,
             UP_VOTE,
             DOWN_VOTE,
             RESET_VOTE,
@@ -136,12 +137,36 @@ namespace Forum
             return value ? *value : 0;
         }
 
+        inline PrivilegeValueType minimumPrivilegeValue(PrivilegeValueIntType first, PrivilegeValueIntType second)
+        {
+            return std::min(first, second);
+        }
+
         inline PrivilegeValueType minimumPrivilegeValue(PrivilegeValueType first, PrivilegeValueType second)
         {
             if ( ! first) return second;
             if ( ! second) return first;
 
-            return std::min(*first, *second);
+            return minimumPrivilegeValue(*first, *second);
+        }
+
+        inline PrivilegeValueType minimumPrivilegeValue(PrivilegeValueIntType first, PrivilegeValueType second)
+        {
+            if ( ! second) return first;
+
+            return minimumPrivilegeValue(first, *second);
+        }
+
+        inline PrivilegeValueType minimumPrivilegeValue(PrivilegeValueType first, PrivilegeValueIntType second)
+        {
+            if ( ! first) return second;
+
+            return minimumPrivilegeValue(*first, second);
+        }
+
+        inline PrivilegeValueType maximumPrivilegeValue(PrivilegeValueIntType first, PrivilegeValueIntType second)
+        {
+            return std::max(first, second);
         }
 
         inline PrivilegeValueType maximumPrivilegeValue(PrivilegeValueType first, PrivilegeValueType second)
@@ -149,8 +174,23 @@ namespace Forum
             if ( ! first) return second;
             if ( ! second) return first;
 
-            return std::max(*first, *second);
+            return maximumPrivilegeValue(*first, *second);
         }
+
+        inline PrivilegeValueType maximumPrivilegeValue(PrivilegeValueIntType first, PrivilegeValueType second)
+        {
+            if ( ! second) return first;
+
+            return maximumPrivilegeValue(first, *second);
+        }
+
+        inline PrivilegeValueType maximumPrivilegeValue(PrivilegeValueType first, PrivilegeValueIntType second)
+        {
+            if ( ! first) return second;
+
+            return maximumPrivilegeValue(*first, second);
+        }
+
 
         inline PrivilegeDefaultDurationType minimumPrivilegeDefaultDuration(PrivilegeDefaultDurationType first,
             PrivilegeDefaultDurationType second)

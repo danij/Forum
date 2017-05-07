@@ -46,12 +46,21 @@ namespace Forum
 
             Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(Authorization::DiscussionThreadMessagePrivilege privilege) const override
             {
-                auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
-                executeActionWithParentThreadIfAvailable([&result, privilege](auto& parentThread)
+                Authorization::PrivilegeValueType discussionThreadLevelValue;
+                executeActionWithParentThreadIfAvailable([&discussionThreadLevelValue, privilege](auto& parentThread)
                 {
-                    result = Authorization::minimumPrivilegeValue(result, parentThread.getDiscussionThreadMessagePrivilege(privilege));
+                    discussionThreadLevelValue = parentThread.getDiscussionThreadMessagePrivilege(privilege);
                 });
-                return result;
+
+                return getDiscussionThreadMessagePrivilege(privilege, discussionThreadLevelValue);
+            }
+
+            Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(
+                    Authorization::DiscussionThreadMessagePrivilege privilege,
+                    Authorization::PrivilegeValueType discussionThreadLevelValue) const
+            {
+                auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
+                return Authorization::minimumPrivilegeValue(result, discussionThreadLevelValue);
             }
 
             template<typename TAction>
