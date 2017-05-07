@@ -1,0 +1,28 @@
+@startuml
+
+node DiscussionThreadMessage [
+   Discussion Thread Message
+]
+
+node DiscussionThread [
+   Discussion Thread
+]
+
+node DiscussionTag [
+   Discussion Tag
+]
+
+node DiscussionCategory [
+   Discussion Category
+]
+
+node ForumWide [
+   Forum Wide
+]
+
+DiscussionThreadMessage <-up- DiscussionThread
+DiscussionThread <-up- DiscussionTag
+DiscussionTag <-up- ForumWide
+DiscussionCategory <-up- ForumWide
+
+@enduml

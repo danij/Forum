@@ -153,6 +153,35 @@ Each BLOB is prefixed by the following information:
 | CRC32 Hash   | 4 bytes      | hash of blob bytes without padding |
 | Blob         | `size` bytes | padded to a multiple of 8 bytes    |
 
+## Authorization
+
+The forum backend implements a hierarchical authorization scheme that allows fine-grained control over any action that
+ a user might perform.
+ 
+A set of privileges has been defined with different granularity:
+   
+| Target         | Privilege List |
+| -------------- | -------------- |
+| Thread Message | `view`, `view_creator_user`, `view_ip_address`, `view_votes`, `up_vote`, `down_vote`, `reset_vote`, `add_comment`, `set_comment_to_solved`, `get_message_comments`, `change_content`, `delete`, `move_discussion_message`, `adjust_privilege` |
+| Thread         | `view`, `subscribe_to_thread`, `unsubscribe_from_thread`, `add_message`, `change_name`, `add_tag`, `remove_tag`, `delete`, `merge`, `adjust_privilege` |
+| Tag            | `view`, `get_discussion_threads`, `change_name`, `change_uiblob`, `delete`, `merge`, `adjust_privilege` |
+| Category       | `view`, `change_name`, `change_description`, `change_parent`, `change_displayorder`, `add_tag`, `remove_tag`, `delete`, `adjust_privilege` |
+| Forum Wide     | `login`, `get_entities_count`, `list_users`, `get_user_info`, `get_discussion_threads_of_user`, `get_discussion_thread_messages_of_user`, `get_subscribed_discussion_threads_of_user`, `get_all_discussion_categories`, `get_discussion_categories_from_root`, `get_all_discussion_tags`, `get_all_discussion_threads`, `get_all_message_comments`, `get_message_comments_of_user`, `add_discussion_category`, `add_discussion_tag`, `add_discussion_thread`, `change_any_user_name`, `change_any_user_info`, `delete_any_user`, `adjust_forum_wide_privilege` |
+
+Each user can be assigned a numeric value `[-32000 .. 32000]` for a privilege. Privileges are also configured a required
+ value. A comparison between the value associated with the user and the required value is performed in order to decide
+ whether the user is allowed the specific privilege.
+  
+Privileges are hierarchical, e.g. one can control discussion thread message related privileges for a whole thread at once,
+ or even for all threads that are assigned a specific tag. If a required value is specified at multiple levels, the 
+ minimum value is used.
+  
+![Privilege Inheritance](privileges.png)
+
+Users can be granted privileges for a limited amount of time. The value granted can also be positive (grant) or
+ negative (suppress). The privilege is checked using the following formula 
+ `MAX(positive value granted to user) - MIN(negative value granted to user) ≥ MIN(required value for entity)`.
+
 ## Security
 
 The forum backend applications are designed to run with minimal privileges. 
