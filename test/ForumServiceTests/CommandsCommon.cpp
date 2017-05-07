@@ -1,5 +1,6 @@
 #include "CommandsCommon.h"
 
+#include "AllowAllAuthorization.h"
 #include "MemoryRepositoryCommon.h"
 #include "MemoryRepositoryUser.h"
 #include "MemoryRepositoryDiscussionThread.h"

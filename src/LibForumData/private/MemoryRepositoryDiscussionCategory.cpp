@@ -28,11 +28,20 @@ MemoryRepositoryDiscussionCategory::MemoryRepositoryDiscussionCategory(MemorySto
 StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream& output,
                                                                        RetrieveDiscussionCategoriesBy by) const
 {
+    StatusWriter status(output, StatusCode::OK);
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
     {
         auto& currentUser = performedBy.get(collection, store());
+
+        authorizationStatus = authorization_->getDiscussionCategories(currentUser);
+        if (AuthorizationStatus::OK != authorizationStatus)
+        {
+            status = authorizationStatus;
+            return;
+        }
 
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
         {
@@ -41,10 +50,12 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
             case RetrieveDiscussionCategoriesBy::Name: 
                 writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByName().begin(), 
                                                                                collection.categoriesByName().end()));
+                status.disable();
                 break;
             case RetrieveDiscussionCategoriesBy::MessageCount: 
                 writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByMessageCount().begin(), 
                                                                                collection.categoriesByMessageCount().end()));
+                status.disable();
                 break;
             }
         }
@@ -55,17 +66,19 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
             case RetrieveDiscussionCategoriesBy::Name: 
                 writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByName().rbegin(), 
                                                                                collection.categoriesByName().rend()));
+                status.disable();
                 break;
             case RetrieveDiscussionCategoriesBy::MessageCount: 
                 writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByMessageCount().rbegin(), 
                                                                                collection.categoriesByMessageCount().rend()));
+                status.disable();
                 break;
             }
         }
 
         readEvents().onGetDiscussionCategories(createObserverContext(currentUser));
     });
-    return StatusCode::OK;
+    return status;
 }
 
 StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(OutStream& output) const
@@ -80,9 +93,9 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
                           auto& currentUser = performedBy.get(collection, store());
 
                           authorizationStatus = authorization_->getDiscussionCategoriesFromRoot(currentUser);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
 
@@ -129,9 +142,9 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const I
                           }
 
                           authorizationStatus = authorization_->getDiscussionCategoryById(currentUser, **it);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
 
@@ -180,9 +193,9 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                            auto parentIt = indexById.find(parentId);
 
                            authorizationStatus = authorization_->addNewDiscussionCategory(*currentUser, name, *parentIt);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
                  
@@ -263,9 +276,9 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
                            }
                                   
                            authorizationStatus = authorization_->changeDiscussionCategoryName(*currentUser, **it, newName);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -311,9 +324,9 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
 
                            authorizationStatus = authorization_->changeDiscussionCategoryDescription(*currentUser, **it,
                                                                                                      newDescription);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -380,9 +393,9 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(co
                            }
                            
                            authorizationStatus = authorization_->changeDiscussionCategoryParent(*currentUser, **it, newParentRef);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -450,9 +463,9 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
                  
                            authorizationStatus = authorization_->changeDiscussionCategoryDisplayOrder(*currentUser, **it, 
                                                                                                       newDisplayOrder);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -493,9 +506,9 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(const Id
                            }
 
                            authorizationStatus = authorization_->deleteDiscussionCategory(*currentUser, **it);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -545,9 +558,9 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(const 
                            auto& category = **categoryIt;
                  
                            authorizationStatus = authorization_->addDiscussionTagToCategory(*currentUser, tag, category);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -611,9 +624,9 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(c
                            auto& category = **categoryIt;
                            
                            authorizationStatus = authorization_->removeDiscussionTagFromCategory(*currentUser, tag, category);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 

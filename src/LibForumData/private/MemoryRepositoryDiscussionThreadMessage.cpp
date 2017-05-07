@@ -50,9 +50,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
         }
 
         authorizationStatus = authorization_->getDiscussionThreadMessagesOfUserByCreated(currentUser, **it);
-        if (AuthorizationStatusCode::OK != authorizationStatus.code)
+        if (AuthorizationStatus::OK != authorizationStatus)
         {
-            status = authorizationStatus.code;
+            status = authorizationStatus;
             return;
         }
 
@@ -111,9 +111,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                  
                            authorizationStatus = authorization_->addNewDiscussionMessageInThread(*currentUser, 
                                                                                                  **threadIt, content);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -238,9 +238,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(cons
                            }
 
                            authorizationStatus = authorization_->deleteDiscussionMessage(*currentUser, **it);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -299,9 +299,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
                            authorizationStatus = authorization_->changeDiscussionThreadMessageContent(*currentUser, 
                                                                                                       **it, newContent, 
                                                                                                       changeReason);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -370,9 +370,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
                            
                            authorizationStatus = authorization_->moveDiscussionThreadMessage(*currentUser, *messageRef, 
                                                                                              *threadIntoRef);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
                      
@@ -483,9 +483,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
                                authorizationStatus = authorization_->downVoteDiscussionThreadMessage(*currentUser, 
                                                                                                      *messageRef);
                            }
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -571,9 +571,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
                            }
 
                            authorizationStatus = authorization_->resetVoteDiscussionThreadMessage(*currentUser, **it);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
                
@@ -611,9 +611,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream
                           auto& currentUser = performedBy.get(collection, store());
 
                           authorizationStatus = authorization_->getMessageComments(currentUser);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
 
@@ -650,9 +650,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
                       
                           authorizationStatus = authorization_->getMessageCommentsOfDiscussionThreadMessage(currentUser, 
                                                                                                             message);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
 
@@ -690,9 +690,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
                           auto& user = **it;
                   
                           authorizationStatus = authorization_->getMessageCommentsOfUser(currentUser, user);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
 
@@ -742,9 +742,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
                            authorizationStatus = authorization_->addCommentToDiscussionThreadMessage(*currentUser, 
                                                                                                      **messageIt,
                                                                                                      content);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -807,9 +807,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(co
                            auto& comment = **it;
                  
                            authorizationStatus = authorization_->setMessageCommentToSolved(*currentUser, comment);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 

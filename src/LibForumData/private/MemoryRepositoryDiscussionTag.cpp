@@ -27,11 +27,20 @@ MemoryRepositoryDiscussionTag::MemoryRepositoryDiscussionTag(MemoryStoreRef stor
 
 StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, RetrieveDiscussionTagsBy by) const
 {
+    StatusWriter status(output, StatusCode::OK);    
     PerformedByWithLastSeenUpdateGuard performedBy;
+    AuthorizationStatus authorizationStatus;
 
     collection().read([&](const EntityCollection& collection)
     {
         auto& currentUser = performedBy.get(collection, store());
+
+        authorizationStatus = authorization_->getDiscussionTags(currentUser);
+        if (AuthorizationStatus::OK != authorizationStatus)
+        {
+            status = authorizationStatus;
+            return;
+        }
 
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
         {
@@ -40,10 +49,12 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
             case RetrieveDiscussionTagsBy::Name: 
                 writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByName().begin(), 
                                                                          collection.tagsByName().end()));
+                status.disable();
                 break;
             case RetrieveDiscussionTagsBy::MessageCount: 
                 writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByMessageCount().begin(),
                                                                          collection.tagsByMessageCount().end()));
+                status.disable();
                 break;
             }
         }
@@ -54,17 +65,19 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
             case RetrieveDiscussionTagsBy::Name: 
                 writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByName().rbegin(), 
                                                                          collection.tagsByName().rend()));
+                status.disable();
                 break;
             case RetrieveDiscussionTagsBy::MessageCount: 
                 writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByMessageCount().rbegin(),
                                                                          collection.tagsByMessageCount().rend()));
+                status.disable();
                 break;
             }
         }
 
         readEvents().onGetDiscussionTags(createObserverContext(currentUser));
     });
-    return StatusCode::OK;
+    return status;
 }
 
 
@@ -99,9 +112,9 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
                            }
                  
                            authorizationStatus = authorization_->addNewDiscussionTag(*currentUser, name);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -167,9 +180,9 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
                            }
                                   
                            authorizationStatus = authorization_->changeDiscussionTagName(*currentUser, **it, newName);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -212,9 +225,9 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
                            }
 
                            authorizationStatus = authorization_->changeDiscussionTagUiBlob(*currentUser, **it, blob);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -252,9 +265,9 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, 
                            }
                            
                            authorizationStatus = authorization_->deleteDiscussionTag(*currentUser, **it);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -304,9 +317,9 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
                            auto& thread = **threadIt;
                  
                            authorizationStatus = authorization_->addDiscussionTagToThread(*currentUser, tag, thread);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -364,9 +377,9 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const Id
                            auto& thread = **threadIt;
                  
                            authorizationStatus = authorization_->removeDiscussionTagFromThread(*currentUser, tag, thread);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
                            
@@ -424,9 +437,9 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& from
                            auto& tagInto = **itInto;
                    
                            authorizationStatus = authorization_->mergeDiscussionTags(*currentUser, tagFrom, tagInto);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 

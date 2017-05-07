@@ -128,14 +128,14 @@ namespace Forum
                 return *this;
             }
 
-            StatusWriter& operator=(Authorization::AuthorizationStatusCode newCode)
+            StatusWriter& operator=(Authorization::AuthorizationStatus newCode)
             {
                 switch (newCode)
                 {
-                case Authorization::AuthorizationStatusCode::NOT_ALLOWED:
+                case Authorization::AuthorizationStatus::NOT_ALLOWED:
                     statusCode_ = Repository::StatusCode::UNAUTHORIZED;
                     break;
-                case Authorization::AuthorizationStatusCode::THROTTLED:
+                case Authorization::AuthorizationStatus::THROTTLED:
                     statusCode_ = Repository::StatusCode::THROTTLED;
                     break;
                 default:

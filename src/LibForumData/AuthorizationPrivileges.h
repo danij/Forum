@@ -28,7 +28,7 @@ namespace Forum
             GET_MESSAGE_COMMENTS,
             CHANGE_CONTENT,
             DELETE,
-            MOVE_DISCUSSION_MESSAGE,
+            MOVE,
 
             ADJUST_PRIVILEGE,
 
@@ -47,8 +47,8 @@ namespace Forum
         enum class DiscussionThreadPrivilege : EnumIntType
         {
             VIEW,
-            SUBSCRIBE_TO_THREAD,
-            UNSUBSCRIBE_FROM_THREAD,
+            SUBSCRIBE,
+            UNSUBSCRIBE,
             ADD_MESSAGE,
             CHANGE_NAME,
             ADD_TAG,
@@ -78,6 +78,7 @@ namespace Forum
         enum class DiscussionCategoryPrivilege : EnumIntType
         {
             VIEW,
+            GET_DISCUSSION_THREADS,
             CHANGE_NAME,
             CHANGE_DESCRIPTION,
             CHANGE_PARENT,
@@ -93,9 +94,11 @@ namespace Forum
 
         enum class ForumWidePrivilege : EnumIntType
         {
+            ADD_USER,
             LOGIN,
             GET_ENTITIES_COUNT,
-            LIST_USERS,
+            GET_VERSION,
+            GET_ALL_USERS,
             GET_USER_INFO,
             GET_DISCUSSION_THREADS_OF_USER,
             GET_DISCUSSION_THREAD_MESSAGES_OF_USER,

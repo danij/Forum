@@ -82,9 +82,9 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
         auto& currentUser = performedBy.get(collection, store());
 
         authorizationStatus = authorization_->getUsers(currentUser);
-        if (AuthorizationStatusCode::OK != authorizationStatus.code)
+        if (AuthorizationStatus::OK != authorizationStatus)
         {
-            status = authorizationStatus.code;
+            status = authorizationStatus;
             return;
         }
 
@@ -144,9 +144,9 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
                           auto& user = **it;
 
                           authorizationStatus = authorization_->getUserById(currentUser, user);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
 
@@ -183,9 +183,9 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                           }
 
                           authorizationStatus = authorization_->getUserByName(currentUser, **it);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
 
@@ -241,9 +241,9 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                            }
 
                            authorizationStatus = authorization_->addNewUser(*currentUser, name);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -295,9 +295,9 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView new
                            }
 
                            authorizationStatus = authorization_->changeUserName(*currentUser, **it, newName);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -347,9 +347,9 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView new
                            }
 
                            authorizationStatus = authorization_->changeUserInfo(*currentUser, **it, newInfo);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -386,9 +386,9 @@ StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
                            }
 
                            authorizationStatus = authorization_->deleteUser(*currentUser, **it);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 

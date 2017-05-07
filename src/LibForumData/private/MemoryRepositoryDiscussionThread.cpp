@@ -119,9 +119,9 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdTyp
                           auto& thread = **it;
 
                           authorizationStatus = authorization_->getDiscussionThreadById(currentUser, thread);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
 
@@ -192,9 +192,9 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const Id
                           auto& user = **it;
 
                           authorizationStatus = authorization_->getDiscussionThreadsOfUser(currentUser, user);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
                  
@@ -233,9 +233,9 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
                           auto& user = **it;
                  
                           authorizationStatus = authorization_->getSubscribedDiscussionThreadsOfUser(currentUser, user);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
 
@@ -278,9 +278,9 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(const I
                           auto& tag = **it;
 
                           authorizationStatus = authorization_->getDiscussionThreadsWithTag(currentUser, tag);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
                  
@@ -317,9 +317,9 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(cons
                          auto& category = **it;
 
                          authorizationStatus = authorization_->getDiscussionThreadsOfCategory(currentUser, category);
-                         if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                         if (AuthorizationStatus::OK != authorizationStatus)
                          {
-                             status = authorizationStatus.code;
+                             status = authorizationStatus;
                              return;
                          }
 
@@ -354,9 +354,9 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
                            auto currentUser = performedBy.getAndUpdate(collection);
                  
                            authorizationStatus = authorization_->addNewDiscussionThread(*currentUser, name);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -451,9 +451,9 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const Id
                            }
                                   
                            authorizationStatus = authorization_->changeDiscussionThreadName(*currentUser, **it, newName);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
                            
@@ -493,9 +493,9 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(const IdType
                            }
 
                            authorizationStatus = authorization_->deleteDiscussionThread(*currentUser, **it);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -548,9 +548,9 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                    
                            authorizationStatus = authorization_->mergeDiscussionThreads(*currentUser, threadFrom, 
                                                                                         threadInto);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -646,9 +646,9 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(const I
                            auto threadRef = *it;
 
                            authorizationStatus = authorization_->subscribeToDiscussionThread(*currentUser, *threadRef);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 
@@ -691,9 +691,9 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(con
                            auto threadRef = *it;
 
                            authorizationStatus = authorization_->unsubscribeFromDiscussionThread(*currentUser, *threadRef);
-                           if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                           if (AuthorizationStatus::OK != authorizationStatus)
                            {
-                               status = authorizationStatus.code;
+                               status = authorizationStatus;
                                return;
                            }
 

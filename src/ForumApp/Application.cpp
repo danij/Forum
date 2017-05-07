@@ -4,7 +4,7 @@
 #include "DefaultIOServiceProvider.h"
 #include "StringHelpers.h"
 
-#include "Authorization.h"
+#include "DefaultAuthorization.h"
 
 #include "MemoryRepositoryCommon.h"
 #include "MemoryRepositoryUser.h"
@@ -164,9 +164,10 @@ void Application::validateConfiguration()
 
 void Application::createCommandHandler()
 {
-    auto authorization = std::make_shared<AllowAllAuthorization>();
+    auto entityCollection = std::make_shared<Entities::EntityCollection>();
 
-    auto store = std::make_shared<MemoryStore>(std::make_shared<Entities::EntityCollection>());
+    auto store = std::make_shared<MemoryStore>(entityCollection);
+    auto authorization = std::make_shared<DefaultAuthorization>(entityCollection->grantedPrivileges(), *entityCollection);
 
     auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization);
     auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization);

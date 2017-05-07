@@ -29,9 +29,9 @@ StatusCode MetricsRepository::getVersion(OutStream& output)
                           auto& currentUser = performedBy.get(collection, store());
                       
                           authorizationStatus = authorization_->getVersion(currentUser);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
                       

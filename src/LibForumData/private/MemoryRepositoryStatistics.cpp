@@ -30,9 +30,9 @@ StatusCode MemoryRepositoryStatistics::getEntitiesCount(OutStream& output) const
                           auto& currentUser = performedBy.get(collection, store());
                       
                           authorizationStatus = authorization_->getEntitiesCount(currentUser);
-                          if (AuthorizationStatusCode::OK != authorizationStatus.code)
+                          if (AuthorizationStatus::OK != authorizationStatus)
                           {
-                              status = authorizationStatus.code;
+                              status = authorizationStatus;
                               return;
                           }
                       

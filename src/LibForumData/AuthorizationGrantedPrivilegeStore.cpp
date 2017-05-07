@@ -132,12 +132,12 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const Disc
     return ::isAllowed(positive, negative, category.getDiscussionCategoryPrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdType userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                                     ForumWidePrivilege privilege, time_t now) const
 {
     PrivilegeValueType positive, negative;
 
-    updateForumWidePrivilege(user.id(), {}, now, privilege, positive, negative);
+    updateForumWidePrivilege(userId, {}, now, privilege, positive, negative);
 
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getForumWidePrivilege(privilege));
 }

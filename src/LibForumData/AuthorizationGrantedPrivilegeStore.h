@@ -64,7 +64,7 @@ namespace Forum
             PrivilegeValueType isAllowed(const Entities::User& user, const Entities::DiscussionCategory& category,
                                          DiscussionCategoryPrivilege privilege, time_t now) const;
             
-            PrivilegeValueType isAllowed(const Entities::User& user, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+            PrivilegeValueType isAllowed(Entities::IdType userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                          ForumWidePrivilege privilege, time_t now) const;
 
             void computeDiscussionThreadMessageVisibilityAllowed(DiscussionThreadMessagePrivilegeCheck* items,
