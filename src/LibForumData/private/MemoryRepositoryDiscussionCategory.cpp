@@ -40,18 +40,20 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
             return;
         }
 
+        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+        
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
         {
             switch (by)
             {
             case RetrieveDiscussionCategoriesBy::Name: 
-                writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByName().begin(), 
-                                                                               collection.categoriesByName().end()));
+                writeArraySafeName(output, "categories", collection.categoriesByName().begin(), 
+                                   collection.categoriesByName().end(), restriction);
                 status.disable();
                 break;
             case RetrieveDiscussionCategoriesBy::MessageCount: 
-                writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByMessageCount().begin(), 
-                                                                               collection.categoriesByMessageCount().end()));
+                writeArraySafeName(output, "categories", collection.categoriesByMessageCount().begin(),
+                                   collection.categoriesByMessageCount().end(), restriction);
                 status.disable();
                 break;
             }
@@ -61,13 +63,13 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
             switch (by)
             {
             case RetrieveDiscussionCategoriesBy::Name: 
-                writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByName().rbegin(), 
-                                                                               collection.categoriesByName().rend()));
+                writeArraySafeName(output, "categories", collection.categoriesByName().rbegin(),
+                                   collection.categoriesByName().rend(), restriction);
                 status.disable();
                 break;
             case RetrieveDiscussionCategoriesBy::MessageCount: 
-                writeSingleValueSafeName(output, "categories", Json::enumerate(collection.categoriesByMessageCount().rbegin(), 
-                                                                               collection.categoriesByMessageCount().rend()));
+                writeArraySafeName(output, "categories", collection.categoriesByMessageCount().rbegin(), 
+                                   collection.categoriesByMessageCount().rend(), restriction);
                 status.disable();
                 break;
             }
@@ -106,7 +108,10 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
                           BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
 
                           status.disable();
-                          writeSingleValueSafeName(output, "categories", Json::enumerate(indexBegin, indexRootEnd));
+                          
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+
+                          writeArraySafeName(output, "categories", indexBegin, indexRootEnd, restriction);
 
                           readEvents().onGetRootDiscussionCategories(createObserverContext(currentUser));
                       });
@@ -141,7 +146,10 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const I
 
                           status.disable();
                           BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
-                          writeSingleValueSafeName(output, "category", **it);
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+
+                          writeSingleValueSafeName(output, "category", **it, restriction);
 
                           readEvents().onGetDiscussionCategory(createObserverContext(currentUser), **it);
                       });

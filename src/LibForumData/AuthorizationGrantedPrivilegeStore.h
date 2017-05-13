@@ -150,5 +150,38 @@ namespace Forum
             PrivilegeEntryCollection discussionCategorySpecificPrivileges_;
             PrivilegeEntryCollection forumWideSpecificPrivileges_;
         };
+
+        struct SerializationRestriction final : private boost::noncopyable
+        {
+            SerializationRestriction(const GrantedPrivilegeStore& privilegeStore, const Entities::User& user, time_t now)
+                : privilegeStore_(privilegeStore), user_(user), now_(now)
+            {
+            }
+
+            bool isAllowed(const Entities::DiscussionThreadMessage& message) const
+            {
+                return static_cast<bool>(privilegeStore_.isAllowed(user_, message, DiscussionThreadMessagePrivilege::VIEW, now_));
+            }
+
+            bool isAllowed(const Entities::DiscussionThread& thread) const
+            {
+                return static_cast<bool>(privilegeStore_.isAllowed(user_, thread, DiscussionThreadPrivilege::VIEW, now_));
+            }
+
+            bool isAllowed(const Entities::DiscussionTag& tag) const
+            {
+                return static_cast<bool>(privilegeStore_.isAllowed(user_, tag, DiscussionTagPrivilege::VIEW, now_));
+            }
+
+            bool isAllowed(const Entities::DiscussionCategory& category) const
+            {
+                return static_cast<bool>(privilegeStore_.isAllowed(user_, category, DiscussionCategoryPrivilege::VIEW, now_));
+            }
+
+        private:
+            const GrantedPrivilegeStore& privilegeStore_;
+            const Entities::User& user_;
+            time_t now_;
+        };
     }
 }

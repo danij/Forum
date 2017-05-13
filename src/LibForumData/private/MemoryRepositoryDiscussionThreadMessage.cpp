@@ -62,8 +62,11 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
         auto& displayContext = Context::getDisplayContext();
 
         status.disable();
+
+        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+
         writeEntitiesWithPagination(messages, "messages", output, displayContext.pageNumber, pageSize,
-            displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& m) { return m; });
+            displayContext.sortOrder == Context::SortOrder::Ascending, restriction);
 
         readEvents().onGetDiscussionThreadMessagesOfUser(createObserverContext(currentUser), **it);
     });
@@ -568,14 +571,16 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
 }
 
 template<typename Collection>
-static void writeMessageComments(const Collection& collection, OutStream& output)
+static void writeMessageComments(const Collection& collection, OutStream& output, 
+                                 const GrantedPrivilegeStore& privilegeStore, const User& currentUser)
 {
     auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesCommentsPerPage;
     auto& displayContext = Context::getDisplayContext();
 
+    SerializationRestriction restriction(privilegeStore, currentUser, Context::getCurrentTime());
+    
     writeEntitiesWithPagination(collection, "message_comments", output, 
-        displayContext.pageNumber, pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, 
-        [](const auto& c) { return c; });
+        displayContext.pageNumber, pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, restriction);
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream& output) const
@@ -592,7 +597,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream
                               return;
                           }
 
-                          writeMessageComments(collection.messageCommentsByCreated(), output);
+                          writeMessageComments(collection.messageCommentsByCreated(), output, 
+                                               collection.grantedPrivileges(), currentUser);
                           readEvents().onGetMessageComments(createObserverContext(currentUser));
                       });
     return status;
@@ -629,7 +635,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
 
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentMessage, true);
                       
-                          writeMessageComments(message.messageCommentsByCreated(), output);
+                          writeMessageComments(message.messageCommentsByCreated(), output, 
+                                               collection.grantedPrivileges(), currentUser);
 
                           readEvents().onGetMessageCommentsOfMessage(createObserverContext(currentUser), message);
                       });
@@ -666,7 +673,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
 
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentUser, true);
                           
-                          writeMessageComments(user.messageCommentsByCreated(), output);
+                          writeMessageComments(user.messageCommentsByCreated(), output, 
+                                               collection.grantedPrivileges(), currentUser);
 
                           readEvents().onGetMessageCommentsOfUser(createObserverContext(currentUser), user);
                       });

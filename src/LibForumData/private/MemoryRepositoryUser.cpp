@@ -90,27 +90,31 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
         auto pageSize = getGlobalConfig()->user.maxUsersPerPage;
         auto& displayContext = Context::getDisplayContext();
 
+        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+        
+        auto ascending = displayContext.sortOrder == Context::SortOrder::Ascending;
+
         switch (by)
         {
         case RetrieveUsersBy::Name:
             writeEntitiesWithPagination(collection.usersByName(), "users", output, displayContext.pageNumber, 
-                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& u) { return u; });
+                pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::Created:
             writeEntitiesWithPagination(collection.usersByCreated(), "users", output, displayContext.pageNumber, 
-                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& u) { return u; });
+                pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::LastSeen:
             writeEntitiesWithPagination(collection.usersByLastSeen(), "users", output, displayContext.pageNumber, 
-                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& u) { return u; });
+                pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::ThreadCount:
             writeEntitiesWithPagination(collection.usersByThreadCount(), "users", output, displayContext.pageNumber, 
-                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& u) { return u; });
+                pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::MessageCount:
             writeEntitiesWithPagination(collection.usersByMessageCount(), "users", output, displayContext.pageNumber, 
-                pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, [](const auto& u) { return u; });
+                pageSize, ascending, restriction);
             break;
         }
 
@@ -145,7 +149,10 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
                           }
 
                           status.disable();
-                          writeSingleValueSafeName(output, "user", user);
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+
+                          writeSingleValueSafeName(output, "user", user, restriction);
                           
                           readEvents().onGetUserById(createObserverContext(currentUser), user);
                       });
@@ -175,13 +182,18 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                               return;
                           }
 
+                          auto& user = **it;
+
                           if ( ! (status = authorization_->getUserByName(currentUser, **it)))
                           {
                               return;
                           }
 
                           status.disable();
-                          writeSingleValueSafeName(output, "user", **it);
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+        
+                          writeSingleValueSafeName(output, "user", user, restriction);
 
                           readEvents().onGetUserByName(createObserverContext(currentUser), name);
                       });

@@ -87,7 +87,7 @@ namespace Forum
                 Content
             };
 
-            DiscussionThreadMessage(User& createdBy) : createdBy_(createdBy), solvedCommentsCount_(0) {}
+            explicit DiscussionThreadMessage(User& createdBy) : createdBy_(createdBy), solvedCommentsCount_(0) {}
 
             bool hasVoted(const std::weak_ptr<User>& user) const
             {

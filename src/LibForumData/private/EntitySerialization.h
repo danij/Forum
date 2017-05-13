@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Entities.h"
+#include "AuthorizationGrantedPrivilegeStore.h"
 #include "JsonWriter.h"
 
 #include <boost/optional.hpp>
@@ -10,12 +10,6 @@ namespace Json
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::EntitiesCount& thread);
 
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::UuidString& id);
-    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::User& user);
-    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionThreadMessage& thread);
-    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::MessageComment& messageComment);
-    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionThread& thread);
-    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionTag& tag);
-    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::DiscussionCategory& category);
 }
 
 namespace Forum
@@ -45,5 +39,25 @@ namespace Forum
         };
 
         extern thread_local SerializationSettings serializationSettings;
+
+        Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThreadMessage& thread,
+                const Authorization::SerializationRestriction& restriction);
+
+        Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThread& thread,
+                const Authorization::SerializationRestriction& restriction);
+
+        Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionTag& tag,
+                const Authorization::SerializationRestriction& restriction);
+
+        Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionCategory& category,
+                const Authorization::SerializationRestriction& restriction);
+
+        /**
+         * The restriction parameter is not yet used by these two functions, just keeping a uniform interface
+         */
+        Json::JsonWriter& serialize(Json::JsonWriter& writer, const MessageComment& messageComment,
+                const Authorization::SerializationRestriction& restriction);
+        Json::JsonWriter& serialize(Json::JsonWriter& writer, const User& user,
+                const Authorization::SerializationRestriction& restriction);
     }
 }

@@ -38,19 +38,21 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
         {
             return;
         }
-
+        
+        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+        
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
         {
             switch (by)
             {
             case RetrieveDiscussionTagsBy::Name: 
-                writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByName().begin(), 
-                                                                         collection.tagsByName().end()));
+                writeArraySafeName(output, "tags", collection.tagsByName().begin(), collection.tagsByName().end(),
+                                   restriction);
                 status.disable();
                 break;
             case RetrieveDiscussionTagsBy::MessageCount: 
-                writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByMessageCount().begin(),
-                                                                         collection.tagsByMessageCount().end()));
+                writeArraySafeName(output, "tags", collection.tagsByMessageCount().begin(), 
+                                   collection.tagsByMessageCount().end(), restriction);
                 status.disable();
                 break;
             }
@@ -60,13 +62,13 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
             switch (by)
             {
             case RetrieveDiscussionTagsBy::Name: 
-                writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByName().rbegin(), 
-                                                                         collection.tagsByName().rend()));
+                writeArraySafeName(output, "tags", collection.tagsByName().rbegin(), collection.tagsByName().rend(),
+                                   restriction);
                 status.disable();
                 break;
             case RetrieveDiscussionTagsBy::MessageCount: 
-                writeSingleValueSafeName(output, "tags", Json::enumerate(collection.tagsByMessageCount().rbegin(),
-                                                                         collection.tagsByMessageCount().rend()));
+                writeArraySafeName(output, "tags", collection.tagsByMessageCount().rbegin(), 
+                                   collection.tagsByMessageCount().rend(), restriction);
                 status.disable();
                 break;
             }

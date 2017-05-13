@@ -3,15 +3,20 @@
 #include "JsonWriter.h"
 #include "Repository.h"
 #include "Authorization.h"
+#include "AuthorizationGrantedPrivilegeStore.h"
 
 #include <cassert>
+#include <tuple>
+
+#include <boost/range/iterator_range.hpp>
+#include <boost/range/adaptor/filtered.hpp>
 
 namespace Forum
 {
     namespace Helpers
     {
         template <typename T, size_t Size>
-        void writeSingleValueSafeName(Forum::Repository::OutStream& output, const char(&name)[Size], const T& value)
+        void writeSingleValueSafeName(Repository::OutStream& output, const char(&name)[Size], const T& value)
         {
             Json::JsonWriter writer(output);
             writer
@@ -20,15 +25,51 @@ namespace Forum
                 << Json::objEnd;
         }
 
-        inline void writeStatusCode(Forum::Repository::OutStream& output, Repository::StatusCode code)
+        template <typename T, size_t Size>
+        void writeSingleValueSafeName(Repository::OutStream& output, const char(&name)[Size], const T& value,
+                                      const Authorization::SerializationRestriction& restriction)
+        {
+            Json::JsonWriter writer(output);
+
+            writer.startObject();
+            writer.newPropertyWithSafeName(name);
+            serialize(writer, value, restriction);
+            writer.endObject();
+        }
+
+        template <typename It, size_t Size>
+        void writeArraySafeName(Json::JsonWriter& writer, const char(&name)[Size], It begin, It end,
+                                const Authorization::SerializationRestriction& restriction)
+        {
+            writer.startObject();
+
+            writer.newPropertyWithSafeName(name);
+            writer.startArray();
+            for (auto it = begin; it != end; ++it)
+            {
+                serialize(writer, **it, restriction);
+            }
+            writer.endArray();
+
+            writer.endObject();
+        }
+
+        template <typename It, size_t Size>
+        void writeArraySafeName(Repository::OutStream& output, const char(&name)[Size], It begin, It end,
+                                const Authorization::SerializationRestriction& restriction)
+        {
+            Json::JsonWriter writer(output);
+            writeArraySafeName(writer, name, begin, end, restriction);
+        }
+
+        inline void writeStatusCode(Repository::OutStream& output, Repository::StatusCode code)
         {
             writeSingleValueSafeName(output, "status", code);
         }
 
-        template<typename Collection, typename InterceptorFn, size_t PropertyNameSize>
-        void writeEntitiesWithPagination(const Collection& collection, const char(&propertyName)[PropertyNameSize],
-                                         Json::JsonWriter& writer, int_fast32_t pageNumber, int_fast32_t pageSize,
-                                         bool ascending, InterceptorFn&& interceptor)
+        template<typename Collection, typename FilterFn>
+        auto getPageFromCollection(const Collection& collection, int_fast32_t pageNumber, int_fast32_t pageSize, 
+                                   bool ascending, FilterFn&& filter)
         {
             auto count = static_cast<int_fast32_t>(collection.size());
 
@@ -36,8 +77,8 @@ namespace Forum
 
             IteratorType itStart, itEnd;
 
-            auto firstElementIndex = std::max(static_cast<decltype(count)>(0), 
-                                              static_cast<decltype(count)>(pageNumber * pageSize));
+            auto firstElementIndex = std::max(static_cast<decltype(count)>(0),
+                static_cast<decltype(count)>(pageNumber * pageSize));
             if (ascending)
             {
 
@@ -48,48 +89,55 @@ namespace Forum
             {
                 itStart = collection.nth(std::max(count - firstElementIndex, static_cast<decltype(count)>(0)));
                 itEnd = collection.nth(std::max(count - firstElementIndex - pageSize, static_cast<decltype(count)>(0)));
-            }
 
-            writer << Json::propertySafeName("totalCount", count)
-                   << Json::propertySafeName("pageSize", pageSize)
-                   << Json::propertySafeName("page", pageNumber);
-
-            //need to write the array manually, so that we can control the advance direction of iteration
-            writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
-            writer << Json::arrayStart;
-            if (ascending)
-            {
-                while (itStart != itEnd)
+                if (itStart == collection.begin())
                 {
-                    writer << interceptor(*itStart);
-                    ++itStart;
+                    itStart = itEnd;
                 }
             }
-            else
-            {
-                auto start = collection.begin();
-                if (itStart != start)
-                {
-                    while (itStart != itEnd)
-                    {
-                        writer << interceptor(*--itStart);
-                    }
-                }
-            }
-            writer << Json::arrayEnd;
+            return std::make_tuple(count, pageSize, pageNumber, 
+                                   boost::make_iterator_range(itStart, itEnd) | boost::adaptors::filtered(filter));
         }
-        
-        template<typename Collection, typename InterceptorFn, size_t PropertyNameSize>
+
+        template<typename PageInfoType, size_t PropertyNameSize>
+        void writeEntitiesWithPagination(const PageInfoType& pageInfo, const char(&propertyName)[PropertyNameSize],
+                                         Json::JsonWriter& writer, const Authorization::SerializationRestriction& restriction)
+        {
+            writer << Json::propertySafeName("totalCount", std::get<0>(pageInfo))
+                   << Json::propertySafeName("pageSize", std::get<1>(pageInfo))
+                   << Json::propertySafeName("page", std::get<2>(pageInfo));
+
+            writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
+            writer.startArray();
+            for (const auto& value : std::get<3>(pageInfo))
+            {
+                serialize(writer, *value, restriction);
+            }
+            writer.endArray();
+        }
+
+        template<typename Collection, size_t PropertyNameSize, typename FilterFn>
         void writeEntitiesWithPagination(const Collection& collection, const char(&propertyName)[PropertyNameSize],
-                                         Forum::Repository::OutStream& output, int_fast32_t pageNumber,
-                                         int_fast32_t pageSize, bool ascending, InterceptorFn&& interceptor)
+                                         Repository::OutStream& output, int_fast32_t pageNumber,
+                                         int_fast32_t pageSize, bool ascending, FilterFn&& filter,
+                                         const Authorization::SerializationRestriction& restriction)
         {
             Json::JsonWriter writer(output);
-            writer << Json::objStart;
 
-            writeEntitiesWithPagination(collection, propertyName, writer, pageNumber, pageSize, ascending, interceptor);
+            writer.startObject();
+            auto pageInfo = getPageFromCollection(collection, pageNumber, pageSize, ascending, std::move(filter));
+            writeEntitiesWithPagination(pageInfo, propertyName, writer, restriction);
+            writer.endObject();
+        }
 
-            writer << Json::objEnd;
+        template<typename Collection, size_t PropertyNameSize>
+        void writeEntitiesWithPagination(const Collection& collection, const char(&propertyName)[PropertyNameSize],
+                                         Repository::OutStream& output, int_fast32_t pageNumber,
+                                         int_fast32_t pageSize, bool ascending,
+                                         const Authorization::SerializationRestriction& restriction)
+        {
+            writeEntitiesWithPagination(collection, propertyName, output, pageNumber, pageSize, ascending, 
+                                        [](auto&) { return true; }, restriction);
         }
 
         /**

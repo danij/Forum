@@ -71,7 +71,7 @@ namespace Forum
             };
 
             explicit DiscussionCategory(Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
-                : notifyChangeFn_(&DiscussionCategory::emptyNotifyChange), forumWidePrivileges_(forumWidePrivileges_) { }
+                : notifyChangeFn_(&DiscussionCategory::emptyNotifyChange), forumWidePrivileges_(forumWidePrivileges) { }
 
             bool addChild(std::shared_ptr<DiscussionCategory> category)
             {

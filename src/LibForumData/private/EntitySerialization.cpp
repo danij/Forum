@@ -9,9 +9,10 @@ using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
+using namespace Forum::Authorization;
 using namespace Json;
 
-thread_local SerializationSettings Forum::Entities::serializationSettings = {};
+thread_local SerializationSettings Entities::serializationSettings = {};
 
 JsonWriter& Json::operator<<(JsonWriter& writer, const EntitiesCount& value)
 {
@@ -35,8 +36,9 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const UuidString& id)
     return writer.writeSafeString(buffer, std::extent<decltype(buffer)>::value);
 }
 
-JsonWriter& Json::operator<<(JsonWriter& writer, const User& user)
+JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const SerializationRestriction& restriction)
 {
+    (void)restriction;
     writer
         << objStart
             << propertySafeName("id", user.id())
@@ -82,8 +84,10 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
     return writer;
 }
 
-JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& message)
+JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessage& message, 
+                                const SerializationRestriction& restriction)
 {
+    if ( ! restriction.isAllowed(message)) return writer.null();
     writer
         << objStart
             << propertySafeName("id", message.id())
@@ -96,13 +100,16 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& 
 
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
     {
-        writer << propertySafeName("createdBy", message.createdBy());
+        writer.newPropertyWithSafeName("createdBy");
+        serialize(writer, message.createdBy(), restriction);
     }
     if ( ! serializationSettings.hideDiscussionThreadMessageParentThread)
     {
-        message.executeActionWithParentThreadIfAvailable([&writer](auto& parentThread)
+        message.executeActionWithParentThreadIfAvailable([&writer, &restriction](auto& parentThread)
         {
-            writer << propertySafeName("parentThread", parentThread);
+            writer.newPropertyWithSafeName("parentThread");
+            BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
+            serialize(writer, parentThread, restriction);
         });
     }
 
@@ -131,18 +138,21 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThreadMessage& 
     return writer;
 }
 
-static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage& latestMessage)
+static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage& latestMessage,
+                               const SerializationRestriction& restriction)
 {
     writer.newPropertyWithSafeName("latestMessage");
     writer << objStart
         << propertySafeName("id", latestMessage.id())
-        << propertySafeName("created", latestMessage.created())
-        << propertySafeName("createdBy", latestMessage.createdBy())
-        << objEnd;
+        << propertySafeName("created", latestMessage.created());
+    writer.newPropertyWithSafeName("createdBy");
+    serialize(writer, latestMessage.createdBy(), restriction);
+    writer << objEnd;
 }
 
 template<typename IndexIdType>
-static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadCollectionBase<IndexIdType>& threads)
+static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadCollectionBase<IndexIdType>& threads,
+                               const SerializationRestriction& restriction)
 {
     auto index = threads.threadsByLatestMessageCreated();
     if ( ! index.size())
@@ -153,11 +163,12 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadCollect
     auto messageIndex = thread->messagesByCreated();
     if (messageIndex.size())
     {
-        writeLatestMessage(writer, **messageIndex.rbegin());
+        writeLatestMessage(writer, **messageIndex.rbegin(), restriction);
     }
 }
 
-JsonWriter& Json::operator<<(JsonWriter& writer, const MessageComment& comment)
+JsonWriter& Entities::serialize(JsonWriter& writer, const MessageComment& comment,
+                                const SerializationRestriction& restriction)
 {
     writer
         << objStart
@@ -174,20 +185,24 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const MessageComment& comment)
     {
         comment.executeActionWithParentMessageIfAvailable([&](const DiscussionThreadMessage& message)
         {
-            writer << propertySafeName("message", message);
+            writer.newPropertyWithSafeName("message");
+            serialize(writer, message, restriction);
         });
     }
     if ( ! serializationSettings.hideMessageCommentUser)
     {
-        writer << propertySafeName("createdBy", comment.createdBy());
+        writer.newPropertyWithSafeName("createdBy");
+        serialize(writer, comment.createdBy(), restriction);
     }
 
     writer << objEnd;
     return writer;
 }
 
-JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
+JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thread,
+                                const SerializationRestriction& restriction)
 {
+    if ( ! restriction.isAllowed(thread)) return writer.null();
     writer
         << objStart
             << propertySafeName("id", thread.id())
@@ -198,7 +213,8 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
             << propertySafeName("subscribedUsersCount", thread.subscribedUsersCount());
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
     {
-        writer << propertySafeName("createdBy", thread.createdBy());
+        writer.newPropertyWithSafeName("createdBy");
+        serialize(writer, thread.createdBy(), restriction);
     }
 
     const auto& messagesIndex = thread.messagesByCreated();
@@ -208,15 +224,17 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
 
     if (messageCount)
     {
-        writeLatestMessage(writer, **messagesIndex.rbegin());
+        writeLatestMessage(writer, **messagesIndex.rbegin(), restriction);
     }
     if ( ! serializationSettings.hideDiscussionThreadMessages)
     {
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
         auto& displayContext = Context::getDisplayContext();
-
-        writeEntitiesWithPagination(messagesIndex, "messages", writer, displayContext.pageNumber, pageSize, true, 
-                                    [](const auto& m) { return m; });
+        
+        auto pageInfo = getPageFromCollection(messagesIndex, displayContext.pageNumber, pageSize, true,
+                                              [](auto&) {return true;});
+        
+        writeEntitiesWithPagination(pageInfo, "messages", writer, restriction);
     }
     if ( ! serializationSettings.hideVisitedThreadSinceLastChange)
     {
@@ -233,7 +251,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
         {
             if (tag)
             {
-                writer << *tag;
+                serialize(writer, *tag, restriction);
             }
         }
         writer << arrayEnd;
@@ -249,7 +267,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
         {
             if (category)
             {
-                writer << *category;
+                serialize(writer, *category, restriction);
             }
         }
         writer << arrayEnd;
@@ -262,8 +280,10 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionThread& thread)
     return writer;
 }
 
-JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionTag& tag)
+JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag, 
+                                const SerializationRestriction& restriction)
 {
+    if ( ! restriction.isAllowed(tag)) return writer.null();
     writer << objStart
         << propertySafeName("id", tag.id())
         << propertySafeName("name", tag.name())
@@ -273,7 +293,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionTag& tag)
 
     if ( ! serializationSettings.hideLatestMessage)
     {
-        writeLatestMessage(writer, tag);
+        writeLatestMessage(writer, tag, restriction);
     }
     if ( ! serializationSettings.hideDiscussionCategoriesOfTags)
     {
@@ -286,7 +306,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionTag& tag)
         {
             if (category)
             {
-                writer << *category;
+                serialize(writer, *category, restriction);
             }
         }
         writer << arrayEnd;
@@ -296,8 +316,10 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionTag& tag)
     return writer;
 }
 
-JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionCategory& category)
+JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& category, 
+                                const SerializationRestriction& restriction)
 {
+    if ( ! restriction.isAllowed(category)) return writer.null();
     writer << objStart
         << propertySafeName("id", category.id())
         << propertySafeName("name", category.name())
@@ -314,20 +336,22 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionCategory& categ
         auto latestMessage = category.latestMessage();
         if (latestMessage)
         {
-            writeLatestMessage(writer, *latestMessage);
+            writeLatestMessage(writer, *latestMessage, restriction);
         }
     }
     if ( ! serializationSettings.hideDiscussionCategoryTags)
     {
         BoolTemporaryChanger _(serializationSettings.hideDiscussionCategoriesOfTags, true);
-        writer << propertySafeName("tags", enumerate(category.tags().begin(), category.tags().end()));
+
+        writeArraySafeName(writer, "tags", category.tags().begin(), category.tags().end(), restriction);
     }
     if (serializationSettings.showDiscussionCategoryChildren)
     {
         //only show 1 level of category children
         BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryParent, true);
-        writer << propertySafeName("children", enumerate(category.children().begin(), category.children().end()));
+
+        writeArraySafeName(writer, "children", category.children().begin(), category.children().end(), restriction);
     }
 
     OptionalRevertToNoneChanger<decltype(serializationSettings.displayDiscussionCategoryParentRecursionDepth)::value_type> 
@@ -345,7 +369,8 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const DiscussionCategory& categ
         {
             BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
             depth += 1;
-            writer << propertySafeName("parent", parent);
+            writer.newPropertyWithSafeName("parent");
+            serialize(writer, parent, restriction);
         });
     }
 
