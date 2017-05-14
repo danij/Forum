@@ -231,10 +231,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
         auto& displayContext = Context::getDisplayContext();
         
-        auto pageInfo = getPageFromCollection(messagesIndex, displayContext.pageNumber, pageSize, true,
-                                              [](auto&) {return true;});
-        
-        writeEntitiesWithPagination(pageInfo, "messages", writer, restriction);
+        writeEntitiesWithPagination(messagesIndex, displayContext.pageNumber, pageSize, true, "messages", writer, 
+                                    [](auto&) { return true; }, restriction);
     }
     if ( ! serializationSettings.hideVisitedThreadSinceLastChange)
     {

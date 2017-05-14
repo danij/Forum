@@ -37,12 +37,12 @@ static void writeDiscussionThreads(ThreadsCollectionByName&& collectionByName,
     BoolTemporaryChanger _(serializationSettings.visitedThreadSinceLastChange, false);
     BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
 
-    auto writeFilter = [&](auto& currentThread)
+    auto writeFilter = [&](const DiscussionThread& currentThread)
                           {
                               bool visitedThreadSinceLastChange = false;
-                              if (currentThread && (currentUser.id() != AnonymousUserId))
+                              if (currentUser.id() != AnonymousUserId)
                               {
-                                  visitedThreadSinceLastChange = currentThread->hasVisitedSinceLastEdit(currentUser.id());
+                                  visitedThreadSinceLastChange = currentThread.hasVisitedSinceLastEdit(currentUser.id());
                               }
                               serializationSettings.visitedThreadSinceLastChange = visitedThreadSinceLastChange;
                               return true;

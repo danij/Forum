@@ -8,9 +8,6 @@
 #include <cassert>
 #include <tuple>
 
-#include <boost/range/iterator_range.hpp>
-#include <boost/range/adaptor/filtered.hpp>
-
 namespace Forum
 {
     namespace Helpers
@@ -65,51 +62,50 @@ namespace Forum
             writeSingleValueSafeName(output, "status", code);
         }
 
-        template<typename Collection, typename FilterFn>
-        auto getPageFromCollection(const Collection& collection, int_fast32_t pageNumber, int_fast32_t pageSize, 
-                                   bool ascending, FilterFn&& filter)
+        template<typename Collection, size_t PropertyNameSize, typename FilterType>
+        void writeEntitiesWithPagination(const Collection& collection, int_fast32_t pageNumber, int_fast32_t pageSize,
+                                         bool ascending, const char(&propertyName)[PropertyNameSize], Json::JsonWriter& writer,
+                                         FilterType&& filter, const Authorization::SerializationRestriction& restriction)
         {
-            auto count = static_cast<int_fast32_t>(collection.size());
+            auto totalCount = static_cast<int_fast32_t>(collection.size());
 
-            typedef decltype(collection.begin()) IteratorType;
-
-            IteratorType itStart, itEnd;
-
-            auto firstElementIndex = std::max(static_cast<decltype(count)>(0),
-                static_cast<decltype(count)>(pageNumber * pageSize));
-            if (ascending)
-            {
-
-                itStart = collection.nth(firstElementIndex);
-                itEnd = collection.nth(firstElementIndex + pageSize);
-            }
-            else
-            {
-                itStart = collection.nth(std::max(count - firstElementIndex, static_cast<decltype(count)>(0)));
-                itEnd = collection.nth(std::max(count - firstElementIndex - pageSize, static_cast<decltype(count)>(0)));
-
-                if (itStart == collection.begin())
-                {
-                    itStart = itEnd;
-                }
-            }
-            return std::make_tuple(count, pageSize, pageNumber, 
-                                   boost::make_iterator_range(itStart, itEnd) | boost::adaptors::filtered(filter));
-        }
-
-        template<typename PageInfoType, size_t PropertyNameSize>
-        void writeEntitiesWithPagination(const PageInfoType& pageInfo, const char(&propertyName)[PropertyNameSize],
-                                         Json::JsonWriter& writer, const Authorization::SerializationRestriction& restriction)
-        {
-            writer << Json::propertySafeName("totalCount", std::get<0>(pageInfo))
-                   << Json::propertySafeName("pageSize", std::get<1>(pageInfo))
-                   << Json::propertySafeName("page", std::get<2>(pageInfo));
+            writer << Json::propertySafeName("totalCount", totalCount)
+                   << Json::propertySafeName("pageSize", pageSize)
+                   << Json::propertySafeName("page", pageNumber);
 
             writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
             writer.startArray();
-            for (const auto& value : std::get<3>(pageInfo))
+
+            auto firstElementIndex = std::max(static_cast<decltype(totalCount)>(0), 
+                                              static_cast<decltype(totalCount)>(pageNumber * pageSize));
+            if (ascending)
             {
-                serialize(writer, *value, restriction);
+                for (auto it = collection.nth(firstElementIndex), n = collection.nth(firstElementIndex + pageSize); it != n; ++it)
+                {
+                    if (*it && filter(**it))
+                    {
+                        serialize(writer, **it, restriction);
+                    }
+                }
+            }
+            else
+            {
+                auto itStart = collection.nth(std::max(totalCount - firstElementIndex, 
+                                                       static_cast<decltype(totalCount)>(0)));
+                auto itEnd = collection.nth(std::max(totalCount - firstElementIndex - pageSize, 
+                                                     static_cast<decltype(totalCount)>(0)));
+
+                if (itStart != collection.begin())
+                {
+                    for (auto it = itStart; it != itEnd;)
+                    {
+                        --it;
+                        if (*it && filter(**it))
+                        {
+                            serialize(writer, **it, restriction);
+                        }
+                    }
+                }
             }
             writer.endArray();
         }
@@ -123,8 +119,8 @@ namespace Forum
             Json::JsonWriter writer(output);
 
             writer.startObject();
-            auto pageInfo = getPageFromCollection(collection, pageNumber, pageSize, ascending, std::move(filter));
-            writeEntitiesWithPagination(pageInfo, propertyName, writer, restriction);
+            writeEntitiesWithPagination(collection, pageNumber, pageSize, ascending, propertyName, writer, 
+                                        std::move(filter), restriction);
             writer.endObject();
         }
 
