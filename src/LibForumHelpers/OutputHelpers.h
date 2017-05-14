@@ -41,8 +41,6 @@ namespace Forum
         void writeArraySafeName(Json::JsonWriter& writer, const char(&name)[Size], It begin, It end,
                                 const Authorization::SerializationRestriction& restriction)
         {
-            writer.startObject();
-
             writer.newPropertyWithSafeName(name);
             writer.startArray();
             for (auto it = begin; it != end; ++it)
@@ -50,8 +48,6 @@ namespace Forum
                 serialize(writer, **it, restriction);
             }
             writer.endArray();
-
-            writer.endObject();
         }
 
         template <typename It, size_t Size>
@@ -59,7 +55,9 @@ namespace Forum
                                 const Authorization::SerializationRestriction& restriction)
         {
             Json::JsonWriter writer(output);
+            writer.startObject();
             writeArraySafeName(writer, name, begin, end, restriction);
+            writer.endObject();
         }
 
         inline void writeStatusCode(Repository::OutStream& output, Repository::StatusCode code)
