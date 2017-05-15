@@ -158,24 +158,28 @@ namespace Forum
             {
             }
 
-            bool isAllowed(const Entities::DiscussionThreadMessage& message) const
+            bool isAllowed(const Entities::DiscussionThreadMessage& message, 
+                           DiscussionThreadMessagePrivilege privilege = DiscussionThreadMessagePrivilege::VIEW) const
             {
-                return static_cast<bool>(privilegeStore_.isAllowed(user_, message, DiscussionThreadMessagePrivilege::VIEW, now_));
+                return static_cast<bool>(privilegeStore_.isAllowed(user_, message, privilege, now_));
             }
 
-            bool isAllowed(const Entities::DiscussionThread& thread) const
+            bool isAllowed(const Entities::DiscussionThread& thread, 
+                           DiscussionThreadPrivilege privilege = DiscussionThreadPrivilege::VIEW) const
             {
-                return static_cast<bool>(privilegeStore_.isAllowed(user_, thread, DiscussionThreadPrivilege::VIEW, now_));
+                return static_cast<bool>(privilegeStore_.isAllowed(user_, thread, privilege, now_));
             }
 
-            bool isAllowed(const Entities::DiscussionTag& tag) const
+            bool isAllowed(const Entities::DiscussionTag& tag, 
+                           DiscussionTagPrivilege privilege = DiscussionTagPrivilege::VIEW) const
             {
-                return static_cast<bool>(privilegeStore_.isAllowed(user_, tag, DiscussionTagPrivilege::VIEW, now_));
+                return static_cast<bool>(privilegeStore_.isAllowed(user_, tag, privilege, now_));
             }
 
-            bool isAllowed(const Entities::DiscussionCategory& category) const
+            bool isAllowed(const Entities::DiscussionCategory& category, 
+                           DiscussionCategoryPrivilege privilege = DiscussionCategoryPrivilege::VIEW) const
             {
-                return static_cast<bool>(privilegeStore_.isAllowed(user_, category, DiscussionCategoryPrivilege::VIEW, now_));
+                return static_cast<bool>(privilegeStore_.isAllowed(user_, category, privilege, now_));
             }
 
         private:

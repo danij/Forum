@@ -84,6 +84,22 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
     return writer;
 }
 
+template<typename Entity, typename PrivilegeArray>
+static void writePermissions(JsonWriter& writer, const Entity& entity, const PrivilegeArray& privilegeArray, 
+                             const SerializationRestriction& restriction)
+{
+    writer.newPropertyWithSafeName("permissions");
+    writer.startArray();
+    for (auto& tuple : privilegeArray)
+    {
+        if (restriction.isAllowed(entity, std::get<0>(tuple)))
+        {
+            writer.writeSafeString(std::get<1>(tuple));
+        }
+    }
+    writer.endArray();
+}
+
 JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessage& message, 
                                 const SerializationRestriction& restriction)
 {
@@ -133,6 +149,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     
     writeVotes(writer, "upVotes", message.upVotes());
     writeVotes(writer, "downVotes", message.downVotes());
+
+    writePermissions(writer, message, DiscussionThreadMessagePrivilegesToSerialize, restriction);
 
     writer << objEnd;
     return writer;
@@ -270,11 +288,13 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
         }
         writer << arrayEnd;
     }
-    writer  << propertySafeName("lastUpdated", thread.lastUpdated())
-            << propertySafeName("visited", thread.visited().load())
-            << propertySafeName("voteScore", thread.voteScore())
+    writer << propertySafeName("lastUpdated", thread.lastUpdated())
+           << propertySafeName("visited", thread.visited().load())
+           << propertySafeName("voteScore", thread.voteScore());
 
-        << objEnd;
+    writePermissions(writer, thread, DiscussionThreadPrivilegesToSerialize, restriction);
+
+    writer << objEnd;
     return writer;
 }
 
@@ -309,7 +329,9 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag,
         }
         writer << arrayEnd;
     }
-
+    
+    writePermissions(writer, tag, DiscussionTagPrivilegesToSerialize, restriction);
+    
     writer << objEnd;
     return writer;
 }
@@ -371,6 +393,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
             serialize(writer, parent, restriction);
         });
     }
+
+    writePermissions(writer, category, DiscussionCategoryPrivilegesToSerialize, restriction);
 
     writer
         << objEnd;
