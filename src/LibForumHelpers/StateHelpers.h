@@ -29,7 +29,7 @@ namespace Forum
         template<typename T>
         struct OptionalRevertToNoneChanger final : private boost::noncopyable
         {
-            OptionalRevertToNoneChanger(boost::optional<T>& optional, T&& value) : optional_(optional)
+            OptionalRevertToNoneChanger(boost::optional<T>& optional, T value) : optional_(optional)
             {
                 if ( ! optional)
                 {

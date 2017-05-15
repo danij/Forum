@@ -35,6 +35,11 @@ namespace Forum
             bool hideDiscussionCategoriesOfTags = false;
             boost::optional<int> displayDiscussionCategoryParentRecursionDepth = boost::none;
 
+            boost::optional<bool> allowDisplayDiscussionThreadMessage = boost::none;
+            boost::optional<bool> allowDisplayDiscussionThreadMessageUser = boost::none;
+            boost::optional<bool> allowDisplayDiscussionThreadMessageVotes = boost::none;
+            boost::optional<bool> allowDisplayDiscussionThreadMessageIpAddress = boost::none;
+
             bool hideLatestMessage = false;
         };
 

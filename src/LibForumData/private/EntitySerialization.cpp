@@ -103,7 +103,16 @@ static void writePermissions(JsonWriter& writer, const Entity& entity, const Pri
 JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessage& message, 
                                 const SerializationRestriction& restriction)
 {
-    if ( ! restriction.isAllowed(message)) return writer.null();
+    auto allowViewOverride = serializationSettings.allowDisplayDiscussionThreadMessage == true;
+    auto allowViewUserOverride = serializationSettings.allowDisplayDiscussionThreadMessageUser == true;
+    auto allowViewVotesOverride = serializationSettings.allowDisplayDiscussionThreadMessageVotes == true;
+    auto allowViewIpAddressOverride = serializationSettings.allowDisplayDiscussionThreadMessageIpAddress == true;
+
+    if ( ! allowViewOverride)
+    {
+        if ( ! restriction.isAllowed(message)) return writer.null();
+    }
+
     writer
         << objStart
             << propertySafeName("id", message.id())
@@ -114,7 +123,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     auto content = message.content();
     writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
 
-    if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
+    if (allowViewUserOverride && ( ! serializationSettings.hideDiscussionThreadCreatedBy))
     {
         writer.newPropertyWithSafeName("createdBy");
         serialize(writer, message.createdBy(), restriction);
@@ -135,20 +144,32 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         writer.startObject();
         message.executeActionWithLastUpdatedByIfAvailable([&](auto& by)
         {
-            writer << propertySafeName("userId", by.id())
-                   << propertySafeName("userName", by.name());
+            if (allowViewUserOverride)
+            {
+                writer << propertySafeName("userId", by.id())
+                       << propertySafeName("userName", by.name());
+            }
         });
         writer << propertySafeName("at", message.lastUpdated())
                << propertySafeName("reason", message.lastUpdatedReason());
-        writeVisitDetails(writer, message.lastUpdatedDetails());
+        if (allowViewIpAddressOverride)
+        {
+            writeVisitDetails(writer, message.lastUpdatedDetails());
+        }
 
         writer.endObject();
     }
 
-    writeVisitDetails(writer, message.creationDetails());
-    
-    writeVotes(writer, "upVotes", message.upVotes());
-    writeVotes(writer, "downVotes", message.downVotes());
+    if (allowViewIpAddressOverride)
+    {
+        writeVisitDetails(writer, message.creationDetails());
+    }
+
+    if (allowViewVotesOverride)
+    {
+        writeVotes(writer, "upVotes", message.upVotes());
+        writeVotes(writer, "downVotes", message.downVotes());
+    }
 
     writePermissions(writer, message, DiscussionThreadMessagePrivilegesToSerialize, restriction);
 
@@ -217,6 +238,83 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const MessageComment& commen
     return writer;
 }
 
+//Overload to reduce the number of calls to the authorization engine for checking rights to each message
+template<typename Collection, size_t PropertyNameSize>
+void writeDiscussionThreadMessages(const Collection& collection, int_fast32_t pageNumber, int_fast32_t pageSize,
+                                   bool ascending, const char(&propertyName)[PropertyNameSize], JsonWriter& writer,
+                                   const SerializationRestriction& restriction)
+{
+    auto totalCount = static_cast<int_fast32_t>(collection.size());
+
+    writer << propertySafeName("totalCount", totalCount)
+           << propertySafeName("pageSize", pageSize)
+           << propertySafeName("page", pageNumber);
+
+    static thread_local std::vector<DiscussionThreadMessagePrivilegeCheck> privilegeChecks(100);
+
+    privilegeChecks.clear();
+
+    auto firstElementIndex = std::max(static_cast<decltype(totalCount)>(0),
+                                      static_cast<decltype(totalCount)>(pageNumber * pageSize));
+    if (ascending)
+    {
+        for (auto it = collection.nth(firstElementIndex), n = collection.nth(firstElementIndex + pageSize); it != n; ++it)
+        {
+            if (*it)
+            {
+                privilegeChecks.emplace_back(DiscussionThreadMessagePrivilegeCheck(restriction.user(), **it));
+            }
+        }
+    }
+    else
+    {
+        auto itStart = collection.nth(std::max(totalCount - firstElementIndex,
+            static_cast<decltype(totalCount)>(0)));
+        auto itEnd = collection.nth(std::max(totalCount - firstElementIndex - pageSize,
+            static_cast<decltype(totalCount)>(0)));
+
+        if (itStart != collection.begin())
+        {
+            for (auto it = itStart; it != itEnd;)
+            {
+                --it;
+                if (*it)
+                {
+                    privilegeChecks.emplace_back(DiscussionThreadMessagePrivilegeCheck(restriction.user(), **it));
+                }
+            }
+        }
+    }
+
+    restriction.privilegeStore().computeDiscussionThreadMessageVisibilityAllowed(privilegeChecks.data(), 
+                                                                                 privilegeChecks.size(), 
+                                                                                 restriction.now());
+
+    writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
+    writer.startArray();
+    for (auto& item : privilegeChecks)
+    {
+        if ( ! item.allowedToShowMessage) continue;
+        if ( ! item.message) continue;
+
+        OptionalRevertToNoneChanger<decltype(serializationSettings.allowDisplayDiscussionThreadMessage)::value_type>
+            _(serializationSettings.allowDisplayDiscussionThreadMessage, item.allowedToShowMessage);
+
+        OptionalRevertToNoneChanger<decltype(serializationSettings.allowDisplayDiscussionThreadMessageUser)::value_type>
+            __(serializationSettings.allowDisplayDiscussionThreadMessageUser, item.allowedToShowUser);
+
+        OptionalRevertToNoneChanger<decltype(serializationSettings.allowDisplayDiscussionThreadMessageVotes)::value_type>
+            ___(serializationSettings.allowDisplayDiscussionThreadMessageVotes, item.allowedToShowVotes);
+        
+        OptionalRevertToNoneChanger<decltype(serializationSettings.allowDisplayDiscussionThreadMessageIpAddress)::value_type>
+            ____(serializationSettings.allowDisplayDiscussionThreadMessageIpAddress, item.allowedToShowIpAddress);
+
+        serialize(writer, *item.message, restriction);
+    }
+    writer.endArray();
+}
+
+
 JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thread,
                                 const SerializationRestriction& restriction)
 {
@@ -249,8 +347,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
         auto& displayContext = Context::getDisplayContext();
         
-        writeEntitiesWithPagination(messagesIndex, displayContext.pageNumber, pageSize, true, "messages", writer, 
-                                    [](auto&) { return true; }, restriction);
+        writeDiscussionThreadMessages(messagesIndex, displayContext.pageNumber, pageSize, true, "messages", writer,
+                                      restriction);
     }
     if ( ! serializationSettings.hideVisitedThreadSinceLastChange)
     {

@@ -16,14 +16,29 @@ namespace Forum
 {
     namespace Authorization
     {
-        struct DiscussionThreadMessagePrivilegeCheck
+        struct DiscussionThreadMessagePrivilegeCheck final
         {
-            Entities::User& user;
-            Entities::DiscussionThreadMessage& message;
-            bool allowedToShowMessage;
-            bool allowedToShowUser;
-            bool allowedToShowVotes;
-            bool allowedToShowIPAddress;
+            DiscussionThreadMessagePrivilegeCheck()
+            {}
+
+            DiscussionThreadMessagePrivilegeCheck(const Entities::User& user, 
+                                                  const Entities::DiscussionThreadMessage& message)
+                : user(&user), message(&message)
+            {                
+            }
+
+            DiscussionThreadMessagePrivilegeCheck(const DiscussionThreadMessagePrivilegeCheck&) = default;
+            DiscussionThreadMessagePrivilegeCheck(DiscussionThreadMessagePrivilegeCheck&&) = default;
+            
+            DiscussionThreadMessagePrivilegeCheck& operator=(const DiscussionThreadMessagePrivilegeCheck&) = default;
+            DiscussionThreadMessagePrivilegeCheck& operator=(DiscussionThreadMessagePrivilegeCheck&&) = default;
+
+            const Entities::User* user = nullptr;
+            const Entities::DiscussionThreadMessage* message = nullptr;
+            bool allowedToShowMessage = false;
+            bool allowedToShowUser = false;
+            bool allowedToShowVotes = false;
+            bool allowedToShowIpAddress = false;
         };
 
         class GrantedPrivilegeStore final : private boost::noncopyable
@@ -68,7 +83,7 @@ namespace Forum
                                          ForumWidePrivilege privilege, time_t now) const;
 
             void computeDiscussionThreadMessageVisibilityAllowed(DiscussionThreadMessagePrivilegeCheck* items,
-                                                                 size_t nrOfItems, time_t now);
+                                                                 size_t nrOfItems, time_t now) const;
         private:
 
             void updateDiscussionThreadMessagePrivilege(const Entities::User& user, const Entities::DiscussionThread& thread, 
@@ -158,6 +173,10 @@ namespace Forum
             {
             }
 
+            const GrantedPrivilegeStore& privilegeStore() const { return privilegeStore_; }
+            const        Entities::User&           user() const { return user_; }
+                                 time_t             now() const { return now_; }
+                                 
             bool isAllowed(const Entities::DiscussionThreadMessage& message, 
                            DiscussionThreadMessagePrivilege privilege = DiscussionThreadMessagePrivilege::VIEW) const
             {
@@ -181,7 +200,7 @@ namespace Forum
             {
                 return static_cast<bool>(privilegeStore_.isAllowed(user_, category, privilege, now_));
             }
-
+            
         private:
             const GrantedPrivilegeStore& privilegeStore_;
             const Entities::User& user_;

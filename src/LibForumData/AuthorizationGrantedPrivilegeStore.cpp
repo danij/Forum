@@ -143,7 +143,7 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdType userId, const ForumWi
 }
 
 void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(DiscussionThreadMessagePrivilegeCheck* items, 
-                                                                            size_t nrOfItems, time_t now)
+                                                                            size_t nrOfItems, time_t now) const
 {
     if (nrOfItems < 1)
     {
@@ -158,8 +158,8 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
         { DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS, {}, {}, {}, {} },
     };
 
-    auto& user = items[0].user;
-    auto& firstMessage = items[0].message;
+    auto& user = *items[0].user;
+    auto& firstMessage = *items[0].message;
 
     firstMessage.executeActionWithParentThreadIfAvailable([this, &user, now, &threadValues](auto& thread)
     {
@@ -181,7 +181,7 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
         std::get<4>(threadValues[0]) = &item.allowedToShowMessage;
         std::get<4>(threadValues[1]) = &item.allowedToShowUser;
         std::get<4>(threadValues[2]) = &item.allowedToShowVotes;
-        std::get<4>(threadValues[3]) = &item.allowedToShowIPAddress;
+        std::get<4>(threadValues[3]) = &item.allowedToShowIpAddress;
 
         for (auto& tuple : threadValues)
         {
@@ -193,14 +193,19 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
 
             PrivilegeValueType messageLevelPositive, messageLevelNegative;
             
-            updateDiscussionThreadMessagePrivilege(item.user.id(), item.message.id(), now, privilege, 
+            if (( ! item.user) || ( ! item.message))
+            {
+                continue;
+            }
+
+            updateDiscussionThreadMessagePrivilege(item.user->id(), item.message->id(), now, privilege, 
                                                    messageLevelPositive, messageLevelNegative);
             
             auto positive = maximumPrivilegeValue(messageLevelPositive, threadLevelPositive);
             auto negative = minimumPrivilegeValue(messageLevelNegative, threadLevelNegative);
 
             *boolToUpdate = static_cast<bool>(
-                    ::isAllowed(positive, negative, item.message.getDiscussionThreadMessagePrivilege(privilege, threadLevelRequired)));
+                    ::isAllowed(positive, negative, item.message->getDiscussionThreadMessagePrivilege(privilege, threadLevelRequired)));
         }
     }
 }
