@@ -58,7 +58,7 @@ void GrantedPrivilegeStore::updateDiscussionThreadMessagePrivilege(const Entitie
                                                                    PrivilegeValueType& negativeValue) const
 {
     updateDiscussionThreadMessagePrivilege(user.id(), thread.id(), now, privilege, positiveValue, negativeValue);
-    for (auto& tag : thread.tags())
+    for (auto tag : thread.tags())
     {
         if (tag)
         {
@@ -97,7 +97,7 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const Disc
     PrivilegeValueType positive, negative;
     updateDiscussionThreadPrivilege(user.id(), thread.id(), now, privilege, positive, negative);
 
-    for (auto& tag : thread.tags())
+    for (auto tag : thread.tags())
     {
         if (tag)
         {
