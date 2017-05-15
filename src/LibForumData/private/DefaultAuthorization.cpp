@@ -8,7 +8,7 @@ using namespace Forum::Entities;
 
 DefaultAuthorization::DefaultAuthorization(GrantedPrivilegeStore& privilegeStore, 
                                            ForumWidePrivilegeStore& forumWidePrivilegeStore)
-    : grantedPrivilegeStore_(privilegeStore), forumWidePrivilegeStore_(forumWidePrivilegeStore_)
+    : grantedPrivilegeStore_(privilegeStore), forumWidePrivilegeStore_(forumWidePrivilegeStore)
 {
 }
 
