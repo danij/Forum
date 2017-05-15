@@ -19,6 +19,7 @@ add_subdirectory(src/LibForumContext)
 add_subdirectory(src/LibForumServiceEndpoints)
 add_subdirectory(src/LibForumHelpers)
 add_subdirectory(src/LibForumData)
+add_subdirectory(src/LibForumPersistence)
 
 add_subdirectory(src/ForumApp)
 

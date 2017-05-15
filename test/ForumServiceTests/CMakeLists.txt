@@ -22,6 +22,7 @@ set(SOURCE_FILES
         IdTests.cpp)
 
 set(HEADER_FILES
+        AllowAllAuthorization.h
         TestHelpers.h
         CommandsCommon.h)
 

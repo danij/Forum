@@ -14,17 +14,20 @@ set(SOURCE_FILES
 
 set(HEADER_FILES
         Application.h
-        DefaultIOServiceProvider.h)
+        DefaultIOServiceProvider.h
+        ../Logging/Logging.h)
 
 include_directories(
-        ../../src
-        ../../src/LibFastJsonWriter
-        ../../src/LibHttp
-        ../../src/LibForumContext
-        ../../src/LibForumServiceEndpoints
-        ../../src/LibForumData
-        ../../src/LibForumData/private
-        ../../src/LibForumHelpers
+        ../
+        ../LibFastJsonWriter
+        ../LibHttp
+        ../LibForumContext
+        ../LibForumServiceEndpoints
+        ../LibForumData
+        ../LibForumData/private
+        ../LibForumHelpers
+        ../LibForumPersistence
+        ../Logging
         ${Boost_INCLUDE_DIRS})
 
 add_executable(ForumApp
@@ -36,6 +39,7 @@ target_link_libraries(ForumApp
         ForumServiceEndpoints
         ForumData
         ForumHelpers
+        ForumPersistence
         ${Boost_LIBRARIES}
         ${ICU_LIBRARIES}
         ${ICU_I18N_LIBRARIES})

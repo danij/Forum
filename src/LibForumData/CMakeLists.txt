@@ -20,7 +20,9 @@ set(SOURCE_FILES
         private/MemoryRepositoryDiscussionThreadMessage.cpp
         private/MemoryRepositoryDiscussionTag.cpp
         private/MemoryRepositoryDiscussionCategory.cpp
-        private/MetricsRepository.cpp)
+        private/MetricsRepository.cpp
+        private/DefaultAuthorization.cpp
+        private/AuthorizationGrantedPrivilegeStore.cpp)
 
 set(HEADER_FILES
         ../Version.h
@@ -43,6 +45,9 @@ set(HEADER_FILES
         EntityMessageCommentCollectionBase.h
         EntityDiscussionTag.h
         EntityDiscussionCategory.h
+        DefaultAuthorization.h
+        AuthorizationPrivileges.h
+        AuthorizationGrantedPrivilegeStore.h
 
         private/ResourceGuard.h
         private/EntitySerialization.h

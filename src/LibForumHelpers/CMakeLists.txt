@@ -4,7 +4,7 @@ project(LibForumHelpers CXX)
 set(Boost_USE_STATIC_LIBS    OFF)
 set(Boost_USE_MULTITHREADED  ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost REQUIRED COMPONENTS locale regex thread system)
+find_package(Boost REQUIRED COMPONENTS regex thread system)
 find_package(ICU)
 
 set(SOURCE_FILES
