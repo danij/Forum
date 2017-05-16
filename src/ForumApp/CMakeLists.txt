@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.3)
 project(ForumApp CXX)
 
-set(Boost_USE_STATIC_LIBS    OFF)
+set(Boost_USE_STATIC_LIBS    ON)
 set(Boost_USE_MULTITHREADED  ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost REQUIRED COMPONENTS system)
+
+find_package(Boost REQUIRED COMPONENTS log program_options system)
 find_package(ICU)
 
 set(SOURCE_FILES

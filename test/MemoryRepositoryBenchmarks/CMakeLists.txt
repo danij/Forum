@@ -10,13 +10,14 @@ set(SOURCE_FILES
         benchmarks.cpp)
 
 include_directories(
-        ../../src
+        ../
         ../../src/LibFastJsonWriter
         ../../src/LibForumContext
         ../../src/LibForumServiceEndpoints
         ../../src/LibForumData
         ../../src/LibForumData/private
         ../../src/LibForumHelpers
+        ../../src/LibForumPersistence
         ${Boost_INCLUDE_DIRS})
 
 add_executable(MemoryRepositoryBenchmarks ${SOURCE_FILES} ${HEADER_FILES} ${JSON_HEADER_FILES})
@@ -26,6 +27,7 @@ target_link_libraries(MemoryRepositoryBenchmarks
         ForumContext
         ForumData
         ForumHelpers
+        ForumPersistence
         ${Boost_LIBRARIES}
         ${ICU_LIBRARIES}
         ${ICU_I18N_LIBRARIES})
