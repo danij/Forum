@@ -218,9 +218,9 @@ private:
     ResponseBufferType responseBuffer_;
     HttpResponseBuilder responseBuilder_;
     TimeoutManager<boost::asio::ip::tcp::socket>& timeoutManager_;
-    Parser parser_;
     bool keepConnectionAlive_ = false;
     bool trustIpFromXForwardedFor_ = false;
+    Parser parser_;
 };
 
 struct HttpListener::HttpListenerImpl

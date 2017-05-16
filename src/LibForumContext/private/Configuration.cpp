@@ -15,8 +15,9 @@ void Forum::Configuration::setGlobalConfig(const Config& value)
     std::atomic_store(&currentConfig, std::make_shared<const Config>(value));
 }
 
+#define CONCAT_MEMBER(structure, member) structure.member
 #define LOAD_CONFIG_VALUE(path) \
-    config.##path = tree.get<decltype(config.##path)>(#path, config.##path);
+    CONCAT_MEMBER(config, path) = tree.get<decltype(CONCAT_MEMBER(config, path))>(#path, CONCAT_MEMBER(config, path))
 
 void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
 {

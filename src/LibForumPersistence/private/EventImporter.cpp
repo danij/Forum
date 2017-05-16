@@ -21,7 +21,7 @@ using namespace Forum;
 using namespace Forum::Persistence;
 
 template<typename Fn>
-static void iteratePathRecursively(const boost::filesystem::path& sourcePath, Fn& action)
+static void iteratePathRecursively(const boost::filesystem::path& sourcePath, Fn&& action)
 {
     if (is_directory(sourcePath))
     {

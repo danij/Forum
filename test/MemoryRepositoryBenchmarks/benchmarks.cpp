@@ -156,7 +156,7 @@ const float messageContentLengthMean = 1000;
 const float messageContentLengthStddev = 200;
 const int retries = 1000;
 
-static std::atomic_int currentAuthNumber = 1;
+static std::atomic_int currentAuthNumber{ 1 };
 
 std::random_device device;
 std::mt19937 randomGenerator(device());

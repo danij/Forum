@@ -6,7 +6,6 @@
 #include <array>
 #include <cstdint>
 #include <ctime>
-#include <tuple>
 
 #include <boost/optional.hpp>
 
@@ -37,12 +36,12 @@ namespace Forum
             COUNT
         };
 
-        const std::array<std::tuple<DiscussionThreadMessagePrivilege, StringView>, 4> DiscussionThreadMessagePrivilegesToSerialize =
+        const std::pair<DiscussionThreadMessagePrivilege, StringView> DiscussionThreadMessagePrivilegesToSerialize[] =
         {
-            std::tuple<DiscussionThreadMessagePrivilege, StringView>{ DiscussionThreadMessagePrivilege::UP_VOTE, "up_vote" },
-            std::tuple<DiscussionThreadMessagePrivilege, StringView>{ DiscussionThreadMessagePrivilege::DOWN_VOTE, "down_vote" },
-            std::tuple<DiscussionThreadMessagePrivilege, StringView>{ DiscussionThreadMessagePrivilege::CHANGE_CONTENT, "change_content" },
-            std::tuple<DiscussionThreadMessagePrivilege, StringView>{ DiscussionThreadMessagePrivilege::DELETE, "delete" }
+            { DiscussionThreadMessagePrivilege::UP_VOTE, "up_vote" },
+            { DiscussionThreadMessagePrivilege::DOWN_VOTE, "down_vote" },
+            { DiscussionThreadMessagePrivilege::CHANGE_CONTENT, "change_content" },
+            { DiscussionThreadMessagePrivilege::DELETE, "delete" }
         };
 
         enum class DiscussionThreadMessageDefaultPrivilegeDuration : EnumIntType
@@ -71,13 +70,13 @@ namespace Forum
             COUNT
         };
 
-        const std::array<std::tuple<DiscussionThreadPrivilege, StringView>, 5> DiscussionThreadPrivilegesToSerialize =
+        const std::pair<DiscussionThreadPrivilege, StringView> DiscussionThreadPrivilegesToSerialize[] =
         {
-            std::tuple<DiscussionThreadPrivilege, StringView>{ DiscussionThreadPrivilege::ADD_MESSAGE, "add_message" },
-            std::tuple<DiscussionThreadPrivilege, StringView>{ DiscussionThreadPrivilege::CHANGE_NAME, "change_name" },
-            std::tuple<DiscussionThreadPrivilege, StringView>{ DiscussionThreadPrivilege::ADD_TAG, "add_tag" },
-            std::tuple<DiscussionThreadPrivilege, StringView>{ DiscussionThreadPrivilege::REMOVE_TAG, "remove_tag" },
-            std::tuple<DiscussionThreadPrivilege, StringView>{ DiscussionThreadPrivilege::DELETE, "delete" },
+            { DiscussionThreadPrivilege::ADD_MESSAGE, "add_message" },
+            { DiscussionThreadPrivilege::CHANGE_NAME, "change_name" },
+            { DiscussionThreadPrivilege::ADD_TAG, "add_tag" },
+            { DiscussionThreadPrivilege::REMOVE_TAG, "remove_tag" },
+            { DiscussionThreadPrivilege::DELETE, "delete" },
         };
 
         enum class DiscussionTagPrivilege : EnumIntType
@@ -94,11 +93,11 @@ namespace Forum
             COUNT
         };
 
-        const std::array<std::tuple<DiscussionTagPrivilege, StringView>, 3> DiscussionTagPrivilegesToSerialize =
+        const std::pair<DiscussionTagPrivilege, StringView> DiscussionTagPrivilegesToSerialize[] =
         {
-            std::tuple<DiscussionTagPrivilege, StringView>{ DiscussionTagPrivilege::CHANGE_NAME, "change_name" },
-            std::tuple<DiscussionTagPrivilege, StringView>{ DiscussionTagPrivilege::CHANGE_UIBLOB, "change_uiblob" },
-            std::tuple<DiscussionTagPrivilege, StringView>{ DiscussionTagPrivilege::DELETE, "delete" }
+            { DiscussionTagPrivilege::CHANGE_NAME, "change_name" },
+            { DiscussionTagPrivilege::CHANGE_UIBLOB, "change_uiblob" },
+            { DiscussionTagPrivilege::DELETE, "delete" }
         };
 
         enum class DiscussionCategoryPrivilege : EnumIntType
@@ -118,15 +117,15 @@ namespace Forum
             COUNT
         };
 
-        const std::array<std::tuple<DiscussionCategoryPrivilege, StringView>, 7> DiscussionCategoryPrivilegesToSerialize = 
+        const std::pair<DiscussionCategoryPrivilege, StringView> DiscussionCategoryPrivilegesToSerialize[] =
         {
-            std::tuple<DiscussionCategoryPrivilege, StringView>{ DiscussionCategoryPrivilege::CHANGE_NAME, "change_name" },
-            std::tuple<DiscussionCategoryPrivilege, StringView>{ DiscussionCategoryPrivilege::CHANGE_DESCRIPTION, "change_description" },
-            std::tuple<DiscussionCategoryPrivilege, StringView>{ DiscussionCategoryPrivilege::CHANGE_PARENT, "change_parent" },
-            std::tuple<DiscussionCategoryPrivilege, StringView>{ DiscussionCategoryPrivilege::CHANGE_DISPLAYORDER, "change_displayorder" },
-            std::tuple<DiscussionCategoryPrivilege, StringView>{ DiscussionCategoryPrivilege::ADD_TAG, "add_tag" },
-            std::tuple<DiscussionCategoryPrivilege, StringView>{ DiscussionCategoryPrivilege::REMOVE_TAG, "remove_tag" },
-            std::tuple<DiscussionCategoryPrivilege, StringView>{ DiscussionCategoryPrivilege::DELETE, "delete" }
+            { DiscussionCategoryPrivilege::CHANGE_NAME, "change_name" },
+            { DiscussionCategoryPrivilege::CHANGE_DESCRIPTION, "change_description" },
+            { DiscussionCategoryPrivilege::CHANGE_PARENT, "change_parent" },
+            { DiscussionCategoryPrivilege::CHANGE_DISPLAYORDER, "change_displayorder" },
+            { DiscussionCategoryPrivilege::ADD_TAG, "add_tag" },
+            { DiscussionCategoryPrivilege::REMOVE_TAG, "remove_tag" },
+            { DiscussionCategoryPrivilege::DELETE, "delete" }
         };
 
         enum class ForumWidePrivilege : EnumIntType

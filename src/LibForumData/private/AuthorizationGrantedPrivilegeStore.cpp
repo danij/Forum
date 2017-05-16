@@ -150,12 +150,13 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
         return;
     }
 
-    std::tuple<DiscussionThreadMessagePrivilege, PrivilegeValueType, PrivilegeValueType, PrivilegeValueType, bool*> threadValues[] =
+    typedef std::tuple<DiscussionThreadMessagePrivilege, PrivilegeValueType, PrivilegeValueType, PrivilegeValueType, bool*> ThreadValuesTuple;
+    ThreadValuesTuple threadValues[] =
     {
-        { DiscussionThreadMessagePrivilege::VIEW, {}, {}, {}, {} },
-        { DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER, {}, {}, {}, {} },
-        { DiscussionThreadMessagePrivilege::VIEW_VOTES, {}, {}, {}, {} },
-        { DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS, {}, {}, {}, {} },
+        ThreadValuesTuple{ DiscussionThreadMessagePrivilege::VIEW, {}, {}, {}, {} },
+        ThreadValuesTuple{ DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER, {}, {}, {}, {} },
+        ThreadValuesTuple{ DiscussionThreadMessagePrivilege::VIEW_VOTES, {}, {}, {}, {} },
+        ThreadValuesTuple{ DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS, {}, {}, {}, {} },
     };
 
     auto& user = *items[0].user;

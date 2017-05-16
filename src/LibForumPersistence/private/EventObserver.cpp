@@ -99,7 +99,7 @@ private:
     static constexpr size_t MaxBlobsInQueue = 10000;
     boost::lockfree::queue<Blob, boost::lockfree::capacity<MaxBlobsInQueue>> queue_;
     std::thread writeThread_;
-    std::atomic_bool stopWriteThread_ = false;
+    std::atomic_bool stopWriteThread_{ false };
     std::condition_variable blobInQueueCondition_;
     std::mutex conditionMutex_;
 };
@@ -213,18 +213,20 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     }
 
     static constexpr size_t UuidSize = boost::uuids::uuid::static_size();
-    static constexpr PersistentTimestampType ZeroTimestamp = 0;
+    static const PersistentTimestampType ZeroTimestamp;
     static const Helpers::IpAddress ZeroIpAddress;
+
+    typedef decltype(BlobPart::size) SizeType;
 
 #define ADD_CONTEXT_BLOB_PARTS \
     { reinterpret_cast<const char*>(&contextTimestamp), sizeof(contextTimestamp), false }, \
     { reinterpret_cast<const char*>(&context.performedBy.id().value().data), UuidSize, false }, \
-    { reinterpret_cast<const char*>(context.ipAddress.data()), context.ipAddress.dataSize(), false }
+    { reinterpret_cast<const char*>(context.ipAddress.data()), static_cast<SizeType>(context.ipAddress.dataSize()), false }
 
 #define ADD_EMPTY_CONTEXT_BLOB_PARTS \
     { reinterpret_cast<const char*>(&ZeroTimestamp), sizeof(ZeroTimestamp), false }, \
     { reinterpret_cast<const char*>(&UuidString::empty.value().data), UuidSize, false }, \
-    { reinterpret_cast<const char*>(ZeroIpAddress.data()), ZeroIpAddress.dataSize(), false }
+    { reinterpret_cast<const char*>(ZeroIpAddress.data()), static_cast<SizeType>(ZeroIpAddress.dataSize()), false }
         
     void onAddNewUser(ObserverContext context, const User& user)
     {
@@ -233,8 +235,8 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false }, \
-            { reinterpret_cast<const char*>(user.auth().data()), user.auth().size(), true }, \
-            { reinterpret_cast<const char*>(user.name().data()), user.name().size(), true }, \
+            { reinterpret_cast<const char*>(user.auth().data()), static_cast<SizeType>(user.auth().size()), true }, \
+            { reinterpret_cast<const char*>(user.name().data()), static_cast<SizeType>(user.name().size()), true }, \
         };
 
         recordBlob(EventType::ADD_NEW_USER, 1, parts, std::extent<decltype(parts)>::value);
@@ -244,11 +246,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     {
         switch (change)
         {
-        case User::Name: 
+        case User::Name:
             onChangeUserName(context, user);
             break;
-        case User::Info: 
+        case User::Info:
             onChangeUserInfo(context, user);
+            break;
+        default:
             break;
         }
     }
@@ -260,7 +264,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(user.name().data()), user.name().size(), true }
+            { reinterpret_cast<const char*>(user.name().data()), static_cast<SizeType>(user.name().size()), true }
         };
 
         recordBlob(EventType::CHANGE_USER_NAME, 1, parts, std::extent<decltype(parts)>::value);
@@ -273,7 +277,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(user.info().data()), user.info().size(), true }
+            { reinterpret_cast<const char*>(user.info().data()), static_cast<SizeType>(user.info().size()), true }
         };
 
         recordBlob(EventType::CHANGE_USER_INFO, 1, parts, std::extent<decltype(parts)>::value);
@@ -298,7 +302,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(thread.name().data()), thread.name().size(), true }
+            { reinterpret_cast<const char*>(thread.name().data()), static_cast<SizeType>(thread.name().size()), true }
         };
 
         recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
@@ -312,6 +316,8 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         case DiscussionThread::Name: 
             onChangeDiscussionThreadName(context, thread);
             break;
+        default:
+            break;
         }
     }
 
@@ -322,7 +328,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(thread.name().data()), thread.name().size(), true }
+            { reinterpret_cast<const char*>(thread.name().data()), static_cast<SizeType>(thread.name().size()), true }
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_THREAD_NAME, 1, parts, std::extent<decltype(parts)>::value);
@@ -405,7 +411,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false },
             { reinterpret_cast<const char*>(&parentThreadId.value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(message.content().data()), message.content().size(), true }
+            { reinterpret_cast<const char*>(message.content().data()), static_cast<SizeType>(message.content().size()), true }
         };
 
         recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
@@ -419,6 +425,8 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         case DiscussionThreadMessage::Content: 
             onChangeDiscussionThreadMessageContentContent(context, message);
             break;
+        default:
+            break;
         }
     }
 
@@ -429,8 +437,8 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(message.content().data()), message.content().size(), true },
-            { reinterpret_cast<const char*>(message.lastUpdatedReason().data()), message.lastUpdatedReason().size(), true }
+            { reinterpret_cast<const char*>(message.content().data()), static_cast<SizeType>(message.content().size()), true },
+            { reinterpret_cast<const char*>(message.lastUpdatedReason().data()), static_cast<SizeType>(message.lastUpdatedReason().size()), true }
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1, parts, std::extent<decltype(parts)>::value);
@@ -497,7 +505,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&comment.id().value().data), UuidSize, false },
             { reinterpret_cast<const char*>(&parentMessageId.value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(comment.content().data()), comment.content().size(), true }
+            { reinterpret_cast<const char*>(comment.content().data()), static_cast<SizeType>(comment.content().size()), true }
         };
 
         recordBlob(EventType::ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
@@ -522,7 +530,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(tag.name().data()), tag.name().size(), true }
+            { reinterpret_cast<const char*>(tag.name().data()), static_cast<SizeType>(tag.name().size()), true }
         };
 
         recordBlob(EventType::ADD_NEW_DISCUSSION_TAG, 1, parts, std::extent<decltype(parts)>::value);
@@ -538,7 +546,9 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         case DiscussionTag::UIBlob: 
             onChangeDiscussionTagUIBlob(context, tag);
             break;
-        }    
+        default:
+            break;
+        }
     }
 
     void onChangeDiscussionTagName(ObserverContext context, const DiscussionTag& tag)
@@ -548,7 +558,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(tag.name().data()), tag.name().size(), true }
+            { reinterpret_cast<const char*>(tag.name().data()), static_cast<SizeType>(tag.name().size()), true }
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_TAG_NAME, 1, parts, std::extent<decltype(parts)>::value);
@@ -561,7 +571,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(tag.uiBlob().data()), tag.uiBlob().size(), true }
+            { reinterpret_cast<const char*>(tag.uiBlob().data()), static_cast<SizeType>(tag.uiBlob().size()), true }
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_TAG_UI_BLOB, 1, parts, std::extent<decltype(parts)>::value);
@@ -632,7 +642,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
             { reinterpret_cast<const char*>(&parentCategoryId.value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(category.name().data()), category.name().size(), true }
+            { reinterpret_cast<const char*>(category.name().data()), static_cast<SizeType>(category.name().size()), true }
         };
 
         recordBlob(EventType::ADD_NEW_DISCUSSION_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
@@ -655,6 +665,8 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         case DiscussionCategory::Parent:
             onChangeDiscussionCategoryParent(context, category);
             break;
+        default:
+            break;
         }
     }
 
@@ -665,7 +677,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(category.name().data()), category.name().size(), true }
+            { reinterpret_cast<const char*>(category.name().data()), static_cast<SizeType>(category.name().size()), true }
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_NAME, 1, parts, std::extent<decltype(parts)>::value);
@@ -678,7 +690,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(category.description().data()), category.description().size(), true }
+            { reinterpret_cast<const char*>(category.description().data()), static_cast<SizeType>(category.description().size()), true }
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_DESCRIPTION, 1, parts, std::extent<decltype(parts)>::value);
@@ -795,15 +807,18 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     std::vector<boost::signals2::connection> connections;
     EventCollector collector;
     std::thread timerThread;
-    std::atomic_bool stopTimerThread = false;
-    static constexpr std::chrono::seconds timerThreadCheckEverySeconds{ 1 };
+    std::atomic_bool stopTimerThread{ false };
+    static const std::chrono::seconds timerThreadCheckEverySeconds;
     static constexpr uint32_t updateThreadVisitedEveryIncrement = 30;
     uint32_t timerThreadCurrentIncrement = 0;
     std::mutex threadVisitedMutex;
     std::map<IdType, uint32_t> cachedNrOfThreadVisits;
 };
 
-const Helpers::IpAddress EventObserver::EventObserverImpl::ZeroIpAddress{};
+const PersistentTimestampType Forum::Persistence::EventObserver::EventObserverImpl::ZeroTimestamp{ 0 };
+const Helpers::IpAddress Forum::Persistence::EventObserver::EventObserverImpl::ZeroIpAddress{};
+const std::chrono::seconds Forum::Persistence::EventObserver::EventObserverImpl::timerThreadCheckEverySeconds{ 1 };
+
 
 EventObserver::EventObserver(ReadEvents& readEvents, WriteEvents& writeEvents, 
                              const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
