@@ -9,6 +9,7 @@
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/ranked_index.hpp>
+#include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 
 #include <memory>
@@ -34,6 +35,7 @@ namespace Forum
             struct DiscussionThreadCollectionByLastUpdated {};
             struct DiscussionThreadCollectionByLatestMessageCreated {};
             struct DiscussionThreadCollectionByMessageCount {};
+            struct DiscussionThreadCollectionByPinDisplayOrder {};
 
             template<typename IndexType, typename T1, typename T2>
             struct IdIndexType : boost::multi_index::hashed_unique<T1, T2>
@@ -62,6 +64,10 @@ namespace Forum
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLatestMessageCreated>,
                             const boost::multi_index::const_mem_fun<DiscussionThread, Timestamp,
                                     &DiscussionThread::latestMessageCreated>>,
+
+                    boost::multi_index::ordered_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByPinDisplayOrder>,
+                            const boost::multi_index::const_mem_fun<DiscussionThread, uint16_t,
+                                    &DiscussionThread::pinDisplayOrder>>,
 
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByMessageCount>,
                             const boost::multi_index::const_mem_fun<DiscussionThreadMessageCollectionBase<OrderedIndexForId>,
@@ -111,6 +117,11 @@ namespace Forum
             auto threadsByMessageCount() const
             {
                 return Helpers::toConst(threads_.template get<DiscussionThreadCollectionByMessageCount>());
+            }
+
+            auto threadsByPinDisplayOrder() const
+            {
+                return Helpers::toConst(threads_.template get<DiscussionThreadCollectionByPinDisplayOrder>());
             }
 
             bool containsThread(const DiscussionThreadRef& thread) const

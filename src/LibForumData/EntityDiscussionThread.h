@@ -49,6 +49,9 @@ namespace Forum
 
                   Timestamp    latestMessageCreated()      const { return latestMessageCreated_; }
 
+                  auto         pinDisplayOrder()           const { return pinDisplayOrder_; }
+                  auto&        pinDisplayOrder()                 { return pinDisplayOrder_; }
+
             DiscussionThreadMessage::VoteScoreType voteScore() const;
 
             Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(Authorization::DiscussionThreadMessagePrivilege privilege) const override;
@@ -69,7 +72,8 @@ namespace Forum
             };
 
             explicit DiscussionThread(User& createdBy)
-                    : createdBy_(createdBy), latestVisibleChange_(0), latestMessageCreated_(0), visited_(0) {};
+                    : createdBy_(createdBy), latestVisibleChange_(0), latestMessageCreated_(0), pinDisplayOrder_(0),
+                      visited_(0) {};
 
             void insertMessage(DiscussionThreadMessageRef message) override;
             void modifyDiscussionThreadMessage(MessageIdIteratorType iterator,
@@ -98,6 +102,7 @@ namespace Forum
             //store the timestamp of the latest message in the collection that was created
             //as it's expensive to retrieve it every time
             Timestamp latestMessageCreated_;
+            uint16_t pinDisplayOrder_;
             mutable std::atomic_int_fast64_t visited_;
             std::set<boost::uuids::uuid> visitorsSinceLastEdit_;
             std::set<std::weak_ptr<DiscussionTag>, std::owner_less<std::weak_ptr<DiscussionTag>>> tags_;
