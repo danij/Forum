@@ -47,66 +47,66 @@ namespace Forum
             //TODO remove expired privileges
             void grantDiscussionThreadMessagePrivilege(Entities::IdType userId, Entities::IdType entityId, 
                                                        DiscussionThreadMessagePrivilege privilege, 
-                                                       PrivilegeValueIntType value, time_t expiresAt);
+                                                       PrivilegeValueIntType value, Entities::Timestamp expiresAt);
             
             void grantDiscussionThreadPrivilege(Entities::IdType userId, Entities::IdType entityId, 
                                                 DiscussionThreadPrivilege privilege, 
-                                                PrivilegeValueIntType value, time_t expiresAt);
+                                                PrivilegeValueIntType value, Entities::Timestamp expiresAt);
 
             void grantDiscussionTagPrivilege(Entities::IdType userId, Entities::IdType entityId, 
                                              DiscussionTagPrivilege privilege, 
-                                             PrivilegeValueIntType value, time_t expiresAt);
+                                             PrivilegeValueIntType value, Entities::Timestamp expiresAt);
 
             void grantDiscussionCategoryPrivilege(Entities::IdType userId, Entities::IdType entityId, 
                                                   DiscussionCategoryPrivilege privilege, 
-                                                  PrivilegeValueIntType value, time_t expiresAt);
+                                                  PrivilegeValueIntType value, Entities::Timestamp expiresAt);
 
             void grantForumWidePrivilege(Entities::IdType userId, Entities::IdType entityId, 
                                          ForumWidePrivilege privilege, 
-                                         PrivilegeValueIntType value, time_t expiresAt);
+                                         PrivilegeValueIntType value, Entities::Timestamp expiresAt);
 
             //isAllowed returns the privilege level with which access was granted or empty if not allowed
 
             PrivilegeValueType isAllowed(const Entities::User& user, const Entities::DiscussionThreadMessage& message, 
-                                         DiscussionThreadMessagePrivilege privilege, time_t now) const;
+                                         DiscussionThreadMessagePrivilege privilege, Entities::Timestamp now) const;
             
             PrivilegeValueType isAllowed(const Entities::User& user, const Entities::DiscussionThread& thread,
-                                         DiscussionThreadPrivilege privilege, time_t now) const;
+                                         DiscussionThreadPrivilege privilege, Entities::Timestamp now) const;
             
             PrivilegeValueType isAllowed(const Entities::User& user, const Entities::DiscussionTag& tag,
-                                         DiscussionTagPrivilege privilege, time_t now) const;
+                                         DiscussionTagPrivilege privilege, Entities::Timestamp now) const;
             
             PrivilegeValueType isAllowed(const Entities::User& user, const Entities::DiscussionCategory& category,
-                                         DiscussionCategoryPrivilege privilege, time_t now) const;
+                                         DiscussionCategoryPrivilege privilege, Entities::Timestamp now) const;
             
             PrivilegeValueType isAllowed(Entities::IdType userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
-                                         ForumWidePrivilege privilege, time_t now) const;
+                                         ForumWidePrivilege privilege, Entities::Timestamp now) const;
 
             void computeDiscussionThreadMessageVisibilityAllowed(DiscussionThreadMessagePrivilegeCheck* items,
-                                                                 size_t nrOfItems, time_t now) const;
+                                                                 size_t nrOfItems, Entities::Timestamp now) const;
         private:
 
             void updateDiscussionThreadMessagePrivilege(const Entities::User& user, const Entities::DiscussionThread& thread, 
-                                                        time_t now, DiscussionThreadMessagePrivilege privilege,
+                                                        Entities::Timestamp now, DiscussionThreadMessagePrivilege privilege,
                                                         PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
             
-            void updateDiscussionThreadMessagePrivilege(Entities::IdType userId, Entities::IdType entityId, time_t now,
+            void updateDiscussionThreadMessagePrivilege(Entities::IdType userId, Entities::IdType entityId, Entities::Timestamp now,
                                                         DiscussionThreadMessagePrivilege privilege,
                                                         PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
             
-            void updateDiscussionThreadPrivilege(Entities::IdType userId, Entities::IdType entityId, time_t now,
+            void updateDiscussionThreadPrivilege(Entities::IdType userId, Entities::IdType entityId, Entities::Timestamp now,
                                                  DiscussionThreadPrivilege privilege,
                                                  PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
-            void updateDiscussionTagPrivilege(Entities::IdType userId, Entities::IdType entityId, time_t now,
+            void updateDiscussionTagPrivilege(Entities::IdType userId, Entities::IdType entityId, Entities::Timestamp now,
                                               DiscussionTagPrivilege privilege,
                                               PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const ;
 
-            void updateDiscussionCategoryPrivilege(Entities::IdType userId, Entities::IdType entityId, time_t now,
+            void updateDiscussionCategoryPrivilege(Entities::IdType userId, Entities::IdType entityId, Entities::Timestamp now,
                                                    DiscussionCategoryPrivilege privilege,
                                                    PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
-            void updateForumWidePrivilege(Entities::IdType userId, Entities::IdType entityId, time_t now,
+            void updateForumWidePrivilege(Entities::IdType userId, Entities::IdType entityId, Entities::Timestamp now,
                                           ForumWidePrivilege privilege,
                                           PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
@@ -115,7 +115,7 @@ namespace Forum
             struct PrivilegeEntry
             {
                 PrivilegeEntry(Entities::IdType userId, Entities::IdType entityId,
-                               EnumIntType privilege, PrivilegeValueIntType value, time_t expiresAt)
+                               EnumIntType privilege, PrivilegeValueIntType value, Entities::Timestamp expiresAt)
                     : userAndEntityAndPrivilege_({ userId, entityId, privilege }),
                       privilegeValue_(value), expiresAt_(expiresAt)
                 {
@@ -132,7 +132,7 @@ namespace Forum
             private:
                 IdPrivilegeTuple userAndEntityAndPrivilege_;
                 PrivilegeValueIntType privilegeValue_;
-                time_t expiresAt_;
+                Entities::Timestamp expiresAt_;
             };
 
             struct PrivilegeEntryCollectionByUserIdEntityIdPrivilege {};
@@ -156,7 +156,7 @@ namespace Forum
                     PrivilegeEntryCollection;
 
             void updatePrivilege(const PrivilegeEntryCollection& collection, Entities::IdType userId, 
-                                 Entities::IdType entityId, time_t now, EnumIntType privilege,
+                                 Entities::IdType entityId, Entities::Timestamp now, EnumIntType privilege,
                                  PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
             PrivilegeEntryCollection discussionThreadMessageSpecificPrivileges_;
@@ -168,14 +168,14 @@ namespace Forum
 
         struct SerializationRestriction final : private boost::noncopyable
         {
-            SerializationRestriction(const GrantedPrivilegeStore& privilegeStore, const Entities::User& user, time_t now)
+            SerializationRestriction(const GrantedPrivilegeStore& privilegeStore, const Entities::User& user, Entities::Timestamp now)
                 : privilegeStore_(privilegeStore), user_(user), now_(now)
             {
             }
 
             const GrantedPrivilegeStore& privilegeStore() const { return privilegeStore_; }
             const        Entities::User&           user() const { return user_; }
-                                 time_t             now() const { return now_; }
+                                 Entities::Timestamp             now() const { return now_; }
                                  
             bool isAllowed(const Entities::DiscussionThreadMessage& message, 
                            DiscussionThreadMessagePrivilege privilege = DiscussionThreadMessagePrivilege::VIEW) const
@@ -204,7 +204,7 @@ namespace Forum
         private:
             const GrantedPrivilegeStore& privilegeStore_;
             const Entities::User& user_;
-            time_t now_;
+            Entities::Timestamp now_;
         };
     }
 }
