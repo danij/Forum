@@ -36,6 +36,8 @@ namespace Forum
             StatusCode addNewDiscussionThread(StringView name, OutStream& output) override;
             StatusCode changeDiscussionThreadName(const Entities::IdType& id, StringView newName,
                                                   OutStream& output) override;
+            StatusCode changeDiscussionThreadPinDisplayOrder(const Entities::IdType& id, uint16_t newValue,
+                                                             OutStream& output) override;
             StatusCode deleteDiscussionThread(const Entities::IdType& id, OutStream& output) override;
             StatusCode mergeDiscussionThreads(const Entities::IdType& fromId, const Entities::IdType& intoId, 
                                               OutStream& output) override;

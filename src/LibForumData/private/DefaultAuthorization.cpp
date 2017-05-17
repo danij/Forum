@@ -103,6 +103,13 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionThreadName(const User&
     return isAllowed(currentUser, thread, DiscussionThreadPrivilege::CHANGE_NAME);
 }
 
+AuthorizationStatus DefaultAuthorization::changeDiscussionThreadPinDisplayOrder(const User& currentUser, 
+                                                                                const DiscussionThread& thread, 
+                                                                                uint16_t newValue) const
+{
+    return isAllowed(currentUser, thread, DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER);
+}
+
 AuthorizationStatus DefaultAuthorization::deleteDiscussionThread(const User& currentUser, const DiscussionThread& thread) const
 {
     return isAllowed(currentUser, thread, DiscussionThreadPrivilege::DELETE);

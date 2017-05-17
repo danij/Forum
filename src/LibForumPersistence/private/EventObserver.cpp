@@ -316,6 +316,9 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         case DiscussionThread::Name: 
             onChangeDiscussionThreadName(context, thread);
             break;
+        case DiscussionThread::PinDisplayOrder:
+            onChangeDiscussionThreadPinDisplayOrder(context, thread);
+            break;
         default:
             break;
         }
@@ -332,6 +335,19 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_THREAD_NAME, 1, parts, std::extent<decltype(parts)>::value);
+    }
+
+    void onChangeDiscussionThreadPinDisplayOrder(ObserverContext context, const DiscussionThread& thread)
+    {
+        PersistentTimestampType contextTimestamp = context.timestamp;
+        BlobPart parts[] =
+        {
+            ADD_CONTEXT_BLOB_PARTS,
+            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
+            { reinterpret_cast<const char*>(thread.pinDisplayOrder()), static_cast<SizeType>(sizeof(uint16_t)), true }
+        };
+
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER, 1, parts, std::extent<decltype(parts)>::value);
     }
 
     void onDeleteDiscussionThread(ObserverContext context, const DiscussionThread& thread)

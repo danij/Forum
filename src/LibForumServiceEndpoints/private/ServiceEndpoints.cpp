@@ -483,6 +483,18 @@ void DiscussionThreadsEndpoint::changeName(Http::RequestState& requestState)
     });
 }
 
+void DiscussionThreadsEndpoint::changePinDisplayOrder(Http::RequestState& requestState)
+{
+    handleDefault(requestState, {}, {},
+        [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
+            std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER, parameters);
+    });
+}
+
 void DiscussionThreadsEndpoint::merge(Http::RequestState& requestState)
 {
     handleDefault(requestState, {}, {}, 

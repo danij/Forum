@@ -60,6 +60,7 @@ namespace Forum
             UNSUBSCRIBE,
             ADD_MESSAGE,
             CHANGE_NAME,
+            CHANGE_PIN_DISPLAY_ORDER,
             ADD_TAG,
             REMOVE_TAG,
             DELETE,
@@ -74,6 +75,7 @@ namespace Forum
         {
             { DiscussionThreadPrivilege::ADD_MESSAGE, "add_message" },
             { DiscussionThreadPrivilege::CHANGE_NAME, "change_name" },
+            { DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER, "change_pin_display_order" },
             { DiscussionThreadPrivilege::ADD_TAG, "add_tag" },
             { DiscussionThreadPrivilege::REMOVE_TAG, "remove_tag" },
             { DiscussionThreadPrivilege::DELETE, "delete" },

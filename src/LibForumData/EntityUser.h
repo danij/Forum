@@ -41,6 +41,7 @@ namespace Forum
             auto subscribedThreadsByLastUpdated()          const { return subscribedThreads_.threadsByLastUpdated(); }
             auto subscribedThreadsByLatestMessageCreated() const { return subscribedThreads_.threadsByLatestMessageCreated(); }
             auto subscribedThreadsByMessageCount()         const { return subscribedThreads_.threadsByMessageCount(); }
+            auto subscribedThreadsByPinDisplayOrder()      const { return subscribedThreads_.threadsByPinDisplayOrder(); }
 
             enum ChangeType : uint32_t
             {

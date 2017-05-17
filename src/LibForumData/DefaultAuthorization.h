@@ -59,6 +59,9 @@ namespace Forum
             AuthorizationStatus changeDiscussionThreadName(const Entities::User& currentUser, 
                                                            const Entities::DiscussionThread& thread, 
                                                            StringView newName) const override;
+            AuthorizationStatus changeDiscussionThreadPinDisplayOrder(const Entities::User& currentUser, 
+                                                                      const Entities::DiscussionThread& thread, 
+                                                                      uint16_t newValue) const override;
             AuthorizationStatus deleteDiscussionThread(const Entities::User& currentUser, 
                                                        const Entities::DiscussionThread& thread) const override;
             AuthorizationStatus mergeDiscussionThreads(const Entities::User& currentUser, 

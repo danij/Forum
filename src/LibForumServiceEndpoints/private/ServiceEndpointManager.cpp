@@ -76,6 +76,8 @@ void ServiceEndpointManager::registerRoutes(Http::HttpRouter& router)
                     [this](auto& state) { this->impl_->threadsEndpoint.remove(state);});
     router.addRoute("threads/name", Http::HttpVerb::PUT,
                     [this](auto& state) { this->impl_->threadsEndpoint.changeName(state);});
+    router.addRoute("threads/pindisplayorder", Http::HttpVerb::PUT,
+                    [this](auto& state) { this->impl_->threadsEndpoint.changePinDisplayOrder(state);});
     router.addRoute("threads/merge", Http::HttpVerb::POST,
                     [this](auto& state) { this->impl_->threadsEndpoint.merge(state);});
     router.addRoute("threads/subscribe", Http::HttpVerb::POST,

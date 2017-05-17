@@ -26,11 +26,12 @@ MemoryRepositoryDiscussionThread::MemoryRepositoryDiscussionThread(MemoryStoreRe
 }
 
 template<typename ThreadsCollectionByName, typename ThreadsCollectionByCreated, typename ThreadsCollectionByLastUpdated,
-         typename ThreadsCollectionByMessageCount>
-static void writeDiscussionThreads(ThreadsCollectionByName&& collectionByName, 
+         typename ThreadsCollectionByMessageCount, typename ThreadsCollectionByPinDisplayOrder>
+static void writeDiscussionThreads(ThreadsCollectionByName&& collectionByName,
                                    ThreadsCollectionByCreated&& collectionByCreated,
                                    ThreadsCollectionByLastUpdated&& collectionByLastUpdated,
-                                   ThreadsCollectionByMessageCount&& collectionByMessageCount,                                   
+                                   ThreadsCollectionByMessageCount&& collectionByMessageCount,
+                                   ThreadsCollectionByPinDisplayOrder&& collectionByPinDisplayOrder,
                                    RetrieveDiscussionThreadsBy by, OutStream& output, 
                                    const GrantedPrivilegeStore& privilegeStore, const User& currentUser)
 {
@@ -55,25 +56,47 @@ static void writeDiscussionThreads(ThreadsCollectionByName&& collectionByName,
     
     auto ascending = displayContext.sortOrder == Context::SortOrder::Ascending;
 
+    Json::JsonWriter writer(output);
+
+    writer.startObject();
+
+    if (0 == displayContext.pageNumber)
+    {
+        writer.newPropertyWithSafeName("pinned_threads");
+        writer.startArray();
+
+        auto it = collectionByPinDisplayOrder.rbegin();
+        auto end = collectionByPinDisplayOrder.rend();
+
+        for (; (it != end) && ((*it)->pinDisplayOrder() > 0); ++it)
+        {
+            serialize(writer, **it, restriction);
+        }
+
+        writer.endArray();
+    }
+    
     switch (by)
     {
     case RetrieveDiscussionThreadsBy::Name:
-        writeEntitiesWithPagination(collectionByName, "threads", output, displayContext.pageNumber, 
-            pageSize, ascending, writeFilter, restriction);
+        writeEntitiesWithPagination(collectionByName, displayContext.pageNumber, pageSize, ascending, "threads", 
+            writer, writeFilter, restriction);
         break;
     case RetrieveDiscussionThreadsBy::Created:
-        writeEntitiesWithPagination(collectionByCreated, "threads", output, displayContext.pageNumber, 
-            pageSize, ascending, writeFilter, restriction);
+        writeEntitiesWithPagination(collectionByCreated, displayContext.pageNumber, pageSize, ascending, "threads",
+            writer, writeFilter, restriction);
         break;
     case RetrieveDiscussionThreadsBy::LastUpdated:
-        writeEntitiesWithPagination(collectionByLastUpdated, "threads", output, displayContext.pageNumber, 
-            pageSize, ascending, writeFilter, restriction);
+        writeEntitiesWithPagination(collectionByLastUpdated, displayContext.pageNumber, pageSize, ascending, "threads",
+            writer, writeFilter, restriction);
         break;
     case RetrieveDiscussionThreadsBy::MessageCount:
-        writeEntitiesWithPagination(collectionByMessageCount, "threads", output, displayContext.pageNumber, 
-            pageSize, ascending, writeFilter, restriction);
+        writeEntitiesWithPagination(collectionByMessageCount, displayContext.pageNumber, pageSize, ascending, "threads",
+            writer, writeFilter, restriction);
         break;
     }
+
+    writer.endObject();
 }
 
 template<typename ThreadsCollection>
@@ -81,7 +104,8 @@ static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscu
                                    OutStream& output, const GrantedPrivilegeStore& privilegeStore, const User& currentUser)
 {
     writeDiscussionThreads(collection.threadsByName(), collection.threadsByCreated(), collection.threadsByLastUpdated(),
-                           collection.threadsByMessageCount(), by, output, privilegeStore, currentUser);
+                           collection.threadsByMessageCount(), collection.threadsByPinDisplayOrder(), by, output, 
+                           privilegeStore, currentUser);
 }
 
 StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreads(OutStream& output, RetrieveDiscussionThreadsBy by) const
@@ -244,6 +268,7 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
                           writeDiscussionThreads(user.subscribedThreadsByName(), user.subscribedThreadsByCreated(),
                                                  user.subscribedThreadsByLastUpdated(), 
                                                  user.subscribedThreadsByMessageCount(),
+                                                 user.subscribedThreadsByPinDisplayOrder(),
                                                  by, output, collection.grantedPrivileges(), currentUser);
 
                           readEvents().onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
@@ -452,6 +477,44 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const Id
                                                                  });
                            writeEvents().onChangeDiscussionThread(createObserverContext(*currentUser), **it,
                                                                   DiscussionThread::ChangeType::Name);
+                       });
+    return status;
+}
+
+
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrder(const IdType& id, uint16_t newValue,
+                                                                                   OutStream& output)
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto& indexById = collection.threads()
+                                   .get<EntityCollection::DiscussionThreadCollectionById>();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           
+                           if ( ! (status = authorization_->changeDiscussionThreadPinDisplayOrder(*currentUser, **it, newValue)))
+                           {
+                               return;
+                           }
+                           
+                           collection.modifyDiscussionThread(it, [newValue, &currentUser](DiscussionThread& thread)
+                                                                 {
+                                                                     thread.pinDisplayOrder() = newValue;
+                                                                     thread.latestVisibleChange() = Context::getCurrentTime();
+                                                                     updateLastUpdated(thread, currentUser);
+                                                                 });
+                           writeEvents().onChangeDiscussionThread(createObserverContext(*currentUser), **it,
+                                                                  DiscussionThread::ChangeType::PinDisplayOrder);
                        });
     return status;
 }

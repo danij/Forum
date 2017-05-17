@@ -68,7 +68,8 @@ namespace Forum
             enum ChangeType : uint32_t
             {
                 None = 0,
-                Name
+                Name,
+                PinDisplayOrder
             };
 
             explicit DiscussionThread(User& createdBy)

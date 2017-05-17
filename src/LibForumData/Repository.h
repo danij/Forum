@@ -107,6 +107,8 @@ namespace Forum
             virtual StatusCode addNewDiscussionThread(StringView name, OutStream& output) = 0;
             virtual StatusCode changeDiscussionThreadName(const Entities::IdType& id, StringView newName,
                                                           OutStream& output) = 0;
+            virtual StatusCode changeDiscussionThreadPinDisplayOrder(const Entities::IdType& id, uint16_t newValue,
+                                                                     OutStream& output) = 0;
             virtual StatusCode deleteDiscussionThread(const Entities::IdType& id, OutStream& output) = 0;
             virtual StatusCode mergeDiscussionThreads(const Entities::IdType& fromId, const Entities::IdType& intoId,
                                                       OutStream& output) = 0;
