@@ -8,6 +8,7 @@ UuidString::UuidString() : UuidString(boost::uuids::uuid{}) { }
 
 UuidString::UuidString(boost::uuids::uuid value) : value_(std::move(value))
 {
+    updateHashValue();
 }
 
 static const int hexValues[] = 
@@ -51,6 +52,7 @@ UuidString::UuidString(const std::string& value)
     {
         value_ = {};
     }
+    updateHashValue();
 }
 
 UuidString::UuidString(const boost::string_view& value)
@@ -59,6 +61,7 @@ UuidString::UuidString(const boost::string_view& value)
     {
         value_ = {};
     }
+    updateHashValue();
 }
 
 UuidString::operator std::string() const
@@ -84,6 +87,11 @@ void UuidString::toString(char* buffer) const
             buffer[destination++] = '-';
         }
     }
+}
+
+void UuidString::updateHashValue()
+{
+    hashValue_ = hash_value(value_);
 }
 
 const UuidString UuidString::empty = {};

@@ -23,6 +23,7 @@ namespace Forum
             static constexpr size_t StringRepresentationSize = boost::uuids::uuid::static_size() * 2 + 4;
 
             const boost::uuids::uuid& value() const { return value_; }
+            auto                  hashValue() const { return hashValue_; }
 
             bool operator==(const UuidString& other) const
             {
@@ -70,12 +71,15 @@ namespace Forum
             static const UuidString empty;
 
         private:
+            void updateHashValue();
+
             boost::uuids::uuid value_;
+            size_t hashValue_;
         };
 
         inline size_t hash_value(const UuidString& value)
         {
-            return hash_value(value.value());
+            return value.hashValue();
         }
     }
 }
