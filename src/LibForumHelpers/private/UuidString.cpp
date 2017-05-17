@@ -5,7 +5,11 @@
 
 using namespace Forum::Entities;
 
-UuidString::UuidString() : UuidString(boost::uuids::uuid{}) { }
+UuidString::UuidString() : value_(boost::uuids::uuid{})
+{
+    static auto emptyUuidHash = hash_value(boost::uuids::uuid{});
+    hashValue_ = emptyUuidHash;
+}
 
 UuidString::UuidString(boost::uuids::uuid value) : value_(std::move(value))
 {
