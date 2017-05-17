@@ -11,12 +11,16 @@ UuidString::UuidString(boost::uuids::uuid value) : value_(std::move(value))
     updateHashValue();
 }
 
-static const int hexValues[] = 
+static const uint8_t hexValues[] = 
 {
     0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
     0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
 constexpr static int nrOfHexValues = std::extent<decltype(hexValues)>::value;
@@ -39,20 +43,15 @@ static bool parseUuid(const char* data, size_t size, boost::uuids::uuid& destina
 
     for (int src = 0, dst = 0; dst < 16; src += 2, dst += 1)
     {
-        destination.data[dst] = hexValues[static_cast<uint8_t>(data[uuidValuePositions[src]]) % nrOfHexValues] << 4
-                              | hexValues[static_cast<uint8_t>(data[uuidValuePositions[src + 1]]) % nrOfHexValues];
+        destination.data[dst] = hexValues[static_cast<uint8_t>(data[uuidValuePositions[src]])] << 4
+                              | hexValues[static_cast<uint8_t>(data[uuidValuePositions[src + 1]])];
     }
 
     return true;
 }
 
-UuidString::UuidString(const std::string& value)
+UuidString::UuidString(const std::string& value) : UuidString(boost::string_view(value))
 {
-    if ( ! parseUuid(value.data(), value.size(), value_))
-    {
-        value_ = {};
-    }
-    updateHashValue();
 }
 
 UuidString::UuidString(const boost::string_view& value)
