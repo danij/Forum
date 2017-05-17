@@ -184,10 +184,15 @@ void Parser::parseNewLine(char*& buffer, size_t& size)
             finished_ = true;
             return;
         }
-        else
+
+        if (request_.headers[Request::HttpHeader::Transfer_Encoding].size()
+            || request_.headers[Request::HttpHeader::Content_Encoding].size())
         {
-            currentParser_ = &Parser::parseBody;
+            valid_ = false;
+            errorCode_ = HttpStatusCode::Not_Implemented;
+            return;
         }
+        currentParser_ = &Parser::parseBody;
     }
     else
     {
