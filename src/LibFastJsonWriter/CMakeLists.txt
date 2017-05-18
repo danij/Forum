@@ -10,6 +10,7 @@ set(SOURCE_FILES
         private/JsonWriter.cpp)
 
 set(HEADER_FILES
+        StringBuffer.h
         JsonWriter.h)
 
 include_directories(

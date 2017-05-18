@@ -61,8 +61,6 @@ namespace Forum
 
         struct ServiceConfig
         {
-            //must be able to hold maxContentLength * maxMessagesPerPage
-            int_fast32_t serializationPerThreadBufferSize = 1 << 21; //2 MiByte buffer / thread
             //changing the following values requires rebooting the application
             int_fast16_t numberOfIOServiceThreads = 4;
             int_fast32_t numberOfReadBuffers = 8192;

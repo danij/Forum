@@ -19,7 +19,7 @@ using namespace Forum::Repository;
 #define COMMAND_HANDLER_METHOD(name) \
     StatusCode name(const std::vector<StringView>& parameters, OutStream& output)
 
-static thread_local std::string outputBuffer;
+static thread_local Json::StringBuffer outputBuffer{ 1 << 20 }; //1 MiByte buffer / thread initial and for each increment
 
 static const std::string emptyString;
 
@@ -90,11 +90,6 @@ struct CommandHandler::CommandHandlerImpl
     DiscussionCategoryRepositoryRef discussionCategoryRepository;
     StatisticsRepositoryRef statisticsRepository;
     MetricsRepositoryRef metricsRepository;
-
-    CommandHandlerImpl()
-    {
-        outputBuffer.reserve(getGlobalConfig()->service.serializationPerThreadBufferSize);
-    }
 
     static bool checkNumberOfParameters(const std::vector<StringView>& parameters, size_t number)
     {
@@ -753,11 +748,12 @@ CommandHandler::Result CommandHandler::handle(Command command, const std::vector
     {
         statusCode = StatusCode::NOT_FOUND;
     }
-    if (outputBuffer.size() < 1)
+    auto outputView = outputBuffer.view();
+    if (outputView.size() < 1)
     {
         writeStatusCode(outputBuffer, statusCode);
     }
-    return { statusCode, outputBuffer };
+    return { statusCode, outputBuffer.view() };
 }
 
 CommandHandler::Result CommandHandler::handle(View view, const std::vector<StringView>& parameters)
@@ -772,9 +768,10 @@ CommandHandler::Result CommandHandler::handle(View view, const std::vector<Strin
     {
         statusCode = StatusCode::NOT_FOUND;
     }
-    if (outputBuffer.size() < 1)
+    auto outputView = outputBuffer.view();
+    if (outputView.size() < 1)
     {
         writeStatusCode(outputBuffer, statusCode);
     }
-    return{ statusCode, outputBuffer };
+    return{ statusCode, outputView };
 }

@@ -23,6 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <limits>
 #include <string>
 
+#include "StringBuffer.h"
+
 #include <boost/utility/string_view.hpp>
 
 namespace Json
@@ -31,7 +33,8 @@ namespace Json
     {
     public:
         explicit JsonWriter(std::ostream& stream);
-        explicit JsonWriter(std::string& stringBuffer);
+        //explicit JsonWriter(std::string& stringBuffer);
+        explicit JsonWriter(StringBuffer& stringBuffer);
 
         JsonWriter(const JsonWriter&) = delete;
         JsonWriter(JsonWriter&&) = default;
@@ -261,6 +264,61 @@ namespace Json
             writeString(value, Size - 1);
         }
 
+        template<>
+        void writeString<1>(const char(&value)[0 + 1])
+        {
+            //ignore null terminator
+        }
+
+        template<>
+        void writeString<2>(const char(&value)[1 + 1])
+        {
+            //ignore null terminator
+            writeChar(value[0]);
+        }
+
+        template<>
+        void writeString<3>(const char(&value)[2 + 1])
+        {
+            //ignore null terminator
+            if (stringBufferOutput_)
+            {
+                stringBufferOutput_->write(*reinterpret_cast<const uint16_t*>(value));
+            }
+            else
+            {
+                writeString(value, 2);
+            }
+        }
+
+        template<>
+        void writeString<5>(const char(&value)[4 + 1])
+        {
+            //ignore null terminator
+            if (stringBufferOutput_)
+            {
+                stringBufferOutput_->write(*reinterpret_cast<const uint32_t*>(value));
+            }
+            else
+            {
+                writeString(value, 4);
+            }
+        }
+
+        template<>
+        void writeString<9>(const char(&value)[8 + 1])
+        {
+            //ignore null terminator
+            if (stringBufferOutput_)
+            {
+                stringBufferOutput_->write(*reinterpret_cast<const uint64_t*>(value));
+            }
+            else
+            {
+                writeString(value, 8);
+            }
+        }
+
         void writeString(const std::string& value)
         {
             writeString(value.c_str(), value.size());
@@ -268,10 +326,14 @@ namespace Json
 
         void writeString(const char* value, size_t size)
         {
-            if (stringOutput_)
+            if (stringBufferOutput_)
             {
-                stringOutput_->insert(stringOutput_->end(), value, value + size);
+                stringBufferOutput_->write(value, size);
             }
+            //else if (stringOutput_)
+            //{
+            //    stringOutput_->insert(stringOutput_->end(), value, value + size);
+            //}
             else
             {
                 streamOutput_->write(value, size);
@@ -280,10 +342,14 @@ namespace Json
 
         void writeChar(char value)
         {
-            if (stringOutput_)
+            if (stringBufferOutput_)
             {
-                *stringOutput_ += value;
+                stringBufferOutput_->write(value);
             }
+            //else if (stringOutput_)
+            //{
+            //    *stringOutput_ += value;
+            //}
             else
             {
                 *streamOutput_ << value;
@@ -315,8 +381,9 @@ namespace Json
             stateStack_.at(++stateIndex_) = state;
         }
 
-        std::string* stringOutput_ = nullptr;
+        //std::string* stringOutput_ = nullptr;
         std::ostream* streamOutput_ = nullptr;
+        StringBuffer* stringBufferOutput_ = nullptr;
 
         std::array<State, MaxStateDepth> stateStack_;
         int stateIndex_ = -1;

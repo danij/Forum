@@ -55,7 +55,6 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(discussionCategory.maxNameLength);
     LOAD_CONFIG_VALUE(discussionCategory.maxDescriptionLength);
 
-    LOAD_CONFIG_VALUE(service.serializationPerThreadBufferSize);
     LOAD_CONFIG_VALUE(service.numberOfIOServiceThreads);
     LOAD_CONFIG_VALUE(service.numberOfReadBuffers);
     LOAD_CONFIG_VALUE(service.numberOfWriteBuffers);

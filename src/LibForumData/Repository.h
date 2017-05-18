@@ -2,6 +2,7 @@
 
 #include "Observers.h"
 #include "TypeHelpers.h"
+#include "StringBuffer.h"
 
 #include <cstdint>
 #include <memory>
@@ -58,7 +59,7 @@ namespace Forum
             MessageCount
         };
 
-        typedef std::string OutStream;
+        typedef Json::StringBuffer OutStream;
 
         /**
          * return StatusCode from repository methods so that the code can easily be converted to a HTTP code

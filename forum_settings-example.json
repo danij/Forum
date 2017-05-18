@@ -39,7 +39,6 @@
     },
 
     "service": {
-        "serializationPerThreadBufferSize": 2097152,
         "numberOfIOServiceThreads": 4,
         "numberOfReadBuffers": 8192,
         "numberOfWriteBuffers": 8192,
