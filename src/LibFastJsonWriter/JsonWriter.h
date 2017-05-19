@@ -265,59 +265,19 @@ namespace Json
         }
 
         template<>
-        void writeString<1>(const char(&value)[0 + 1])
-        {
-            //ignore null terminator
-        }
+        void writeString<1>(const char (&value)[0 + 1]);
 
         template<>
-        void writeString<2>(const char(&value)[1 + 1])
-        {
-            //ignore null terminator
-            writeChar(value[0]);
-        }
+        void writeString<2>(const char (&value)[1 + 1]);
 
         template<>
-        void writeString<3>(const char(&value)[2 + 1])
-        {
-            //ignore null terminator
-            if (stringBufferOutput_)
-            {
-                stringBufferOutput_->write(*reinterpret_cast<const uint16_t*>(value));
-            }
-            else
-            {
-                writeString(value, 2);
-            }
-        }
+        void writeString<3>(const char (&value)[2 + 1]);
 
         template<>
-        void writeString<5>(const char(&value)[4 + 1])
-        {
-            //ignore null terminator
-            if (stringBufferOutput_)
-            {
-                stringBufferOutput_->write(*reinterpret_cast<const uint32_t*>(value));
-            }
-            else
-            {
-                writeString(value, 4);
-            }
-        }
+        void writeString<5>(const char (&value)[4 + 1]);
 
         template<>
-        void writeString<9>(const char(&value)[8 + 1])
-        {
-            //ignore null terminator
-            if (stringBufferOutput_)
-            {
-                stringBufferOutput_->write(*reinterpret_cast<const uint64_t*>(value));
-            }
-            else
-            {
-                writeString(value, 8);
-            }
-        }
+        void writeString<9>(const char (&value)[8 + 1]);
 
         void writeString(const std::string& value)
         {
@@ -388,6 +348,61 @@ namespace Json
         std::array<State, MaxStateDepth> stateStack_;
         int stateIndex_ = -1;
     };
+    
+    template <>
+    inline void JsonWriter::writeString<1>(const char(&value)[0 + 1])
+    {
+        //ignore null terminator
+    }
+
+    template <>
+    inline void JsonWriter::writeString<2>(const char(&value)[1 + 1])
+    {
+        //ignore null terminator
+        writeChar(value[0]);
+    }
+
+    template <>
+    inline void JsonWriter::writeString<3>(const char(&value)[2 + 1])
+    {
+        //ignore null terminator
+        if (stringBufferOutput_)
+        {
+            stringBufferOutput_->write(*reinterpret_cast<const uint16_t*>(value));
+        }
+        else
+        {
+            writeString(value, 2);
+        }
+    }
+
+    template <>
+    inline void JsonWriter::writeString<5>(const char(&value)[4 + 1])
+    {
+        //ignore null terminator
+        if (stringBufferOutput_)
+        {
+            stringBufferOutput_->write(*reinterpret_cast<const uint32_t*>(value));
+        }
+        else
+        {
+            writeString(value, 4);
+        }
+    }
+
+    template <>
+    inline void JsonWriter::writeString<9>(const char(&value)[8 + 1])
+    {
+        //ignore null terminator
+        if (stringBufferOutput_)
+        {
+            stringBufferOutput_->write(*reinterpret_cast<const uint64_t*>(value));
+        }
+        else
+        {
+            writeString(value, 8);
+        }
+    }
 
     template <typename T>
     JsonWriter& operator<<(JsonWriter& writer, const T* value)
