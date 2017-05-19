@@ -29,6 +29,95 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Json
 {
+    namespace Detail
+    {
+        inline void writeChar(std::ostream* streamOutput, StringBuffer* stringBufferOutput, char value)
+        {
+            if (stringBufferOutput)
+            {
+                stringBufferOutput->write(value);
+            }
+            else
+            {
+                *streamOutput << value;
+            }
+        }
+
+        inline void writeString(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char* value, size_t size)
+        {
+            if (stringBufferOutput)
+            {
+                stringBufferOutput->write(value, size);
+            }
+            else
+            {
+                streamOutput->write(value, size);
+            }
+        }
+
+        template<size_t Size>
+        void writeString(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[Size])
+        {
+            //ignore null terminator
+            writeString(streamOutput, stringBufferOutput, value, Size - 1);
+        }
+
+        template <>
+        inline void writeString<1>(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[0 + 1])
+        {
+            //ignore null terminator
+        }
+
+        template <>
+        inline void writeString<2>(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[1 + 1])
+        {
+            //ignore null terminator
+            writeChar(streamOutput, stringBufferOutput, value[0]);
+        }
+
+        template <>
+        inline void writeString<3>(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[2 + 1])
+        {
+            //ignore null terminator
+            if (stringBufferOutput)
+            {
+                stringBufferOutput->write(*reinterpret_cast<const uint16_t*>(value));
+            }
+            else
+            {
+                writeString(streamOutput, stringBufferOutput, value, 2);
+            }
+        }
+
+        template <>
+        inline void writeString<5>(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[4 + 1])
+        {
+            //ignore null terminator
+            if (stringBufferOutput)
+            {
+                stringBufferOutput->write(*reinterpret_cast<const uint32_t*>(value));
+            }
+            else
+            {
+                writeString(streamOutput, stringBufferOutput, value, 4);
+            }
+        }
+
+        template <>
+        inline void writeString<9>(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[8 + 1])
+        {
+            //ignore null terminator
+            if (stringBufferOutput)
+            {
+                stringBufferOutput->write(*reinterpret_cast<const uint64_t*>(value));
+            }
+            else
+            {
+                writeString(streamOutput, stringBufferOutput, value, 8);
+            }
+        }
+    }
+
     class JsonWriter final
     {
     public:
@@ -95,7 +184,6 @@ namespace Json
         {
             return writeSafeString(value.data(), value.size());
         }
-
 
         JsonWriter& operator<<(bool value)
         {
@@ -260,24 +348,8 @@ namespace Json
         template<size_t Size>
         void writeString(const char(&value)[Size])
         {
-            //ignore null terminator
-            writeString(value, Size - 1);
+            Detail::writeString<Size>(streamOutput_, stringBufferOutput_, value);
         }
-
-        template<>
-        void writeString<1>(const char (&value)[0 + 1]);
-
-        template<>
-        void writeString<2>(const char (&value)[1 + 1]);
-
-        template<>
-        void writeString<3>(const char (&value)[2 + 1]);
-
-        template<>
-        void writeString<5>(const char (&value)[4 + 1]);
-
-        template<>
-        void writeString<9>(const char (&value)[8 + 1]);
 
         void writeString(const std::string& value)
         {
@@ -286,34 +358,12 @@ namespace Json
 
         void writeString(const char* value, size_t size)
         {
-            if (stringBufferOutput_)
-            {
-                stringBufferOutput_->write(value, size);
-            }
-            //else if (stringOutput_)
-            //{
-            //    stringOutput_->insert(stringOutput_->end(), value, value + size);
-            //}
-            else
-            {
-                streamOutput_->write(value, size);
-            }
+            Detail::writeString(streamOutput_, stringBufferOutput_, value, size);
         }
 
         void writeChar(char value)
         {
-            if (stringBufferOutput_)
-            {
-                stringBufferOutput_->write(value);
-            }
-            //else if (stringOutput_)
-            //{
-            //    *stringOutput_ += value;
-            //}
-            else
-            {
-                *streamOutput_ << value;
-            }
+            Detail::writeChar(streamOutput_, stringBufferOutput_, value);
         }
 
         friend JsonWriter& operator<<(JsonWriter& writer, const char* value);
@@ -341,68 +391,12 @@ namespace Json
             stateStack_.at(++stateIndex_) = state;
         }
 
-        //std::string* stringOutput_ = nullptr;
         std::ostream* streamOutput_ = nullptr;
         StringBuffer* stringBufferOutput_ = nullptr;
 
         std::array<State, MaxStateDepth> stateStack_;
         int stateIndex_ = -1;
     };
-    
-    template <>
-    inline void JsonWriter::writeString<1>(const char(&value)[0 + 1])
-    {
-        //ignore null terminator
-    }
-
-    template <>
-    inline void JsonWriter::writeString<2>(const char(&value)[1 + 1])
-    {
-        //ignore null terminator
-        writeChar(value[0]);
-    }
-
-    template <>
-    inline void JsonWriter::writeString<3>(const char(&value)[2 + 1])
-    {
-        //ignore null terminator
-        if (stringBufferOutput_)
-        {
-            stringBufferOutput_->write(*reinterpret_cast<const uint16_t*>(value));
-        }
-        else
-        {
-            writeString(value, 2);
-        }
-    }
-
-    template <>
-    inline void JsonWriter::writeString<5>(const char(&value)[4 + 1])
-    {
-        //ignore null terminator
-        if (stringBufferOutput_)
-        {
-            stringBufferOutput_->write(*reinterpret_cast<const uint32_t*>(value));
-        }
-        else
-        {
-            writeString(value, 4);
-        }
-    }
-
-    template <>
-    inline void JsonWriter::writeString<9>(const char(&value)[8 + 1])
-    {
-        //ignore null terminator
-        if (stringBufferOutput_)
-        {
-            stringBufferOutput_->write(*reinterpret_cast<const uint64_t*>(value));
-        }
-        else
-        {
-            writeString(value, 8);
-        }
-    }
 
     template <typename T>
     JsonWriter& operator<<(JsonWriter& writer, const T* value)
