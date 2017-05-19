@@ -16,6 +16,7 @@ namespace Forum
          * Using a string for representing the id to prevent constant conversions between string <-> uuid
          */
         typedef UuidString IdType;
+        typedef const UuidString& IdTypeRef;
 
         /**
          * Representing a timestamp as the number of seconds since the UNIX EPOCH

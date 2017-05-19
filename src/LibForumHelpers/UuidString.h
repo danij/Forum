@@ -10,12 +10,18 @@ namespace Forum
         /**
          * Stores a binary and string representation of a uuid on the stack
          */
-        struct UuidString
+        struct UuidString final
         {
             UuidString();
             UuidString(boost::uuids::uuid value);
             UuidString(const std::string& value);
             UuidString(const boost::string_view& value);
+
+            UuidString(const UuidString&) = default;
+            UuidString(UuidString&&) = default;
+
+            UuidString& operator=(const UuidString&) = default;
+            UuidString& operator=(UuidString&&) = default;
 
             /**
              * How many characters are needed to store the string representation (without null terminator)

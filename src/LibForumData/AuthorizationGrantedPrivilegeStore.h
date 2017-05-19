@@ -45,23 +45,23 @@ namespace Forum
         {
         public:
             //TODO remove expired privileges
-            void grantDiscussionThreadMessagePrivilege(Entities::IdType userId, Entities::IdType entityId, 
+            void grantDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, 
                                                        DiscussionThreadMessagePrivilege privilege, 
                                                        PrivilegeValueIntType value, Entities::Timestamp expiresAt);
             
-            void grantDiscussionThreadPrivilege(Entities::IdType userId, Entities::IdType entityId, 
+            void grantDiscussionThreadPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, 
                                                 DiscussionThreadPrivilege privilege, 
                                                 PrivilegeValueIntType value, Entities::Timestamp expiresAt);
 
-            void grantDiscussionTagPrivilege(Entities::IdType userId, Entities::IdType entityId, 
+            void grantDiscussionTagPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, 
                                              DiscussionTagPrivilege privilege, 
                                              PrivilegeValueIntType value, Entities::Timestamp expiresAt);
 
-            void grantDiscussionCategoryPrivilege(Entities::IdType userId, Entities::IdType entityId, 
+            void grantDiscussionCategoryPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, 
                                                   DiscussionCategoryPrivilege privilege, 
                                                   PrivilegeValueIntType value, Entities::Timestamp expiresAt);
 
-            void grantForumWidePrivilege(Entities::IdType userId, Entities::IdType entityId, 
+            void grantForumWidePrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, 
                                          ForumWidePrivilege privilege, 
                                          PrivilegeValueIntType value, Entities::Timestamp expiresAt);
 
@@ -79,7 +79,7 @@ namespace Forum
             PrivilegeValueType isAllowed(const Entities::User& user, const Entities::DiscussionCategory& category,
                                          DiscussionCategoryPrivilege privilege, Entities::Timestamp now) const;
             
-            PrivilegeValueType isAllowed(Entities::IdType userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                          ForumWidePrivilege privilege, Entities::Timestamp now) const;
 
             void computeDiscussionThreadMessageVisibilityAllowed(DiscussionThreadMessagePrivilegeCheck* items,
@@ -90,23 +90,23 @@ namespace Forum
                                                         Entities::Timestamp now, DiscussionThreadMessagePrivilege privilege,
                                                         PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
             
-            void updateDiscussionThreadMessagePrivilege(Entities::IdType userId, Entities::IdType entityId, Entities::Timestamp now,
+            void updateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, Entities::Timestamp now,
                                                         DiscussionThreadMessagePrivilege privilege,
                                                         PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
             
-            void updateDiscussionThreadPrivilege(Entities::IdType userId, Entities::IdType entityId, Entities::Timestamp now,
+            void updateDiscussionThreadPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, Entities::Timestamp now,
                                                  DiscussionThreadPrivilege privilege,
                                                  PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
-            void updateDiscussionTagPrivilege(Entities::IdType userId, Entities::IdType entityId, Entities::Timestamp now,
+            void updateDiscussionTagPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, Entities::Timestamp now,
                                               DiscussionTagPrivilege privilege,
                                               PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const ;
 
-            void updateDiscussionCategoryPrivilege(Entities::IdType userId, Entities::IdType entityId, Entities::Timestamp now,
+            void updateDiscussionCategoryPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, Entities::Timestamp now,
                                                    DiscussionCategoryPrivilege privilege,
                                                    PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
-            void updateForumWidePrivilege(Entities::IdType userId, Entities::IdType entityId, Entities::Timestamp now,
+            void updateForumWidePrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, Entities::Timestamp now,
                                           ForumWidePrivilege privilege,
                                           PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
@@ -114,7 +114,7 @@ namespace Forum
 
             struct PrivilegeEntry
             {
-                PrivilegeEntry(Entities::IdType userId, Entities::IdType entityId,
+                PrivilegeEntry(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
                                EnumIntType privilege, PrivilegeValueIntType value, Entities::Timestamp expiresAt)
                     : userAndEntityAndPrivilege_({ userId, entityId, privilege }),
                       privilegeValue_(value), expiresAt_(expiresAt)
@@ -123,11 +123,11 @@ namespace Forum
 
                 const IdPrivilegeTuple& userEntityAndPrivilege() const { return userAndEntityAndPrivilege_; }
 
-                Entities::IdType   userId() const { return std::get<0>(userAndEntityAndPrivilege_); }
-                Entities::IdType entityId() const { return std::get<1>(userAndEntityAndPrivilege_); }
-                auto            privilege() const { return std::get<2>(userAndEntityAndPrivilege_); }
-                auto       privilegeValue() const { return privilegeValue_; }
-                auto            expiresAt() const { return expiresAt_; }
+                Entities::IdTypeRef   userId() const { return std::get<0>(userAndEntityAndPrivilege_); }
+                Entities::IdTypeRef entityId() const { return std::get<1>(userAndEntityAndPrivilege_); }
+                auto               privilege() const { return std::get<2>(userAndEntityAndPrivilege_); }
+                auto          privilegeValue() const { return privilegeValue_; }
+                auto               expiresAt() const { return expiresAt_; }
 
             private:
                 IdPrivilegeTuple userAndEntityAndPrivilege_;
@@ -146,17 +146,17 @@ namespace Forum
                                 &PrivilegeEntry::userEntityAndPrivilege>>,
 
                 boost::multi_index::hashed_non_unique<boost::multi_index::tag<PrivilegeEntryCollectionByUserId>,
-                        const boost::multi_index::const_mem_fun<PrivilegeEntry, Entities::IdType, &PrivilegeEntry::userId>>,
+                        const boost::multi_index::const_mem_fun<PrivilegeEntry, Entities::IdTypeRef, &PrivilegeEntry::userId>>,
 
                 boost::multi_index::hashed_non_unique<boost::multi_index::tag<PrivilegeEntryCollectionByEntityId>,
-                        const boost::multi_index::const_mem_fun<PrivilegeEntry, Entities::IdType, &PrivilegeEntry::entityId>>
+                        const boost::multi_index::const_mem_fun<PrivilegeEntry, Entities::IdTypeRef, &PrivilegeEntry::entityId>>
             > {};
 
             typedef boost::multi_index_container<PrivilegeEntry, PrivilegeEntryCollectionIndices>
                     PrivilegeEntryCollection;
 
-            void updatePrivilege(const PrivilegeEntryCollection& collection, Entities::IdType userId, 
-                                 Entities::IdType entityId, Entities::Timestamp now, EnumIntType privilege,
+            void updatePrivilege(const PrivilegeEntryCollection& collection, Entities::IdTypeRef userId, 
+                                 Entities::IdTypeRef entityId, Entities::Timestamp now, EnumIntType privilege,
                                  PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
             PrivilegeEntryCollection discussionThreadMessageSpecificPrivileges_;

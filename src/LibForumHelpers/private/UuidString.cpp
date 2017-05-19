@@ -1,10 +1,15 @@
 #include "UuidString.h"
 
+#include <type_traits>
 #include <boost/uuid/uuid_io.hpp>
 
 using namespace Forum::Entities;
 
-UuidString::UuidString() : UuidString(boost::uuids::uuid{}) { }
+UuidString::UuidString() : value_(boost::uuids::uuid{})
+{
+    static auto emptyUuidHash = hash_value(boost::uuids::uuid{});
+    hashValue_ = emptyUuidHash;
+}
 
 UuidString::UuidString(boost::uuids::uuid value) : value_(std::move(value))
 {
@@ -23,8 +28,6 @@ static const uint8_t hexValues[] =
     0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-constexpr static int nrOfHexValues = std::extent<decltype(hexValues)>::value;
-
 static const int uuidValuePositions[] = 
 {
     /* 8*/ 0, 1, 2, 3, 4, 5, 6, 7, 
@@ -40,6 +43,8 @@ static bool parseUuid(const char* data, size_t size, boost::uuids::uuid& destina
     {
         return false;
     }
+
+    static_assert(std::extent<decltype(hexValues)>::value >= sizeof(uint8_t), "hexValues does not contain enough values");
 
     for (int src = 0, dst = 0; dst < 16; src += 2, dst += 1)
     {
