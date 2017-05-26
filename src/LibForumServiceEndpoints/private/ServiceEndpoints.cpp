@@ -58,7 +58,7 @@ static void updateContextForRequest(const Http::HttpRequest& request)
 
         if (Http::matchStringUpperOrLower(name, "pPaAgGeE"))
         {
-            Http::fromStringOrDefault(value, displayContext.pageNumber, 0);
+            Http::fromStringOrDefault(value, displayContext.pageNumber, static_cast<decltype(displayContext.pageNumber)>(0));
         }
         else if (Http::matchStringUpperOrLower(name, "sSoOrRtT") && 
                  Http::matchStringUpperOrLower(value, "dDeEsScCeEnNdDiInNgG"))
