@@ -147,7 +147,7 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
         }
         else
         {
-            startReading();            
+            startReading();
         }
     }
 
@@ -251,7 +251,7 @@ struct HttpListener::HttpListenerImpl
                 static_cast<size_t>(config.numberOfReadBuffers));
         writeBuffers = std::make_unique<WriteBufferPoolType>(
                 static_cast<size_t>(config.numberOfWriteBuffers));
-        
+
         timeoutTimer.async_wait(TimeoutCheckCallback{ this });
     }
 
@@ -326,15 +326,17 @@ HttpRouter& HttpListener::router()
     return impl_->router;
 }
 
-struct Http::HttpListenerOnAcceptCallback
+namespace Http
 {
-    void operator()(const boost::system::error_code& ec)
+    struct HttpListenerOnAcceptCallback
     {
-        listener->onAccept(ec);
-    }
-    HttpListener* listener;
-};
-
+        void operator()(const boost::system::error_code& ec)
+        {
+            listener->onAccept(ec);
+        }
+        HttpListener* listener;
+    };
+}
 
 void HttpListener::startAccept()
 {
