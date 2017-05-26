@@ -297,17 +297,14 @@ void writeDiscussionThreadMessages(const Collection& collection, int_fast32_t pa
         if ( ! item.allowedToShowMessage) continue;
         if ( ! item.message) continue;
 
-        OptionalRevertToNoneChanger<decltype(serializationSettings.allowDisplayDiscussionThreadMessage)::value_type>
-            _(serializationSettings.allowDisplayDiscussionThreadMessage, item.allowedToShowMessage);
-
-        OptionalRevertToNoneChanger<decltype(serializationSettings.allowDisplayDiscussionThreadMessageUser)::value_type>
-            __(serializationSettings.allowDisplayDiscussionThreadMessageUser, item.allowedToShowUser);
-
-        OptionalRevertToNoneChanger<decltype(serializationSettings.allowDisplayDiscussionThreadMessageVotes)::value_type>
-            ___(serializationSettings.allowDisplayDiscussionThreadMessageVotes, item.allowedToShowVotes);
-        
-        OptionalRevertToNoneChanger<decltype(serializationSettings.allowDisplayDiscussionThreadMessageIpAddress)::value_type>
-            ____(serializationSettings.allowDisplayDiscussionThreadMessageIpAddress, item.allowedToShowIpAddress);
+        OptionalRevertToNoneChanger<bool> _(serializationSettings.allowDisplayDiscussionThreadMessage,
+                                            item.allowedToShowMessage);
+        OptionalRevertToNoneChanger<bool> __(serializationSettings.allowDisplayDiscussionThreadMessageUser,
+                                             item.allowedToShowUser);
+        OptionalRevertToNoneChanger<bool> ___(serializationSettings.allowDisplayDiscussionThreadMessageVotes,
+                                              item.allowedToShowVotes);
+        OptionalRevertToNoneChanger<bool> ____(serializationSettings.allowDisplayDiscussionThreadMessageIpAddress,
+                                               item.allowedToShowIpAddress);
 
         serialize(writer, *item.message, restriction);
     }
