@@ -302,7 +302,7 @@ namespace Http
     private:
         bool requestNewBuffer()
         {
-            if ((latestBuffer_ + 1) >= MaxNrOfBuffers)
+            if (static_cast<size_t>(latestBuffer_ + 1) >= MaxNrOfBuffers)
             {
                 return false;
             }
