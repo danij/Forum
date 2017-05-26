@@ -213,7 +213,7 @@ AuthorizationStatus DefaultAuthorization::setMessageCommentToSolved(const User& 
     auto status = AuthorizationStatus::NOT_ALLOWED;
     comment.executeActionWithParentMessageIfAvailable([this, &status, &currentUser](auto& message)
     {
-        status = isAllowed(currentUser, message, DiscussionThreadMessagePrivilege::SET_COMMENT_TO_SOLVED);        
+        status = this->isAllowed(currentUser, message, DiscussionThreadMessagePrivilege::SET_COMMENT_TO_SOLVED);        
     });
     return status;
 }
