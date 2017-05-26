@@ -10,6 +10,7 @@
 ## Logging
 
 - [ ] Add logging to more scenarios
+- [ ] Add samples for configuring logging
 
 ## Configuration
 
@@ -18,12 +19,14 @@
 
 ## Authorization
 
-- [ ] Implement simple authorization scheme for all actions
+- [X] Implement simple authorization scheme for all actions
+- [ ] Implement commands for adjusting authorization rights
+- [ ] Implement views for returning authorization information
 - [ ] Implement flood protection/throttling for actions
 
 ## HTTP
 
-- [ ] Reject zipped or chunked request bodies
+- [X] Reject zipped or chunked request bodies
 - [ ] Implement HTTP security features (e.g. [OWASP](https://www.owasp.org/index.php/Main_Page) recommendations)
 
 ## Authentication 

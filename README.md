@@ -19,6 +19,10 @@ Text content is stored as UTF-8 and is compared using Unicode awareness whenever
 
 [Long version](doc/Architecture&Details.md)
 
+### TODO
+
+This software is not yet production ready. For more details please consult the [TODO list](doc/Todo.md).
+
 ### Service
 
 The backend provides a [RESTful API](doc/API.md) over HTTP/1.1 for retrieving and updating entities, represented using JSON. 
