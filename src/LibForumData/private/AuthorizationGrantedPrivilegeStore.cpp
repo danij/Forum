@@ -85,7 +85,7 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const Disc
 
     message.executeActionWithParentThreadIfAvailable([this, &positive, &negative, &user, privilege, now](auto& thread)
     {
-        updateDiscussionThreadMessagePrivilege(user, thread, now, privilege, positive, negative);
+        this->updateDiscussionThreadMessagePrivilege(user, thread, now, privilege, positive, negative);
     });
 
     return ::isAllowed(positive, negative, message.getDiscussionThreadMessagePrivilege(privilege));
@@ -170,7 +170,7 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
             auto privilege = std::get<0>(tuple);
             auto& positive = std::get<1>(tuple);
             auto& negative = std::get<2>(tuple);
-            updateDiscussionThreadMessagePrivilege(user, thread, now, privilege, positive, negative);
+            this->updateDiscussionThreadMessagePrivilege(user, thread, now, privilege, positive, negative);
 
             std::get<3>(tuple) = thread.getDiscussionThreadMessagePrivilege(privilege);
         }
