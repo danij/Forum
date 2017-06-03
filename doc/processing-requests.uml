@@ -26,7 +26,7 @@ activate User
 IO --> User : TCP handshake
 
 IO -> HTTPListener : user connected
-HTTPListener -> IO : read byts
+HTTPListener -> IO : request bytes
 
 User -> HTTPListener : GET /users
 
