@@ -42,7 +42,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
     writer
         << objStart
             << propertySafeName("id", user.id())
-            << propertySafeName("name", user.name())
+            << propertySafeName("name", user.name().string())
             << propertySafeName("info", user.info())
             << propertySafeName("created", user.created())
             << propertySafeName("lastSeen", user.lastSeen())
@@ -63,7 +63,7 @@ static JsonWriter& writeVotes(JsonWriter& writer, const char(&name)[NameSize], c
         {
             writer << objStart
                 << propertySafeName("userId", user->id())
-                << propertySafeName("userName", user->name())
+                << propertySafeName("userName", user->name().string())
                 << propertySafeName("at", pair.second)
                 << objEnd;
         }
@@ -147,7 +147,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
             if (allowViewUserOverride)
             {
                 writer << propertySafeName("userId", by.id())
-                       << propertySafeName("userName", by.name());
+                       << propertySafeName("userName", by.name().string());
             }
         });
         writer << propertySafeName("at", message.lastUpdated())
@@ -319,7 +319,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
     writer
         << objStart
             << propertySafeName("id", thread.id())
-            << propertySafeName("name", thread.name())
+            << propertySafeName("name", thread.name().string())
             << propertySafeName("created", thread.created())
             << propertySafeName("latestVisibleChangeAt", thread.latestVisibleChange())
             << propertySafeName("visitorsSinceLastChange", thread.nrOfVisitorsSinceLastEdit())
@@ -399,7 +399,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag,
     if ( ! restriction.isAllowed(tag)) return writer.null();
     writer << objStart
         << propertySafeName("id", tag.id())
-        << propertySafeName("name", tag.name())
+        << propertySafeName("name", tag.name().string())
         << propertySafeName("created", tag.created())
         << propertySafeName("threadCount", tag.threadsById().size())
         << propertySafeName("messageCount", tag.messageCount());
@@ -437,7 +437,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
     if ( ! restriction.isAllowed(category)) return writer.null();
     writer << objStart
         << propertySafeName("id", category.id())
-        << propertySafeName("name", category.name())
+        << propertySafeName("name", category.name().string())
         << propertySafeName("description", category.description())
         << propertySafeName("displayOrder", category.displayOrder())
         << propertySafeName("created", category.created())

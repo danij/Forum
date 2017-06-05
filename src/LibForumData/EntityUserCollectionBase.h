@@ -41,8 +41,7 @@ namespace Forum
                             const boost::multi_index::const_mem_fun<User, const std::string&, &User::auth>>,
 
                     boost::multi_index::ranked_unique<boost::multi_index::tag<UserCollectionByName>,
-                            const boost::multi_index::const_mem_fun<User, StringView, &User::name>,
-                                Helpers::StringAccentAndCaseInsensitiveLess>,
+                            const boost::multi_index::const_mem_fun<User, const Helpers::StringWithSortKey&, &User::name>>,
 
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<UserCollectionByCreated>,
                             const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &User::created>>,

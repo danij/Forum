@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <iosfwd>
 #include <memory>
 #include <string>
 
@@ -84,12 +85,6 @@ namespace Forum
          */
         void cleanupStringHelpers();
 
-        struct StringAccentAndCaseInsensitiveLess
-        {
-            StringAccentAndCaseInsensitiveLess();
-            bool operator()(StringView lhs, StringView rhs) const;
-        };
-        
         inline std::string toString(StringView view)
         {
             return std::string(view.data(), view.size());
@@ -142,5 +137,39 @@ namespace Forum
             std::unique_ptr<char[]> ptr_;
             size_t size_ = 0;
         };
+
+        struct StringWithSortKey final
+        {
+            StringWithSortKey() noexcept;
+            StringWithSortKey(StringView view);
+
+            StringWithSortKey(const StringWithSortKey& other);
+            StringWithSortKey(StringWithSortKey&& other) noexcept;
+
+            StringWithSortKey& operator=(const StringWithSortKey& other);
+            StringWithSortKey& operator=(StringWithSortKey&& other) noexcept;
+
+            bool operator==(const StringWithSortKey& other) const;
+            bool operator<(const StringWithSortKey& other) const;
+            bool operator<=(const StringWithSortKey& other) const;
+            bool operator>(const StringWithSortKey& other) const;
+            bool operator>=(const StringWithSortKey& other) const;
+
+            friend void swap(StringWithSortKey& first, StringWithSortKey& second) noexcept;
+            friend std::ostream& operator<<(std::ostream& stream, const StringWithSortKey& string);
+
+            StringView string() const;
+            StringView sortKey() const;
+
+        private:
+            std::unique_ptr<char[]> bytes_;
+            size_t stringLength_;
+            size_t sortKeyLength_;
+        };
+
+        inline std::string toString(const StringWithSortKey& value)
+        {
+            return toString(value.string());
+        }
     }
 }

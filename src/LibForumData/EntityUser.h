@@ -24,8 +24,8 @@ namespace Forum
         {
       const std::string& auth()        const { return auth_; }
             std::string& auth()              { return auth_; }
-            StringView   name()        const { return name_; }
-            std::string& name()              { return name_; }
+            const auto&  name()        const { return name_; }
+            auto&        name()              { return name_; }
             StringView   info()        const { return info_; }
             std::string& info()              { return info_; }
             Timestamp    lastSeen()    const { return lastSeen_; }
@@ -54,7 +54,7 @@ namespace Forum
             /**
              * Only used to construct the anonymous user
              */
-            explicit User(StringView name) : name_(name.data(), name.size()), lastSeen_(0) {}
+            explicit User(StringView name) : name_(name), lastSeen_(0) {}
 
             void registerVote(const DiscussionThreadMessageRef& message)
             {
@@ -63,7 +63,7 @@ namespace Forum
 
         private:
             std::string auth_;
-            std::string name_;
+            Helpers::StringWithSortKey name_;
             std::string info_;
             Timestamp lastSeen_;
             std::set<DiscussionThreadMessageWeakRef, std::owner_less<DiscussionThreadMessageWeakRef>> votedMessages_;

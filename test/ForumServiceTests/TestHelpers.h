@@ -30,6 +30,11 @@ namespace Forum
             return Entities::UuidString(id) == Entities::UuidString::empty;
         }
 
+        inline bool operator==(const StringWithSortKey& first, const std::string& second)
+        {
+            return first == StringWithSortKey(StringView(second));
+        }
+
         extern const std::string sampleValidIdString;
         extern const Entities::IdType sampleValidId;
         extern const std::string sampleValidIdString2;

@@ -231,7 +231,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                return;
                            }
 
-                           auto nameString = toString(name);
+                           StringWithSortKey nameString(name);
 
                            auto currentUser = performedBy.getAndUpdate(collection);
 
@@ -260,7 +260,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", user->id());
-                                               writer << Json::propertySafeName("name", user->name());
+                                               writer << Json::propertySafeName("name", user->name().string());
                                                writer << Json::propertySafeName("created", user->created());
                                            });
                        });
@@ -298,7 +298,7 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView new
                                return;
                            }
 
-                           auto newNameString = toString(newName);
+                           StringWithSortKey newNameString(newName);
 
                            auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
                            if (indexByName.find(newNameString) != indexByName.end())

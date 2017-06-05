@@ -178,7 +178,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto nameString = toString(name);
+                           StringWithSortKey nameString(name);
                            
                            auto& indexByName = collection.categories().get<EntityCollection::DiscussionCategoryCollectionByName>();
                            if (indexByName.find(nameString) != indexByName.end())
@@ -222,7 +222,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", category->id());
-                                               writer << Json::propertySafeName("name", category->name());
+                                               writer << Json::propertySafeName("name", category->name().string());
                                                writer << Json::propertySafeName("parentId", setParentId);
                                            });
                        });
@@ -261,7 +261,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
                                return;
                            }
 
-                           auto newNameString = toString(newName);
+                           StringWithSortKey newNameString(newName);
 
                            auto& indexByName = collection.categories().get<EntityCollection::DiscussionCategoryCollectionByName>();
                            if (indexByName.find(newNameString) != indexByName.end())

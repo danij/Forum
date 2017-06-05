@@ -26,8 +26,8 @@ namespace Forum
                                      public IndicateDeletionInProgress,
                                      public Authorization::DiscussionTagPrivilegeStore
         {
-            StringView    name()           const { return name_; }
-            std::string&  name()                 { return name_; }
+            const auto&   name()           const { return name_; }
+            auto&         name()                 { return name_; }
                                                  
             StringView    uiBlob()         const { return uiBlob_; }
             std::string&  uiBlob()               { return uiBlob_; }
@@ -70,7 +70,7 @@ namespace Forum
             auto& notifyChange() { return notifyChangeFn_; }
 
         private:
-            std::string name_;
+            Helpers::StringWithSortKey name_;
             std::string uiBlob_;
             int_fast32_t messageCount_ = 0;
             std::set<std::weak_ptr<DiscussionCategory>, std::owner_less<std::weak_ptr<DiscussionCategory>>> categories_;

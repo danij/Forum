@@ -43,8 +43,8 @@ namespace Forum
                             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &DiscussionCategory::id>>,
 
                     boost::multi_index::ranked_unique<boost::multi_index::tag<DiscussionCategoryCollectionByName>,
-                            const boost::multi_index::const_mem_fun<DiscussionCategory, StringView,
-                                    &DiscussionCategory::name>, Helpers::StringAccentAndCaseInsensitiveLess>,
+                            const boost::multi_index::const_mem_fun<DiscussionCategory, const Helpers::StringWithSortKey&,
+                                    &DiscussionCategory::name>>,
 
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionCategoryCollectionByMessageCount>,
                             const boost::multi_index::const_mem_fun<DiscussionCategory, int_fast32_t,

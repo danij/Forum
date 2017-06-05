@@ -377,7 +377,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
 
                            auto thread = std::make_shared<DiscussionThread>(*currentUser);
                            thread->id() = generateUUIDString();
-                           thread->name() = toString(name);
+                           thread->name() = name;
                            updateCreated(*thread);
                            thread->latestVisibleChange() = thread->lastUpdated() = thread->created();
                            
@@ -428,7 +428,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", thread->id());
-                                               writer << Json::propertySafeName("name", thread->name());
+                                               writer << Json::propertySafeName("name", thread->name().string());
                                                writer << Json::propertySafeName("created", thread->created());
                                            });
                        });
@@ -471,7 +471,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const Id
                            
                            collection.modifyDiscussionThread(it, [&newName, &currentUser](DiscussionThread& thread)
                                                                  {
-                                                                     thread.name() = toString(newName);
+                                                                     thread.name() = newName;
                                                                      thread.latestVisibleChange() = Context::getCurrentTime();
                                                                      updateLastUpdated(thread, currentUser);
                                                                  });

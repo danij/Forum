@@ -29,12 +29,12 @@ namespace Forum
                                         public Authorization::DiscussionThreadPrivilegeStore,
                                         public std::enable_shared_from_this<DiscussionThread>
         {
-                  StringView   name()                      const { return name_; }
-                  std::string& name()                            { return name_; }
-            const User&        createdBy()                 const { return createdBy_; }
-                  User&        createdBy()                       { return createdBy_; }
-                  Timestamp    latestVisibleChange()       const { return latestVisibleChange_; }
-                  Timestamp&   latestVisibleChange()             { return latestVisibleChange_; }
+            const auto&        name()                      const { return name_; }
+                  auto&        name()                            { return name_; }
+            const auto&        createdBy()                 const { return createdBy_; }
+                  auto&        createdBy()                       { return createdBy_; }
+                  auto         latestVisibleChange()       const { return latestVisibleChange_; }
+                  auto&        latestVisibleChange()             { return latestVisibleChange_; }
 
                   auto         tags()                      const { return Helpers::toConst(tags_); }
                   auto&        tagsWeak()                        { return tags_; }
@@ -94,7 +94,7 @@ namespace Forum
         private:
             void refreshLatestMessageCreated();
 
-            std::string name_;
+            Helpers::StringWithSortKey name_;
             User& createdBy_;
             //store the timestamp of the latest visibile change in order to be able to 
             //detect when to return a status that nothing has changed since a provided timestamp

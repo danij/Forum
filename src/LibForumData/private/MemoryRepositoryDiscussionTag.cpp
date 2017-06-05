@@ -100,7 +100,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
                            
-                           auto nameString = toString(name);
+                           StringWithSortKey nameString(name);
 
                            auto& indexByName = collection.tags().get<EntityCollection::DiscussionTagCollectionByName>();
                            if (indexByName.find(nameString) != indexByName.end())
@@ -127,7 +127,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", tag->id());
-                                               writer << Json::propertySafeName("name", tag->name());
+                                               writer << Json::propertySafeName("name", tag->name().string());
                                            });
                        });
     return status;
@@ -165,7 +165,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
                                return;
                            }
 
-                           auto newNameString = toString(newName);
+                           StringWithSortKey newNameString(newName);
 
                            auto& indexByName = collection.tags().get<EntityCollection::DiscussionTagCollectionByName>();
                            if (indexByName.find(newNameString) != indexByName.end())

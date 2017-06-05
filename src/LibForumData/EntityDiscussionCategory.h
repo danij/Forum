@@ -28,8 +28,8 @@ namespace Forum
                                           public Authorization::DiscussionCategoryPrivilegeStore,
                                           public std::enable_shared_from_this<DiscussionCategory>
         {
-            StringView    name()              const { return name_; }
-            std::string&  name()                    { return name_; }
+            const auto&   name()              const { return name_; }
+            auto&         name()                    { return name_; }
                                               
             StringView    description()       const { return description_; }
             std::string&  description()             { return description_; }
@@ -142,7 +142,7 @@ namespace Forum
             auto& notifyChange() { return notifyChangeFn_; }
 
         private:
-            std::string name_;
+            Helpers::StringWithSortKey name_;
             std::string description_;
             int_fast16_t displayOrder_ = 0;
             int_fast32_t messageCount_ = 0;
