@@ -167,6 +167,9 @@ namespace Forum
             size_t sortKeyLength_;
         };
 
+        void swap(StringWithSortKey& first, StringWithSortKey& second) noexcept;
+        std::ostream& operator<<(std::ostream& stream, const StringWithSortKey& string);
+        
         inline std::string toString(const StringWithSortKey& value)
         {
             return toString(value.string());
