@@ -3,6 +3,7 @@
 #include <cstring>
 #include <memory>
 #include <mutex>
+#include <ostream>
 #include <stdexcept>
 
 #include <boost/noncopyable.hpp>
