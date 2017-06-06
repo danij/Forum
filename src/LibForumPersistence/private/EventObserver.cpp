@@ -232,12 +232,14 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onAddNewUser(ObserverContext context, const User& user)
     {
         PersistentTimestampType contextTimestamp = context.timestamp; //make sure the size is fixed for serialization
+        auto userName = user.name().string();
+
         BlobPart parts[] = 
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false }, \
             { reinterpret_cast<const char*>(user.auth().data()), static_cast<SizeType>(user.auth().size()), true }, \
-            { reinterpret_cast<const char*>(user.name().data()), static_cast<SizeType>(user.name().size()), true }, \
+            { reinterpret_cast<const char*>(userName.data()), static_cast<SizeType>(userName.size()), true }, \
         };
 
         recordBlob(EventType::ADD_NEW_USER, 1, parts, std::extent<decltype(parts)>::value);
@@ -261,11 +263,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onChangeUserName(ObserverContext context, const User& user)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
+        auto userName = user.name().string();
+
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(user.name().data()), static_cast<SizeType>(user.name().size()), true }
+            { reinterpret_cast<const char*>(userName.data()), static_cast<SizeType>(userName.size()), true }
         };
 
         recordBlob(EventType::CHANGE_USER_NAME, 1, parts, std::extent<decltype(parts)>::value);
@@ -299,11 +303,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onAddNewDiscussionThread(ObserverContext context, const DiscussionThread& thread)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
+        auto threadName = thread.name().string();
+
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(thread.name().data()), static_cast<SizeType>(thread.name().size()), true }
+            { reinterpret_cast<const char*>(threadName.data()), static_cast<SizeType>(threadName.size()), true }
         };
 
         recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
@@ -328,11 +334,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onChangeDiscussionThreadName(ObserverContext context, const DiscussionThread& thread)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
+        auto threadName = thread.name().string();
+
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(thread.name().data()), static_cast<SizeType>(thread.name().size()), true }
+            { reinterpret_cast<const char*>(threadName.data()), static_cast<SizeType>(threadName.size()), true }
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_THREAD_NAME, 1, parts, std::extent<decltype(parts)>::value);
@@ -543,11 +551,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onAddNewDiscussionTag(ObserverContext context, const DiscussionTag& tag)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
+        auto tagName = tag.name().string();
+
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(tag.name().data()), static_cast<SizeType>(tag.name().size()), true }
+            { reinterpret_cast<const char*>(tagName.data()), static_cast<SizeType>(tagName.size()), true }
         };
 
         recordBlob(EventType::ADD_NEW_DISCUSSION_TAG, 1, parts, std::extent<decltype(parts)>::value);
@@ -571,11 +581,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onChangeDiscussionTagName(ObserverContext context, const DiscussionTag& tag)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
+        auto tagName = tag.name().string();
+
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(tag.name().data()), static_cast<SizeType>(tag.name().size()), true }
+            { reinterpret_cast<const char*>(tagName.data()), static_cast<SizeType>(tagName.size()), true }
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_TAG_NAME, 1, parts, std::extent<decltype(parts)>::value);
@@ -652,14 +664,15 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         category.executeActionWithParentCategoryIfAvailable([&parentCategoryId](auto& parentCategory)
         {
             parentCategoryId = parentCategory.id();
-        });        
+        });
+        auto categoryName = category.name().string();
 
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
             { reinterpret_cast<const char*>(&parentCategoryId.value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(category.name().data()), static_cast<SizeType>(category.name().size()), true }
+            { reinterpret_cast<const char*>(categoryName.data()), static_cast<SizeType>(categoryName.size()), true }
         };
 
         recordBlob(EventType::ADD_NEW_DISCUSSION_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
@@ -690,11 +703,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onChangeDiscussionCategoryName(ObserverContext context, const DiscussionCategory& category)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
+        auto categoryName = category.name().string();
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(category.name().data()), static_cast<SizeType>(category.name().size()), true }
+            { reinterpret_cast<const char*>(categoryName.data()), static_cast<SizeType>(categoryName.size()), true }
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_NAME, 1, parts, std::extent<decltype(parts)>::value);
