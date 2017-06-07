@@ -28,16 +28,31 @@ namespace Forum
                                                public Authorization::DiscussionThreadMessagePrivilegeStore
         {
             typedef int_fast32_t VoteScoreType;
+            typedef std::map<std::weak_ptr<User>, Timestamp, std::owner_less<std::weak_ptr<User>>> VoteCollection;
 
                   StringView                 content()             const { return content_; }
                   Helpers::ImmutableString&  content()                   { return content_; }
             const User&                      createdBy()           const { return createdBy_; }
                   User&                      createdBy()                 { return createdBy_; }
                                                                    
-            auto                             upVotes()             const { return Helpers::toConst(upVotes_); }
-            auto                             downVotes()           const { return Helpers::toConst(downVotes_); }
-            VoteScoreType                    voteScore()           const 
-                { return static_cast<VoteScoreType>(upVotes_.size()) - static_cast<VoteScoreType>(downVotes_.size()); }
+            auto                             upVotes()             const
+            {
+                static const VoteCollection emptyVoteCollection;
+                return Helpers::toConst(upVotes_ ? *upVotes_ : emptyVoteCollection);
+            }
+            auto                             downVotes()           const
+            {
+                static const VoteCollection emptyVoteCollection;
+                return Helpers::toConst(downVotes_ ? *downVotes_ : emptyVoteCollection);
+            }
+            VoteScoreType                    voteScore()           const
+            {
+                VoteScoreType upVoteCount = 0, downVoteCount = 0;
+                if (upVotes_) upVoteCount = static_cast<VoteScoreType>(upVotes_->size());
+                if (downVotes_) downVoteCount = static_cast<VoteScoreType>(downVotes_->size());
+
+                return upVoteCount - downVoteCount;
+            }
 
             int_fast32_t              solvedCommentsCount() const { return solvedCommentsCount_; }
             int_fast32_t&             solvedCommentsCount()       { return solvedCommentsCount_; }
@@ -91,17 +106,20 @@ namespace Forum
 
             bool hasVoted(const std::weak_ptr<User>& user) const
             {
-                return (upVotes_.find(user) != upVotes_.end()) || (downVotes_.find(user) != downVotes_.end());
+                return (upVotes_ && (upVotes_->find(user) != upVotes_->end()))
+                  || (downVotes_ && (downVotes_->find(user) != downVotes_->end()));
             }
 
             void addUpVote(std::weak_ptr<User> user, const Timestamp& at)
             {
-                upVotes_.insert(std::make_pair(std::move(user), at));
+                if ( ! upVotes_) upVotes_.reset(new VoteCollection);
+                upVotes_->insert(std::make_pair(std::move(user), at));
             }
 
             void addDownVote(std::weak_ptr<User> user, const Timestamp& at)
             {
-                downVotes_.insert(std::make_pair(std::move(user), at));
+                if ( ! downVotes_) downVotes_.reset(new VoteCollection);
+                downVotes_->insert(std::make_pair(std::move(user), at));
             }
 
             /**
@@ -110,7 +128,7 @@ namespace Forum
              */
             bool removeVote(std::weak_ptr<User> user)
             {
-                return upVotes_.erase(user) > 0 || downVotes_.erase(user) > 0;
+                return (upVotes_ && (upVotes_->erase(user) > 0)) || (downVotes_ && (downVotes_->erase(user) > 0));
             }
 
         private:
@@ -120,8 +138,9 @@ namespace Forum
             int_fast32_t solvedCommentsCount_;
             //using maps as they use less memory than unordered_maps
             //number of votes/message will usually be small
-            std::map<std::weak_ptr<User>, Timestamp, std::owner_less<std::weak_ptr<User>>> upVotes_;
-            std::map<std::weak_ptr<User>, Timestamp, std::owner_less<std::weak_ptr<User>>> downVotes_;
+
+            std::unique_ptr<VoteCollection> upVotes_;
+            std::unique_ptr<VoteCollection> downVotes_;
         };
 
         typedef std::shared_ptr<DiscussionThreadMessage> DiscussionThreadMessageRef;
