@@ -16,18 +16,18 @@ namespace Forum
             StatusCode getDiscussionTags(OutStream& output, RetrieveDiscussionTagsBy by) const override;
             
             StatusCode addNewDiscussionTag(StringView name, OutStream& output) override;
-            StatusCode changeDiscussionTagName(const Entities::IdType& id, StringView newName,
+            StatusCode changeDiscussionTagName(Entities::IdTypeRef id, StringView newName,
                                                OutStream& output) override;
-            StatusCode changeDiscussionTagUiBlob(const Entities::IdType& id, StringView blob,
+            StatusCode changeDiscussionTagUiBlob(Entities::IdTypeRef id, StringView blob,
                                                  OutStream& output) override;
-            StatusCode deleteDiscussionTag(const Entities::IdType& id, OutStream& output) override;
+            StatusCode deleteDiscussionTag(Entities::IdTypeRef id, OutStream& output) override;
             
-            StatusCode addDiscussionTagToThread(const Entities::IdType& tagId, const Entities::IdType& threadId, 
+            StatusCode addDiscussionTagToThread(Entities::IdTypeRef tagId, Entities::IdTypeRef threadId, 
                                                 OutStream& output) override;
-            StatusCode removeDiscussionTagFromThread(const Entities::IdType& tagId, 
-                                                     const Entities::IdType& threadId, 
+            StatusCode removeDiscussionTagFromThread(Entities::IdTypeRef tagId, 
+                                                     Entities::IdTypeRef threadId, 
                                                      OutStream& output) override;
-            StatusCode mergeDiscussionTags(const Entities::IdType& fromId, const Entities::IdType& intoId,
+            StatusCode mergeDiscussionTags(Entities::IdTypeRef fromId, Entities::IdTypeRef intoId,
                                            OutStream& output) override;
         private:
             Authorization::DiscussionTagAuthorizationRef authorization_;

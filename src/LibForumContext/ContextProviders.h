@@ -19,12 +19,12 @@ namespace Forum
         /**
          * Returns the id of the current user executing an action
          */
-        const Entities::IdType& getCurrentUserId();
+        Entities::IdTypeRef getCurrentUserId();
 
         /**
          * Sets the id of the current user executing an action (thread-local)
          */
-        void setCurrentUserId(const Entities::IdType& value);
+        void setCurrentUserId(Entities::IdTypeRef value);
 
         /**
          * Returns the IP address of the current user executing an action

@@ -20,29 +20,29 @@ namespace Forum
              * - Increases the number of visits
              * - Stores that the current user has visited the discussion thread
              */
-            StatusCode getDiscussionThreadById(const Entities::IdType& id, OutStream& output) override;
+            StatusCode getDiscussionThreadById(Entities::IdTypeRef id, OutStream& output) override;
 
-            StatusCode getDiscussionThreadsOfUser(const Entities::IdType& id, OutStream& output,
+            StatusCode getDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,
                                                   RetrieveDiscussionThreadsBy by) const override;
-            StatusCode getSubscribedDiscussionThreadsOfUser(const Entities::IdType& id, OutStream& output,
+            StatusCode getSubscribedDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,
                                                             RetrieveDiscussionThreadsBy by) const override;
 
-            StatusCode getDiscussionThreadsWithTag(const Entities::IdType& id, OutStream& output,
+            StatusCode getDiscussionThreadsWithTag(Entities::IdTypeRef id, OutStream& output,
                                                    RetrieveDiscussionThreadsBy by) const override;
 
-            StatusCode getDiscussionThreadsOfCategory(const Entities::IdType& id, OutStream& output,
+            StatusCode getDiscussionThreadsOfCategory(Entities::IdTypeRef id, OutStream& output,
                                                       RetrieveDiscussionThreadsBy by) const override;
 
             StatusCode addNewDiscussionThread(StringView name, OutStream& output) override;
-            StatusCode changeDiscussionThreadName(const Entities::IdType& id, StringView newName,
+            StatusCode changeDiscussionThreadName(Entities::IdTypeRef id, StringView newName,
                                                   OutStream& output) override;
-            StatusCode changeDiscussionThreadPinDisplayOrder(const Entities::IdType& id, uint16_t newValue,
+            StatusCode changeDiscussionThreadPinDisplayOrder(Entities::IdTypeRef id, uint16_t newValue,
                                                              OutStream& output) override;
-            StatusCode deleteDiscussionThread(const Entities::IdType& id, OutStream& output) override;
-            StatusCode mergeDiscussionThreads(const Entities::IdType& fromId, const Entities::IdType& intoId, 
+            StatusCode deleteDiscussionThread(Entities::IdTypeRef id, OutStream& output) override;
+            StatusCode mergeDiscussionThreads(Entities::IdTypeRef fromId, Entities::IdTypeRef intoId, 
                                               OutStream& output) override;
-            StatusCode subscribeToDiscussionThread(const Entities::IdType& id, OutStream& output) override;
-            StatusCode unsubscribeFromDiscussionThread(const Entities::IdType& id, OutStream& output) override;
+            StatusCode subscribeToDiscussionThread(Entities::IdTypeRef id, OutStream& output) override;
+            StatusCode unsubscribeFromDiscussionThread(Entities::IdTypeRef id, OutStream& output) override;
 
         private:
             Authorization::DiscussionThreadAuthorizationRef authorization_;

@@ -222,38 +222,15 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
 
     collection().write([&](EntityCollection& collection)
                        {
-                           auto authString = toString(auth);
-
-                           auto& indexByAuth = collection.users().get<EntityCollection::UserCollectionByAuth>();
-                           if (indexByAuth.find(authString) != indexByAuth.end())
-                           {
-                               status = StatusCode::USER_WITH_SAME_AUTH_ALREADY_EXISTS;
-                               return;
-                           }
-
-                           StringWithSortKey nameString(name);
-
                            auto currentUser = performedBy.getAndUpdate(collection);
-
-                           auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
-                           if (indexByName.find(nameString) != indexByName.end())
-                           {
-                               status = StatusCode::ALREADY_EXISTS;
-                               return;
-                           }
-
                            if ( ! (status = authorization_->addNewUser(*currentUser, name)))
                            {
                                return;
                            }
 
-                           auto user = std::make_shared<User>();
-                           user->id() = generateUUIDString();
-                           user->auth() = std::move(authString);
-                           user->name() = std::move(nameString);
-                           updateCreated(*user);
-
-                           collection.users().insert(user);
+                           auto statusWithResource = addNewUser(collection, name, auth);
+                           auto& user = statusWithResource.resource;
+                           if ( ! (status = statusWithResource.status)) return;
 
                            writeEvents().onAddNewUser(createObserverContext(*currentUser), *user);
 
@@ -265,6 +242,36 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                            });
                        });
     return status;
+}
+
+StatusWithResource<UserRef> MemoryRepositoryUser::addNewUser(EntityCollection& collection, 
+                                                             StringView name, StringView auth)
+{
+    auto authString = toString(auth);
+
+    auto& indexByAuth = collection.users().get<EntityCollection::UserCollectionByAuth>();
+    if (indexByAuth.find(authString) != indexByAuth.end())
+    {
+        return StatusCode::USER_WITH_SAME_AUTH_ALREADY_EXISTS;
+    }
+
+    StringWithSortKey nameString(name);
+
+    auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
+    if (indexByName.find(nameString) != indexByName.end())
+    {
+        return StatusCode::ALREADY_EXISTS;
+    }
+
+    auto user = std::make_shared<User>();
+    user->id() = generateUUIDString();
+    user->auth() = std::move(authString);
+    user->name() = std::move(nameString);
+    updateCreated(*user);
+
+    collection.users().insert(user);
+
+    return user;
 }
 
 StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView newName, OutStream& output)
@@ -284,7 +291,6 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView new
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
-
                            auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -292,27 +298,42 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView new
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-
                            if ( ! (status = authorization_->changeUserName(*currentUser, **it, newName)))
                            {
                                return;
                            }
 
-                           StringWithSortKey newNameString(newName);
+                           auto statusWithResource = changeUserName(collection, id, newName);
+                           auto& user = statusWithResource.resource;
+                           if ( ! (status = statusWithResource.status)) return;
 
-                           auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
-                           if (indexByName.find(newNameString) != indexByName.end())
-                           {
-                               status = StatusCode::ALREADY_EXISTS;
-                               return;
-                           }
-                           collection.modifyUser(it, [&newNameString](User& user)
-                                                     {
-                                                         user.name() = std::move(newNameString);
-                                                     });
-                           writeEvents().onChangeUser(createObserverContext(*currentUser), **it, User::ChangeType::Name);
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), *user, User::ChangeType::Name);
                        });
     return status;
+}
+
+StatusWithResource<UserRef> MemoryRepositoryUser::changeUserName(EntityCollection& collection,
+                                                                 IdTypeRef id, StringView newName)
+{
+    auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+    
+    StringWithSortKey newNameString(newName);
+
+    auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
+    if (indexByName.find(newNameString) != indexByName.end())
+    {
+        return StatusCode::ALREADY_EXISTS;
+    }
+    collection.modifyUser(it, [&newNameString](User& user)
+                              {
+                                  user.name() = std::move(newNameString);
+                              });
+    return *it;
 }
 
 StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView newInfo, OutStream& output)
@@ -333,7 +354,6 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView new
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
-
                            auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -341,20 +361,35 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView new
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-
                            if ( ! (status = authorization_->changeUserInfo(*currentUser, **it, newInfo)))
                            {
                                return;
                            }
 
-                           collection.modifyUser(it, [&newInfo](User& user)
-                                                     {
-                                                         user.info() = toString(newInfo);
-                                                     });
+                           auto statusWithResource = changeUserInfo(collection, id, newInfo);
+                           auto& user = statusWithResource.resource;
+                           if ( ! (status = statusWithResource.status)) return;
 
-                           writeEvents().onChangeUser(createObserverContext(*currentUser), **it, User::ChangeType::Info);
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), *user, User::ChangeType::Info);
                        });
     return status;
+}
+
+StatusWithResource<UserRef> MemoryRepositoryUser::changeUserInfo(EntityCollection& collection,
+                                                                 IdTypeRef id, StringView newInfo)
+{
+    auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+    
+    collection.modifyUser(it, [&newInfo](User& user)
+                              {
+                                  user.info() = toString(newInfo);
+                              });
+    return *it;
 }
 
 StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
@@ -369,7 +404,6 @@ StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
-
                            auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -377,7 +411,6 @@ StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-
                            if ( ! (status = authorization_->deleteUser(*currentUser, **it)))
                            {
                                return;
@@ -386,7 +419,19 @@ StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
                            //make sure the user is not deleted before being passed to the observers
                            writeEvents().onDeleteUser(createObserverContext(*currentUser), **it);
 
-                           collection.deleteUser(it);
+                           deleteUser(collection, id);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdTypeRef id)
+{
+    auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    collection.deleteUser(it);
 }

@@ -7,22 +7,28 @@ namespace Forum
 {
     namespace Repository
     {
-        class MemoryRepositoryUser final : public MemoryRepositoryBase, public IUserRepository
+        class MemoryRepositoryUser final : public MemoryRepositoryBase, 
+                                           public IUserRepository, public IUserDirectWriteRepository
         {
         public:
             explicit MemoryRepositoryUser(MemoryStoreRef store, Authorization::UserAuthorizationRef authorization);
 
             StatusCode getUsers(OutStream& output, RetrieveUsersBy by) const override;
 
-            StatusCode getUserById(const Entities::IdType& id, OutStream& output) const override;
+            StatusCode getUserById(Entities::IdTypeRef id, OutStream& output) const override;
             StatusCode getUserByName(StringView name, OutStream& output) const override;
 
             StatusCode addNewUser(StringView name, StringView auth, OutStream& output) override;
-            StatusCode changeUserName(const Entities::IdType& id, StringView newName, 
-                                      OutStream& output) override;
-            StatusCode changeUserInfo(const Entities::IdType& id, StringView newInfo, 
-                                      OutStream& output) override;
-            StatusCode deleteUser(const Entities::IdType& id, OutStream& output) override;
+            StatusWithResource<Entities::UserRef> addNewUser(Entities::EntityCollection& collection, 
+                                                             StringView name, StringView auth) override;
+            StatusCode changeUserName(Entities::IdTypeRef id, StringView newName,  OutStream& output) override;
+            StatusWithResource<Entities::UserRef> changeUserName(Entities::EntityCollection& collection,
+                                                                 Entities::IdTypeRef id, StringView newName) override;
+            StatusCode changeUserInfo(Entities::IdTypeRef id, StringView newInfo, OutStream& output) override;
+            StatusWithResource<Entities::UserRef> changeUserInfo(Entities::EntityCollection& collection,
+                                                                 Entities::IdTypeRef id, StringView newInfo) override;
+            StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) override;
+            StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
         private:
             Authorization::UserAuthorizationRef authorization_;

@@ -13,30 +13,30 @@ namespace Forum
             explicit MemoryRepositoryDiscussionCategory(MemoryStoreRef store,
                                                         Authorization::DiscussionCategoryAuthorizationRef authorization);
 
-            StatusCode addNewDiscussionCategory(StringView name, const Entities::IdType& parentId,
+            StatusCode addNewDiscussionCategory(StringView name, Entities::IdTypeRef parentId,
                                                 OutStream& output) override;
-            StatusCode changeDiscussionCategoryName(const Entities::IdType& id, StringView newName,
+            StatusCode changeDiscussionCategoryName(Entities::IdTypeRef id, StringView newName,
                                                     OutStream& output) override;
-            StatusCode changeDiscussionCategoryDescription(const Entities::IdType& id, 
+            StatusCode changeDiscussionCategoryDescription(Entities::IdTypeRef id, 
                                                            StringView newDescription,
                                                            OutStream& output) override;
-            StatusCode changeDiscussionCategoryParent(const Entities::IdType& id, 
-                                                      const Entities::IdType& newParentId,
+            StatusCode changeDiscussionCategoryParent(Entities::IdTypeRef id, 
+                                                      Entities::IdTypeRef newParentId,
                                                       OutStream& output) override;
-            StatusCode changeDiscussionCategoryDisplayOrder(const Entities::IdType& id, 
+            StatusCode changeDiscussionCategoryDisplayOrder(Entities::IdTypeRef id, 
                                                             int_fast16_t newDisplayOrder,
                                                             OutStream& output) override;
-            StatusCode deleteDiscussionCategory(const Entities::IdType& id, OutStream& output) override;
+            StatusCode deleteDiscussionCategory(Entities::IdTypeRef id, OutStream& output) override;
 
-            StatusCode getDiscussionCategoryById(const Entities::IdType& id, OutStream& output) const override;
+            StatusCode getDiscussionCategoryById(Entities::IdTypeRef id, OutStream& output) const override;
             StatusCode getDiscussionCategories(OutStream& output, RetrieveDiscussionCategoriesBy by) const override;
             StatusCode getDiscussionCategoriesFromRoot(OutStream& output) const override;
 
-            StatusCode addDiscussionTagToCategory(const Entities::IdType& tagId, 
-                                                  const Entities::IdType& categoryId, 
+            StatusCode addDiscussionTagToCategory(Entities::IdTypeRef tagId, 
+                                                  Entities::IdTypeRef categoryId, 
                                                   OutStream& output) override;
-            StatusCode removeDiscussionTagFromCategory(const Entities::IdType& tagId, 
-                                                       const Entities::IdType& categoryId, 
+            StatusCode removeDiscussionTagFromCategory(Entities::IdTypeRef tagId, 
+                                                       Entities::IdTypeRef categoryId, 
                                                        OutStream& output) override;
         private:
             Authorization::DiscussionCategoryAuthorizationRef authorization_;
