@@ -31,6 +31,7 @@ set(HEADER_FILES
         Observers.h
         Entities.h
         ConstCollectionAdapter.h
+        EntityCollection.h
         EntityCommonTypes.h
         EntityUser.h
         EntityDiscussionThread.h
@@ -51,7 +52,6 @@ set(HEADER_FILES
 
         private/ResourceGuard.h
         private/EntitySerialization.h
-        private/EntityCollection.h
         private/MemoryRepositoryCommon.h
         private/MemoryRepositoryUser.h
         private/MemoryRepositoryDiscussionThread.h
