@@ -434,4 +434,6 @@ StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdType
     }
 
     collection.deleteUser(it);
+
+    return StatusCode::OK;
 }
