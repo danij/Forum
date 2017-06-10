@@ -61,13 +61,12 @@ PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& 
 UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& collection)
 {
     lastSeenUpdate_ = nullptr;
-    const auto& index = collection.users().get<EntityCollection::UserCollectionById>();
-    auto it = index.find(Context::getCurrentUserId());
-    if (it == index.end())
+    
+    auto result = getCurrentUser(collection);
+    if (result == AnonymousUser)
     {
-        return AnonymousUser;
+        return result;
     }
-    auto& result = *it;
 
     auto now = Context::getCurrentTime();
 
@@ -79,6 +78,17 @@ UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
         });
     }
     return result;
+}
+
+UserRef Repository::getCurrentUser(EntityCollection& collection)
+{
+    const auto& index = collection.users().get<EntityCollection::UserCollectionById>();
+    auto it = index.find(Context::getCurrentUserId());
+    if (it == index.end())
+    {
+        return AnonymousUser;
+    }
+    return *it;
 }
 
 StatusCode MemoryRepositoryBase::validateString(StringView string, 

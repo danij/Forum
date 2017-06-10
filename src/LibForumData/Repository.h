@@ -124,6 +124,7 @@ namespace Forum
         };
         typedef std::shared_ptr<IUserDirectWriteRepository> UserDirectWriteRepositoryRef;
 
+
         class IDiscussionThreadRepository
         {
         public:
@@ -155,6 +156,27 @@ namespace Forum
             virtual StatusCode unsubscribeFromDiscussionThread(Entities::IdTypeRef id, OutStream& output) = 0;
         };
         typedef std::shared_ptr<IDiscussionThreadRepository> DiscussionThreadRepositoryRef;
+
+        class IDiscussionThreadDirectWriteRepository
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IDiscussionThreadDirectWriteRepository);
+
+            virtual StatusWithResource<Entities::DiscussionThreadRef> 
+                    addNewDiscussionThread(Entities::EntityCollection& collection, StringView name) = 0;
+            virtual StatusCode changeDiscussionThreadName(Entities::EntityCollection& collection, 
+                                                          Entities::IdTypeRef id, StringView newName) = 0;
+            virtual StatusCode changeDiscussionThreadPinDisplayOrder(Entities::EntityCollection& collection, 
+                                                                     Entities::IdTypeRef id, uint16_t newValue) = 0;
+            virtual StatusCode deleteDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
+            virtual StatusCode mergeDiscussionThreads(Entities::EntityCollection& collection, 
+                                                      Entities::IdTypeRef fromId, Entities::IdTypeRef intoId) = 0;
+            virtual StatusCode subscribeToDiscussionThread(Entities::EntityCollection& collection,
+                                                           Entities::IdTypeRef id) = 0;
+            virtual StatusCode unsubscribeFromDiscussionThread(Entities::EntityCollection& collection, 
+                                                               Entities::IdTypeRef id) = 0;
+        };
+        typedef std::shared_ptr<IDiscussionThreadDirectWriteRepository> DiscussionThreadDirectWriteRepositoryRef;
 
 
         class IDiscussionThreadMessageRepository

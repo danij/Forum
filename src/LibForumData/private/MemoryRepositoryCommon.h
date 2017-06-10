@@ -49,6 +49,8 @@ namespace Forum
             std::function<void()> lastSeenUpdate_;
         };
 
+        Entities::UserRef getCurrentUser(Entities::EntityCollection& collection);
+
         class MemoryRepositoryBase : public IObservableRepository, private boost::noncopyable
         {
         public:

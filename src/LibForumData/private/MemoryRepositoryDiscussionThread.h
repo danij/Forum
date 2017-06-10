@@ -7,7 +7,9 @@ namespace Forum
 {
     namespace Repository
     {
-        class MemoryRepositoryDiscussionThread final : public MemoryRepositoryBase, public IDiscussionThreadRepository
+        class MemoryRepositoryDiscussionThread final : public MemoryRepositoryBase, 
+                                                       public IDiscussionThreadRepository,
+                                                       public IDiscussionThreadDirectWriteRepository
         {
         public:
             explicit MemoryRepositoryDiscussionThread(MemoryStoreRef store,
@@ -34,15 +36,27 @@ namespace Forum
                                                       RetrieveDiscussionThreadsBy by) const override;
 
             StatusCode addNewDiscussionThread(StringView name, OutStream& output) override;
+            StatusWithResource<Entities::DiscussionThreadRef>
+                       addNewDiscussionThread(Entities::EntityCollection& collection, StringView name) override;
+
             StatusCode changeDiscussionThreadName(Entities::IdTypeRef id, StringView newName,
                                                   OutStream& output) override;
+            StatusCode changeDiscussionThreadName(Entities::EntityCollection& collection,
+                                                  Entities::IdTypeRef id, StringView newName) override;
             StatusCode changeDiscussionThreadPinDisplayOrder(Entities::IdTypeRef id, uint16_t newValue,
                                                              OutStream& output) override;
+            StatusCode changeDiscussionThreadPinDisplayOrder(Entities::EntityCollection& collection, 
+                                                             Entities::IdTypeRef id, uint16_t newValue) override;
             StatusCode deleteDiscussionThread(Entities::IdTypeRef id, OutStream& output) override;
-            StatusCode mergeDiscussionThreads(Entities::IdTypeRef fromId, Entities::IdTypeRef intoId, 
+            StatusCode deleteDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
+            StatusCode mergeDiscussionThreads(Entities::IdTypeRef fromId, Entities::IdTypeRef intoId,
                                               OutStream& output) override;
+            StatusCode mergeDiscussionThreads(Entities::EntityCollection& collection, 
+                                              Entities::IdTypeRef fromId, Entities::IdTypeRef intoId) override;
             StatusCode subscribeToDiscussionThread(Entities::IdTypeRef id, OutStream& output) override;
+            StatusCode subscribeToDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
             StatusCode unsubscribeFromDiscussionThread(Entities::IdTypeRef id, OutStream& output) override;
+            StatusCode unsubscribeFromDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
         private:
             Authorization::DiscussionThreadAuthorizationRef authorization_;
