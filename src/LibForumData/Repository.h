@@ -209,6 +209,35 @@ namespace Forum
         };
         typedef std::shared_ptr<IDiscussionThreadMessageRepository> DiscussionThreadMessageRepositoryRef;
 
+        class IDiscussionThreadMessageDirectWriteRepository
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IDiscussionThreadMessageDirectWriteRepository)
+
+            virtual StatusWithResource<Entities::DiscussionThreadMessageRef>
+                addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef threadId, 
+                                                StringView content) = 0;
+            virtual StatusCode deleteDiscussionMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
+            virtual StatusCode changeDiscussionThreadMessageContent(Entities::EntityCollection& collection, 
+                                                                    Entities::IdTypeRef id, StringView newContent,
+                                                                    StringView changeReason) = 0;
+            virtual StatusCode moveDiscussionThreadMessage(Entities::EntityCollection& collection, 
+                                                           Entities::IdTypeRef messageId, 
+                                                           Entities::IdTypeRef intoThreadId) = 0;
+            virtual StatusCode upVoteDiscussionThreadMessage(Entities::EntityCollection& collection, 
+                                                             Entities::IdTypeRef id) = 0;
+            virtual StatusCode downVoteDiscussionThreadMessage(Entities::EntityCollection& collection, 
+                                                               Entities::IdTypeRef id) = 0;
+            virtual StatusCode resetVoteDiscussionThreadMessage(Entities::EntityCollection& collection, 
+                                                                Entities::IdTypeRef id) = 0;
+
+            virtual StatusWithResource<Entities::MessageCommentRef>
+                addCommentToDiscussionThreadMessage(Entities::EntityCollection& collection,
+                                                    Entities::IdTypeRef messageId, StringView content) = 0;
+            virtual StatusCode setMessageCommentToSolved(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
+        };
+        typedef std::shared_ptr<IDiscussionThreadMessageDirectWriteRepository> DiscussionThreadMessageDirectWriteRepositoryRef;
+
 
         class IDiscussionTagRepository
         {
