@@ -22,11 +22,9 @@ namespace Forum
             StatusWithResource<Entities::UserRef> addNewUser(Entities::EntityCollection& collection, 
                                                              StringView name, StringView auth) override;
             StatusCode changeUserName(Entities::IdTypeRef id, StringView newName,  OutStream& output) override;
-            StatusWithResource<Entities::UserRef> changeUserName(Entities::EntityCollection& collection,
-                                                                 Entities::IdTypeRef id, StringView newName) override;
+            StatusCode changeUserName(Entities::EntityCollection& collection, Entities::IdTypeRef id, StringView newName) override;
             StatusCode changeUserInfo(Entities::IdTypeRef id, StringView newInfo, OutStream& output) override;
-            StatusWithResource<Entities::UserRef> changeUserInfo(Entities::EntityCollection& collection,
-                                                                 Entities::IdTypeRef id, StringView newInfo) override;
+            StatusCode changeUserInfo(Entities::EntityCollection& collection, Entities::IdTypeRef id, StringView newInfo) override;
             StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 

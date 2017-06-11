@@ -298,22 +298,21 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView new
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                           if ( ! (status = authorization_->changeUserName(*currentUser, **it, newName)))
+                           auto& user = **it;
+
+                           if ( ! (status = authorization_->changeUserName(*currentUser, user, newName)))
                            {
                                return;
                            }
 
-                           auto statusWithResource = changeUserName(collection, id, newName);
-                           auto& user = statusWithResource.resource;
-                           if ( ! (status = statusWithResource.status)) return;
+                           if ( ! (status = changeUserName(collection, id, newName))) return;
 
-                           writeEvents().onChangeUser(createObserverContext(*currentUser), *user, User::ChangeType::Name);
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Name);
                        });
     return status;
 }
 
-StatusWithResource<UserRef> MemoryRepositoryUser::changeUserName(EntityCollection& collection,
-                                                                 IdTypeRef id, StringView newName)
+StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, IdTypeRef id, StringView newName)
 {
     auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
     auto it = indexById.find(id);
@@ -333,7 +332,7 @@ StatusWithResource<UserRef> MemoryRepositoryUser::changeUserName(EntityCollectio
                               {
                                   user.name() = std::move(newNameString);
                               });
-    return *it;
+    return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView newInfo, OutStream& output)
@@ -361,22 +360,21 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView new
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                           if ( ! (status = authorization_->changeUserInfo(*currentUser, **it, newInfo)))
+                           auto& user = **it;
+
+                           if ( ! (status = authorization_->changeUserInfo(*currentUser, user, newInfo)))
                            {
                                return;
                            }
 
-                           auto statusWithResource = changeUserInfo(collection, id, newInfo);
-                           auto& user = statusWithResource.resource;
-                           if ( ! (status = statusWithResource.status)) return;
+                           if ( ! (status = changeUserInfo(collection, id, newInfo))) return;
 
-                           writeEvents().onChangeUser(createObserverContext(*currentUser), *user, User::ChangeType::Info);
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Info);
                        });
     return status;
 }
 
-StatusWithResource<UserRef> MemoryRepositoryUser::changeUserInfo(EntityCollection& collection,
-                                                                 IdTypeRef id, StringView newInfo)
+StatusCode MemoryRepositoryUser::changeUserInfo(EntityCollection& collection, IdTypeRef id, StringView newInfo)
 {
     auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
     auto it = indexById.find(id);
@@ -389,7 +387,7 @@ StatusWithResource<UserRef> MemoryRepositoryUser::changeUserInfo(EntityCollectio
                               {
                                   user.info() = toString(newInfo);
                               });
-    return *it;
+    return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
@@ -419,7 +417,7 @@ StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
                            //make sure the user is not deleted before being passed to the observers
                            writeEvents().onDeleteUser(createObserverContext(*currentUser), **it);
 
-                           deleteUser(collection, id);
+                           status = deleteUser(collection, id);
                        });
     return status;
 }

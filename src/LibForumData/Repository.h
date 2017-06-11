@@ -116,10 +116,10 @@ namespace Forum
 
             virtual StatusWithResource<Entities::UserRef> addNewUser(Entities::EntityCollection& collection,
                                                                      StringView name, StringView auth) = 0;
-            virtual StatusWithResource<Entities::UserRef> changeUserName(Entities::EntityCollection& collection,
-                                                                         Entities::IdTypeRef id, StringView newName) = 0;
-            virtual StatusWithResource<Entities::UserRef> changeUserInfo(Entities::EntityCollection& collection,
-                                                                         Entities::IdTypeRef id, StringView newInfo) = 0;
+            virtual StatusCode changeUserName(Entities::EntityCollection& collection, Entities::IdTypeRef id, 
+                                              StringView newName) = 0;
+            virtual StatusCode changeUserInfo(Entities::EntityCollection& collection, Entities::IdTypeRef id, 
+                                              StringView newInfo) = 0;
             virtual StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
         };
         typedef std::shared_ptr<IUserDirectWriteRepository> UserDirectWriteRepositoryRef;
