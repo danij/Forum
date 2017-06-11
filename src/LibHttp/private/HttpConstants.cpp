@@ -7,17 +7,17 @@
 
 using namespace Http;
 
-static StringView statusCodes[] = 
+static StringView statusCodes[] =
 {
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, { "Continue", 8 }, { "Switching Protocols", 19 }, {}, {}, {}, 
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, { "Continue", 8 }, { "Switching Protocols", 19 }, {}, {}, {},
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    {}, {}, {}, {}, {}, {}, {}, {}, { "OK", 2 }, { "Created", 7 }, { "Accepted", 8 }, 
-    { "Non-Authoritative Information", 29 }, { "No Content", 10 }, { "Reset Content", 13 }, { "Partial Content", 15 }, 
+    {}, {}, {}, {}, {}, {}, {}, {}, { "OK", 2 }, { "Created", 7 }, { "Accepted", 8 },
+    { "Non-Authoritative Information", 29 }, { "No Content", 10 }, { "Reset Content", 13 }, { "Partial Content", 15 },
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
@@ -30,12 +30,12 @@ static StringView statusCodes[] =
     { "Method Not Allowed", 18 }, { "Not Acceptable", 14 }, { "Proxy Authentication Required", 29 },
     { "Request Timeout", 15 }, { "Conflict", 8 }, { "Gone", 4 }, { "Length Required", 15 },
     { "Precondition Failed", 19 }, { "Payload Too Large", 17 }, { "URI Too Long", 12 },
-    { "Unsupported Media Type", 22 }, { "Range Not Satisfiable", 21 }, { "Expectation Failed", 18 }, {}, {}, {}, {}, 
-    {}, {}, {}, {}, { "Upgrade Required", 16 }, {}, { "Precondition Required", 21 }, { "Too Many Requests", 17 }, {}, 
-    { "Request Header Fields Too Large", 31 }, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, 
+    { "Unsupported Media Type", 22 }, { "Range Not Satisfiable", 21 }, { "Expectation Failed", 18 }, {}, {}, {}, {},
+    {}, {}, {}, {}, { "Upgrade Required", 16 }, {}, { "Precondition Required", 21 }, { "Too Many Requests", 17 }, {},
+    { "Request Header Fields Too Large", 31 }, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, 
-    { "Internal Server Error", 21 }, { "Not Implemented", 15 }, { "Bad Gateway", 11 }, { "Service Unavailable", 19 }, 
+    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+    { "Internal Server Error", 21 }, { "Not Implemented", 15 }, { "Bad Gateway", 11 }, { "Service Unavailable", 19 },
     { "Gateway Timeout", 15 }, { "HTTP Version Not Supported", 26 }, {}, {}, {}, {}, {},
     { "Network Authentication Required", 31 }
 };
@@ -57,7 +57,7 @@ static int hashHeaderName(const char* text, size_t size)
 {
     constexpr int maxHeaderNameSize = 22;
     static int coefficients[] = { 1, 2, 42, 307 };
-    return 
+    return
     (
         CharToLower[static_cast<uint8_t>(text[0])]        * coefficients[0] +
         CharToLower[static_cast<uint8_t>(text[size - 1])] * coefficients[1] +
@@ -142,7 +142,7 @@ HEADER_COMPARER(306, "uUpPgGrRaAdDeE", Request::HttpHeader::Upgrade)
 
 typedef Request::HttpHeader (*MatchFunction)(const char* value, size_t size);
 
-static MatchFunction matchFunctionTable[] = 
+static MatchFunction matchFunctionTable[] =
 {
     nullptr, nullptr, nullptr, nullptr, nullptr, match_5, nullptr, nullptr, match_8, nullptr,
     nullptr, match_11, match_12, nullptr, nullptr, nullptr, nullptr, nullptr, match_18, nullptr,
@@ -174,7 +174,7 @@ static MatchFunction matchFunctionTable[] =
     nullptr, nullptr, nullptr, match_273, match_274, nullptr, nullptr, nullptr, match_278, nullptr,
     nullptr, match_281, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, match_288, nullptr,
     nullptr, nullptr, nullptr, nullptr, match_294, nullptr, nullptr, nullptr, nullptr, nullptr,
-    nullptr, nullptr, nullptr, match_303, nullptr, nullptr, match_306, 
+    nullptr, nullptr, nullptr, match_303, nullptr, nullptr, match_306,
 };
 
 Request::HttpHeader Http::Request::matchHttpHeader(const char* headerName, size_t size)

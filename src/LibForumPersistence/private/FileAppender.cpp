@@ -63,7 +63,7 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
         {
             fwrite(Padding, 1, paddingNeeded, file);
         }
-        
+
         if (ferror(file))
         {
             FORUM_LOG_ERROR << "Could not persist blob to file";

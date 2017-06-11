@@ -132,18 +132,18 @@ int Application::run(int argc, const char* argv[])
     auto& events = getApplicationEvents();
 
     events.onApplicationStart();
-    
+
     httpListener_->startListening();
 
     getIOServiceProvider().start();
     getIOServiceProvider().waitForStop();
-    
+
     httpListener_->stopListening();
 
     BOOST_LOG_TRIVIAL(info) << "Stopped listening for HTTP connections";
 
     events.beforeApplicationStop();
-    
+
     cleanup();
 
     return 0;
@@ -179,13 +179,13 @@ void Application::createCommandHandler()
 
     ObservableRepositoryRef observableRepository = userRepository;
 
-    commandHandler_ = std::make_unique<CommandHandler>(observableRepository, 
-                                                       userRepository, 
+    commandHandler_ = std::make_unique<CommandHandler>(observableRepository,
+                                                       userRepository,
                                                        discussionThreadRepository,
-                                                       discussionThreadMessageRepository, 
-                                                       discussionTagRepository, 
+                                                       discussionThreadMessageRepository,
+                                                       discussionTagRepository,
                                                        discussionCategoryRepository,
-                                                       statisticsRepository, 
+                                                       statisticsRepository,
                                                        metricsRepository);
 
     auto forumConfig = Configuration::getGlobalConfig();
@@ -195,7 +195,7 @@ void Application::createCommandHandler()
     {
         persistenceObserver_ = std::make_unique<EventObserver>(observableRepository->readEvents(),
                                                                observableRepository->writeEvents(),
-                                                               persistenceConfig.outputFolder, 
+                                                               persistenceConfig.outputFolder,
                                                                persistenceConfig.createNewOutputFileEverySeconds);
     }
     catch(std::exception& ex)
@@ -214,7 +214,7 @@ void Application::importEvents()
     auto result = importer.import(persistenceConfig.inputFolder);
     if (result.success)
     {
-        FORUM_LOG_INFO << "Finished importing " << result.statistic.importedBlobs << " events out of " 
+        FORUM_LOG_INFO << "Finished importing " << result.statistic.importedBlobs << " events out of "
                                                 << result.statistic.readBlobs << " blobs read";
     }
     else

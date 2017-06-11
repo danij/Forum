@@ -16,7 +16,7 @@ namespace Forum
             Blob(Blob&&) = default;
             Blob& operator=(const Blob&) = default;
             Blob& operator=(Blob&&) = default;
-            
+
             char* buffer; //storing raw pointer so that Blob can be placed in a boost lockfree queue
             size_t size;
 

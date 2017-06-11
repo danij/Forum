@@ -85,7 +85,7 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
 }
 
 template<typename Entity, typename PrivilegeArray>
-static void writePermissions(JsonWriter& writer, const Entity& entity, const PrivilegeArray& privilegeArray, 
+static void writePermissions(JsonWriter& writer, const Entity& entity, const PrivilegeArray& privilegeArray,
                              const SerializationRestriction& restriction)
 {
     writer.newPropertyWithSafeName("permissions");
@@ -100,7 +100,7 @@ static void writePermissions(JsonWriter& writer, const Entity& entity, const Pri
     writer.endArray();
 }
 
-JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessage& message, 
+JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessage& message,
                                 const SerializationRestriction& restriction)
 {
     auto allowViewOverride = serializationSettings.allowDisplayDiscussionThreadMessage == true;
@@ -286,8 +286,8 @@ void writeDiscussionThreadMessages(const Collection& collection, int_fast32_t pa
         }
     }
 
-    restriction.privilegeStore().computeDiscussionThreadMessageVisibilityAllowed(privilegeChecks.data(), 
-                                                                                 privilegeChecks.size(), 
+    restriction.privilegeStore().computeDiscussionThreadMessageVisibilityAllowed(privilegeChecks.data(),
+                                                                                 privilegeChecks.size(),
                                                                                  restriction.now());
 
     writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
@@ -343,7 +343,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
     {
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
         auto& displayContext = Context::getDisplayContext();
-        
+
         writeDiscussionThreadMessages(messagesIndex, displayContext.pageNumber, pageSize, true, "messages", writer,
                                       restriction);
     }
@@ -393,7 +393,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
     return writer;
 }
 
-JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag, 
+JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag,
                                 const SerializationRestriction& restriction)
 {
     if ( ! restriction.isAllowed(tag)) return writer.null();
@@ -424,14 +424,14 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag,
         }
         writer << arrayEnd;
     }
-    
+
     writePermissions(writer, tag, DiscussionTagPrivilegesToSerialize, restriction);
-    
+
     writer << objEnd;
     return writer;
 }
 
-JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& category, 
+JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& category,
                                 const SerializationRestriction& restriction)
 {
     if ( ! restriction.isAllowed(category)) return writer.null();
@@ -469,7 +469,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
         writeArraySafeName(writer, "children", category.children().begin(), category.children().end(), restriction);
     }
 
-    OptionalRevertToNoneChanger<decltype(serializationSettings.displayDiscussionCategoryParentRecursionDepth)::value_type> 
+    OptionalRevertToNoneChanger<decltype(serializationSettings.displayDiscussionCategoryParentRecursionDepth)::value_type>
             recursionDepthChanger(serializationSettings.displayDiscussionCategoryParentRecursionDepth, 0);
 
     constexpr int maxDisplayDepth = 10;

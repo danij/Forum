@@ -73,10 +73,10 @@ namespace Forum
         template<typename TCollection>
         auto toConst(const TCollection& collection)
         {
-            return ConstSharedPointerCollectionAdapter<typename std::remove_pointer<typename 
+            return ConstSharedPointerCollectionAdapter<typename std::remove_pointer<typename
                 TCollection::value_type::element_type>::type, TCollection>(collection);
         }
-        
+
 
         template <typename TKey, typename TValue, typename TCollection>
         class ConstMapAdapter final
@@ -128,7 +128,7 @@ namespace Forum
 
             const TCollection& collection_;
         };
-        
+
         template<typename MapKey, typename MapT, typename MapCompare, typename MapAllocator>
         auto toConst(const std::map<MapKey, MapT, MapCompare, MapAllocator>& collection)
         {

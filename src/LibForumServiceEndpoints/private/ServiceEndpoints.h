@@ -20,10 +20,10 @@ namespace Forum
             typedef CommandHandler::Result(*ExecuteCommandFn)(const Http::RequestState&, CommandHandler&, View, Command,
                                                               std::vector<StringView>&);
 
-            void handleDefault(Http::RequestState& requestState, View view, Command command, 
+            void handleDefault(Http::RequestState& requestState, View view, Command command,
                                ExecuteCommandFn executeCommand);
 
-            static CommandHandler::Result defaultExecuteView(const Http::RequestState&, CommandHandler&, View, Command, 
+            static CommandHandler::Result defaultExecuteView(const Http::RequestState&, CommandHandler&, View, Command,
                                                              std::vector<StringView>&);
 
             CommandHandler& commandHandler_;
@@ -44,7 +44,7 @@ namespace Forum
 
             void getEntitiesCount(Http::RequestState& requestState);
         };
-        
+
         class UsersEndpoint : private AbstractEndpoint
         {
         public:

@@ -16,25 +16,25 @@ namespace Forum
         /**
         * Stores a discussion tag that groups threads of similar discussions
         * Repositories are responsible for updating the relationships between this message and other entities
-        * 
+        *
         * The tag manages the message count and also notifies any discussion categories when a thread is added or removed
         */
-        struct DiscussionTag final : public Identifiable, 
-                                     public CreatedMixin, 
+        struct DiscussionTag final : public Identifiable,
+                                     public CreatedMixin,
                                      public LastUpdatedMixinWithBy<User>,
-                                     public DiscussionThreadCollectionBase<HashIndexForId>, 
+                                     public DiscussionThreadCollectionBase<HashIndexForId>,
                                      public IndicateDeletionInProgress,
                                      public Authorization::DiscussionTagPrivilegeStore
         {
             const auto&   name()           const { return name_; }
             auto&         name()                 { return name_; }
-                                                 
+
             StringView    uiBlob()         const { return uiBlob_; }
             std::string&  uiBlob()               { return uiBlob_; }
-                                          
+
             int_fast32_t  messageCount()   const { return messageCount_; }
             int_fast32_t& messageCount()         { return messageCount_; }
-            
+
             auto          categories()     const { return Helpers::toConst(categories_); }
             auto&         categoriesWeak()       { return categories_; }
 
@@ -65,7 +65,7 @@ namespace Forum
             {
                 return categories_.erase(category) > 0;
             }
-            
+
             typedef std::function<void(DiscussionTag&)> NotifyChangeActionType;
             auto& notifyChange() { return notifyChangeFn_; }
 

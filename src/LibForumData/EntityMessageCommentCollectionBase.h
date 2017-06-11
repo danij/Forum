@@ -34,7 +34,7 @@ namespace Forum
 
                     IdIndexType<IndexTypeForId, boost::multi_index::tag<MessageCommentCollectionById>,
                             const boost::multi_index::const_mem_fun<Identifiable, const IdType&, &MessageComment::id>>,
-                    
+
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<MessageCommentCollectionByCreated>,
                             const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &MessageComment::created>>
             > {};
@@ -42,7 +42,7 @@ namespace Forum
             typedef boost::multi_index_container<MessageCommentRef, MessageCommentCollectionIndices>
                     MessageCommentCollection;
             typedef typename MessageCommentCollection::iterator MessageCommentIdIteratorType;
-            
+
             auto& messageComments()
             {
                 return messageComments_;

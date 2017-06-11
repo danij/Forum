@@ -6,40 +6,40 @@ using namespace Forum;
 using namespace Forum::Entities;
 using namespace Forum::Authorization;
 
-void GrantedPrivilegeStore::grantDiscussionThreadMessagePrivilege(IdTypeRef userId, IdTypeRef entityId, 
-                                                                  DiscussionThreadMessagePrivilege privilege, 
+void GrantedPrivilegeStore::grantDiscussionThreadMessagePrivilege(IdTypeRef userId, IdTypeRef entityId,
+                                                                  DiscussionThreadMessagePrivilege privilege,
                                                                   PrivilegeValueIntType value, Timestamp expiresAt)
 {
     discussionThreadMessageSpecificPrivileges_.insert(
             PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
 }
 
-void GrantedPrivilegeStore::grantDiscussionThreadPrivilege(IdTypeRef userId, IdTypeRef entityId, 
-                                                           DiscussionThreadPrivilege privilege, 
+void GrantedPrivilegeStore::grantDiscussionThreadPrivilege(IdTypeRef userId, IdTypeRef entityId,
+                                                           DiscussionThreadPrivilege privilege,
                                                            PrivilegeValueIntType value, Timestamp expiresAt)
 {
     discussionThreadSpecificPrivileges_.insert(
             PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
 }
 
-void GrantedPrivilegeStore::grantDiscussionTagPrivilege(IdTypeRef userId, IdTypeRef entityId, 
-                                                        DiscussionTagPrivilege privilege, 
+void GrantedPrivilegeStore::grantDiscussionTagPrivilege(IdTypeRef userId, IdTypeRef entityId,
+                                                        DiscussionTagPrivilege privilege,
                                                         PrivilegeValueIntType value, Timestamp expiresAt)
 {
     discussionTagSpecificPrivileges_.insert(
             PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
 }
 
-void GrantedPrivilegeStore::grantDiscussionCategoryPrivilege(IdTypeRef userId, IdTypeRef entityId, 
-                                                             DiscussionCategoryPrivilege privilege, 
+void GrantedPrivilegeStore::grantDiscussionCategoryPrivilege(IdTypeRef userId, IdTypeRef entityId,
+                                                             DiscussionCategoryPrivilege privilege,
                                                              PrivilegeValueIntType value, Timestamp expiresAt)
 {
     discussionCategorySpecificPrivileges_.insert(
             PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
 }
 
-void GrantedPrivilegeStore::grantForumWidePrivilege(IdTypeRef userId, IdTypeRef entityId, 
-                                                    ForumWidePrivilege privilege, 
+void GrantedPrivilegeStore::grantForumWidePrivilege(IdTypeRef userId, IdTypeRef entityId,
+                                                    ForumWidePrivilege privilege,
                                                     PrivilegeValueIntType value, Timestamp expiresAt)
 {
     forumWideSpecificPrivileges_.insert(
@@ -51,10 +51,10 @@ static PrivilegeValueIntType getEffectivePrivilegeValue(PrivilegeValueType posit
     return optionalOrZero(positive) - optionalOrZero(negative);
 }
 
-void GrantedPrivilegeStore::updateDiscussionThreadMessagePrivilege(const Entities::User& user, 
-                                                                   const Entities::DiscussionThread& thread, Timestamp now, 
-                                                                   DiscussionThreadMessagePrivilege privilege, 
-                                                                   PrivilegeValueType& positiveValue, 
+void GrantedPrivilegeStore::updateDiscussionThreadMessagePrivilege(const Entities::User& user,
+                                                                   const Entities::DiscussionThread& thread, Timestamp now,
+                                                                   DiscussionThreadMessagePrivilege privilege,
+                                                                   PrivilegeValueType& positiveValue,
                                                                    PrivilegeValueType& negativeValue) const
 {
     updateDiscussionThreadMessagePrivilege(user.id(), thread.id(), now, privilege, positiveValue, negativeValue);
@@ -142,7 +142,7 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Foru
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getForumWidePrivilege(privilege));
 }
 
-void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(DiscussionThreadMessagePrivilegeCheck* items, 
+void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(DiscussionThreadMessagePrivilegeCheck* items,
                                                                             size_t nrOfItems, Timestamp now) const
 {
     if (nrOfItems < 1)
@@ -193,15 +193,15 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
             auto boolToUpdate = std::get<4>(tuple);
 
             PrivilegeValueType messageLevelPositive, messageLevelNegative;
-            
+
             if (( ! item.user) || ( ! item.message))
             {
                 continue;
             }
 
-            updateDiscussionThreadMessagePrivilege(item.user->id(), item.message->id(), now, privilege, 
+            updateDiscussionThreadMessagePrivilege(item.user->id(), item.message->id(), now, privilege,
                                                    messageLevelPositive, messageLevelNegative);
-            
+
             auto positive = maximumPrivilegeValue(messageLevelPositive, threadLevelPositive);
             auto negative = minimumPrivilegeValue(messageLevelNegative, threadLevelNegative);
 
@@ -211,53 +211,53 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
     }
 }
 
-void GrantedPrivilegeStore::updateDiscussionThreadMessagePrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now, 
+void GrantedPrivilegeStore::updateDiscussionThreadMessagePrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now,
                                                                    DiscussionThreadMessagePrivilege privilege,
                                                                    PrivilegeValueType& positiveValue,
                                                                    PrivilegeValueType& negativeValue) const
 {
-    updatePrivilege(discussionThreadMessageSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege), 
+    updatePrivilege(discussionThreadMessageSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege),
                     positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::updateDiscussionThreadPrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now, 
+void GrantedPrivilegeStore::updateDiscussionThreadPrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now,
                                                             DiscussionThreadPrivilege privilege,
-                                                            PrivilegeValueType& positiveValue, 
+                                                            PrivilegeValueType& positiveValue,
                                                             PrivilegeValueType& negativeValue) const
 {
-    updatePrivilege(discussionThreadSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege), 
+    updatePrivilege(discussionThreadSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege),
                     positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::updateDiscussionTagPrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now, 
+void GrantedPrivilegeStore::updateDiscussionTagPrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now,
                                                          DiscussionTagPrivilege privilege,
-                                                         PrivilegeValueType& positiveValue, 
+                                                         PrivilegeValueType& positiveValue,
                                                          PrivilegeValueType& negativeValue) const
 {
-    updatePrivilege(discussionTagSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege), 
+    updatePrivilege(discussionTagSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege),
                     positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::updateDiscussionCategoryPrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now, 
+void GrantedPrivilegeStore::updateDiscussionCategoryPrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now,
                                                               DiscussionCategoryPrivilege privilege,
                                                               PrivilegeValueType& positiveValue,
                                                               PrivilegeValueType& negativeValue) const
 {
-    updatePrivilege(discussionCategorySpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege), 
+    updatePrivilege(discussionCategorySpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege),
                     positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::updateForumWidePrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now, 
+void GrantedPrivilegeStore::updateForumWidePrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now,
                                                      ForumWidePrivilege privilege,
-                                                     PrivilegeValueType& positiveValue, 
+                                                     PrivilegeValueType& positiveValue,
                                                      PrivilegeValueType& negativeValue) const
 {
-    updatePrivilege(forumWideSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege), 
+    updatePrivilege(forumWideSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege),
                     positiveValue, negativeValue);
 }
 
 void GrantedPrivilegeStore::updatePrivilege(const PrivilegeEntryCollection& collection, IdTypeRef userId, IdTypeRef entityId,
-                                            Timestamp now, EnumIntType privilege, PrivilegeValueType& positiveValue, 
+                                            Timestamp now, EnumIntType privilege, PrivilegeValueType& positiveValue,
                                             PrivilegeValueType& negativeValue) const
 {
     IdPrivilegeTuple toSearch{ userId, entityId, privilege };

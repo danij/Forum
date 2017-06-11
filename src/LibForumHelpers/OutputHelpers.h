@@ -76,7 +76,7 @@ namespace Forum
             writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
             writer.startArray();
 
-            auto firstElementIndex = std::max(static_cast<decltype(totalCount)>(0), 
+            auto firstElementIndex = std::max(static_cast<decltype(totalCount)>(0),
                                               static_cast<decltype(totalCount)>(pageNumber * pageSize));
             if (ascending)
             {
@@ -90,9 +90,9 @@ namespace Forum
             }
             else
             {
-                auto itStart = collection.nth(std::max(totalCount - firstElementIndex, 
+                auto itStart = collection.nth(std::max(totalCount - firstElementIndex,
                                                        static_cast<decltype(totalCount)>(0)));
-                auto itEnd = collection.nth(std::max(totalCount - firstElementIndex - pageSize, 
+                auto itEnd = collection.nth(std::max(totalCount - firstElementIndex - pageSize,
                                                      static_cast<decltype(totalCount)>(0)));
 
                 if (itStart != collection.begin())
@@ -119,7 +119,7 @@ namespace Forum
             Json::JsonWriter writer(output);
 
             writer.startObject();
-            writeEntitiesWithPagination(collection, pageNumber, pageSize, ascending, propertyName, writer, 
+            writeEntitiesWithPagination(collection, pageNumber, pageSize, ascending, propertyName, writer,
                                         std::move(filter), restriction);
             writer.endObject();
         }
@@ -130,7 +130,7 @@ namespace Forum
                                          int_fast32_t pageSize, bool ascending,
                                          const Authorization::SerializationRestriction& restriction)
         {
-            writeEntitiesWithPagination(collection, propertyName, output, pageNumber, pageSize, ascending, 
+            writeEntitiesWithPagination(collection, propertyName, output, pageNumber, pageSize, ascending,
                                         [](auto&) { return true; }, restriction);
         }
 
@@ -189,7 +189,7 @@ namespace Forum
                 return *this;
             }
 
-            operator bool() const 
+            operator bool() const
             {
                 return Repository::StatusCode::OK == statusCode_;
             }

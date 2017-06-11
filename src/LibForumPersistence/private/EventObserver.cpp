@@ -107,7 +107,7 @@ private:
 
 struct EventObserver::EventObserverImpl final : private boost::noncopyable
 {
-    EventObserverImpl(ReadEvents& readEvents, WriteEvents& writeEvents, 
+    EventObserverImpl(ReadEvents& readEvents, WriteEvents& writeEvents,
                       const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
         : readEvents(readEvents), writeEvents(writeEvents), collector(destinationFolder, refreshEverySeconds)
     {
@@ -140,7 +140,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     }
 
     static constexpr EventContextVersionType ContextVersion = 1;
-    
+
     void recordBlob(EventType eventType, EventVersionType version, BlobPart* parts, size_t nrOfParts)
     {
         auto totalSize = std::accumulate(parts, parts + nrOfParts, 0, [](uint32_t total, BlobPart& part)
@@ -228,13 +228,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     { reinterpret_cast<const char*>(&ZeroTimestamp), sizeof(ZeroTimestamp), false }, \
     { reinterpret_cast<const char*>(&UuidString::empty.value().data), UuidSize, false }, \
     { reinterpret_cast<const char*>(ZeroIpAddress.data()), static_cast<SizeType>(ZeroIpAddress.dataSize()), false }
-        
+
     void onAddNewUser(ObserverContext context, const User& user)
     {
         PersistentTimestampType contextTimestamp = context.timestamp; //make sure the size is fixed for serialization
         auto userName = user.name().string();
 
-        BlobPart parts[] = 
+        BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false }, \
@@ -315,12 +315,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void onChangeDiscussionThread(ObserverContext context, const DiscussionThread& thread, 
+    void onChangeDiscussionThread(ObserverContext context, const DiscussionThread& thread,
                                   DiscussionThread::ChangeType change)
     {
         switch (change)
         {
-        case DiscussionThread::Name: 
+        case DiscussionThread::Name:
             onChangeDiscussionThreadName(context, thread);
             break;
         case DiscussionThread::PinDisplayOrder:
@@ -368,10 +368,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DELETE_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);        
+        recordBlob(EventType::DELETE_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void onMergeDiscussionThreads(ObserverContext context, const DiscussionThread& fromThread, 
+    void onMergeDiscussionThreads(ObserverContext context, const DiscussionThread& fromThread,
                                   const DiscussionThread& toThread)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
@@ -385,7 +385,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         recordBlob(EventType::MERGE_DISCUSSION_THREADS, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void onMoveDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message, 
+    void onMoveDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message,
                                        const DiscussionThread& intoThread)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
@@ -408,7 +408,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::SUBSCRIBE_TO_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);        
+        recordBlob(EventType::SUBSCRIBE_TO_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
     }
 
     void onUnsubscribeFromDiscussionThread(ObserverContext context, const DiscussionThread& thread)
@@ -447,7 +447,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     {
         switch (change)
         {
-        case DiscussionThreadMessage::Content: 
+        case DiscussionThreadMessage::Content:
             onChangeDiscussionThreadMessageContentContent(context, message);
             break;
         default:
@@ -567,10 +567,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     {
         switch (change)
         {
-        case DiscussionTag::Name: 
+        case DiscussionTag::Name:
             onChangeDiscussionTagName(context, tag);
             break;
-        case DiscussionTag::UIBlob: 
+        case DiscussionTag::UIBlob:
             onChangeDiscussionTagUIBlob(context, tag);
             break;
         default:
@@ -605,7 +605,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
         recordBlob(EventType::CHANGE_DISCUSSION_TAG_UI_BLOB, 1, parts, std::extent<decltype(parts)>::value);
     }
-    
+
     void onDeleteDiscussionTag(ObserverContext context, const DiscussionTag& tag)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
@@ -678,7 +678,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         recordBlob(EventType::ADD_NEW_DISCUSSION_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void onChangeDiscussionCategory(ObserverContext context, const DiscussionCategory& category, 
+    void onChangeDiscussionCategory(ObserverContext context, const DiscussionCategory& category,
                                     DiscussionCategory::ChangeType change)
     {
         switch (change)
@@ -772,7 +772,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         recordBlob(EventType::DELETE_DISCUSSION_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void onAddDiscussionTagToCategory(ObserverContext context, const DiscussionTag& tag, 
+    void onAddDiscussionTagToCategory(ObserverContext context, const DiscussionTag& tag,
                                       const DiscussionCategory& category)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
@@ -786,7 +786,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         recordBlob(EventType::ADD_DISCUSSION_TAG_TO_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void onRemoveDiscussionTagFromCategory(ObserverContext context, const DiscussionTag& tag, 
+    void onRemoveDiscussionTagFromCategory(ObserverContext context, const DiscussionTag& tag,
                                            const DiscussionCategory& category)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
@@ -799,7 +799,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
         recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
     }
-    
+
     void onGetDiscussionThreadById(ObserverContext context, const DiscussionThread& thread)
     {
         std::lock_guard<decltype(threadVisitedMutex)> lock(threadVisitedMutex);
@@ -821,14 +821,14 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         std::lock_guard<decltype(threadVisitedMutex)> lock(threadVisitedMutex);
 
         for (auto& pair : cachedNrOfThreadVisits)
-        {            
+        {
             BlobPart parts[] =
             {
                 ADD_EMPTY_CONTEXT_BLOB_PARTS,
                 { reinterpret_cast<const char*>(&pair.first.value().data), UuidSize, false },
                 { reinterpret_cast<const char*>(&pair.second), sizeof(pair.second), false },
             };
-            
+
             recordBlob(EventType::INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS, 1, parts, std::extent<decltype(parts)>::value);
         }
     }
@@ -851,7 +851,7 @@ const Helpers::IpAddress Forum::Persistence::EventObserver::EventObserverImpl::Z
 const std::chrono::seconds Forum::Persistence::EventObserver::EventObserverImpl::timerThreadCheckEverySeconds{ 1 };
 
 
-EventObserver::EventObserver(ReadEvents& readEvents, WriteEvents& writeEvents, 
+EventObserver::EventObserver(ReadEvents& readEvents, WriteEvents& writeEvents,
                              const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
     : impl_(new EventObserverImpl(readEvents, writeEvents, destinationFolder, refreshEverySeconds))
 {

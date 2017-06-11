@@ -38,8 +38,8 @@ std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
 
     ObservableRepositoryRef observableRepository = userRepository;
 
-    return std::make_shared<CommandHandler>(observableRepository, userRepository, discussionThreadRepository, 
-        discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository, 
+    return std::make_shared<CommandHandler>(observableRepository, userRepository, discussionThreadRepository,
+        discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository,
         statisticsRepository, metricsRepository);
 }
 

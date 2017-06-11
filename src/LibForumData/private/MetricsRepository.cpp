@@ -25,12 +25,12 @@ StatusCode MetricsRepository::getVersion(OutStream& output)
     collection().read([&](const Entities::EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, store());
-                      
+
                           if ( ! (status = authorization_->getVersion(currentUser)))
                           {
                               return;
                           }
-                      
+
                           status.disable();
                           writeSingleValueSafeName(output, "version", VERSION);
                       });

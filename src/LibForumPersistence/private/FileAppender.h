@@ -16,7 +16,7 @@ namespace Forum
         {
         public:
             FileAppender(const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds);
-            
+
             void append(const Blob* blobs, size_t nrOfBlobs);
 
         private:

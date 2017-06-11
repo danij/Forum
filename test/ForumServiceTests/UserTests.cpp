@@ -588,7 +588,7 @@ BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
         TimestampChanger changer(20050);//difference to previous action is lower than the minimum for updating last seen
         auto userId = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Def" }).get<std::string>("user.id");
         LoggedInUserChanger loggedInChanger(userId);
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler,
                                                            Forum::Commands::DELETE_USER, { static_cast<std::string>(userToDelete) }));
     }
 
@@ -625,27 +625,27 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_invalid_user_returns_inva
     auto handler = createCommandHandler();
 
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
-                          handlerToObj(handler, 
+                          handlerToObj(handler,
                                        Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
                                        SortOrder::Ascending, { "bogusId" }));
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
-                          handlerToObj(handler, 
+                          handlerToObj(handler,
                                        Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
                                        SortOrder::Descending, { "bogusId" }));
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
-                          handlerToObj(handler, 
-                                       Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, 
+                          handlerToObj(handler,
+                                       Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED,
                                        SortOrder::Ascending, { "bogusId" }));
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
-                          handlerToObj(handler, 
-                                       Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, 
+                          handlerToObj(handler,
+                                       Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED,
                                        SortOrder::Descending, { "bogusId" }));
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
-                          handlerToObj(handler, 
+                          handlerToObj(handler,
                                        Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
                                        SortOrder::Ascending, { "bogusId" }));
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
-                          handlerToObj(handler, 
+                          handlerToObj(handler,
                                        Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
                                        SortOrder::Descending, { "bogusId" }));
 }
@@ -1112,12 +1112,12 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_messages_of_invalid_user_returns_inv
     auto handler = createCommandHandler();
 
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
-                          handlerToObj(handler, 
-                                       Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, 
+                          handlerToObj(handler,
+                                       Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED,
                                        SortOrder::Ascending, { "bogusId" }));
     assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
-                          handlerToObj(handler, 
-                                       Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, 
+                          handlerToObj(handler,
+                                       Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED,
                                        SortOrder::Descending, { "bogusId" }));
 }
 
@@ -1604,7 +1604,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_involves_pagination )
 
     BOOST_REQUIRE_EQUAL(userIds[9], users[0].id);
     BOOST_REQUIRE_EQUAL("User110", users[0].name);
-    
+
     //get empty page
     settings.pageNumber = 4;
     page = handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, settings);
@@ -1634,7 +1634,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descendi
 
     DisplaySettings settings;
     settings.sortOrder = SortOrder::Descending;
-    
+
     //get full pages
     for (size_t i = 0; i < pageSize; i++)
     {
@@ -1668,7 +1668,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descendi
 
     BOOST_REQUIRE_EQUAL(userIds[0], users[0].id);
     BOOST_REQUIRE_EQUAL("User101", users[0].name);
-    
+
     //get empty page
     settings.pageNumber = 4;
     page = handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, settings);

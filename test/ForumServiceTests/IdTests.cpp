@@ -25,4 +25,3 @@ BOOST_AUTO_TEST_CASE( UuidString_can_be_converted_to_and_from_string_views )
 
     BOOST_REQUIRE_EQUAL(std::string(uuidString), convertedString);
 }
-

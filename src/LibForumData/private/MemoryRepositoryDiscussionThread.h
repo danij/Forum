@@ -7,14 +7,14 @@ namespace Forum
 {
     namespace Repository
     {
-        class MemoryRepositoryDiscussionThread final : public MemoryRepositoryBase, 
+        class MemoryRepositoryDiscussionThread final : public MemoryRepositoryBase,
                                                        public IDiscussionThreadRepository,
                                                        public IDiscussionThreadDirectWriteRepository
         {
         public:
             explicit MemoryRepositoryDiscussionThread(MemoryStoreRef store,
                                                       Authorization::DiscussionThreadAuthorizationRef authorization);
-         
+
             StatusCode getDiscussionThreads(OutStream& output, RetrieveDiscussionThreadsBy by) const override;
 
             /**
@@ -45,13 +45,13 @@ namespace Forum
                                                   Entities::IdTypeRef id, StringView newName) override;
             StatusCode changeDiscussionThreadPinDisplayOrder(Entities::IdTypeRef id, uint16_t newValue,
                                                              OutStream& output) override;
-            StatusCode changeDiscussionThreadPinDisplayOrder(Entities::EntityCollection& collection, 
+            StatusCode changeDiscussionThreadPinDisplayOrder(Entities::EntityCollection& collection,
                                                              Entities::IdTypeRef id, uint16_t newValue) override;
             StatusCode deleteDiscussionThread(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode deleteDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
             StatusCode mergeDiscussionThreads(Entities::IdTypeRef fromId, Entities::IdTypeRef intoId,
                                               OutStream& output) override;
-            StatusCode mergeDiscussionThreads(Entities::EntityCollection& collection, 
+            StatusCode mergeDiscussionThreads(Entities::EntityCollection& collection,
                                               Entities::IdTypeRef fromId, Entities::IdTypeRef intoId) override;
             StatusCode subscribeToDiscussionThread(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode subscribeToDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;

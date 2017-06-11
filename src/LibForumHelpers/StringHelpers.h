@@ -89,7 +89,7 @@ namespace Forum
         {
             return std::string(view.data(), view.size());
         }
-        
+
         /**
          * Stores an immutable string in a custom location in memory
          * Providing a string_view to it is easier than defining an std::basic_string with a custom allocator
@@ -104,8 +104,8 @@ namespace Forum
 
             ImmutableString(ImmutableString&&) = default;
             ImmutableString& operator=(ImmutableString&&) = default;
-            
-            
+
+
             ImmutableString(StringView view)
             {
                 copyFrom(view);
@@ -169,7 +169,7 @@ namespace Forum
 
         void swap(StringWithSortKey& first, StringWithSortKey& second) noexcept;
         std::ostream& operator<<(std::ostream& stream, const StringWithSortKey& string);
-        
+
         inline std::string toString(const StringWithSortKey& value)
         {
             return toString(value.string());

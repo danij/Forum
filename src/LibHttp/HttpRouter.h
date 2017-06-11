@@ -45,7 +45,7 @@ namespace Http
          * @param pathLowerCase Lowercase version of the path to match, with trailing / but without leading /
          * @param verb Verb to match
          * @param handler Handler that will be called if the route is matched.
-         * 
+         *
          */
         void addRoute(StringView pathLowerCase, HttpVerb verb, HandlerFn&& handler);
 

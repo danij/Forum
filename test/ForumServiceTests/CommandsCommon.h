@@ -32,35 +32,35 @@ namespace Forum
         using TreeType = boost::property_tree::ptree;
         using TreeStatusTupleType = std::tuple<TreeType, Forum::Repository::StatusCode>;
 
-        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command, 
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command,
                               const std::vector<StringView>& parameters);
-        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command, 
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command,
                               DisplaySettings displaySettings, const std::vector<StringView>& parameters);
         TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command);
-        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command, 
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::Command command,
                               DisplaySettings displaySettings);
 
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command,
                                                   const std::vector<StringView>& parameters);
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command,
-                                                  DisplaySettings displaySettings, 
+                                                  DisplaySettings displaySettings,
                                                   const std::vector<StringView>& parameters);
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command);
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::Command command,
                                                   DisplaySettings displaySettings);
 
-        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::View view, 
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::View view,
                               const std::vector<StringView>& parameters);
-        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::View view, 
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::View view,
                               DisplaySettings displaySettings, const std::vector<StringView>& parameters);
         TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::View view);
-        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::View view, 
+        TreeType handlerToObj(Commands::CommandHandlerRef& handler, Commands::View view,
                               DisplaySettings displaySettings);
 
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::View view,
                                                   const std::vector<StringView>& parameters);
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::View view,
-                                                  DisplaySettings displaySettings, 
+                                                  DisplaySettings displaySettings,
                                                   const std::vector<StringView>& parameters);
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::View view);
         TreeStatusTupleType handlerToObjAndStatus(Commands::CommandHandlerRef& handler, Commands::View view,

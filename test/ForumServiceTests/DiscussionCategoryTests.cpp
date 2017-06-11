@@ -22,7 +22,7 @@ struct SerializedDiscussionCategoryReferencedByTagInCategoryTest
 };
 
 /**
-* Stores only the information that is sent out about a discussion tag 
+* Stores only the information that is sent out about a discussion tag
 */
 struct SerializedDiscussionTagInCategoryTest
 {
@@ -149,7 +149,7 @@ struct SerializedDiscussionCategory;
 CREATE_FUNCTION_ALIAS(deserializeCategory, deserializeEntity<SerializedDiscussionCategory>)
 CREATE_FUNCTION_ALIAS(deserializeCategories, deserializeEntities<SerializedDiscussionCategory>)
 
-static bool serializedDiscussionCategoryByDisplayOrderLess(const SerializedDiscussionCategory& first, 
+static bool serializedDiscussionCategoryByDisplayOrderLess(const SerializedDiscussionCategory& first,
                                                            const SerializedDiscussionCategory& second);
 
 /**
@@ -206,7 +206,7 @@ struct SerializedDiscussionCategory
     }
 };
 
-static bool serializedDiscussionCategoryByDisplayOrderLess(const SerializedDiscussionCategory& first, 
+static bool serializedDiscussionCategoryByDisplayOrderLess(const SerializedDiscussionCategory& first,
                                                            const SerializedDiscussionCategory& second)
 {
     return first.displayOrder < second.displayOrder;
@@ -364,27 +364,27 @@ BOOST_AUTO_TEST_CASE( Renaming_a_discussion_category_succeeds_only_if_creation_c
 
     auto config = getGlobalConfig();
 
-    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME));
-    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId }));
-    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId, "" }));
-    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId, " \t\r\n" }));
-    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId, " Foo" }));
-    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId, "Foo\t" }));
-    assertStatusCodeEqual(StatusCode::VALUE_TOO_SHORT, 
-                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, 
+    assertStatusCodeEqual(StatusCode::VALUE_TOO_SHORT,
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME,
                                        { categoryId, std::string(config->discussionCategory.minNameLength - 1, 'a') }));
-    assertStatusCodeEqual(StatusCode::VALUE_TOO_LONG, 
-                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, 
+    assertStatusCodeEqual(StatusCode::VALUE_TOO_LONG,
+                          handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME,
                                        { categoryId, std::string(config->discussionCategory.maxNameLength + 1, 'a') }));
-    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS,
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId, "\xFF\xFF" }));
-    assertStatusCodeEqual(StatusCode::ALREADY_EXISTS, 
+    assertStatusCodeEqual(StatusCode::ALREADY_EXISTS,
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_NAME, { categoryId, "fȏo" }));
 }
 
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE( Changing_the_display_order_of_discussion_categories_requir
 BOOST_AUTO_TEST_CASE( Discussion_categories_are_ordered_ascending_by_their_display_order_relative_to_their_parent )
 {
     auto handler = createCommandHandler();
-    
+
     auto parentCategoryId = createDiscussionCategoryAndGetId(handler, "Parent");
     auto childCategory1Id = createDiscussionCategoryAndGetId(handler, "Child1-200", parentCategoryId);
     auto childCategory2Id = createDiscussionCategoryAndGetId(handler, "Child2-100", parentCategoryId);
@@ -543,7 +543,7 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_categories_can_no_longer_be_retrieved )
     BOOST_REQUIRE_EQUAL(3, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.discussionCategories"));
 
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_CATEGORY, { ids[0] }));
-    
+
     BOOST_REQUIRE_EQUAL(2, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.discussionCategories"));
 
     auto categories = getCategories(handler, Forum::Commands::GET_DISCUSSION_CATEGORIES_BY_NAME);
@@ -560,7 +560,7 @@ BOOST_AUTO_TEST_CASE( Deleting_discussion_categories_moves_child_categories_to_r
     auto parentCategoryId = createDiscussionCategoryAndGetId(handler, "Parent");
     auto childCategoryId = createDiscussionCategoryAndGetId(handler, "Child", parentCategoryId);
 
-    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_CATEGORY, 
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_CATEGORY,
                                                        { parentCategoryId }));
 
     auto categories = getCategories(handler, Forum::Commands::GET_DISCUSSION_CATEGORIES_BY_NAME);
@@ -598,22 +598,22 @@ BOOST_AUTO_TEST_CASE( Attaching_discussion_tags_require_a_valid_discussion_tag_a
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Category");
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
 
-    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler,
                                                                        Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY,
                                                                        { "bogus tag id", "bogus category id" }));
-    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler,
                                                                        Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY,
                                                                        { tagId, "bogus category id" }));
-    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler, 
+    assertStatusCodeEqual(StatusCode::INVALID_PARAMETERS, handlerToObj(handler,
                                                                        Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY,
                                                                        { "bogus tag id", categoryId }));
-    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, 
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler,
                                                               Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY,
                                                               { sampleValidIdString, sampleValidIdString }));
-    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, 
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler,
                                                               Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY,
                                                               { tagId, sampleValidIdString }));
-    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler, 
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, handlerToObj(handler,
                                                               Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY,
                                                               { sampleValidIdString, categoryId }));
 }
@@ -691,7 +691,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_category_detaches_it_from_tags )
         }
 
     deleteCategory(handler, category1Id);
-    
+
     auto tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
     BOOST_REQUIRE_EQUAL(2, tags.size());
     BOOST_REQUIRE_EQUAL(tag1Id, tags[0].id);
@@ -754,7 +754,7 @@ BOOST_AUTO_TEST_CASE( Discussion_categories_include_tags_of_current_and_one_leve
     auto childCategoryId = createDiscussionCategoryAndGetId(handler, "Child", parentCategoryId);
     auto tag1Id = createDiscussionTagAndGetId(handler, "Tag1");
     auto tag2Id = createDiscussionTagAndGetId(handler, "Tag2");
-    
+
     addTagToCategory(handler, tag1Id, parentCategoryId);
     addTagToCategory(handler, tag2Id, childCategoryId);
 
@@ -777,15 +777,15 @@ BOOST_AUTO_TEST_CASE( Discussion_categories_recursively_include_total_thread_and
     auto handler = createCommandHandler();
 
     LoggedInUserChanger __(createUserAndGetId(handler, "User"));
-    
+
     auto category1Id = createDiscussionCategoryAndGetId(handler, "Category1");
     auto childCategory1Id = createDiscussionCategoryAndGetId(handler, "ChildCategory1", category1Id);
     auto category2Id = createDiscussionCategoryAndGetId(handler, "Category2");
 
-    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler,
                                                        Forum::Commands::CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER,
                                                        { category1Id, "1" }));
-    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, 
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler,
                                                        Forum::Commands::CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER,
                                                        { category2Id, "2" }));
 
@@ -840,12 +840,12 @@ BOOST_AUTO_TEST_CASE( Discussion_categories_recursively_include_total_thread_and
     BOOST_REQUIRE_EQUAL(category1Id, categories[0].id);
     BOOST_REQUIRE_EQUAL(4, categories[0].threadTotalCount);
     BOOST_REQUIRE_EQUAL(38, categories[0].messageTotalCount);
-    
+
     BOOST_REQUIRE_EQUAL(1, categories[0].children.size());
     BOOST_REQUIRE_EQUAL(childCategory1Id, categories[0].children[0].id);
     BOOST_REQUIRE_EQUAL(2, categories[0].children[0].threadTotalCount);
     BOOST_REQUIRE_EQUAL(8, categories[0].children[0].messageTotalCount);
-    
+
     BOOST_REQUIRE_EQUAL(category2Id, categories[1].id);
     BOOST_REQUIRE_EQUAL(2, categories[1].threadTotalCount);
     BOOST_REQUIRE_EQUAL(27, categories[1].messageTotalCount);
@@ -908,7 +908,7 @@ BOOST_AUTO_TEST_CASE( Discussion_categories_include_latest_message_of_latest_thr
         LoggedInUserChanger __(user1Id);
         thread1Id = createDiscussionThreadAndGetId(handler, "Thread1");
         addTagToThread(handler, tagId, thread1Id);
-        
+
         createDiscussionMessageAndGetId(handler, thread1Id, "Message 1");
     }
     {
@@ -933,7 +933,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_attached_to_one_category_can_be_retriev
     auto handler = createCommandHandler();
 
     LoggedInUserChanger __(createUserAndGetId(handler, "User"));
-    
+
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Category");
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
 
@@ -1017,7 +1017,7 @@ BOOST_AUTO_TEST_CASE( Listing_discussion_threads_attached_to_categories_does_not
 
     addTagToCategory(handler, tagId, categoryId);
     addTagToThread(handler, tagId, threadId);
-    
+
     auto threads = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME).get_child("threads");
     for (auto& item : threads)
     {
@@ -1185,7 +1185,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_updates_latest_message_of_eac
         addTagToThread(handler, tagId, thread2Id);
         createDiscussionMessageAndGetId(handler, thread2Id, "Message 2");
     }
-    
+
     deleteDiscussionThread(handler, thread2Id);
 
     auto category = getCategory(handler, parentCategoryId);
@@ -1236,7 +1236,7 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_tags_updates_threads_in_categories )
     BOOST_REQUIRE_EQUAL(1, category.tags.size());
     BOOST_REQUIRE_EQUAL(tag1Id, category.tags[0].id);
     BOOST_REQUIRE_EQUAL("Tag1", category.tags[0].name);
-    
+
     threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
                                               { categoryId }).get_child("threads"));
 

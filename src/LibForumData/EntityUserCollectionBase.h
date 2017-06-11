@@ -87,7 +87,7 @@ namespace Forum
                                             }
                                         });
             }
-            
+
             /**
              * Enables a safe modification of a user instance, refreshing all indexes the user is registered in
              */

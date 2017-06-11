@@ -39,7 +39,7 @@ private:
     {
         UErrorCode errorCode{};
         collator_.reset(ucol_open("en_US", &errorCode));
-        
+
         if (U_FAILURE(errorCode))
         {
             throw std::runtime_error("Unable to load collation!");
@@ -118,7 +118,7 @@ StringWithSortKey::StringWithSortKey(StringView view) : StringWithSortKey()
         sortKeyBuffer = sortKeyBufferIfThreadLocalOneIsNotYetInitialized.get();
     }
 
-    sortKeyLength_ = ucol_getSortKey(LocaleCache::instance().collator(), u16Chars, u16Written, 
+    sortKeyLength_ = ucol_getSortKey(LocaleCache::instance().collator(), u16Chars, u16Written,
                                      sortKeyBuffer, MaxSortKeyGenerationDestinationBufferSize);
 
     bytes_.reset(new char[stringLength_ + sortKeyLength_]);

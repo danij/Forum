@@ -19,7 +19,7 @@ namespace Forum
             const Context::DisplayContext displayContext;
             const Helpers::IpAddress ipAddress;
 
-            ObserverContext_(PerformedByType performedBy, Entities::Timestamp timestamp, 
+            ObserverContext_(PerformedByType performedBy, Entities::Timestamp timestamp,
                             Context::DisplayContext displayContext, Helpers::IpAddress ipAddress) :
                     performedBy(performedBy), timestamp(timestamp), displayContext(displayContext), ipAddress(ipAddress)
             {
@@ -30,7 +30,7 @@ namespace Forum
         typedef const ObserverContext_& ObserverContext;
 
         struct ReadEvents : private boost::noncopyable
-        {            
+        {
             boost::signals2::signal<void(ObserverContext)> onGetEntitiesCount;
 
             boost::signals2::signal<void(ObserverContext)> onGetUsers;
@@ -44,7 +44,7 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetDiscussionThreadMessagesOfUser;
 
             boost::signals2::signal<void(ObserverContext)> onGetMessageComments;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&)> 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&)>
                                                           onGetMessageCommentsOfMessage;
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetMessageCommentsOfUser;
 
@@ -57,7 +57,7 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext,
                                          const Entities::DiscussionCategory&)> onGetDiscussionThreadsOfCategory;
         };
-        
+
         struct WriteEvents : private boost::noncopyable
         {
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onAddNewUser;
@@ -65,23 +65,23 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onDeleteUser;
 
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onAddNewDiscussionThread;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&,
                                          Entities::DiscussionThread::ChangeType)> onChangeDiscussionThread;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onDeleteDiscussionThread;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread& fromThread, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread& fromThread,
                                          const Entities::DiscussionThread& toThread)> onMergeDiscussionThreads;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage& message, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage& message,
                                          const Entities::DiscussionThread& intoThread)> onMoveDiscussionThreadMessage;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onSubscribeToDiscussionThread;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onUnsubscribeFromDiscussionThread;
 
-            boost::signals2::signal<void(ObserverContext, 
+            boost::signals2::signal<void(ObserverContext,
                                          const Entities::DiscussionThreadMessage&)> onAddNewDiscussionThreadMessage;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&,
                                          Entities::DiscussionThreadMessage::ChangeType)> onChangeDiscussionThreadMessage;
-            boost::signals2::signal<void(ObserverContext, 
+            boost::signals2::signal<void(ObserverContext,
                                          const Entities::DiscussionThreadMessage&)> onDeleteDiscussionThreadMessage;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&)> 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&)>
                                          onDiscussionThreadMessageUpVote;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&)>
                                          onDiscussionThreadMessageDownVote;
@@ -94,23 +94,23 @@ namespace Forum
                                          onSolveDiscussionThreadMessageComment;
 
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onAddNewDiscussionTag;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&,
                                          Entities::DiscussionTag::ChangeType)> onChangeDiscussionTag;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onDeleteDiscussionTag;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag,
                                          const Entities::DiscussionThread& thread)> onAddDiscussionTagToThread;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag,
                                          const Entities::DiscussionThread& thread)> onRemoveDiscussionTagFromThread;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& fromTag, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& fromTag,
                                          const Entities::DiscussionTag& toTag)> onMergeDiscussionTags;
 
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionCategory&)> onAddNewDiscussionCategory;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionCategory&, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionCategory&,
                                          Entities::DiscussionCategory::ChangeType)> onChangeDiscussionCategory;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionCategory&)> onDeleteDiscussionCategory;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag,
                                          const Entities::DiscussionCategory& category)> onAddDiscussionTagToCategory;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag, 
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag,
                                          const Entities::DiscussionCategory& category)> onRemoveDiscussionTagFromCategory;
         };
     }

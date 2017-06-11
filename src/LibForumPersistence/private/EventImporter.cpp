@@ -47,14 +47,14 @@ T readAndIncrementBuffer(const char*& data, size_t& size)
 
 struct PersistedContext
 {
-    
+
 };
 
 struct EventImporter::EventImporterImpl final : private boost::noncopyable
 {
     explicit EventImporterImpl(bool verifyChecksum) : verifyChecksum_(verifyChecksum)
     {
-        importFunctions_ = 
+        importFunctions_ =
         {
             {}, //UNKNOWN
             { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_ADD_NEW_USER_v1(contextVersion, data, size); } },
@@ -244,43 +244,43 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         auto context = processContext(contextVersion, data, size);
         (void)context;
     }
-    
+
     void import_MERGE_DISCUSSION_TAGS_v1(uint16_t contextVersion, const char* data, size_t size)
     {
         auto context = processContext(contextVersion, data, size);
         (void)context;
     }
-    
+
     void import_ADD_NEW_DISCUSSION_CATEGORY_v1(uint16_t contextVersion, const char* data, size_t size)
     {
         auto context = processContext(contextVersion, data, size);
         (void)context;
     }
-    
+
     void import_CHANGE_DISCUSSION_CATEGORY_NAME_v1(uint16_t contextVersion, const char* data, size_t size)
     {
         auto context = processContext(contextVersion, data, size);
         (void)context;
     }
-    
+
     void import_CHANGE_DISCUSSION_CATEGORY_DESCRIPTION_v1(uint16_t contextVersion, const char* data, size_t size)
     {
         auto context = processContext(contextVersion, data, size);
         (void)context;
     }
-    
+
     void import_CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER_v1(uint16_t contextVersion, const char* data, size_t size)
     {
         auto context = processContext(contextVersion, data, size);
         (void)context;
     }
-    
+
     void import_CHANGE_DISCUSSION_CATEGORY_PARENT_v1(uint16_t contextVersion, const char* data, size_t size)
     {
         auto context = processContext(contextVersion, data, size);
         (void)context;
     }
-    
+
     void import_DELETE_DISCUSSION_CATEGORY_v1(uint16_t contextVersion, const char* data, size_t size)
     {
         auto context = processContext(contextVersion, data, size);
@@ -382,7 +382,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             data += blobSizeWithPadding;
             size -= blobSizeWithPadding;
         }
-        
+
         return result;
     }
 
@@ -462,7 +462,7 @@ ImportResult EventImporter::import(const boost::filesystem::path& sourcePath)
             {
                 auto fullName = path.string();
                 eventFileNames.insert(std::make_pair(timestamp, fullName));
-            }      
+            }
         }
     });
 

@@ -23,7 +23,7 @@ namespace Http
             int_fast16_t connectionTimeoutSeconds;
             bool trustIpFromXForwardedFor;
         };
-        
+
         explicit HttpListener(Configuration config, HttpRouter& router, boost::asio::io_service& ioService);
         ~HttpListener();
 
@@ -33,7 +33,7 @@ namespace Http
         HttpRouter& router();
 
     private:
-        
+
         void startAccept();
         friend struct HttpListenerOnAcceptCallback;
         void onAccept(const boost::system::error_code& ec);
@@ -41,7 +41,7 @@ namespace Http
         struct HttpConnection;
         friend struct HttpConnection;
         void release(HttpConnection* connection);
-        
+
         struct HttpListenerImpl;
         HttpListenerImpl* impl_;
     };

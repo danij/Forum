@@ -58,7 +58,7 @@ namespace Forum
                             const boost::multi_index::const_mem_fun<CreatedMixin, Timestamp, &DiscussionThread::created>>,
 
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLastUpdated>,
-                            const boost::multi_index::const_mem_fun<LastUpdatedMixin, Timestamp, 
+                            const boost::multi_index::const_mem_fun<LastUpdatedMixin, Timestamp,
                                     &DiscussionThread::lastUpdated>>,
 
                     boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLatestMessageCreated>,

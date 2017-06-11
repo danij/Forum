@@ -60,7 +60,7 @@ namespace Http
             isHttpOnly = value;
             return *this;
         }
-        
+
         boost::optional<time_t> expires;
         boost::optional<uint32_t> cookieMaxAge;
         StringView cookieDomain;

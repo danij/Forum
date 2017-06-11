@@ -54,7 +54,7 @@ namespace Http
         }
 
     private:
-        
+
         typedef void (Parser::*ParserFn)(char*& buffer, size_t& size);
 
         void          parseVerb(char*& buffer, size_t& size);

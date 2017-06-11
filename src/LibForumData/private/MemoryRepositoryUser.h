@@ -7,7 +7,7 @@ namespace Forum
 {
     namespace Repository
     {
-        class MemoryRepositoryUser final : public MemoryRepositoryBase, 
+        class MemoryRepositoryUser final : public MemoryRepositoryBase,
                                            public IUserRepository, public IUserDirectWriteRepository
         {
         public:
@@ -19,7 +19,7 @@ namespace Forum
             StatusCode getUserByName(StringView name, OutStream& output) const override;
 
             StatusCode addNewUser(StringView name, StringView auth, OutStream& output) override;
-            StatusWithResource<Entities::UserRef> addNewUser(Entities::EntityCollection& collection, 
+            StatusWithResource<Entities::UserRef> addNewUser(Entities::EntityCollection& collection,
                                                              StringView name, StringView auth) override;
             StatusCode changeUserName(Entities::IdTypeRef id, StringView newName,  OutStream& output) override;
             StatusCode changeUserName(Entities::EntityCollection& collection, Entities::IdTypeRef id, StringView newName) override;

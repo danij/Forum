@@ -29,7 +29,7 @@ size_t Http::buildSimpleResponseFromStatusCode(HttpStatusCode code, int_fast8_t 
     *buffer++ = ' ';
 
     auto codeString = getStatusCodeString(code);
-    
+
     buffer = std::copy(codeString.begin(), codeString.end(), buffer);
 
     *buffer++ = '\r';
@@ -59,7 +59,7 @@ void HttpResponseBuilder::writeResponseCode(int majorVersion, int minorVersion, 
 
     buffer[5] = majorVersion + '0';
     buffer[7] = minorVersion + '0';
-    
+
     int intCode = static_cast<int>(code);
     buffer[9] = (intCode / 100) + '0';
     buffer[10] = ((intCode / 10) % 10) + '0';
@@ -97,25 +97,25 @@ void HttpResponseBuilder::writeHeader(StringView name, int value)
 //based on information from http://www.ietf.org/rfc/rfc6265.txt
 static const bool ReservedCharactersForCookies[] =
 {
-     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
-     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
-     true, false,  true, false, false, false, false, false, false, false, false, false,  true, false, false, false, 
-    false, false, false, false, false, false, false, false, false, false, false,  true, false,  true, false, false, 
-    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 
-    false, false, false, false, false, false, false, false, false, false, false, false,  true, false, false, false, 
-    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, 
-    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,  true, 
-     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
-     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
-     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
-     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
-     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
-     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
-     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true, 
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true, false,  true, false, false, false, false, false, false, false, false, false,  true, false, false, false,
+    false, false, false, false, false, false, false, false, false, false, false,  true, false,  true, false, false,
+    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+    false, false, false, false, false, false, false, false, false, false, false, false,  true, false, false, false,
+    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
+     true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
      true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true
 };
 
-static const bool ReservedCharactersForUrlEncodingWithoutSlash[] = 
+static const bool ReservedCharactersForUrlEncodingWithoutSlash[] =
 {
      true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
      true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,

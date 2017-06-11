@@ -12,7 +12,7 @@ using namespace Http;
 Parser::Parser(char* headerBuffer, size_t headerBufferSize, size_t maxContentLength,
                PushBodyBytesFn pushBodyBytes, void* pushBodyBytesState)
     : headerBuffer_(headerBuffer), headerBufferSize_(headerBufferSize), pushBodyBytes_(pushBodyBytes),
-      pushBodyBytesState_(pushBodyBytesState), parsePathStartsAt_(headerBuffer_), 
+      pushBodyBytesState_(pushBodyBytesState), parsePathStartsAt_(headerBuffer_),
       parseVersionStartsAt_(headerBuffer_), parseHeaderNameStartsAt_(headerBuffer_),
       parseHeaderValueStartsAt_(headerBuffer_), maxContentLength_(maxContentLength)
 {
@@ -146,7 +146,7 @@ void Parser::parseVersion(char*& buffer, size_t& size)
     }
     request_.versionMajor = 1;
     if (parseVersionStartsAt_[7] == '0')
-    {        
+    {
         request_.versionMinor = 0;
     }
     else if (parseVersionStartsAt_[7] == '1')
@@ -166,7 +166,7 @@ void Parser::parseNewLine(char*& buffer, size_t& size)
 {
     if (0 == size) return;
     //\r was already added by previous steps
-    if (('\n' != *buffer++) || (headerSize_ >= headerBufferSize_) || 
+    if (('\n' != *buffer++) || (headerSize_ >= headerBufferSize_) ||
         (headerSize_ < 1) || (headerBuffer_[headerSize_ - 1] != '\r'))
     {
         valid_ = false;
@@ -220,7 +220,7 @@ void Parser::parseHeaderName(char*& buffer, size_t& size)
     {
         if ( ! copyUntil(':', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
-        parseCurrentHeaderName_ = StringView(parseHeaderNameStartsAt_, 
+        parseCurrentHeaderName_ = StringView(parseHeaderNameStartsAt_,
                                              headerBuffer_ + headerSize_ - 1 - parseHeaderNameStartsAt_);
 
         currentParser_ = &Parser::parseHeaderSpacing;
@@ -250,7 +250,7 @@ void Parser::parseHeaderValue(char*& buffer, size_t& size)
 {
     if ( ! copyUntil('\r', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
-    parseCurrentHeaderValue_ = StringView(parseHeaderValueStartsAt_, 
+    parseCurrentHeaderValue_ = StringView(parseHeaderValueStartsAt_,
                                           headerBuffer_ + headerSize_ - 1 - parseHeaderValueStartsAt_);
 
     currentParser_ = &Parser::parseNewLine;
@@ -301,8 +301,8 @@ void Parser::interpretImportantHeaders()
     }
 
     auto connectionHeaderString = request_.headers[Request::HttpHeader::Connection];
-    request_.keepConnectionAlive = matchStringUpperOrLower(connectionHeaderString.data(), 
-                                                           connectionHeaderString.size(), 
+    request_.keepConnectionAlive = matchStringUpperOrLower(connectionHeaderString.data(),
+                                                           connectionHeaderString.size(),
                                                            "kKeEeEpP--aAlLiIvVeE");
 
     if (request_.headers[Request::HttpHeader::Expect].size())
@@ -347,11 +347,11 @@ void Parser::interpretPathString()
             if (('&' == c) || ((i + 1) == n))
             {
                 valueEnd = i;
-                request_.queryPairs[request_.nrOfQueryPairs].first = 
-                        viewAfterDecodingUrlEncodingInPlace(keyEnd > keyStart ? pathStart + keyStart : nullptr, 
+                request_.queryPairs[request_.nrOfQueryPairs].first =
+                        viewAfterDecodingUrlEncodingInPlace(keyEnd > keyStart ? pathStart + keyStart : nullptr,
                                                             keyEnd - keyStart);
-                request_.queryPairs[request_.nrOfQueryPairs].second = 
-                        viewAfterDecodingUrlEncodingInPlace(valueEnd > valueStart ? pathStart + valueStart : nullptr, 
+                request_.queryPairs[request_.nrOfQueryPairs].second =
+                        viewAfterDecodingUrlEncodingInPlace(valueEnd > valueStart ? pathStart + valueStart : nullptr,
                                                             valueEnd - valueStart);
                 request_.nrOfQueryPairs += 1;
                 keyStart = keyEnd = i + 1;
@@ -415,11 +415,11 @@ void Parser::interpretCookies(char* value, size_t size)
                 while (cookieStart[valueStart] == ' ') valueStart += 1;
                 while (cookieStart[valueEnd - 1] == ' ') valueEnd -= 1;
 
-                request_.cookies[request_.nrOfCookies].first = 
-                        viewAfterDecodingUrlEncodingInPlace(nameEnd > nameStart ? cookieStart + nameStart : nullptr, 
+                request_.cookies[request_.nrOfCookies].first =
+                        viewAfterDecodingUrlEncodingInPlace(nameEnd > nameStart ? cookieStart + nameStart : nullptr,
                                                             nameEnd - nameStart);
                 request_.cookies[request_.nrOfCookies].second =
-                        viewAfterDecodingUrlEncodingInPlace(valueEnd > valueStart ? cookieStart + valueStart : nullptr, 
+                        viewAfterDecodingUrlEncodingInPlace(valueEnd > valueStart ? cookieStart + valueStart : nullptr,
                                                             valueEnd - valueStart);
                 request_.nrOfCookies += 1;
                 nameStart = nameEnd = valueStart = valueEnd = i + 1;

@@ -61,7 +61,7 @@ PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& 
 UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& collection)
 {
     lastSeenUpdate_ = nullptr;
-    
+
     auto result = getCurrentUser(collection);
     if (result == AnonymousUser)
     {
@@ -91,9 +91,9 @@ UserRef Repository::getCurrentUser(EntityCollection& collection)
     return *it;
 }
 
-StatusCode MemoryRepositoryBase::validateString(StringView string, 
+StatusCode MemoryRepositoryBase::validateString(StringView string,
                                                 EmptyStringValidation emptyValidation,
-                                                boost::optional<int_fast32_t> minimumLength, 
+                                                boost::optional<int_fast32_t> minimumLength,
                                                 boost::optional<int_fast32_t> maximumLength)
 {
     if ((INVALID_PARAMETERS_FOR_EMPTY_STRING == emptyValidation) && string.empty())
@@ -140,7 +140,7 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
     auto u16Chars = u_strFromUTF8(temp, std::extent<decltype(temp)>::value, &written,
                                   firstLastUtf8, nrOfFirstCharBytes + nrOfLastCharBytes, &errorCode);
     if (U_FAILURE(errorCode)) return false;
-    
+
     errorCode = {};
     auto u32Chars = u_strToUTF32(u32Buffer, 2, &written, u16Chars, written, &errorCode);
     if (U_FAILURE(errorCode)) return false;

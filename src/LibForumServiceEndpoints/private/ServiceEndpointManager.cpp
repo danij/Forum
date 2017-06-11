@@ -7,7 +7,7 @@ using namespace Forum::Commands;
 struct ServiceEndpointManager::ServiceEndpointManagerImpl
 {
     explicit ServiceEndpointManagerImpl(CommandHandler& handler)
-        : commandHandler(handler), metricsEndpoint(handler), statisticsEndpoint(handler), 
+        : commandHandler(handler), metricsEndpoint(handler), statisticsEndpoint(handler),
           usersEndpoint(handler), threadsEndpoint(handler), threadMessagesEndpoint(handler),
           tagsEndpoint(handler), categoriesEndpoint(handler)
     {
@@ -38,11 +38,11 @@ ServiceEndpointManager::~ServiceEndpointManager()
 
 void ServiceEndpointManager::registerRoutes(Http::HttpRouter& router)
 {
-    router.addRoute("metrics/version/", Http::HttpVerb::GET, 
+    router.addRoute("metrics/version/", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->metricsEndpoint.getVersion(state);});
-    router.addRoute("statistics/entitycount/", Http::HttpVerb::GET, 
+    router.addRoute("statistics/entitycount/", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->statisticsEndpoint.getEntitiesCount(state);});
-    
+
     router.addRoute("users/", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->usersEndpoint.getAll(state);});
     router.addRoute("users/id", Http::HttpVerb::GET,

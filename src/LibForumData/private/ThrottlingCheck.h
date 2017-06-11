@@ -15,7 +15,7 @@ namespace Forum
         class ThrottlingCheck final : boost::noncopyable
         {
         public:
-            ThrottlingCheck(size_t maxAllowed, TPeriod period) 
+            ThrottlingCheck(size_t maxAllowed, TPeriod period)
                 : maxAllowed_(maxAllowed), period_(period), currentIndex_(0)
             {
                 maxAllowed = std::max(maxAllowed, static_cast<decltype(maxAllowed)>(1));
@@ -25,7 +25,7 @@ namespace Forum
 
             bool isAllowed(TPeriod at)
             {
-                //use a spin lock instead of a mutex for better performance, 
+                //use a spin lock instead of a mutex for better performance,
                 //as the function has little work to do
                 while (lockFlag_.test_and_set(std::memory_order_acquire)){}
 

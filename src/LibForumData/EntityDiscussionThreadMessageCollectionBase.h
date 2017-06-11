@@ -27,13 +27,13 @@ namespace Forum
             struct DiscussionThreadMessageCollectionByCreated {};
 
             template<typename IndexType, typename T1, typename T2>
-            struct IdIndexType : boost::multi_index::hashed_unique<T1, T2> 
+            struct IdIndexType : boost::multi_index::hashed_unique<T1, T2>
             {};
 
             template<typename T1, typename T2>
             struct IdIndexType<OrderedIndexForId, T1, T2> : boost::multi_index::ranked_unique<T1, T2>
             {};
-            
+
             struct DiscussionMessageCollectionIndices : boost::multi_index::indexed_by<
 
                     IdIndexType<IndexTypeForId, boost::multi_index::tag<DiscussionThreadMessageCollectionById>,
@@ -96,7 +96,7 @@ namespace Forum
              * Enables a safe modification of a discussion message instance,
              * refreshing all indexes the message is registered in
              */
-            void modifyDiscussionThreadMessageById(const IdType& id, 
+            void modifyDiscussionThreadMessageById(const IdType& id,
                                                    std::function<void(DiscussionThreadMessage&)>&& modifyFunction)
             {
                 modifyDiscussionThreadMessage(messages_.template get<DiscussionThreadMessageCollectionById>().find(id),

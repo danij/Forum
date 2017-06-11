@@ -23,7 +23,7 @@ namespace Http
 
         struct BringBackBuffer final
         {
-            void operator()(Buffer* toReturn) 
+            void operator()(Buffer* toReturn)
             {
                 if (manager) manager->returnBuffer(toReturn);
             }
@@ -43,7 +43,7 @@ namespace Http
                 availableIndexes_[i] = i;
             }
         }
-        
+
         /**
          * Returns a buffer which must be manually returned to the pool
          */
@@ -53,7 +53,7 @@ namespace Http
             if (numberOfUsedBuffers >= maxBufferCount_)
             {
                 return {};
-            } 
+            }
             return &buffers_[availableIndexes_[numberOfUsedBuffers++]];
         }
 
@@ -103,9 +103,9 @@ namespace Http
     {
     public:
         explicit FixedSizeObjectPool(size_t maxBufferCount) : bufferPool_(maxBufferCount)
-        {           
+        {
         }
-        
+
         template<typename ...Args>
         T* getObject(Args&& ...constructorArgs)
         {
@@ -290,7 +290,7 @@ namespace Http
                 return const_iterator(bufferArray_, std::max(bufferArray_->latestBuffer_, 0) + 1);
             }
 
-        private:   
+        private:
             const ReadWriteBufferArray* bufferArray_;
         };
 

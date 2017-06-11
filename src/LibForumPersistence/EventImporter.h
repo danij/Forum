@@ -39,7 +39,7 @@ namespace Forum
             /**
              * Imports eventsin chronological order from files found after recursively searching the provided path
              * Files are sorted based on timestamp before import
-             * 
+             *
              * @return Number of events imported
              */
             ImportResult import(const boost::filesystem::path& sourcePath);

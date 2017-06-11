@@ -15,7 +15,7 @@ using namespace Forum::Helpers;
 using namespace Forum::Repository;
 using namespace Forum::Authorization;
 
-MemoryRepositoryDiscussionThreadMessage::MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store, 
+MemoryRepositoryDiscussionThreadMessage::MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store,
                                                                                  DiscussionThreadMessageAuthorizationRef authorization)
     : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization))
 {
@@ -74,7 +74,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
 }
 
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(const IdType& threadId, 
+StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(const IdType& threadId,
                                                                                     StringView content,
                                                                                     OutStream& output)
 {
@@ -86,7 +86,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
 
     auto config = getGlobalConfig();
     auto validationCode = validateString(content, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->discussionThreadMessage.minContentLength, 
+                                         config->discussionThreadMessage.minContentLength,
                                          config->discussionThreadMessage.maxContentLength,
                                          &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
 
@@ -107,7 +107,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                 
+
                            if ( ! (status = authorization_->addNewDiscussionMessageInThread(*currentUser, **threadIt, content)))
                            {
                                return;
@@ -116,11 +116,11 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                            auto statusWithResource = addNewDiscussionMessageInThread(collection, threadId, content);
                            auto& message = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
-                           
+
                            auto& user = *currentUser;
                            writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), **threadIt);
                            writeEvents().onAddNewDiscussionThreadMessage(createObserverContext(user), *message);
-                 
+
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", message->id());
@@ -132,7 +132,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
 }
 
 StatusWithResource<DiscussionThreadMessageRef>
-    MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection, 
+    MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection,
                                                                              IdTypeRef threadId, StringView content)
 {
     auto& threadIndex = collection.threads();
@@ -143,27 +143,27 @@ StatusWithResource<DiscussionThreadMessageRef>
     }
 
     auto currentUser = getCurrentUser(collection);
-    
+
     auto message = std::make_shared<DiscussionThreadMessage>(*currentUser);
     message->id() = generateUUIDString();
     message->parentThread() = *threadIt;
     message->content() = content;
     updateCreated(*message);
-                 
+
     collection.insertMessage(message);
-    collection.modifyDiscussionThread(threadIt, 
+    collection.modifyDiscussionThread(threadIt,
         [&collection, &message, &threadIt, &currentUser] (DiscussionThread& thread)
         {
             thread.insertMessage(message);
             thread.resetVisitorsSinceLastEdit();
             thread.latestVisibleChange() = message->created();
             thread.subscribedUsers().insert(currentUser);
-                 
+
             for (auto& tagWeak : thread.tagsWeak())
             {
                 if (auto tagShared = tagWeak.lock())
                 {
-                    collection.modifyDiscussionTagById(tagShared->id(), 
+                    collection.modifyDiscussionTagById(tagShared->id(),
                         [&thread](auto& tag)
                         {
                             tag.messageCount() += 1;
@@ -176,7 +176,7 @@ StatusWithResource<DiscussionThreadMessageRef>
             {
                 if (auto categoryShared = categoryWeak.lock())
                 {
-                    collection.modifyDiscussionCategoryById(categoryShared->id(), 
+                    collection.modifyDiscussionCategoryById(categoryShared->id(),
                         [&thread, &threadIt](auto& category)
                         {
                             category.updateMessageCount(*threadIt, 1);
@@ -194,7 +194,7 @@ StatusWithResource<DiscussionThreadMessageRef>
             {
                 auto privilege = DiscussionThreadMessagePrivilege::CHANGE_CONTENT;
                 auto valueNeeded = optionalOrZero(thread.getDiscussionThreadMessagePrivilege(privilege));
-                                       
+
                 if (valueNeeded > 0)
                 {
                     auto expiresAt = message->created() + changePrivilegeDuration;
@@ -221,7 +221,7 @@ StatusWithResource<DiscussionThreadMessageRef>
                 }
             }
         });
-                 
+
     collection.modifyUserById(currentUser->id(), [&](User& user)
                                                  {
                                                      user.insertMessage(message);
@@ -238,7 +238,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(cons
         return status = StatusCode::INVALID_PARAMETERS;
     }
     PerformedByWithLastSeenUpdateGuard performedBy;
-    
+
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
@@ -277,9 +277,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(Enti
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageContent(const IdType& id, 
+StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageContent(const IdType& id,
                                                                                          StringView newContent,
-                                                                                         StringView changeReason, 
+                                                                                         StringView changeReason,
                                                                                          OutStream& output)
 {
     StatusWriter status(output);
@@ -287,7 +287,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     auto config = getGlobalConfig();
 
     auto contentValidationCode = validateString(newContent, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                                config->discussionThreadMessage.minContentLength, 
+                                                config->discussionThreadMessage.minContentLength,
                                                 config->discussionThreadMessage.maxContentLength,
                                                 &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (contentValidationCode != StatusCode::OK)
@@ -298,7 +298,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     auto reasonEmptyValidation = 0 == config->discussionThreadMessage.minChangeReasonLength
                                  ? ALLOW_EMPTY_STRING : INVALID_PARAMETERS_FOR_EMPTY_STRING;
     auto reasonValidationCode = validateString(newContent, reasonEmptyValidation,
-                                               config->discussionThreadMessage.minChangeReasonLength, 
+                                               config->discussionThreadMessage.minChangeReasonLength,
                                                config->discussionThreadMessage.maxChangeReasonLength,
                                                &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (reasonValidationCode != StatusCode::OK)
@@ -319,7 +319,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                           
+
                            if ( ! (status = authorization_->changeDiscussionThreadMessageContent(*currentUser, **it, newContent, changeReason)))
                            {
                                return;
@@ -334,7 +334,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageContent(EntityCollection& collection,
-                                                                                         IdTypeRef id, 
+                                                                                         IdTypeRef id,
                                                                                          StringView newContent,
                                                                                          StringView changeReason)
 {
@@ -366,7 +366,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(const IdType& messageId, 
+StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(const IdType& messageId,
                                                                                 const IdType& intoThreadId,
                                                                                 OutStream& output)
 {
@@ -395,24 +395,24 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                 
+
                            auto messageRef = *messageIt;
                            auto threadIntoRef = *itInto;
                            auto threadFromRef = messageRef->parentThread().lock();
-                 
+
                            if (threadFromRef == threadIntoRef)
                            {
                                status = StatusCode::NO_EFFECT;
                                return;
                            }
-                           
+
                            if ( ! (status = authorization_->moveDiscussionThreadMessage(*currentUser, *messageRef, *threadIntoRef)))
                            {
                                return;
                            }
-                     
+
                            //make sure the message is not deleted before being passed to the observers
-                           writeEvents().onMoveDiscussionThreadMessage(createObserverContext(*currentUser), 
+                           writeEvents().onMoveDiscussionThreadMessage(createObserverContext(*currentUser),
                                                                        *messageRef, *threadIntoRef);
 
                            status = moveDiscussionThreadMessage(collection, messageId, intoThreadId);
@@ -424,9 +424,9 @@ static void updateThreadOnMoveMessage(EntityCollection& collection, DiscussionTh
 {
     threadRef->resetVisitorsSinceLastEdit();
     threadRef->latestVisibleChange() = Context::getCurrentTime();
-                 
+
     int_fast32_t increment = insert ? 1 : -1;
-                 
+
     for (auto& tagWeak : threadRef->tagsWeak())
     {
         if (auto tagShared = tagWeak.lock())
@@ -446,7 +446,7 @@ static void updateThreadOnMoveMessage(EntityCollection& collection, DiscussionTh
                                                                               category.updateMessageCount(threadRef, increment);
                                                                           });
         }
-    }                              
+    }
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(EntityCollection& collection,
@@ -483,12 +483,12 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
                                               });
     if (threadFromRef)
     {
-        collection.modifyDiscussionThreadById(threadFromRef->id(), 
+        collection.modifyDiscussionThreadById(threadFromRef->id(),
             [&collection, &messageRef](DiscussionThread& thread)
             {
                 thread.deleteDiscussionThreadMessageById(messageRef->id());
                 updateThreadOnMoveMessage(collection, thread.shared_from_this(), true);
-            });                              
+            });
     }
 
     return StatusCode::OK;
@@ -521,7 +521,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
-                 
+
                            auto& indexById = collection.messages().get<EntityCollection::DiscussionThreadMessageCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -531,7 +531,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
                            }
                            auto& messageRef = *it;
                            auto& message = **it;
-                 
+
                            if (&message.createdBy() == currentUser.get())
                            {
                                status = StatusCode::NOT_ALLOWED;
@@ -580,7 +580,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     }
     auto& messageRef = *it;
     auto& message = **it;
-    
+
     auto currentUser = getCurrentUser(collection);
 
     UserWeakRef userWeak(currentUser);
@@ -638,7 +638,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
-               
+
                            auto& indexById = collection.messages().get<EntityCollection::DiscussionThreadMessageCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -647,7 +647,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
                                return;
                            }
                            auto& message = **it;
-               
+
                            if (&message.createdBy() == currentUser.get())
                            {
                                status = StatusCode::NOT_ALLOWED;
@@ -660,7 +660,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
                            }
 
                            if ( ! (status = resetVoteDiscussionThreadMessage(collection, id))) return;
-               
+
 
                            writeEvents().onDiscussionThreadMessageResetVote(createObserverContext(*currentUser),
                                                                             message);
@@ -668,7 +668,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMessage(EntityCollection& collection, 
+StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMessage(EntityCollection& collection,
                                                                                      IdTypeRef id)
 {
     auto& indexById = collection.messages().get<EntityCollection::DiscussionThreadMessageCollectionById>();
@@ -680,24 +680,24 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
     auto& message = **it;
 
     auto currentUser = getCurrentUser(collection);
-    
+
     if ( ! message.removeVote(currentUser))
     {
         return StatusCode::NO_EFFECT;
-    }    
+    }
     return StatusCode::OK;
 }
 
 template<typename Collection>
-static void writeMessageComments(const Collection& collection, OutStream& output, 
+static void writeMessageComments(const Collection& collection, OutStream& output,
                                  const GrantedPrivilegeStore& privilegeStore, const User& currentUser)
 {
     auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesCommentsPerPage;
     auto& displayContext = Context::getDisplayContext();
 
     SerializationRestriction restriction(privilegeStore, currentUser, Context::getCurrentTime());
-    
-    writeEntitiesWithPagination(collection, "message_comments", output, 
+
+    writeEntitiesWithPagination(collection, "message_comments", output,
         displayContext.pageNumber, pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, restriction);
 }
 
@@ -715,14 +715,14 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream
                               return;
                           }
 
-                          writeMessageComments(collection.messageCommentsByCreated(), output, 
+                          writeMessageComments(collection.messageCommentsByCreated(), output,
                                                collection.grantedPrivileges(), currentUser);
                           readEvents().onGetMessageComments(createObserverContext(currentUser));
                       });
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussionThreadMessage(const IdType& id, 
+StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussionThreadMessage(const IdType& id,
                                                                                                 OutStream& output) const
 {
     StatusWriter status(output);
@@ -745,15 +745,15 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
                               return;
                           }
                           auto& message = **it;
-                      
+
                           if ( ! (status = authorization_->getMessageCommentsOfDiscussionThreadMessage(currentUser, message)))
                           {
                               return;
                           }
 
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentMessage, true);
-                      
-                          writeMessageComments(message.messageCommentsByCreated(), output, 
+
+                          writeMessageComments(message.messageCommentsByCreated(), output,
                                                collection.grantedPrivileges(), currentUser);
 
                           readEvents().onGetMessageCommentsOfMessage(createObserverContext(currentUser), message);
@@ -783,15 +783,15 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
                               return;
                           }
                           auto& user = **it;
-                  
+
                           if ( ! (status = authorization_->getMessageCommentsOfUser(currentUser, user)))
                           {
                               return;
                           }
 
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentUser, true);
-                          
-                          writeMessageComments(user.messageCommentsByCreated(), output, 
+
+                          writeMessageComments(user.messageCommentsByCreated(), output,
                                                collection.grantedPrivileges(), currentUser);
 
                           readEvents().onGetMessageCommentsOfUser(createObserverContext(currentUser), user);
@@ -799,7 +799,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThreadMessage(const IdType& messageId, 
+StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThreadMessage(const IdType& messageId,
                                                                                         StringView content,
                                                                                         OutStream& output)
 {
@@ -831,7 +831,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                                  
+
                            if ( ! (status = authorization_->addCommentToDiscussionThreadMessage(*currentUser, **messageIt, content)))
                            {
                                return;
@@ -843,7 +843,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
 
                            writeEvents().onAddCommentToDiscussionThreadMessage(createObserverContext(*currentUser),
                                                                                *comment);
-                 
+
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", comment->id());
@@ -851,10 +851,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
                                                writer << Json::propertySafeName("created", comment->created());
                                            });
                        });
-    return status;    
+    return status;
 }
 
-StatusWithResource<MessageCommentRef> 
+StatusWithResource<MessageCommentRef>
     MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThreadMessage(EntityCollection& collection,
                                                                                  IdTypeRef messageId, StringView content)
 {
@@ -871,14 +871,14 @@ StatusWithResource<MessageCommentRef>
     comment->id() = generateUUIDString();
     comment->content() = content;
     updateCreated(*comment);
-                 
+
     collection.messageComments().insert(comment);
-                 
+
     collection.modifyDiscussionThreadMessageById((*messageIt)->id(), [&](auto& message)
                                                                      {
                                                                          message.messageComments().insert(comment);
                                                                      });
-                 
+
     collection.modifyUserById(currentUser->id(), [&](User& user)
                                                  {
                                                      user.messageComments().insert(comment);
@@ -902,7 +902,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(co
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
-                 
+
                            auto& indexById = collection.messageComments().get<EntityCollection::MessageCommentCollectionById>();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -911,7 +911,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(co
                                return;
                            }
                            auto& comment = **it;
-                 
+
                            if ( ! (status = authorization_->setMessageCommentToSolved(*currentUser, comment)))
                            {
                                return;
@@ -922,7 +922,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(co
                            writeEvents().onSolveDiscussionThreadMessageComment(createObserverContext(*currentUser),
                                                                                comment);
                        });
-    return status;    
+    return status;
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(EntityCollection& collection, IdTypeRef id)
@@ -939,7 +939,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(En
     {
         return StatusCode::NO_EFFECT;
     }
-                 
+
     comment.solved() = true;
     comment.executeActionWithParentMessageIfAvailable([&](DiscussionThreadMessage& message)
                                                         {

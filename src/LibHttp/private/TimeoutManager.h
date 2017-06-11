@@ -84,7 +84,7 @@ namespace Http
         }
 
     private:
-    
+
         typedef std::pair<T*, time_t> EntryPair;
 
         struct TimeoutManagerCollectionByElement {};

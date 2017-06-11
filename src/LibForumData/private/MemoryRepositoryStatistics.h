@@ -10,7 +10,7 @@ namespace Forum
         class MemoryRepositoryStatistics final : public MemoryRepositoryBase, public IStatisticsRepository
         {
         public:
-            explicit MemoryRepositoryStatistics(MemoryStoreRef store, 
+            explicit MemoryRepositoryStatistics(MemoryStoreRef store,
                                                 Authorization::StatisticsAuthorizationRef authorization);
 
             StatusCode getEntitiesCount(OutStream& output) const override;

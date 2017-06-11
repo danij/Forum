@@ -22,7 +22,7 @@ namespace Forum
          * Representing a timestamp as the number of seconds since the UNIX EPOCH
          */
         typedef int_fast64_t Timestamp;
-        
+
         /**
          * Specify that a collection is to order entities by id using a hash table
          */
@@ -83,7 +83,7 @@ namespace Forum
 
             const VisitDetails& lastUpdatedDetails() const { return lastUpdatedDetails_; }
                   VisitDetails& lastUpdatedDetails()       { return lastUpdatedDetails_; }
-                        
+
                   StringView    lastUpdatedReason()  const { return lastUpdatedReason_; }
                   std::string&  lastUpdatedReason()        { return lastUpdatedReason_; }
 

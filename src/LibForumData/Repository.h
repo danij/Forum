@@ -89,9 +89,9 @@ namespace Forum
 
         /**
          * return StatusCode from repository methods so that the code can easily be converted to a HTTP code
-         * if needed, without parsing the output 
+         * if needed, without parsing the output
          */
-        
+
         class IUserRepository
         {
         public:
@@ -116,9 +116,9 @@ namespace Forum
 
             virtual StatusWithResource<Entities::UserRef> addNewUser(Entities::EntityCollection& collection,
                                                                      StringView name, StringView auth) = 0;
-            virtual StatusCode changeUserName(Entities::EntityCollection& collection, Entities::IdTypeRef id, 
+            virtual StatusCode changeUserName(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                               StringView newName) = 0;
-            virtual StatusCode changeUserInfo(Entities::EntityCollection& collection, Entities::IdTypeRef id, 
+            virtual StatusCode changeUserInfo(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                               StringView newInfo) = 0;
             virtual StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
         };
@@ -162,18 +162,18 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadDirectWriteRepository);
 
-            virtual StatusWithResource<Entities::DiscussionThreadRef> 
+            virtual StatusWithResource<Entities::DiscussionThreadRef>
                     addNewDiscussionThread(Entities::EntityCollection& collection, StringView name) = 0;
-            virtual StatusCode changeDiscussionThreadName(Entities::EntityCollection& collection, 
+            virtual StatusCode changeDiscussionThreadName(Entities::EntityCollection& collection,
                                                           Entities::IdTypeRef id, StringView newName) = 0;
-            virtual StatusCode changeDiscussionThreadPinDisplayOrder(Entities::EntityCollection& collection, 
+            virtual StatusCode changeDiscussionThreadPinDisplayOrder(Entities::EntityCollection& collection,
                                                                      Entities::IdTypeRef id, uint16_t newValue) = 0;
             virtual StatusCode deleteDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
-            virtual StatusCode mergeDiscussionThreads(Entities::EntityCollection& collection, 
+            virtual StatusCode mergeDiscussionThreads(Entities::EntityCollection& collection,
                                                       Entities::IdTypeRef fromId, Entities::IdTypeRef intoId) = 0;
             virtual StatusCode subscribeToDiscussionThread(Entities::EntityCollection& collection,
                                                            Entities::IdTypeRef id) = 0;
-            virtual StatusCode unsubscribeFromDiscussionThread(Entities::EntityCollection& collection, 
+            virtual StatusCode unsubscribeFromDiscussionThread(Entities::EntityCollection& collection,
                                                                Entities::IdTypeRef id) = 0;
         };
         typedef std::shared_ptr<IDiscussionThreadDirectWriteRepository> DiscussionThreadDirectWriteRepositoryRef;
@@ -188,7 +188,7 @@ namespace Forum
                                                                           OutStream& output) const = 0;
 
             virtual StatusCode getMessageComments(OutStream& output) const = 0;
-            virtual StatusCode getMessageCommentsOfDiscussionThreadMessage(Entities::IdTypeRef id, 
+            virtual StatusCode getMessageCommentsOfDiscussionThreadMessage(Entities::IdTypeRef id,
                                                                            OutStream& output) const = 0;
             virtual StatusCode getMessageCommentsOfUser(Entities::IdTypeRef id,  OutStream& output) const = 0;
 
@@ -197,13 +197,13 @@ namespace Forum
             virtual StatusCode deleteDiscussionMessage(Entities::IdTypeRef id, OutStream& output) = 0;
             virtual StatusCode changeDiscussionThreadMessageContent(Entities::IdTypeRef id, StringView newContent,
                                                                     StringView changeReason, OutStream& output) = 0;
-            virtual StatusCode moveDiscussionThreadMessage(Entities::IdTypeRef messageId, 
+            virtual StatusCode moveDiscussionThreadMessage(Entities::IdTypeRef messageId,
                                                            Entities::IdTypeRef intoThreadId, OutStream& output) = 0;
             virtual StatusCode upVoteDiscussionThreadMessage(Entities::IdTypeRef id, OutStream& output) = 0;
             virtual StatusCode downVoteDiscussionThreadMessage(Entities::IdTypeRef id, OutStream& output) = 0;
             virtual StatusCode resetVoteDiscussionThreadMessage(Entities::IdTypeRef id, OutStream& output) = 0;
 
-            virtual StatusCode addCommentToDiscussionThreadMessage(Entities::IdTypeRef messageId, 
+            virtual StatusCode addCommentToDiscussionThreadMessage(Entities::IdTypeRef messageId,
                                                                    StringView content, OutStream& output) = 0;
             virtual StatusCode setMessageCommentToSolved(Entities::IdTypeRef id, OutStream& output) = 0;
         };
@@ -215,20 +215,20 @@ namespace Forum
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadMessageDirectWriteRepository)
 
             virtual StatusWithResource<Entities::DiscussionThreadMessageRef>
-                addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef threadId, 
+                addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef threadId,
                                                 StringView content) = 0;
             virtual StatusCode deleteDiscussionMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
-            virtual StatusCode changeDiscussionThreadMessageContent(Entities::EntityCollection& collection, 
+            virtual StatusCode changeDiscussionThreadMessageContent(Entities::EntityCollection& collection,
                                                                     Entities::IdTypeRef id, StringView newContent,
                                                                     StringView changeReason) = 0;
-            virtual StatusCode moveDiscussionThreadMessage(Entities::EntityCollection& collection, 
-                                                           Entities::IdTypeRef messageId, 
+            virtual StatusCode moveDiscussionThreadMessage(Entities::EntityCollection& collection,
+                                                           Entities::IdTypeRef messageId,
                                                            Entities::IdTypeRef intoThreadId) = 0;
-            virtual StatusCode upVoteDiscussionThreadMessage(Entities::EntityCollection& collection, 
+            virtual StatusCode upVoteDiscussionThreadMessage(Entities::EntityCollection& collection,
                                                              Entities::IdTypeRef id) = 0;
-            virtual StatusCode downVoteDiscussionThreadMessage(Entities::EntityCollection& collection, 
+            virtual StatusCode downVoteDiscussionThreadMessage(Entities::EntityCollection& collection,
                                                                Entities::IdTypeRef id) = 0;
-            virtual StatusCode resetVoteDiscussionThreadMessage(Entities::EntityCollection& collection, 
+            virtual StatusCode resetVoteDiscussionThreadMessage(Entities::EntityCollection& collection,
                                                                 Entities::IdTypeRef id) = 0;
 
             virtual StatusWithResource<Entities::MessageCommentRef>
@@ -252,9 +252,9 @@ namespace Forum
             virtual StatusCode changeDiscussionTagUiBlob(Entities::IdTypeRef id, StringView blob,
                                                          OutStream& output) = 0;
             virtual StatusCode deleteDiscussionTag(Entities::IdTypeRef id, OutStream& output) = 0;
-            virtual StatusCode addDiscussionTagToThread(Entities::IdTypeRef tagId, Entities::IdTypeRef threadId, 
+            virtual StatusCode addDiscussionTagToThread(Entities::IdTypeRef tagId, Entities::IdTypeRef threadId,
                                                         OutStream& output) = 0;
-            virtual StatusCode removeDiscussionTagFromThread(Entities::IdTypeRef tagId, 
+            virtual StatusCode removeDiscussionTagFromThread(Entities::IdTypeRef tagId,
                                                              Entities::IdTypeRef threadId, OutStream& output) = 0;
             virtual StatusCode mergeDiscussionTags(Entities::IdTypeRef fromId, Entities::IdTypeRef intoId,
                                                    OutStream& output) = 0;
@@ -266,19 +266,19 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionTagDirectWriteRepository)
 
-            virtual StatusWithResource<Entities::DiscussionTagRef> 
+            virtual StatusWithResource<Entities::DiscussionTagRef>
                 addNewDiscussionTag(Entities::EntityCollection& collection, StringView name) = 0;
             virtual StatusCode changeDiscussionTagName(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                                        StringView newName) = 0;
-            virtual StatusCode changeDiscussionTagUiBlob(Entities::EntityCollection& collection, 
+            virtual StatusCode changeDiscussionTagUiBlob(Entities::EntityCollection& collection,
                                                          Entities::IdTypeRef id, StringView blob) = 0;
-            virtual StatusCode deleteDiscussionTag(Entities::EntityCollection& collection, 
+            virtual StatusCode deleteDiscussionTag(Entities::EntityCollection& collection,
                                                    Entities::IdTypeRef id) = 0;
-            virtual StatusCode addDiscussionTagToThread(Entities::EntityCollection& collection, 
+            virtual StatusCode addDiscussionTagToThread(Entities::EntityCollection& collection,
                                                         Entities::IdTypeRef tagId, Entities::IdTypeRef threadId) = 0;
-            virtual StatusCode removeDiscussionTagFromThread(Entities::EntityCollection& collection, 
+            virtual StatusCode removeDiscussionTagFromThread(Entities::EntityCollection& collection,
                                                              Entities::IdTypeRef tagId, Entities::IdTypeRef threadId) = 0;
-            virtual StatusCode mergeDiscussionTags(Entities::EntityCollection& collection, Entities::IdTypeRef fromId, 
+            virtual StatusCode mergeDiscussionTags(Entities::EntityCollection& collection, Entities::IdTypeRef fromId,
                                                    Entities::IdTypeRef intoId) = 0;
         };
         typedef std::shared_ptr<IDiscussionTagDirectWriteRepository> DiscussionTagDirectWriteRepositoryRef;
@@ -293,24 +293,24 @@ namespace Forum
             virtual StatusCode getDiscussionCategories(OutStream& output, RetrieveDiscussionCategoriesBy by) const = 0;
             virtual StatusCode getDiscussionCategoriesFromRoot(OutStream& output) const = 0;
 
-            virtual StatusCode addNewDiscussionCategory(StringView name, Entities::IdTypeRef parentId, 
+            virtual StatusCode addNewDiscussionCategory(StringView name, Entities::IdTypeRef parentId,
                                                         OutStream& output) = 0;
             virtual StatusCode changeDiscussionCategoryName(Entities::IdTypeRef id, StringView newName,
                                                             OutStream& output) = 0;
-            virtual StatusCode changeDiscussionCategoryDescription(Entities::IdTypeRef id, 
+            virtual StatusCode changeDiscussionCategoryDescription(Entities::IdTypeRef id,
                                                                    StringView newDescription,
                                                                    OutStream& output) = 0;
-            virtual StatusCode changeDiscussionCategoryParent(Entities::IdTypeRef id, 
+            virtual StatusCode changeDiscussionCategoryParent(Entities::IdTypeRef id,
                                                               Entities::IdTypeRef newParentId,
                                                               OutStream& output) = 0;
-            virtual StatusCode changeDiscussionCategoryDisplayOrder(Entities::IdTypeRef id, 
-                                                                    int_fast16_t newDisplayOrder, 
+            virtual StatusCode changeDiscussionCategoryDisplayOrder(Entities::IdTypeRef id,
+                                                                    int_fast16_t newDisplayOrder,
                                                                     OutStream& output) = 0;
             virtual StatusCode deleteDiscussionCategory(Entities::IdTypeRef id, OutStream& output) = 0;
-            virtual StatusCode addDiscussionTagToCategory(Entities::IdTypeRef tagId, 
+            virtual StatusCode addDiscussionTagToCategory(Entities::IdTypeRef tagId,
                                                           Entities::IdTypeRef categoryId, OutStream& output) = 0;
-            virtual StatusCode removeDiscussionTagFromCategory(Entities::IdTypeRef tagId, 
-                                                               Entities::IdTypeRef categoryId, 
+            virtual StatusCode removeDiscussionTagFromCategory(Entities::IdTypeRef tagId,
+                                                               Entities::IdTypeRef categoryId,
                                                                OutStream& output) = 0;
         };
         typedef std::shared_ptr<IDiscussionCategoryRepository> DiscussionCategoryRepositoryRef;
@@ -320,21 +320,21 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionCategoryDirectWriteRepository)
 
-            virtual StatusWithResource<Entities::DiscussionCategoryRef> 
-                addNewDiscussionCategory(Entities::EntityCollection& collection, StringView name, 
+            virtual StatusWithResource<Entities::DiscussionCategoryRef>
+                addNewDiscussionCategory(Entities::EntityCollection& collection, StringView name,
                                          Entities::IdTypeRef parentId) = 0;
-            virtual StatusCode changeDiscussionCategoryName(Entities::EntityCollection& collection, 
+            virtual StatusCode changeDiscussionCategoryName(Entities::EntityCollection& collection,
                                                             Entities::IdTypeRef id, StringView newName) = 0;
-            virtual StatusCode changeDiscussionCategoryDescription(Entities::EntityCollection& collection, 
+            virtual StatusCode changeDiscussionCategoryDescription(Entities::EntityCollection& collection,
                                                                    Entities::IdTypeRef id, StringView newDescription) = 0;
-            virtual StatusCode changeDiscussionCategoryParent(Entities::EntityCollection& collection, 
+            virtual StatusCode changeDiscussionCategoryParent(Entities::EntityCollection& collection,
                                                               Entities::IdTypeRef id, Entities::IdTypeRef newParentId) = 0;
-            virtual StatusCode changeDiscussionCategoryDisplayOrder(Entities::EntityCollection& collection, 
+            virtual StatusCode changeDiscussionCategoryDisplayOrder(Entities::EntityCollection& collection,
                                                                     Entities::IdTypeRef id, int_fast16_t newDisplayOrder) = 0;
             virtual StatusCode deleteDiscussionCategory(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
-            virtual StatusCode addDiscussionTagToCategory(Entities::EntityCollection& collection, 
+            virtual StatusCode addDiscussionTagToCategory(Entities::EntityCollection& collection,
                                                           Entities::IdTypeRef tagId, Entities::IdTypeRef categoryId) = 0;
-            virtual StatusCode removeDiscussionTagFromCategory(Entities::EntityCollection& collection, 
+            virtual StatusCode removeDiscussionTagFromCategory(Entities::EntityCollection& collection,
                                                                Entities::IdTypeRef tagId, Entities::IdTypeRef categoryId) = 0;
         };
         typedef std::shared_ptr<IDiscussionCategoryDirectWriteRepository> DiscussionCategoryDirectWriteRepositoryRef;
@@ -354,7 +354,7 @@ namespace Forum
         {
         public:
             DECLARE_INTERFACE_MANDATORY(IStatisticsRepository);
-            
+
             virtual StatusCode getEntitiesCount(OutStream& output) const = 0;
         };
         typedef std::shared_ptr<IStatisticsRepository> StatisticsRepositoryRef;

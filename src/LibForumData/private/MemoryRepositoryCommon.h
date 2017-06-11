@@ -57,7 +57,7 @@ namespace Forum
             explicit MemoryRepositoryBase(MemoryStoreRef store) : store_(std::move(store))
             {}
             virtual ~MemoryRepositoryBase() = default;
-            
+
             ReadEvents& readEvents()   override { return store_->readEvents; }
             WriteEvents& writeEvents() override { return store_->writeEvents; }
 
@@ -74,15 +74,15 @@ namespace Forum
                 INVALID_PARAMETERS_FOR_EMPTY_STRING
             };
 
-            static StatusCode validateString(StringView string, 
+            static StatusCode validateString(StringView string,
                                              EmptyStringValidation emptyValidation,
-                                             boost::optional<int_fast32_t> minimumLength, 
+                                             boost::optional<int_fast32_t> minimumLength,
                                              boost::optional<int_fast32_t> maximumLength);
 
             template<typename Fn>
-            static StatusCode validateString(StringView string, 
+            static StatusCode validateString(StringView string,
                                              EmptyStringValidation emptyValidation,
-                                             boost::optional<int_fast32_t> minimumLength, 
+                                             boost::optional<int_fast32_t> minimumLength,
                                              boost::optional<int_fast32_t> maximumLength,
                                              Fn&& extraValidation)
             {
@@ -101,7 +101,7 @@ namespace Forum
 
         inline ObserverContext_ createObserverContext(PerformedByType performedBy)
         {
-            return ObserverContext_(performedBy, Context::getCurrentTime(), Context::getDisplayContext(), 
+            return ObserverContext_(performedBy, Context::getCurrentTime(), Context::getDisplayContext(),
                                     Context::getCurrentUserIpAddress());
         }
 
@@ -112,7 +112,7 @@ namespace Forum
         }
 
         template<typename ByType>
-        void updateLastUpdated(Entities::LastUpdatedMixinWithBy<ByType>& entity, 
+        void updateLastUpdated(Entities::LastUpdatedMixinWithBy<ByType>& entity,
                                const typename Entities::LastUpdatedMixinWithBy<ByType>::ByTypeRef& by)
         {
             entity.lastUpdated() = Context::getCurrentTime();

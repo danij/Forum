@@ -17,12 +17,12 @@ namespace Forum
         /**
         * Stores hierarchical category that groups discussion threads
         * Repositories are responsible for updating the relationships between this message and other entities
-        * 
+        *
         * The discussion category manages the message count and the total thread/message counts
         * when adding/removing threads and/or tags
         */
-        struct DiscussionCategory final : public Identifiable, 
-                                          public CreatedMixin, 
+        struct DiscussionCategory final : public Identifiable,
+                                          public CreatedMixin,
                                           public LastUpdatedMixinWithBy<User>,
                                           public DiscussionThreadCollectionBase<HashIndexForId>,
                                           public Authorization::DiscussionCategoryPrivilegeStore,
@@ -30,13 +30,13 @@ namespace Forum
         {
             const auto&   name()              const { return name_; }
             auto&         name()                    { return name_; }
-                                              
+
             StringView    description()       const { return description_; }
             std::string&  description()             { return description_; }
-                                              
+
             int_fast16_t  displayOrder()      const { return displayOrder_; }
             int_fast16_t& displayOrder()            { return displayOrder_; }
-                                              
+
             int_fast32_t  messageCount()      const { return messageCount_; }
 
             int_fast32_t  threadTotalCount()  const { return totalThreads_.threadsById().size(); }
@@ -46,7 +46,7 @@ namespace Forum
 
             auto          tags()              const { return Helpers::toConst(tags_); }
             auto&         tags()                    { return tags_; }
-                                              
+
             auto          children()          const { return Helpers::toConst(children_); }
             auto&         children()                { return children_; }
 

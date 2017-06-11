@@ -7,7 +7,7 @@ namespace Forum
 {
     namespace Repository
     {
-        class MemoryRepositoryDiscussionThreadMessage final : public MemoryRepositoryBase, 
+        class MemoryRepositoryDiscussionThreadMessage final : public MemoryRepositoryBase,
                                                               public IDiscussionThreadMessageRepository,
                                                               public IDiscussionThreadMessageDirectWriteRepository
         {
@@ -18,20 +18,20 @@ namespace Forum
             StatusCode addNewDiscussionMessageInThread(Entities::IdTypeRef threadId,
                                                        StringView content, OutStream& output) override;
             StatusWithResource<Entities::DiscussionThreadMessageRef>
-                addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef threadId, 
+                addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef threadId,
                                                 StringView content) override;
             StatusCode deleteDiscussionMessage(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode deleteDiscussionMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
             StatusCode changeDiscussionThreadMessageContent(Entities::IdTypeRef id, StringView newContent,
-                                                            StringView changeReason, 
+                                                            StringView changeReason,
                                                             OutStream& output) override;
-            StatusCode changeDiscussionThreadMessageContent(Entities::EntityCollection& collection, 
+            StatusCode changeDiscussionThreadMessageContent(Entities::EntityCollection& collection,
                                                             Entities::IdTypeRef id, StringView newContent,
                                                             StringView changeReason) override;
-            StatusCode moveDiscussionThreadMessage(Entities::IdTypeRef messageId, Entities::IdTypeRef intoThreadId, 
+            StatusCode moveDiscussionThreadMessage(Entities::IdTypeRef messageId, Entities::IdTypeRef intoThreadId,
                                                    OutStream& output) override;
-            StatusCode moveDiscussionThreadMessage(Entities::EntityCollection& collection, 
-                                                   Entities::IdTypeRef messageId, 
+            StatusCode moveDiscussionThreadMessage(Entities::EntityCollection& collection,
+                                                   Entities::IdTypeRef messageId,
                                                    Entities::IdTypeRef intoThreadId) override;
             StatusCode upVoteDiscussionThreadMessage(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode upVoteDiscussionThreadMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
@@ -43,14 +43,14 @@ namespace Forum
             StatusCode getDiscussionThreadMessagesOfUserByCreated(Entities::IdTypeRef id,
                                                                   OutStream& output) const override;
 
-            StatusCode addCommentToDiscussionThreadMessage(Entities::IdTypeRef messageId, StringView content, 
+            StatusCode addCommentToDiscussionThreadMessage(Entities::IdTypeRef messageId, StringView content,
                                                            OutStream& output) override;
-            StatusWithResource<Entities::MessageCommentRef> 
+            StatusWithResource<Entities::MessageCommentRef>
                 addCommentToDiscussionThreadMessage(Entities::EntityCollection& collection,
                                                     Entities::IdTypeRef messageId, StringView content) override;
 
             StatusCode getMessageComments(OutStream& output) const override;
-            StatusCode getMessageCommentsOfDiscussionThreadMessage(Entities::IdTypeRef id, 
+            StatusCode getMessageCommentsOfDiscussionThreadMessage(Entities::IdTypeRef id,
                                                                    OutStream& output) const override;
             StatusCode getMessageCommentsOfUser(Entities::IdTypeRef id, OutStream& output) const override;
             StatusCode setMessageCommentToSolved(Entities::IdTypeRef id, OutStream& output) override;

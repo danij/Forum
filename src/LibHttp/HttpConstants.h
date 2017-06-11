@@ -104,7 +104,7 @@ namespace Http
 
     namespace Request
     {
-        //Standard and common non-standard headers extracted from 
+        //Standard and common non-standard headers extracted from
         //https://www.w3.org/Protocols/rfc2616/rfc2616.html and https://en.wikipedia.org/wiki/List_of_HTTP_header_fields
         enum HttpHeader
         {

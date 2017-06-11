@@ -23,7 +23,7 @@ namespace Forum
          */
         struct EntityCollection : public UserCollectionBase<HashIndexForId>,
                                   public DiscussionThreadCollectionBase<HashIndexForId>,
-                                  public DiscussionThreadMessageCollectionBase<HashIndexForId>, 
+                                  public DiscussionThreadMessageCollectionBase<HashIndexForId>,
                                   public MessageCommentCollectionBase<HashIndexForId>,
                                   public DiscussionTagCollectionBase<HashIndexForId>,
                                   public DiscussionCategoryCollectionBase<HashIndexForId>,

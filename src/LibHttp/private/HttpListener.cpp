@@ -35,14 +35,14 @@ static void closeSocket(boost::asio::ip::tcp::socket& socket)
 
 struct HttpListener::HttpConnection final : private boost::noncopyable
 {
-    explicit HttpConnection(HttpListener& listener, boost::asio::ip::tcp::socket&& socket, ReadBufferType&& headerBuffer, 
+    explicit HttpConnection(HttpListener& listener, boost::asio::ip::tcp::socket&& socket, ReadBufferType&& headerBuffer,
                             ReadBufferPoolType& readBufferPool, WriteBufferPoolType& writeBufferPool,
                             TimeoutManager<boost::asio::ip::tcp::socket>& timeoutManager, bool trustIpFromXForwardedFor)
-        : listener_(listener), socket_(std::move(socket)), headerBuffer_(std::move(headerBuffer)), 
-          requestBodyBuffer_(readBufferPool), responseBuffer_(writeBufferPool), 
-          responseBuilder_(writeToBuffer, &responseBuffer_), timeoutManager_(timeoutManager), 
+        : listener_(listener), socket_(std::move(socket)), headerBuffer_(std::move(headerBuffer)),
+          requestBodyBuffer_(readBufferPool), responseBuffer_(writeBufferPool),
+          responseBuilder_(writeToBuffer, &responseBuffer_), timeoutManager_(timeoutManager),
           trustIpFromXForwardedFor_(trustIpFromXForwardedFor),
-          parser_(headerBuffer_->data, headerBuffer_->size, Buffer::MaxRequestBodyLength, 
+          parser_(headerBuffer_->data, headerBuffer_->size, Buffer::MaxRequestBodyLength,
               [](auto buffer, auto size, auto state)
               {
                   return reinterpret_cast<HttpConnection*>(state)->onReadBody(buffer, size);
@@ -82,7 +82,7 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
             listener_.release(this);
             return;
         }
-        
+
         if (parser_.process(readBuffer_.data(), bytesTransfered) == Parser::ParseResult::INVALID_INPUT)
         {
             //invalid input
@@ -297,9 +297,9 @@ void HttpListener::startListening()
 {
     //TODO: error checking
     boost::asio::ip::tcp::endpoint endpoint
-    { 
-        boost::asio::ip::address::from_string(impl_->config.listenIPAddress), 
-        impl_->config.listenPort 
+    {
+        boost::asio::ip::address::from_string(impl_->config.listenIPAddress),
+        impl_->config.listenPort
     };
 
     impl_->acceptor.open(endpoint.protocol());
@@ -312,8 +312,8 @@ void HttpListener::startListening()
 
 void HttpListener::stopListening()
 {
-    impl_->ioService.dispatch([&] 
-    { 
+    impl_->ioService.dispatch([&]
+    {
         boost::system::error_code ec;
         impl_->acceptor.close(ec);
 
@@ -362,7 +362,7 @@ void HttpListener::onAccept(const boost::system::error_code& ec)
     if (headerBuffer)
     {
         auto connection = impl_->connectionPool.getObject(*this, std::move(impl_->socket), std::move(headerBuffer),
-                                                          *impl_->readBuffers, *impl_->writeBuffers, 
+                                                          *impl_->readBuffers, *impl_->writeBuffers,
                                                           impl_->timeoutManager, impl_->config.trustIpFromXForwardedFor);
         if (nullptr != connection)
         {

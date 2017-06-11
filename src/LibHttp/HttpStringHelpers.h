@@ -14,7 +14,7 @@ namespace Http
 
     /**
      * Matches a string against another one, optionally ignoring case
-     * 
+     *
      * @pre source must point to (AgainstSize - 1) / 2 characters
      * @param source String to be searched
      * @param against A string where each character appears as both upper and lower case (e.g. HhEeLlLlO  WwOoRrLlDd)
@@ -101,7 +101,7 @@ namespace Http
         224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239,
         240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255
     };
-    
+
     static const int HexParsingValues[] =
     {
         0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -158,8 +158,8 @@ namespace Http
     {
         return StringView(value, decodeUrlEncodingInPlace(value, size));
     }
-    
-    static const bool ReservedCharactersForUrlEncoding[] = 
+
+    static const bool ReservedCharactersForUrlEncoding[] =
     {
          true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
          true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
@@ -210,7 +210,7 @@ namespace Http
     }
 
     /**
-     * Performes URL encoding leaving out only unreserved characters 
+     * Performes URL encoding leaving out only unreserved characters
      * as listed under https://tools.ietf.org/html/rfc3986#section-2.3
      */
     template<size_t Size>
@@ -235,8 +235,8 @@ namespace Http
     /**
      * Performes URL encoding on an input string of maximum MaxPercentEncodingInputSize characters.
      * Use the result as soon as possible, calling the function again will overrite the result
-     * 
-     * @return A view to a thread-local buffer. 
+     *
+     * @return A view to a thread-local buffer.
      */
     inline StringView urlEncode(StringView input)
     {
@@ -247,14 +247,14 @@ namespace Http
     /**
      * Writes a date string as expected by the HTTP protocol, e.g. Tue, 18 Apr 2017 09:00:00 GMT
      * The functions doesn't check bounds, the output buffer must be large enough
-     * 
+     *
      * @return The amount of characters written
      */
     inline size_t writeHttpDateGMT(time_t value, char* output)
     {
         //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date
         static const char DayNames[][4] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-        static const char MonthNames[][4] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+        static const char MonthNames[][4] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
         std::tm time;
 #if defined(_WIN32) || defined (WIN32)

@@ -26,7 +26,7 @@ static const std::string emptyString;
 template<typename Collection>
 auto countNonEmpty(const Collection& collection)
 {
-    return static_cast<size_t>(std::count_if(collection.begin(), collection.end(), 
+    return static_cast<size_t>(std::count_if(collection.begin(), collection.end(),
                                [](auto& view) { return view.size() > 0; }));
 }
 
@@ -45,7 +45,7 @@ static StringView normalize(StringView input)
 {
     int32_t chars16Written = 0, chars8Written = 0;
     UErrorCode errorCode{};
-    auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before.get(), NormalizeBuffer16MaxChars, &chars16Written, 
+    auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before.get(), NormalizeBuffer16MaxChars, &chars16Written,
                                       input.data(), input.size(), &errorCode);
     if (U_FAILURE(errorCode))
     {
@@ -60,7 +60,7 @@ static StringView normalize(StringView input)
     }
 
     errorCode = {};
-    auto chars16NormalizedWritten = unorm2_normalize(normalizer, u8to16Result, chars16Written, 
+    auto chars16NormalizedWritten = unorm2_normalize(normalizer, u8to16Result, chars16Written,
                                                      normalizeBuffer16After.get(), NormalizeBuffer16MaxChars, &errorCode);
     if (U_FAILURE(errorCode))
     {
@@ -68,7 +68,7 @@ static StringView normalize(StringView input)
     }
 
     errorCode = {};
-    auto u16to8Result = u_strToUTF8(normalizeBuffer8.get(), NormalizeBuffer8MaxChars, &chars8Written, 
+    auto u16to8Result = u_strToUTF8(normalizeBuffer8.get(), NormalizeBuffer8MaxChars, &chars8Written,
                                     normalizeBuffer16After.get(), chars16NormalizedWritten, &errorCode);
     if (U_FAILURE(errorCode))
     {
@@ -105,7 +105,7 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! boost::conversion::try_lexical_convert(value.data(), value.size(), result))
         {
-            return false;            
+            return false;
         }
         return true;
     }
@@ -183,7 +183,7 @@ struct CommandHandler::CommandHandlerImpl
         if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
         return userRepository->changeUserName(parameters[0], normalizedParam, output);
     }
-    
+
     COMMAND_HANDLER_METHOD( CHANGE_USER_INFO )
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
@@ -263,28 +263,28 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
+        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output,
                                                                       RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_CREATED )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
+        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output,
                                                                       RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
+        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output,
                                                                       RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output, 
+        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output,
                                                                       RetrieveDiscussionThreadsBy::MessageCount);
     }
 
@@ -303,7 +303,7 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output, 
+        return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
                                                                                 RetrieveDiscussionThreadsBy::Name);
     }
 
@@ -327,7 +327,7 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
                                                                                 RetrieveDiscussionThreadsBy::MessageCount);
     }
-    
+
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
@@ -572,28 +572,28 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
+        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output,
                                                                           RetrieveDiscussionThreadsBy::Name);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
+        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output,
                                                                           RetrieveDiscussionThreadsBy::Created);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
+        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output,
                                                                           RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output, 
+        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output,
                                                                           RetrieveDiscussionThreadsBy::MessageCount);
     }
 };

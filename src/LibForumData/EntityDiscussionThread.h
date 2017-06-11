@@ -21,8 +21,8 @@ namespace Forum
         * Stores a discussion thread that contains messages
         * Repositories are responsible for updating the relationships between this message and other entities
         */
-        struct DiscussionThread final : public Identifiable, 
-                                        public CreatedMixin, 
+        struct DiscussionThread final : public Identifiable,
+                                        public CreatedMixin,
                                         public LastUpdatedMixinWithBy<User>,
                                         public DiscussionThreadMessageCollectionBase<OrderedIndexForId>,
                                         public IndicateDeletionInProgress,
@@ -96,7 +96,7 @@ namespace Forum
 
             Helpers::StringWithSortKey name_;
             User& createdBy_;
-            //store the timestamp of the latest visibile change in order to be able to 
+            //store the timestamp of the latest visibile change in order to be able to
             //detect when to return a status that nothing has changed since a provided timestamp
             //Note: do not use as index in collection, the indexes would not always be updated
             Timestamp latestVisibleChange_;

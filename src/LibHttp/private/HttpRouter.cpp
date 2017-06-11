@@ -64,7 +64,7 @@ void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& respon
     {
         tempPath[tempPathLength++] = '/';
     }
-    
+
     bool routeFound = false;
     for (auto& pair : routes_[getFirstIndexForRoutes(tempPath, tempPathLength)][static_cast<size_t>(request.verb)])
     {
@@ -92,7 +92,7 @@ void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& respon
         }
         else
         {
-            writeNotFound(request, response);            
+            writeNotFound(request, response);
         }
     }
 }
@@ -106,4 +106,3 @@ void HttpRouter::setDefaultRoute(HandlerFn&& handler)
 {
     defaultRoute_ = std::move(handler);
 }
-

@@ -109,7 +109,7 @@ namespace Forum
              * Enables a safe modification of a discussion category instance,
              * refreshing all indexes the category is registered in
              */
-            void modifyDiscussionCategoryById(const IdType& id, 
+            void modifyDiscussionCategoryById(const IdType& id,
                                               std::function<void(DiscussionCategory&)>&& modifyFunction)
             {
                 modifyDiscussionCategory(categories_.template get<DiscussionCategoryCollectionById>().find(id),

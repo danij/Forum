@@ -14,13 +14,13 @@ namespace Forum
     {
         struct User;
         struct DiscussionThreadMessage;
-        
+
         /**
          * Stores a comment to a discussion thread message
          * Does not get deleted if the message is deleted
          */
-        struct MessageComment final : public Identifiable, 
-                                      public CreatedMixin, 
+        struct MessageComment final : public Identifiable,
+                                      public CreatedMixin,
                                       private boost::noncopyable
         {
                   StringView                        content()       const { return content_; }

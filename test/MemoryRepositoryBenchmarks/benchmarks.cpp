@@ -109,7 +109,7 @@ auto createCommandHandler()
  */
 static std::vector<StringView> parametersVector(10);
 
-IdType executeAndGetId(CommandHandler& handler, Command command, 
+IdType executeAndGetId(CommandHandler& handler, Command command,
                        const std::initializer_list<StringView>& parameters = {})
 {
     parametersVector.clear();
@@ -188,10 +188,10 @@ int main()
     std::cout << "# of users: " << nrOfUsers << '\n';
     std::cout << "# of discussion threads: " << nrOfThreads << '\n';
     std::cout << "# of discussion messages: " << nrOfMessages << '\n';
-    std::cout << "\tDiscussion message length: mean = " << messageContentLengthMean << 
+    std::cout << "\tDiscussion message length: mean = " << messageContentLengthMean <<
                                           ", stddev = " << messageContentLengthStddev << "\n\n";
     std::cout << "# of discussion tags: " << nrOfTags << '\n';
-    std::cout << "# of discussion categories: " << nrOfCategories 
+    std::cout << "# of discussion categories: " << nrOfCategories
               << " (" << nrOfCategoryParentChildRelationships << " parent-child)\n";
     std::cout << "# of discussion tags/category: " << nrOfTagsPerCategoryMin << "-" << nrOfTagsPerCategoryMax << '\n';
     std::cout << "# of discussion tags/thread: " << nrOfTagsPerThreadMin << "-" << nrOfTagsPerThreadMax << '\n';
@@ -310,7 +310,7 @@ void populateData(BenchmarkContext& context)
 
     std::uniform_int_distribution<> userIdDistribution(0, userIds.size() - 1);
     std::normal_distribution<float> messageSizedistribution(messageContentLengthMean, messageContentLengthStddev);
-    
+
     auto config = Configuration::getGlobalConfig();
 
 
@@ -473,7 +473,7 @@ void doBenchmarks(BenchmarkContext& context)
         }) << " ";
     }
     std::cout << '\n';
-    
+
     std::cout << "Get first page of users by last seen: ";
     for (int i = 0; i < retries; ++i)
     {
@@ -540,7 +540,7 @@ void doBenchmarks(BenchmarkContext& context)
         }) << " ";
     }
     std::cout << '\n';
-    
+
     std::cout << "Get fourth page of discussion threads by message count descending: ";
     for (int i = 0; i < retries; ++i)
     {

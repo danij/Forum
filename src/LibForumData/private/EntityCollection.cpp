@@ -184,7 +184,7 @@ void EntityCollection::modifyDiscussionThreadMessage(MessageIdIteratorType itera
             {
                 messageToModify.executeActionWithParentThreadIfAvailable([&](auto& parentThread)
                 {
-                    parentThread.modifyDiscussionThreadMessageById(messageToModify.id(), 
+                    parentThread.modifyDiscussionThreadMessageById(messageToModify.id(),
                                                                    std::forward<std::function<void(DiscussionThreadMessage&)>>(modifyFunction));
                 });
             });

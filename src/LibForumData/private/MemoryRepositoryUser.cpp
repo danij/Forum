@@ -34,12 +34,12 @@ static bool isValidUserName(StringView input)
     int32_t written;
     UErrorCode errorCode{};
 
-    auto u16Chars = u_strFromUTF8Lenient(validUserNameBuffer16.get(), MaxNrOfUserNameChars16, &written, 
+    auto u16Chars = u_strFromUTF8Lenient(validUserNameBuffer16.get(), MaxNrOfUserNameChars16, &written,
                                          input.data(), input.size(), &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     errorCode = {};
-    auto u32Chars = u_strToUTF32(validUserNameBuffer32.get(), MaxNrOfUserNameChars32, &written, 
+    auto u32Chars = u_strToUTF32(validUserNameBuffer32.get(), MaxNrOfUserNameChars32, &written,
                                  u16Chars, written, &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
@@ -61,7 +61,7 @@ static bool isValidUserName(StringView input)
     return true;
 }
 
-MemoryRepositoryUser::MemoryRepositoryUser(MemoryStoreRef store, UserAuthorizationRef authorization) 
+MemoryRepositoryUser::MemoryRepositoryUser(MemoryStoreRef store, UserAuthorizationRef authorization)
     : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization))
 {
     if ( ! authorization_)
@@ -91,29 +91,29 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
         auto& displayContext = Context::getDisplayContext();
 
         SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
-        
+
         auto ascending = displayContext.sortOrder == Context::SortOrder::Ascending;
 
         switch (by)
         {
         case RetrieveUsersBy::Name:
-            writeEntitiesWithPagination(collection.usersByName(), "users", output, displayContext.pageNumber, 
+            writeEntitiesWithPagination(collection.usersByName(), "users", output, displayContext.pageNumber,
                 pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::Created:
-            writeEntitiesWithPagination(collection.usersByCreated(), "users", output, displayContext.pageNumber, 
+            writeEntitiesWithPagination(collection.usersByCreated(), "users", output, displayContext.pageNumber,
                 pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::LastSeen:
-            writeEntitiesWithPagination(collection.usersByLastSeen(), "users", output, displayContext.pageNumber, 
+            writeEntitiesWithPagination(collection.usersByLastSeen(), "users", output, displayContext.pageNumber,
                 pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::ThreadCount:
-            writeEntitiesWithPagination(collection.usersByThreadCount(), "users", output, displayContext.pageNumber, 
+            writeEntitiesWithPagination(collection.usersByThreadCount(), "users", output, displayContext.pageNumber,
                 pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::MessageCount:
-            writeEntitiesWithPagination(collection.usersByMessageCount(), "users", output, displayContext.pageNumber, 
+            writeEntitiesWithPagination(collection.usersByMessageCount(), "users", output, displayContext.pageNumber,
                 pageSize, ascending, restriction);
             break;
         }
@@ -153,7 +153,7 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
                           SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "user", user, restriction);
-                          
+
                           readEvents().onGetUserById(createObserverContext(currentUser), user);
                       });
     return status;
@@ -169,7 +169,7 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
     {
         return status = INVALID_PARAMETERS;
     }
-    
+
     collection().read([&](const EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, store());
@@ -192,7 +192,7 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
-        
+
                           writeSingleValueSafeName(output, "user", user, restriction);
 
                           readEvents().onGetUserByName(createObserverContext(currentUser), name);
@@ -210,7 +210,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
     }
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING, 
+    auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
                                          config->user.minNameLength, config->user.maxNameLength,
                                          isValidUserName);
     if (validationCode != StatusCode::OK)
@@ -244,7 +244,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
     return status;
 }
 
-StatusWithResource<UserRef> MemoryRepositoryUser::addNewUser(EntityCollection& collection, 
+StatusWithResource<UserRef> MemoryRepositoryUser::addNewUser(EntityCollection& collection,
                                                              StringView name, StringView auth)
 {
     auto authString = toString(auth);
@@ -320,7 +320,7 @@ StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, Id
     {
         return StatusCode::NOT_FOUND;
     }
-    
+
     StringWithSortKey newNameString(newName);
 
     auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
@@ -382,7 +382,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(EntityCollection& collection, Id
     {
         return StatusCode::NOT_FOUND;
     }
-    
+
     collection.modifyUser(it, [&newInfo](User& user)
                               {
                                   user.info() = toString(newInfo);

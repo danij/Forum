@@ -36,7 +36,7 @@ namespace Forum
                 {
                     return *(messageIndex.rbegin());
                 }
-                return nullptr;                
+                return nullptr;
             }
 
             /**
@@ -59,11 +59,11 @@ namespace Forum
                     }
                 }
             }
-            
+
             bool insertDiscussionThread(const DiscussionThreadRef& thread) override
             {
                 auto it = referenceCount_.find(thread);
-                if (it == referenceCount_.end() 
+                if (it == referenceCount_.end()
                     && DiscussionThreadCollectionBase<IndexTypeForId>::insertDiscussionThread(thread))
                 {
                     referenceCount_.insert(std::make_pair(thread, 1));
@@ -75,7 +75,7 @@ namespace Forum
             }
 
             /**
-             * Removes a thread completely, even if the reference count is > 1 
+             * Removes a thread completely, even if the reference count is > 1
              * Used when a thread is permanently deleted
              */
             DiscussionThreadRef deleteDiscussionThread(ThreadIdIteratorType iterator) override

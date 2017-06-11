@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( Json_serialization_escapes_very_large_strings )
     JsonWriter writer(stream);
 
     std::string largeString(1000000, 'a');
-    
+
     writer.startObject();
     writer.newPropertyWithSafeName("prop") << ("\n" + largeString + "\n");
     writer.endObject();
