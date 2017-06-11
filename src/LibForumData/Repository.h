@@ -315,6 +315,30 @@ namespace Forum
         };
         typedef std::shared_ptr<IDiscussionCategoryRepository> DiscussionCategoryRepositoryRef;
 
+        class IDiscussionCategoryDirectWriteRepository
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IDiscussionCategoryDirectWriteRepository)
+
+            virtual StatusWithResource<Entities::DiscussionCategoryRef> 
+                addNewDiscussionCategory(Entities::EntityCollection& collection, StringView name, 
+                                         Entities::IdTypeRef parentId) = 0;
+            virtual StatusCode changeDiscussionCategoryName(Entities::EntityCollection& collection, 
+                                                            Entities::IdTypeRef id, StringView newName) = 0;
+            virtual StatusCode changeDiscussionCategoryDescription(Entities::EntityCollection& collection, 
+                                                                   Entities::IdTypeRef id, StringView newDescription) = 0;
+            virtual StatusCode changeDiscussionCategoryParent(Entities::EntityCollection& collection, 
+                                                              Entities::IdTypeRef id, Entities::IdTypeRef newParentId) = 0;
+            virtual StatusCode changeDiscussionCategoryDisplayOrder(Entities::EntityCollection& collection, 
+                                                                    Entities::IdTypeRef id, int_fast16_t newDisplayOrder) = 0;
+            virtual StatusCode deleteDiscussionCategory(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
+            virtual StatusCode addDiscussionTagToCategory(Entities::EntityCollection& collection, 
+                                                          Entities::IdTypeRef tagId, Entities::IdTypeRef categoryId) = 0;
+            virtual StatusCode removeDiscussionTagFromCategory(Entities::EntityCollection& collection, 
+                                                               Entities::IdTypeRef tagId, Entities::IdTypeRef categoryId) = 0;
+        };
+        typedef std::shared_ptr<IDiscussionCategoryDirectWriteRepository> DiscussionCategoryDirectWriteRepositoryRef;
+
 
         class IObservableRepository
         {

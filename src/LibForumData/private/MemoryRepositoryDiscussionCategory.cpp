@@ -194,31 +194,20 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                            {
                                return;
                            }
-                 
-                           auto category = std::make_shared<DiscussionCategory>(collection);
-                           category->notifyChange() = collection.notifyCategoryChange();
-                           category->id() = generateUUIDString();
-                           category->name() = std::move(nameString);
-                           updateCreated(*category);
-                 
-                           auto setParentId = IdType::empty;
-                           if (parentId)
-                           {
-                               if (parentIt != indexById.end())
-                               {
-                                   collection.modifyDiscussionCategory(parentIt, [&category](DiscussionCategory& parent)
-                                                                                 {
-                                                                                     parent.addChild(category);
-                                                                                 });
-                                   category->parentWeak() = *parentIt;
-                                   setParentId = parentId;
-                               }
-                           }
-                 
-                           collection.categories().insert(category);
 
+                           auto statusWithResource = addNewDiscussionCategory(collection, name, parentId);
+                           auto& category = statusWithResource.resource;
+                           if ( ! (status = statusWithResource.status)) return;
+
+                 
                            writeEvents().onAddNewDiscussionCategory(createObserverContext(*currentUser), *category);
                  
+                           auto setParentId = IdType::empty;
+                           if (parentIt != indexById.end())
+                           {
+                               setParentId = (*parentIt)->id();
+                           }
+
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", category->id());
@@ -227,6 +216,44 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                                            });
                        });
     return status;
+}
+
+StatusWithResource<DiscussionCategoryRef> 
+    MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(EntityCollection& collection, StringView name,
+                                                                 IdTypeRef parentId) 
+{
+    StringWithSortKey nameString(name);
+
+    auto& indexByName = collection.categories().get<EntityCollection::DiscussionCategoryCollectionByName>();
+    if (indexByName.find(nameString) != indexByName.end())
+    {
+        return StatusCode::ALREADY_EXISTS;
+    }
+
+    auto& indexById = collection.categories().get<EntityCollection::DiscussionCategoryCollectionById>();
+
+    auto category = std::make_shared<DiscussionCategory>(collection);
+    category->notifyChange() = collection.notifyCategoryChange();
+    category->id() = generateUUIDString();
+    category->name() = std::move(nameString);
+    updateCreated(*category);
+
+    if (parentId)
+    {
+        auto parentIt = indexById.find(parentId);
+        if (parentIt != indexById.end())
+        {
+            collection.modifyDiscussionCategory(parentIt, [&category](DiscussionCategory& parent)
+            {
+                parent.addChild(category);
+            });
+            category->parentWeak() = *parentIt;
+        }
+    }
+
+    collection.categories().insert(category);
+
+    return category;
 }
 
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(const IdType& id, StringView newName, 
@@ -260,30 +287,47 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(cons
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-
-                           StringWithSortKey newNameString(newName);
-
-                           auto& indexByName = collection.categories().get<EntityCollection::DiscussionCategoryCollectionByName>();
-                           if (indexByName.find(newNameString) != indexByName.end())
-                           {
-                               status = StatusCode::ALREADY_EXISTS;
-                               return;
-                           }
                            
                            if ( ! (status = authorization_->changeDiscussionCategoryName(*currentUser, **it, newName)))
                            {
                                return;
                            }
 
-                           collection.modifyDiscussionCategory(it, [&newNameString, &currentUser](DiscussionCategory& category)
-                                                                   {
-                                                                       category.name() = std::move(newNameString);
-                                                                       updateLastUpdated(category, currentUser);
-                                                                   });
+                           if ( ! (status = changeDiscussionCategoryName(collection, id, newName))) return;
+
                            writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), **it,
                                                                     DiscussionCategory::ChangeType::Name);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(EntityCollection& collection,
+                                                                            IdTypeRef id, StringView newName)
+{
+    auto& indexById = collection.categories().get<EntityCollection::DiscussionCategoryCollectionById>();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    StringWithSortKey newNameString(newName);
+
+    auto& indexByName = collection.categories().get<EntityCollection::DiscussionCategoryCollectionByName>();
+    if (indexByName.find(newNameString) != indexByName.end())
+    {
+        return StatusCode::ALREADY_EXISTS;
+    }
+
+    auto currentUser = getCurrentUser(collection);
+
+    collection.modifyDiscussionCategory(it, [&newNameString, &currentUser](DiscussionCategory& category)
+                                            {
+                                                category.name() = std::move(newNameString);
+                                                updateLastUpdated(category, currentUser);
+                                            });
+
+    return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescription(const IdType& id,
@@ -313,23 +357,40 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
+                           auto& category = **it;
 
-                           if ( ! (status = authorization_->changeDiscussionCategoryDescription(*currentUser, **it, newDescription)))
+                           if ( ! (status = authorization_->changeDiscussionCategoryDescription(*currentUser, category, newDescription)))
                            {
                                return;
                            }
 
-                           collection.modifyDiscussionCategory(it, [&newDescription](DiscussionCategory& category)
-                                                                   {
-                                                                       category.description() = toString(newDescription);
-                                                                   });
+                           if ( ! (status = changeDiscussionCategoryDescription(collection, id, newDescription))) return;
 
                            writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser),
-                                                                    **it, DiscussionCategory::ChangeType::Description);
+                                                                    category, DiscussionCategory::ChangeType::Description);
                        });
     return status;
 }
 
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescription(EntityCollection& collection,
+                                                                                   IdTypeRef id, StringView newDescription)
+{
+    auto& indexById = collection.categories().get<EntityCollection::DiscussionCategoryCollectionById>();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto currentUser = getCurrentUser(collection);
+
+    collection.modifyDiscussionCategory(it, [&newDescription, &currentUser](DiscussionCategory& category)
+                                        {
+                                            category.description() = toString(newDescription);
+                                            updateLastUpdated(category, currentUser);
+                                        });
+    return StatusCode::OK;
+}
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(const IdType& id, const IdType& newParentId, 
                                                                               OutStream& output)
 {
@@ -352,7 +413,6 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(co
                                return;
                            }
                  
-                           auto& threadRef = *it;
                            auto& thread = **it;
                            auto newParentIt = indexById.find(newParentId);
                            DiscussionCategoryRef newParentRef; //might be empty
@@ -360,62 +420,85 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(co
                            if (newParentIt != indexById.end())
                            {
                                newParentRef = *newParentIt;
-                               //check that the new parent is not a child of the current category
-                               if (newParentRef->hasAncestor(threadRef))
-                               {
-                                   status = StatusCode::CIRCULAR_REFERENCE_NOT_ALLOWED;
-                                   return;
-                               }
                            }
-
-                           IdType currentParentId;
-
-                           if (auto currentParent = thread.parentWeak().lock())
-                           {
-                               if (currentParent->id() == newParentId)
-                               {
-                                   status = StatusCode::NO_EFFECT;
-                                   return;
-                               }
-                               currentParentId = currentParent->id();
-                           }
-                           
+                                                      
                            if ( ! (status = authorization_->changeDiscussionCategoryParent(*currentUser, **it, newParentRef)))
                            {
                                return;
                            }
 
-                           if (currentParentId)
-                           {
-                               collection.modifyDiscussionCategoryById(currentParentId,
-                                   [&threadRef](DiscussionCategory& parent)
-                               {
-                                   //remove the current category from it's parent child list
-                                   parent.removeChild(threadRef);
-                               });
-                           }
-                           
-                           collection.modifyDiscussionCategory(it, [&newParentRef, &currentUser](DiscussionCategory& category)
-                                                                   {
-                                                                       category.parentWeak() = newParentRef;
-                                                                       updateLastUpdated(category, currentUser);
-                                                                   });
-                 
-                           //changing a parent requires updating totals
-                           //until there's a visible performance penalty, simply update all totals
-                           for (auto& category : collection.categories())
-                           {
-                               category->resetTotals();
-                           }
-                           for (auto& category : collection.categories())
-                           {
-                               category->recalculateTotals();
-                           }
+                           if ( ! (status = changeDiscussionCategoryParent(collection, id, newParentId))) return;
 
                            writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), thread,
                                                                     DiscussionCategory::ChangeType::Parent);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(EntityCollection& collection,
+                                                                              IdTypeRef id, IdTypeRef newParentId)
+{
+    auto& indexById = collection.categories().get<EntityCollection::DiscussionCategoryCollectionById>();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto& threadRef = *it;
+    auto& thread = **it;
+    auto newParentIt = indexById.find(newParentId);
+    DiscussionCategoryRef newParentRef; //might be empty
+
+    if (newParentIt != indexById.end())
+    {
+        newParentRef = *newParentIt;
+        //check that the new parent is not a child of the current category
+        if (newParentRef->hasAncestor(threadRef))
+        {
+            return StatusCode::CIRCULAR_REFERENCE_NOT_ALLOWED;
+        }
+    }
+
+    auto currentParentId = IdType::empty;
+
+    if (auto currentParent = thread.parentWeak().lock())
+    {
+        if (currentParent->id() == newParentId)
+        {
+            return StatusCode::NO_EFFECT;
+        }
+        currentParentId = currentParent->id();
+    }
+
+    if (currentParentId)
+    {
+        collection.modifyDiscussionCategoryById(currentParentId, [&threadRef](DiscussionCategory& parent)
+                                                                 {
+                                                                     //remove the current category from it's parent child list
+                                                                     parent.removeChild(threadRef);
+                                                                 });
+    }
+
+    auto currentUser = getCurrentUser(collection);
+    collection.modifyDiscussionCategory(it, [&newParentRef, &currentUser](DiscussionCategory& category)
+                                            {
+                                                category.parentWeak() = newParentRef;
+                                                updateLastUpdated(category, currentUser);
+                                            });
+                 
+    //changing a parent requires updating totals
+    //until there's a visible performance penalty, simply update all totals
+    for (auto& category : collection.categories())
+    {
+        category->resetTotals();
+    }
+    for (auto& category : collection.categories())
+    {
+        category->recalculateTotals();
+    }
+
+    return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOrder(const IdType& id, 
@@ -451,17 +534,34 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
                                return;
                            }
 
-                           collection.modifyDiscussionCategory(it, 
-                                                               [&newDisplayOrder, &currentUser](DiscussionCategory& category)
-                                                               {
-                                                                   category.displayOrder() = newDisplayOrder;
-                                                                   updateLastUpdated(category, currentUser);
-                                                               });
+                           if ( ! (status = changeDiscussionCategoryDisplayOrder(collection, id, newDisplayOrder))) return;
 
                            writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), **it,
                                                                     DiscussionCategory::ChangeType::DisplayOrder);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOrder(EntityCollection& collection,
+                                                                                    IdTypeRef id, 
+                                                                                    int_fast16_t newDisplayOrder)
+{
+    auto& indexById = collection.categories().get<EntityCollection::DiscussionCategoryCollectionById>();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto currentUser = getCurrentUser(collection);
+
+    collection.modifyDiscussionCategory(it, 
+                                        [&newDisplayOrder, &currentUser](DiscussionCategory& category)
+                                        {
+                                            category.displayOrder() = newDisplayOrder;
+                                            updateLastUpdated(category, currentUser);
+                                        });
+    return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(const IdType& id, OutStream& output)
@@ -494,9 +594,23 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(const Id
                            //make sure the category is not deleted before being passed to the observers
                            writeEvents().onDeleteDiscussionCategory(createObserverContext(*currentUser), **it);
 
-                           collection.deleteDiscussionCategory(it);
+                           status = deleteDiscussionCategory(collection, id);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(EntityCollection& collection, IdTypeRef id)
+{
+    auto& indexById = collection.categories().get<EntityCollection::DiscussionCategoryCollectionById>();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    collection.deleteDiscussionCategory(it);
+
+    return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(const IdType& tagId, const IdType& categoryId,
@@ -530,9 +644,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(const 
                                return;
                            }
                            
-                           auto& tagRef = *tagIt;
                            auto& tag = **tagIt;
-                           auto& categoryRef = *categoryIt;
                            auto& category = **categoryIt;
                            
                            if ( ! (status = authorization_->addDiscussionTagToCategory(*currentUser, tag, category)))
@@ -540,25 +652,52 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(const 
                                return;
                            }
 
-                           //the number of categories associated to a tag is smaller than 
-                           //the number of tags associated to a category, so search the category in the tag
-                           if ( ! tag.addCategory(categoryRef))
-                           {
-                               //actually already added, but return ok
-                               status = StatusCode::OK;
-                               return;
-                           }
-                                  
-                           collection.modifyDiscussionCategory(categoryIt, [&tagRef, &currentUser](auto& category)
-                                                                           {
-                                                                               category.addTag(tagRef);
-                                                                               updateLastUpdated(category, currentUser);
-                                                                           });
+                           if ( ! (status = addDiscussionTagToCategory(collection, tagId, categoryId))) return;
 
                            writeEvents().onAddDiscussionTagToCategory(createObserverContext(*currentUser), 
                                                                       tag, category);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(EntityCollection& collection,
+                                                                          IdTypeRef tagId, IdTypeRef categoryId)
+{
+    auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto tagIt = tagIndexById.find(tagId);
+    if (tagIt == tagIndexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto& categoryIndexById = collection.categories().get<EntityCollection::DiscussionCategoryCollectionById>();
+    auto categoryIt = categoryIndexById.find(categoryId);
+    if (categoryIt == categoryIndexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto& tagRef = *tagIt;
+    auto& tag = **tagIt;
+    auto& categoryRef = *categoryIt;
+    auto& category = **categoryIt;
+
+    //the number of categories associated to a tag is smaller than 
+    //the number of tags associated to a category, so search the category in the tag
+    if ( ! tag.addCategory(categoryRef))
+    {
+        //actually already added, but return ok
+        return StatusCode::OK;
+    }
+
+    auto currentUser = getCurrentUser(collection);
+
+    collection.modifyDiscussionCategory(categoryIt, [&tagRef, &currentUser](auto& category)
+                                                    {
+                                                        category.addTag(tagRef);
+                                                        updateLastUpdated(category, currentUser);
+                                                    });
+    return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(const IdType& tagId, 
@@ -593,9 +732,7 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(c
                                return;
                            }
                  
-                           auto& tagRef = *tagIt;
                            auto& tag = **tagIt;
-                           auto& categoryRef = *categoryIt;
                            auto& category = **categoryIt;
                            
                            if ( ! (status = authorization_->removeDiscussionTagFromCategory(*currentUser, tag, category)))
@@ -603,21 +740,49 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(c
                                return;
                            }
 
-                           //the number of categories associated to a tag is smaller than 
-                           //the number of tags associated to a category, so search the category in the tag
-                           if ( ! tag.removeCategory(categoryRef))
-                           {
-                               status = StatusCode::NO_EFFECT;
-                               return;
-                           }
-                                 
-                           collection.modifyDiscussionCategory(categoryIt, [&tagRef, &currentUser](auto& category)
-                                                                           {
-                                                                               category.removeTag(tagRef);
-                                                                               updateLastUpdated(category, currentUser);
-                                                                           });
+                           if ( ! (status = removeDiscussionTagFromCategory(collection, tagId, categoryId))) return;
+
                            writeEvents().onRemoveDiscussionTagFromCategory(createObserverContext(*currentUser), 
                                                                            tag, category);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(EntityCollection& collection,
+                                                                               IdTypeRef tagId, IdTypeRef categoryId)
+{
+    auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto tagIt = tagIndexById.find(tagId);
+    if (tagIt == tagIndexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto& categoryIndexById = collection.categories().get<EntityCollection::DiscussionCategoryCollectionById>();
+    auto categoryIt = categoryIndexById.find(categoryId);
+    if (categoryIt == categoryIndexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto& tagRef = *tagIt;
+    auto& tag = **tagIt;
+    auto& categoryRef = *categoryIt;
+    auto& category = **categoryIt;
+
+    //the number of categories associated to a tag is smaller than 
+    //the number of tags associated to a category, so search the category in the tag
+    if ( ! tag.removeCategory(categoryRef))
+    {
+        return StatusCode::NO_EFFECT;
+    }
+
+    auto currentUser = getCurrentUser(collection);
+    
+    collection.modifyDiscussionCategory(categoryIt, [&tagRef, &currentUser](auto& category)
+                                                    {
+                                                        category.removeTag(tagRef);
+                                                        updateLastUpdated(category, currentUser);
+                                                    });
+    return StatusCode::OK;
 }
