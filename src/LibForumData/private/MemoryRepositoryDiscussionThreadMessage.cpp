@@ -917,7 +917,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(co
                                return;
                            }
 
-                           if ( ! (status = setMessageCommentToSolved(collection, id)));
+                           if ( ! (status = setMessageCommentToSolved(collection, id))) return;
 
                            writeEvents().onSolveDiscussionThreadMessageComment(createObserverContext(*currentUser),
                                                                                comment);
