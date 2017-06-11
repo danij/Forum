@@ -537,8 +537,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
                            }
 
                            if ( ! (status = changeDiscussionThreadPinDisplayOrder(collection, id, newValue))) return;
-
-                           
+                                                      
                            writeEvents().onChangeDiscussionThread(createObserverContext(*currentUser), **it,
                                                                   DiscussionThread::ChangeType::PinDisplayOrder);
                        });
@@ -596,7 +595,7 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(const IdType
                            //make sure the thread is not deleted before being passed to the observers
                            writeEvents().onDeleteDiscussionThread(createObserverContext(*currentUser), **it);
 
-                           deleteDiscussionThread(collection, id);
+                           status = deleteDiscussionThread(collection, id);
                        });
     return status;
 }
@@ -659,7 +658,7 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                            //make sure the thread is not deleted before being passed to the observers
                            writeEvents().onMergeDiscussionThreads(createObserverContext(*currentUser), 
                                                                   threadFrom, threadInto);
-                           mergeDiscussionThreads(collection, fromId, intoId);
+                           status = mergeDiscussionThreads(collection, fromId, intoId);
                        });                          
     return status;
 }
