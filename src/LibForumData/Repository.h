@@ -261,6 +261,28 @@ namespace Forum
         };
         typedef std::shared_ptr<IDiscussionTagRepository> DiscussionTagRepositoryRef;
 
+        class IDiscussionTagDirectWriteRepository
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IDiscussionTagDirectWriteRepository)
+
+            virtual StatusWithResource<Entities::DiscussionTagRef> 
+                addNewDiscussionTag(Entities::EntityCollection& collection, StringView name) = 0;
+            virtual StatusCode changeDiscussionTagName(Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                                                       StringView newName) = 0;
+            virtual StatusCode changeDiscussionTagUiBlob(Entities::EntityCollection& collection, 
+                                                         Entities::IdTypeRef id, StringView blob) = 0;
+            virtual StatusCode deleteDiscussionTag(Entities::EntityCollection& collection, 
+                                                   Entities::IdTypeRef id) = 0;
+            virtual StatusCode addDiscussionTagToThread(Entities::EntityCollection& collection, 
+                                                        Entities::IdTypeRef tagId, Entities::IdTypeRef threadId) = 0;
+            virtual StatusCode removeDiscussionTagFromThread(Entities::EntityCollection& collection, 
+                                                             Entities::IdTypeRef tagId, Entities::IdTypeRef threadId) = 0;
+            virtual StatusCode mergeDiscussionTags(Entities::EntityCollection& collection, Entities::IdTypeRef fromId, 
+                                                   Entities::IdTypeRef intoId) = 0;
+        };
+        typedef std::shared_ptr<IDiscussionTagDirectWriteRepository> DiscussionTagDirectWriteRepositoryRef;
+
 
         class IDiscussionCategoryRepository
         {

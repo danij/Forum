@@ -99,28 +99,15 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
-                           
-                           StringWithSortKey nameString(name);
-
-                           auto& indexByName = collection.tags().get<EntityCollection::DiscussionTagCollectionByName>();
-                           if (indexByName.find(nameString) != indexByName.end())
-                           {
-                               status = StatusCode::ALREADY_EXISTS;
-                               return;
-                           }
-                 
+                                           
                            if ( ! (status = authorization_->addNewDiscussionTag(*currentUser, name)))
                            {
                                return;
                            }
 
-                           auto tag = std::make_shared<DiscussionTag>(collection);
-                           tag->notifyChange() = collection.notifyTagChange();
-                           tag->id() = generateUUIDString();
-                           tag->name() = std::move(nameString);
-                           updateCreated(*tag);
-                 
-                           collection.tags().insert(tag);
+                           auto statusWithResource = addNewDiscussionTag(collection, name);
+                           auto& tag = statusWithResource.resource;
+                           if ( ! (status = statusWithResource.status)) return;
 
                            writeEvents().onAddNewDiscussionTag(createObserverContext(*currentUser), *tag);
                  
@@ -131,6 +118,28 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
                                            });
                        });
     return status;
+}
+
+StatusWithResource<DiscussionTagRef> MemoryRepositoryDiscussionTag::addNewDiscussionTag(EntityCollection& collection, 
+                                                                                        StringView name)
+{
+    StringWithSortKey nameString(name);
+
+    auto& indexByName = collection.tags().get<EntityCollection::DiscussionTagCollectionByName>();
+    if (indexByName.find(nameString) != indexByName.end())
+    {
+        return StatusCode::ALREADY_EXISTS;
+    }
+
+    auto tag = std::make_shared<DiscussionTag>(collection);
+    tag->notifyChange() = collection.notifyTagChange();
+    tag->id() = generateUUIDString();
+    tag->name() = std::move(nameString);
+    updateCreated(*tag);
+                 
+    collection.tags().insert(tag);
+
+    return tag;
 }
 
 StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& id, StringView newName,
@@ -179,15 +188,34 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
                                return;
                            }
 
-                           collection.modifyDiscussionTag(it, [&newNameString, &currentUser](DiscussionTag& tag)
-                                                              {
-                                                                  tag.name() = std::move(newNameString);
-                                                                  updateLastUpdated(tag, currentUser);
-                                                              });
+                           if ( ! (status = changeDiscussionTagName(collection, id, newName))) return;
+                            
                            writeEvents().onChangeDiscussionTag(createObserverContext(*currentUser), **it,
                                                                DiscussionTag::ChangeType::Name);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(EntityCollection& collection, IdTypeRef id,
+                                                                  StringView newName)
+{
+    auto currentUser = getCurrentUser(collection);
+
+    auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    StringWithSortKey newNameString(newName);
+
+    collection.modifyDiscussionTag(it, [&newNameString, &currentUser](DiscussionTag& tag)
+                                        {
+                                            tag.name() = std::move(newNameString);
+                                            updateLastUpdated(tag, currentUser);
+                                        });
+    return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType& id, StringView blob,
@@ -221,14 +249,30 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
                                return;
                            }
 
-                           collection.modifyDiscussionTag(it, [&blob](DiscussionTag& tag)
-                                                              {
-                                                                  tag.uiBlob() = toString(blob);
-                                                              });
+                           if ( ! (status = changeDiscussionTagUiBlob(collection, id, blob))) return;
+
                            writeEvents().onChangeDiscussionTag(createObserverContext(*currentUser),
                                                                **it, DiscussionTag::ChangeType::UIBlob);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(EntityCollection& collection, IdTypeRef id, StringView blob)
+{
+    auto currentUser = getCurrentUser(collection);
+
+    auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    collection.modifyDiscussionTag(it, [&blob](DiscussionTag& tag)
+                                       {
+                                           tag.uiBlob() = toString(blob);
+                                       });
+    return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, OutStream& output)
@@ -261,9 +305,22 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, 
                            //make sure the tag is not deleted before being passed to the observers
                            writeEvents().onDeleteDiscussionTag(createObserverContext(*currentUser), **it);
 
-                           collection.deleteDiscussionTag(it);
+                           status = deleteDiscussionTag(collection, id);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(EntityCollection& collection, IdTypeRef id)
+{
+    auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    collection.deleteDiscussionTag(it);
+    return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType& tagId, const IdType& threadId, 
@@ -297,9 +354,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
                                return;
                            }
                  
-                           auto& tagRef = *tagIt;
                            auto& tag = **tagIt;
-                           auto& threadRef = *threadIt;
                            auto& thread = **threadIt;
                  
                            if ( ! (status = authorization_->addDiscussionTagToThread(*currentUser, tag, thread)))
@@ -307,21 +362,49 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
                                return;
                            }
 
-                           //the number of tags associated to a thread is much smaller than 
-                           //the number of threads associated to a tag, so search the tag in the thread
-                           if ( ! thread.addTag(tagRef))
-                           {
-                               //actually already added, but return ok
-                               status = StatusCode::OK;
-                               return;
-                           }
-                 
-                           tag.insertDiscussionThread(threadRef);
-                           updateLastUpdated(thread, currentUser);
+                           if ( ! (status = addDiscussionTagToThread(collection, tagId, threadId))) return;
 
                            writeEvents().onAddDiscussionTagToThread(createObserverContext(*currentUser), tag, thread);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollection& collection, IdTypeRef tagId, 
+                                                                   IdTypeRef threadId)
+{
+    auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto tagIt = tagIndexById.find(tagId);
+    if (tagIt == tagIndexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto& threadIndexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+    auto threadIt = threadIndexById.find(threadId);
+    if (threadIt == threadIndexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto& tagRef = *tagIt;
+    auto& tag = **tagIt;
+    auto& threadRef = *threadIt;
+    auto& thread = **threadIt;
+
+    auto currentUser = getCurrentUser(collection);
+
+    //the number of tags associated to a thread is much smaller than 
+    //the number of threads associated to a tag, so search the tag in the thread
+    if ( ! thread.addTag(tagRef))
+    {
+        //actually already added, but return ok
+        return StatusCode::OK;
+    }
+                 
+    tag.insertDiscussionThread(threadRef);
+    updateLastUpdated(thread, currentUser);
+
+    return StatusCode::OK;    
 }
 
 StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const IdType& tagId, const IdType& threadId, 
@@ -355,28 +438,55 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const Id
                                return;
                            }
                  
-                           auto& tagRef = *tagIt;
                            auto& tag = **tagIt;
                            auto& thread = **threadIt;
                  
                            if ( ! (status = authorization_->removeDiscussionTagFromThread(*currentUser, tag, thread)))
                            {
                                return;
-                           }
-                           
-                           if ( ! thread.removeTag(tagRef))
-                           {
-                               //tag was not added to the thread
-                               status = StatusCode::NO_EFFECT;
-                               return;
-                           }
-                 
-                           tag.deleteDiscussionThreadById(threadId);
-                           updateLastUpdated(thread, currentUser);
+                           }                           
+
+                           if ( ! (status = removeDiscussionTagFromThread(collection, tagId, threadId))) return;
 
                            writeEvents().onRemoveDiscussionTagFromThread(createObserverContext(*currentUser), tag, thread);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCollection& collection,
+                                                                        IdTypeRef tagId, IdTypeRef threadId)
+{
+
+    auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto tagIt = tagIndexById.find(tagId);
+    if (tagIt == tagIndexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto& threadIndexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+    auto threadIt = threadIndexById.find(threadId);
+    if (threadIt == threadIndexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto& tagRef = *tagIt;
+    auto& tag = **tagIt;
+    auto& thread = **threadIt;
+
+    auto currentUser = getCurrentUser(collection);
+    
+    if ( ! thread.removeTag(tagRef))
+    {
+        //tag was not added to the thread
+        return StatusCode::NO_EFFECT;
+    }
+                 
+    tag.deleteDiscussionThreadById(threadId);
+    updateLastUpdated(thread, currentUser);
+
+    return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& fromId, const IdType& intoId, 
@@ -413,7 +523,6 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& from
                            }
                    
                            auto& tagFrom = **itFrom;
-                           auto& tagIntoRef = *itInto;
                            auto& tagInto = **itInto;
                    
                            if ( ! (status = authorization_->mergeDiscussionTags(*currentUser, tagFrom, tagInto)))
@@ -424,24 +533,50 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& from
                            //make sure the tag is not deleted before being passed to the observers
                            writeEvents().onMergeDiscussionTags(createObserverContext(*currentUser), tagFrom, tagInto);
                            
-                           for (auto& thread : tagFrom.threads())
-                           {
-                               thread->addTag(tagIntoRef);
-                               updateLastUpdated(*thread, currentUser);
-                               tagInto.insertDiscussionThread(thread);
-                           }
-                           for (auto& categoryWeak : tagFrom.categoriesWeak())
-                           {
-                               if (auto category = categoryWeak.lock())
-                               {
-                                   category->addTag(tagIntoRef);
-                                   updateLastUpdated(*category, currentUser);
-                               }
-                           }
-                   
-                           updateLastUpdated(tagInto, currentUser);
-                   
-                           collection.deleteDiscussionTag(itFrom);
+                           status = mergeDiscussionTags(collection, fromId, intoId);
                        });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& collection, IdTypeRef fromId,
+                                                              IdTypeRef intoId)
+{
+    auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto itFrom = indexById.find(fromId);
+    if (itFrom == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+    auto itInto = indexById.find(intoId);
+    if (itInto == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+
+    auto& tagFrom = **itFrom;
+    auto& tagIntoRef = *itInto;
+    auto& tagInto = **itInto;
+    
+    auto currentUser = getCurrentUser(collection);
+
+    for (auto& thread : tagFrom.threads())
+    {
+        thread->addTag(tagIntoRef);
+        updateLastUpdated(*thread, currentUser);
+        tagInto.insertDiscussionThread(thread);
+    }
+    for (auto& categoryWeak : tagFrom.categoriesWeak())
+    {
+        if (auto category = categoryWeak.lock())
+        {
+            category->addTag(tagIntoRef);
+            updateLastUpdated(*category, currentUser);
+        }
+    }
+
+    updateLastUpdated(tagInto, currentUser);
+
+    collection.deleteDiscussionTag(itFrom);
+
+    return StatusCode::OK;
 }
