@@ -680,7 +680,6 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
     auto& tagRef = *tagIt;
     auto& tag = **tagIt;
     auto& categoryRef = *categoryIt;
-    auto& category = **categoryIt;
 
     //the number of categories associated to a tag is smaller than
     //the number of tags associated to a category, so search the category in the tag
@@ -768,7 +767,6 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
     auto& tagRef = *tagIt;
     auto& tag = **tagIt;
     auto& categoryRef = *categoryIt;
-    auto& category = **categoryIt;
 
     //the number of categories associated to a tag is smaller than
     //the number of tags associated to a category, so search the category in the tag
