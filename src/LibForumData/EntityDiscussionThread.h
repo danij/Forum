@@ -2,68 +2,68 @@
 
 #include "AuthorizationPrivileges.h"
 #include "EntityCommonTypes.h"
-#include "EntityDiscussionThreadMessageCollectionBase.h"
+#include "EntityDiscussionThreadMessageCollection.h"
+#include "StringHelpers.h"
 
 #include <atomic>
 #include <string>
-#include <memory>
 #include <set>
+
+#include <boost/noncopyable.hpp>
 
 namespace Forum
 {
     namespace Entities
     {
-        struct User;
-        struct DiscussionTag;
-        struct DiscussionCategory;
+        class User;
+        class DiscussionTag;
+        class DiscussionCategory;
 
         /**
         * Stores a discussion thread that contains messages
         * Repositories are responsible for updating the relationships between this message and other entities
         */
-        struct DiscussionThread final : public Identifiable,
-                                        public CreatedMixin,
-                                        public LastUpdatedMixinWithBy<User>,
-                                        public DiscussionThreadMessageCollectionBase<OrderedIndexForId>,
-                                        public IndicateDeletionInProgress,
-                                        public Authorization::DiscussionThreadPrivilegeStore,
-                                        public std::enable_shared_from_this<DiscussionThread>
+        class DiscussionThread final : public Authorization::DiscussionThreadPrivilegeStore,
+                                       private boost::noncopyable
         {
-            const auto&        name()                      const { return name_; }
-                  auto&        name()                            { return name_; }
-            const auto&        createdBy()                 const { return createdBy_; }
-                  auto&        createdBy()                       { return createdBy_; }
-                  auto         latestVisibleChange()       const { return latestVisibleChange_; }
-                  auto&        latestVisibleChange()             { return latestVisibleChange_; }
+        public:
+            const auto& id()                        const { return id_; }
 
-                  auto         tags()                      const { return Helpers::toConst(tags_); }
-                  auto&        tagsWeak()                        { return tags_; }
+                   auto created()                   const { return created_; }
+            const auto& creationDetails()           const { return creationDetails_; }
 
-                  auto         categories()                const { return Helpers::toConst(categories_); }
-                  auto&        categoriesWeak()                  { return categories_; }
+            const auto& createdBy()                 const { return createdBy_; }
 
-                  auto         nrOfVisitorsSinceLastEdit() const { return visitorsSinceLastEdit_.size(); }
+            const auto& name()                      const { return name_; }
+            const auto& messages()                  const { return messages_; }
+                   auto messageCount()              const { return messages_.count(); }
 
-                  auto&        subscribedUsers()                 { return subscribedUsers_; }
-                  auto         subscribedUsersCount()      const { return subscribedUsers_.size(); }
+                   auto lastUpdated()               const { return lastUpdated_; }
+            const auto& lastUpdatedDetails()        const { return lastUpdatedDetails_; }
+             StringView lastUpdatedReason()         const { return lastUpdatedReason_; }
 
-                  Timestamp    latestMessageCreated()      const { return latestMessageCreated_; }
+            const auto& lastUpdatedBy()             const { return lastUpdatedBy_; }
+            
+                   auto latestVisibleChange()       const { return latestVisibleChange_; }
+                   auto latestMessageCreated()      const { return latestMessageCreated_; }
+                   auto nrOfVisitorsSinceLastEdit() const { return visitorsSinceLastEdit_.size(); }
+                   
+                   auto tags()                      const { return Helpers::toConst(tags_); }
+                   auto categories()                const { return Helpers::toConst(categories_); }
 
-                  auto         pinDisplayOrder()           const { return pinDisplayOrder_; }
-                  auto&        pinDisplayOrder()                 { return pinDisplayOrder_; }
+                   auto subscribedUsers()           const { return Helpers::toConst(subscribedUsers_); }
+                   auto subscribedUsersCount()      const { return subscribedUsers_.size(); }
+                   
+                   auto pinDisplayOrder()           const { return pinDisplayOrder_; }
 
             DiscussionThreadMessage::VoteScoreType voteScore() const;
 
-            Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(Authorization::DiscussionThreadMessagePrivilege privilege) const override;
-            Authorization::PrivilegeValueType getDiscussionThreadPrivilege(Authorization::DiscussionThreadPrivilege privilege) const override;
-            Authorization::PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege) const override;
-
-            /**
-             * Thread-safe reference to the number of times the thread was visited.
-             * Can be updated even for const values as it is not refenced in any index.
-             * @return An atomic integer of at least 64-bits
-             */
-            std::atomic_int_fast64_t& visited() const { return visited_; }
+            Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(
+                    Authorization::DiscussionThreadMessagePrivilege privilege) const override;
+            Authorization::PrivilegeValueType getDiscussionThreadPrivilege(
+                    Authorization::DiscussionThreadPrivilege privilege) const override;
+            Authorization::PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(
+                    Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege) const override;
 
             enum ChangeType : uint32_t
             {
@@ -72,45 +72,108 @@ namespace Forum
                 PinDisplayOrder
             };
 
-            explicit DiscussionThread(User& createdBy)
-                    : createdBy_(createdBy), latestVisibleChange_(0), latestMessageCreated_(0), pinDisplayOrder_(0),
-                      visited_(0) {};
+            struct ChangeNotification
+            {
+                std::function<void(const DiscussionThread&)> onUpdateName;
+                std::function<void(const DiscussionThread&)> onUpdateLastUpdated;
+                std::function<void(const DiscussionThread&)> onUpdateLatestMessageCreated;
+                std::function<void(const DiscussionThread&)> onUpdateMessageCount;
+                std::function<void(const DiscussionThread&)> onUpdatePinDisplayOrder;
+            };
 
-            void insertMessage(DiscussionThreadMessageRef message) override;
-            void modifyDiscussionThreadMessage(MessageIdIteratorType iterator,
-                                               std::function<void(DiscussionThreadMessage&)>&& modifyFunction) override;
-            DiscussionThreadMessageRef deleteDiscussionThreadMessage(MessageIdIteratorType iterator) override;
+            static auto& changeNotifications() { return changeNotifications_; }
+
+            DiscussionThread(IdType id, User& createdBy, Timestamp created, VisitDetails creationDetails)
+                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
+                  createdBy_(createdBy)
+            {
+                messages_.onCountChange() = [this]()
+                {
+                    changeNotifications_.onUpdateMessageCount(*this);
+                };
+            }
+
+            void updateName(Helpers::StringWithSortKey&& name)
+            {
+                name_ = std::move(name);
+                changeNotifications_.onUpdateName(*this);
+            }
+
+            void updateLastUpdated(Timestamp value)
+            {
+                lastUpdated_ = value;
+                changeNotifications_.onUpdateLastUpdated(*this);
+            }
+
+            auto& lastUpdatedDetails()  { return lastUpdatedDetails_; }
+            auto& lastUpdatedReason()   { return lastUpdatedReason_; }
+            auto& latestVisibleChange() { return latestVisibleChange_; }
+
+            /**
+            * Thread-safe reference to the number of times the thread was visited.
+            * Can be updated even for const values as it is not refenced in any index.
+            * @return An atomic integer of at least 64-bits
+            */
+            auto& visited()   const { return visited_; }
+
+            auto& subscribedUsers() { return subscribedUsers_; }
+
+            void updatePinDisplayOrder(uint16_t value)
+            {
+                pinDisplayOrder_ = value;
+                changeNotifications_.onUpdatePinDisplayOrder(*this);
+            }
+
+            void insertMessage(DiscussionThreadMessagePtr message);
+            void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message);
 
             void addVisitorSinceLastEdit(const IdType& userId);
             bool hasVisitedSinceLastEdit(const IdType& userId) const;
             void resetVisitorsSinceLastEdit();
 
-            bool addTag(std::weak_ptr<DiscussionTag> tag);
-            bool removeTag(const std::weak_ptr<DiscussionTag>& tag);
+            bool addTag(EntityPointer<DiscussionTag> tag);
+            bool removeTag(EntityPointer<DiscussionTag> tag);
 
-            bool addCategory(std::weak_ptr<DiscussionCategory> category);
-            bool removeCategory(const std::weak_ptr<DiscussionCategory>& category);
+            bool addCategory(EntityPointer<DiscussionCategory> category);
+            bool removeCategory(EntityPointer<DiscussionCategory> category);
 
         private:
             void refreshLatestMessageCreated();
 
-            Helpers::StringWithSortKey name_;
+            static ChangeNotification changeNotifications_;
+
+            IdType id_;
+            Timestamp created_ = 0;
+            VisitDetails creationDetails_;
+
             User& createdBy_;
+
+            Helpers::StringWithSortKey name_;
+            DiscussionThreadMessageCollection messages_;
+
+            Timestamp lastUpdated_ = 0;
+            VisitDetails lastUpdatedDetails_;
+            std::string lastUpdatedReason_;
+            boost::optional<EntityPointer<User>> lastUpdatedBy_;
+
             //store the timestamp of the latest visibile change in order to be able to
             //detect when to return a status that nothing has changed since a provided timestamp
             //Note: do not use as index in collection, the indexes would not always be updated
-            Timestamp latestVisibleChange_;
+            Timestamp latestVisibleChange_ = 0;
+
             //store the timestamp of the latest message in the collection that was created
             //as it's expensive to retrieve it every time
-            Timestamp latestMessageCreated_;
-            uint16_t pinDisplayOrder_;
-            mutable std::atomic_int_fast64_t visited_;
+            Timestamp latestMessageCreated_ = 0;
+
+            uint16_t pinDisplayOrder_ = 0;
+            mutable std::atomic_int_fast64_t visited_ = 0;
             std::set<boost::uuids::uuid> visitorsSinceLastEdit_;
-            std::set<std::weak_ptr<DiscussionTag>, std::owner_less<std::weak_ptr<DiscussionTag>>> tags_;
-            std::set<std::weak_ptr<DiscussionCategory>, std::owner_less<std::weak_ptr<DiscussionCategory>>> categories_;
-            std::set<std::weak_ptr<User>, std::owner_less<std::weak_ptr<User>>> subscribedUsers_;
+
+            std::set<EntityPointer<DiscussionTag>> tags_;
+            std::set<EntityPointer<DiscussionCategory>> categories_;
+            std::set<EntityPointer<User>> subscribedUsers_;
         };
 
-        typedef std::shared_ptr<DiscussionThread> DiscussionThreadRef;
+        typedef EntityPointer<DiscussionThread> DiscussionThreadPtr;
     }
 }

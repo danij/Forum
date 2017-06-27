@@ -1,68 +1,61 @@
 #pragma once
 
 #include "EntityCommonTypes.h"
+#include "StringHelpers.h"
+
+#include <string>
 
 #include <boost/noncopyable.hpp>
 
-#include <memory>
-#include <string>
-#include "StringHelpers.h"
 
 namespace Forum
 {
     namespace Entities
     {
-        struct User;
-        struct DiscussionThreadMessage;
+        class User;
+        class DiscussionThreadMessage;
 
         /**
          * Stores a comment to a discussion thread message
          * Does not get deleted if the message is deleted
          */
-        struct MessageComment final : public Identifiable,
-                                      public CreatedMixin,
-                                      private boost::noncopyable
+        class MessageComment final : private boost::noncopyable
         {
-                  StringView                        content()       const { return content_; }
-                  Helpers::ImmutableString&         content()             { return content_; }
-            const User&                             createdBy()     const { return createdBy_; }
-                  User&                             createdBy()           { return createdBy_; }
-                  bool                              solved()        const { return solved_; }
-                  bool&                             solved()              { return solved_; }
+        public:
+            const auto& id()              const { return id_; }
+            
+                   auto created()         const { return created_; }
+            const auto& creationDetails() const { return creationDetails_; }
 
-            std::weak_ptr<DiscussionThreadMessage>& parentMessage()       { return parentMessage_; }
+            const User& createdBy()       const { return createdBy_; }
+            const auto& parentMessage()   const { return message_; }
 
-            template<typename TAction>
-            void executeActionWithParentMessageIfAvailable(TAction&& action) const
-            {
-                auto parentMessageShared = parentMessage_.lock();
-                if (parentMessageShared)
-                {
-                    action(const_cast<const DiscussionThreadMessage&>(*parentMessageShared));
-                }
-            }
+             StringView content()         const { return content_; }
+                   bool solved()          const { return solved_; }
 
-            template<typename TAction>
-            void executeActionWithParentMessageIfAvailable(TAction&& action)
-            {
-                auto parentMessageShared = parentMessage_.lock();
-                if (parentMessageShared)
-                {
-                    action(*parentMessageShared);
-                }
-            }
 
-            explicit MessageComment(User& createdBy) : createdBy_(createdBy), solved_(false)
+            MessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy, Timestamp created,
+                           VisitDetails creationDetails)
+                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)), 
+                  createdBy_(createdBy), message_(message)
             {}
 
-        private:
-            Helpers::ImmutableString content_;
-            User& createdBy_;
-            std::weak_ptr<DiscussionThreadMessage> parentMessage_;
-            bool solved_;
-        };
+            bool&                     solved()  { return solved_; }
+            Helpers::ImmutableString& content() { return content_; }
 
-        typedef std::shared_ptr<MessageComment> MessageCommentRef;
-        typedef std::  weak_ptr<MessageComment> MessageCommentWeakRef;
+        private:
+            IdType id_;
+            Timestamp created_ = 0;
+            VisitDetails creationDetails_;
+            
+            User& createdBy_;
+            DiscussionThreadMessage& message_;
+
+            Helpers::ImmutableString content_;
+
+            bool solved_ = false;
+        };
+        
+        typedef EntityPointer<MessageComment> MessageCommentPtr;
     }
 }

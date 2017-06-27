@@ -10,11 +10,13 @@ using namespace Forum;
 using namespace Forum::Entities;
 using namespace Forum::Authorization;
 
+DiscussionThread::ChangeNotification DiscussionThread::changeNotifications_;
+
 DiscussionThreadMessage::VoteScoreType DiscussionThread::voteScore() const
 {
-    if (messages_.size())
+    if (messages_.count())
     {
-        return (*messagesByCreated().begin())->voteScore();
+        return messages_.byCreated().begin()->voteScore();
     }
     return 0;
 }
@@ -22,12 +24,10 @@ DiscussionThreadMessage::VoteScoreType DiscussionThread::voteScore() const
 PrivilegeValueType DiscussionThread::getDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege) const
 {
     auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
-    for (auto& tagWeak : tags_)
+    for (auto tag : tags_)
     {
-        if (auto tagShared = tagWeak.lock())
-        {
-            result = minimumPrivilegeValue(result, tagShared->getDiscussionThreadMessagePrivilege(privilege));
-        }
+        assert(tag);
+        result = minimumPrivilegeValue(result, tag->getDiscussionThreadMessagePrivilege(privilege));
     }
     return result;
 }
@@ -35,12 +35,10 @@ PrivilegeValueType DiscussionThread::getDiscussionThreadMessagePrivilege(Discuss
 PrivilegeValueType DiscussionThread::getDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege) const
 {
     auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege);
-    for (auto& tagWeak : tags_)
+    for (auto tag : tags_)
     {
-        if (auto tagShared = tagWeak.lock())
-        {
-            result = minimumPrivilegeValue(result, tagShared->getDiscussionThreadPrivilege(privilege));
-        }
+        assert(tag);
+        result = minimumPrivilegeValue(result, tag->getDiscussionThreadPrivilege(privilege));
     }
     return result;
 }
@@ -50,44 +48,35 @@ PrivilegeDefaultDurationType DiscussionThread::getDiscussionThreadMessageDefault
     auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadMessageDefaultPrivilegeDuration(privilege);
     if (result) return result;
 
-    for (auto& tagWeak : tags_)
+    for (auto tag : tags_)
     {
-        if (auto tagShared = tagWeak.lock())
-        {
-            result = maximumPrivilegeDefaultDuration(result, tagShared->getDiscussionThreadMessageDefaultPrivilegeDuration(privilege));
-        }
+        assert(tag);
+        result = maximumPrivilegeDefaultDuration(result, tag->getDiscussionThreadMessageDefaultPrivilegeDuration(privilege));
     }
     return result;
 }
 
-void DiscussionThread::insertMessage(DiscussionThreadMessageRef message)
+void DiscussionThread::insertMessage(DiscussionThreadMessagePtr message)
 {
-    DiscussionThreadMessageCollectionBase<OrderedIndexForId>::insertMessage(message);
-    if (message)
-    {
-        latestMessageCreated_ = std::max(latestMessageCreated_, message->created());
-    }
+    if ( ! message) return;
+
+    messages_.add(message);
+    latestMessageCreated_ = std::max(latestMessageCreated_, message->created());
 }
 
-void DiscussionThread::modifyDiscussionThreadMessage(MessageIdIteratorType iterator,
-                                                     std::function<void(DiscussionThreadMessage&)>&& modifyFunction)
+void DiscussionThread::deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message)
 {
-    DiscussionThreadMessageCollectionBase<OrderedIndexForId>::modifyDiscussionThreadMessage(iterator, std::move(modifyFunction));
-    refreshLatestMessageCreated();
-}
+    if ( ! message) return;
 
-DiscussionThreadMessageRef DiscussionThread::deleteDiscussionThreadMessage(MessageIdIteratorType iterator)
-{
-    auto result = DiscussionThreadMessageCollectionBase<OrderedIndexForId>::deleteDiscussionThreadMessage(iterator);
+    messages_.remove(message);
     refreshLatestMessageCreated();
-    return result;
 }
 
 void DiscussionThread::refreshLatestMessageCreated()
 {
-    auto& index = messages_.template get<DiscussionThreadMessageCollectionByCreated>();
+    auto& index = messages_.byCreated();
     auto it = index.rbegin();
-    if (it == index.rend() || nullptr == *it)
+    if (it == index.rend() || (! *it))
     {
         latestMessageCreated_ = 0;
         return;
@@ -115,25 +104,25 @@ void DiscussionThread::resetVisitorsSinceLastEdit()
     visitorsSinceLastEdit_.clear();
 }
 
-bool DiscussionThread::addTag(std::weak_ptr<DiscussionTag> tag)
+bool DiscussionThread::addTag(EntityPointer<DiscussionTag> tag)
 {
     latestVisibleChange() = Context::getCurrentTime();
-    return std::get<1>(tags_.insert(std::move(tag)));
+    return std::get<1>(tags_.insert(tag));
 }
 
-bool DiscussionThread::removeTag(const std::weak_ptr<DiscussionTag>& tag)
+bool DiscussionThread::removeTag(EntityPointer<DiscussionTag> tag)
 {
     latestVisibleChange() = Context::getCurrentTime();
     return tags_.erase(tag) > 0;
 }
 
-bool DiscussionThread::addCategory(std::weak_ptr<DiscussionCategory> category)
+bool DiscussionThread::addCategory(EntityPointer<DiscussionCategory> category)
 {
     latestVisibleChange() = Context::getCurrentTime();
-    return std::get<1>(categories_.insert(std::move(category)));
+    return std::get<1>(categories_.insert(category));
 }
 
-bool DiscussionThread::removeCategory(const std::weak_ptr<DiscussionCategory>& category)
+bool DiscussionThread::removeCategory(EntityPointer<DiscussionCategory> category)
 {
     latestVisibleChange() = Context::getCurrentTime();
     return categories_.erase(category) > 0;

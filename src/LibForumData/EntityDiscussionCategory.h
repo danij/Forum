@@ -10,6 +10,8 @@
 #include <memory>
 #include <set>
 
+#include <boost/noncopyable.hpp>
+
 namespace Forum
 {
     namespace Entities
@@ -21,21 +23,46 @@ namespace Forum
         * The discussion category manages the message count and the total thread/message counts
         * when adding/removing threads and/or tags
         */
-        struct DiscussionCategory final : public Identifiable,
-                                          public CreatedMixin,
-                                          public LastUpdatedMixinWithBy<User>,
-                                          public DiscussionThreadCollectionBase<HashIndexForId>,
+        class DiscussionCategory final :  public DiscussionThreadCollectionBase<HashIndexForId>,
                                           public Authorization::DiscussionCategoryPrivilegeStore,
-                                          public std::enable_shared_from_this<DiscussionCategory>
+            private boost::noncopyable
         {
-            const auto&   name()              const { return name_; }
-            auto&         name()                    { return name_; }
+        public:
+            const auto& id() const { return id_; }
+
+            auto created() const { return created_; }
+
+            const auto& creationDetails() const { return creationDetails_; }
+            auto& creationDetails() { return creationDetails_; }
+
+            auto lastUpdated() const { return lastUpdated_; }
+            auto& lastUpdated() { return lastUpdated_; }
+
+            const auto& lastUpdatedDetails() const { return lastUpdatedDetails_; }
+            auto& lastUpdatedDetails() { return lastUpdatedDetails_; }
+
+            StringView lastUpdatedReason() const { return lastUpdatedReason_; }
+            auto& lastUpdatedReason() { return lastUpdatedReason_; }
+
+            const auto& lastUpdatedBy() const { return lastUpdatedBy_; }
+
+            const auto& name() const { return name_; }
+            void updateName(Helpers::StringWithSortKey&& name)
+            {
+                name_ = std::move(name);
+                changeNotifications_.onUpdateName(*this);
+            }
+
 
             StringView    description()       const { return description_; }
             std::string&  description()             { return description_; }
 
             int_fast16_t  displayOrder()      const { return displayOrder_; }
-            int_fast16_t& displayOrder()            { return displayOrder_; }
+            void updateDisplayOrder(int_fast16_t value)
+            {
+                displayOrder_ = std::max(static_cast<int_fast16_t>(0), value);
+                changeNotifications_.onUpdateDisplayOrder(*this);
+            }
 
             int_fast32_t  messageCount()      const { return messageCount_; }
 
@@ -70,8 +97,18 @@ namespace Forum
                 Parent
             };
 
-            explicit DiscussionCategory(Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
-                : notifyChangeFn_(&DiscussionCategory::emptyNotifyChange), forumWidePrivileges_(forumWidePrivileges) { }
+            struct ChangeNotification
+            {
+                std::function<void(const DiscussionCategory&)> onUpdateName;
+                std::function<void(const DiscussionCategory&)> onUpdateMessageCount;
+                std::function<void(const DiscussionCategory&)> onUpdateDisplayOrder;
+            };
+
+            static auto& changeNotifications() { return changeNotifications_; }
+            
+            DiscussionCategory(IdType id, Timestamp created, Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
+                : id_(std::move(id)), created_(created),
+            notifyChangeFn_(&DiscussionCategory::emptyNotifyChange), forumWidePrivileges_(forumWidePrivileges) { }
 
             bool addChild(std::shared_ptr<DiscussionCategory> category)
             {
@@ -142,6 +179,16 @@ namespace Forum
             auto& notifyChange() { return notifyChangeFn_; }
 
         private:
+            IdType id_;
+            Timestamp created_ = 0;
+            VisitDetails creationDetails_;
+
+            Timestamp lastUpdated_ = 0;
+            VisitDetails lastUpdatedDetails_;
+            std::string lastUpdatedReason_;
+
+            boost::optional<UserPtr> lastUpdatedBy_;
+
             Helpers::StringWithSortKey name_;
             std::string description_;
             int_fast16_t displayOrder_ = 0;
@@ -155,9 +202,10 @@ namespace Forum
             Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
 
             static void emptyNotifyChange(DiscussionCategory&) { }
+
+            static ChangeNotification changeNotifications_;
         };
 
-        typedef std::shared_ptr<DiscussionCategory> DiscussionCategoryRef;
-        typedef std::  weak_ptr<DiscussionCategory> DiscussionCategoryWeakRef;
+        typedef EntityPointer<DiscussionCategory> DiscussionCategoryPtr;
     }
 }

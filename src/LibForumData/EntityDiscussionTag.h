@@ -2,16 +2,19 @@
 
 #include "AuthorizationPrivileges.h"
 #include "EntityCommonTypes.h"
-#include "EntityDiscussionThreadCollectionBase.h"
+#include "EntityDiscussionThreadCollection.h"
 
 #include <string>
 #include <memory>
+
+#include <boost/noncopyable.hpp>
 
 namespace Forum
 {
     namespace Entities
     {
-        struct DiscussionCategory;
+        class User;
+        class DiscussionCategory;
 
         /**
         * Stores a discussion tag that groups threads of similar discussions
@@ -19,29 +22,38 @@ namespace Forum
         *
         * The tag manages the message count and also notifies any discussion categories when a thread is added or removed
         */
-        struct DiscussionTag final : public Identifiable,
-                                     public CreatedMixin,
-                                     public LastUpdatedMixinWithBy<User>,
-                                     public DiscussionThreadCollectionBase<HashIndexForId>,
-                                     public IndicateDeletionInProgress,
-                                     public Authorization::DiscussionTagPrivilegeStore
+        class DiscussionTag final : public Authorization::DiscussionTagPrivilegeStore,
+                                    private boost::noncopyable
         {
-            const auto&   name()           const { return name_; }
-            auto&         name()                 { return name_; }
+        public:
+            const auto& id()                 const { return id_; }
 
-            StringView    uiBlob()         const { return uiBlob_; }
-            std::string&  uiBlob()               { return uiBlob_; }
+                   auto created()            const { return created_; }
+            const auto& creationDetails()    const { return creationDetails_; }
 
-            int_fast32_t  messageCount()   const { return messageCount_; }
-            int_fast32_t& messageCount()         { return messageCount_; }
+             StringView uiBlob()             const { return uiBlob_; }
+            const auto& name()               const { return name_; }
 
-            auto          categories()     const { return Helpers::toConst(categories_); }
-            auto&         categoriesWeak()       { return categories_; }
+            const auto& threads()            const { return threads_; }
 
-            Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(Authorization::DiscussionThreadMessagePrivilege privilege) const override;
-            Authorization::PrivilegeValueType getDiscussionThreadPrivilege(Authorization::DiscussionThreadPrivilege privilege) const override;
-            Authorization::PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege) const override;
-            Authorization::PrivilegeValueType getDiscussionTagPrivilege(Authorization::DiscussionTagPrivilege privilege) const override;
+                   auto lastUpdated()        const { return lastUpdated_; }
+            const auto& lastUpdatedDetails() const { return lastUpdatedDetails_; }
+             StringView lastUpdatedReason()  const { return lastUpdatedReason_; }
+            const auto& lastUpdatedBy()      const { return lastUpdatedBy_; }
+            
+                   auto threadCount()        const { return threads_.count(); }
+                   auto messageCount()       const { return messageCount_; }
+
+                   auto categories()         const { return Helpers::toConst(categories_); }
+
+            Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(
+                    Authorization::DiscussionThreadMessagePrivilege privilege) const override;
+            Authorization::PrivilegeValueType getDiscussionThreadPrivilege(
+                    Authorization::DiscussionThreadPrivilege privilege) const override;
+            Authorization::PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(
+                    Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege) const override;
+            Authorization::PrivilegeValueType getDiscussionTagPrivilege(
+                    Authorization::DiscussionTagPrivilege privilege) const override;
 
             enum ChangeType : uint32_t
             {
@@ -49,38 +61,69 @@ namespace Forum
                 Name,
                 UIBlob
             };
-
-            explicit DiscussionTag(Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
-                : notifyChangeFn_(&DiscussionTag::emptyNotifyChange), forumWidePrivileges_(forumWidePrivileges) {  }
-
-            bool insertDiscussionThread(const DiscussionThreadRef& thread) override;
-            DiscussionThreadRef deleteDiscussionThread(DiscussionThreadCollection::iterator iterator) override;
-
-            bool addCategory(std::weak_ptr<DiscussionCategory> category)
+            
+            struct ChangeNotification
             {
-                return std::get<1>(categories_.insert(std::move(category)));
+                std::function<void(const DiscussionTag&)> onUpdateName;
+                std::function<void(const DiscussionTag&)> onUpdateThreadCount;
+                std::function<void(const DiscussionTag&)> onUpdateMessageCount;
+            };
+            
+            static auto& changeNotifications() { return changeNotifications_; }
+
+            DiscussionTag(IdType id, Timestamp created, VisitDetails creationDetails, 
+                          Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
+                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
+                  forumWidePrivileges_(forumWidePrivileges)
+            {}
+
+            void updateName(Helpers::StringWithSortKey&& name)
+            {
+                name_ = std::move(name);
+                changeNotifications_.onUpdateName(*this);
+            }
+            std::string& uiBlob() { return uiBlob_; }
+
+            auto& lastUpdated() { return lastUpdated_; }
+            auto& lastUpdatedDetails() { return lastUpdatedDetails_; }
+            auto& lastUpdatedReason() { return lastUpdatedReason_; }
+
+            auto& messageCount() { return messageCount_; }
+            void updateMessageCount(int_fast32_t value)
+            {
+                messageCount_ = value;
+                changeNotifications_.onUpdateMessageCount(*this);
             }
 
-            bool removeCategory(const std::weak_ptr<DiscussionCategory>& category)
-            {
-                return categories_.erase(category) > 0;
-            }
+            bool insertDiscussionThread(DiscussionThreadPtr thread);
+            bool deleteDiscussionThread(DiscussionThreadPtr thread);
 
-            typedef std::function<void(DiscussionTag&)> NotifyChangeActionType;
-            auto& notifyChange() { return notifyChangeFn_; }
+            bool addCategory(EntityPointer<DiscussionCategory> category);
+            bool removeCategory(EntityPointer<DiscussionCategory> category);
 
         private:
+            static ChangeNotification changeNotifications_;
+
+            IdType id_;
+            Timestamp created_ = 0;
+            VisitDetails creationDetails_;
+
             Helpers::StringWithSortKey name_;
             std::string uiBlob_;
-            int_fast32_t messageCount_ = 0;
-            std::set<std::weak_ptr<DiscussionCategory>, std::owner_less<std::weak_ptr<DiscussionCategory>>> categories_;
-            NotifyChangeActionType notifyChangeFn_;
-            Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
 
-            static void emptyNotifyChange(DiscussionTag& tag) { }
+            DiscussionThreadCollectionWithHashedId threads_;
+
+            Timestamp lastUpdated_ = 0;
+            VisitDetails lastUpdatedDetails_;
+            std::string lastUpdatedReason_;
+            boost::optional<EntityPointer<User>> lastUpdatedBy_;
+            
+            int_fast32_t messageCount_ = 0;
+            std::set<EntityPointer<DiscussionCategory>> categories_;
+
+            Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
         };
 
-        typedef std::shared_ptr<DiscussionTag> DiscussionTagRef;
-        typedef std::  weak_ptr<DiscussionTag> DiscussionTagWeakRef;
+        typedef EntityPointer<DiscussionTag> DiscussionTagPtr;
     }
 }

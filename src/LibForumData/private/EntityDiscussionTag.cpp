@@ -5,6 +5,8 @@ using namespace Forum;
 using namespace Forum::Entities;
 using namespace Forum::Authorization;
 
+DiscussionTag::ChangeNotification DiscussionTag::changeNotifications_;
+
 PrivilegeValueType DiscussionTag::getDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege) const
 {
     return minimumPrivilegeValue(
@@ -34,41 +36,47 @@ PrivilegeValueType DiscussionTag::getDiscussionTagPrivilege(DiscussionTagPrivile
         forumWidePrivileges_.getDiscussionTagPrivilege(privilege));
 }
 
-bool DiscussionTag::insertDiscussionThread(const DiscussionThreadRef& thread)
+bool DiscussionTag::insertDiscussionThread(DiscussionThreadPtr thread)
 {
-    if ( ! DiscussionThreadCollectionBase::insertDiscussionThread(thread))
+    if ( ! threads_.add(thread))
     {
-        return false;
+        return;
     }
-    messageCount() += thread->messages().size();
+    messageCount() += thread->messageCount();
 
-    for (auto& categoryWeak : categoriesWeak())
+    for (auto category : categories_)
     {
-        if (auto category = categoryWeak.lock())
-        {
-            category->insertDiscussionThread(thread);
-        }
+        assert(category);
+        category->insertDiscussionThread(thread);
     }
-    notifyChangeFn_(*this);
+    changeNotifications_.onUpdateThreadCount(*this);
     return true;
 }
 
-DiscussionThreadRef DiscussionTag::deleteDiscussionThread(DiscussionThreadCollection::iterator iterator)
+bool DiscussionTag::deleteDiscussionThread(DiscussionThreadPtr thread)
 {
-    DiscussionThreadRef result;
-    if ( ! ((result = DiscussionThreadCollectionBase::deleteDiscussionThread(iterator))))
+    if ( ! threads_.remove(thread))
     {
-        return result;
+        return false;
     }
-    messageCount() -= result->messages().size();
-    for (auto& categoryWeak : categoriesWeak())
+    messageCount() -= thread->messageCount();
+
+    for (auto category : categories_)
     {
-        if (auto category = categoryWeak.lock())
-        {
-            //called from detaching a tag from a thread
-            category->deleteDiscussionThreadIfNoOtherTagsReferenceIt(result);
-        }
+        assert(category);
+        //called from detaching a tag from a thread
+        category->deleteDiscussionThreadIfNoOtherTagsReferenceIt(thread);
     }
-    notifyChangeFn_(*this);
-    return result;
+    changeNotifications_.onUpdateThreadCount(*this);
+    return true;
+}
+
+bool DiscussionTag::addCategory(EntityPointer<DiscussionCategory> category)
+{
+    return std::get<1>(categories_.insert(std::move(category)));
+}
+
+bool DiscussionTag::removeCategory(EntityPointer<DiscussionCategory> category)
+{
+    return categories_.erase(category) > 0;
 }

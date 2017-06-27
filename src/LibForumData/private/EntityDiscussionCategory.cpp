@@ -5,6 +5,8 @@ using namespace Forum;
 using namespace Forum::Entities;
 using namespace Forum::Authorization;
 
+DiscussionCategory::ChangeNotification DiscussionCategory::changeNotifications_;
+
 static void executeOnAllCategoryParents(DiscussionCategory& category, std::function<void(DiscussionCategory&)>&& fn)
 {
     DiscussionCategoryWeakRef parentWeak = category.parentWeak();

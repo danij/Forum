@@ -1,12 +1,10 @@
 #pragma once
 
+#include "EntityPointer.h"
 #include "UuidString.h"
+#include "IpAddress.h"
 
 #include <cstdint>
-#include <memory>
-
-#include "IpAddress.h"
-#include "TypeHelpers.h"
 
 namespace Forum
 {
@@ -23,96 +21,34 @@ namespace Forum
          */
         typedef int_fast64_t Timestamp;
 
-        /**
-         * Specify that a collection is to order entities by id using a hash table
-         */
-        struct HashIndexForId {};
-
-        /**
-         * Specify that a colelction is to order entities by id using a tree
-         */
-        struct OrderedIndexForId {};
-
-        struct Identifiable
-        {
-            DECLARE_ABSTRACT_MANDATORY(Identifiable)
-
-            const IdType& id() const { return id_; }
-                  IdType& id()       { return id_; }
-
-        private:
-            IdType id_;
-        };
-
-        struct IndicateDeletionInProgress
-        {
-            DECLARE_ABSTRACT_MANDATORY(IndicateDeletionInProgress)
-
-            bool& aboutToBeDeleted() { return aboutToBeDeleted_; }
-
-        private:
-            bool aboutToBeDeleted_ = false;
-        };
-
         struct VisitDetails
         {
             Helpers::IpAddress ip;
         };
 
-        struct CreatedMixin
-        {
-            DECLARE_ABSTRACT_MANDATORY(CreatedMixin)
+#define HASHED_COLLECTION(Type, Getter) \
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::hashed_non_unique< \
+            const boost::multi_index::const_mem_fun<Type, std::result_of<decltype(&Type::Getter)(Type)>::type, &Type::Getter>>>>
 
-                  Timestamp     created()         const { return created_; }
-                  Timestamp&    created()               { return created_; }
+#define HASHED_UNIQUE_COLLECTION(Type, Getter) \
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::hashed_unique< \
+            const boost::multi_index::const_mem_fun<Type, std::result_of<decltype(&Type::Getter)(Type)>::type, &Type::Getter>>>>
 
-            const VisitDetails& creationDetails() const { return creationDetails_; }
-                  VisitDetails& creationDetails()       { return creationDetails_; }
+#define ORDERED_COLLECTION(Type, Getter) \
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ordered_non_unique< \
+            const boost::multi_index::const_mem_fun<Type, std::result_of<decltype(&Type::Getter)(Type)>::type, &Type::Getter>>>>
 
-        private:
-            Timestamp created_ = 0;
-            VisitDetails creationDetails_;
-        };
+#define ORDERED_UNIQUE_COLLECTION(Type, Getter) \
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ordered_unique< \
+            const boost::multi_index::const_mem_fun<Type, std::result_of<decltype(&Type::Getter)(Type)>::type, &Type::Getter>>>>
 
-        struct LastUpdatedMixin
-        {
-            DECLARE_ABSTRACT_MANDATORY(LastUpdatedMixin)
+#define RANKED_COLLECTION(Type, Getter) \
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ranked_non_unique< \
+            const boost::multi_index::const_mem_fun<Type, std::result_of<decltype(&Type::Getter)(Type)>::type, &Type::Getter>>>>
 
-                  Timestamp     lastUpdated()        const { return lastUpdated_; }
-                  Timestamp&    lastUpdated()              { return lastUpdated_; }
+#define RANKED_UNIQUE_COLLECTION(Type, Getter) \
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ranked_unique< \
+            const boost::multi_index::const_mem_fun<Type, std::result_of<decltype(&Type::Getter)(Type)>::type, &Type::Getter>>>>
 
-            const VisitDetails& lastUpdatedDetails() const { return lastUpdatedDetails_; }
-                  VisitDetails& lastUpdatedDetails()       { return lastUpdatedDetails_; }
-
-                  StringView    lastUpdatedReason()  const { return lastUpdatedReason_; }
-                  std::string&  lastUpdatedReason()        { return lastUpdatedReason_; }
-
-        private:
-            Timestamp lastUpdated_ = 0;
-            VisitDetails lastUpdatedDetails_;
-            std::string lastUpdatedReason_;
-        };
-
-        template<typename ByType>
-        struct LastUpdatedMixinWithBy : public LastUpdatedMixin
-        {
-            DECLARE_ABSTRACT_MANDATORY(LastUpdatedMixinWithBy)
-
-            std::weak_ptr<ByType>& lastUpdatedBy() { return lastUpdatedBy_; }
-
-            template<typename Action>
-            void executeActionWithLastUpdatedByIfAvailable(Action&& action) const
-            {
-                if (auto updatedByShared = lastUpdatedBy_.lock())
-                {
-                    action(const_cast<const ByType&>(*updatedByShared));
-                }
-            }
-
-            typedef std::weak_ptr<ByType> ByTypeRef;
-
-        private:
-            ByTypeRef lastUpdatedBy_;
-        };
     }
 }

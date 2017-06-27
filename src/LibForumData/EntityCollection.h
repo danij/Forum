@@ -2,13 +2,13 @@
 
 #include "AuthorizationPrivileges.h"
 #include "AuthorizationGrantedPrivilegeStore.h"
-#include "EntityDiscussionThreadMessageCollectionBase.h"
-#include "EntityMessageCommentCollectionBase.h"
-#include "EntityDiscussionThreadCollectionBase.h"
-#include "EntityDiscussionTagCollectionBase.h"
-#include "EntityDiscussionCategoryCollectionBase.h"
-#include "EntityUserCollectionBase.h"
-#include "Entities.h"
+
+#include "EntityUserCollection.h"
+#include "EntityDiscussionThreadCollection.h"
+#include "EntityDiscussionThreadMessageCollection.h"
+#include "EntityDiscussionTagCollection.h"
+#include "EntityDiscussionCategoryCollection.h"
+#include "EntityMessageCommentCollection.h"
 
 #include <memory>
 #include <functional>
@@ -19,9 +19,9 @@ namespace Forum
     {
         /**
          * Stores references to all entities present in memory
-         * Upon deleting an entitie, the collection also removes the entity from any other collection if might have been part of
+         * Upon deleting an entity, the collection also removes the entity from any other collection if might have been part of
          */
-        struct EntityCollection : public UserCollectionBase<HashIndexForId>,
+        class EntityCollection final : public UserCollectionBase<HashIndexForId>,
                                   public DiscussionThreadCollectionBase<HashIndexForId>,
                                   public DiscussionThreadMessageCollectionBase<HashIndexForId>,
                                   public MessageCommentCollectionBase<HashIndexForId>,
@@ -29,6 +29,7 @@ namespace Forum
                                   public DiscussionCategoryCollectionBase<HashIndexForId>,
                                   public Authorization::ForumWidePrivilegeStore
         {
+        public:
             /**
              * Safely deletes a user instance, removing it from all indexes it is registered in
              */
@@ -70,29 +71,45 @@ namespace Forum
             auto& notifyTagChange()      { return notifyTagChange_; }
             auto& notifyCategoryChange() { return notifyCategoryChange_; }
 
-            EntityCollection()
-            {
-                notifyTagChange_ = [this](auto& tag)
-                {
-                    this->modifyDiscussionTagById(tag.id(), [](auto&) {});
-                };
-                notifyCategoryChange_ = [this](auto& category)
-                {
-                    this->modifyDiscussionCategoryById(category.id(), [](auto&) {});
-                };
-            }
-
+                        
             const auto& grantedPrivileges() const { return grantedPrivileges_; }
                   auto& grantedPrivileges()       { return grantedPrivileges_; }
+
+            //new
+            EntityCollection();
+            ~EntityCollection();
+
+            std::unique_ptr<User>* getUserPoolRoot();
+            std::unique_ptr<DiscussionThread>* getDiscussionThreadPoolRoot();
+            std::unique_ptr<DiscussionThreadMessage>* getDiscussionThreadMessagePoolRoot();
+            std::unique_ptr<DiscussionTag>* getDiscussionTagPoolRoot();
+            std::unique_ptr<DiscussionCategory>* getDiscussionCategoryPoolRoot();
+            std::unique_ptr<MessageComment>* getMessageCommentPoolRoot();
+
+            UserPtr createAndAddUser(IdType id, Timestamp created);
+            DiscussionThreadPtr createAndAddDiscussionThread(/*EXTRA PARAMETERS*/);
+            DiscussionThreadMessagePtr createAndAddDiscussionThreadMessage();
+            DiscussionTagPtr createAndAddDiscussionTag();
+            DiscussionCategoryPtr createAndAddDiscussionCategory();
+
+            const UserCollection& users() const;
+            const DiscussionThreadCollectionWithHashedId& threads() const;
+            const DiscussionThreadMessageCollection& threadMessages() const;
+            const DiscussionTagCollection& tags() const;
+            const DiscussionCategoryCollection& categories() const;
+            const MessageCommentCollection& messageComments() const;
 
         private:
             DiscussionTag::NotifyChangeActionType notifyTagChange_;
             DiscussionCategory::NotifyChangeActionType notifyCategoryChange_;
             Authorization::GrantedPrivilegeStore grantedPrivileges_;
+
+            struct Impl;
+            Impl* impl_;
         };
         typedef std::shared_ptr<EntityCollection> EntityCollectionRef;
 
-        extern const UserRef AnonymousUser;
+        extern const UserPtr AnonymousUser;
         extern const IdType AnonymousUserId;
     }
 }

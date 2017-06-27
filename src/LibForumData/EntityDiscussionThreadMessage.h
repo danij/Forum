@@ -2,74 +2,83 @@
 
 #include "AuthorizationPrivileges.h"
 #include "EntityCommonTypes.h"
-#include "EntityMessageCommentCollectionBase.h"
+#include "EntityMessageCommentCollection.h"
 #include "StringHelpers.h"
 
-#include <memory>
 #include <string>
 #include <map>
+
+#include <boost/noncopyable.hpp>
 
 namespace Forum
 {
     namespace Entities
     {
-        struct User;
-        struct DiscussionThread;
+        class User;
+        class DiscussionThread;
 
         /**
          * Stores a message part of a discussion thread
          * Repositories are responsible for updating the relationships between this message and other entities
          * When cloning a message, the repository needs to reintroduce it in all collections it was part of
          */
-        struct DiscussionThreadMessage final : public Identifiable,
-                                               public CreatedMixin,
-                                               public LastUpdatedMixinWithBy<User>,
-                                               public MessageCommentCollectionBase<OrderedIndexForId>,
-                                               public Authorization::DiscussionThreadMessagePrivilegeStore
+        class DiscussionThreadMessage final : public Authorization::DiscussionThreadMessagePrivilegeStore,
+                                              private boost::noncopyable
         {
+        public:
             typedef int_fast32_t VoteScoreType;
-            typedef std::map<std::weak_ptr<User>, Timestamp, std::owner_less<std::weak_ptr<User>>> VoteCollection;
+            //using maps as they use less memory than unordered_maps
+            //number of votes/message will usually be small
+            typedef std::map<EntityPointer<User>, Timestamp> VoteCollection;
 
-                  StringView                 content()             const { return content_; }
-                  Helpers::ImmutableString&  content()                   { return content_; }
-            const User&                      createdBy()           const { return createdBy_; }
-                  User&                      createdBy()                 { return createdBy_; }
+            const auto& id()                  const { return id_; }
 
-            auto                             upVotes()             const
+                   auto created()             const { return created_; }
+            const auto& creationDetails()     const { return creationDetails_; }
+
+            const User& createdBy()           const { return createdBy_; }
+            const auto& parentThread()        const { return parentThread_; }
+
+             StringView content()             const { return content_; }
+
+                   auto lastUpdated()         const { return lastUpdated_; }
+            const auto& lastUpdatedDetails()  const { return lastUpdatedDetails_; }
+             StringView lastUpdatedReason()   const { return lastUpdatedReason_; }
+            const auto& lastUpdatedBy()       const { return lastUpdatedBy_; }
+            
+            const auto& comments()            const { return comments_; }
+                   auto solvedCommentsCount() const { return solvedCommentsCount_; }
+
+            bool hasVoted(EntityPointer<User> user) const
+            {
+                return (upVotes_ && (upVotes_->find(user) != upVotes_->end()))
+                    || (downVotes_ && (downVotes_->find(user) != downVotes_->end()));
+            }
+
+            auto upVotes() const
             {
                 static const VoteCollection emptyVoteCollection;
                 return Helpers::toConst(upVotes_ ? *upVotes_ : emptyVoteCollection);
             }
-            auto                             downVotes()           const
+            
+            auto downVotes() const
             {
                 static const VoteCollection emptyVoteCollection;
                 return Helpers::toConst(downVotes_ ? *downVotes_ : emptyVoteCollection);
             }
-            VoteScoreType                    voteScore()           const
+
+            auto voteScore() const
             {
                 VoteScoreType upVoteCount = 0, downVoteCount = 0;
                 if (upVotes_) upVoteCount = static_cast<VoteScoreType>(upVotes_->size());
                 if (downVotes_) downVoteCount = static_cast<VoteScoreType>(downVotes_->size());
 
                 return upVoteCount - downVoteCount;
-            }
+            } 
 
-            int_fast32_t              solvedCommentsCount() const { return solvedCommentsCount_; }
-            int_fast32_t&             solvedCommentsCount()       { return solvedCommentsCount_; }
-
-            std::weak_ptr<DiscussionThread>& parentThread()       { return parentThread_; }
-
-            Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(Authorization::DiscussionThreadMessagePrivilege privilege) const override
-            {
-                Authorization::PrivilegeValueType discussionThreadLevelValue;
-                executeActionWithParentThreadIfAvailable([&discussionThreadLevelValue, privilege](auto& parentThread)
-                {
-                    discussionThreadLevelValue = parentThread.getDiscussionThreadMessagePrivilege(privilege);
-                });
-
-                return getDiscussionThreadMessagePrivilege(privilege, discussionThreadLevelValue);
-            }
-
+            Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(
+                    Authorization::DiscussionThreadMessagePrivilege privilege) const override;
+            
             Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(
                     Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueType discussionThreadLevelValue) const
@@ -78,72 +87,71 @@ namespace Forum
                 return Authorization::minimumPrivilegeValue(result, discussionThreadLevelValue);
             }
 
-            template<typename TAction>
-            void executeActionWithParentThreadIfAvailable(TAction&& action) const
-            {
-                if (auto parentThreadShared = parentThread_.lock())
-                {
-                    action(const_cast<const DiscussionThread&>(*parentThreadShared));
-                }
-            }
-
-            template<typename TAction>
-            void executeActionWithParentThreadIfAvailable(TAction&& action)
-            {
-                if (auto parentMessageThread = parentThread_.lock())
-                {
-                    action(*parentMessageThread);
-                }
-            }
-
             enum ChangeType : uint32_t
             {
                 None = 0,
                 Content
             };
 
-            explicit DiscussionThreadMessage(User& createdBy) : createdBy_(createdBy), solvedCommentsCount_(0) {}
+            DiscussionThreadMessage(IdType id, User& createdBy, Timestamp created, VisitDetails creationDetails)
+                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)), 
+                  createdBy_(createdBy)
+            {}
 
-            bool hasVoted(const std::weak_ptr<User>& user) const
-            {
-                return (upVotes_ && (upVotes_->find(user) != upVotes_->end()))
-                  || (downVotes_ && (downVotes_->find(user) != downVotes_->end()));
-            }
+                                auto& parentThread()        { return parentThread_; }
+                                                            
+                                auto& lastUpdated()         { return lastUpdated_; }
+                                auto& lastUpdatedDetails()  { return lastUpdatedDetails_; }
+                                auto& lastUpdatedReason()   { return lastUpdatedReason_; }
+                                                            
+            Helpers::ImmutableString& content()             { return content_; }
+            
+                                auto& comments()            { return comments_; }
+                                auto& solvedCommentsCount() { return solvedCommentsCount_; }
 
-            void addUpVote(std::weak_ptr<User> user, const Timestamp& at)
+            void addUpVote(EntityPointer<User> user, const Timestamp& at)
             {
                 if ( ! upVotes_) upVotes_.reset(new VoteCollection);
-                upVotes_->insert(std::make_pair(std::move(user), at));
+                upVotes_->insert(std::make_pair(user, at));
             }
 
-            void addDownVote(std::weak_ptr<User> user, const Timestamp& at)
+            void addDownVote(EntityPointer<User> user, const Timestamp& at)
             {
                 if ( ! downVotes_) downVotes_.reset(new VoteCollection);
-                downVotes_->insert(std::make_pair(std::move(user), at));
+                downVotes_->insert(std::make_pair(user, at));
             }
 
             /**
              * Removes the vote of a user
              * @return TRUE if there was an up or down vote from the user
              */
-            bool removeVote(std::weak_ptr<User> user)
+            bool removeVote(EntityPointer<User> user)
             {
                 return (upVotes_ && (upVotes_->erase(user) > 0)) || (downVotes_ && (downVotes_->erase(user) > 0));
             }
 
         private:
-            Helpers::ImmutableString content_;
+            IdType id_;
+            Timestamp created_ = 0;
+            VisitDetails creationDetails_;
+
             User& createdBy_;
-            std::weak_ptr<DiscussionThread> parentThread_;
-            int_fast32_t solvedCommentsCount_;
-            //using maps as they use less memory than unordered_maps
-            //number of votes/message will usually be small
+            EntityPointer<DiscussionThread> parentThread_;
+
+            Helpers::ImmutableString content_;
+
+            Timestamp lastUpdated_ = 0;
+            VisitDetails lastUpdatedDetails_;
+            std::string lastUpdatedReason_;
+            boost::optional<EntityPointer<User>> lastUpdatedBy_;
+            
+            MessageCommentCollection comments_;
+            int32_t solvedCommentsCount_ = 0;
 
             std::unique_ptr<VoteCollection> upVotes_;
             std::unique_ptr<VoteCollection> downVotes_;
         };
 
-        typedef std::shared_ptr<DiscussionThreadMessage> DiscussionThreadMessageRef;
-        typedef std::  weak_ptr<DiscussionThreadMessage> DiscussionThreadMessageWeakRef;
+        typedef EntityPointer<DiscussionThreadMessage> DiscussionThreadMessagePtr;
     }
 }

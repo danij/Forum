@@ -1,12 +1,14 @@
 #pragma once
 
-#include "EntityDiscussionThreadCollectionBase.h"
-#include "EntityDiscussionThreadMessageCollectionBase.h"
 #include "EntityCommonTypes.h"
+#include "EntityDiscussionThreadCollection.h"
+#include "EntityDiscussionThreadMessageCollection.h"
+#include "EntityMessageCommentCollection.h"
 
 #include <string>
-#include <memory>
 #include <set>
+
+#include <boost/noncopyable.hpp>
 
 namespace Forum
 {
@@ -16,32 +18,28 @@ namespace Forum
         * Stores a user that creates content
         * Repositories are responsible for updating the relationships between this message and other entities
         */
-        struct User final : public Identifiable,
-                            public CreatedMixin,
-                            public DiscussionThreadCollectionBase<OrderedIndexForId>,
-                            public DiscussionThreadMessageCollectionBase<OrderedIndexForId>,
-                            public MessageCommentCollectionBase<OrderedIndexForId>
+        class User final : private boost::noncopyable
         {
-      const std::string& auth()        const { return auth_; }
-            std::string& auth()              { return auth_; }
-            const auto&  name()        const { return name_; }
-            auto&        name()              { return name_; }
-            StringView   info()        const { return info_; }
-            std::string& info()              { return info_; }
-            Timestamp    lastSeen()    const { return lastSeen_; }
-            Timestamp&   lastSeen()          { return lastSeen_; }
-            auto&        votedMessages()     { return votedMessages_; }
+        public:
+            const auto& id()                const { return id_; }
 
-            auto&        subscribedThreads() { return subscribedThreads_; }
+                   auto created()           const { return created_; }
+            const auto& creationDetails()   const { return creationDetails_; }
+                                            
+             StringView auth()              const { return auth_; }
+            const auto& name()              const { return name_; }
+             StringView info()              const { return info_; }
 
-            auto subscribedThreadCount()                   const { return subscribedThreads_.threadCount(); }
-            auto subscribedThreadsById()                   const { return subscribedThreads_.threadsById(); }
-            auto subscribedThreadsByName()                 const { return subscribedThreads_.threadsByName(); }
-            auto subscribedThreadsByCreated()              const { return subscribedThreads_.threadsByCreated(); }
-            auto subscribedThreadsByLastUpdated()          const { return subscribedThreads_.threadsByLastUpdated(); }
-            auto subscribedThreadsByLatestMessageCreated() const { return subscribedThreads_.threadsByLatestMessageCreated(); }
-            auto subscribedThreadsByMessageCount()         const { return subscribedThreads_.threadsByMessageCount(); }
-            auto subscribedThreadsByPinDisplayOrder()      const { return subscribedThreads_.threadsByPinDisplayOrder(); }
+                  auto  lastSeen()          const { return lastSeen_; }
+
+            const auto& threads()           const { return threads_; }
+                   auto threadCount()       const { return threads_.count(); }
+            const auto& subscribedThreads() const { return subscribedThreads_; }
+
+            const auto& threadMessages()    const { return threadMessages_; }
+                  auto  messageCount()      const { return threadMessages_.count(); }
+
+            const auto& votedMessages()     const { return votedMessages_; }
 
             enum ChangeType : uint32_t
             {
@@ -50,27 +48,84 @@ namespace Forum
                 Info
             };
 
-            User() : lastSeen_(0) {}
-            /**
-             * Only used to construct the anonymous user
-             */
-            explicit User(StringView name) : name_(name), lastSeen_(0) {}
-
-            void registerVote(const DiscussionThreadMessageRef& message)
+            struct ChangeNotification
             {
-                votedMessages_.insert(DiscussionThreadMessageWeakRef(message));
+                std::function<void(const User&)> onUpdateAuth;
+                std::function<void(const User&)> onUpdateName;
+                std::function<void(const User&)> onUpdateLastSeen;
+                std::function<void(const User&)> onUpdateThreadCount;
+                std::function<void(const User&)> onUpdateMessageCount;
+            };
+
+            static auto& changeNotifications() { return changeNotifications_; }
+
+            User(IdType id, Timestamp created, VisitDetails creationDetails)
+                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails))
+            {
+                threads_.onCountChange() = [this]()
+                {
+                    changeNotifications_.onUpdateThreadCount(*this);
+                };
+                threadMessages_.onCountChange() = [this]()
+                {
+                    changeNotifications_.onUpdateMessageCount(*this);
+                };
+            }
+
+            explicit User(StringView name) : id_(IdType::empty), name_(name)
+            {}
+
+            auto& info()              { return info_; }
+            auto& threads()           { return threads_; }
+            auto& subscribedThreads() { return subscribedThreads_; }
+            auto& threadMessages()    { return threadMessages_; }
+            auto& votedMessages()     { return votedMessages_; }
+
+            void updateAuth(std::string value)
+            {
+                auth_ = std::move(value);
+                changeNotifications_.onUpdateAuth(*this);
+            }
+
+            void updateName(Helpers::StringWithSortKey&& name)
+            {
+                name_ = std::move(name);
+                changeNotifications_.onUpdateName(*this);
+            }
+
+            void updateLastSeen(Timestamp value)
+            {
+                lastSeen_ = value;
+                changeNotifications_.onUpdateLastSeen(*this);
+            }
+
+            void registerVote(DiscussionThreadMessagePtr message)
+            {
+                votedMessages_.insert(message);
             }
 
         private:
+            static ChangeNotification changeNotifications_;
+
+            IdType id_;
+            Timestamp created_ = 0;
+            VisitDetails creationDetails_;
+
             std::string auth_;
             Helpers::StringWithSortKey name_;
             std::string info_;
-            Timestamp lastSeen_;
-            std::set<DiscussionThreadMessageWeakRef, std::owner_less<DiscussionThreadMessageWeakRef>> votedMessages_;
-            DiscussionThreadCollectionBase<OrderedIndexForId> subscribedThreads_;
+
+            Timestamp lastSeen_ = 0;
+            
+            DiscussionThreadCollectionWithOrderedId threads_;
+            DiscussionThreadCollectionWithOrderedId subscribedThreads_;
+                                    
+            DiscussionThreadMessageCollection threadMessages_;
+            std::set<DiscussionThreadMessagePtr> votedMessages_;
+            
+            MessageCommentCollection messageComments_;
         };
 
-        typedef std::shared_ptr<User> UserRef;
-        typedef std::  weak_ptr<User> UserWeakRef;
+        typedef EntityPointer<User> UserPtr;
     }
 }
