@@ -127,5 +127,6 @@ namespace Forum
         };
 
         typedef EntityPointer<User> UserPtr;
+        typedef EntityPointer<const User> UserConstPtr;
     }
 }

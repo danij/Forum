@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
+#include <type_traits>
 
 namespace Forum
 {
@@ -45,6 +46,10 @@ namespace Forum
             template<>
             MessageComment& getEntityFromGlobalCollection<MessageComment>(size_t index);
         }
+        
+        template<typename T>
+        class StoresEntityPointer;
+
         /**
          * Stores a pointer to an entity as an index into a collection
          * The collection will be part of a singleton EntityCollection
@@ -54,7 +59,13 @@ namespace Forum
         {
         public:
             typedef int32_t IndexType;
-            
+
+            typedef typename std::add_const<T>::type ConstT;
+            typedef typename std::add_lvalue_reference<T>::type RefT;
+            typedef typename std::add_pointer<T>::type PtrT;
+            typedef typename std::add_lvalue_reference<typename std::add_const<T>::type>::type RefToConstT;
+            typedef typename std::add_pointer<typename std::add_const<T>::type>::type PtrToConstT;
+
             static constexpr IndexType Invalid = -1;
             
             EntityPointer() : index_(Invalid)
@@ -64,7 +75,9 @@ namespace Forum
             {}
 
             EntityPointer(nullptr_t) : EntityPointer()
-            {}
+            {
+                storePointerInClass();
+            }
 
             EntityPointer(const EntityPointer&) = default;
             EntityPointer(EntityPointer&&) = default;
@@ -77,23 +90,33 @@ namespace Forum
                 return Invalid != index_;
             }
 
-            const T& operator*() const
+            operator EntityPointer<ConstT>() const
+            {
+                return EntityPointer<ConstT>(index_);
+            }
+
+            auto toConst() const
+            {
+                return operator EntityPointer<ConstT>();
+            }
+
+            RefToConstT operator*() const
             {
                 return *this;
             }
 
-            T& operator*()
+            RefT operator*()
             {
                 if ( ! *this) throw std::runtime_error("Invalid EntityPointer dereferenced");
-                return Private::getEntityFromGlobalCollection<T>(index_);
+                return Private::getEntityFromGlobalCollection<typename std::remove_const<T>::type>(index_);
             }
 
-            const T* operator->() const
+            PtrToConstT operator->() const
             {
                 return &(*this);
             }
 
-            T* operator->()
+            PtrT operator->()
             {
                 return &(*this);
             }
@@ -130,6 +153,26 @@ namespace Forum
 
         private:
             IndexType index_;
+
+            template<typename = std::enable_if_t<std::is_base_of<StoresEntityPointer<T>, T>::value>>
+            void storePointerInClass()
+            {
+                (*this).pointer_ = *this;
+            }
+
+            void storePointerInClass()
+            {}
+        };
+        
+        template<typename T>
+        class StoresEntityPointer
+        {
+        public:
+            auto getPointer() const { return pointer_; }
+
+            friend class EntityPointer<T>;
+        private:
+            EntityPointer<T> pointer_;
         };
     }
 }

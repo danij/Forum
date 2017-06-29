@@ -39,7 +39,7 @@ namespace Forum
                    auto lastUpdated()        const { return lastUpdated_; }
             const auto& lastUpdatedDetails() const { return lastUpdatedDetails_; }
              StringView lastUpdatedReason()  const { return lastUpdatedReason_; }
-            const auto& lastUpdatedBy()      const { return lastUpdatedBy_; }
+                   auto lastUpdatedBy()      const { return lastUpdatedBy_.toConst(); }
             
                    auto threadCount()        const { return threads_.count(); }
                    auto messageCount()       const { return messageCount_; }
@@ -116,7 +116,7 @@ namespace Forum
             Timestamp lastUpdated_ = 0;
             VisitDetails lastUpdatedDetails_;
             std::string lastUpdatedReason_;
-            boost::optional<EntityPointer<User>> lastUpdatedBy_;
+            EntityPointer<User> lastUpdatedBy_;
             
             int_fast32_t messageCount_ = 0;
             std::set<EntityPointer<DiscussionCategory>> categories_;
@@ -125,5 +125,6 @@ namespace Forum
         };
 
         typedef EntityPointer<DiscussionTag> DiscussionTagPtr;
+        typedef EntityPointer<const DiscussionTag> DiscussionTagConstPtr;
     }
 }

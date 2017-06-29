@@ -42,7 +42,7 @@ namespace Forum
             const auto& lastUpdatedDetails()        const { return lastUpdatedDetails_; }
              StringView lastUpdatedReason()         const { return lastUpdatedReason_; }
 
-            const auto& lastUpdatedBy()             const { return lastUpdatedBy_; }
+                   auto lastUpdatedBy()             const { return lastUpdatedBy_.toConst(); }
             
                    auto latestVisibleChange()       const { return latestVisibleChange_; }
                    auto latestMessageCreated()      const { return latestMessageCreated_; }
@@ -154,7 +154,7 @@ namespace Forum
             Timestamp lastUpdated_ = 0;
             VisitDetails lastUpdatedDetails_;
             std::string lastUpdatedReason_;
-            boost::optional<EntityPointer<User>> lastUpdatedBy_;
+            EntityPointer<User> lastUpdatedBy_;
 
             //store the timestamp of the latest visibile change in order to be able to
             //detect when to return a status that nothing has changed since a provided timestamp
@@ -175,5 +175,6 @@ namespace Forum
         };
 
         typedef EntityPointer<DiscussionThread> DiscussionThreadPtr;
+        typedef EntityPointer<const DiscussionThread> DiscussionThreadConstPtr;
     }
 }

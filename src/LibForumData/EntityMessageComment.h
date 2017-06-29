@@ -57,5 +57,6 @@ namespace Forum
         };
         
         typedef EntityPointer<MessageComment> MessageCommentPtr;
+        typedef EntityPointer<const MessageComment> MessageCommentConstPtr;
     }
 }

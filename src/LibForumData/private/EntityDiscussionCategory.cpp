@@ -9,13 +9,13 @@ DiscussionCategory::ChangeNotification DiscussionCategory::changeNotifications_;
 
 static void executeOnAllCategoryParents(DiscussionCategory& category, std::function<void(DiscussionCategory&)>&& fn)
 {
-    DiscussionCategoryWeakRef parentWeak = category.parentWeak();
+    auto parent = category.parent();
     while (true)
     {
-        if (auto parent = parentWeak.lock())
+        if (parent)
         {
             fn(*parent);
-            parentWeak = parent->parentWeak();
+            parent = parent->parent();
         }
         else { break; }
     }
@@ -27,15 +27,39 @@ static void executeOnCategoryAndAllParents(DiscussionCategory& category, std::fu
     executeOnAllCategoryParents(category, std::move(fn));
 }
 
-bool DiscussionCategory::insertDiscussionThread(const DiscussionThreadRef& thread)
+bool DiscussionCategory::addChild(EntityPointer<DiscussionCategory> category)
 {
-    if ( ! DiscussionThreadCollectionBase::insertDiscussionThread(thread))
+    return std::get<1>(children_.insert(std::move(category)));
+}
+
+bool DiscussionCategory::removeChild(EntityPointer<DiscussionCategory> category)
+{
+    return children_.erase(category) > 0;
+}
+
+bool DiscussionCategory::hasAncestor(EntityPointer<DiscussionCategory> ancestor)
+{
+    auto currentParent = parent_;
+    while (currentParent)
+    {
+        if (currentParent == ancestor) return true;
+        currentParent = currentParent->parent_;
+    }
+    return false;
+}
+
+bool DiscussionCategory::insertDiscussionThread(DiscussionThreadPtr thread)
+{
+    if ( ! threads_.add(thread))
     {
         return false;
     }
+
     //don't use updateMessageCount() as insertDiscussionThread will take care of that for totals
-    messageCount_ += thread->messages().size();
-    thread->addCategory(shared_from_this());
+    messageCount_ += thread->messageCount();
+    thread->addCategory(getPointer());
+
+    changeNotifications_.onUpdateMessageCount(*this);
 
     executeOnCategoryAndAllParents(*this, [&](auto& category)
     {
@@ -43,62 +67,40 @@ bool DiscussionCategory::insertDiscussionThread(const DiscussionThreadRef& threa
         category.totalThreads_.insertDiscussionThread(thread);
     });
 
-    notifyChangeFn_(*this);
     return true;
 }
 
-void DiscussionCategory::modifyDiscussionThread(ThreadIdIteratorType iterator,
-                                                std::function<void(DiscussionThread&)>&& modifyFunction)
+bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread)
 {
-    if (iterator == threads_.end())
+    if ( ! threads_.remove(thread))
     {
-        return;
-    }
-    auto thread = *iterator;
-    if ( ! thread)
-    {
-        return;
-    }
-    DiscussionThreadCollectionBase::modifyDiscussionThread(iterator,
-                                                           std::forward<decltype(modifyFunction)>(modifyFunction));
-    executeOnCategoryAndAllParents(*this, [&](auto& category)
-    {
-        //update separate references of this category and all parents
-        category.totalThreads_.modifyDiscussionThreadById(thread->id(), {});
-    });
-}
-
-DiscussionThreadRef DiscussionCategory::deleteDiscussionThread(ThreadIdIteratorType iterator)
-{
-    DiscussionThreadRef result;
-    if ( ! ((result = DiscussionThreadCollectionBase::deleteDiscussionThread(iterator))))
-    {
-        return result;
+        return false;
     }
     //don't use updateMessageCount() as deleteDiscussionThreadById will take care of that for totals
-    messageCount_ -= static_cast<int_fast32_t>(result->messages().size());
-    if ( ! result->aboutToBeDeleted())
+    messageCount_ -= static_cast<int_fast32_t>(thread->messageCount());
+    if ( ! thread->aboutToBeDeleted())
     {
-        result->removeCategory(shared_from_this());
+        thread->removeCategory(getPointer());
     }
 
+    changeNotifications_.onUpdateMessageCount(*this);
+    
     executeOnCategoryAndAllParents(*this, [&](auto& category)
     {
-        category.totalThreads_.deleteDiscussionThreadById(result->id());
+        category.totalThreads_.remove(thread);
     });
 
-    notifyChangeFn_(*this);
-    return result;
+    return true;
 }
 
-void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(const DiscussionThreadRef& thread)
+void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(DiscussionThreadPtr thread)
 {
     //don't remove the thread just yet, perhaps it's also referenced by other tags
     bool referencedByOtherTags = false;
-    for (auto tagWeak : thread->tagsWeak())
+    for (auto tag : thread->tags())
     {
-        auto currentTag = tagWeak.lock();
-        if (currentTag && containsTag(currentTag))
+        assert(tag);
+        if (containsTag(tag))
         {
             referencedByOtherTags = true;
             break;
@@ -106,7 +108,8 @@ void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(const Di
     }
     if ( ! referencedByOtherTags)
     {
-        deleteDiscussionThreadById(thread->id());
+        deleteDiscussionThread(thread);
+        
         //release separate references held by this category and parents, if reference count drops to 0
         executeOnCategoryAndAllParents(*this, [&](auto& category)
         {
@@ -115,35 +118,40 @@ void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(const Di
     }
 }
 
-bool DiscussionCategory::addTag(const DiscussionTagRef& tag)
+bool DiscussionCategory::addTag(DiscussionTagPtr tag)
 {
     if ( ! std::get<1>(tags_.insert(tag)))
     {
         return false;
     }
 
-    for (auto& thread : tag->threads().get<EntityCollection::DiscussionThreadCollectionById>())
+    for (auto& thread : tag->threads().byId())
     {
         insertDiscussionThread(thread);
     }
     return true;
 }
 
-bool DiscussionCategory::removeTag(const DiscussionTagRef& tag)
+bool DiscussionCategory::removeTag(DiscussionTagPtr tag)
 {
     if (0 == tags_.erase(tag))
     {
         return false;
     }
 
-    for (auto& thread : tag->threads().get<EntityCollection::DiscussionThreadCollectionById>())
+    for (auto& thread : tag->threads().byId())
     {
         deleteDiscussionThreadIfNoOtherTagsReferenceIt(thread);
     }
     return true;
 }
 
-void DiscussionCategory::updateMessageCount(const DiscussionThreadRef& thread, int_fast32_t delta)
+bool DiscussionCategory::containsTag(DiscussionTagPtr tag) const
+{
+    return tags_.find(tag) != tags_.end();
+}
+
+void DiscussionCategory::updateMessageCount(DiscussionThreadPtr thread, int_fast32_t delta)
 {
     messageCount_ += delta;
     //make sure totals of the current category are always updated
@@ -165,21 +173,22 @@ void DiscussionCategory::updateMessageCount(const DiscussionThreadRef& thread, i
         }
         category.totalThreads_.messageCount() += delta;
     });
+
+    changeNotifications_.onUpdateMessageCount(*this);
 }
 
 void DiscussionCategory::resetTotals()
 {
-    totalThreads_.threads().clear();
-    totalThreads_.messageCount() = 0;
+    totalThreads_ = {};
 }
 
 void DiscussionCategory::recalculateTotals()
 {
     executeOnCategoryAndAllParents(*this, [this](auto& category)
     {
-        for (auto& thread : this->threads())
+        for (auto thread : threads_.byId())
         {
-            totalThreads_.insertDiscussionThread(thread);
+            totalThreads_.add(thread);
         }
     });
 }

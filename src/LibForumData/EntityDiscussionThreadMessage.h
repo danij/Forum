@@ -37,14 +37,14 @@ namespace Forum
             const auto& creationDetails()     const { return creationDetails_; }
 
             const User& createdBy()           const { return createdBy_; }
-            const auto& parentThread()        const { return parentThread_; }
+                   auto parentThread()        const { return parentThread_.toConst(); }
 
              StringView content()             const { return content_; }
 
                    auto lastUpdated()         const { return lastUpdated_; }
             const auto& lastUpdatedDetails()  const { return lastUpdatedDetails_; }
              StringView lastUpdatedReason()   const { return lastUpdatedReason_; }
-            const auto& lastUpdatedBy()       const { return lastUpdatedBy_; }
+                   auto lastUpdatedBy()       const { return lastUpdatedBy_.toConst(); }
             
             const auto& comments()            const { return comments_; }
                    auto solvedCommentsCount() const { return solvedCommentsCount_; }
@@ -143,7 +143,7 @@ namespace Forum
             Timestamp lastUpdated_ = 0;
             VisitDetails lastUpdatedDetails_;
             std::string lastUpdatedReason_;
-            boost::optional<EntityPointer<User>> lastUpdatedBy_;
+            EntityPointer<User> lastUpdatedBy_;
             
             MessageCommentCollection comments_;
             int32_t solvedCommentsCount_ = 0;
@@ -153,5 +153,6 @@ namespace Forum
         };
 
         typedef EntityPointer<DiscussionThreadMessage> DiscussionThreadMessagePtr;
+        typedef EntityPointer<cosnt DiscussionThreadMessage> DiscussionThreadMessageConstPtr;
     }
 }

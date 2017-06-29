@@ -102,13 +102,15 @@ namespace Forum
             * Used when a thread is permanently deleted
             */
             bool remove(DiscussionThreadPtr thread);
-
+            
             void updateLatestMessageCreated(DiscussionThreadPtr thread);
 
+            auto count()        const { return byId_.size(); }
             auto messageCount() const { return messageCount_; }
             auto byId()         const { return Helpers::toConst(byId_); }
 
             auto& byLatestMessageCreated() { return byLatestMessageCreated_; }
+            auto& messageCount()           { return messageCount_; }
 
             DiscussionThreadMessagePtr latestMessage() const;
 
