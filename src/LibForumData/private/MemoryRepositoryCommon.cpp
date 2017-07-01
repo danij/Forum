@@ -30,40 +30,30 @@ PerformedByWithLastSeenUpdateGuard::~PerformedByWithLastSeenUpdateGuard()
 
 PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& collection, const MemoryStore& store)
 {
-    const auto& index = collection.usersById();
+    const auto& index = collection.users().byId();
     auto it = index.find(Context::getCurrentUserId());
     if (it == index.end())
     {
-        return *AnonymousUser;
+        return *anonymousUser();
     }
-    auto& result = **it;
+
+    const User& result = **it;
 
     auto now = Context::getCurrentTime();
 
     if ((result.lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
     {
-        auto& userId = result.id();
-        auto& mutableCollection = const_cast<MemoryStore&>(store).collection;
-        lastSeenUpdate_ = [&mutableCollection, now, &userId]()
-        {
-            mutableCollection.write([&](EntityCollection& collectionToModify)
-                                    {
-                                        collectionToModify.modifyUserById(userId, [ & ](User& user)
-                                        {
-                                            user.lastSeen() = now;
-                                        });
-                                    });
-        };
+        const_cast<User&>(result).updateLastSeen(now);
     }
     return result;
 }
 
-UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& collection)
+UserPtr PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& collection)
 {
     lastSeenUpdate_ = nullptr;
 
     auto result = getCurrentUser(collection);
-    if (result == AnonymousUser)
+    if (result == anonymousUser())
     {
         return result;
     }
@@ -72,21 +62,18 @@ UserRef PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
 
     if ((result->lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
     {
-        collection.modifyUserById(result->id(), [&](User& user)
-        {
-            user.lastSeen() = now;
-        });
+        result->updateLastSeen(now);
     }
     return result;
 }
 
-UserRef Repository::getCurrentUser(EntityCollection& collection)
+UserPtr Repository::getCurrentUser(EntityCollection& collection)
 {
-    const auto& index = collection.users().get<EntityCollection::UserCollectionById>();
+    const auto& index = collection.users().byId();
     auto it = index.find(Context::getCurrentUserId());
     if (it == index.end())
     {
-        return AnonymousUser;
+        return anonymousUser();
     }
     return *it;
 }

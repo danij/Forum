@@ -127,7 +127,7 @@ namespace Forum
 
             AuthorizationStatus addNewDiscussionCategory(const Entities::User& currentUser,
                                                          StringView name,
-                                                         const Entities::DiscussionCategoryRef& parent) const override { return {}; }
+                                                         const Entities::DiscussionCategory* parent) const override { return {}; }
             AuthorizationStatus changeDiscussionCategoryName(const Entities::User& currentUser,
                                                              const Entities::DiscussionCategory& category,
                                                              StringView newName) const override { return {}; }
@@ -136,7 +136,7 @@ namespace Forum
                                                                     StringView newDescription) const override { return {}; }
             AuthorizationStatus changeDiscussionCategoryParent(const Entities::User& currentUser,
                                                                const Entities::DiscussionCategory& category,
-                                                               const Entities::DiscussionCategoryRef& newParent) const override { return {}; }
+                                                               const Entities::DiscussionCategory* newParent) const override { return {}; }
             AuthorizationStatus changeDiscussionCategoryDisplayOrder(const Entities::User& currentUser,
                                                                      const Entities::DiscussionCategory& category,
                                                                      int_fast16_t newDisplayOrder) const override { return {}; }

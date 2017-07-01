@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <vector>
 
 namespace Forum
 {
@@ -114,7 +113,7 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IUserDirectWriteRepository);
 
-            virtual StatusWithResource<Entities::UserRef> addNewUser(Entities::EntityCollection& collection,
+            virtual StatusWithResource<Entities::UserPtr> addNewUser(Entities::EntityCollection& collection,
                                                                      StringView name, StringView auth) = 0;
             virtual StatusCode changeUserName(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                               StringView newName) = 0;
@@ -162,7 +161,7 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadDirectWriteRepository);
 
-            virtual StatusWithResource<Entities::DiscussionThreadRef>
+            virtual StatusWithResource<Entities::DiscussionThreadPtr>
                     addNewDiscussionThread(Entities::EntityCollection& collection, StringView name) = 0;
             virtual StatusCode changeDiscussionThreadName(Entities::EntityCollection& collection,
                                                           Entities::IdTypeRef id, StringView newName) = 0;
@@ -214,7 +213,7 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadMessageDirectWriteRepository)
 
-            virtual StatusWithResource<Entities::DiscussionThreadMessageRef>
+            virtual StatusWithResource<Entities::DiscussionThreadMessagePtr>
                 addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef threadId,
                                                 StringView content) = 0;
             virtual StatusCode deleteDiscussionMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
@@ -231,7 +230,7 @@ namespace Forum
             virtual StatusCode resetVoteDiscussionThreadMessage(Entities::EntityCollection& collection,
                                                                 Entities::IdTypeRef id) = 0;
 
-            virtual StatusWithResource<Entities::MessageCommentRef>
+            virtual StatusWithResource<Entities::MessageCommentPtr>
                 addCommentToDiscussionThreadMessage(Entities::EntityCollection& collection,
                                                     Entities::IdTypeRef messageId, StringView content) = 0;
             virtual StatusCode setMessageCommentToSolved(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
@@ -266,7 +265,7 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionTagDirectWriteRepository)
 
-            virtual StatusWithResource<Entities::DiscussionTagRef>
+            virtual StatusWithResource<Entities::DiscussionTagPtr>
                 addNewDiscussionTag(Entities::EntityCollection& collection, StringView name) = 0;
             virtual StatusCode changeDiscussionTagName(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                                        StringView newName) = 0;
@@ -320,7 +319,7 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionCategoryDirectWriteRepository)
 
-            virtual StatusWithResource<Entities::DiscussionCategoryRef>
+            virtual StatusWithResource<Entities::DiscussionCategoryPtr>
                 addNewDiscussionCategory(Entities::EntityCollection& collection, StringView name,
                                          Entities::IdTypeRef parentId) = 0;
             virtual StatusCode changeDiscussionCategoryName(Entities::EntityCollection& collection,

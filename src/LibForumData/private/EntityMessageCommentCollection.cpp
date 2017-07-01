@@ -14,12 +14,12 @@ bool MessageCommentCollection::add(MessageCommentPtr comment)
 bool MessageCommentCollection::remove(MessageCommentPtr comment)
 {
     {
-        auto itById = byId_.find(comment);
+        auto itById = byId_.find(comment->id());
         if (itById == byId_.end()) return false;
         
         byId_.erase(itById);
     }
-    byCreated_.erase(comment);
+    eraseFromNonUniqueCollection(byCreated_, comment, comment->created());
 
     if (onCountChange_) onCountChange_();
     return true;

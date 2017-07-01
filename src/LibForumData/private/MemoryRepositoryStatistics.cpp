@@ -36,11 +36,11 @@ StatusCode MemoryRepositoryStatistics::getEntitiesCount(OutStream& output) const
                           status.disable();
 
                           EntitiesCount count;
-                          count.nrOfUsers = static_cast<uint_fast32_t>(collection.usersById().size());
-                          count.nrOfDiscussionThreads = static_cast<uint_fast32_t>(collection.threadsById().size());
-                          count.nrOfDiscussionMessages = static_cast<uint_fast32_t>(collection.messagesById().size());
-                          count.nrOfDiscussionTags = static_cast<uint_fast32_t>(collection.tagsById().size());
-                          count.nrOfDiscussionCategories = static_cast<uint_fast32_t>(collection.categoriesById().size());
+                          count.nrOfUsers = static_cast<uint_fast32_t>(collection.users().count());
+                          count.nrOfDiscussionThreads = static_cast<uint_fast32_t>(collection.threads().count());
+                          count.nrOfDiscussionMessages = static_cast<uint_fast32_t>(collection.threadMessages().count());
+                          count.nrOfDiscussionTags = static_cast<uint_fast32_t>(collection.tags().count());
+                          count.nrOfDiscussionCategories = static_cast<uint_fast32_t>(collection.categories().count());
 
                           writeSingleValueSafeName(output, "count", count);
 

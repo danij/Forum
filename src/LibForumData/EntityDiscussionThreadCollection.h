@@ -7,6 +7,8 @@
 #include <functional>
 #include <map>
 
+#include <boost/noncopyable.hpp>
+
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/ordered_index.hpp>
@@ -20,7 +22,7 @@ namespace Forum
         class DiscussionThreadCollectionBase
         {
         public:
-            DECLARE_ABSTRACT_MANDATORY_NO_COPY(DiscussionThreadCollectionBase)
+            DECLARE_ABSTRACT_MANDATORY(DiscussionThreadCollectionBase)
 
             virtual bool add(DiscussionThreadPtr thread);
             virtual bool remove(DiscussionThreadPtr thread);
@@ -50,7 +52,8 @@ namespace Forum
             auto& byPinDisplayOrder()      { return byPinDisplayOrder_; }
             
         private:
-            RANKED_UNIQUE_COLLECTION(DiscussionThread, name) byName_;
+
+            RANKED_COLLECTION(DiscussionThread, name) byName_;
 
             RANKED_COLLECTION(DiscussionThread, created) byCreated_;
             RANKED_COLLECTION(DiscussionThread, lastUpdated) byLastUpdated_;
@@ -62,31 +65,39 @@ namespace Forum
             std::function<void()> onCountChange_;
         };
 
-        class DiscussionThreadCollectionWithHashedId final : DiscussionThreadCollectionBase
+        class DiscussionThreadCollectionWithHashedId final : public DiscussionThreadCollectionBase, 
+                                                             private boost::noncopyable
         {
         public:
             bool add(DiscussionThreadPtr thread) override;
             bool remove(DiscussionThreadPtr thread) override;
 
-            auto byId() const { return Helpers::toConst(byId_); }
+            bool contains(DiscussionThreadPtr thread) const;
+
+             auto byId() const { return Helpers::toConst(byId_); }
+            auto& byId()       { return byId_; }
 
         private:
             HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
         };
 
-        class DiscussionThreadCollectionWithOrderedId final : DiscussionThreadCollectionBase
+        class DiscussionThreadCollectionWithOrderedId final : public DiscussionThreadCollectionBase, 
+                                                              private boost::noncopyable
         {
         public:
             bool add(DiscussionThreadPtr thread) override;
             bool remove(DiscussionThreadPtr thread) override;
 
-            auto byId() const { return Helpers::toConst(byId_); }
+            bool contains(DiscussionThreadPtr thread) const;
+
+             auto byId() const { return Helpers::toConst(byId_); }
+            auto& byId()       { return byId_; }
 
         private:
             ORDERED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
         };
 
-        class DiscussionThreadCollectionWithReferenceCountAndMessageCount final
+        class DiscussionThreadCollectionWithReferenceCountAndMessageCount final : private boost::noncopyable
         {
         public:
             bool add(DiscussionThreadPtr thread);
@@ -102,6 +113,8 @@ namespace Forum
             * Used when a thread is permanently deleted
             */
             bool remove(DiscussionThreadPtr thread);
+
+            void clear();
             
             void updateLatestMessageCreated(DiscussionThreadPtr thread);
 

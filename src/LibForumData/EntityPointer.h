@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
@@ -23,28 +24,28 @@ namespace Forum
             void setGlobalEntityCollection(EntityCollection* collection);
             
             template<typename T>
-            T& getEntityFromGlobalCollection(size_t index)
+            T* getEntityFromGlobalCollection(size_t index)
             {
                 throw std::runtime_error("Should no be called");
             }
 
             template<>
-            User& getEntityFromGlobalCollection<User>(size_t index);
+            User* getEntityFromGlobalCollection<User>(size_t index);
 
             template<>
-            DiscussionThread& getEntityFromGlobalCollection<DiscussionThread>(size_t index);
+            DiscussionThread* getEntityFromGlobalCollection<DiscussionThread>(size_t index);
 
             template<>
-            DiscussionThreadMessage& getEntityFromGlobalCollection<DiscussionThreadMessage>(size_t index);
+            DiscussionThreadMessage* getEntityFromGlobalCollection<DiscussionThreadMessage>(size_t index);
 
             template<>
-            DiscussionTag& getEntityFromGlobalCollection<DiscussionTag>(size_t index);
+            DiscussionTag* getEntityFromGlobalCollection<DiscussionTag>(size_t index);
 
             template<>
-            DiscussionCategory& getEntityFromGlobalCollection<DiscussionCategory>(size_t index);
+            DiscussionCategory* getEntityFromGlobalCollection<DiscussionCategory>(size_t index);
 
             template<>
-            MessageComment& getEntityFromGlobalCollection<MessageComment>(size_t index);
+            MessageComment* getEntityFromGlobalCollection<MessageComment>(size_t index);
         }
         
         template<typename T>
@@ -59,6 +60,8 @@ namespace Forum
         {
         public:
             typedef int32_t IndexType;
+
+            typedef T element_type;
 
             typedef typename std::add_const<T>::type ConstT;
             typedef typename std::add_lvalue_reference<T>::type RefT;
@@ -90,7 +93,7 @@ namespace Forum
                 return Invalid != index_;
             }
 
-            operator EntityPointer<ConstT>() const
+            explicit operator EntityPointer<ConstT>() const
             {
                 return EntityPointer<ConstT>(index_);
             }
@@ -100,27 +103,48 @@ namespace Forum
                 return operator EntityPointer<ConstT>();
             }
 
+            PtrToConstT ptr() const
+            {
+                if ( ! operator bool()) return nullptr;
+                return Private::getEntityFromGlobalCollection<typename std::remove_const<T>::type>(index_);
+            }
+
+            PtrT ptr()
+            {
+                if ( ! operator bool()) return nullptr;
+                return Private::getEntityFromGlobalCollection<typename std::remove_const<T>::type>(index_);
+            }
+
             RefToConstT operator*() const
             {
-                return *this;
+                return *ptr();
             }
 
             RefT operator*()
             {
-                if ( ! *this) throw std::runtime_error("Invalid EntityPointer dereferenced");
-                return Private::getEntityFromGlobalCollection<typename std::remove_const<T>::type>(index_);
+                return *ptr();
             }
 
             PtrToConstT operator->() const
             {
-                return &(*this);
+                return ptr();
             }
 
             PtrT operator->()
             {
-                return &(*this);
+                return ptr();
             }
             
+            operator PtrToConstT() const
+            {
+                return ptr();
+            }
+
+            operator PtrT()
+            {
+                return ptr();
+            }
+
             bool operator==(EntityPointer other) const
             {
                 return index_ == other.index_;

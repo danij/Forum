@@ -40,9 +40,9 @@ bool DiscussionTag::insertDiscussionThread(DiscussionThreadPtr thread)
 {
     if ( ! threads_.add(thread))
     {
-        return;
+        return false;
     }
-    messageCount() += thread->messageCount();
+    messageCount_ += thread->messageCount();
 
     for (auto category : categories_)
     {
@@ -59,7 +59,7 @@ bool DiscussionTag::deleteDiscussionThread(DiscussionThreadPtr thread)
     {
         return false;
     }
-    messageCount() -= thread->messageCount();
+    messageCount_ -= thread->messageCount();
 
     for (auto category : categories_)
     {

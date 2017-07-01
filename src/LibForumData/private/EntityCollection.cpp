@@ -4,6 +4,7 @@
 #include "StateHelpers.h"
 #include "ContextProviders.h"
 
+using namespace Forum::Authorization;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 
@@ -15,290 +16,6 @@ static thread_local bool alsoDeleteThreadsFromUser = true;
  * Used to prevent the individual removal of message from a user's created messages collection when deleting a user
  */
 static thread_local bool alsoDeleteMessagesFromUser = true;
-
-UserRef EntityCollection::deleteUser(UserIdIteratorType iterator)
-{
-    UserRef user;
-    if ( ! ((user = UserCollectionBase::deleteUser(iterator))))
-    {
-        return user;
-    }
-    //delete all votes of this user
-    {
-        for (auto& messageWeak : user->votedMessages())
-        {
-            if (auto message = messageWeak.lock())
-            {
-                message->removeVote(user);
-            }
-        }
-    }
-    //delete all comments of this user
-    {
-        for (auto& commentRef : user->messageComments())
-        {
-            if (commentRef)
-            {
-                commentRef->executeActionWithParentMessageIfAvailable([&](DiscussionThreadMessage& message)
-                {
-                    if (commentRef->solved())
-                    {
-                        message.solvedCommentsCount() -= 1;
-                    }
-                    message.deleteMessageCommentById(commentRef->id());
-                });
-            }
-        }
-    }
-    //delete all subscriptions of this user
-    {
-        for (auto& threadRef : user->subscribedThreads().threads())
-        {
-            threadRef->subscribedUsers().erase(user);
-        }
-    }
-    {
-        //no need to delete the message from the user as we're deleting the whole user anyway
-        BoolTemporaryChanger changer(alsoDeleteMessagesFromUser, false);
-        for (auto& message : user->messages())
-        {
-            //Each discussion message holds a reference to the user that created it and the parent thread
-            //As such, delete the discussion message before deleting the thread and the user
-            deleteDiscussionThreadMessageById(message->id());
-        }
-    }
-    {
-        //no need to delete the thread from the user as we're deleting the whole user anyway
-        BoolTemporaryChanger changer(alsoDeleteThreadsFromUser, false);
-        for (auto& thread : user->threads())
-        {
-            //Each discussion thread holds a reference to the user that created it
-            //As such, delete the discussion thread before deleting the user
-            deleteDiscussionThreadById(thread->id());
-        }
-    }
-    return user;
-}
-
-//
-//
-//Discussion Threads
-//
-//
-
-void EntityCollection::modifyDiscussionThread(ThreadIdIteratorType iterator,
-                                              std::function<void(DiscussionThread&)>&& modifyFunction)
-{
-    if (iterator == threads_.end())
-    {
-        return;
-    }
-    //allow reindexing of the collection that includes all threads
-    threads_.modify(iterator, [&modifyFunction](const DiscussionThreadRef& thread)
-    {
-        if (thread)
-        {
-            //allow reindexing of the subcollection containing only the threads of the current user
-            thread->createdBy().modifyDiscussionThreadById(thread->id(),
-                                                           std::forward<std::function<void(DiscussionThread&)>>(modifyFunction));
-            for (auto& userWeak : thread->subscribedUsers())
-            {
-                if (auto userShared = userWeak.lock())
-                {
-                    userShared->subscribedThreads().modifyDiscussionThreadById(thread->id(), {});
-                }
-            }
-        }
-    });
-}
-
-DiscussionThreadRef EntityCollection::deleteDiscussionThread(ThreadIdIteratorType iterator)
-{
-    DiscussionThreadRef thread;
-    if ( ! ((thread = DiscussionThreadCollectionBase::deleteDiscussionThread(iterator))))
-    {
-        return thread;
-    }
-    thread->aboutToBeDeleted() = true;
-    {
-        for (auto& message : thread->messages())
-        {
-            //Each discussion message holds a reference to the user that created it and the parent thread
-            //As such, delete the discussion message before deleting the thread
-            deleteDiscussionThreadMessageById(message->id());
-        }
-    }
-    if (alsoDeleteThreadsFromUser)
-    {
-        modifyUserById(thread->createdBy().id(), [&](User& user)
-        {
-            user.deleteDiscussionThreadById(thread->id());
-        });
-    }
-    for (auto& categoryWeak : thread->categoriesWeak())
-    {
-        if (auto categoryShared = categoryWeak.lock())
-        {
-            categoryShared->deleteDiscussionThreadById(thread->id());
-        }
-    }
-    for (auto& tagWeak : thread->tagsWeak())
-    {
-        if (auto tagShared = tagWeak.lock())
-        {
-            tagShared->deleteDiscussionThreadById(thread->id());
-        }
-    }
-    for (auto& userWeak : thread->subscribedUsers())
-    {
-        if (auto userShared = userWeak.lock())
-        {
-            userShared->subscribedThreads().deleteDiscussionThreadById(thread->id());
-        }
-    }
-    return thread;
-}
-
-//
-//
-//Discussion Messages
-//
-//
-
-void EntityCollection::modifyDiscussionThreadMessage(MessageIdIteratorType iterator,
-                                                     std::function<void(DiscussionThreadMessage&)>&& modifyFunction)
-{
-    if (iterator == messages_.end())
-    {
-        return;
-    }
-    //allow reindexing of the collection that includes all messages
-    messages_.modify(iterator, [&modifyFunction](const DiscussionThreadMessageRef& message)
-    {
-        if (message)
-        {
-            //allow reindexing of the subcollection containing only the messages of the current user
-            message->createdBy().modifyDiscussionThreadMessageById(message->id(), [&modifyFunction](auto& messageToModify)
-            {
-                messageToModify.executeActionWithParentThreadIfAvailable([&](auto& parentThread)
-                {
-                    parentThread.modifyDiscussionThreadMessageById(messageToModify.id(),
-                                                                   std::forward<std::function<void(DiscussionThreadMessage&)>>(modifyFunction));
-                });
-            });
-        }
-    });
-}
-
-DiscussionThreadMessageRef EntityCollection::deleteDiscussionThreadMessage(MessageIdIteratorType iterator)
-{
-    DiscussionThreadMessageRef message;
-    if ( ! ((message = DiscussionThreadMessageCollectionBase::deleteDiscussionThreadMessage(iterator))))
-    {
-        return message;
-    }
-    if (alsoDeleteMessagesFromUser)
-    {
-        modifyUserById(message->createdBy().id(), [&](User& user)
-        {
-            user.deleteDiscussionThreadMessageById(message->id());
-        });
-    }
-
-    message->executeActionWithParentThreadIfAvailable([&](auto& parentThread)
-    {
-        if ( ! parentThread.aboutToBeDeleted())
-        {
-            this->modifyDiscussionThreadById(parentThread.id(), [&](DiscussionThread& thread)
-            {
-                thread.deleteDiscussionThreadMessageById(message->id());
-                thread.resetVisitorsSinceLastEdit();
-                thread.latestVisibleChange() = Context::getCurrentTime();
-
-                for (auto& tagWeak : thread.tagsWeak())
-                {
-                    if (auto tagShared = tagWeak.lock())
-                    {
-                        this->modifyDiscussionTagById(tagShared->id(), [&thread](auto& tag)
-                        {
-                            tag.messageCount() -= 1;
-                            //notify the thread collection of each tag that the thread has fewer messages
-                            tag.modifyDiscussionThreadById(thread.id(), {});
-                        });
-                    }
-                }
-                for (auto& categoryWeak : thread.categoriesWeak())
-                {
-                    if (auto categoryShared = categoryWeak.lock())
-                    {
-                        auto threadShared = thread.shared_from_this();
-                        this->modifyDiscussionCategoryById(categoryShared->id(), [&thread, &threadShared](auto& category)
-                        {
-                            category.updateMessageCount(threadShared, -1);
-                            //notify the thread collection of each category that the thread has fewer messages
-                            category.modifyDiscussionThreadById(thread.id(), {});
-                        });
-                    }
-                }
-            });
-        }
-    });
-    return message;
-}
-
-//
-//
-//Discussion Tags
-//
-//
-
-DiscussionTagRef EntityCollection::deleteDiscussionTag(TagIdIteratorType iterator)
-{
-    DiscussionTagRef tag;
-    if ( ! ((tag = DiscussionTagCollectionBase::deleteDiscussionTag(iterator))))
-    {
-        return tag;
-    }
-    tag->aboutToBeDeleted();
-    for (auto& categoryWeak : tag->categoriesWeak())
-    {
-        if (auto category = categoryWeak.lock())
-        {
-            category->removeTag(tag);
-        }
-    }
-    for (auto& thread : tag->threads().get<DiscussionThreadCollectionById>())
-    {
-        if (thread)
-        {
-            thread->removeTag(tag);
-        }
-    }
-    return tag;
-}
-
-//
-//
-//Discussion Categories
-//
-//
-
-DiscussionCategoryRef EntityCollection::deleteDiscussionCategory(CategoryIdIteratorType iterator)
-{
-    DiscussionCategoryRef category;
-    if ( ! ((category = DiscussionCategoryCollectionBase::deleteDiscussionCategory(iterator))))
-    {
-        return category;
-    }
-    for (auto& tag : category->tags())
-    {
-        if (tag)
-        {
-            tag->removeCategory(category);
-        }
-    }
-    return category;
-}
 
 struct EntityCollection::Impl
 {
@@ -319,6 +36,224 @@ struct EntityCollection::Impl
     DiscussionTagCollection tags_;
     DiscussionCategoryCollection categories_;
     MessageCommentCollection messageComments_;
+
+    GrantedPrivilegeStore grantedPrivileges_;
+
+    void insertUser(UserPtr user)
+    {
+        assert(user);
+        assert(users_.add(user));
+    }
+
+    void deleteUser(UserPtr user)
+    {
+        assert(user);
+        if ( ! users_.remove(user))
+        {
+            return;
+        }
+
+        for (DiscussionThreadMessagePtr message : user->votedMessages())
+        {
+            assert(message);
+            message->removeVote(user);
+        }
+
+        for (MessageCommentPtr comment : user->messageComments().byId())
+        {
+            assert(comment);
+            if (comment->solved())
+            {
+                comment->parentMessage().solvedCommentsCount() -= 1;
+            }
+            comment->parentMessage().comments().remove(comment);
+        }
+
+        for (DiscussionThreadPtr thread : user->subscribedThreads().byId())
+        {
+            assert(thread);
+            thread->subscribedUsers().erase(user);
+        }
+
+        {
+            //no need to delete the message from the user as we're deleting the whole user anyway
+            BoolTemporaryChanger changer(alsoDeleteMessagesFromUser, false);
+            for (auto& message : user->threadMessages().byId())
+            {
+                assert(message);
+                //Each discussion message holds a reference to the user that created it and the parent thread
+                //As such, delete the discussion message before deleting the thread and the user
+                deleteDiscussionThreadMessage(message);
+            }
+        }
+        {
+            //no need to delete the thread from the user as we're deleting the whole user anyway
+            BoolTemporaryChanger changer(alsoDeleteThreadsFromUser, false);
+            for (auto& thread : user->threads().byId())
+            {
+                assert(thread);
+                //Each discussion thread holds a reference to the user that created it
+                //As such, delete the discussion thread before deleting the user
+                deleteDiscussionThread(thread);
+            }
+        }
+    }
+
+    void insertDiscussionThread(DiscussionThreadPtr thread)
+    {
+        assert(thread);
+        assert(threads_.add(thread));
+    }
+
+    void deleteDiscussionThread(DiscussionThreadPtr thread)
+    {
+        assert(thread);
+
+        if ( ! threads_.remove(thread))
+        {
+            return;
+        }
+
+        thread->aboutToBeDeleted() = true;
+
+        for (auto& message : thread->messages().byId())
+        {
+            assert(message);
+            //Each discussion message holds a reference to the user that created it and the parent thread
+            //As such, delete the discussion message before deleting the thread
+            deleteDiscussionThreadMessage(message);
+        }
+
+        if (alsoDeleteThreadsFromUser)
+        {
+            thread->createdBy().threads().remove(thread);
+        }
+
+        for (DiscussionCategoryPtr category : thread->categories())
+        {
+            assert(category);
+            category->deleteDiscussionThread(thread);
+        }
+
+        for (DiscussionTagPtr tag : thread->tags())
+        {
+            assert(tag);
+            tag->deleteDiscussionThread(thread);
+        }
+
+        for (UserPtr user : thread->subscribedUsers())
+        {
+            assert(user);
+            user->subscribedThreads().remove(thread);
+        }
+    }
+
+    void insertDiscussionThreadMessage(DiscussionThreadMessagePtr message)
+    {
+        assert(message);
+        assert(threadMessages_.add(message));
+    }
+
+    void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message)
+    {
+        assert(message);
+        if ( ! threadMessages_.remove(message))
+        {
+            return;
+        }
+
+        if (alsoDeleteMessagesFromUser)
+        {
+            message->createdBy().threadMessages().remove(message);
+        }
+
+        for (MessageCommentPtr comment : message->comments().byId())
+        {
+            deleteMessageComment(comment);
+        }
+
+        DiscussionThread& parentThread = *(message->parentThread());
+        if ( ! parentThread.aboutToBeDeleted())
+        {
+            return;
+        }
+
+        parentThread.deleteDiscussionThreadMessage(message);
+        parentThread.resetVisitorsSinceLastEdit();
+        parentThread.latestVisibleChange() = Context::getCurrentTime();
+
+        for (DiscussionTagPtr tag : parentThread.tags())
+        {
+            assert(tag);
+            tag->updateMessageCount(-1);
+        }
+
+        for (DiscussionCategoryPtr category : parentThread.categories())
+        {
+            assert(category);
+            category->updateMessageCount(message->parentThread(), -1);
+        }
+    }
+
+    void insertDiscussionTag(DiscussionTagPtr tag)
+    {
+        assert(tag);
+        assert(tags_.add(tag));
+    }
+
+    void deleteDiscussionTag(DiscussionTagPtr tag)
+    {
+        assert(tag);
+
+        if ( ! tags_.remove (tag))
+        {
+            return;
+        }
+
+        for (DiscussionCategoryPtr category : tag->categories())
+        {
+            assert(category);
+            category->removeTag(tag);
+        }
+        for (DiscussionThreadPtr thread : tag->threads().byId())
+        {
+            assert(thread);
+            thread->removeTag(tag);
+        }
+    }
+
+    void insertDiscussionCategory(DiscussionCategoryPtr category)
+    {
+        assert(category);
+        assert(categories_.add(category));
+    }
+
+    void deleteDiscussionCategory(DiscussionCategoryPtr category)
+    {
+        assert(category);
+
+        if ( ! categories_.remove(category))
+        {
+            return;
+        }
+        for (DiscussionTagPtr tag : category->tags())
+        {
+            assert(tag);
+            tag->removeCategory(category);
+        }
+    }
+
+    void insertMessageComment(MessageCommentPtr comment)
+    {
+        assert(comment);
+        assert(messageComments_.add(comment));
+    }
+
+    void deleteMessageComment(MessageCommentPtr comment)
+    {
+        assert(comment);
+        messageComments_.remove(comment);
+    }
 
     void setEventListeners()
     {
@@ -413,16 +348,29 @@ struct EntityCollection::Impl
 
     }
 
-    void onUpdateDiscussionCategoryMessageCount(const DiscussionTag& category)
+    void onUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category)
     {
 
     }
 
-    void onUpdateDiscussionCategoryDisplayOrder(const DiscussionTag& category)
+    void onUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category)
     {
 
     }
 };
+
+static UserPtr anonymousUser_;
+static IdType anonymousUserId_;
+
+UserPtr Forum::Entities::anonymousUser()
+{
+    return anonymousUser_;
+}
+
+IdType Forum::Entities::anonymousUserId()
+{
+    return anonymousUserId_;
+}
 
 EntityCollection::EntityCollection()
 {
@@ -431,14 +379,8 @@ EntityCollection::EntityCollection()
     Private::setGlobalEntityCollection(this);
     impl_->setEventListeners();
     
-    notifyTagChange_ = [this](auto& tag)
-    {
-        this->modifyDiscussionTagById(tag.id(), [](auto&) {});
-    };
-    notifyCategoryChange_ = [this](auto& category)
-    {
-        this->modifyDiscussionCategoryById(category.id(), [](auto&) {});
-    };
+    anonymousUser_ = UserPtr(static_cast<UserPtr::IndexType>(impl_->managedEntities.users.add("<anonymous>")));
+    anonymousUserId_ = anonymousUser_->id();
 }
 
 EntityCollection::~EntityCollection()
@@ -446,6 +388,16 @@ EntityCollection::~EntityCollection()
     Private::setGlobalEntityCollection(nullptr);
 
     if (impl_) delete impl_;
+}
+
+const GrantedPrivilegeStore& EntityCollection::grantedPrivileges() const
+{
+    return impl_->grantedPrivileges_;
+}
+
+GrantedPrivilegeStore& EntityCollection::grantedPrivileges()
+{
+    return impl_->grantedPrivileges_;
 }
 
 std::unique_ptr<User>* EntityCollection::getUserPoolRoot()
@@ -478,33 +430,52 @@ std::unique_ptr<MessageComment>* EntityCollection::getMessageCommentPoolRoot()
     return impl_->managedEntities.messageComments.data();
 }
 
-UserPtr EntityCollection::createAndAddUser(IdType id, Timestamp created)
+UserPtr EntityCollection::createUser(IdType id, Timestamp created, VisitDetails creationDetails)
 {
-    return UserPtr(static_cast<UserPtr::IndexType>(impl_->managedEntities.users.add(id, created)));
+    return UserPtr(static_cast<UserPtr::IndexType>(
+        impl_->managedEntities.users.add(id, created, std::move(creationDetails))));
 }
 
-DiscussionThreadPtr EntityCollection::createAndAddDiscussionThread()
+DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& createdBy, Timestamp created, 
+                                                             VisitDetails creationDetails)
 {
-    return DiscussionThreadPtr(static_cast<DiscussionThreadPtr::IndexType>(impl_->managedEntities.threads.add()));
+    return DiscussionThreadPtr(static_cast<DiscussionThreadPtr::IndexType>(impl_->managedEntities.threads.add(
+        id, createdBy, created, creationDetails)));
 }
 
-DiscussionThreadMessagePtr EntityCollection::createAndAddDiscussionThreadMessage()
+DiscussionThreadMessagePtr EntityCollection::createDiscussionThreadMessage(IdType id, User& createdBy, 
+                                                                           Timestamp created, VisitDetails creationDetails)
 {
     return DiscussionThreadMessagePtr(static_cast<DiscussionThreadMessagePtr::IndexType>(
-        impl_->managedEntities.threadMessages.add()));
+        impl_->managedEntities.threadMessages.add(id, createdBy, created, creationDetails)));
 }
 
-DiscussionTagPtr EntityCollection::createAndAddDiscussionTag()
+DiscussionTagPtr EntityCollection::createDiscussionTag(IdType id, Timestamp created, VisitDetails creationDetails)
 {
-    return DiscussionTagPtr(static_cast<DiscussionTagPtr::IndexType>(impl_->managedEntities.tags.add()));
+    return DiscussionTagPtr(static_cast<DiscussionTagPtr::IndexType>(impl_->managedEntities.tags.add(
+        id, created, creationDetails, *this)));
 }
 
-DiscussionCategoryPtr EntityCollection::createAndAddDiscussionCategory()
+DiscussionCategoryPtr EntityCollection::createDiscussionCategory(IdType id, Timestamp created, VisitDetails creationDetails)
 {
-    return DiscussionCategoryPtr(static_cast<DiscussionCategoryPtr::IndexType>(impl_->managedEntities.categories.add()));
+    return DiscussionCategoryPtr(static_cast<DiscussionCategoryPtr::IndexType>(impl_->managedEntities.categories.add(
+        id, created, creationDetails, *this)));
 }
+
+MessageCommentPtr EntityCollection::createMessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy, 
+                                                         Timestamp created, VisitDetails creationDetails)
+{
+    return MessageCommentPtr(static_cast<MessageCommentPtr::IndexType>(impl_->managedEntities.messageComments.add(
+        id, message, createdBy, created, creationDetails)));
+}
+
 
 const UserCollection& EntityCollection::users() const
+{
+    return impl_->users_;
+}
+
+UserCollection& EntityCollection::users()
 {
     return impl_->users_;
 }
@@ -514,7 +485,17 @@ const DiscussionThreadCollectionWithHashedId& EntityCollection::threads() const
     return impl_->threads_;
 }
 
+DiscussionThreadCollectionWithHashedId& EntityCollection::threads()
+{
+    return impl_->threads_;
+}
+
 const DiscussionThreadMessageCollection& EntityCollection::threadMessages() const
+{
+    return impl_->threadMessages_;
+}
+
+DiscussionThreadMessageCollection& EntityCollection::threadMessages()
 {
     return impl_->threadMessages_;
 }
@@ -524,7 +505,17 @@ const DiscussionTagCollection& EntityCollection::tags() const
     return impl_->tags_;
 }
 
+DiscussionTagCollection& EntityCollection::tags()
+{
+    return impl_->tags_;
+}
+
 const DiscussionCategoryCollection& EntityCollection::categories() const
+{
+    return impl_->categories_;
+}
+
+DiscussionCategoryCollection& EntityCollection::categories()
 {
     return impl_->categories_;
 }
@@ -534,5 +525,67 @@ const MessageCommentCollection& EntityCollection::messageComments() const
     return impl_->messageComments_;
 }
 
-const UserPtr Forum::Entities::AnonymousUser = std::make_shared<User>("<anonymous>");
-const IdType Forum::Entities::AnonymousUserId = AnonymousUser->id();
+MessageCommentCollection& EntityCollection::messageComments()
+{
+    return impl_->messageComments_;
+}
+
+void EntityCollection::insertUser(UserPtr user)
+{
+    impl_->insertUser(user);
+}
+
+void EntityCollection::deleteUser(UserPtr user)
+{
+    impl_->deleteUser(user);
+}
+
+void EntityCollection::insertDiscussionThread(DiscussionThreadPtr thread)
+{
+    impl_->insertDiscussionThread(thread);
+}
+
+void EntityCollection::deleteDiscussionThread(DiscussionThreadPtr thread)
+{
+    impl_->deleteDiscussionThread(thread);
+}
+
+void EntityCollection::insertDiscussionThreadMessage(DiscussionThreadMessagePtr message)
+{
+    impl_->insertDiscussionThreadMessage(message);
+}
+
+void EntityCollection::deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message)
+{
+    impl_->deleteDiscussionThreadMessage(message);
+}
+
+void EntityCollection::insertDiscussionTag(DiscussionTagPtr tag)
+{
+    impl_->insertDiscussionTag(tag);
+}
+
+void EntityCollection::deleteDiscussionTag(DiscussionTagPtr tag)
+{
+    impl_->deleteDiscussionTag(tag);
+}
+
+void EntityCollection::insertDiscussionCategory(DiscussionCategoryPtr category)
+{
+    impl_->insertDiscussionCategory(category);
+}
+
+void EntityCollection::deleteDiscussionCategory(DiscussionCategoryPtr category)
+{
+    impl_->deleteDiscussionCategory(category);
+}
+
+void EntityCollection::insertMessageComment(MessageCommentPtr comment)
+{
+    impl_->insertMessageComment(comment);
+}
+
+void EntityCollection::deleteMessageComment(MessageCommentPtr comment)
+{
+    impl_->deleteMessageComment(comment);
+}

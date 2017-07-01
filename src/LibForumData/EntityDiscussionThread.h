@@ -108,15 +108,22 @@ namespace Forum
             auto& lastUpdatedDetails()  { return lastUpdatedDetails_; }
             auto& lastUpdatedReason()   { return lastUpdatedReason_; }
             auto& latestVisibleChange() { return latestVisibleChange_; }
+            auto& lastUpdatedBy()       { return lastUpdatedBy_; }
 
             /**
             * Thread-safe reference to the number of times the thread was visited.
             * Can be updated even for const values as it is not refenced in any index.
             * @return An atomic integer of at least 64-bits
             */
-            auto& visited()   const { return visited_; }
+            auto& visited()    const { return visited_; }
 
-            auto& subscribedUsers() { return subscribedUsers_; }
+            auto& createdBy()        { return createdBy_; }
+            auto& messages()         { return messages_; }
+            auto& tags()             { return tags_; }
+            auto& categories()       { return categories_; }
+                                     
+            auto& subscribedUsers()  { return subscribedUsers_; }
+            bool& aboutToBeDeleted() { return aboutToBeDeleted_; }
 
             void updatePinDisplayOrder(uint16_t value)
             {
@@ -167,6 +174,8 @@ namespace Forum
 
             uint16_t pinDisplayOrder_ = 0;
             mutable std::atomic_int_fast64_t visited_ = 0;
+            bool aboutToBeDeleted_ = false;
+
             std::set<boost::uuids::uuid> visitorsSinceLastEdit_;
 
             std::set<EntityPointer<DiscussionTag>> tags_;

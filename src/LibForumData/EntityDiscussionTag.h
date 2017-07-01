@@ -5,7 +5,6 @@
 #include "EntityDiscussionThreadCollection.h"
 
 #include <string>
-#include <memory>
 
 #include <boost/noncopyable.hpp>
 
@@ -82,16 +81,19 @@ namespace Forum
                 name_ = std::move(name);
                 changeNotifications_.onUpdateName(*this);
             }
-            std::string& uiBlob() { return uiBlob_; }
+            std::string& uiBlob()      { return uiBlob_; }
 
-            auto& lastUpdated() { return lastUpdated_; }
+            auto& lastUpdated()        { return lastUpdated_; }
             auto& lastUpdatedDetails() { return lastUpdatedDetails_; }
-            auto& lastUpdatedReason() { return lastUpdatedReason_; }
+            auto& lastUpdatedReason()  { return lastUpdatedReason_; }
+            auto& lastUpdatedBy()      { return lastUpdatedBy_; }
 
-            auto& messageCount() { return messageCount_; }
-            void updateMessageCount(int_fast32_t value)
+            auto& threads()            { return threads_; }
+            auto& categories()         { return categories_; }
+
+            void updateMessageCount(int_fast32_t delta)
             {
-                messageCount_ = value;
+                messageCount_ += delta;
                 changeNotifications_.onUpdateMessageCount(*this);
             }
 

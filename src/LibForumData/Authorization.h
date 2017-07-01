@@ -166,7 +166,7 @@ namespace Forum
 
             virtual AuthorizationStatus addNewDiscussionCategory(const Entities::User& currentUser,
                                                                  StringView name,
-                                                                 const Entities::DiscussionCategoryRef& parent) const = 0;
+                                                                 const Entities::DiscussionCategory* parent) const = 0;
             virtual AuthorizationStatus changeDiscussionCategoryName(const Entities::User& currentUser,
                                                                      const Entities::DiscussionCategory& category,
                                                                      StringView newName) const = 0;
@@ -175,7 +175,7 @@ namespace Forum
                                                                             StringView newDescription) const = 0;
             virtual AuthorizationStatus changeDiscussionCategoryParent(const Entities::User& currentUser,
                                                                        const Entities::DiscussionCategory& category,
-                                                                       const Entities::DiscussionCategoryRef& newParent) const = 0;
+                                                                       const Entities::DiscussionCategory* newParent) const = 0;
             virtual AuthorizationStatus changeDiscussionCategoryDisplayOrder(const Entities::User& currentUser,
                                                                              const Entities::DiscussionCategory& category,
                                                                              int_fast16_t newDisplayOrder) const = 0;

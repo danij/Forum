@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EntityPointer.h"
+
 #include <boost/iterator/transform_iterator.hpp>
 
 #include <cassert>
@@ -57,14 +59,14 @@ namespace Forum
 
         private:
 
-            static const T* getPointer(const std::shared_ptr<T>& ptr)
+            static const T* getPointer(Entities::EntityPointer<T> ptr)
             {
                 if ( ! ptr)
                 {
                     assert("Collections should not contain empty shared pointers");
                     return nullptr;
                 }
-                return ptr.get();
+                return ptr.ptr();
             }
 
             const TCollection& collection_;

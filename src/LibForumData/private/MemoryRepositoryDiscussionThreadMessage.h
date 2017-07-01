@@ -17,7 +17,7 @@ namespace Forum
 
             StatusCode addNewDiscussionMessageInThread(Entities::IdTypeRef threadId,
                                                        StringView content, OutStream& output) override;
-            StatusWithResource<Entities::DiscussionThreadMessageRef>
+            StatusWithResource<Entities::DiscussionThreadMessagePtr>
                 addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef threadId,
                                                 StringView content) override;
             StatusCode deleteDiscussionMessage(Entities::IdTypeRef id, OutStream& output) override;
@@ -45,7 +45,7 @@ namespace Forum
 
             StatusCode addCommentToDiscussionThreadMessage(Entities::IdTypeRef messageId, StringView content,
                                                            OutStream& output) override;
-            StatusWithResource<Entities::MessageCommentRef>
+            StatusWithResource<Entities::MessageCommentPtr>
                 addCommentToDiscussionThreadMessage(Entities::EntityCollection& collection,
                                                     Entities::IdTypeRef messageId, StringView content) override;
 

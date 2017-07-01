@@ -97,23 +97,23 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
         switch (by)
         {
         case RetrieveUsersBy::Name:
-            writeEntitiesWithPagination(collection.usersByName(), "users", output, displayContext.pageNumber,
+            writeEntitiesWithPagination(collection.users().byName(), "users", output, displayContext.pageNumber,
                 pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::Created:
-            writeEntitiesWithPagination(collection.usersByCreated(), "users", output, displayContext.pageNumber,
+            writeEntitiesWithPagination(collection.users().byCreated(), "users", output, displayContext.pageNumber,
                 pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::LastSeen:
-            writeEntitiesWithPagination(collection.usersByLastSeen(), "users", output, displayContext.pageNumber,
+            writeEntitiesWithPagination(collection.users().byLastSeen(), "users", output, displayContext.pageNumber,
                 pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::ThreadCount:
-            writeEntitiesWithPagination(collection.usersByThreadCount(), "users", output, displayContext.pageNumber,
+            writeEntitiesWithPagination(collection.users().byThreadCount(), "users", output, displayContext.pageNumber,
                 pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::MessageCount:
-            writeEntitiesWithPagination(collection.usersByMessageCount(), "users", output, displayContext.pageNumber,
+            writeEntitiesWithPagination(collection.users().byMessageCount(), "users", output, displayContext.pageNumber,
                 pageSize, ascending, restriction);
             break;
         }
@@ -133,7 +133,7 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
                       {
                           auto& currentUser = performedBy.get(collection, store());
 
-                          const auto& index = collection.usersById();
+                          const auto& index = collection.users().byId();
                           auto it = index.find(id);
                           if (it == index.end())
                           {
@@ -174,7 +174,7 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                       {
                           auto& currentUser = performedBy.get(collection, store());
 
-                          const auto& index = collection.usersByName();
+                          const auto& index = collection.users().byName();
                           auto it = index.find(name);
                           if (it == index.end())
                           {
@@ -244,12 +244,12 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
     return status;
 }
 
-StatusWithResource<UserRef> MemoryRepositoryUser::addNewUser(EntityCollection& collection,
+StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& collection,
                                                              StringView name, StringView auth)
 {
     auto authString = toString(auth);
 
-    auto& indexByAuth = collection.users().get<EntityCollection::UserCollectionByAuth>();
+    auto& indexByAuth = collection.users().byAuth();
     if (indexByAuth.find(authString) != indexByAuth.end())
     {
         return StatusCode::USER_WITH_SAME_AUTH_ALREADY_EXISTS;
@@ -257,19 +257,18 @@ StatusWithResource<UserRef> MemoryRepositoryUser::addNewUser(EntityCollection& c
 
     StringWithSortKey nameString(name);
 
-    auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
+    auto& indexByName = collection.users().byName();
     if (indexByName.find(nameString) != indexByName.end())
     {
         return StatusCode::ALREADY_EXISTS;
     }
 
-    auto user = std::make_shared<User>();
-    user->id() = generateUUIDString();
-    user->auth() = std::move(authString);
-    user->name() = std::move(nameString);
-    updateCreated(*user);
+    auto user = collection.createUser(generateUUIDString(), Context::getCurrentTime(), 
+                                      { Context::getCurrentUserIpAddress() });
+    user->updateAuth(std::move(authString));
+    user->updateName(std::move(nameString));
 
-    collection.users().insert(user);
+    collection.insertUser(user);
 
     return user;
 }
@@ -291,7 +290,7 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView new
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
-                           auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+                           auto& indexById = collection.users().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
                            {
@@ -314,7 +313,7 @@ StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView new
 
 StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, IdTypeRef id, StringView newName)
 {
-    auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+    auto& indexById = collection.users().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
@@ -323,15 +322,15 @@ StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, Id
 
     StringWithSortKey newNameString(newName);
 
-    auto& indexByName = collection.users().get<EntityCollection::UserCollectionByName>();
+    auto& indexByName = collection.users().byName();
     if (indexByName.find(newNameString) != indexByName.end())
     {
         return StatusCode::ALREADY_EXISTS;
     }
-    collection.modifyUser(it, [&newNameString](User& user)
-                              {
-                                  user.name() = std::move(newNameString);
-                              });
+    
+    UserPtr user = *it;
+    user->updateName(std::move(newNameString));
+
     return StatusCode::OK;
 }
 
@@ -353,7 +352,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView new
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
-                           auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+                           auto& indexById = collection.users().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
                            {
@@ -376,17 +375,16 @@ StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView new
 
 StatusCode MemoryRepositoryUser::changeUserInfo(EntityCollection& collection, IdTypeRef id, StringView newInfo)
 {
-    auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+    auto& indexById = collection.users().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
         return StatusCode::NOT_FOUND;
     }
 
-    collection.modifyUser(it, [&newInfo](User& user)
-                              {
-                                  user.info() = toString(newInfo);
-                              });
+    UserPtr user = *it;
+    user->info() = toString(newInfo);
+
     return StatusCode::OK;
 }
 
@@ -402,7 +400,7 @@ StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
-                           auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+                           auto& indexById = collection.users().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
                            {
@@ -424,14 +422,14 @@ StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
 
 StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdTypeRef id)
 {
-    auto& indexById = collection.users().get<EntityCollection::UserCollectionById>();
+    auto& indexById = collection.users().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
         return StatusCode::NOT_FOUND;
     }
 
-    collection.deleteUser(it);
+    collection.deleteUser(*it);
 
     return StatusCode::OK;
 }

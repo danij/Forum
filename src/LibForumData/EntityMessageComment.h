@@ -29,6 +29,7 @@ namespace Forum
 
             const User& createdBy()       const { return createdBy_; }
             const auto& parentMessage()   const { return message_; }
+                  auto& parentMessage()         { return message_; }
 
              StringView content()         const { return content_; }
                    bool solved()          const { return solved_; }

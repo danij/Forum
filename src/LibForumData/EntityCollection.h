@@ -11,7 +11,8 @@
 #include "EntityMessageCommentCollection.h"
 
 #include <memory>
-#include <functional>
+
+#include <boost/noncopyable.hpp>
 
 namespace Forum
 {
@@ -21,95 +22,72 @@ namespace Forum
          * Stores references to all entities present in memory
          * Upon deleting an entity, the collection also removes the entity from any other collection if might have been part of
          */
-        class EntityCollection final : public UserCollectionBase<HashIndexForId>,
-                                  public DiscussionThreadCollectionBase<HashIndexForId>,
-                                  public DiscussionThreadMessageCollectionBase<HashIndexForId>,
-                                  public MessageCommentCollectionBase<HashIndexForId>,
-                                  public DiscussionTagCollectionBase<HashIndexForId>,
-                                  public DiscussionCategoryCollectionBase<HashIndexForId>,
-                                  public Authorization::ForumWidePrivilegeStore
+        class EntityCollection final : public Authorization::ForumWidePrivilegeStore,
+                                       private boost::noncopyable
         {
         public:
-            /**
-             * Safely deletes a user instance, removing it from all indexes it is registered in
-             */
-            UserRef deleteUser(UserIdIteratorType iterator) override;
-
-            /**
-             * Enables a safe modification of a discussion thread instance,
-             * also taking other collections in which the thread might be registered into account
-             */
-            void modifyDiscussionThread(ThreadIdIteratorType iterator,
-                                        std::function<void(DiscussionThread&)>&& modifyFunction) override;
-            /**
-             * Safely deletes a discussion thread instance,
-             * also taking other collections in which the thread might be registered into account
-             */
-            DiscussionThreadRef deleteDiscussionThread(ThreadIdIteratorType iterator) override;
-
-            /**
-             * Enables a safe modification of a discussion message instance,
-             * refreshing all indexes the message is registered in
-             */
-            void modifyDiscussionThreadMessage(MessageIdIteratorType iterator,
-                                               std::function<void(DiscussionThreadMessage&)>&& modifyFunction) override;
-            /**
-             * Safely deletes a discussion message instance, removing it from all indexes it is registered in
-             */
-            DiscussionThreadMessageRef deleteDiscussionThreadMessage(MessageIdIteratorType iterator) override;
-
-            /**
-            * Safely deletes a discussion tag instance, removing it from all indexes it is registered in
-            */
-            DiscussionTagRef deleteDiscussionTag(TagIdIteratorType iterator) override;
-
-            /**
-            * Safely deletes a discussion category instance, removing it from all indexes it is registered in
-            */
-            DiscussionCategoryRef deleteDiscussionCategory(CategoryIdIteratorType iterator) override;
-
-            auto& notifyTagChange()      { return notifyTagChange_; }
-            auto& notifyCategoryChange() { return notifyCategoryChange_; }
-
-                        
-            const auto& grantedPrivileges() const { return grantedPrivileges_; }
-                  auto& grantedPrivileges()       { return grantedPrivileges_; }
-
-            //new
             EntityCollection();
             ~EntityCollection();
 
-            std::unique_ptr<User>* getUserPoolRoot();
-            std::unique_ptr<DiscussionThread>* getDiscussionThreadPoolRoot();
+            const Authorization::GrantedPrivilegeStore& grantedPrivileges() const;
+                  Authorization::GrantedPrivilegeStore& grantedPrivileges();
+                  
+            std::unique_ptr<User>*                    getUserPoolRoot();
+            std::unique_ptr<DiscussionThread>*        getDiscussionThreadPoolRoot();
             std::unique_ptr<DiscussionThreadMessage>* getDiscussionThreadMessagePoolRoot();
-            std::unique_ptr<DiscussionTag>* getDiscussionTagPoolRoot();
-            std::unique_ptr<DiscussionCategory>* getDiscussionCategoryPoolRoot();
-            std::unique_ptr<MessageComment>* getMessageCommentPoolRoot();
+            std::unique_ptr<DiscussionTag>*           getDiscussionTagPoolRoot();
+            std::unique_ptr<DiscussionCategory>*      getDiscussionCategoryPoolRoot();
+            std::unique_ptr<MessageComment>*          getMessageCommentPoolRoot();
 
-            UserPtr createAndAddUser(IdType id, Timestamp created);
-            DiscussionThreadPtr createAndAddDiscussionThread(/*EXTRA PARAMETERS*/);
-            DiscussionThreadMessagePtr createAndAddDiscussionThreadMessage();
-            DiscussionTagPtr createAndAddDiscussionTag();
-            DiscussionCategoryPtr createAndAddDiscussionCategory();
+            UserPtr                    createUser(IdType id, Timestamp created, VisitDetails creationDetails);
+            DiscussionThreadPtr        createDiscussionThread(IdType id, User& createdBy, Timestamp created, 
+                                                              VisitDetails creationDetails);
+            DiscussionThreadMessagePtr createDiscussionThreadMessage(IdType id, User& createdBy, Timestamp created, 
+                                                                     VisitDetails creationDetails);
+            DiscussionTagPtr           createDiscussionTag(IdType id, Timestamp created, VisitDetails creationDetails);
+            DiscussionCategoryPtr      createDiscussionCategory(IdType id, Timestamp created, VisitDetails creationDetails);
+            MessageCommentPtr          createMessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy, 
+                                                           Timestamp created, VisitDetails creationDetails);
 
-            const UserCollection& users() const;
+            const UserCollection&                         users() const;
+                  UserCollection&                         users();
             const DiscussionThreadCollectionWithHashedId& threads() const;
-            const DiscussionThreadMessageCollection& threadMessages() const;
-            const DiscussionTagCollection& tags() const;
-            const DiscussionCategoryCollection& categories() const;
-            const MessageCommentCollection& messageComments() const;
+                  DiscussionThreadCollectionWithHashedId& threads();
+            const DiscussionThreadMessageCollection&      threadMessages() const;
+                  DiscussionThreadMessageCollection&      threadMessages();
+            const DiscussionTagCollection&                tags() const;
+                  DiscussionTagCollection&                tags();
+            const DiscussionCategoryCollection&           categories() const;
+                  DiscussionCategoryCollection&           categories();
+            const MessageCommentCollection&               messageComments() const;
+                  MessageCommentCollection&               messageComments();
+
+            void insertUser(UserPtr user);
+            void deleteUser(UserPtr user);
+
+            void insertDiscussionThread(DiscussionThreadPtr thread);
+            void deleteDiscussionThread(DiscussionThreadPtr thread);
+
+            void insertDiscussionThreadMessage(DiscussionThreadMessagePtr message);
+            void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message);
+
+            void insertDiscussionTag(DiscussionTagPtr tag);
+            void deleteDiscussionTag(DiscussionTagPtr tag);
+
+            void insertDiscussionCategory(DiscussionCategoryPtr category);
+            void deleteDiscussionCategory(DiscussionCategoryPtr category);
+
+            void insertMessageComment(MessageCommentPtr comment);
+            void deleteMessageComment(MessageCommentPtr comment);
 
         private:
-            DiscussionTag::NotifyChangeActionType notifyTagChange_;
-            DiscussionCategory::NotifyChangeActionType notifyCategoryChange_;
-            Authorization::GrantedPrivilegeStore grantedPrivileges_;
-
             struct Impl;
             Impl* impl_;
         };
+
         typedef std::shared_ptr<EntityCollection> EntityCollectionRef;
 
-        extern const UserPtr AnonymousUser;
-        extern const IdType AnonymousUserId;
+        UserPtr anonymousUser();
+        IdType anonymousUserId();
     }
 }

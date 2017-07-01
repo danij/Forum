@@ -16,11 +16,12 @@ namespace Forum
 {
     namespace Entities
     {
-        class DiscussionThreadMessageCollection final : boost::noncopyable
+        class DiscussionThreadMessageCollection final : private boost::noncopyable
         {
         public:
             bool add(DiscussionThreadMessagePtr message);
             bool remove(DiscussionThreadMessagePtr message);
+            void clear();
 
             auto& onCountChange()       { return onCountChange_; }
 

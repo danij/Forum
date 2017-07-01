@@ -210,12 +210,7 @@ AuthorizationStatus DefaultAuthorization::addCommentToDiscussionThreadMessage(co
 AuthorizationStatus DefaultAuthorization::setMessageCommentToSolved(const User& currentUser,
                                                                     const MessageComment& comment) const
 {
-    auto status = AuthorizationStatus::NOT_ALLOWED;
-    comment.executeActionWithParentMessageIfAvailable([this, &status, &currentUser](auto& message)
-    {
-        status = this->isAllowed(currentUser, message, DiscussionThreadMessagePrivilege::SET_COMMENT_TO_SOLVED);
-    });
-    return status;
+    return isAllowed(currentUser, comment.parentMessage(), DiscussionThreadMessagePrivilege::SET_COMMENT_TO_SOLVED);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionTags(const User& currentUser) const
@@ -280,7 +275,7 @@ AuthorizationStatus DefaultAuthorization::getDiscussionCategoriesFromRoot(const 
 }
 
 AuthorizationStatus DefaultAuthorization::addNewDiscussionCategory(const User& currentUser, StringView name,
-                                                                   const DiscussionCategoryRef& parent) const
+                                                                   const DiscussionCategory* parent) const
 {
     return isAllowed(currentUser.id(), ForumWidePrivilege::ADD_DISCUSSION_CATEGORY);
 }
@@ -301,7 +296,7 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionCategoryDescription(co
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionCategoryParent(const User& currentUser,
                                                                          const DiscussionCategory& category,
-                                                                         const DiscussionCategoryRef& newParent) const
+                                                                         const DiscussionCategory* newParent) const
 {
     return isAllowed(currentUser, category, DiscussionCategoryPrivilege::CHANGE_PARENT);
 }

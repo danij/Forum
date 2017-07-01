@@ -16,7 +16,7 @@ namespace Forum
 {
     namespace Entities
     {
-        class UserCollection final : boost::noncopyable
+        class UserCollection final : private boost::noncopyable
         {
         public:
             bool add(UserPtr user);

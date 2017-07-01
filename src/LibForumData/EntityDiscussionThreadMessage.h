@@ -36,7 +36,7 @@ namespace Forum
                    auto created()             const { return created_; }
             const auto& creationDetails()     const { return creationDetails_; }
 
-            const User& createdBy()           const { return createdBy_; }
+            const auto& createdBy()           const { return createdBy_; }
                    auto parentThread()        const { return parentThread_.toConst(); }
 
              StringView content()             const { return content_; }
@@ -98,16 +98,18 @@ namespace Forum
                   createdBy_(createdBy)
             {}
 
-                                auto& parentThread()        { return parentThread_; }
+            auto& createdBy()           { return createdBy_; }
+            auto& parentThread()        { return parentThread_; }
                                                             
-                                auto& lastUpdated()         { return lastUpdated_; }
-                                auto& lastUpdatedDetails()  { return lastUpdatedDetails_; }
-                                auto& lastUpdatedReason()   { return lastUpdatedReason_; }
-                                                            
-            Helpers::ImmutableString& content()             { return content_; }
+            auto& lastUpdated()         { return lastUpdated_; }
+            auto& lastUpdatedDetails()  { return lastUpdatedDetails_; }
+            auto& lastUpdatedReason()   { return lastUpdatedReason_; }
+            auto& lastUpdatedBy()       { return lastUpdatedBy_; }
+
+            auto& content()             { return content_; }
             
-                                auto& comments()            { return comments_; }
-                                auto& solvedCommentsCount() { return solvedCommentsCount_; }
+            auto& comments()            { return comments_; }
+            auto& solvedCommentsCount() { return solvedCommentsCount_; }
 
             void addUpVote(EntityPointer<User> user, const Timestamp& at)
             {
@@ -153,6 +155,6 @@ namespace Forum
         };
 
         typedef EntityPointer<DiscussionThreadMessage> DiscussionThreadMessagePtr;
-        typedef EntityPointer<cosnt DiscussionThreadMessage> DiscussionThreadMessageConstPtr;
+        typedef EntityPointer<const DiscussionThreadMessage> DiscussionThreadMessageConstPtr;
     }
 }

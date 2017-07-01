@@ -16,7 +16,7 @@ namespace Forum
 {
     namespace Entities
     {
-        class MessageCommentCollection final : boost::noncopyable
+        class MessageCommentCollection final : private boost::noncopyable
         {
         public:
             bool add(MessageCommentPtr comment);

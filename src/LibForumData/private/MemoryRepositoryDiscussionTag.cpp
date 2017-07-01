@@ -46,13 +46,13 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
             switch (by)
             {
             case RetrieveDiscussionTagsBy::Name:
-                writeArraySafeName(output, "tags", collection.tagsByName().begin(), collection.tagsByName().end(),
+                writeArraySafeName(output, "tags", collection.tags().byName().begin(), collection.tags().byName().end(),
                                    restriction);
                 status.disable();
                 break;
             case RetrieveDiscussionTagsBy::MessageCount:
-                writeArraySafeName(output, "tags", collection.tagsByMessageCount().begin(),
-                                   collection.tagsByMessageCount().end(), restriction);
+                writeArraySafeName(output, "tags", collection.tags().byMessageCount().begin(),
+                                   collection.tags().byMessageCount().end(), restriction);
                 status.disable();
                 break;
             }
@@ -62,13 +62,13 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
             switch (by)
             {
             case RetrieveDiscussionTagsBy::Name:
-                writeArraySafeName(output, "tags", collection.tagsByName().rbegin(), collection.tagsByName().rend(),
+                writeArraySafeName(output, "tags", collection.tags().byName().rbegin(), collection.tags().byName().rend(),
                                    restriction);
                 status.disable();
                 break;
             case RetrieveDiscussionTagsBy::MessageCount:
-                writeArraySafeName(output, "tags", collection.tagsByMessageCount().rbegin(),
-                                   collection.tagsByMessageCount().rend(), restriction);
+                writeArraySafeName(output, "tags", collection.tags().byMessageCount().rbegin(),
+                                   collection.tags().byMessageCount().rend(), restriction);
                 status.disable();
                 break;
             }
@@ -120,24 +120,23 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
     return status;
 }
 
-StatusWithResource<DiscussionTagRef> MemoryRepositoryDiscussionTag::addNewDiscussionTag(EntityCollection& collection,
+StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscussionTag(EntityCollection& collection,
                                                                                         StringView name)
 {
     StringWithSortKey nameString(name);
 
-    auto& indexByName = collection.tags().get<EntityCollection::DiscussionTagCollectionByName>();
+    auto& indexByName = collection.tags().byName();
     if (indexByName.find(nameString) != indexByName.end())
     {
         return StatusCode::ALREADY_EXISTS;
     }
 
-    auto tag = std::make_shared<DiscussionTag>(collection);
-    tag->notifyChange() = collection.notifyTagChange();
-    tag->id() = generateUUIDString();
-    tag->name() = std::move(nameString);
-    updateCreated(*tag);
+    //IdType id, Timestamp created, VisitDetails creationDetails
+    auto tag = collection.createDiscussionTag(generateUUIDString(), Context::getCurrentTime(), 
+                                              { Context::getCurrentUserIpAddress() });
+    tag->updateName(std::move(nameString));
 
-    collection.tags().insert(tag);
+    collection.insertDiscussionTag(tag);
 
     return tag;
 }
@@ -166,7 +165,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+                           auto& indexById = collection.tags().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
                            {
@@ -176,7 +175,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& 
 
                            StringWithSortKey newNameString(newName);
 
-                           auto& indexByName = collection.tags().get<EntityCollection::DiscussionTagCollectionByName>();
+                           auto& indexByName = collection.tags().byName();
                            if (indexByName.find(newNameString) != indexByName.end())
                            {
                                status = StatusCode::ALREADY_EXISTS;
@@ -201,7 +200,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(EntityCollecti
 {
     auto currentUser = getCurrentUser(collection);
 
-    auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto& indexById = collection.tags().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
@@ -210,11 +209,12 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(EntityCollecti
 
     StringWithSortKey newNameString(newName);
 
-    collection.modifyDiscussionTag(it, [&newNameString, &currentUser](DiscussionTag& tag)
-                                        {
-                                            tag.name() = std::move(newNameString);
-                                            updateLastUpdated(tag, currentUser);
-                                        });
+    DiscussionTagPtr tagPtr = *it;
+    DiscussionTag& tag = *tagPtr;
+
+    tag.updateName(std::move(newNameString));
+    updateLastUpdated(tag, currentUser);
+
     return StatusCode::OK;
 }
 
@@ -236,7 +236,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+                           auto& indexById = collection.tags().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
                            {
@@ -261,17 +261,16 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(EntityCollec
 {
     auto currentUser = getCurrentUser(collection);
 
-    auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto& indexById = collection.tags().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
         return StatusCode::NOT_FOUND;
     }
 
-    collection.modifyDiscussionTag(it, [&blob](DiscussionTag& tag)
-                                       {
-                                           tag.uiBlob() = toString(blob);
-                                       });
+    DiscussionTagPtr tagPtr = *it;
+    tagPtr->uiBlob() = toString(blob);
+
     return StatusCode::OK;
 }
 
@@ -289,7 +288,7 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, 
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+                           auto& indexById = collection.tags().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
                            {
@@ -312,14 +311,14 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, 
 
 StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(EntityCollection& collection, IdTypeRef id)
 {
-    auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto& indexById = collection.tags().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
         return StatusCode::NOT_FOUND;
     }
 
-    collection.deleteDiscussionTag(it);
+    collection.deleteDiscussionTag(*it);
     return StatusCode::OK;
 }
 
@@ -338,7 +337,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+                           auto& tagIndexById = collection.tags().byId();
                            auto tagIt = tagIndexById.find(tagId);
                            if (tagIt == tagIndexById.end())
                            {
@@ -346,7 +345,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
                                return;
                            }
 
-                           auto& threadIndexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                           auto& threadIndexById = collection.threads().byId();
                            auto threadIt = threadIndexById.find(threadId);
                            if (threadIt == threadIndexById.end())
                            {
@@ -372,37 +371,37 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType&
 StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollection& collection, IdTypeRef tagId,
                                                                    IdTypeRef threadId)
 {
-    auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto& tagIndexById = collection.tags().byId();
     auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
         return StatusCode::NOT_FOUND;
     }
 
-    auto& threadIndexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+    auto& threadIndexById = collection.threads().byId();
     auto threadIt = threadIndexById.find(threadId);
     if (threadIt == threadIndexById.end())
     {
         return StatusCode::NOT_FOUND;
     }
 
-    auto& tagRef = *tagIt;
-    auto& tag = **tagIt;
-    auto& threadRef = *threadIt;
-    auto& thread = **threadIt;
+    DiscussionTagPtr tagPtr = *tagIt;
+    DiscussionTag& tag = *tagPtr;
+    DiscussionThreadPtr threadPtr = *threadIt;
+    DiscussionThread& thread = *threadPtr;
 
     auto currentUser = getCurrentUser(collection);
 
     //the number of tags associated to a thread is much smaller than
     //the number of threads associated to a tag, so search the tag in the thread
-    if ( ! thread.addTag(tagRef))
+    if ( ! thread.addTag(tagPtr))
     {
         //actually already added, but return ok
         return StatusCode::OK;
     }
 
-    tag.insertDiscussionThread(threadRef);
-    updateLastUpdated(thread, currentUser);
+    tag.insertDiscussionThread(threadPtr);
+    updateThreadLastUpdated(thread, currentUser);
 
     return StatusCode::OK;
 }
@@ -422,7 +421,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const Id
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+                           auto& tagIndexById = collection.tags().byId();
                            auto tagIt = tagIndexById.find(tagId);
                            if (tagIt == tagIndexById.end())
                            {
@@ -430,7 +429,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const Id
                                return;
                            }
 
-                           auto& threadIndexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                           auto& threadIndexById = collection.threads().byId();
                            auto threadIt = threadIndexById.find(threadId);
                            if (threadIt == threadIndexById.end())
                            {
@@ -457,34 +456,35 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
                                                                         IdTypeRef tagId, IdTypeRef threadId)
 {
 
-    auto& tagIndexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto& tagIndexById = collection.tags().byId();
     auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
         return StatusCode::NOT_FOUND;
     }
 
-    auto& threadIndexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+    auto& threadIndexById = collection.threads().byId();
     auto threadIt = threadIndexById.find(threadId);
     if (threadIt == threadIndexById.end())
     {
         return StatusCode::NOT_FOUND;
     }
 
-    auto& tagRef = *tagIt;
-    auto& tag = **tagIt;
-    auto& thread = **threadIt;
+    DiscussionTagPtr tagPtr = *tagIt;
+    DiscussionTag& tag = *tagPtr;
+    DiscussionThreadPtr threadPtr = *threadIt;
+    DiscussionThread& thread = *threadPtr;
 
     auto currentUser = getCurrentUser(collection);
 
-    if ( ! thread.removeTag(tagRef))
+    if ( ! thread.removeTag(tagPtr))
     {
         //tag was not added to the thread
         return StatusCode::NO_EFFECT;
     }
 
-    tag.deleteDiscussionThreadById(threadId);
-    updateLastUpdated(thread, currentUser);
+    tag.deleteDiscussionThread(threadPtr);
+    updateThreadLastUpdated(thread, currentUser);
 
     return StatusCode::OK;
 }
@@ -508,7 +508,7 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& from
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+                           auto& indexById = collection.tags().byId();
                            auto itFrom = indexById.find(fromId);
                            if (itFrom == indexById.end())
                            {
@@ -541,7 +541,7 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& from
 StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& collection, IdTypeRef fromId,
                                                               IdTypeRef intoId)
 {
-    auto& indexById = collection.tags().get<EntityCollection::DiscussionTagCollectionById>();
+    auto& indexById = collection.tags().byId();
     auto itFrom = indexById.find(fromId);
     if (itFrom == indexById.end())
     {
@@ -553,30 +553,34 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& 
         return StatusCode::NOT_FOUND;
     }
 
-    auto& tagFrom = **itFrom;
-    auto& tagIntoRef = *itInto;
-    auto& tagInto = **itInto;
+    DiscussionTagPtr tagFromPtr = *itFrom;
+    DiscussionTag& tagFrom = *tagFromPtr;
+    DiscussionTagPtr tagIntoRef = *itInto;
+    DiscussionTag& tagInto = *tagIntoRef;
 
     auto currentUser = getCurrentUser(collection);
 
-    for (auto& thread : tagFrom.threads())
+    for (DiscussionThreadPtr thread : tagFrom.threads().byId())
     {
+        assert(thread);
         thread->addTag(tagIntoRef);
-        updateLastUpdated(*thread, currentUser);
+
+        updateThreadLastUpdated(*thread, currentUser);
+
         tagInto.insertDiscussionThread(thread);
     }
-    for (auto& categoryWeak : tagFrom.categoriesWeak())
+
+    for (DiscussionCategoryPtr category : tagFrom.categories())
     {
-        if (auto category = categoryWeak.lock())
-        {
-            category->addTag(tagIntoRef);
-            updateLastUpdated(*category, currentUser);
-        }
+        assert(category);
+        category->addTag(tagIntoRef);
+
+        updateLastUpdated(*category, currentUser);
     }
 
     updateLastUpdated(tagInto, currentUser);
 
-    collection.deleteDiscussionTag(itFrom);
+    collection.deleteDiscussionTag(tagFromPtr);
 
     return StatusCode::OK;
 }

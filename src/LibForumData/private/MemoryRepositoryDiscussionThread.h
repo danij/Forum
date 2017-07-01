@@ -36,7 +36,7 @@ namespace Forum
                                                       RetrieveDiscussionThreadsBy by) const override;
 
             StatusCode addNewDiscussionThread(StringView name, OutStream& output) override;
-            StatusWithResource<Entities::DiscussionThreadRef>
+            StatusWithResource<Entities::DiscussionThreadPtr>
                        addNewDiscussionThread(Entities::EntityCollection& collection, StringView name) override;
 
             StatusCode changeDiscussionThreadName(Entities::IdTypeRef id, StringView newName,

@@ -83,10 +83,9 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const Disc
     PrivilegeValueType positive, negative;
     updateDiscussionThreadMessagePrivilege(user.id(), message.id(), now, privilege, positive, negative);
 
-    message.executeActionWithParentThreadIfAvailable([this, &positive, &negative, &user, privilege, now](auto& thread)
-    {
-        this->updateDiscussionThreadMessagePrivilege(user, thread, now, privilege, positive, negative);
-    });
+    DiscussionThreadConstPtr thread = message.parentThread();
+    assert(thread);
+    updateDiscussionThreadMessagePrivilege(user, *thread, now, privilege, positive, negative);
 
     return ::isAllowed(positive, negative, message.getDiscussionThreadMessagePrivilege(privilege));
 }
@@ -162,19 +161,18 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
     auto& user = *items[0].user;
     auto& firstMessage = *items[0].message;
 
-    firstMessage.executeActionWithParentThreadIfAvailable([this, &user, now, &threadValues](auto& thread)
+    DiscussionThreadConstPtr thread = firstMessage.parentThread();
+    assert(thread);
+    //predetermine the privilege values granted and required at thread level as they are the same for all messages
+    for (auto& tuple : threadValues)
     {
-        //predetermine the privilege values granted and required at thread level as they are the same for all messages
-        for (auto& tuple : threadValues)
-        {
-            auto privilege = std::get<0>(tuple);
-            auto& positive = std::get<1>(tuple);
-            auto& negative = std::get<2>(tuple);
-            this->updateDiscussionThreadMessagePrivilege(user, thread, now, privilege, positive, negative);
+        auto privilege = std::get<0>(tuple);
+        auto& positive = std::get<1>(tuple);
+        auto& negative = std::get<2>(tuple);
+        updateDiscussionThreadMessagePrivilege(user, *thread, now, privilege, positive, negative);
 
-            std::get<3>(tuple) = thread.getDiscussionThreadMessagePrivilege(privilege);
-        }
-    });
+        std::get<3>(tuple) = thread->getDiscussionThreadMessagePrivilege(privilege);
+    }
 
     for (size_t i = 0; i < nrOfItems; ++i)
     {

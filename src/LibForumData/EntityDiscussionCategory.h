@@ -34,6 +34,8 @@ namespace Forum
 
             const auto& name()               const { return name_; }
              StringView description()        const { return description_; }
+                   auto parent()             const { return parent_.toConst(); }
+
                    auto displayOrder()       const { return displayOrder_; }
                    bool isRootCategory()     const { return ! parent_; }
 
@@ -42,6 +44,7 @@ namespace Forum
              StringView lastUpdatedReason()  const { return lastUpdatedReason_; }
                    auto lastUpdatedBy()      const { return lastUpdatedBy_.toConst(); }
                    
+            const auto& threads()            const { return threads_; }
                    auto threadCount()        const { return threads_.count(); }
                    auto messageCount()       const { return messageCount_; }
                    
@@ -108,6 +111,9 @@ namespace Forum
             auto& lastUpdated()        { return lastUpdated_; }
             auto& lastUpdatedDetails() { return lastUpdatedDetails_; }
             auto& lastUpdatedReason()  { return lastUpdatedReason_; }
+            auto& lastUpdatedBy()      { return lastUpdatedBy_; }
+
+            auto& tags()               { return tags_; }
 
             bool addChild(EntityPointer<DiscussionCategory> category);
             bool removeChild(EntityPointer<DiscussionCategory> category);

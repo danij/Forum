@@ -14,13 +14,19 @@ bool DiscussionThreadMessageCollection::add(DiscussionThreadMessagePtr message)
 bool DiscussionThreadMessageCollection::remove(DiscussionThreadMessagePtr message)
 {
     {
-        auto itById = byId_.find(message);
+        auto itById = byId_.find(message->id());
         if (itById == byId_.end()) return false;
         
         byId_.erase(itById);
     }
-    byCreated_.erase(message);
+    eraseFromNonUniqueCollection(byCreated_, message, message->created());
 
     if (onCountChange_) onCountChange_();
     return true;
+}
+
+void DiscussionThreadMessageCollection::clear()
+{
+    byId_.clear();
+    byCreated_.clear();
 }

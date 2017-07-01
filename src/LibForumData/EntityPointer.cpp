@@ -27,37 +27,37 @@ void Private::setGlobalEntityCollection(EntityCollection* collection)
 }
 
 template<>
-User& Private::getEntityFromGlobalCollection<User>(size_t index)
+User* Private::getEntityFromGlobalCollection<User>(size_t index)
 {
-    return *getGlobalEntityCollection().getUserPoolRoot()[index];
+    return getGlobalEntityCollection().getUserPoolRoot()[index].get();
 }
 
 template<>
-DiscussionThread& Private::getEntityFromGlobalCollection<DiscussionThread>(size_t index)
+DiscussionThread* Private::getEntityFromGlobalCollection<DiscussionThread>(size_t index)
 {
-    return *getGlobalEntityCollection().getDiscussionThreadPoolRoot()[index];
+    return getGlobalEntityCollection().getDiscussionThreadPoolRoot()[index].get();
 }
 
 template<>
-DiscussionThreadMessage& Private::getEntityFromGlobalCollection<DiscussionThreadMessage>(size_t index)
+DiscussionThreadMessage* Private::getEntityFromGlobalCollection<DiscussionThreadMessage>(size_t index)
 {
-    return *getGlobalEntityCollection().getDiscussionThreadMessagePoolRoot()[index];
+    return getGlobalEntityCollection().getDiscussionThreadMessagePoolRoot()[index].get();
 }
 
 template<>
-DiscussionTag& Private::getEntityFromGlobalCollection<DiscussionTag>(size_t index)
+DiscussionTag* Private::getEntityFromGlobalCollection<DiscussionTag>(size_t index)
 {
-    return *getGlobalEntityCollection().getDiscussionTagPoolRoot()[index];
+    return getGlobalEntityCollection().getDiscussionTagPoolRoot()[index].get();
 }
 
 template<>
-DiscussionCategory& Private::getEntityFromGlobalCollection<DiscussionCategory>(size_t index)
+DiscussionCategory* Private::getEntityFromGlobalCollection<DiscussionCategory>(size_t index)
 {
-    return *getGlobalEntityCollection().getDiscussionCategoryPoolRoot()[index];
+    return getGlobalEntityCollection().getDiscussionCategoryPoolRoot()[index].get();
 }
 
 template<>
-MessageComment& Private::getEntityFromGlobalCollection<MessageComment>(size_t index)
+MessageComment* Private::getEntityFromGlobalCollection<MessageComment>(size_t index)
 {
-    return *getGlobalEntityCollection().getMessageCommentPoolRoot()[index];
+    return getGlobalEntityCollection().getMessageCommentPoolRoot()[index].get();
 }

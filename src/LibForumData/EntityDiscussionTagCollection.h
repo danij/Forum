@@ -16,7 +16,7 @@ namespace Forum
 {
     namespace Entities
     {
-        class DiscussionTagCollection final : boost::noncopyable
+        class DiscussionTagCollection final : private boost::noncopyable
         {
         public:
             bool add(DiscussionTagPtr tag);

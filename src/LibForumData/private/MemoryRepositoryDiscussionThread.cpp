@@ -8,6 +8,8 @@
 #include "StateHelpers.h"
 #include "StringHelpers.h"
 
+#include <utility>
+
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -41,7 +43,7 @@ static void writeDiscussionThreads(ThreadsCollectionByName&& collectionByName,
     auto writeFilter = [&](const DiscussionThread& currentThread)
                           {
                               bool visitedThreadSinceLastChange = false;
-                              if (currentUser.id() != AnonymousUserId)
+                              if (currentUser.id() != anonymousUserId())
                               {
                                   visitedThreadSinceLastChange = currentThread.hasVisitedSinceLastEdit(currentUser.id());
                               }
@@ -103,8 +105,8 @@ template<typename ThreadsCollection>
 static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscussionThreadsBy by,
                                    OutStream& output, const GrantedPrivilegeStore& privilegeStore, const User& currentUser)
 {
-    writeDiscussionThreads(collection.threadsByName(), collection.threadsByCreated(), collection.threadsByLastUpdated(),
-                           collection.threadsByMessageCount(), collection.threadsByPinDisplayOrder(), by, output,
+    writeDiscussionThreads(collection.threads().byName(), collection.threads().byCreated(), collection.threads().byLastUpdated(),
+                           collection.threads().byMessageCount(), collection.threads().byPinDisplayOrder(), by, output,
                            privilegeStore, currentUser);
 }
 
@@ -136,7 +138,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdTyp
                       {
                           auto& currentUser = performedBy.get(collection, store());
 
-                          const auto& index = collection.threadsById();
+                          const auto& index = collection.threads().byId();
                           auto it = index.find(id);
                           if (it == index.end())
                           {
@@ -153,7 +155,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdTyp
 
                           thread.visited().fetch_add(1);
 
-                          if (currentUser.id() != AnonymousUserId)
+                          if (currentUser.id() != anonymousUserId())
                           if ( ! thread.hasVisitedSinceLastEdit(currentUser.id()))
                           {
                               addUserToVisitedSinceLastEdit = true;
@@ -184,11 +186,12 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdTyp
     {
         collection().write([&](EntityCollection& collection)
                            {
-                               auto& index = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                               auto& index = collection.threads().byId();
                                auto it = index.find(id);
                                if (it != index.end())
                                {
-                                   (*it)->addVisitorSinceLastEdit(userId);
+                                   DiscussionThreadPtr threadPtr = *it;
+                                   threadPtr->addVisitorSinceLastEdit(userId);
                                }
                            });
     }
@@ -210,7 +213,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const Id
                       {
                           auto& currentUser = performedBy.get(collection, store());
 
-                          const auto& indexById = collection.usersById();
+                          const auto& indexById = collection.users().byId();
                           auto it = indexById.find(id);
                           if (it == indexById.end())
                           {
@@ -248,7 +251,7 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
                       {
                           auto& currentUser = performedBy.get(collection, store());
 
-                          const auto& indexById = collection.usersById();
+                          const auto& indexById = collection.users().byId();
                           auto it = indexById.find(id);
                           if (it == indexById.end())
                           {
@@ -265,10 +268,10 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
 
                           status.disable();
-                          writeDiscussionThreads(user.subscribedThreadsByName(), user.subscribedThreadsByCreated(),
-                                                 user.subscribedThreadsByLastUpdated(),
-                                                 user.subscribedThreadsByMessageCount(),
-                                                 user.subscribedThreadsByPinDisplayOrder(),
+                          writeDiscussionThreads(user.subscribedThreads().byName(), user.subscribedThreads().byCreated(),
+                                                 user.subscribedThreads().byLastUpdated(),
+                                                 user.subscribedThreads().byMessageCount(),
+                                                 user.subscribedThreads().byPinDisplayOrder(),
                                                  by, output, collection.grantedPrivileges(), currentUser);
 
                           readEvents().onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
@@ -290,7 +293,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(const I
                       {
                           auto& currentUser = performedBy.get(collection, store());
 
-                          const auto& indexById = collection.tagsById();
+                          const auto& indexById = collection.tags().byId();
                           auto it = indexById.find(id);
                           if (it == indexById.end())
                           {
@@ -327,7 +330,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(cons
                      {
                          auto& currentUser = performedBy.get(collection, store());
 
-                         const auto& indexById = collection.categoriesById();
+                         const auto& indexById = collection.categories().byId();
                          auto it = indexById.find(id);
                          if (it == indexById.end())
                          {
@@ -391,28 +394,23 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
     return status;
 }
 
-StatusWithResource<DiscussionThreadRef> MemoryRepositoryDiscussionThread::addNewDiscussionThread(EntityCollection& collection,
+StatusWithResource<DiscussionThreadPtr> MemoryRepositoryDiscussionThread::addNewDiscussionThread(EntityCollection& collection,
                                                                                                  StringView name)
 {
     auto currentUser = getCurrentUser(collection);
 
-    auto thread = std::make_shared<DiscussionThread>(*currentUser);
-    thread->id() = generateUUIDString();
-    thread->name() = name;
-    updateCreated(*thread);
-    thread->latestVisibleChange() = thread->lastUpdated() = thread->created();
+    auto thread = collection.createDiscussionThread(generateUUIDString(), *currentUser, Context::getCurrentTime(),
+                                                    { Context::getCurrentUserIpAddress() });
+    thread->updateName(std::move(name));
+    thread->updateLastUpdated(thread->latestVisibleChange() = thread->created());
 
     collection.insertDiscussionThread(thread);
-
-    collection.modifyUserById(currentUser->id(), [&](User& user)
-                                                 {
-                                                     user.insertDiscussionThread(thread);
-                                                 });
+    currentUser->threads().add(thread);
 
     //add privileges for the user that created the message
-    auto changePrivilegeDuration = optionalOrZero(
-            collection.getForumWideDefaultPrivilegeDuration(
-                    ForumWideDefaultPrivilegeDuration::CHANGE_DISCUSSION_THREAD_NAME));
+    auto changePrivilegeDuration = optionalOrZero(collection.getForumWideDefaultPrivilegeDuration(
+            ForumWideDefaultPrivilegeDuration::CHANGE_DISCUSSION_THREAD_NAME));
+
     if (changePrivilegeDuration > 0)
     {
         auto privilege = DiscussionThreadPrivilege::CHANGE_NAME;
@@ -468,8 +466,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const Id
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads()
-                                   .get<EntityCollection::DiscussionThreadCollectionById>();
+                           auto& indexById = collection.threads().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
                            {
@@ -493,7 +490,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const Id
 StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(EntityCollection& collection, IdTypeRef id,
                                                                         StringView newName)
 {
-    auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+    auto& indexById = collection.threads().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
@@ -502,12 +499,11 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(EntityCo
 
     auto currentUser = getCurrentUser(collection);
 
-    collection.modifyDiscussionThread(it, [&newName, &currentUser](DiscussionThread& thread)
-                                          {
-                                              thread.name() = newName;
-                                              thread.latestVisibleChange() = Context::getCurrentTime();
-                                              updateLastUpdated(thread, currentUser);
-                                          });
+    DiscussionThreadPtr thread = *it;
+
+    thread->updateName(std::move(newName));
+    updateThreadLastUpdated(*thread, currentUser);
+
     return StatusCode::OK;
 }
 
@@ -522,8 +518,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads()
-                                   .get<EntityCollection::DiscussionThreadCollectionById>();
+                           auto& indexById = collection.threads().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
                            {
@@ -547,7 +542,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
 StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrder(EntityCollection& collection,
                                                                                    IdTypeRef id, uint16_t newValue)
 {
-    auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+    auto& indexById = collection.threads().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
@@ -556,12 +551,10 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
 
     auto currentUser = getCurrentUser(collection);
 
-    collection.modifyDiscussionThread(it, [newValue, &currentUser](DiscussionThread& thread)
-                                          {
-                                              thread.pinDisplayOrder() = newValue;
-                                              thread.latestVisibleChange() = Context::getCurrentTime();
-                                              updateLastUpdated(thread, currentUser);
-                                          });
+    DiscussionThreadPtr thread = *it;
+    thread->updatePinDisplayOrder(newValue);
+    updateThreadLastUpdated(*thread, currentUser);
+
     return StatusCode::OK;
 }
 
@@ -579,7 +572,7 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(const IdType
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                           auto& indexById = collection.threads().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
                            {
@@ -602,14 +595,14 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(const IdType
 
 StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(EntityCollection& collection, IdTypeRef id)
 {
-    auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+    auto& indexById = collection.threads().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
         return StatusCode::NOT_FOUND;
     }
 
-    collection.deleteDiscussionThread(it);
+    collection.deleteDiscussionThread(*it);
 
     return StatusCode::OK;
 }
@@ -633,7 +626,7 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                           auto& indexById = collection.threads().byId();
                            auto itFrom = indexById.find(fromId);
                            if (itFrom == indexById.end())
                            {
@@ -663,42 +656,27 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType
     return status;
 }
 
-static void updateMessageCounts(EntityCollection& collection, DiscussionThreadRef& threadRef, int_fast32_t difference)
+static void updateMessageCounts(DiscussionThreadPtr thread, int_fast32_t difference)
 {
-    for (auto& tagWeak : threadRef->tagsWeak())
+    for (DiscussionTagPtr tag : thread->tags())
     {
-        if (auto tagShared = tagWeak.lock())
-        {
-            collection.modifyDiscussionTagById(tagShared->id(),
-                                               [&threadRef, difference](auto& tag)
-                                               {
-                                                   tag.messageCount() += difference;
-                                                   //notify the thread collection of each tag that the thread has new messages
-                                                   tag.modifyDiscussionThreadById(threadRef->id(), {});
-                                               });
-        }
+        assert(tag);
+        tag->updateMessageCount(difference);
     }
-    for (auto& categoryWeak : threadRef->categoriesWeak())
+
+    for (DiscussionCategoryPtr category : thread->categories())
     {
-        if (auto categoryShared = categoryWeak.lock())
-        {
-            collection.modifyDiscussionCategoryById(categoryShared->id(),
-                                                    [&threadRef, difference](auto& category)
-                                                    {
-                                                        category.updateMessageCount(threadRef, difference);
-                                                        //notify the thread collection of each category that the thread has new messages
-                                                        category.modifyDiscussionThreadById(threadRef->id(), {});
-                                                    });
-        }
+        assert(category);
+        category->updateMessageCount(thread, difference);
     }
-};
+}
 
 StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollection& collection,
                                                                     IdTypeRef fromId, IdTypeRef intoId)
 {
     auto currentUser = getCurrentUser(collection);
 
-    auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+    auto& indexById = collection.threads().byId();
     auto itFrom = indexById.find(fromId);
     if (itFrom == indexById.end())
     {
@@ -710,38 +688,34 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
         return StatusCode::NOT_FOUND;
     }
 
-    auto threadFromRef = *itFrom;
-    auto& threadFrom = **itFrom;
-    auto threadIntoRef = *itInto;
+    DiscussionThreadPtr threadFromPtr = *itFrom;
+    DiscussionThread& threadFrom = *threadFromPtr;
+    DiscussionThreadPtr threadIntoPtr = *itInto;
+    DiscussionThread& threadInto = *threadIntoPtr;
 
-    collection.modifyDiscussionThread(itInto, [&](DiscussionThread& thread)
+    updateThreadLastUpdated(threadInto, currentUser);
+
+    for (auto& message : threadFrom.messages().byId())
     {
-        updateLastUpdated(thread, currentUser);
-        thread.latestVisibleChange() = thread.lastUpdated();
+        threadInto.insertMessage(message);
+    }
 
-        for (auto& message : threadFrom.messages())
-        {
-            thread.insertMessage(message);
-        }
+    updateMessageCounts(threadFromPtr, - static_cast<int_fast32_t>(threadFrom.messageCount()));
+    updateMessageCounts(threadIntoPtr,   static_cast<int_fast32_t>(threadFrom.messageCount()));
 
-        updateMessageCounts(collection, threadFromRef, - static_cast<int_fast32_t>(threadFrom.messages().size()));
-        updateMessageCounts(collection, threadIntoRef,   static_cast<int_fast32_t>(threadFrom.messages().size()));
+    //remove all message references from the thread so they don't get deleted
+    threadFrom.messages().clear();
 
-        //remove all message references from the thread so they don't get deleted
-        threadFrom.messages().clear();
+    //update subscriptions
+    for (UserPtr user : threadFrom.subscribedUsers())
+    {
+        assert(user);
+        user->subscribedThreads().add(threadIntoPtr);
+        threadInto.subscribedUsers().insert(user);
+    }
 
-        //update subscriptions
-        for (auto& userWeak : threadFromRef->subscribedUsers())
-        {
-            if (auto userShared = userWeak.lock())
-            {
-                userShared->subscribedThreads().insertDiscussionThread(threadIntoRef);
-                thread.subscribedUsers().insert(userWeak);
-            }
-        }
-    });
     //this will also decrease the message count on the tags the thread was part of
-    collection.deleteDiscussionThread(itFrom);
+    collection.deleteDiscussionThread(threadFromPtr);
 
     return StatusCode::OK;
 }
@@ -760,7 +734,7 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(const I
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                           auto& indexById = collection.threads().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
                            {
@@ -784,22 +758,23 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(const I
 
 StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityCollection& collection, IdTypeRef id)
 {
-    auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+    auto& indexById = collection.threads().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
         return StatusCode::NOT_FOUND;
     }
 
-    auto threadRef = *it;
+    auto thread = *it;
     auto currentUser = getCurrentUser(collection);
 
-    if ( ! (threadRef->subscribedUsers().insert(currentUser).second))
+    if ( ! std::get<1>(thread->subscribedUsers().insert(currentUser)))
     {
         return StatusCode::NO_EFFECT;
     }
 
-    currentUser->subscribedThreads().insertDiscussionThread(threadRef);
+    currentUser->subscribedThreads().add(thread);
+
     return StatusCode::OK;
 }
 
@@ -817,7 +792,7 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(con
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+                           auto& indexById = collection.threads().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
                            {
@@ -841,21 +816,21 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(con
 
 StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(EntityCollection& collection, IdTypeRef id)
 {
-    auto& indexById = collection.threads().get<EntityCollection::DiscussionThreadCollectionById>();
+    auto& indexById = collection.threads().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
         return StatusCode::NOT_FOUND;
     }
 
-    auto threadRef = *it;
+    auto thread = *it;
     auto currentUser = getCurrentUser(collection);
 
-    if (0 == threadRef->subscribedUsers().erase(currentUser))
+    if (0 == thread->subscribedUsers().erase(currentUser))
     {
         return StatusCode::NO_EFFECT;
     }
 
-    currentUser->subscribedThreads().deleteDiscussionThreadById(threadRef->id());
+    currentUser->subscribedThreads().remove(thread);
     return StatusCode::OK;
 }

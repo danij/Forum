@@ -43,13 +43,13 @@ namespace Forum
             * Get the current user that performs the action and optionally also perform the update of last seen
             * This method takes advantage if a write lock on the collection is already secured
             */
-            Entities::UserRef getAndUpdate(Entities::EntityCollection& collection);
+            Entities::UserPtr getAndUpdate(Entities::EntityCollection& collection);
 
         private:
             std::function<void()> lastSeenUpdate_;
         };
 
-        Entities::UserRef getCurrentUser(Entities::EntityCollection& collection);
+        Entities::UserPtr getCurrentUser(Entities::EntityCollection& collection);
 
         class MemoryRepositoryBase : public IObservableRepository, private boost::noncopyable
         {
@@ -105,19 +105,19 @@ namespace Forum
                                     Context::getCurrentUserIpAddress());
         }
 
-        inline void updateCreated(Entities::CreatedMixin& entity)
-        {
-            entity.created() = Context::getCurrentTime();
-            entity.creationDetails().ip = Context::getCurrentUserIpAddress();
-        }
-
-        template<typename ByType>
-        void updateLastUpdated(Entities::LastUpdatedMixinWithBy<ByType>& entity,
-                               const typename Entities::LastUpdatedMixinWithBy<ByType>::ByTypeRef& by)
+        template<typename Entity, typename ByType>
+        void updateLastUpdated(Entity& entity, const ByType& by)
         {
             entity.lastUpdated() = Context::getCurrentTime();
             entity.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();
             entity.lastUpdatedBy() = by;
+        }
+
+        inline void updateThreadLastUpdated(Entities::DiscussionThread& thread, Entities::UserPtr currentUser)
+        {
+            thread.updateLastUpdated(thread.latestVisibleChange() = Context::getCurrentTime());
+            thread.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();
+            thread.lastUpdatedBy() = currentUser;
         }
     }
 }

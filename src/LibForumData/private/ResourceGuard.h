@@ -20,7 +20,8 @@ namespace Forum
             void read(TAction&& action) const
             {
                 std::shared_lock<decltype(mutex_)> lock(mutex_);
-                action(const_cast<const T&>(*resource_));
+                const T& constResource = *resource_;
+                action(constResource);
             }
 
             template<typename TAction>

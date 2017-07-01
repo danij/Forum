@@ -17,7 +17,7 @@ namespace Forum
 
             StatusCode addNewDiscussionCategory(StringView name, Entities::IdTypeRef parentId,
                                                 OutStream& output) override;
-            StatusWithResource<Entities::DiscussionCategoryRef>
+            StatusWithResource<Entities::DiscussionCategoryPtr>
                 addNewDiscussionCategory(Entities::EntityCollection& collection, StringView name,
                                          Entities::IdTypeRef parentId) override;
             StatusCode changeDiscussionCategoryName(Entities::IdTypeRef id, StringView newName,

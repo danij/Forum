@@ -17,7 +17,7 @@ namespace Forum
 {
     namespace Entities
     {
-        class DiscussionCategoryCollection final : boost::noncopyable
+        class DiscussionCategoryCollection final : private boost::noncopyable
         {
         public:
             bool add(DiscussionCategoryPtr category);

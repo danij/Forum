@@ -16,17 +16,17 @@ bool DiscussionCategoryCollection::add(DiscussionCategoryPtr category)
 bool DiscussionCategoryCollection::remove(DiscussionCategoryPtr category)
 {
     {
-        auto itById = byId_.find(category);
+        auto itById = byId_.find(category->id());
         if (itById == byId_.end()) return false;
         
         byId_.erase(itById);
     }
     {
-        auto itByName = byName_.find(category);
+        auto itByName = byName_.find(category->name());
         if (itByName != byName_.end()) byName_.erase(itByName);
     }
-    byMessageCount_.erase(category);
-    byDisplayOrderRootPriority_.erase(category);
+    eraseFromNonUniqueCollection(byMessageCount_, category, category->messageCount());
+    eraseFromNonUniqueCollection(byDisplayOrderRootPriority_, category, category->displayOrderWithRootPriority());
 
     if (onCountChange_) onCountChange_();
     return true;
@@ -34,7 +34,7 @@ bool DiscussionCategoryCollection::remove(DiscussionCategoryPtr category)
 
 void DiscussionCategoryCollection::updateName(DiscussionCategoryPtr category)
 {
-    auto it = byName_.find(category);
+    auto it = byName_.find(category->name());
     if (it != byName_.end())
     {
         byName_.replace(it, category);
@@ -43,18 +43,10 @@ void DiscussionCategoryCollection::updateName(DiscussionCategoryPtr category)
 
 void DiscussionCategoryCollection::updateMessageCount(DiscussionCategoryPtr category)
 {
-    auto it = byMessageCount_.find(category);
-    if (it != byMessageCount_.end())
-    {
-        byMessageCount_.replace(it, category);
-    }
+    replaceInNonUniqueCollection(byMessageCount_, category, category->messageCount());
 }
 
 void DiscussionCategoryCollection::updateDisplayOrderRootPriority(DiscussionCategoryPtr category)
 {
-    auto it = byDisplayOrderRootPriority_.find(category);
-    if (it != byDisplayOrderRootPriority_.end())
-    {
-        byDisplayOrderRootPriority_.replace(it, category);
-    }
+    replaceInNonUniqueCollection(byDisplayOrderRootPriority_, category, category->displayOrderWithRootPriority());
 }

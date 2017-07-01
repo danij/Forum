@@ -26,7 +26,7 @@ namespace Forum
                    auto created()           const { return created_; }
             const auto& creationDetails()   const { return creationDetails_; }
                                             
-             StringView auth()              const { return auth_; }
+            const auto& auth()              const { return auth_; }
             const auto& name()              const { return name_; }
              StringView info()              const { return info_; }
 
@@ -37,9 +37,10 @@ namespace Forum
             const auto& subscribedThreads() const { return subscribedThreads_; }
 
             const auto& threadMessages()    const { return threadMessages_; }
-                  auto  messageCount()      const { return threadMessages_.count(); }
-
-            const auto& votedMessages()     const { return votedMessages_; }
+                   auto messageCount()      const { return threadMessages_.count(); }
+                   
+                   auto votedMessages()     const { return Helpers::toConst(votedMessages_); }
+            const auto& messageComments()   const { return messageComments_; }
 
             enum ChangeType : uint32_t
             {
@@ -80,8 +81,9 @@ namespace Forum
             auto& subscribedThreads() { return subscribedThreads_; }
             auto& threadMessages()    { return threadMessages_; }
             auto& votedMessages()     { return votedMessages_; }
+            auto& messageComments()   { return messageComments_; }
 
-            void updateAuth(std::string value)
+            void updateAuth(std::string&& value)
             {
                 auth_ = std::move(value);
                 changeNotifications_.onUpdateAuth(*this);

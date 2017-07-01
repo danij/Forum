@@ -17,7 +17,7 @@ namespace Forum
             template<class... Args>
             IndexType add(Args&&... args)
             {
-                auto ptr = std::make_unique<T>(args...);
+                auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
 
                 if (freeIndexes_.size())
                 {

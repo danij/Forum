@@ -18,14 +18,14 @@ bool DiscussionThreadCollectionBase::add(DiscussionThreadPtr thread)
 bool DiscussionThreadCollectionBase::remove(DiscussionThreadPtr thread)
 {
     {
-        auto itByName = byName_.find(thread);
+        auto itByName = byName_.find(thread->name());
         if (itByName != byName_.end()) byName_.erase(itByName);
     }
-    byCreated_.erase(thread);
-    byLastUpdated_.erase(thread);
-    byLatestMessageCreated_.erase(thread);
-    byMessageCount_.erase(thread);
-    byPinDisplayOrder_.erase(thread);
+    eraseFromNonUniqueCollection(byCreated_, thread, thread->created());
+    eraseFromNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
+    eraseFromNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
+    eraseFromNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
+    eraseFromNonUniqueCollection(byPinDisplayOrder_, thread, thread->pinDisplayOrder());
 
     if (onCountChange_) onCountChange_();
     return true;
@@ -33,7 +33,7 @@ bool DiscussionThreadCollectionBase::remove(DiscussionThreadPtr thread)
 
 void DiscussionThreadCollectionBase::updateName(DiscussionThreadPtr thread)
 {
-    auto it = byName_.find(thread);
+    auto it = byName_.find(thread->name());
     if (it != byName_.end())
     {
         byName_.replace(it, thread);
@@ -42,43 +42,27 @@ void DiscussionThreadCollectionBase::updateName(DiscussionThreadPtr thread)
 
 void DiscussionThreadCollectionBase::updateLastUpdated(DiscussionThreadPtr thread)
 {
-    auto it = byLastUpdated_.find(thread);
-    if (it != byLastUpdated_.end())
-    {
-        byLastUpdated_.replace(it, thread);
-    }
+    replaceInNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
 }
 
 void DiscussionThreadCollectionBase::updateLatestMessageCreated(DiscussionThreadPtr thread)
 {
-    auto it = byLatestMessageCreated_.find(thread);
-    if (it != byLatestMessageCreated_.end())
-    {
-        byLatestMessageCreated_.replace(it, thread);
-    }
+    replaceInNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
 }
 
 void DiscussionThreadCollectionBase::updateMessageCount(DiscussionThreadPtr thread)
 {
-    auto it = byMessageCount_.find(thread);
-    if (it != byMessageCount_.end())
-    {
-        byMessageCount_.replace(it, thread);
-    }
+    replaceInNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
 }
 
 void DiscussionThreadCollectionBase::updatePinDisplayOrder(DiscussionThreadPtr thread)
 {
-    auto it = byPinDisplayOrder_.find(thread);
-    if (it != byPinDisplayOrder_.end())
-    {
-        byPinDisplayOrder_.replace(it, thread);
-    }
+    replaceInNonUniqueCollection(byPinDisplayOrder_, thread, thread->pinDisplayOrder());
 }
 
 bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
 {
-    if ( ! std::get<1>(byId_.insert(thread))) return;
+    if ( ! std::get<1>(byId_.insert(thread))) return false;
     
     return DiscussionThreadCollectionBase::add(thread);
 }
@@ -86,12 +70,17 @@ bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
 bool DiscussionThreadCollectionWithHashedId::remove(DiscussionThreadPtr thread)
 {
     {
-        auto itById = byId_.find(thread);
+        auto itById = byId_.find(thread->id());
         if (itById == byId_.end()) return false;
         
         byId_.erase(itById);
     }
     return DiscussionThreadCollectionBase::remove(thread);
+}
+
+bool DiscussionThreadCollectionWithHashedId::contains(DiscussionThreadPtr thread) const
+{
+    return byId_.find(thread->id()) != byId_.end();
 }
 
 bool DiscussionThreadCollectionWithOrderedId::add(DiscussionThreadPtr thread)
@@ -104,12 +93,17 @@ bool DiscussionThreadCollectionWithOrderedId::add(DiscussionThreadPtr thread)
 bool DiscussionThreadCollectionWithOrderedId::remove(DiscussionThreadPtr thread)
 {
     {
-        auto itById = byId_.find(thread);
+        auto itById = byId_.find(thread->id());
         if (itById == byId_.end()) return false;
         
         byId_.erase(itById);
     }
     return DiscussionThreadCollectionBase::remove(thread);
+}
+
+bool DiscussionThreadCollectionWithOrderedId::contains(DiscussionThreadPtr thread) const
+{
+    return byId_.find(thread->id()) != byId_.end();
 }
 
 bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::add(DiscussionThreadPtr thread)
@@ -148,25 +142,29 @@ bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::remove(Discuss
 {
     assert(thread);
     {
-        auto itById = byId_.find(thread);
+        auto itById = byId_.find(thread->id());
         if (itById == byId_.end()) return false;
 
         byId_.erase(itById);
     }
-    byLatestMessageCreated_.erase(thread);
+    eraseFromNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
     referenceCount_.erase(thread);
     messageCount_ -= thread->messageCount();
 
     return true;
 }
 
+void DiscussionThreadCollectionWithReferenceCountAndMessageCount::clear()
+{
+    byId_.clear();
+    byLatestMessageCreated_.clear();
+    referenceCount_.clear();
+    messageCount_ = 0;
+}
+
 void DiscussionThreadCollectionWithReferenceCountAndMessageCount::updateLatestMessageCreated(DiscussionThreadPtr thread)
 {
-    auto it = byLatestMessageCreated_.find(thread);
-    if (it != byLatestMessageCreated_.end())
-    {
-        byLatestMessageCreated_.replace(it, thread);
-    }
+    replaceInNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
 }
 
 DiscussionThreadMessagePtr DiscussionThreadCollectionWithReferenceCountAndMessageCount::latestMessage() const

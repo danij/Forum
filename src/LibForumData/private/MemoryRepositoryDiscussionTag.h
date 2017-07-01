@@ -18,7 +18,7 @@ namespace Forum
             StatusCode getDiscussionTags(OutStream& output, RetrieveDiscussionTagsBy by) const override;
 
             StatusCode addNewDiscussionTag(StringView name, OutStream& output) override;
-            StatusWithResource<Entities::DiscussionTagRef>
+            StatusWithResource<Entities::DiscussionTagPtr>
                 addNewDiscussionTag(Entities::EntityCollection& collection, StringView name) override;
             StatusCode changeDiscussionTagName(Entities::IdTypeRef id, StringView newName, OutStream& output) override;
             StatusCode changeDiscussionTagName(Entities::EntityCollection& collection, Entities::IdTypeRef id,

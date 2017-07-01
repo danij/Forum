@@ -64,7 +64,7 @@ bool DiscussionCategory::insertDiscussionThread(DiscussionThreadPtr thread)
     executeOnCategoryAndAllParents(*this, [&](auto& category)
     {
         //this category and all parents will hold separate references to the new thread
-        category.totalThreads_.insertDiscussionThread(thread);
+        category.totalThreads_.add(thread);
     });
 
     return true;
@@ -125,8 +125,9 @@ bool DiscussionCategory::addTag(DiscussionTagPtr tag)
         return false;
     }
 
-    for (auto& thread : tag->threads().byId())
+    for (DiscussionThreadPtr thread : tag->threads().byId())
     {
+        assert(thread);
         insertDiscussionThread(thread);
     }
     return true;
@@ -141,6 +142,7 @@ bool DiscussionCategory::removeTag(DiscussionTagPtr tag)
 
     for (auto& thread : tag->threads().byId())
     {
+        assert(thread);
         deleteDiscussionThreadIfNoOtherTagsReferenceIt(thread);
     }
     return true;
@@ -158,13 +160,13 @@ void DiscussionCategory::updateMessageCount(DiscussionThreadPtr thread, int_fast
     totalThreads_.messageCount() += delta;
 
     bool stop = false;
-    executeOnAllCategoryParents(*this, [&](auto& category)
+    executeOnAllCategoryParents(*this, [&](DiscussionCategory& category)
     {
         if (stop)
         {
             return;
         }
-        if (category.containsThread(thread))
+        if (category.threads().contains(thread))
         {
             //stop any updates on the total or else the messages will be counted multiple times
             //they will be/have already been taken care of by a call to updateMessageCount of this specific category
@@ -179,7 +181,7 @@ void DiscussionCategory::updateMessageCount(DiscussionThreadPtr thread, int_fast
 
 void DiscussionCategory::resetTotals()
 {
-    totalThreads_ = {};
+    totalThreads_.clear();
 }
 
 void DiscussionCategory::recalculateTotals()
