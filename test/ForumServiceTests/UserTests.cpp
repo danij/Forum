@@ -261,9 +261,12 @@ BOOST_AUTO_TEST_CASE( A_user_that_was_created_can_be_retrieved_and_has_a_distinc
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
+    BOOST_REQUIRE_EQUAL(2, retrievedNames.size());
     BOOST_REQUIRE( ! isIdEmpty(retrievedIds[0]));
     BOOST_REQUIRE( ! isIdEmpty(retrievedIds[1]));
     BOOST_REQUIRE_NE(retrievedIds[0], retrievedIds[1]);
+
+    BOOST_REQUIRE_EQUAL(2, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("User1", retrievedNames[0]);
     BOOST_REQUIRE_EQUAL("User2", retrievedNames[1]);
 }

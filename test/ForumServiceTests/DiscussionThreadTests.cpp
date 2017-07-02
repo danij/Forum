@@ -281,6 +281,8 @@ BOOST_AUTO_TEST_CASE( A_discussion_thread_that_was_created_can_be_retrieved_and_
     auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
                                               .get_child("threads"));
 
+    BOOST_REQUIRE_EQUAL(2, threads.size());
+
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
     BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
     BOOST_REQUIRE_NE(threads[0].id, threads[1].id);
@@ -568,6 +570,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_creation_and_last_up
     auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED, SortOrder::Ascending);
     auto threads = deserializeThreads(result.get_child("threads"));
 
+    BOOST_REQUIRE_EQUAL(2, threads.size());
+
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
     BOOST_REQUIRE_EQUAL(1000, threads[0].created);
@@ -603,6 +607,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_each_user_that_creat
 
     auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED, SortOrder::Ascending);
     auto threads = deserializeThreads(result.get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(3, threads.size());
 
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
@@ -641,6 +647,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_does_not_show_other_topics_o
     auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED, SortOrder::Ascending);
     auto resultThreads = result.get_child("threads");
     auto threads = deserializeThreads(resultThreads);
+
+    BOOST_REQUIRE_EQUAL(2, threads.size());
 
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
@@ -687,6 +695,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_discussion_threads_created_by_
                                               .get_child("threads"));
 
     BOOST_REQUIRE_EQUAL(5, threads.size());
+
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
     BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
@@ -704,6 +713,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_discussion_threads_created_by_
                                               .get_child("threads"));
 
     BOOST_REQUIRE_EQUAL(2, threads.size());
+
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc2", threads[0].name);
     BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
@@ -731,6 +741,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_increments_the_visited_count
 
     auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED, SortOrder::Ascending);
     auto threads = deserializeThreads(result.get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(2, threads.size());
 
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
@@ -760,6 +772,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_increments_the_visited_count
 
     result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED, SortOrder::Ascending);
     threads = deserializeThreads(result.get_child("threads"));
+
+    BOOST_REQUIRE_EQUAL(2, threads.size());
 
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
@@ -989,6 +1003,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_does_not_show_messages )
     auto result = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_CREATED, SortOrder::Ascending);
     auto resultThreads = result.get_child("threads");
     auto threads = deserializeThreads(resultThreads);
+
+    BOOST_REQUIRE_EQUAL(2, threads.size());
 
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
@@ -1540,6 +1556,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_include_info_about_latest_message )
                                                    SortOrder::Ascending).get_child("threads"));
 
     BOOST_REQUIRE_EQUAL(2, threads.size());
+
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
     BOOST_REQUIRE_EQUAL(1000, threads[0].created);
     BOOST_REQUIRE_EQUAL(3000, threads[0].latestMessage.created);
@@ -1720,6 +1737,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_message_coun
                                                    SortOrder::Ascending).get_child("threads"));
 
     BOOST_REQUIRE_EQUAL(3, threads.size());
+
     BOOST_REQUIRE_EQUAL("Ghi", threads[0].name);
     BOOST_REQUIRE_EQUAL(1, threads[0].messageCount);
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
@@ -1732,6 +1750,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_message_coun
                                               SortOrder::Descending).get_child("threads"));
 
     BOOST_REQUIRE_EQUAL(3, threads.size());
+
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
     BOOST_REQUIRE_EQUAL(3, threads[0].messageCount);
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
