@@ -344,29 +344,6 @@ struct EntityCollection::Impl
         }
     }
 
-    void discussionThreadRefreshAction(DiscussionThread& thread, void (DiscussionThreadCollectionBase::*fn)())
-    {
-        (thread.createdBy().threads().*fn)();
-
-        for (UserPtr user : thread.subscribedUsers())
-        {
-            assert(user);
-            (user->subscribedThreads().*fn)();
-        }
-
-        for (DiscussionTagPtr tag : thread.tags())
-        {
-            assert(tag);
-            (tag->threads().*fn)();
-        }
-
-        for (DiscussionCategoryPtr category : thread.categories())
-        {
-            assert(category);
-            (category->threads().*fn)();
-        }
-    }
-
     void onPrepareUpdateDiscussionThreadName(const DiscussionThread& thread)                 { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateName); }
     void onPrepareUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateLastUpdated); }
     void onPrepareUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateLatestMessageCreated); }
@@ -410,17 +387,28 @@ struct EntityCollection::Impl
         users_.refreshByThreadCount();
         users_.refreshByMessageCount();
 
-        threads_.refreshByLastUpdated();
-        threads_.refreshByLatestMessageCreated();
-        threads_.refreshByMessageCount();
-        threads_.refreshByPinDisplayOrder();
-
-        for (DiscussionThreadPtr thread : threads_.byId())
+        auto threadCollectionUpdate = [](DiscussionThreadCollectionBase& threads)
         {
-            discussionThreadRefreshAction(*thread, &DiscussionThreadCollectionBase::refreshByLastUpdated);
-            discussionThreadRefreshAction(*thread, &DiscussionThreadCollectionBase::refreshByLatestMessageCreated);
-            discussionThreadRefreshAction(*thread, &DiscussionThreadCollectionBase::refreshByMessageCount);
-            discussionThreadRefreshAction(*thread, &DiscussionThreadCollectionBase::refreshByPinDisplayOrder);
+            threads.refreshByLastUpdated();
+            threads.refreshByLatestMessageCreated();
+            threads.refreshByMessageCount();
+            threads.refreshByPinDisplayOrder();
+        };
+
+        for (UserPtr user : users_.byId())
+        {
+            threadCollectionUpdate(user->threads());
+            threadCollectionUpdate(user->subscribedThreads());
+        }
+
+        for (DiscussionTagPtr tag : tags_.byId())
+        {
+            threadCollectionUpdate(tag->threads());
+        }
+
+        for (DiscussionCategoryPtr category : categories_.byId())
+        {
+            threadCollectionUpdate(category->threads());
         }
 
         tags_.refreshByMessageCount();
