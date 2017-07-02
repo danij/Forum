@@ -3,8 +3,6 @@
 #include "ConstCollectionAdapter.h"
 #include "EntityDiscussionTag.h"
 
-#include <functional>
-
 #include <boost/noncopyable.hpp>
 
 #include <boost/multi_index_container.hpp>
@@ -22,10 +20,11 @@ namespace Forum
             bool add(DiscussionTagPtr tag);
             bool remove(DiscussionTagPtr tag);
 
+            void prepareUpdateName(DiscussionTagPtr tag);
             void updateName(DiscussionTagPtr tag);
+            
+            void prepareUpdateMessageCount(DiscussionTagPtr tag);
             void updateMessageCount(DiscussionTagPtr tag);
-
-            auto& onCountChange()       { return onCountChange_; }
 
             auto count()          const { return byId_.size(); }
 
@@ -41,10 +40,10 @@ namespace Forum
             HASHED_UNIQUE_COLLECTION(DiscussionTag, id) byId_;
 
             RANKED_UNIQUE_COLLECTION(DiscussionTag, name) byName_;
+            decltype(byName_)::nth_index<0>::type::iterator byNameUpdateIt_;
 
             RANKED_COLLECTION(DiscussionTag, messageCount) byMessageCount_;
-
-            std::function<void()> onCountChange_;
+            decltype(byMessageCount_)::nth_index<0>::type::iterator byMessageCountUpdateIt_;
         };
     }
 }

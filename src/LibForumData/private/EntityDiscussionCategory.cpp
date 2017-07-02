@@ -50,6 +50,9 @@ bool DiscussionCategory::hasAncestor(EntityPointer<DiscussionCategory> ancestor)
 
 bool DiscussionCategory::insertDiscussionThread(DiscussionThreadPtr thread)
 {
+    assert(thread);
+    changeNotifications_.onPrepareUpdateMessageCount(*this);
+
     if ( ! threads_.add(thread))
     {
         return false;
@@ -57,7 +60,7 @@ bool DiscussionCategory::insertDiscussionThread(DiscussionThreadPtr thread)
 
     //don't use updateMessageCount() as insertDiscussionThread will take care of that for totals
     messageCount_ += thread->messageCount();
-    thread->addCategory(getPointer());
+    thread->addCategory(pointer());
 
     changeNotifications_.onUpdateMessageCount(*this);
 
@@ -72,6 +75,9 @@ bool DiscussionCategory::insertDiscussionThread(DiscussionThreadPtr thread)
 
 bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread)
 {
+    assert(thread);
+    changeNotifications_.onPrepareUpdateMessageCount(*this);
+
     if ( ! threads_.remove(thread))
     {
         return false;
@@ -80,7 +86,7 @@ bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread)
     messageCount_ -= static_cast<int_fast32_t>(thread->messageCount());
     if ( ! thread->aboutToBeDeleted())
     {
-        thread->removeCategory(getPointer());
+        thread->removeCategory(pointer());
     }
 
     changeNotifications_.onUpdateMessageCount(*this);
@@ -95,6 +101,7 @@ bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread)
 
 void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(DiscussionThreadPtr thread)
 {
+    assert(thread);
     //don't remove the thread just yet, perhaps it's also referenced by other tags
     bool referencedByOtherTags = false;
     for (auto tag : thread->tags())
@@ -120,6 +127,7 @@ void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(Discussi
 
 bool DiscussionCategory::addTag(DiscussionTagPtr tag)
 {
+    assert(tag);
     if ( ! std::get<1>(tags_.insert(tag)))
     {
         return false;
@@ -135,6 +143,7 @@ bool DiscussionCategory::addTag(DiscussionTagPtr tag)
 
 bool DiscussionCategory::removeTag(DiscussionTagPtr tag)
 {
+    assert(tag);
     if (0 == tags_.erase(tag))
     {
         return false;
@@ -155,6 +164,9 @@ bool DiscussionCategory::containsTag(DiscussionTagPtr tag) const
 
 void DiscussionCategory::updateMessageCount(DiscussionThreadPtr thread, int_fast32_t delta)
 {
+    assert(thread);
+    changeNotifications_.onPrepareUpdateMessageCount(*this);
+
     messageCount_ += delta;
     //make sure totals of the current category are always updated
     totalThreads_.messageCount() += delta;

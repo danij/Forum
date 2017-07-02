@@ -78,9 +78,7 @@ namespace Forum
             {}
 
             EntityPointer(nullptr_t) : EntityPointer()
-            {
-                storePointerInClass();
-            }
+            {}
 
             EntityPointer(const EntityPointer&) = default;
             EntityPointer(EntityPointer&&) = default;
@@ -117,21 +115,25 @@ namespace Forum
 
             RefToConstT operator*() const
             {
+                assert(operator bool());
                 return *ptr();
             }
 
             RefT operator*()
             {
+                assert(operator bool());
                 return *ptr();
             }
 
             PtrToConstT operator->() const
             {
+                assert(operator bool());
                 return ptr();
             }
 
             PtrT operator->()
             {
+                assert(operator bool());
                 return ptr();
             }
             
@@ -177,24 +179,15 @@ namespace Forum
 
         private:
             IndexType index_;
-
-            template<typename = std::enable_if_t<std::is_base_of<StoresEntityPointer<T>, T>::value>>
-            void storePointerInClass()
-            {
-                (*this).pointer_ = *this;
-            }
-
-            void storePointerInClass()
-            {}
         };
         
         template<typename T>
         class StoresEntityPointer
         {
         public:
-            auto getPointer() const { return pointer_; }
+            auto pointer() const { return pointer_; }
 
-            friend class EntityPointer<T>;
+            friend class EntityCollection;
         private:
             EntityPointer<T> pointer_;
         };

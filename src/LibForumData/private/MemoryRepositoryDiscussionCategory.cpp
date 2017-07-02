@@ -439,6 +439,27 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(co
     return status;
 }
 
+static void updateCategoryParent(EntityCollection& collection, DiscussionCategory& category,
+                                 DiscussionCategoryPtr newParentPtr, const UserPtr currentUser)
+{
+    category.parent() = newParentPtr;
+    updateLastUpdated(category, currentUser);
+
+    //changing a parent requires updating totals
+    //until there's a visible performance penalty, simply update all totals
+    for (DiscussionCategoryPtr currentCategory : collection.categories().byId())
+    {
+        assert(currentCategory);
+        currentCategory->resetTotals();
+    }
+
+    for (DiscussionCategoryPtr currentCategory : collection.categories().byId())
+    {
+        assert(currentCategory);
+        currentCategory->recalculateTotals();
+    }
+}
+
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(EntityCollection& collection,
                                                                               IdTypeRef id, IdTypeRef newParentId)
 {
@@ -478,22 +499,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(En
 
     auto currentUser = getCurrentUser(collection);
 
-    category.parent() = newParentPtr;
-    updateLastUpdated(category, currentUser);
-
-    //changing a parent requires updating totals
-    //until there's a visible performance penalty, simply update all totals
-    for (DiscussionCategoryPtr currentCategory : collection.categories().byId())
-    {
-        assert(currentCategory);
-        currentCategory->resetTotals();
-    }
-
-    for (DiscussionCategoryPtr currentCategory : collection.categories().byId())
-    {
-        assert(currentCategory);
-        currentCategory->recalculateTotals();
-    }
+    updateCategoryParent(collection, category, newParentPtr, currentUser);
 
     return StatusCode::OK;
 }
@@ -604,7 +610,15 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(EntityCo
         return StatusCode::NOT_FOUND;
     }
 
-    collection.deleteDiscussionCategory(*it);
+    DiscussionCategoryPtr category = *it;
+    auto currentUser = getCurrentUser(collection);
+
+    for (DiscussionCategoryPtr childCategory : category->children())
+    {
+        updateCategoryParent(collection, *childCategory, {}, currentUser);
+    }
+
+    collection.deleteDiscussionCategory(category);
 
     return StatusCode::OK;
 }

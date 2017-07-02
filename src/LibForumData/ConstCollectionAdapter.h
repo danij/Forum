@@ -61,11 +61,7 @@ namespace Forum
 
             static const T* getPointer(Entities::EntityPointer<T> ptr)
             {
-                if ( ! ptr)
-                {
-                    assert("Collections should not contain empty shared pointers");
-                    return nullptr;
-                }
+                assert(ptr); //collections should not contain empty pointers
                 return ptr.ptr();
             }
 

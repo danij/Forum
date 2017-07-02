@@ -106,24 +106,28 @@ void DiscussionThread::resetVisitorsSinceLastEdit()
 
 bool DiscussionThread::addTag(EntityPointer<DiscussionTag> tag)
 {
+    assert(tag);
     latestVisibleChange() = Context::getCurrentTime();
     return std::get<1>(tags_.insert(tag));
 }
 
 bool DiscussionThread::removeTag(EntityPointer<DiscussionTag> tag)
 {
+    assert(tag);
     latestVisibleChange() = Context::getCurrentTime();
     return tags_.erase(tag) > 0;
 }
 
 bool DiscussionThread::addCategory(EntityPointer<DiscussionCategory> category)
 {
+    assert(category);
     latestVisibleChange() = Context::getCurrentTime();
     return std::get<1>(categories_.insert(category));
 }
 
 bool DiscussionThread::removeCategory(EntityPointer<DiscussionCategory> category)
 {
+    assert(category);
     latestVisibleChange() = Context::getCurrentTime();
     return categories_.erase(category) > 0;
 }

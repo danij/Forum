@@ -27,15 +27,26 @@ namespace Forum
             virtual bool add(DiscussionThreadPtr thread);
             virtual bool remove(DiscussionThreadPtr thread);
 
+            void prepareUpdateName(DiscussionThreadPtr thread);
             void updateName(DiscussionThreadPtr thread);
+
+            void prepareUpdateLastUpdated(DiscussionThreadPtr thread);
             void updateLastUpdated(DiscussionThreadPtr thread);
+
+            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread);
             void updateLatestMessageCreated(DiscussionThreadPtr thread);
+
+            void prepareUpdateMessageCount(DiscussionThreadPtr thread);
             void updateMessageCount(DiscussionThreadPtr thread);
+
+            void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread);
             void updatePinDisplayOrder(DiscussionThreadPtr thread);
 
+            auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
-                                          
-            auto count()                  const { return byName_.size(); }
+                                     
+            typedef RETURN_TYPE(RANKED_COLLECTION(DiscussionThread, name), size) CountType;
+            CountType count()             const { return byName_.size(); }
                                           
             auto byName()                 const { return Helpers::toConst(byName_); }
             auto byCreated()              const { return Helpers::toConst(byCreated_); }
@@ -54,14 +65,23 @@ namespace Forum
         private:
 
             RANKED_COLLECTION(DiscussionThread, name) byName_;
+            decltype(byName_)::nth_index<0>::type::iterator byNameUpdateIt_;
 
             RANKED_COLLECTION(DiscussionThread, created) byCreated_;
+
             RANKED_COLLECTION(DiscussionThread, lastUpdated) byLastUpdated_;
+            decltype(byLastUpdated_)::nth_index<0>::type::iterator byLastUpdatedUpdateIt_;
+
             RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
+            decltype(byLatestMessageCreated_)::nth_index<0>::type::iterator byLatestMessageCreatedUpdateIt_;
+
             RANKED_COLLECTION(DiscussionThread, messageCount) byMessageCount_;
-
+            decltype(byMessageCount_)::nth_index<0>::type::iterator byMessageCountUpdateIt_;
+            
             ORDERED_COLLECTION(DiscussionThread, pinDisplayOrder) byPinDisplayOrder_;
+            decltype(byPinDisplayOrder_)::nth_index<0>::type::iterator byPinDisplayOrderUpdateIt_;
 
+            std::function<void()> onPrepareCountChange_;
             std::function<void()> onCountChange_;
         };
 
@@ -116,6 +136,7 @@ namespace Forum
 
             void clear();
             
+            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread);
             void updateLatestMessageCreated(DiscussionThreadPtr thread);
 
             auto count()        const { return byId_.size(); }
@@ -131,6 +152,8 @@ namespace Forum
             HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
             
             RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
+            decltype(byLatestMessageCreated_)::nth_index<0>::type::iterator byLatestMessageCreatedUpdateIt_;
+
 
             int_fast32_t messageCount_ = 0;
             std::map<DiscussionThreadPtr, int_fast32_t> referenceCount_;

@@ -18,25 +18,27 @@ namespace Forum
         * Stores a user that creates content
         * Repositories are responsible for updating the relationships between this message and other entities
         */
-        class User final : private boost::noncopyable
+        class User final : public StoresEntityPointer<User>,
+                           private boost::noncopyable
         {
         public:
             const auto& id()                const { return id_; }
 
                    auto created()           const { return created_; }
             const auto& creationDetails()   const { return creationDetails_; }
-                                            
+                           
             const auto& auth()              const { return auth_; }
             const auto& name()              const { return name_; }
+
              StringView info()              const { return info_; }
 
-                  auto  lastSeen()          const { return lastSeen_; }
+                   auto lastSeen()          const { return lastSeen_; }
 
             const auto& threads()           const { return threads_; }
-                   auto threadCount()       const { return threads_.count(); }
             const auto& subscribedThreads() const { return subscribedThreads_; }
-
             const auto& threadMessages()    const { return threadMessages_; }
+
+                   auto threadCount()       const { return threads_.count(); }
                    auto messageCount()      const { return threadMessages_.count(); }
                    
                    auto votedMessages()     const { return Helpers::toConst(votedMessages_); }
@@ -51,10 +53,19 @@ namespace Forum
 
             struct ChangeNotification
             {
+                std::function<void(const User&)> onPrepareUpdateAuth;
                 std::function<void(const User&)> onUpdateAuth;
+
+                std::function<void(const User&)> onPrepareUpdateName;
                 std::function<void(const User&)> onUpdateName;
+                
+                std::function<void(const User&)> onPrepareUpdateLastSeen;
                 std::function<void(const User&)> onUpdateLastSeen;
+                
+                std::function<void(const User&)> onPrepareUpdateThreadCount;
                 std::function<void(const User&)> onUpdateThreadCount;
+                
+                std::function<void(const User&)> onPrepareUpdateMessageCount;
                 std::function<void(const User&)> onUpdateMessageCount;
             };
 
@@ -63,14 +74,11 @@ namespace Forum
             User(IdType id, Timestamp created, VisitDetails creationDetails)
                 : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails))
             {
-                threads_.onCountChange() = [this]()
-                {
-                    changeNotifications_.onUpdateThreadCount(*this);
-                };
-                threadMessages_.onCountChange() = [this]()
-                {
-                    changeNotifications_.onUpdateMessageCount(*this);
-                };
+                threads_.onPrepareCountChange()        = [this]() { changeNotifications_.onPrepareUpdateThreadCount(*this); };
+                threads_.onCountChange()               = [this]() { changeNotifications_.onUpdateThreadCount(*this); };
+
+                threadMessages_.onPrepareCountChange() = [this]() { changeNotifications_.onPrepareUpdateMessageCount(*this); };
+                threadMessages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
             }
 
             explicit User(StringView name) : id_(IdType::empty), name_(name)
@@ -85,18 +93,21 @@ namespace Forum
 
             void updateAuth(std::string&& value)
             {
+                changeNotifications_.onPrepareUpdateAuth(*this);
                 auth_ = std::move(value);
                 changeNotifications_.onUpdateAuth(*this);
             }
 
             void updateName(Helpers::StringWithSortKey&& name)
             {
+                changeNotifications_.onPrepareUpdateName(*this);
                 name_ = std::move(name);
                 changeNotifications_.onUpdateName(*this);
             }
 
             void updateLastSeen(Timestamp value)
             {
+                changeNotifications_.onPrepareUpdateLastSeen(*this);
                 lastSeen_ = value;
                 changeNotifications_.onUpdateLastSeen(*this);
             }

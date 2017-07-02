@@ -3,8 +3,6 @@
 #include "ConstCollectionAdapter.h"
 #include "EntityDiscussionCategory.h"
 
-#include <functional>
-
 #include <boost/noncopyable.hpp>
 
 #include <boost/multi_index_container.hpp>
@@ -23,12 +21,15 @@ namespace Forum
             bool add(DiscussionCategoryPtr category);
             bool remove(DiscussionCategoryPtr category);
 
+            void prepareUpdateName(DiscussionCategoryPtr category);
             void updateName(DiscussionCategoryPtr category);
+
+            void prepareUpdateMessageCount(DiscussionCategoryPtr category);
             void updateMessageCount(DiscussionCategoryPtr category);
+            
+            void prepareUpdateDisplayOrderRootPriority(DiscussionCategoryPtr category);
             void updateDisplayOrderRootPriority(DiscussionCategoryPtr category);
-
-            auto& onCountChange()                   { return onCountChange_; }
-
+            
             auto count()                      const { return byId_.size(); }
 
             auto byId()                       const { return Helpers::toConst(byId_); }
@@ -45,12 +46,13 @@ namespace Forum
             HASHED_UNIQUE_COLLECTION(DiscussionCategory, id) byId_;
 
             RANKED_UNIQUE_COLLECTION(DiscussionCategory, name) byName_;
+            decltype(byName_)::nth_index<0>::type::iterator byNameUpdateIt_;
 
             RANKED_COLLECTION(DiscussionCategory, messageCount) byMessageCount_;
+            decltype(byMessageCount_)::nth_index<0>::type::iterator byMessageCountUpdateIt_;
 
             ORDERED_COLLECTION(DiscussionCategory, displayOrderWithRootPriority) byDisplayOrderRootPriority_;
-
-            std::function<void()> onCountChange_;
+            decltype(byDisplayOrderRootPriority_)::nth_index<0>::type::iterator byDisplayOrderRootPriorityUpdateIt_;
         };
     }
 }

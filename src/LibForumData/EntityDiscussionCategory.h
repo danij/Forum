@@ -32,11 +32,14 @@ namespace Forum
                    auto created()            const { return created_; }
             const auto& creationDetails()    const { return creationDetails_; }
 
-            const auto& name()               const { return name_; }
+            typedef const Helpers::StringWithSortKey& NameReturnType;
+            NameReturnType name()            const { return name_; }
+
              StringView description()        const { return description_; }
                    auto parent()             const { return parent_.toConst(); }
 
-                   auto displayOrder()       const { return displayOrder_; }
+                   typedef int_fast16_t DisplayOrderReturnType;
+            DisplayOrderReturnType displayOrder() const { return displayOrder_; }
                    bool isRootCategory()     const { return ! parent_; }
 
                    auto lastUpdated()        const { return lastUpdated_; }
@@ -46,7 +49,9 @@ namespace Forum
                    
             const auto& threads()            const { return threads_; }
                    auto threadCount()        const { return threads_.count(); }
-                   auto messageCount()       const { return messageCount_; }
+
+                   typedef int_fast32_t MessageCountReturnType;
+            MessageCountReturnType messageCount() const { return messageCount_; }
                    
                    auto threadTotalCount()   const { return totalThreads_.count(); }
                    auto messageTotalCount()  const { return totalThreads_.messageCount(); }
@@ -80,8 +85,13 @@ namespace Forum
 
             struct ChangeNotification
             {
+                std::function<void(const DiscussionCategory&)> onPrepareUpdateName;
                 std::function<void(const DiscussionCategory&)> onUpdateName;
+
+                std::function<void(const DiscussionCategory&)> onPrepareUpdateMessageCount;
                 std::function<void(const DiscussionCategory&)> onUpdateMessageCount;
+
+                std::function<void(const DiscussionCategory&)> onPrepareUpdateDisplayOrder;
                 std::function<void(const DiscussionCategory&)> onUpdateDisplayOrder;
             };
 
@@ -95,12 +105,14 @@ namespace Forum
 
             void updateName(Helpers::StringWithSortKey&& name)
             {
+                changeNotifications_.onPrepareUpdateName(*this);
                 name_ = std::move(name);
                 changeNotifications_.onUpdateName(*this);
             }
 
             void updateDisplayOrder(int_fast16_t value)
             {
+                changeNotifications_.onPrepareUpdateDisplayOrder(*this);
                 displayOrder_ = std::max(static_cast<int_fast16_t>(0), value);
                 changeNotifications_.onUpdateDisplayOrder(*this);
             }
@@ -112,8 +124,10 @@ namespace Forum
             auto& lastUpdatedDetails() { return lastUpdatedDetails_; }
             auto& lastUpdatedReason()  { return lastUpdatedReason_; }
             auto& lastUpdatedBy()      { return lastUpdatedBy_; }
-
+            
+            auto& threads()            { return threads_; }
             auto& tags()               { return tags_; }
+            auto& children()           { return children_; }
 
             bool addChild(EntityPointer<DiscussionCategory> category);
             bool removeChild(EntityPointer<DiscussionCategory> category);

@@ -4,6 +4,8 @@ using namespace Forum::Entities;
 
 bool DiscussionThreadCollectionBase::add(DiscussionThreadPtr thread)
 {
+    if (onPrepareCountChange_) onPrepareCountChange_();
+
     byName_.insert(thread);
     byCreated_.insert(thread);
     byLastUpdated_.insert(thread);
@@ -17,10 +19,9 @@ bool DiscussionThreadCollectionBase::add(DiscussionThreadPtr thread)
 
 bool DiscussionThreadCollectionBase::remove(DiscussionThreadPtr thread)
 {
-    {
-        auto itByName = byName_.find(thread->name());
-        if (itByName != byName_.end()) byName_.erase(itByName);
-    }
+    if (onPrepareCountChange_) onPrepareCountChange_();
+
+    eraseFromNonUniqueCollection(byName_, thread, thread->name());
     eraseFromNonUniqueCollection(byCreated_, thread, thread->created());
     eraseFromNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
     eraseFromNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
@@ -31,33 +32,69 @@ bool DiscussionThreadCollectionBase::remove(DiscussionThreadPtr thread)
     return true;
 }
 
+void DiscussionThreadCollectionBase::prepareUpdateName(DiscussionThreadPtr thread)
+{
+    byNameUpdateIt_ = findInNonUniqueCollection(byName_, thread, thread->name());
+}
+
 void DiscussionThreadCollectionBase::updateName(DiscussionThreadPtr thread)
 {
-    auto it = byName_.find(thread->name());
-    if (it != byName_.end())
+    if (byNameUpdateIt_ != byName_.end())
     {
-        byName_.replace(it, thread);
+        byName_.replace(byNameUpdateIt_, thread);
     }
+}
+
+void DiscussionThreadCollectionBase::prepareUpdateLastUpdated(DiscussionThreadPtr thread)
+{
+    byLastUpdatedUpdateIt_ = findInNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
 }
 
 void DiscussionThreadCollectionBase::updateLastUpdated(DiscussionThreadPtr thread)
 {
-    replaceInNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
+    if (byLastUpdatedUpdateIt_ != byLastUpdated_.end())
+    {
+        byLastUpdated_.replace(byLastUpdatedUpdateIt_, thread);
+    }
+}
+
+void DiscussionThreadCollectionBase::prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread)
+{
+    byLatestMessageCreatedUpdateIt_ = findInNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
 }
 
 void DiscussionThreadCollectionBase::updateLatestMessageCreated(DiscussionThreadPtr thread)
 {
-    replaceInNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
+    if (byLatestMessageCreatedUpdateIt_ != byLatestMessageCreated_.end())
+    {
+        byLatestMessageCreated_.replace(byLatestMessageCreatedUpdateIt_, thread);
+    }
+}
+
+void DiscussionThreadCollectionBase::prepareUpdateMessageCount(DiscussionThreadPtr thread)
+{
+    byMessageCountUpdateIt_ = findInNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
 }
 
 void DiscussionThreadCollectionBase::updateMessageCount(DiscussionThreadPtr thread)
 {
-    replaceInNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
+    if (byMessageCountUpdateIt_ != byMessageCount_.end())
+    {
+        byMessageCount_.replace(byMessageCountUpdateIt_, thread);
+    }
+}
+
+void DiscussionThreadCollectionBase::prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread)
+{
+    byPinDisplayOrderUpdateIt_ = findInNonUniqueCollection(byPinDisplayOrder_, thread, thread->pinDisplayOrder());
 }
 
 void DiscussionThreadCollectionBase::updatePinDisplayOrder(DiscussionThreadPtr thread)
 {
-    replaceInNonUniqueCollection(byPinDisplayOrder_, thread, thread->pinDisplayOrder());
+    if (byPinDisplayOrderUpdateIt_ != byPinDisplayOrder_.end())
+    {
+        byPinDisplayOrder_.replace(byPinDisplayOrderUpdateIt_, thread);
+    }
 }
 
 bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
@@ -162,9 +199,17 @@ void DiscussionThreadCollectionWithReferenceCountAndMessageCount::clear()
     messageCount_ = 0;
 }
 
+void DiscussionThreadCollectionWithReferenceCountAndMessageCount::prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread)
+{
+    byLatestMessageCreatedUpdateIt_ = findInNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
+}
+
 void DiscussionThreadCollectionWithReferenceCountAndMessageCount::updateLatestMessageCreated(DiscussionThreadPtr thread)
 {
-    replaceInNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
+    if (byLatestMessageCreatedUpdateIt_ != byLatestMessageCreated_.end())
+    {
+        byLatestMessageCreated_.replace(byLatestMessageCreatedUpdateIt_, thread);
+    }
 }
 
 DiscussionThreadMessagePtr DiscussionThreadCollectionWithReferenceCountAndMessageCount::latestMessage() const

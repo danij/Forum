@@ -50,8 +50,11 @@ namespace Forum
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ranked_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
 
+#define RETURN_TYPE(Type, Getter) \
+        typename std::result_of<decltype(&Type::Getter)(Type*)>::type
+
         template<typename Collection, typename Entity, typename Value>
-        void eraseFromNonUniqueCollection(Collection& collection, Entity toCompare, Value toSearch)
+        void eraseFromNonUniqueCollection(Collection& collection, Entity toCompare, const Value& toSearch)
         {
             auto range = collection.equal_range(toSearch);
             for (auto it = range.first; it != range.second; ++it)
@@ -63,19 +66,19 @@ namespace Forum
                 }
             }
         }
-
+        
         template<typename Collection, typename Entity, typename Value>
-        void replaceInNonUniqueCollection(Collection& collection, Entity toCompare, Value toSearch)
+        auto findInNonUniqueCollection(Collection& collection, Entity toCompare, const Value& toSearch)
         {
             auto range = collection.equal_range(toSearch);
             for (auto it = range.first; it != range.second; ++it)
             {
                 if (*it == toCompare)
                 {
-                    collection.replace(it, toCompare);
-                    return;
+                    return it;
                 }
             }
+            return collection.end();
         }
     }
 }

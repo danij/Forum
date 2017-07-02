@@ -23,9 +23,11 @@ namespace Forum
             bool remove(DiscussionThreadMessagePtr message);
             void clear();
 
-            auto& onCountChange()       { return onCountChange_; }
+            auto& onPrepareCountChange() { return onPrepareCountChange_; }
+            auto& onCountChange()        { return onCountChange_; }
 
-            auto count()          const { return byId_.size(); }
+            typedef RETURN_TYPE(HASHED_UNIQUE_COLLECTION(DiscussionThreadMessage, id), size) CountType;
+            CountType count()     const { return byId_.size(); }
 
             auto byId()           const { return Helpers::toConst(byId_); }
             auto byCreated()      const { return Helpers::toConst(byCreated_); }
@@ -38,6 +40,7 @@ namespace Forum
 
             RANKED_COLLECTION(DiscussionThreadMessage, created) byCreated_;
 
+            std::function<void()> onPrepareCountChange_;
             std::function<void()> onCountChange_;
         };
     }

@@ -12,7 +12,6 @@ bool UserCollection::add(UserPtr user)
     byThreadCount_.insert(user);
     byMessageCount_.insert(user);
 
-    if (onCountChange_) onCountChange_();
     return true;
 }
 
@@ -37,39 +36,70 @@ bool UserCollection::remove(UserPtr user)
     eraseFromNonUniqueCollection(byThreadCount_, user, user->threadCount());
     eraseFromNonUniqueCollection(byMessageCount_, user, user->messageCount());
 
-    if (onCountChange_) onCountChange_();
     return true;
+}
+
+void UserCollection::prepareUpdateAuth(UserPtr user)
+{
+    byAuthUpdateIt_ = byAuth_.find(user->auth());
 }
 
 void UserCollection::updateAuth(UserPtr user)
 {
-    auto it = byAuth_.find(user->auth());
-    if (it != byAuth_.end())
+    if (byAuthUpdateIt_ != byAuth_.end())
     {
-        byAuth_.replace(it, user);
+        byAuth_.replace(byAuthUpdateIt_, user);
     }
+}
+
+void UserCollection::prepareUpdateName(UserPtr user)
+{
+    byNameUpdateIt_ = byName_.find(user->name());
 }
 
 void UserCollection::updateName(UserPtr user)
 {
-    auto it = byName_.find(user->name());
-    if (it != byName_.end())
+    if (byNameUpdateIt_ != byName_.end())
     {
-        byName_.replace(it, user);
+        byName_.replace(byNameUpdateIt_, user);
     }
+}
+
+void UserCollection::prepareUpdateLastSeen(UserPtr user)
+{
+    byLastSeenUpdateIt_ = findInNonUniqueCollection(byLastSeen_, user, user->lastSeen());
 }
 
 void UserCollection::updateLastSeen(UserPtr user)
 {
-    replaceInNonUniqueCollection(byLastSeen_, user, user->lastSeen());
+    if (byLastSeenUpdateIt_ != byLastSeen_.end())
+    {
+        byLastSeen_.replace(byLastSeenUpdateIt_, user);
+    }
+}
+
+void UserCollection::prepareUpdateThreadCount(UserPtr user)
+{
+    byThreadCountUpdateIt_ = findInNonUniqueCollection(byThreadCount_, user, user->threadCount());
 }
 
 void UserCollection::updateThreadCount(UserPtr user)
 {
-    replaceInNonUniqueCollection(byThreadCount_, user, user->threadCount());
+    if (byThreadCountUpdateIt_ != byThreadCount_.end())
+    {
+        byThreadCount_.replace(byThreadCountUpdateIt_, user);
+    }
+}
+
+void UserCollection::prepareUpdateMessageCount(UserPtr user)
+{
+    byMessageCountUpdateIt_ = findInNonUniqueCollection(byMessageCount_, user, user->messageCount());
 }
 
 void UserCollection::updateMessageCount(UserPtr user)
 {
-    replaceInNonUniqueCollection(byMessageCount_, user, user->messageCount());
+    if (byMessageCountUpdateIt_ != byMessageCount_.end())
+    {
+        byMessageCount_.replace(byMessageCountUpdateIt_, user);
+    }
 }

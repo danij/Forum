@@ -129,9 +129,12 @@ StringWithSortKey::StringWithSortKey(StringView view) : StringWithSortKey()
 StringWithSortKey::StringWithSortKey(const StringWithSortKey& other)
     : stringLength_(other.stringLength_), sortKeyLength_(other.sortKeyLength_)
 {
-    auto toCopy = stringLength_ + sortKeyLength_;
-    bytes_ = std::unique_ptr<char[]>(new char[toCopy]);
-    std::copy(other.bytes_.get(), other.bytes_.get() + toCopy, bytes_.get());
+    if (other.bytes_)
+    {
+        auto toCopy = stringLength_ + sortKeyLength_;
+        bytes_ = std::unique_ptr<char[]>(new char[toCopy]);
+        std::copy(other.bytes_.get(), other.bytes_.get() + toCopy, bytes_.get());
+    }
 }
 
 StringWithSortKey::StringWithSortKey(StringWithSortKey&& other) noexcept

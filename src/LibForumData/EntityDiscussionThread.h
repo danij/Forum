@@ -24,6 +24,7 @@ namespace Forum
         * Repositories are responsible for updating the relationships between this message and other entities
         */
         class DiscussionThread final : public Authorization::DiscussionThreadPrivilegeStore,
+                                       public StoresEntityPointer<DiscussionThread>,
                                        private boost::noncopyable
         {
         public:
@@ -33,8 +34,9 @@ namespace Forum
             const auto& creationDetails()           const { return creationDetails_; }
 
             const auto& createdBy()                 const { return createdBy_; }
-
+            
             const auto& name()                      const { return name_; }
+
             const auto& messages()                  const { return messages_; }
                    auto messageCount()              const { return messages_.count(); }
 
@@ -45,7 +47,9 @@ namespace Forum
                    auto lastUpdatedBy()             const { return lastUpdatedBy_.toConst(); }
             
                    auto latestVisibleChange()       const { return latestVisibleChange_; }
+
                    auto latestMessageCreated()      const { return latestMessageCreated_; }
+
                    auto nrOfVisitorsSinceLastEdit() const { return visitorsSinceLastEdit_.size(); }
                    
                    auto tags()                      const { return Helpers::toConst(tags_); }
@@ -74,10 +78,19 @@ namespace Forum
 
             struct ChangeNotification
             {
+                std::function<void(const DiscussionThread&)> onPrepareUpdateName;
                 std::function<void(const DiscussionThread&)> onUpdateName;
+
+                std::function<void(const DiscussionThread&)> onPrepareUpdateLastUpdated;
                 std::function<void(const DiscussionThread&)> onUpdateLastUpdated;
+
+                std::function<void(const DiscussionThread&)> onPrepareUpdateLatestMessageCreated;
                 std::function<void(const DiscussionThread&)> onUpdateLatestMessageCreated;
+
+                std::function<void(const DiscussionThread&)> onPrepareUpdateMessageCount;
                 std::function<void(const DiscussionThread&)> onUpdateMessageCount;
+
+                std::function<void(const DiscussionThread&)> onPrepareUpdatePinDisplayOrder;
                 std::function<void(const DiscussionThread&)> onUpdatePinDisplayOrder;
             };
 
@@ -87,20 +100,20 @@ namespace Forum
                 : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
                   createdBy_(createdBy)
             {
-                messages_.onCountChange() = [this]()
-                {
-                    changeNotifications_.onUpdateMessageCount(*this);
-                };
+                messages_.onPrepareCountChange() = [this]() { changeNotifications_.onPrepareUpdateMessageCount(*this); };
+                messages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
             }
 
             void updateName(Helpers::StringWithSortKey&& name)
             {
+                changeNotifications_.onPrepareUpdateName(*this);
                 name_ = std::move(name);
                 changeNotifications_.onUpdateName(*this);
             }
 
             void updateLastUpdated(Timestamp value)
             {
+                changeNotifications_.onPrepareUpdateLastUpdated(*this);
                 lastUpdated_ = value;
                 changeNotifications_.onUpdateLastUpdated(*this);
             }
@@ -127,6 +140,7 @@ namespace Forum
 
             void updatePinDisplayOrder(uint16_t value)
             {
+                changeNotifications_.onPrepareUpdatePinDisplayOrder(*this);
                 pinDisplayOrder_ = value;
                 changeNotifications_.onUpdatePinDisplayOrder(*this);
             }

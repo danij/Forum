@@ -38,6 +38,9 @@ PrivilegeValueType DiscussionTag::getDiscussionTagPrivilege(DiscussionTagPrivile
 
 bool DiscussionTag::insertDiscussionThread(DiscussionThreadPtr thread)
 {
+    assert(thread);
+    changeNotifications_.onPrepareUpdateThreadCount(*this);
+
     if ( ! threads_.add(thread))
     {
         return false;
@@ -55,6 +58,9 @@ bool DiscussionTag::insertDiscussionThread(DiscussionThreadPtr thread)
 
 bool DiscussionTag::deleteDiscussionThread(DiscussionThreadPtr thread)
 {
+    assert(thread);
+    changeNotifications_.onPrepareUpdateThreadCount(*this);
+
     if ( ! threads_.remove(thread))
     {
         return false;
@@ -73,10 +79,12 @@ bool DiscussionTag::deleteDiscussionThread(DiscussionThreadPtr thread)
 
 bool DiscussionTag::addCategory(EntityPointer<DiscussionCategory> category)
 {
+    assert(category);
     return std::get<1>(categories_.insert(std::move(category)));
 }
 
 bool DiscussionTag::removeCategory(EntityPointer<DiscussionCategory> category)
 {
+    assert(category);
     return categories_.erase(category) > 0;
 }

@@ -3,8 +3,6 @@
 #include "ConstCollectionAdapter.h"
 #include "EntityMessageComment.h"
 
-#include <functional>
-
 #include <boost/noncopyable.hpp>
 
 #include <boost/multi_index_container.hpp>
@@ -21,9 +19,7 @@ namespace Forum
         public:
             bool add(MessageCommentPtr comment);
             bool remove(MessageCommentPtr comment);
-
-            auto& onCountChange() { return onCountChange_; }
-
+            
             auto count()          const { return byId_.size(); }
 
             auto byId()           const { return Helpers::toConst(byId_); }
@@ -36,8 +32,6 @@ namespace Forum
             HASHED_UNIQUE_COLLECTION(MessageComment, id) byId_;
 
             RANKED_COLLECTION(MessageComment, created) byCreated_;
-
-            std::function<void()> onCountChange_;
         };
     }
 }

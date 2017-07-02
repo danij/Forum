@@ -22,13 +22,20 @@ namespace Forum
             bool add(UserPtr user);
             bool remove(UserPtr user);
 
+            void prepareUpdateAuth(UserPtr user);
             void updateAuth(UserPtr user);
-            void updateName(UserPtr user);
-            void updateLastSeen(UserPtr user);
-            void updateThreadCount(UserPtr user);
-            void updateMessageCount(UserPtr user);
 
-            auto& onCountChange()       { return onCountChange_; }
+            void prepareUpdateName(UserPtr user);
+            void updateName(UserPtr user);
+
+            void prepareUpdateLastSeen(UserPtr user);
+            void updateLastSeen(UserPtr user);
+            
+            void prepareUpdateThreadCount(UserPtr user);
+            void updateThreadCount(UserPtr user);
+
+            void prepareUpdateMessageCount(UserPtr user);
+            void updateMessageCount(UserPtr user);
 
             auto count()          const { return byId_.size(); }
 
@@ -51,15 +58,21 @@ namespace Forum
         private:
             HASHED_UNIQUE_COLLECTION(User, id) byId_;
             HASHED_UNIQUE_COLLECTION(User, auth) byAuth_;
+            decltype(byAuth_)::nth_index<0>::type::iterator byAuthUpdateIt_;
 
             RANKED_UNIQUE_COLLECTION(User, name) byName_;
+            decltype(byName_)::nth_index<0>::type::iterator byNameUpdateIt_;
 
             RANKED_COLLECTION(User, created) byCreated_;
-            RANKED_COLLECTION(User, lastSeen) byLastSeen_;
-            RANKED_COLLECTION(User, threadCount) byThreadCount_;
-            RANKED_COLLECTION(User, messageCount) byMessageCount_;
 
-            std::function<void()> onCountChange_;
+            RANKED_COLLECTION(User, lastSeen) byLastSeen_;
+            decltype(byLastSeen_)::nth_index<0>::type::iterator byLastSeenUpdateIt_;
+
+            RANKED_COLLECTION(User, threadCount) byThreadCount_;
+            decltype(byThreadCount_)::nth_index<0>::type::iterator byThreadCountUpdateIt_;
+            
+            RANKED_COLLECTION(User, messageCount) byMessageCount_;
+            decltype(byMessageCount_)::nth_index<0>::type::iterator byMessageCountUpdateIt_;
         };
     }
 }

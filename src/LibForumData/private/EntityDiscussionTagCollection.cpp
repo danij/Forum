@@ -8,7 +8,6 @@ bool DiscussionTagCollection::add(DiscussionTagPtr tag)
     byName_.insert(tag);
     byMessageCount_.insert(tag);
 
-    if (onCountChange_) onCountChange_();
     return true;
 }
 
@@ -26,20 +25,31 @@ bool DiscussionTagCollection::remove(DiscussionTagPtr tag)
     }
     eraseFromNonUniqueCollection(byMessageCount_, tag, tag->messageCount());
 
-    if (onCountChange_) onCountChange_();
     return true;
+}
+
+void DiscussionTagCollection::prepareUpdateName(DiscussionTagPtr tag)
+{
+    byNameUpdateIt_ = byName_.find(tag->name());
 }
 
 void DiscussionTagCollection::updateName(DiscussionTagPtr tag)
 {
-    auto it = byName_.find(tag->name());
-    if (it != byName_.end())
+    if (byNameUpdateIt_ != byName_.end())
     {
-        byName_.replace(it, tag);
+        byName_.replace(byNameUpdateIt_, tag);
     }
+}
+
+void DiscussionTagCollection::prepareUpdateMessageCount(DiscussionTagPtr tag)
+{
+    byMessageCountUpdateIt_ = findInNonUniqueCollection(byMessageCount_, tag, tag->messageCount());
 }
 
 void DiscussionTagCollection::updateMessageCount(DiscussionTagPtr tag)
 {
-    replaceInNonUniqueCollection(byMessageCount_, tag, tag->messageCount());
+    if (byMessageCountUpdateIt_ != byMessageCount_.end())
+    {
+        byMessageCount_.replace(byMessageCountUpdateIt_, tag);
+    }
 }

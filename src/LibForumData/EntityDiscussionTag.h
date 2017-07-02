@@ -22,6 +22,7 @@ namespace Forum
         * The tag manages the message count and also notifies any discussion categories when a thread is added or removed
         */
         class DiscussionTag final : public Authorization::DiscussionTagPrivilegeStore,
+                                    public StoresEntityPointer<DiscussionTag>,
                                     private boost::noncopyable
         {
         public:
@@ -30,8 +31,9 @@ namespace Forum
                    auto created()            const { return created_; }
             const auto& creationDetails()    const { return creationDetails_; }
 
+            typedef const Helpers::StringWithSortKey& NameReturnType;
+            NameReturnType name()            const { return name_; }
              StringView uiBlob()             const { return uiBlob_; }
-            const auto& name()               const { return name_; }
 
             const auto& threads()            const { return threads_; }
 
@@ -40,8 +42,11 @@ namespace Forum
              StringView lastUpdatedReason()  const { return lastUpdatedReason_; }
                    auto lastUpdatedBy()      const { return lastUpdatedBy_.toConst(); }
             
-                   auto threadCount()        const { return threads_.count(); }
-                   auto messageCount()       const { return messageCount_; }
+            typedef DiscussionThreadCollectionBase::CountType ThreadCountReturnType;
+            ThreadCountReturnType threadCount() const { return threads_.count(); }
+
+            typedef int_fast32_t MessageCountReturnType;
+            MessageCountReturnType messageCount()       const { return messageCount_; }
 
                    auto categories()         const { return Helpers::toConst(categories_); }
 
@@ -60,11 +65,16 @@ namespace Forum
                 Name,
                 UIBlob
             };
-            
+
             struct ChangeNotification
             {
+                std::function<void(const DiscussionTag&)> onPrepareUpdateName;                
                 std::function<void(const DiscussionTag&)> onUpdateName;
+
+                std::function<void(const DiscussionTag&)> onPrepareUpdateThreadCount;
                 std::function<void(const DiscussionTag&)> onUpdateThreadCount;
+
+                std::function<void(const DiscussionTag&)> onPrepareUpdateMessageCount;
                 std::function<void(const DiscussionTag&)> onUpdateMessageCount;
             };
             
@@ -78,6 +88,7 @@ namespace Forum
 
             void updateName(Helpers::StringWithSortKey&& name)
             {
+                changeNotifications_.onPrepareUpdateName(*this);
                 name_ = std::move(name);
                 changeNotifications_.onUpdateName(*this);
             }
@@ -93,6 +104,7 @@ namespace Forum
 
             void updateMessageCount(int_fast32_t delta)
             {
+                changeNotifications_.onPrepareUpdateMessageCount(*this);
                 messageCount_ += delta;
                 changeNotifications_.onUpdateMessageCount(*this);
             }

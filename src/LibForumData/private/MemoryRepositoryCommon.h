@@ -106,7 +106,7 @@ namespace Forum
         }
 
         template<typename Entity, typename ByType>
-        void updateLastUpdated(Entity& entity, const ByType& by)
+        void updateLastUpdated(Entity& entity, ByType by)
         {
             entity.lastUpdated() = Context::getCurrentTime();
             entity.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();

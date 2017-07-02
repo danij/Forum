@@ -105,18 +105,20 @@ struct EntityCollection::Impl
         assert(threads_.add(thread));
     }
 
-    void deleteDiscussionThread(DiscussionThreadPtr thread)
+    void deleteDiscussionThread(DiscussionThreadPtr threadPtr)
     {
-        assert(thread);
+        assert(threadPtr);
 
-        if ( ! threads_.remove(thread))
+        if ( ! threads_.remove(threadPtr))
         {
             return;
         }
 
-        thread->aboutToBeDeleted() = true;
+        DiscussionThread& thread = *threadPtr;
 
-        for (auto& message : thread->messages().byId())
+        thread.aboutToBeDeleted() = true;
+
+        for (auto& message : thread.messages().byId())
         {
             assert(message);
             //Each discussion message holds a reference to the user that created it and the parent thread
@@ -126,25 +128,25 @@ struct EntityCollection::Impl
 
         if (alsoDeleteThreadsFromUser)
         {
-            thread->createdBy().threads().remove(thread);
+            thread.createdBy().threads().remove(threadPtr);
         }
 
-        for (DiscussionCategoryPtr category : thread->categories())
+        for (DiscussionCategoryPtr category : thread.categories())
         {
             assert(category);
-            category->deleteDiscussionThread(thread);
+            category->deleteDiscussionThread(threadPtr);
         }
 
-        for (DiscussionTagPtr tag : thread->tags())
+        for (DiscussionTagPtr tag : thread.tags())
         {
             assert(tag);
-            tag->deleteDiscussionThread(thread);
+            tag->deleteDiscussionThread(threadPtr);
         }
 
-        for (UserPtr user : thread->subscribedUsers())
+        for (UserPtr user : thread.subscribedUsers())
         {
             assert(user);
-            user->subscribedThreads().remove(thread);
+            user->subscribedThreads().remove(threadPtr);
         }
     }
 
@@ -173,7 +175,7 @@ struct EntityCollection::Impl
         }
 
         DiscussionThread& parentThread = *(message->parentThread());
-        if ( ! parentThread.aboutToBeDeleted())
+        if (parentThread.aboutToBeDeleted())
         {
             return;
         }
@@ -257,11 +259,25 @@ struct EntityCollection::Impl
 
     void setEventListeners()
     {
+        User::changeNotifications().onPrepareUpdateAuth         = [this](auto& user) { this->onPrepareUpdateUserAuth(user); };
+        User::changeNotifications().onPrepareUpdateAuth         = [this](auto& user) { this->onPrepareUpdateUserAuth(user); };
+        User::changeNotifications().onPrepareUpdateName         = [this](auto& user) { this->onPrepareUpdateUserName(user); };
+        User::changeNotifications().onPrepareUpdateLastSeen     = [this](auto& user) { this->onPrepareUpdateUserLastSeen(user); };
+        User::changeNotifications().onPrepareUpdateThreadCount  = [this](auto& user) { this->onPrepareUpdateUserThreadCount(user); };
+        User::changeNotifications().onPrepareUpdateMessageCount = [this](auto& user) { this->onPrepareUpdateUserMessageCount(user); };
+
+        User::changeNotifications().onUpdateAuth         = [this](auto& user) { this->onUpdateUserAuth(user); };
         User::changeNotifications().onUpdateAuth         = [this](auto& user) { this->onUpdateUserAuth(user); };
         User::changeNotifications().onUpdateName         = [this](auto& user) { this->onUpdateUserName(user); };
         User::changeNotifications().onUpdateLastSeen     = [this](auto& user) { this->onUpdateUserLastSeen(user); };
         User::changeNotifications().onUpdateThreadCount  = [this](auto& user) { this->onUpdateUserThreadCount(user); };
         User::changeNotifications().onUpdateMessageCount = [this](auto& user) { this->onUpdateUserMessageCount(user); };
+
+        DiscussionThread::changeNotifications().onPrepareUpdateName                 = [this](auto& thread) { this->onPrepareUpdateDiscussionThreadName(thread); };
+        DiscussionThread::changeNotifications().onPrepareUpdateLastUpdated          = [this](auto& thread) { this->onPrepareUpdateDiscussionThreadLastUpdated(thread); };
+        DiscussionThread::changeNotifications().onPrepareUpdateLatestMessageCreated = [this](auto& thread) { this->onPrepareUpdateDiscussionThreadLatestMessageCreated(thread); };
+        DiscussionThread::changeNotifications().onPrepareUpdateMessageCount         = [this](auto& thread) { this->onPrepareUpdateDiscussionThreadMessageCount(thread); };
+        DiscussionThread::changeNotifications().onPrepareUpdatePinDisplayOrder      = [this](auto& thread) { this->onPrepareUpdateDiscussionThreadPinDisplayOrder(thread); };
 
         DiscussionThread::changeNotifications().onUpdateName                 = [this](auto& thread) { this->onUpdateDiscussionThreadName(thread); };
         DiscussionThread::changeNotifications().onUpdateLastUpdated          = [this](auto& thread) { this->onUpdateDiscussionThreadLastUpdated(thread); };
@@ -269,94 +285,91 @@ struct EntityCollection::Impl
         DiscussionThread::changeNotifications().onUpdateMessageCount         = [this](auto& thread) { this->onUpdateDiscussionThreadMessageCount(thread); };
         DiscussionThread::changeNotifications().onUpdatePinDisplayOrder      = [this](auto& thread) { this->onUpdateDiscussionThreadPinDisplayOrder(thread); };
 
+        DiscussionTag::changeNotifications().onPrepareUpdateName         = [this](auto& tag) { this->onPrepareUpdateDiscussionTagName(tag); };
+        DiscussionTag::changeNotifications().onPrepareUpdateThreadCount  = [this](auto& tag) { this->onPrepareUpdateDiscussionTagThreadCount(tag); };
+        DiscussionTag::changeNotifications().onPrepareUpdateMessageCount = [this](auto& tag) { this->onPrepareUpdateDiscussionTagMessageCount(tag); };
+
         DiscussionTag::changeNotifications().onUpdateName         = [this](auto& tag) { this->onUpdateDiscussionTagName(tag); };
         DiscussionTag::changeNotifications().onUpdateThreadCount  = [this](auto& tag) { this->onUpdateDiscussionTagThreadCount(tag); };
         DiscussionTag::changeNotifications().onUpdateMessageCount = [this](auto& tag) { this->onUpdateDiscussionTagMessageCount(tag); };
+
+        DiscussionCategory::changeNotifications().onPrepareUpdateName         = [this](auto& category) { this->onPrepareUpdateDiscussionCategoryName(category); };
+        DiscussionCategory::changeNotifications().onPrepareUpdateMessageCount = [this](auto& category) { this->onPrepareUpdateDiscussionCategoryMessageCount(category); };
+        DiscussionCategory::changeNotifications().onPrepareUpdateDisplayOrder = [this](auto& category) { this->onPrepareUpdateDiscussionCategoryDisplayOrder(category); };
 
         DiscussionCategory::changeNotifications().onUpdateName         = [this](auto& category) { this->onUpdateDiscussionCategoryName(category); };
         DiscussionCategory::changeNotifications().onUpdateMessageCount = [this](auto& category) { this->onUpdateDiscussionCategoryMessageCount(category); };
         DiscussionCategory::changeNotifications().onUpdateDisplayOrder = [this](auto& category) { this->onUpdateDiscussionCategoryDisplayOrder(category); };
     }
 
-    void onUpdateUserAuth(const User& user)
+    void onPrepareUpdateUserAuth        (const User& user) { users_.prepareUpdateAuth(user.pointer()); }
+    void onPrepareUpdateUserName        (const User& user) { users_.prepareUpdateName(user.pointer()); }
+    void onPrepareUpdateUserLastSeen    (const User& user) { users_.prepareUpdateLastSeen(user.pointer()); }
+    void onPrepareUpdateUserThreadCount (const User& user) { users_.prepareUpdateThreadCount(user.pointer()); }
+    void onPrepareUpdateUserMessageCount(const User& user) { users_.prepareUpdateMessageCount(user.pointer()); }
+
+    void onUpdateUserAuth        (const User& user) { users_.updateAuth(user.pointer()); }
+    void onUpdateUserName        (const User& user) { users_.updateName(user.pointer()); }
+    void onUpdateUserLastSeen    (const User& user) { users_.updateLastSeen(user.pointer()); }
+    void onUpdateUserThreadCount (const User& user) { users_.updateThreadCount(user.pointer()); }
+    void onUpdateUserMessageCount(const User& user) { users_.updateMessageCount(user.pointer()); }
+
+    void discussionThreadAction(const DiscussionThread& constThread,
+                                void (DiscussionThreadCollectionBase::*fn)(DiscussionThreadPtr))
     {
-        
+        auto& thread = const_cast<DiscussionThread&>(constThread);
+        DiscussionThreadPtr threadPtr = thread.pointer();
+
+        (threads_.*fn)(threadPtr);
+        (thread.createdBy().threads().*fn)(threadPtr);
+
+        for (UserPtr user : thread.subscribedUsers())
+        {
+            assert(user);
+            (user->subscribedThreads().*fn)(threadPtr);
+        }
+
+        for (DiscussionTagPtr tag : thread.tags())
+        {
+            assert(tag);
+            (tag->threads().*fn)(threadPtr);
+        }
+
+        for (DiscussionCategoryPtr category : thread.categories())
+        {
+            assert(category);
+            (category->threads().*fn)(threadPtr);
+        }
     }
 
-    void onUpdateUserName(const User& user)
-    {
-        
-    }
+    void onPrepareUpdateDiscussionThreadName(const DiscussionThread& thread)                 { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateName); }
+    void onPrepareUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateLastUpdated); }
+    void onPrepareUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateLatestMessageCreated); }
+    void onPrepareUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)         { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateMessageCount); }
+    void onPrepareUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdatePinDisplayOrder); }
 
-    void onUpdateUserLastSeen(const User& user)
-    {
-        
-    }
+    void onUpdateDiscussionThreadName(const DiscussionThread& thread)                 { discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateName); }
+    void onUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateLastUpdated); }
+    void onUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateLatestMessageCreated); }
+    void onUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)         { discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateMessageCount); }
+    void onUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { discussionThreadAction(thread, &DiscussionThreadCollectionBase::updatePinDisplayOrder); }
 
-    void onUpdateUserThreadCount(const User& user)
-    {
-        
-    }
+    void onPrepareUpdateDiscussionTagName        (const DiscussionTag& tag) { tags_.prepareUpdateName(tag.pointer()); }
+    void onPrepareUpdateDiscussionTagThreadCount (const DiscussionTag& tag) { }
+    void onPrepareUpdateDiscussionTagMessageCount(const DiscussionTag& tag) { tags_.prepareUpdateMessageCount(tag.pointer()); }
 
-    void onUpdateUserMessageCount(const User& user)
-    {
-        
-    }
+    void onUpdateDiscussionTagName        (const DiscussionTag& tag) { tags_.updateName(tag.pointer()); }
+    void onUpdateDiscussionTagThreadCount (const DiscussionTag& tag) { /*TODO add retrieval of tags sorted by thread count*/ }
+    void onUpdateDiscussionTagMessageCount(const DiscussionTag& tag) { tags_.updateMessageCount(tag.pointer()); }
 
-    void onUpdateDiscussionThreadName(const DiscussionThread& thread)
-    {
-        
-    }
+    void onPrepareUpdateDiscussionCategoryName        (const DiscussionCategory& category) { categories_.prepareUpdateName(category.pointer()); }
+    void onPrepareUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category) { categories_.prepareUpdateMessageCount(category.pointer()); }
+    void onPrepareUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category) { categories_.prepareUpdateDisplayOrderRootPriority(category.pointer()); }
 
-    void onUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)
-    {
+    void onUpdateDiscussionCategoryName        (const DiscussionCategory& category) { categories_.updateName(category.pointer()); }
+    void onUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category) { categories_.updateMessageCount(category.pointer()); }
+    void onUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category) { categories_.updateDisplayOrderRootPriority(category.pointer()); }
 
-    }
-
-    void onUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread)
-    {
-
-    }
-
-    void onUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)
-    {
-
-    }
-
-    void onUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)
-    {
-
-    }
-
-    void onUpdateDiscussionTagName(const DiscussionTag& tag)
-    {
-
-    }
-
-    void onUpdateDiscussionTagThreadCount(const DiscussionTag& tag)
-    {
-
-    }
-
-    void onUpdateDiscussionTagMessageCount(const DiscussionTag& tag)
-    {
-
-    }
-
-    void onUpdateDiscussionCategoryName(const DiscussionCategory& category)
-    {
-
-    }
-
-    void onUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category)
-    {
-
-    }
-
-    void onUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category)
-    {
-
-    }
 };
 
 static UserPtr anonymousUser_;
@@ -432,15 +445,19 @@ std::unique_ptr<MessageComment>* EntityCollection::getMessageCommentPoolRoot()
 
 UserPtr EntityCollection::createUser(IdType id, Timestamp created, VisitDetails creationDetails)
 {
-    return UserPtr(static_cast<UserPtr::IndexType>(
+    auto result = UserPtr(static_cast<UserPtr::IndexType>(
         impl_->managedEntities.users.add(id, created, std::move(creationDetails))));
+    result->pointer_ = result;
+    return result;
 }
 
 DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& createdBy, Timestamp created, 
                                                              VisitDetails creationDetails)
 {
-    return DiscussionThreadPtr(static_cast<DiscussionThreadPtr::IndexType>(impl_->managedEntities.threads.add(
+    auto result = DiscussionThreadPtr(static_cast<DiscussionThreadPtr::IndexType>(impl_->managedEntities.threads.add(
         id, createdBy, created, creationDetails)));
+    result->pointer_ = result;
+    return result;
 }
 
 DiscussionThreadMessagePtr EntityCollection::createDiscussionThreadMessage(IdType id, User& createdBy, 
@@ -452,14 +469,18 @@ DiscussionThreadMessagePtr EntityCollection::createDiscussionThreadMessage(IdTyp
 
 DiscussionTagPtr EntityCollection::createDiscussionTag(IdType id, Timestamp created, VisitDetails creationDetails)
 {
-    return DiscussionTagPtr(static_cast<DiscussionTagPtr::IndexType>(impl_->managedEntities.tags.add(
+    auto result = DiscussionTagPtr(static_cast<DiscussionTagPtr::IndexType>(impl_->managedEntities.tags.add(
         id, created, creationDetails, *this)));
+    result->pointer_ = result;
+    return result;
 }
 
 DiscussionCategoryPtr EntityCollection::createDiscussionCategory(IdType id, Timestamp created, VisitDetails creationDetails)
 {
-    return DiscussionCategoryPtr(static_cast<DiscussionCategoryPtr::IndexType>(impl_->managedEntities.categories.add(
+    auto result = DiscussionCategoryPtr(static_cast<DiscussionCategoryPtr::IndexType>(impl_->managedEntities.categories.add(
         id, created, creationDetails, *this)));
+    result->pointer_ = result;
+    return result;
 }
 
 MessageCommentPtr EntityCollection::createMessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy, 

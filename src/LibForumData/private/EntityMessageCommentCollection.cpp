@@ -7,7 +7,6 @@ bool MessageCommentCollection::add(MessageCommentPtr comment)
     if ( ! std::get<1>(byId_.insert(comment))) return false;
     byCreated_.insert(comment);
 
-    if (onCountChange_) onCountChange_();
     return true;
 }
 
@@ -21,6 +20,5 @@ bool MessageCommentCollection::remove(MessageCommentPtr comment)
     }
     eraseFromNonUniqueCollection(byCreated_, comment, comment->created());
 
-    if (onCountChange_) onCountChange_();
     return true;
 }

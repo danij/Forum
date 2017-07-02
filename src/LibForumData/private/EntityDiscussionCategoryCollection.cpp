@@ -9,7 +9,6 @@ bool DiscussionCategoryCollection::add(DiscussionCategoryPtr category)
     byMessageCount_.insert(category);
     byDisplayOrderRootPriority_.insert(category);
 
-    if (onCountChange_) onCountChange_();
     return true;
 }
 
@@ -28,25 +27,45 @@ bool DiscussionCategoryCollection::remove(DiscussionCategoryPtr category)
     eraseFromNonUniqueCollection(byMessageCount_, category, category->messageCount());
     eraseFromNonUniqueCollection(byDisplayOrderRootPriority_, category, category->displayOrderWithRootPriority());
 
-    if (onCountChange_) onCountChange_();
     return true;
+}
+
+void DiscussionCategoryCollection::prepareUpdateName(DiscussionCategoryPtr category)
+{
+    byNameUpdateIt_ = byName_.find(category->name());
 }
 
 void DiscussionCategoryCollection::updateName(DiscussionCategoryPtr category)
 {
-    auto it = byName_.find(category->name());
-    if (it != byName_.end())
+    if (byNameUpdateIt_ != byName_.end())
     {
-        byName_.replace(it, category);
+        byName_.replace(byNameUpdateIt_, category);
     }
+}
+
+void DiscussionCategoryCollection::prepareUpdateMessageCount(DiscussionCategoryPtr category)
+{
+    byMessageCountUpdateIt_ = findInNonUniqueCollection(byMessageCount_, category, category->messageCount());
 }
 
 void DiscussionCategoryCollection::updateMessageCount(DiscussionCategoryPtr category)
 {
-    replaceInNonUniqueCollection(byMessageCount_, category, category->messageCount());
+    if (byMessageCountUpdateIt_ != byMessageCount_.end())
+    {
+        byMessageCount_.replace(byMessageCountUpdateIt_, category);
+    }
+}
+
+void DiscussionCategoryCollection::prepareUpdateDisplayOrderRootPriority(DiscussionCategoryPtr category)
+{
+    byDisplayOrderRootPriorityUpdateIt_ = findInNonUniqueCollection(byDisplayOrderRootPriority_, category, 
+                                                                    category->displayOrderWithRootPriority());
 }
 
 void DiscussionCategoryCollection::updateDisplayOrderRootPriority(DiscussionCategoryPtr category)
 {
-    replaceInNonUniqueCollection(byDisplayOrderRootPriority_, category, category->displayOrderWithRootPriority());
+    if (byDisplayOrderRootPriorityUpdateIt_ != byDisplayOrderRootPriority_.end())
+    {
+        byDisplayOrderRootPriority_.replace(byDisplayOrderRootPriorityUpdateIt_, category);
+    }
 }
