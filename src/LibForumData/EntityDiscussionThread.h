@@ -113,6 +113,8 @@ namespace Forum
 
             void updateLastUpdated(Timestamp value)
             {
+                if (lastUpdated_ == value) return;
+
                 changeNotifications_.onPrepareUpdateLastUpdated(*this);
                 lastUpdated_ = value;
                 changeNotifications_.onUpdateLastUpdated(*this);

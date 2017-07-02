@@ -107,6 +107,8 @@ namespace Forum
 
             void updateLastSeen(Timestamp value)
             {
+                if (lastSeen_ == value) return;
+
                 changeNotifications_.onPrepareUpdateLastSeen(*this);
                 lastSeen_ = value;
                 changeNotifications_.onUpdateLastSeen(*this);

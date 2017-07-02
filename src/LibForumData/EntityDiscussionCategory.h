@@ -32,14 +32,12 @@ namespace Forum
                    auto created()            const { return created_; }
             const auto& creationDetails()    const { return creationDetails_; }
 
-            typedef const Helpers::StringWithSortKey& NameReturnType;
-            NameReturnType name()            const { return name_; }
+            const auto& name()               const { return name_; }
 
              StringView description()        const { return description_; }
                    auto parent()             const { return parent_.toConst(); }
 
-                   typedef int_fast16_t DisplayOrderReturnType;
-            DisplayOrderReturnType displayOrder() const { return displayOrder_; }
+                   auto displayOrder()       const { return displayOrder_; }
                    bool isRootCategory()     const { return ! parent_; }
 
                    auto lastUpdated()        const { return lastUpdated_; }
@@ -50,8 +48,7 @@ namespace Forum
             const auto& threads()            const { return threads_; }
                    auto threadCount()        const { return threads_.count(); }
 
-                   typedef int_fast32_t MessageCountReturnType;
-            MessageCountReturnType messageCount() const { return messageCount_; }
+                   auto messageCount()       const { return messageCount_; }
                    
                    auto threadTotalCount()   const { return totalThreads_.count(); }
                    auto messageTotalCount()  const { return totalThreads_.messageCount(); }
@@ -112,8 +109,11 @@ namespace Forum
 
             void updateDisplayOrder(int_fast16_t value)
             {
+                auto newValue = std::max(static_cast<int_fast16_t>(0), value);
+                if (displayOrder_ == value) return;
+
                 changeNotifications_.onPrepareUpdateDisplayOrder(*this);
-                displayOrder_ = std::max(static_cast<int_fast16_t>(0), value);
+                displayOrder_ = newValue;
                 changeNotifications_.onUpdateDisplayOrder(*this);
             }
 

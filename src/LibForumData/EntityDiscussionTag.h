@@ -31,8 +31,7 @@ namespace Forum
                    auto created()            const { return created_; }
             const auto& creationDetails()    const { return creationDetails_; }
 
-            typedef const Helpers::StringWithSortKey& NameReturnType;
-            NameReturnType name()            const { return name_; }
+            const auto& name()               const { return name_; }
              StringView uiBlob()             const { return uiBlob_; }
 
             const auto& threads()            const { return threads_; }
@@ -42,11 +41,9 @@ namespace Forum
              StringView lastUpdatedReason()  const { return lastUpdatedReason_; }
                    auto lastUpdatedBy()      const { return lastUpdatedBy_.toConst(); }
             
-            typedef DiscussionThreadCollectionBase::CountType ThreadCountReturnType;
-            ThreadCountReturnType threadCount() const { return threads_.count(); }
+                   auto threadCount()        const { return threads_.count(); }
 
-            typedef int_fast32_t MessageCountReturnType;
-            MessageCountReturnType messageCount()       const { return messageCount_; }
+                   auto messageCount()       const { return messageCount_; }
 
                    auto categories()         const { return Helpers::toConst(categories_); }
 
@@ -104,6 +101,8 @@ namespace Forum
 
             void updateMessageCount(int_fast32_t delta)
             {
+                if (0 == delta) return;
+
                 changeNotifications_.onPrepareUpdateMessageCount(*this);
                 messageCount_ += delta;
                 changeNotifications_.onUpdateMessageCount(*this);
