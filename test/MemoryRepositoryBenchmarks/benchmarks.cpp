@@ -179,7 +179,9 @@ int main()
 
     auto context = createCommandHandler();
 
-    std::cout << "Populate duration: " << countDuration<std::chrono::milliseconds>([&]() { populateData(context); }) << " ms\n";
+    auto populationDuration = countDuration<std::chrono::milliseconds>([&]() { populateData(context); });
+
+    std::cout << "Populate duration: " << populationDuration << " ms\n";
 
     std::cout << "=====\n";
     std::cout << "Forum Memory Repository Benchmarks\n";
@@ -334,6 +336,29 @@ void populateData(BenchmarkContext& context)
 
     std::vector<std::tuple<IdType, IdType>> threadTagsToAdd;
 
+    int messagesProcessed = 0;
+    int messagesProcessedPercent = -1;
+
+    auto updateMessagesProcessedPercent = [&messagesProcessed, &messagesProcessedPercent]()
+    {
+        messagesProcessed += 1;
+        int newPercent = messagesProcessed * 100 / nrOfMessages;
+        if (newPercent > messagesProcessedPercent)
+        {
+            messagesProcessedPercent = newPercent;
+            if (0 == newPercent)
+            {
+                std::cout << "Adding threads and messages... ";
+            }
+            std::cout << messagesProcessedPercent << "% ";
+            std::cout.flush();
+            if (100 == newPercent)
+            {
+                std::cout << std::endl;
+            }
+        }
+    };
+
     for (size_t i = 0; i < nrOfThreads; i++)
     {
         Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
@@ -348,6 +373,7 @@ void populateData(BenchmarkContext& context)
         addMessage(id);
 
         context.currentTimestamp += 10;
+        updateMessagesProcessedPercent();
     }
     std::uniform_int_distribution<> threadIdDistribution(0, threadIds.size() - 1);
 
@@ -357,6 +383,7 @@ void populateData(BenchmarkContext& context)
         addMessage(threadIds[threadIdDistribution(randomGenerator)]);
 
         context.currentTimestamp += 1;
+        updateMessagesProcessedPercent();
     }
 
     for (auto& tuple : threadTagsToAdd)
