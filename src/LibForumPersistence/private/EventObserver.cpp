@@ -426,11 +426,9 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onAddNewDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
-        UuidString parentThreadId = {};
-        message.executeActionWithParentThreadIfAvailable([&parentThreadId](auto& thread)
-        {
-            parentThreadId = thread.id();
-        });
+        assert(message.parentThread());
+        auto parentThreadId = message.parentThread()->id();
+
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -520,11 +518,8 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onAddCommentToDiscussionThreadMessage(ObserverContext context, const MessageComment& comment)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
-        UuidString parentMessageId = {};
-        comment.executeActionWithParentMessageIfAvailable([&parentMessageId](auto& message)
-        {
-            parentMessageId = message.id();
-        });
+        auto parentMessageId = comment.parentMessage().id();
+
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
@@ -661,10 +656,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
         UuidString parentCategoryId = {};
-        category.executeActionWithParentCategoryIfAvailable([&parentCategoryId](auto& parentCategory)
+        if (category.parent())
         {
-            parentCategoryId = parentCategory.id();
-        });
+            parentCategoryId = category.parent()->id();
+        }
         auto categoryName = category.name().string();
 
         BlobPart parts[] =
@@ -745,10 +740,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
         UuidString parentCategoryId = {};
-        category.executeActionWithParentCategoryIfAvailable([&parentCategoryId](auto& parentCategory)
+        if (category.parent())
         {
-            parentCategoryId = parentCategory.id();
-        });
+            parentCategoryId = category.parent()->id();
+        }
 
         BlobPart parts[] =
         {
