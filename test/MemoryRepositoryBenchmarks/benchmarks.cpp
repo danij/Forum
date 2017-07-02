@@ -66,6 +66,7 @@ struct IdType
 
 struct BenchmarkContext
 {
+    std::shared_ptr<Entities::EntityCollection> entityCollection;
     std::shared_ptr<CommandHandler> handler;
     std::vector<IdType> userIds;
     std::vector<IdType> threadIds;
@@ -93,6 +94,7 @@ auto createCommandHandler()
     ObservableRepositoryRef observableRepository = userRepository;
 
     BenchmarkContext context;
+    context.entityCollection = entityCollection;
     context.handler = std::make_shared<CommandHandler>(observableRepository, userRepository, discussionThreadRepository,
         discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository,
         statisticsRepository, metricsRepository);
@@ -179,7 +181,9 @@ int main()
 
     auto context = createCommandHandler();
 
+    context.entityCollection->startBatchInsert();
     auto populationDuration = countDuration<std::chrono::milliseconds>([&]() { populateData(context); });
+    context.entityCollection->stopBatchInsert();
 
     std::cout << "Populate duration: " << populationDuration << " ms\n";
 

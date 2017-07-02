@@ -32,15 +32,19 @@ namespace Forum
 
             void prepareUpdateLastUpdated(DiscussionThreadPtr thread);
             void updateLastUpdated(DiscussionThreadPtr thread);
+            void refreshByLastUpdated();
 
             void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread);
             void updateLatestMessageCreated(DiscussionThreadPtr thread);
+            void refreshByLatestMessageCreated();
 
             void prepareUpdateMessageCount(DiscussionThreadPtr thread);
             void updateMessageCount(DiscussionThreadPtr thread);
+            void refreshByMessageCount();
 
             void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread);
             void updatePinDisplayOrder(DiscussionThreadPtr thread);
+            void refreshByPinDisplayOrder();
 
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }

@@ -69,3 +69,21 @@ void DiscussionCategoryCollection::updateDisplayOrderRootPriority(DiscussionCate
         byDisplayOrderRootPriority_.replace(byDisplayOrderRootPriorityUpdateIt_, category);
     }
 }
+
+void DiscussionCategoryCollection::refreshByMessageCount()
+{
+    byMessageCount_.clear();
+    for (DiscussionCategoryPtr category : byId_)
+    {
+        byMessageCount_.insert(category);
+    }
+}
+
+void DiscussionCategoryCollection::refreshByDisplayOrderRootPriority()
+{
+    byDisplayOrderRootPriority_.clear();
+    for (DiscussionCategoryPtr category : byId_)
+    {
+        byDisplayOrderRootPriority_.insert(category);
+    }
+}

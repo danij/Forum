@@ -80,6 +80,9 @@ namespace Forum
             void insertMessageComment(MessageCommentPtr comment);
             void deleteMessageComment(MessageCommentPtr comment);
 
+            void startBatchInsert();
+            void stopBatchInsert();
+
         private:
             struct Impl;
             Impl* impl_;

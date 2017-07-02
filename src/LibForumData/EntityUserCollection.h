@@ -30,12 +30,15 @@ namespace Forum
 
             void prepareUpdateLastSeen(UserPtr user);
             void updateLastSeen(UserPtr user);
+            void refreshByLastSeen();
             
             void prepareUpdateThreadCount(UserPtr user);
             void updateThreadCount(UserPtr user);
+            void refreshByThreadCount();
 
             void prepareUpdateMessageCount(UserPtr user);
             void updateMessageCount(UserPtr user);
+            void refreshByMessageCount();
 
             auto count()          const { return byId_.size(); }
 

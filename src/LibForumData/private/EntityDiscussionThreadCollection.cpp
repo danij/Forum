@@ -97,6 +97,42 @@ void DiscussionThreadCollectionBase::updatePinDisplayOrder(DiscussionThreadPtr t
     }
 }
 
+void DiscussionThreadCollectionBase::refreshByLastUpdated()
+{
+    byLastUpdated_.clear();
+    for (DiscussionThreadPtr thread : byName_)
+    {
+        byLastUpdated_.insert(thread);
+    }
+}
+
+void DiscussionThreadCollectionBase::refreshByLatestMessageCreated()
+{
+    byLatestMessageCreated_.clear();
+    for (DiscussionThreadPtr thread : byName_)
+    {
+        byLatestMessageCreated_.insert(thread);
+    }
+}
+
+void DiscussionThreadCollectionBase::refreshByMessageCount()
+{
+    byMessageCount_.clear();
+    for (DiscussionThreadPtr thread : byName_)
+    {
+        byMessageCount_.insert(thread);
+    }
+}
+
+void DiscussionThreadCollectionBase::refreshByPinDisplayOrder()
+{
+    byPinDisplayOrder_.clear();
+    for (DiscussionThreadPtr thread : byName_)
+    {
+        byPinDisplayOrder_.insert(thread);
+    }
+}
+
 bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
 {
     if ( ! std::get<1>(byId_.insert(thread))) return false;

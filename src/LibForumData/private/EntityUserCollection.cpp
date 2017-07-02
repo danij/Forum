@@ -103,3 +103,30 @@ void UserCollection::updateMessageCount(UserPtr user)
         byMessageCount_.replace(byMessageCountUpdateIt_, user);
     }
 }
+
+void UserCollection::refreshByLastSeen()
+{
+    byLastSeen_.clear();
+    for (UserPtr user : byId_)
+    {
+        byLastSeen_.insert(user);
+    }
+}
+
+void UserCollection::refreshByThreadCount()
+{
+    byThreadCount_.clear();
+    for (UserPtr user : byId_)
+    {
+        byThreadCount_.insert(user);
+    }
+}
+
+void UserCollection::refreshByMessageCount()
+{
+    byMessageCount_.clear();
+    for (UserPtr user : byId_)
+    {
+        byMessageCount_.insert(user);
+    }
+}

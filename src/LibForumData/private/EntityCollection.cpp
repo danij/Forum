@@ -39,6 +39,8 @@ struct EntityCollection::Impl
 
     GrantedPrivilegeStore grantedPrivileges_;
 
+    bool batchInsertInProgress_{false};
+
     void insertUser(UserPtr user)
     {
         assert(user);
@@ -304,15 +306,15 @@ struct EntityCollection::Impl
 
     void onPrepareUpdateUserAuth        (const User& user) { users_.prepareUpdateAuth(user.pointer()); }
     void onPrepareUpdateUserName        (const User& user) { users_.prepareUpdateName(user.pointer()); }
-    void onPrepareUpdateUserLastSeen    (const User& user) { users_.prepareUpdateLastSeen(user.pointer()); }
-    void onPrepareUpdateUserThreadCount (const User& user) { users_.prepareUpdateThreadCount(user.pointer()); }
-    void onPrepareUpdateUserMessageCount(const User& user) { users_.prepareUpdateMessageCount(user.pointer()); }
+    void onPrepareUpdateUserLastSeen    (const User& user) { if ( ! batchInsertInProgress_) users_.prepareUpdateLastSeen(user.pointer()); }
+    void onPrepareUpdateUserThreadCount (const User& user) { if ( ! batchInsertInProgress_) users_.prepareUpdateThreadCount(user.pointer()); }
+    void onPrepareUpdateUserMessageCount(const User& user) { if ( ! batchInsertInProgress_) users_.prepareUpdateMessageCount(user.pointer()); }
 
     void onUpdateUserAuth        (const User& user) { users_.updateAuth(user.pointer()); }
     void onUpdateUserName        (const User& user) { users_.updateName(user.pointer()); }
-    void onUpdateUserLastSeen    (const User& user) { users_.updateLastSeen(user.pointer()); }
-    void onUpdateUserThreadCount (const User& user) { users_.updateThreadCount(user.pointer()); }
-    void onUpdateUserMessageCount(const User& user) { users_.updateMessageCount(user.pointer()); }
+    void onUpdateUserLastSeen    (const User& user) { if ( ! batchInsertInProgress_) users_.updateLastSeen(user.pointer()); }
+    void onUpdateUserThreadCount (const User& user) { if ( ! batchInsertInProgress_) users_.updateThreadCount(user.pointer()); }
+    void onUpdateUserMessageCount(const User& user) { if ( ! batchInsertInProgress_) users_.updateMessageCount(user.pointer()); }
 
     void discussionThreadAction(const DiscussionThread& constThread,
                                 void (DiscussionThreadCollectionBase::*fn)(DiscussionThreadPtr))
@@ -342,34 +344,90 @@ struct EntityCollection::Impl
         }
     }
 
+    void discussionThreadRefreshAction(DiscussionThread& thread, void (DiscussionThreadCollectionBase::*fn)())
+    {
+        (thread.createdBy().threads().*fn)();
+
+        for (UserPtr user : thread.subscribedUsers())
+        {
+            assert(user);
+            (user->subscribedThreads().*fn)();
+        }
+
+        for (DiscussionTagPtr tag : thread.tags())
+        {
+            assert(tag);
+            (tag->threads().*fn)();
+        }
+
+        for (DiscussionCategoryPtr category : thread.categories())
+        {
+            assert(category);
+            (category->threads().*fn)();
+        }
+    }
+
     void onPrepareUpdateDiscussionThreadName(const DiscussionThread& thread)                 { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateName); }
-    void onPrepareUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateLastUpdated); }
-    void onPrepareUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateLatestMessageCreated); }
-    void onPrepareUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)         { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateMessageCount); }
-    void onPrepareUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdatePinDisplayOrder); }
+    void onPrepareUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateLastUpdated); }
+    void onPrepareUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateLatestMessageCreated); }
+    void onPrepareUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)         { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateMessageCount); }
+    void onPrepareUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdatePinDisplayOrder); }
 
     void onUpdateDiscussionThreadName(const DiscussionThread& thread)                 { discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateName); }
-    void onUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateLastUpdated); }
-    void onUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateLatestMessageCreated); }
-    void onUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)         { discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateMessageCount); }
-    void onUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { discussionThreadAction(thread, &DiscussionThreadCollectionBase::updatePinDisplayOrder); }
+    void onUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateLastUpdated); }
+    void onUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateLatestMessageCreated); }
+    void onUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)         { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateMessageCount); }
+    void onUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::updatePinDisplayOrder); }
 
     void onPrepareUpdateDiscussionTagName        (const DiscussionTag& tag) { tags_.prepareUpdateName(tag.pointer()); }
     void onPrepareUpdateDiscussionTagThreadCount (const DiscussionTag& tag) { }
-    void onPrepareUpdateDiscussionTagMessageCount(const DiscussionTag& tag) { tags_.prepareUpdateMessageCount(tag.pointer()); }
+    void onPrepareUpdateDiscussionTagMessageCount(const DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.prepareUpdateMessageCount(tag.pointer()); }
 
     void onUpdateDiscussionTagName        (const DiscussionTag& tag) { tags_.updateName(tag.pointer()); }
     void onUpdateDiscussionTagThreadCount (const DiscussionTag& tag) { /*TODO add retrieval of tags sorted by thread count*/ }
-    void onUpdateDiscussionTagMessageCount(const DiscussionTag& tag) { tags_.updateMessageCount(tag.pointer()); }
+    void onUpdateDiscussionTagMessageCount(const DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.updateMessageCount(tag.pointer()); }
 
     void onPrepareUpdateDiscussionCategoryName        (const DiscussionCategory& category) { categories_.prepareUpdateName(category.pointer()); }
-    void onPrepareUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category) { categories_.prepareUpdateMessageCount(category.pointer()); }
-    void onPrepareUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category) { categories_.prepareUpdateDisplayOrderRootPriority(category.pointer()); }
+    void onPrepareUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.prepareUpdateMessageCount(category.pointer()); }
+    void onPrepareUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.prepareUpdateDisplayOrderRootPriority(category.pointer()); }
 
     void onUpdateDiscussionCategoryName        (const DiscussionCategory& category) { categories_.updateName(category.pointer()); }
-    void onUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category) { categories_.updateMessageCount(category.pointer()); }
-    void onUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category) { categories_.updateDisplayOrderRootPriority(category.pointer()); }
+    void onUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.updateMessageCount(category.pointer()); }
+    void onUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.updateDisplayOrderRootPriority(category.pointer()); }
 
+    void startBatchInsert()
+    {
+        assert( ! batchInsertInProgress_);
+        batchInsertInProgress_ = true;
+    }
+
+    void stopBatchInsert()
+    {
+        assert(batchInsertInProgress_);
+        batchInsertInProgress_ = false;
+
+        users_.refreshByLastSeen();
+        users_.refreshByThreadCount();
+        users_.refreshByMessageCount();
+
+        threads_.refreshByLastUpdated();
+        threads_.refreshByLatestMessageCreated();
+        threads_.refreshByMessageCount();
+        threads_.refreshByPinDisplayOrder();
+
+        for (DiscussionThreadPtr thread : threads_.byId())
+        {
+            discussionThreadRefreshAction(*thread, &DiscussionThreadCollectionBase::refreshByLastUpdated);
+            discussionThreadRefreshAction(*thread, &DiscussionThreadCollectionBase::refreshByLatestMessageCreated);
+            discussionThreadRefreshAction(*thread, &DiscussionThreadCollectionBase::refreshByMessageCount);
+            discussionThreadRefreshAction(*thread, &DiscussionThreadCollectionBase::refreshByPinDisplayOrder);
+        }
+
+        tags_.refreshByMessageCount();
+
+        categories_.refreshByMessageCount();
+        categories_.refreshByDisplayOrderRootPriority();
+    }
 };
 
 static UserPtr anonymousUser_;
@@ -609,4 +667,14 @@ void EntityCollection::insertMessageComment(MessageCommentPtr comment)
 void EntityCollection::deleteMessageComment(MessageCommentPtr comment)
 {
     impl_->deleteMessageComment(comment);
+}
+
+void EntityCollection::startBatchInsert()
+{
+    impl_->startBatchInsert();
+}
+
+void EntityCollection::stopBatchInsert()
+{
+    impl_->stopBatchInsert();
 }

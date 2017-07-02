@@ -53,3 +53,12 @@ void DiscussionTagCollection::updateMessageCount(DiscussionTagPtr tag)
         byMessageCount_.replace(byMessageCountUpdateIt_, tag);
     }
 }
+
+void DiscussionTagCollection::refreshByMessageCount()
+{
+    byMessageCount_.clear();
+    for (DiscussionTagPtr tag : byId_)
+    {
+        byMessageCount_.insert(tag);
+    }
+}

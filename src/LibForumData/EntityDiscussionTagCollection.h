@@ -25,6 +25,7 @@ namespace Forum
             
             void prepareUpdateMessageCount(DiscussionTagPtr tag);
             void updateMessageCount(DiscussionTagPtr tag);
+            void refreshByMessageCount();
 
             auto count()          const { return byId_.size(); }
 

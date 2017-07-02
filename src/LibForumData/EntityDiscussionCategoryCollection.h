@@ -26,10 +26,12 @@ namespace Forum
 
             void prepareUpdateMessageCount(DiscussionCategoryPtr category);
             void updateMessageCount(DiscussionCategoryPtr category);
+            void refreshByMessageCount();
             
             void prepareUpdateDisplayOrderRootPriority(DiscussionCategoryPtr category);
             void updateDisplayOrderRootPriority(DiscussionCategoryPtr category);
-            
+            void refreshByDisplayOrderRootPriority();
+
             auto count()                      const { return byId_.size(); }
 
             auto byId()                       const { return Helpers::toConst(byId_); }
