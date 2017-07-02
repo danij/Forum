@@ -8,11 +8,19 @@ find_package(Boost REQUIRED COMPONENTS locale regex system)
 find_package(ICU)
 
 set(SOURCE_FILES
-        private/EntitySerialization.cpp
+        private/EntityPointer.cpp
         private/EntityCollection.cpp
+        private/EntityUser.cpp
+        private/EntityUserCollection.cpp
         private/EntityDiscussionThread.cpp
-        private/EntityDiscussionCategory.cpp
+        private/EntityDiscussionThreadCollection.cpp
+        private/EntityDiscussionThreadMessage.cpp
+        private/EntityDiscussionThreadMessageCollection.cpp
         private/EntityDiscussionTag.cpp
+        private/EntityDiscussionTagCollection.cpp
+        private/EntityDiscussionCategory.cpp
+        private/EntityDiscussionCategoryCollection.cpp
+        private/EntityMessageCommentCollection.cpp
         private/MemoryRepositoryCommon.cpp
         private/MemoryRepositoryUser.cpp
         private/MemoryRepositoryDiscussionThread.cpp
@@ -21,6 +29,7 @@ set(SOURCE_FILES
         private/MemoryRepositoryDiscussionTag.cpp
         private/MemoryRepositoryDiscussionCategory.cpp
         private/MetricsRepository.cpp
+        private/EntitySerialization.cpp
         private/DefaultAuthorization.cpp
         private/AuthorizationGrantedPrivilegeStore.cpp)
 
@@ -33,19 +42,20 @@ set(HEADER_FILES
         ConstCollectionAdapter.h
         EntityCollection.h
         EntityCommonTypes.h
+        EntityPointer.h
+        VectorWithFreeQueue.h
         EntityUser.h
+        EntityUserCollection.h
         EntityDiscussionThread.h
+        EntityDiscussionThreadCollection.h
         EntityDiscussionThreadMessage.h
-        EntityDiscussionThreadMessageCollectionBase.h
-        EntityUserCollectionBase.h
-        EntityDiscussionThreadCollectionBase.h
-        EntityDiscussionTagCollectionBase.h
-        EntityMessageComment.h
-        EntityDiscussionCategoryCollectionBase.h
-        EntityDiscussionThreadRefCountedCollection.h
-        EntityMessageCommentCollectionBase.h
+        EntityDiscussionThreadMessageCollection.h
         EntityDiscussionTag.h
+        EntityDiscussionTagCollection.h
         EntityDiscussionCategory.h
+        EntityDiscussionCategoryCollection.h
+        EntityMessageComment.h
+        EntityMessageCommentCollection.h
         DefaultAuthorization.h
         AuthorizationPrivileges.h
         AuthorizationGrantedPrivilegeStore.h
@@ -59,7 +69,8 @@ set(HEADER_FILES
         private/MemoryRepositoryDiscussionThreadMessage.h
         private/MemoryRepositoryDiscussionTag.h
         private/MemoryRepositoryDiscussionCategory.h
-        private/MetricsRepository.h)
+        private/MetricsRepository.h
+        private/ThrottlingCheck.h)
 
 include_directories(
         .
