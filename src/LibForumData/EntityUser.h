@@ -121,14 +121,14 @@ namespace Forum
             static ChangeNotification changeNotifications_;
 
             IdType id_;
-            Timestamp created_ = 0;
+            Timestamp created_{0};
             VisitDetails creationDetails_;
 
             std::string auth_;
             Helpers::StringWithSortKey name_;
             std::string info_;
 
-            Timestamp lastSeen_ = 0;
+            Timestamp lastSeen_{0};
             
             DiscussionThreadCollectionWithOrderedId threads_;
             DiscussionThreadCollectionWithOrderedId subscribedThreads_;

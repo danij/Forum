@@ -46,7 +46,7 @@ namespace Forum
 
         private:
             IdType id_;
-            Timestamp created_ = 0;
+            Timestamp created_{0};
             VisitDetails creationDetails_;
             
             User& createdBy_;

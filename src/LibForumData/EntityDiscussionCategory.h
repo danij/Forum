@@ -150,16 +150,16 @@ namespace Forum
             static ChangeNotification changeNotifications_;
 
             IdType id_;
-            Timestamp created_ = 0;
+            Timestamp created_{0};
             VisitDetails creationDetails_;
 
             Helpers::StringWithSortKey name_;
             std::string description_;
-            int_fast16_t displayOrder_ = 0;
-            int_fast32_t messageCount_ = 0;
+            int_fast16_t displayOrder_{0};
+            int_fast32_t messageCount_{0};
             EntityPointer<DiscussionCategory> parent_;
 
-            Timestamp lastUpdated_ = 0;
+            Timestamp lastUpdated_{0};
             VisitDetails lastUpdatedDetails_;
             std::string lastUpdatedReason_;
             UserPtr lastUpdatedBy_;

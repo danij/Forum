@@ -37,7 +37,7 @@ namespace Forum
             /**
             * Get the current user that performs the action and optionally schedule the update of last seen
             */
-            PerformedByType get(const Entities::EntityCollection& collection, const MemoryStore& store);
+            PerformedByType get(const Entities::EntityCollection& collection);
 
             /**
             * Get the current user that performs the action and optionally also perform the update of last seen
@@ -66,7 +66,6 @@ namespace Forum
 
         protected:
             auto& collection() const { return store_->collection; }
-            auto& store()      const { return *store_; }
 
             enum EmptyStringValidation
             {

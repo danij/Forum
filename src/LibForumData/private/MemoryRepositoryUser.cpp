@@ -78,7 +78,7 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
 
     collection().read([&](const EntityCollection& collection)
     {
-        auto& currentUser = performedBy.get(collection, store());
+        auto& currentUser = performedBy.get(collection);
 
         if ( ! (status = authorization_->getUsers(currentUser)))
         {
@@ -131,7 +131,7 @@ StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           const auto& index = collection.users().byId();
                           auto it = index.find(id);
@@ -172,7 +172,7 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           const auto& index = collection.users().byName();
                           auto it = index.find(name);

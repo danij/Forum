@@ -134,7 +134,7 @@ namespace Forum
 
         private:
             IdType id_;
-            Timestamp created_ = 0;
+            Timestamp created_{0};
             VisitDetails creationDetails_;
 
             User& createdBy_;
@@ -142,13 +142,13 @@ namespace Forum
 
             Helpers::ImmutableString content_;
 
-            Timestamp lastUpdated_ = 0;
+            Timestamp lastUpdated_{0};
             VisitDetails lastUpdatedDetails_;
             std::string lastUpdatedReason_;
             EntityPointer<User> lastUpdatedBy_;
             
             MessageCommentCollection comments_;
-            int32_t solvedCommentsCount_ = 0;
+            int32_t solvedCommentsCount_{0};
 
             std::unique_ptr<VoteCollection> upVotes_;
             std::unique_ptr<VoteCollection> downVotes_;

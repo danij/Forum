@@ -33,7 +33,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
 
     collection().read([&](const EntityCollection& collection)
     {
-        auto& currentUser = performedBy.get(collection, store());
+        auto& currentUser = performedBy.get(collection);
 
         if ( ! (status = authorization_->getDiscussionCategories(currentUser)))
         {
@@ -88,7 +88,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           if ( ! (status = authorization_->getDiscussionCategoriesFromRoot(currentUser)))
                           {
@@ -129,7 +129,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const I
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           const auto& index = collection.categories().byId();
                           auto it = index.find(id);

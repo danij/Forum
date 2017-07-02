@@ -32,7 +32,7 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
 
     collection().read([&](const EntityCollection& collection)
     {
-        auto& currentUser = performedBy.get(collection, store());
+        auto& currentUser = performedBy.get(collection);
 
         if ( ! (status = authorization_->getDiscussionTags(currentUser)))
         {
@@ -259,8 +259,6 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType
 
 StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(EntityCollection& collection, IdTypeRef id, StringView blob)
 {
-    auto currentUser = getCurrentUser(collection);
-
     auto& indexById = collection.tags().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())

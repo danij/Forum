@@ -38,7 +38,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
 
     collection().read([&](const EntityCollection& collection)
     {
-        auto& currentUser = performedBy.get(collection, store());
+        auto& currentUser = performedBy.get(collection);
 
         const auto& indexById = collection.users().byId();
         auto it = indexById.find(id);
@@ -675,7 +675,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           if ( ! (status = authorization_->getMessageComments(currentUser)))
                           {
@@ -702,7 +702,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           const auto& indexById = collection.threadMessages().byId();
                           auto it = indexById.find(id);
@@ -740,7 +740,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           const auto& indexById = collection.users().byId();
                           auto it = indexById.find(id);

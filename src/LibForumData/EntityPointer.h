@@ -77,7 +77,7 @@ namespace Forum
             explicit EntityPointer(IndexType index) : index_(index)
             {}
 
-            EntityPointer(nullptr_t) : EntityPointer()
+            EntityPointer(std::nullptr_t) : EntityPointer()
             {}
 
             EntityPointer(const EntityPointer&) = default;

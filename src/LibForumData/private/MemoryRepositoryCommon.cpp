@@ -28,7 +28,7 @@ PerformedByWithLastSeenUpdateGuard::~PerformedByWithLastSeenUpdateGuard()
     if (lastSeenUpdate_) lastSeenUpdate_();
 }
 
-PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& collection, const MemoryStore& store)
+PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& collection)
 {
     const auto& index = collection.users().byId();
     auto it = index.find(Context::getCurrentUserId());

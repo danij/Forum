@@ -101,7 +101,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreads(OutStream& out
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           writeDiscussionThreads(collection.threads(), by, output, collection.grantedPrivileges(), currentUser);
 
@@ -121,7 +121,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdTyp
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           const auto& index = collection.threads().byId();
                           auto it = index.find(id);
@@ -196,7 +196,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const Id
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           const auto& indexById = collection.users().byId();
                           auto it = indexById.find(id);
@@ -234,7 +234,7 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           const auto& indexById = collection.users().byId();
                           auto it = indexById.find(id);
@@ -273,7 +273,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(const I
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           const auto& indexById = collection.tags().byId();
                           auto it = indexById.find(id);
@@ -310,7 +310,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(cons
 
     collection().read([&](const EntityCollection& collection)
                      {
-                         auto& currentUser = performedBy.get(collection, store());
+                         auto& currentUser = performedBy.get(collection);
 
                          const auto& indexById = collection.categories().byId();
                          auto it = indexById.find(id);

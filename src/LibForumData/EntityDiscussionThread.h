@@ -164,7 +164,7 @@ namespace Forum
             static ChangeNotification changeNotifications_;
 
             IdType id_;
-            Timestamp created_ = 0;
+            Timestamp created_{0};
             VisitDetails creationDetails_;
 
             User& createdBy_;
@@ -172,7 +172,7 @@ namespace Forum
             Helpers::StringWithSortKey name_;
             DiscussionThreadMessageCollection messages_;
 
-            Timestamp lastUpdated_ = 0;
+            Timestamp lastUpdated_{0};
             VisitDetails lastUpdatedDetails_;
             std::string lastUpdatedReason_;
             EntityPointer<User> lastUpdatedBy_;
@@ -180,14 +180,14 @@ namespace Forum
             //store the timestamp of the latest visibile change in order to be able to
             //detect when to return a status that nothing has changed since a provided timestamp
             //Note: do not use as index in collection, the indexes would not always be updated
-            Timestamp latestVisibleChange_ = 0;
+            Timestamp latestVisibleChange_{0};
 
             //store the timestamp of the latest message in the collection that was created
             //as it's expensive to retrieve it every time
-            Timestamp latestMessageCreated_ = 0;
+            Timestamp latestMessageCreated_{0};
 
-            uint16_t pinDisplayOrder_ = 0;
-            mutable std::atomic_int_fast64_t visited_ = 0;
+            uint16_t pinDisplayOrder_{0};
+            mutable std::atomic_int_fast64_t visited_{0};
             bool aboutToBeDeleted_ = false;
 
             std::set<boost::uuids::uuid> visitorsSinceLastEdit_;

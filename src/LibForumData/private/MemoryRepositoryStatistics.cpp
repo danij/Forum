@@ -26,7 +26,7 @@ StatusCode MemoryRepositoryStatistics::getEntitiesCount(OutStream& output) const
 
     collection().read([&](const Entities::EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           if ( ! (status = authorization_->getEntitiesCount(currentUser)))
                           {

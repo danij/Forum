@@ -119,7 +119,7 @@ namespace Forum
             static ChangeNotification changeNotifications_;
 
             IdType id_;
-            Timestamp created_ = 0;
+            Timestamp created_{0};
             VisitDetails creationDetails_;
 
             Helpers::StringWithSortKey name_;
@@ -127,12 +127,12 @@ namespace Forum
 
             DiscussionThreadCollectionWithHashedId threads_;
 
-            Timestamp lastUpdated_ = 0;
+            Timestamp lastUpdated_{0};
             VisitDetails lastUpdatedDetails_;
             std::string lastUpdatedReason_;
             EntityPointer<User> lastUpdatedBy_;
             
-            int_fast32_t messageCount_ = 0;
+            int_fast32_t messageCount_{0};
             std::set<EntityPointer<DiscussionCategory>> categories_;
 
             Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;

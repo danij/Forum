@@ -24,7 +24,7 @@ StatusCode MetricsRepository::getVersion(OutStream& output)
 
     collection().read([&](const Entities::EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection, store());
+                          auto& currentUser = performedBy.get(collection);
 
                           if ( ! (status = authorization_->getVersion(currentUser)))
                           {
