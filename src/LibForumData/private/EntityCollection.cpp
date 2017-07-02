@@ -42,7 +42,7 @@ struct EntityCollection::Impl
     void insertUser(UserPtr user)
     {
         assert(user);
-        assert(users_.add(user));
+        users_.add(user);
     }
 
     void deleteUser(UserPtr user)
@@ -102,7 +102,7 @@ struct EntityCollection::Impl
     void insertDiscussionThread(DiscussionThreadPtr thread)
     {
         assert(thread);
-        assert(threads_.add(thread));
+        threads_.add(thread);
     }
 
     void deleteDiscussionThread(DiscussionThreadPtr threadPtr)
@@ -153,7 +153,7 @@ struct EntityCollection::Impl
     void insertDiscussionThreadMessage(DiscussionThreadMessagePtr message)
     {
         assert(message);
-        assert(threadMessages_.add(message));
+        threadMessages_.add(message);
     }
 
     void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message)
@@ -200,7 +200,7 @@ struct EntityCollection::Impl
     void insertDiscussionTag(DiscussionTagPtr tag)
     {
         assert(tag);
-        assert(tags_.add(tag));
+        tags_.add(tag);
     }
 
     void deleteDiscussionTag(DiscussionTagPtr tag)
@@ -227,7 +227,7 @@ struct EntityCollection::Impl
     void insertDiscussionCategory(DiscussionCategoryPtr category)
     {
         assert(category);
-        assert(categories_.add(category));
+        categories_.add(category);
     }
 
     void deleteDiscussionCategory(DiscussionCategoryPtr category)
@@ -248,7 +248,7 @@ struct EntityCollection::Impl
     void insertMessageComment(MessageCommentPtr comment)
     {
         assert(comment);
-        assert(messageComments_.add(comment));
+        messageComments_.add(comment);
     }
 
     void deleteMessageComment(MessageCommentPtr comment)
