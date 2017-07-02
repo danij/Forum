@@ -208,21 +208,19 @@ void showEntitySizes()
     std::cout << std::setfill(' ');
     std::cout << "Forum Entity Sizes:                   [bytes]\n";
     std::cout << "----                                   -----\n";
-    std::cout << "Identifiable                           " << std::setw(5) << sizeof(Entities::Identifiable) << '\n';
-    std::cout << "CreatedMixin                           " << std::setw(5) << sizeof(Entities::CreatedMixin) << '\n';
-    std::cout << "LastUpdatedMixin<User>                 " << std::setw(5) << sizeof(Entities::LastUpdatedMixinWithBy<Entities::User>) << '\n';
     std::cout << "User                                   " << std::setw(5) << sizeof(Entities::User) << '\n';
-    std::cout << "UserCollectionBase                     " << std::setw(5) << sizeof(Entities::UserCollectionBase<Entities::OrderedIndexForId>) << '\n';
+    std::cout << "UserCollection                         " << std::setw(5) << sizeof(Entities::UserCollection) << '\n';
     std::cout << "DiscussionThread                       " << std::setw(5) << sizeof(Entities::DiscussionThread) << '\n';
-    std::cout << "DiscussionThreadCollectionBase         " << std::setw(5) << sizeof(Entities::DiscussionThreadCollectionBase<Entities::OrderedIndexForId>) << '\n';
+    std::cout << "DiscussionThreadCollectionHash         " << std::setw(5) << sizeof(Entities::DiscussionThreadCollectionWithHashedId) << '\n';
+    std::cout << "DiscussionThreadCollectionOrderd       " << std::setw(5) << sizeof(Entities::DiscussionThreadCollectionWithOrderedId) << '\n';
     std::cout << "DiscussionThreadMessage                " << std::setw(5) << sizeof(Entities::DiscussionThreadMessage) << '\n';
-    std::cout << "DiscussionThreadMessageCollectionBase  " << std::setw(5) << sizeof(Entities::DiscussionThreadMessageCollectionBase<Entities::OrderedIndexForId>) << '\n';
+    std::cout << "DiscussionThreadMessageCollection      " << std::setw(5) << sizeof(Entities::DiscussionThreadMessageCollection) << '\n';
     std::cout << "MessageComment                         " << std::setw(5) << sizeof(Entities::MessageComment) << '\n';
-    std::cout << "MessageCommentCollectionBase           " << std::setw(5) << sizeof(Entities::MessageCommentCollectionBase<Entities::OrderedIndexForId>) << '\n';
+    std::cout << "MessageCommentCollection               " << std::setw(5) << sizeof(Entities::MessageCommentCollection) << '\n';
     std::cout << "DiscussionTag                          " << std::setw(5) << sizeof(Entities::DiscussionTag) << '\n';
-    std::cout << "DiscussionTagCollectionBase            " << std::setw(5) << sizeof(Entities::DiscussionTagCollectionBase<Entities::OrderedIndexForId>) << '\n';
+    std::cout << "DiscussionTagCollection                " << std::setw(5) << sizeof(Entities::DiscussionTagCollection) << '\n';
     std::cout << "DiscussionCategory                     " << std::setw(5) << sizeof(Entities::DiscussionCategory) << '\n';
-    std::cout << "DiscussionCategoryCollectionBase       " << std::setw(5) << sizeof(Entities::DiscussionCategoryCollectionBase<Entities::OrderedIndexForId>) << '\n';
+    std::cout << "DiscussionCategoryCollection           " << std::setw(5) << sizeof(Entities::DiscussionCategoryCollection) << '\n';
     std::cout << "=====\n";
     std::cout << std::setw(0);
 }
