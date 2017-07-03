@@ -1,4 +1,5 @@
 #include "EntityDiscussionTagCollection.h"
+#include "ContextProviders.h"
 
 using namespace Forum::Entities;
 
@@ -6,7 +7,11 @@ bool DiscussionTagCollection::add(DiscussionTagPtr tag)
 {
     if ( ! std::get<1>(byId_.insert(tag))) return false;
     byName_.insert(tag);
-    byMessageCount_.insert(tag);
+
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        byMessageCount_.insert(tag);
+    }
 
     return true;
 }
@@ -23,9 +28,23 @@ bool DiscussionTagCollection::remove(DiscussionTagPtr tag)
         auto itByName = byName_.find(tag->name());
         if (itByName != byName_.end()) byName_.erase(itByName);
     }
-    eraseFromNonUniqueCollection(byMessageCount_, tag, tag->messageCount());
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        eraseFromNonUniqueCollection(byMessageCount_, tag, tag->messageCount());
+    }
 
     return true;
+}
+
+void DiscussionTagCollection::stopBatchInsert()
+{
+    if ( ! Context::isBatchInsertInProgress()) return;
+
+    byMessageCount_.clear();
+    for (DiscussionTagPtr tag : byId_)
+    {
+        byMessageCount_.insert(tag);
+    }
 }
 
 void DiscussionTagCollection::prepareUpdateName(DiscussionTagPtr tag)
@@ -43,22 +62,17 @@ void DiscussionTagCollection::updateName(DiscussionTagPtr tag)
 
 void DiscussionTagCollection::prepareUpdateMessageCount(DiscussionTagPtr tag)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     byMessageCountUpdateIt_ = findInNonUniqueCollection(byMessageCount_, tag, tag->messageCount());
 }
 
 void DiscussionTagCollection::updateMessageCount(DiscussionTagPtr tag)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     if (byMessageCountUpdateIt_ != byMessageCount_.end())
     {
         byMessageCount_.replace(byMessageCountUpdateIt_, tag);
-    }
-}
-
-void DiscussionTagCollection::refreshByMessageCount()
-{
-    byMessageCount_.clear();
-    for (DiscussionTagPtr tag : byId_)
-    {
-        byMessageCount_.insert(tag);
     }
 }

@@ -54,6 +54,18 @@ void Forum::Context::setCurrentUserIpAddress(const IpAddress& value)
     currentIpAddress = value;
 }
 
+static bool batchInsertInProgress{ false };
+
+bool Forum::Context::isBatchInsertInProgress()
+{
+    return batchInsertInProgress;
+}
+
+void Forum::Context::setBatchInsertInProgres(bool value)
+{
+    batchInsertInProgress = value;
+}
+
 static thread_local DisplayContext displayContext = {};
 
 const DisplayContext& Forum::Context::getDisplayContext()

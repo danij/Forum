@@ -36,6 +36,16 @@ namespace Forum
         */
         void setCurrentUserIpAddress(const Helpers::IpAddress& value);
 
+        /**
+         * Returns whether a batch insert is currently in progress for optimization purposes
+         */
+        bool isBatchInsertInProgress();
+
+        /**
+         * Sets whether a batch insertion of entities is about to start or has ended
+         */
+        void setBatchInsertInProgres(bool value);
+
         enum class SortOrder
         {
             Ascending,

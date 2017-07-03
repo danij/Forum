@@ -39,7 +39,7 @@ struct EntityCollection::Impl
 
     GrantedPrivilegeStore grantedPrivileges_;
 
-    bool batchInsertInProgress_{false};
+    bool batchInsertInProgress_{ false };
 
     void insertUser(UserPtr user)
     {
@@ -372,49 +372,35 @@ struct EntityCollection::Impl
     void onUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.updateMessageCount(category.pointer()); }
     void onUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.updateDisplayOrderRootPriority(category.pointer()); }
 
-    void startBatchInsert()
+    void toggleBatchInsert(bool activate)
     {
-        assert( ! batchInsertInProgress_);
-        batchInsertInProgress_ = true;
-    }
+        if ( ! activate) assert(batchInsertInProgress_);
 
-    void stopBatchInsert()
-    {
-        assert(batchInsertInProgress_);
-        batchInsertInProgress_ = false;
+        Context::setBatchInsertInProgres(batchInsertInProgress_ = activate);
 
-        users_.refreshByLastSeen();
-        users_.refreshByThreadCount();
-        users_.refreshByMessageCount();
+        if (activate) return;
 
-        auto threadCollectionUpdate = [](DiscussionThreadCollectionBase& threads)
-        {
-            threads.refreshByLastUpdated();
-            threads.refreshByLatestMessageCreated();
-            threads.refreshByMessageCount();
-            threads.refreshByPinDisplayOrder();
-        };
+        users_.stopBatchInsert();
 
         for (UserPtr user : users_.byId())
         {
-            threadCollectionUpdate(user->threads());
-            threadCollectionUpdate(user->subscribedThreads());
+            user->threads().stopBatchInsert();
+            user->subscribedThreads().stopBatchInsert();
         }
 
         for (DiscussionTagPtr tag : tags_.byId())
         {
-            threadCollectionUpdate(tag->threads());
+            tag->threads().stopBatchInsert();
         }
 
         for (DiscussionCategoryPtr category : categories_.byId())
         {
-            threadCollectionUpdate(category->threads());
+            category->threads().stopBatchInsert();
         }
 
-        tags_.refreshByMessageCount();
+        tags_.stopBatchInsert();
 
-        categories_.refreshByMessageCount();
-        categories_.refreshByDisplayOrderRootPriority();
+        categories_.stopBatchInsert();
     }
 };
 
@@ -659,10 +645,10 @@ void EntityCollection::deleteMessageComment(MessageCommentPtr comment)
 
 void EntityCollection::startBatchInsert()
 {
-    impl_->startBatchInsert();
+    impl_->toggleBatchInsert(true);
 }
 
 void EntityCollection::stopBatchInsert()
 {
-    impl_->stopBatchInsert();
+    impl_->toggleBatchInsert(false);
 }

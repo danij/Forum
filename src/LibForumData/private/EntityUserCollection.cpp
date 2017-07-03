@@ -1,4 +1,5 @@
 #include "EntityUserCollection.h"
+#include "ContextProviders.h"
 
 using namespace Forum::Entities;
 
@@ -8,9 +9,13 @@ bool UserCollection::add(UserPtr user)
     byAuth_.insert(user);
     byName_.insert(user);
     byCreated_.insert(user);
-    byLastSeen_.insert(user);
-    byThreadCount_.insert(user);
-    byMessageCount_.insert(user);
+
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        byLastSeen_.insert(user);
+        byThreadCount_.insert(user);
+        byMessageCount_.insert(user);
+    }
 
     return true;
 }
@@ -32,11 +37,38 @@ bool UserCollection::remove(UserPtr user)
         if (itByName != byName_.end()) byName_.erase(itByName);
     }
     eraseFromNonUniqueCollection(byCreated_, user, user->created());
-    eraseFromNonUniqueCollection(byLastSeen_, user, user->lastSeen());
-    eraseFromNonUniqueCollection(byThreadCount_, user, user->threadCount());
-    eraseFromNonUniqueCollection(byMessageCount_, user, user->messageCount());
+
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        eraseFromNonUniqueCollection(byLastSeen_, user, user->lastSeen());
+        eraseFromNonUniqueCollection(byThreadCount_, user, user->threadCount());
+        eraseFromNonUniqueCollection(byMessageCount_, user, user->messageCount());
+    }
 
     return true;
+}
+
+void UserCollection::stopBatchInsert()
+{
+    if ( ! Context::isBatchInsertInProgress()) return;
+
+    byLastSeen_.clear();
+    for (UserPtr user : byId_)
+    {
+        byLastSeen_.insert(user);
+    }
+
+    byThreadCount_.clear();
+    for (UserPtr user : byId_)
+    {
+        byThreadCount_.insert(user);
+    }
+
+    byMessageCount_.clear();
+    for (UserPtr user : byId_)
+    {
+        byMessageCount_.insert(user);
+    }
 }
 
 void UserCollection::prepareUpdateAuth(UserPtr user)
@@ -67,11 +99,15 @@ void UserCollection::updateName(UserPtr user)
 
 void UserCollection::prepareUpdateLastSeen(UserPtr user)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     byLastSeenUpdateIt_ = findInNonUniqueCollection(byLastSeen_, user, user->lastSeen());
 }
 
 void UserCollection::updateLastSeen(UserPtr user)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     if (byLastSeenUpdateIt_ != byLastSeen_.end())
     {
         byLastSeen_.replace(byLastSeenUpdateIt_, user);
@@ -80,11 +116,15 @@ void UserCollection::updateLastSeen(UserPtr user)
 
 void UserCollection::prepareUpdateThreadCount(UserPtr user)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     byThreadCountUpdateIt_ = findInNonUniqueCollection(byThreadCount_, user, user->threadCount());
 }
 
 void UserCollection::updateThreadCount(UserPtr user)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     if (byThreadCountUpdateIt_ != byThreadCount_.end())
     {
         byThreadCount_.replace(byThreadCountUpdateIt_, user);
@@ -93,40 +133,17 @@ void UserCollection::updateThreadCount(UserPtr user)
 
 void UserCollection::prepareUpdateMessageCount(UserPtr user)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     byMessageCountUpdateIt_ = findInNonUniqueCollection(byMessageCount_, user, user->messageCount());
 }
 
 void UserCollection::updateMessageCount(UserPtr user)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     if (byMessageCountUpdateIt_ != byMessageCount_.end())
     {
         byMessageCount_.replace(byMessageCountUpdateIt_, user);
-    }
-}
-
-void UserCollection::refreshByLastSeen()
-{
-    byLastSeen_.clear();
-    for (UserPtr user : byId_)
-    {
-        byLastSeen_.insert(user);
-    }
-}
-
-void UserCollection::refreshByThreadCount()
-{
-    byThreadCount_.clear();
-    for (UserPtr user : byId_)
-    {
-        byThreadCount_.insert(user);
-    }
-}
-
-void UserCollection::refreshByMessageCount()
-{
-    byMessageCount_.clear();
-    for (UserPtr user : byId_)
-    {
-        byMessageCount_.insert(user);
     }
 }

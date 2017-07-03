@@ -20,12 +20,13 @@ namespace Forum
             bool add(DiscussionTagPtr tag);
             bool remove(DiscussionTagPtr tag);
 
+            void stopBatchInsert();
+
             void prepareUpdateName(DiscussionTagPtr tag);
             void updateName(DiscussionTagPtr tag);
             
             void prepareUpdateMessageCount(DiscussionTagPtr tag);
             void updateMessageCount(DiscussionTagPtr tag);
-            void refreshByMessageCount();
 
             auto count()          const { return byId_.size(); }
 

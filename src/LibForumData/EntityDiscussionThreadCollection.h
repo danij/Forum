@@ -30,27 +30,24 @@ namespace Forum
             void prepareUpdateName(DiscussionThreadPtr thread);
             void updateName(DiscussionThreadPtr thread);
 
+            void stopBatchInsert();
+
             void prepareUpdateLastUpdated(DiscussionThreadPtr thread);
             void updateLastUpdated(DiscussionThreadPtr thread);
-            void refreshByLastUpdated();
 
             void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread);
             void updateLatestMessageCreated(DiscussionThreadPtr thread);
-            void refreshByLatestMessageCreated();
 
             void prepareUpdateMessageCount(DiscussionThreadPtr thread);
             void updateMessageCount(DiscussionThreadPtr thread);
-            void refreshByMessageCount();
 
             void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread);
             void updatePinDisplayOrder(DiscussionThreadPtr thread);
-            void refreshByPinDisplayOrder();
 
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
                                      
-            typedef RETURN_TYPE(RANKED_COLLECTION(DiscussionThread, name), size) CountType;
-            CountType count()             const { return byName_.size(); }
+            auto count()                  const { return byName_.size(); }
                                           
             auto byName()                 const { return Helpers::toConst(byName_); }
             auto byCreated()              const { return Helpers::toConst(byCreated_); }
@@ -157,7 +154,6 @@ namespace Forum
             
             RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
             decltype(byLatestMessageCreated_)::nth_index<0>::type::iterator byLatestMessageCreatedUpdateIt_;
-
 
             int_fast32_t messageCount_ = 0;
             std::map<DiscussionThreadPtr, int_fast32_t> referenceCount_;

@@ -21,16 +21,16 @@ namespace Forum
             bool add(DiscussionCategoryPtr category);
             bool remove(DiscussionCategoryPtr category);
 
+            void stopBatchInsert();
+
             void prepareUpdateName(DiscussionCategoryPtr category);
             void updateName(DiscussionCategoryPtr category);
 
             void prepareUpdateMessageCount(DiscussionCategoryPtr category);
             void updateMessageCount(DiscussionCategoryPtr category);
-            void refreshByMessageCount();
             
             void prepareUpdateDisplayOrderRootPriority(DiscussionCategoryPtr category);
             void updateDisplayOrderRootPriority(DiscussionCategoryPtr category);
-            void refreshByDisplayOrderRootPriority();
 
             auto count()                      const { return byId_.size(); }
 

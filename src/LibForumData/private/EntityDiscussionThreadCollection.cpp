@@ -1,4 +1,5 @@
 #include "EntityDiscussionThreadCollection.h"
+#include "ContextProviders.h"
 
 using namespace Forum::Entities;
 
@@ -8,10 +9,14 @@ bool DiscussionThreadCollectionBase::add(DiscussionThreadPtr thread)
 
     byName_.insert(thread);
     byCreated_.insert(thread);
-    byLastUpdated_.insert(thread);
-    byLatestMessageCreated_.insert(thread);
-    byMessageCount_.insert(thread);
-    byPinDisplayOrder_.insert(thread);
+
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        byLastUpdated_.insert(thread);
+        byLatestMessageCreated_.insert(thread);
+        byMessageCount_.insert(thread);
+        byPinDisplayOrder_.insert(thread);
+    }
 
     if (onCountChange_) onCountChange_();
     return true;
@@ -23,10 +28,14 @@ bool DiscussionThreadCollectionBase::remove(DiscussionThreadPtr thread)
 
     eraseFromNonUniqueCollection(byName_, thread, thread->name());
     eraseFromNonUniqueCollection(byCreated_, thread, thread->created());
-    eraseFromNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
-    eraseFromNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
-    eraseFromNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
-    eraseFromNonUniqueCollection(byPinDisplayOrder_, thread, thread->pinDisplayOrder());
+
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        eraseFromNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
+        eraseFromNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
+        eraseFromNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
+        eraseFromNonUniqueCollection(byPinDisplayOrder_, thread, thread->pinDisplayOrder());
+    }
 
     if (onCountChange_) onCountChange_();
     return true;
@@ -45,13 +54,46 @@ void DiscussionThreadCollectionBase::updateName(DiscussionThreadPtr thread)
     }
 }
 
+void DiscussionThreadCollectionBase::stopBatchInsert()
+{
+    if ( ! Context::isBatchInsertInProgress()) return;
+
+    byLastUpdated_.clear();
+    for (DiscussionThreadPtr thread : byName_)
+    {
+        byLastUpdated_.insert(thread);
+    }
+
+    byLatestMessageCreated_.clear();
+    for (DiscussionThreadPtr thread : byName_)
+    {
+        byLatestMessageCreated_.insert(thread);
+    }
+
+    byMessageCount_.clear();
+    for (DiscussionThreadPtr thread : byName_)
+    {
+        byMessageCount_.insert(thread);
+    }
+
+    byPinDisplayOrder_.clear();
+    for (DiscussionThreadPtr thread : byName_)
+    {
+        byPinDisplayOrder_.insert(thread);
+    }
+}
+
 void DiscussionThreadCollectionBase::prepareUpdateLastUpdated(DiscussionThreadPtr thread)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     byLastUpdatedUpdateIt_ = findInNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
 }
 
 void DiscussionThreadCollectionBase::updateLastUpdated(DiscussionThreadPtr thread)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     if (byLastUpdatedUpdateIt_ != byLastUpdated_.end())
     {
         byLastUpdated_.replace(byLastUpdatedUpdateIt_, thread);
@@ -60,11 +102,15 @@ void DiscussionThreadCollectionBase::updateLastUpdated(DiscussionThreadPtr threa
 
 void DiscussionThreadCollectionBase::prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     byLatestMessageCreatedUpdateIt_ = findInNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
 }
 
 void DiscussionThreadCollectionBase::updateLatestMessageCreated(DiscussionThreadPtr thread)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     if (byLatestMessageCreatedUpdateIt_ != byLatestMessageCreated_.end())
     {
         byLatestMessageCreated_.replace(byLatestMessageCreatedUpdateIt_, thread);
@@ -73,11 +119,15 @@ void DiscussionThreadCollectionBase::updateLatestMessageCreated(DiscussionThread
 
 void DiscussionThreadCollectionBase::prepareUpdateMessageCount(DiscussionThreadPtr thread)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     byMessageCountUpdateIt_ = findInNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
 }
 
 void DiscussionThreadCollectionBase::updateMessageCount(DiscussionThreadPtr thread)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     if (byMessageCountUpdateIt_ != byMessageCount_.end())
     {
         byMessageCount_.replace(byMessageCountUpdateIt_, thread);
@@ -86,50 +136,18 @@ void DiscussionThreadCollectionBase::updateMessageCount(DiscussionThreadPtr thre
 
 void DiscussionThreadCollectionBase::prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     byPinDisplayOrderUpdateIt_ = findInNonUniqueCollection(byPinDisplayOrder_, thread, thread->pinDisplayOrder());
 }
 
 void DiscussionThreadCollectionBase::updatePinDisplayOrder(DiscussionThreadPtr thread)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     if (byPinDisplayOrderUpdateIt_ != byPinDisplayOrder_.end())
     {
         byPinDisplayOrder_.replace(byPinDisplayOrderUpdateIt_, thread);
-    }
-}
-
-void DiscussionThreadCollectionBase::refreshByLastUpdated()
-{
-    byLastUpdated_.clear();
-    for (DiscussionThreadPtr thread : byName_)
-    {
-        byLastUpdated_.insert(thread);
-    }
-}
-
-void DiscussionThreadCollectionBase::refreshByLatestMessageCreated()
-{
-    byLatestMessageCreated_.clear();
-    for (DiscussionThreadPtr thread : byName_)
-    {
-        byLatestMessageCreated_.insert(thread);
-    }
-}
-
-void DiscussionThreadCollectionBase::refreshByMessageCount()
-{
-    byMessageCount_.clear();
-    for (DiscussionThreadPtr thread : byName_)
-    {
-        byMessageCount_.insert(thread);
-    }
-}
-
-void DiscussionThreadCollectionBase::refreshByPinDisplayOrder()
-{
-    byPinDisplayOrder_.clear();
-    for (DiscussionThreadPtr thread : byName_)
-    {
-        byPinDisplayOrder_.insert(thread);
     }
 }
 
