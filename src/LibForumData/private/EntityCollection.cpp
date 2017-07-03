@@ -68,7 +68,7 @@ struct EntityCollection::Impl
             {
                 comment->parentMessage().solvedCommentsCount() -= 1;
             }
-            comment->parentMessage().comments().remove(comment);
+            comment->parentMessage().removeComment(comment);
         }
 
         for (DiscussionThreadPtr thread : user->subscribedThreads().byId())
@@ -171,9 +171,13 @@ struct EntityCollection::Impl
             message->createdBy().threadMessages().remove(message);
         }
 
-        for (MessageCommentPtr comment : message->comments().byId())
+        auto messageComments = message->comments();
+        if (messageComments)
         {
-            deleteMessageComment(comment);
+            for (MessageCommentPtr comment : messageComments->byId())
+            {
+                deleteMessageComment(comment);
+            }
         }
 
         DiscussionThread& parentThread = *(message->parentThread());

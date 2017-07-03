@@ -332,13 +332,13 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     DiscussionThreadMessage& message = *messagePtr;
 
     message.content() = newContent;
-    message.lastUpdated() = Context::getCurrentTime();
-    message.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();
-    message.lastUpdatedReason() = toString(changeReason);
+    message.updateLastUpdated(Context::getCurrentTime());
+    message.updateLastUpdatedDetails({ Context::getCurrentUserIpAddress() });
+    message.updateLastUpdatedReason(toString(changeReason));
 
     if (&message.createdBy() != currentUser.ptr())
     {
-        message.lastUpdatedBy() = currentUser;
+        message.updateLastUpdatedBy(currentUser);
     }
 
     DiscussionThread& parentThread = *(message.parentThread());
@@ -843,7 +843,7 @@ StatusWithResource<MessageCommentPtr>
 
     collection.insertMessageComment(comment);
 
-    message.comments().add(comment);
+    message.addComment(comment);
     currentUser->messageComments().add(comment);
 
     return comment;

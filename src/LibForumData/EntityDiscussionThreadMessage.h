@@ -40,14 +40,36 @@ namespace Forum
                    auto parentThread()        const { return parentThread_.toConst(); }
 
              StringView content()             const { return content_; }
-
-                   auto lastUpdated()         const { return lastUpdated_; }
-            const auto& lastUpdatedDetails()  const { return lastUpdatedDetails_; }
-             StringView lastUpdatedReason()   const { return lastUpdatedReason_; }
-                   auto lastUpdatedBy()       const { return lastUpdatedBy_.toConst(); }
             
-            const auto& comments()            const { return comments_; }
-                   auto solvedCommentsCount() const { return solvedCommentsCount_; }
+            const auto& comments() const
+            {
+                static const MessageCommentCollection emptyMessageCommentCollection;
+
+                return comments_ ? *comments_ : emptyMessageCommentCollection;
+            }
+            auto solvedCommentsCount()        const { return solvedCommentsCount_; }
+
+            auto lastUpdated() const
+            {
+                return lastUpdated_ ? lastUpdated_->at_ : Timestamp{ 0 };
+            }
+
+            const auto& lastUpdatedDetails() const
+            {
+                static const VisitDetails lastUpdatedDetailsDefault{};
+                return lastUpdated_ ? lastUpdated_->details_ : lastUpdatedDetailsDefault;
+            }
+
+            StringView lastUpdatedReason() const
+            {
+                return lastUpdated_ ? lastUpdated_->reason_ : StringView{};
+            }
+              
+            auto lastUpdatedBy() const
+            {
+                return lastUpdated_ ? lastUpdated_->by_.toConst() : EntityPointer<const User>{};
+            }
+
 
             bool hasVoted(EntityPointer<User> user) const
             {
@@ -100,16 +122,46 @@ namespace Forum
 
             auto& createdBy()           { return createdBy_; }
             auto& parentThread()        { return parentThread_; }
-                                                            
-            auto& lastUpdated()         { return lastUpdated_; }
-            auto& lastUpdatedDetails()  { return lastUpdatedDetails_; }
-            auto& lastUpdatedReason()   { return lastUpdatedReason_; }
-            auto& lastUpdatedBy()       { return lastUpdatedBy_; }
 
             auto& content()             { return content_; }
             
-            auto& comments()            { return comments_; }
+            auto* comments()            { return comments_.get(); }
+            void  addComment(MessageCommentPtr comment)
+            {
+                if ( ! comments_) comments_.reset(new MessageCommentCollection);
+                comments_->add(comment);
+            }
+            void  removeComment(MessageCommentPtr comment)
+            {
+                if ( ! comments_) return;
+                comments_->remove(comment);
+            }
+
             auto& solvedCommentsCount() { return solvedCommentsCount_; }
+              
+            void updateLastUpdated(Timestamp at)
+            {
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedLazy());
+                lastUpdated_->at_ = at;
+            }
+
+            void updateLastUpdatedDetails(VisitDetails&& details)
+            {
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedLazy());
+                lastUpdated_->details_ = std::move(details);
+            }
+
+            void updateLastUpdatedReason(std::string&& reason)
+            {
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedLazy());
+                lastUpdated_->reason_ = std::move(reason);
+            }
+
+            void updateLastUpdatedBy(EntityPointer<User> by)
+            {
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedLazy());
+                lastUpdated_->by_ = by;
+            }
 
             void addUpVote(EntityPointer<User> user, const Timestamp& at)
             {
@@ -142,12 +194,16 @@ namespace Forum
 
             Helpers::ImmutableString content_;
 
-            Timestamp lastUpdated_{0};
-            VisitDetails lastUpdatedDetails_;
-            std::string lastUpdatedReason_;
-            EntityPointer<User> lastUpdatedBy_;
+            struct LastUpdatedLazy
+            {
+                Timestamp at_{0};
+                VisitDetails details_;
+                std::string reason_;
+                EntityPointer<User> by_;
+            };
+            std::unique_ptr<LastUpdatedLazy> lastUpdated_;
             
-            MessageCommentCollection comments_;
+            std::unique_ptr<MessageCommentCollection> comments_;
             int32_t solvedCommentsCount_{0};
 
             std::unique_ptr<VoteCollection> upVotes_;
