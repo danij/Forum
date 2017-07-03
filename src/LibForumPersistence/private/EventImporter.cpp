@@ -1,6 +1,10 @@
 #include "EventImporter.h"
 #include "PersistenceFormat.h"
 #include "Logging.h"
+#include "ContextProviders.h"
+#include "ContextProviderMocks.h"
+#include "UuidString.h"
+#include "IpAddress.h"
 
 #include <cstdint>
 #include <ctime>
@@ -12,6 +16,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/lexical_cast.hpp>
@@ -19,6 +24,8 @@
 
 using namespace Forum;
 using namespace Forum::Persistence;
+using namespace Forum::Entities;
+using namespace Forum::Helpers;
 
 template<typename Fn>
 static void iteratePathRecursively(const boost::filesystem::path& sourcePath, Fn&& action)
@@ -37,7 +44,7 @@ static void iteratePathRecursively(const boost::filesystem::path& sourcePath, Fn
 }
 
 template<typename T>
-T readAndIncrementBuffer(const char*& data, size_t& size)
+T readAndIncrementBuffer(const uint8_t*& data, size_t& size)
 {
     auto result = *reinterpret_cast<typename std::add_pointer<typename std::add_const<T>::type>::type>(data);
     data += sizeof(T); size -= sizeof(T);
@@ -45,9 +52,39 @@ T readAndIncrementBuffer(const char*& data, size_t& size)
     return result;
 }
 
-struct PersistedContext
+template<>
+UuidString readAndIncrementBuffer<UuidString>(const uint8_t*& data, size_t& size)
 {
+    UuidString result(data);
 
+    static constexpr auto dataSize = boost::uuids::uuid::static_size();
+    data += dataSize; size -= dataSize;
+
+    return result;
+}
+
+template<>
+IpAddress readAndIncrementBuffer<IpAddress>(const uint8_t*& data, size_t& size)
+{
+    IpAddress result(data);
+
+    static constexpr auto dataSize = IpAddress::dataSize();
+    data += dataSize; size -= dataSize;
+
+    return result;
+}
+
+struct CurrentTimeChanger final : private boost::noncopyable
+{
+    explicit CurrentTimeChanger(std::function<Timestamp()>&& fn)
+    {
+        Context::setCurrentTimeMockForCurrentThread(std::move(fn));
+    }
+
+    ~CurrentTimeChanger()
+    {
+        Context::resetCurrentTimeMock();
+    }
 };
 
 struct EventImporter::EventImporterImpl final : private boost::noncopyable
@@ -57,258 +94,271 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         importFunctions_ =
         {
             {}, //UNKNOWN
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_ADD_NEW_USER_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_CHANGE_USER_NAME_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_CHANGE_USER_INFO_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_DELETE_USER_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_ADD_NEW_DISCUSSION_THREAD_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_CHANGE_DISCUSSION_THREAD_NAME_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_DELETE_DISCUSSION_THREAD_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_MERGE_DISCUSSION_THREADS_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_SUBSCRIBE_TO_DISCUSSION_THREAD_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_UNSUBSCRIBE_FROM_DISCUSSION_THREAD_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_ADD_NEW_DISCUSSION_THREAD_MESSAGE_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_MOVE_DISCUSSION_THREAD_MESSAGE_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_DELETE_DISCUSSION_THREAD_MESSAGE_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_DISCUSSION_THREAD_MESSAGE_UP_VOTE_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_DISCUSSION_THREAD_MESSAGE_DOWN_VOTE_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_DISCUSSION_THREAD_MESSAGE_RESET_VOTE_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_ADD_NEW_DISCUSSION_TAG_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_CHANGE_DISCUSSION_TAG_NAME_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_CHANGE_DISCUSSION_TAG_UI_BLOB_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_DELETE_DISCUSSION_TAG_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_ADD_DISCUSSION_TAG_TO_THREAD_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_REMOVE_DISCUSSION_TAG_FROM_THREAD_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_MERGE_DISCUSSION_TAGS_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_ADD_NEW_DISCUSSION_CATEGORY_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_CHANGE_DISCUSSION_CATEGORY_NAME_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_CHANGE_DISCUSSION_CATEGORY_DESCRIPTION_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_CHANGE_DISCUSSION_CATEGORY_PARENT_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_DELETE_DISCUSSION_CATEGORY_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_ADD_DISCUSSION_TAG_TO_CATEGORY_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_REMOVE_DISCUSSION_TAG_FROM_CATEGORY_v1(contextVersion, data, size); } },
-            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { this->import_INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS_v1(contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_ADD_NEW_USER_v1                                (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_CHANGE_USER_NAME_v1                            (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_CHANGE_USER_INFO_v1                            (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_DELETE_USER_v1                                 (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_ADD_NEW_DISCUSSION_THREAD_v1                   (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_CHANGE_DISCUSSION_THREAD_NAME_v1               (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_DELETE_DISCUSSION_THREAD_v1                    (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_MERGE_DISCUSSION_THREADS_v1                    (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_SUBSCRIBE_TO_DISCUSSION_THREAD_v1              (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_UNSUBSCRIBE_FROM_DISCUSSION_THREAD_v1          (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_ADD_NEW_DISCUSSION_THREAD_MESSAGE_v1           (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT_v1    (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_MOVE_DISCUSSION_THREAD_MESSAGE_v1              (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_DELETE_DISCUSSION_THREAD_MESSAGE_v1            (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_DISCUSSION_THREAD_MESSAGE_UP_VOTE_v1           (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_DISCUSSION_THREAD_MESSAGE_DOWN_VOTE_v1         (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_DISCUSSION_THREAD_MESSAGE_RESET_VOTE_v1        (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE_v1    (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT_v1     (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_ADD_NEW_DISCUSSION_TAG_v1                      (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_CHANGE_DISCUSSION_TAG_NAME_v1                  (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_CHANGE_DISCUSSION_TAG_UI_BLOB_v1               (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_DELETE_DISCUSSION_TAG_v1                       (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_ADD_DISCUSSION_TAG_TO_THREAD_v1                (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_REMOVE_DISCUSSION_TAG_FROM_THREAD_v1           (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_MERGE_DISCUSSION_TAGS_v1                       (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_ADD_NEW_DISCUSSION_CATEGORY_v1                 (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_CHANGE_DISCUSSION_CATEGORY_NAME_v1             (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_CHANGE_DISCUSSION_CATEGORY_DESCRIPTION_v1      (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER_v1    (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_CHANGE_DISCUSSION_CATEGORY_PARENT_v1           (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_DELETE_DISCUSSION_CATEGORY_v1                  (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_ADD_DISCUSSION_TAG_TO_CATEGORY_v1              (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_REMOVE_DISCUSSION_TAG_FROM_CATEGORY_v1         (contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS_v1(contextVersion, data, size); } },
         };
     }
 
-    void import_ADD_NEW_USER_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_ADD_NEW_USER_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_CHANGE_USER_NAME_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_CHANGE_USER_NAME_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_CHANGE_USER_INFO_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_CHANGE_USER_INFO_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_DELETE_USER_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_DELETE_USER_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_ADD_NEW_DISCUSSION_THREAD_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_ADD_NEW_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_CHANGE_DISCUSSION_THREAD_NAME_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_CHANGE_DISCUSSION_THREAD_NAME_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_DELETE_DISCUSSION_THREAD_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_DELETE_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_MERGE_DISCUSSION_THREADS_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_MERGE_DISCUSSION_THREADS_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_SUBSCRIBE_TO_DISCUSSION_THREAD_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_SUBSCRIBE_TO_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_UNSUBSCRIBE_FROM_DISCUSSION_THREAD_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_UNSUBSCRIBE_FROM_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_ADD_NEW_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_ADD_NEW_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_MOVE_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_MOVE_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_DELETE_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_DELETE_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_DISCUSSION_THREAD_MESSAGE_UP_VOTE_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_DISCUSSION_THREAD_MESSAGE_UP_VOTE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_DISCUSSION_THREAD_MESSAGE_DOWN_VOTE_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_DISCUSSION_THREAD_MESSAGE_DOWN_VOTE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_DISCUSSION_THREAD_MESSAGE_RESET_VOTE_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_DISCUSSION_THREAD_MESSAGE_RESET_VOTE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_ADD_NEW_DISCUSSION_TAG_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_ADD_NEW_DISCUSSION_TAG_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_CHANGE_DISCUSSION_TAG_NAME_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_CHANGE_DISCUSSION_TAG_NAME_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_CHANGE_DISCUSSION_TAG_UI_BLOB_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_CHANGE_DISCUSSION_TAG_UI_BLOB_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_DELETE_DISCUSSION_TAG_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_DELETE_DISCUSSION_TAG_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_ADD_DISCUSSION_TAG_TO_THREAD_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_ADD_DISCUSSION_TAG_TO_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_REMOVE_DISCUSSION_TAG_FROM_THREAD_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_REMOVE_DISCUSSION_TAG_FROM_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_MERGE_DISCUSSION_TAGS_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_MERGE_DISCUSSION_TAGS_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_ADD_NEW_DISCUSSION_CATEGORY_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_ADD_NEW_DISCUSSION_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_CHANGE_DISCUSSION_CATEGORY_NAME_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_CHANGE_DISCUSSION_CATEGORY_NAME_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_CHANGE_DISCUSSION_CATEGORY_DESCRIPTION_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_CHANGE_DISCUSSION_CATEGORY_DESCRIPTION_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_CHANGE_DISCUSSION_CATEGORY_PARENT_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_CHANGE_DISCUSSION_CATEGORY_PARENT_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_DELETE_DISCUSSION_CATEGORY_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_DELETE_DISCUSSION_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_ADD_DISCUSSION_TAG_TO_CATEGORY_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_ADD_DISCUSSION_TAG_TO_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_REMOVE_DISCUSSION_TAG_FROM_CATEGORY_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_REMOVE_DISCUSSION_TAG_FROM_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    void import_INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS_v1(uint16_t contextVersion, const char* data, size_t size)
+    bool import_INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
-        auto context = processContext(contextVersion, data, size);
-        (void)context;
+        if ( ! processContext(contextVersion, data, size)) return false;
+        return true;
     }
 
-    PersistedContext processContext(uint16_t contextVersion, const char*& data, size_t& size)
+    bool processContext_v1(const uint8_t*& data, size_t& size)
     {
-        //return pointers to context information, increment data and size pointers
-        return {};
+        currentTimestamp_ = readAndIncrementBuffer<PersistentTimestampType>(data, size);
+        Context::setCurrentUserId(readAndIncrementBuffer<UuidString>(data, size));
+        Context::setCurrentUserIpAddress(readAndIncrementBuffer<IpAddress>(data, size));
+        return true;
+    }
+
+    bool processContext(uint16_t contextVersion, const uint8_t*& data, size_t& size)
+    {
+        if (1 != contextVersion)
+        {
+            FORUM_LOG_ERROR << "Unimplemented context version: " << contextVersion;
+            return false;
+
+        }
+        return processContext_v1(data, size);
     }
 
     ImportResult importFile(const std::string& fileName)
@@ -322,7 +372,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             boost::interprocess::mapped_region region(mapping, mappingMode);
             region.advise(boost::interprocess::mapped_region::advice_sequential);
 
-            return iterateBlobsInFile(reinterpret_cast<const char*>(region.get_address()), region.get_size());
+            return iterateBlobsInFile(reinterpret_cast<const uint8_t*>(region.get_address()), region.get_size());
         }
         catch(boost::interprocess::interprocess_exception& ex)
         {
@@ -331,9 +381,10 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
     }
 
-    ImportResult iterateBlobsInFile(const char* data, size_t size)
+    ImportResult iterateBlobsInFile(const uint8_t* data, size_t size)
     {
         ImportResult result{};
+        CurrentTimeChanger _([this]() { return this->getCurrentTimestamp(); });
 
         while (size > 0)
         {
@@ -386,7 +437,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         return result;
     }
 
-    bool processEvent(const char* data, size_t size)
+    bool processEvent(const uint8_t* data, size_t size)
     {
         if (size < EventHeaderSize)
         {
@@ -418,14 +469,18 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             return false;
         }
 
-        fn(contextVersion, data, size);
+        return fn(contextVersion, data, size);
+    }
 
-        return true;
+    Timestamp getCurrentTimestamp()
+    {
+        return currentTimestamp_;
     }
 
 private:
     bool verifyChecksum_;
-    std::vector<std::vector<std::function<void(uint16_t, const char*, size_t)>>> importFunctions_;
+    std::vector<std::vector<std::function<bool(uint16_t, const uint8_t*, size_t)>>> importFunctions_;
+    Timestamp currentTimestamp_;
 };
 
 EventImporter::EventImporter(bool verifyChecksum) : impl_(new EventImporterImpl(verifyChecksum))

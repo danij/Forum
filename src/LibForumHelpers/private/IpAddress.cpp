@@ -44,6 +44,11 @@ IpAddress::IpAddress(const char* string)
     }
 }
 
+IpAddress::IpAddress(const uint8_t* dataArray)
+{
+    std::copy(dataArray, dataArray + dataSize(), data_.bytes);
+}
+
 static int writeUInt8(char* buffer, uint8_t value) noexcept
 {
     if (value > 99)

@@ -67,7 +67,7 @@ namespace Forum
         static constexpr size_t MinBlobSize = sizeof(MagicPrefix) + sizeof(BlobSizeType) + sizeof(BlobChecksumSizeType);
         static constexpr size_t EventHeaderSize = sizeof(EventType) + sizeof(EventVersionType) + sizeof(EventContextVersionType);
 
-        inline BlobChecksumSizeType crc32(const char* buffer, size_t size)
+        inline BlobChecksumSizeType crc32(const void* buffer, size_t size)
         {
             boost::crc_32_type hash;
             hash.process_bytes(buffer, size);

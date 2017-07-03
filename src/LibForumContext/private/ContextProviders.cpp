@@ -37,9 +37,9 @@ const IdType& Forum::Context::getCurrentUserId()
     return currentUser;
 }
 
-void Forum::Context::setCurrentUserId(const IdType& value)
+void Forum::Context::setCurrentUserId(IdType value)
 {
-    currentUser = value;
+    currentUser = std::move(value);
 }
 
 static thread_local IpAddress currentIpAddress = {};
@@ -49,9 +49,9 @@ const IpAddress& Forum::Context::getCurrentUserIpAddress()
     return currentIpAddress;
 }
 
-void Forum::Context::setCurrentUserIpAddress(const IpAddress& value)
+void Forum::Context::setCurrentUserIpAddress(IpAddress value)
 {
-    currentIpAddress = value;
+    currentIpAddress = std::move(value);
 }
 
 static bool batchInsertInProgress{ false };

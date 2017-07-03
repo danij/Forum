@@ -21,6 +21,7 @@ namespace Forum
             IpAddress();
             IpAddress(const boost::asio::ip::address& value);
             IpAddress(const char* string);
+            explicit IpAddress(const uint8_t* dataArray);
 
             IpAddress(const IpAddress&) = default;
             IpAddress(IpAddress&&) = default;
@@ -36,7 +37,7 @@ namespace Forum
 
             const uint8_t* data() const { return data_.bytes; }
 
-            static size_t dataSize() { return 16;  }
+            static constexpr size_t dataSize() { return 16; }
 
             /**
              * Writes the string representation of the address to a buffer and returns the amount of bytes written

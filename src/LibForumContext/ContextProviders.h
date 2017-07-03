@@ -24,7 +24,7 @@ namespace Forum
         /**
          * Sets the id of the current user executing an action (thread-local)
          */
-        void setCurrentUserId(Entities::IdTypeRef value);
+        void setCurrentUserId(Entities::IdType value);
 
         /**
          * Returns the IP address of the current user executing an action
@@ -34,7 +34,7 @@ namespace Forum
         /**
         * Sets the IP address of the current user executing an action (thread-local)
         */
-        void setCurrentUserIpAddress(const Helpers::IpAddress& value);
+        void setCurrentUserIpAddress(Helpers::IpAddress value);
 
         /**
          * Returns whether a batch insert is currently in progress for optimization purposes

@@ -68,6 +68,12 @@ UuidString::UuidString(const boost::string_view& value)
     updateHashValue();
 }
 
+UuidString::UuidString(const uint8_t* uuidArray)
+{
+    std::copy(uuidArray, uuidArray + boost::uuids::uuid::static_size(), value_.data);
+    updateHashValue();
+}
+
 UuidString::operator std::string() const
 {
     return to_string(value_);
