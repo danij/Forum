@@ -10,14 +10,17 @@ The backend supports the following:
 * Discussion threads composed of messages
 * Discussion tags for classifying discussion threads
 * Hierarchical discussion categories for grouping together threads that share the same tags
-* Access control (_not yet implemented_) 
+* Comments for discussion messages
+* Fined grained, hierarchical access control which allows granting or revoking specific privileges to any individual user  
+* Event based persistence of data, enabling incremental backups and going back to any point in time
+* External authentication providers for stronger security and a better user experience
 
-Text content is stored as UTF-8 and is compared using Unicode awareness whenever necessary 
-(e.g. when checking if a user name is already taken).
+Text content is normalized and stored using `UTF-8` encoding. When necessary it is compared using `en_US` collation 
+with primary strength (e.g. when checking if a user name is already taken).
 
 ## Architecture
 
-[Long version](doc/Architecture&Details.md)
+[The following document presents the architecture decisions in detail](doc/Architecture&Details.md)
 
 ### TODO
 
