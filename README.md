@@ -28,7 +28,7 @@ This software is not yet production ready. For more details please consult the [
 
 ### Service
 
-The backend provides a [RESTful API](doc/API.md) over HTTP/1.1 for retrieving and updating entities, represented using JSON. 
+The backend provides a REST API over HTTP/1.1 for retrieving and updating entities, represented using JSON. 
 Supporting HATEOAS is not among the goals of the application.
   
 Serving static files will not be among the responsibilities of the backend service, but of dedicated HTTPDs. 
