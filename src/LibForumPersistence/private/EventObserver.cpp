@@ -24,7 +24,7 @@ using namespace Forum::Entities;
 struct BlobPart
 {
     const char* address;
-    uint32_t size;
+    BlobSizeType size;
     bool includeSizePrefix;
 
     size_t totalSize() const
@@ -217,7 +217,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     static const PersistentTimestampType ZeroTimestamp;
     static const Helpers::IpAddress ZeroIpAddress;
 
-    typedef decltype(BlobPart::size) SizeType;
+    typedef BlobSizeType SizeType;
 
 #define ADD_CONTEXT_BLOB_PARTS \
     { reinterpret_cast<const char*>(&contextTimestamp), sizeof(contextTimestamp), false }, \

@@ -114,7 +114,8 @@ namespace Forum
             DECLARE_INTERFACE_MANDATORY(IUserDirectWriteRepository);
 
             virtual StatusWithResource<Entities::UserPtr> addNewUser(Entities::EntityCollection& collection,
-                                                                     StringView name, StringView auth) = 0;
+                                                                     Entities::IdTypeRef id, StringView name, 
+                                                                     StringView auth) = 0;
             virtual StatusCode changeUserName(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                               StringView newName) = 0;
             virtual StatusCode changeUserInfo(Entities::EntityCollection& collection, Entities::IdTypeRef id,
@@ -367,5 +368,14 @@ namespace Forum
             virtual StatusCode getVersion(OutStream& output) = 0;
         };
         typedef std::shared_ptr<IMetricsRepository> MetricsRepositoryRef;
+
+        struct DirectWriteRepositoryCollection
+        {
+            UserDirectWriteRepositoryRef user;
+            DiscussionThreadDirectWriteRepositoryRef discussionThread;
+            DiscussionThreadMessageDirectWriteRepositoryRef discussionThreadMessage;
+            DiscussionTagDirectWriteRepositoryRef discussionTag;
+            DiscussionCategoryDirectWriteRepositoryRef discussionCategory;
+        };
     }
 }

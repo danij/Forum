@@ -24,6 +24,7 @@
 
 using namespace Forum;
 using namespace Forum::Persistence;
+using namespace Forum::Repository;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 
@@ -52,13 +53,14 @@ T readAndIncrementBuffer(const uint8_t*& data, size_t& size)
     return result;
 }
 
+static constexpr auto uuidBinarySize = boost::uuids::uuid::static_size();
+static constexpr auto ipAddressBinarySize = IpAddress::dataSize();
+
 template<>
 UuidString readAndIncrementBuffer<UuidString>(const uint8_t*& data, size_t& size)
 {
     UuidString result(data);
-
-    static constexpr auto dataSize = boost::uuids::uuid::static_size();
-    data += dataSize; size -= dataSize;
+    data += uuidBinarySize; size -= uuidBinarySize;
 
     return result;
 }
@@ -67,9 +69,27 @@ template<>
 IpAddress readAndIncrementBuffer<IpAddress>(const uint8_t*& data, size_t& size)
 {
     IpAddress result(data);
+    data += ipAddressBinarySize; size -= ipAddressBinarySize;
 
-    static constexpr auto dataSize = IpAddress::dataSize();
-    data += dataSize; size -= dataSize;
+    return result;
+}
+
+template<>
+StringView readAndIncrementBuffer<StringView>(const uint8_t*& data, size_t& size)
+{
+    StringView result;
+
+    auto stringSize = readAndIncrementBuffer<BlobSizeType>(data, size);
+
+    if (size < stringSize)
+    {
+        FORUM_LOG_ERROR << "Could not read string of " << stringSize << " bytes, only " << size << " remaining";
+    }
+    else
+    {
+        result = StringView(reinterpret_cast<const char*>(data), stringSize);
+    }
+    data += stringSize; size -= stringSize;
 
     return result;
 }
@@ -87,9 +107,46 @@ struct CurrentTimeChanger final : private boost::noncopyable
     }
 };
 
+#define CHECK_SIZE(value, expected) \
+    if ((value) < (expected)) \
+    { \
+        FORUM_LOG_ERROR << "Unable to import event of type " << currentEventType_ << ": expected " << expected << " bytes, found only " << value; \
+        return false; \
+    }
+
+#define CHECK_NONEMPTY_STRING(value) \
+    if (value.size() < 1) \
+    { \
+        FORUM_LOG_ERROR << "Unable to import event of type " << currentEventType_ << ": unexpected empty or incomplete string"; \
+        return false; \
+    }
+
+#define CHECK_STATUS_CODE(value) \
+    if (value != StatusCode::OK) { \
+        FORUM_LOG_ERROR << "Unable to import event of type " << currentEventType_ << ": unexpected status code: " << value; \
+    }
+
+#define CHECK_READ_ALL_DATA(value) \
+    if (0 != value) \
+    { \
+        FORUM_LOG_ERROR << "Unable to import event of type " << currentEventType_ << ": unexpected " << value << " bytes at end of blob"; \
+        return false; \
+    }
+
+#define READ_UUID(variable, data, size) \
+    CHECK_SIZE(size, uuidBinarySize); \
+    auto variable = readAndIncrementBuffer<UuidString>(data, size);
+
+#define READ_NONEMPTY_STRING(variable, data, size) \
+    CHECK_SIZE(size, sizeof(BlobSizeType)); \
+    auto variable = readAndIncrementBuffer<StringView>(data, size); \
+    CHECK_NONEMPTY_STRING(variable);
+
 struct EventImporter::EventImporterImpl final : private boost::noncopyable
 {
-    explicit EventImporterImpl(bool verifyChecksum) : verifyChecksum_(verifyChecksum)
+    explicit EventImporterImpl(bool verifyChecksum, EntityCollection& entityCollection, 
+                               DirectWriteRepositoryCollection&& repositories)
+        : verifyChecksum_(verifyChecksum), entityCollection_(entityCollection), repositories_(std::move(repositories))
     {
         importFunctions_ =
         {
@@ -129,221 +186,296 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_ADD_DISCUSSION_TAG_TO_CATEGORY_v1              (contextVersion, data, size); } },
             { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_REMOVE_DISCUSSION_TAG_FROM_CATEGORY_v1         (contextVersion, data, size); } },
             { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS_v1(contextVersion, data, size); } },
+            { {/*v0*/}, [this](auto contextVersion, auto data, auto size) { return this->import_CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER_v1  (contextVersion, data, size); } },
         };
     }
 
     bool import_ADD_NEW_USER_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(auth, data, size);
+        READ_NONEMPTY_STRING(userName, data, size);
+
+        CHECK_STATUS_CODE(repositories_.user->addNewUser(entityCollection_, id, userName, auth).status);
+       
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_CHANGE_USER_NAME_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(newName, data, size);
+
+        CHECK_STATUS_CODE(repositories_.user->changeUserName(entityCollection_, id, newName));
+
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_CHANGE_USER_INFO_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(newInfo, data, size);
+
+        CHECK_STATUS_CODE(repositories_.user->changeUserInfo(entityCollection_, id, newInfo));
+        
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_DELETE_USER_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+
+        CHECK_STATUS_CODE(repositories_.user->deleteUser(entityCollection_, id));
+
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_ADD_NEW_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_THREAD_NAME_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_DELETE_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_MERGE_DISCUSSION_THREADS_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_SUBSCRIBE_TO_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_UNSUBSCRIBE_FROM_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_ADD_NEW_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_MOVE_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_DELETE_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_DISCUSSION_THREAD_MESSAGE_UP_VOTE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_DISCUSSION_THREAD_MESSAGE_DOWN_VOTE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_DISCUSSION_THREAD_MESSAGE_RESET_VOTE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_ADD_NEW_DISCUSSION_TAG_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_TAG_NAME_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_TAG_UI_BLOB_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_DELETE_DISCUSSION_TAG_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_ADD_DISCUSSION_TAG_TO_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_REMOVE_DISCUSSION_TAG_FROM_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_MERGE_DISCUSSION_TAGS_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_ADD_NEW_DISCUSSION_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_CATEGORY_NAME_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_CATEGORY_DESCRIPTION_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_CATEGORY_PARENT_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_DELETE_DISCUSSION_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_ADD_DISCUSSION_TAG_TO_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_REMOVE_DISCUSSION_TAG_FROM_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
+    bool import_CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
+    {
+        if ( ! processContext(contextVersion, data, size)) return false;
+        CHECK_READ_ALL_DATA(size);
+        return true;
+    }
+
+
     bool processContext_v1(const uint8_t*& data, size_t& size)
     {
+        static constexpr auto expected = sizeof(PersistentTimestampType) + uuidBinarySize + ipAddressBinarySize;
+        if (size < expected)
+        {
+            FORUM_LOG_ERROR << "Unable to import context v1: expected " << expected << " bytes, found only " << size;
+            return false;
+        }
+
         currentTimestamp_ = readAndIncrementBuffer<PersistentTimestampType>(data, size);
         Context::setCurrentUserId(readAndIncrementBuffer<UuidString>(data, size));
         Context::setCurrentUserIpAddress(readAndIncrementBuffer<IpAddress>(data, size));
@@ -445,27 +577,27 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             return false;
         }
 
-        auto eventType = readAndIncrementBuffer<EventType>(data, size);
+        currentEventType_ = readAndIncrementBuffer<EventType>(data, size);
         auto version = readAndIncrementBuffer<EventVersionType>(data, size);
         auto contextVersion = readAndIncrementBuffer<EventContextVersionType>(data, size);
 
-        if (eventType >= importFunctions_.size())
+        if (currentEventType_ >= importFunctions_.size())
         {
-            FORUM_LOG_WARNING << "Import for unknown type " << eventType;
+            FORUM_LOG_WARNING << "Import for unknown type " << currentEventType_;
             return false;
         }
 
-        auto& importerVersions = importFunctions_[eventType];
+        auto& importerVersions = importFunctions_[currentEventType_];
         if (version >= importerVersions.size())
         {
-            FORUM_LOG_WARNING << "Import for unsupported version " << version << " for event " << eventType;
+            FORUM_LOG_WARNING << "Import for unsupported version " << version << " for event " << currentEventType_;
             return false;
         }
 
         auto& fn = importerVersions[version];
         if ( ! fn)
         {
-            FORUM_LOG_WARNING << "Missing import function for version " << version << " for event " << eventType;
+            FORUM_LOG_WARNING << "Missing import function for version " << version << " for event " << currentEventType_;
             return false;
         }
 
@@ -479,11 +611,16 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
 private:
     bool verifyChecksum_;
+    EntityCollection& entityCollection_;
+    DirectWriteRepositoryCollection repositories_;
     std::vector<std::vector<std::function<bool(uint16_t, const uint8_t*, size_t)>>> importFunctions_;
-    Timestamp currentTimestamp_;
+    Timestamp currentTimestamp_{};
+    EventType currentEventType_{};
 };
 
-EventImporter::EventImporter(bool verifyChecksum) : impl_(new EventImporterImpl(verifyChecksum))
+EventImporter::EventImporter(bool verifyChecksum, Entities::EntityCollection& entityCollection, 
+                             DirectWriteRepositoryCollection repositories)
+    : impl_(new EventImporterImpl(verifyChecksum, entityCollection, std::move(repositories)))
 {
 }
 

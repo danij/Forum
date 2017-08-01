@@ -21,8 +21,10 @@
 #include "Configuration.h"
 #include "StringHelpers.h"
 #include "EventObserver.h"
+#include "EventImporter.h"
 
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/preprocessor/stringize.hpp>
 
 struct CleanupFixture
 {
@@ -53,6 +55,18 @@ using namespace Forum::Persistence;
 
 struct IdType
 {
+    IdType() = default;
+    IdType(const IdType&) = default;
+    IdType(IdType&&) = default;
+
+    IdType& operator=(const IdType&) = default;
+    IdType& operator=(IdType&&) = default;
+
+    IdType(const Entities::UuidString& uuid)
+    {
+        uuid.toString(data.data());
+    }
+
     std::array<char, 36> data;
     operator StringView() const
     {
@@ -74,6 +88,7 @@ struct BenchmarkContext
     std::vector<IdType> categoryIds;
     Entities::Timestamp currentTimestamp = 1000;
     std::shared_ptr<EventObserver> persistenceObserver;
+    Repository::DirectWriteRepositoryCollection writeRepositories;
 };
 
 auto createCommandHandler()
@@ -98,6 +113,12 @@ auto createCommandHandler()
     context.handler = std::make_shared<CommandHandler>(observableRepository, userRepository, discussionThreadRepository,
         discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository,
         statisticsRepository, metricsRepository);
+
+    context.writeRepositories.user = userRepository;
+    context.writeRepositories.discussionThread = discussionThreadRepository;
+    context.writeRepositories.discussionThreadMessage = discussionThreadMessageRepository;
+    context.writeRepositories.discussionTag = discussionTagRepository;
+    context.writeRepositories.discussionCategory = discussionCategoryRepository;
 
     //context.persistenceObserver = std::make_shared<EventObserver>(observableRepository->readEvents(),
     //                                                              observableRepository->writeEvents(),
@@ -166,6 +187,8 @@ std::mt19937 randomGenerator(device());
 void showEntitySizes();
 
 void populateData(BenchmarkContext& context);
+void generateRandomData(BenchmarkContext& context);
+void importPersistedData(BenchmarkContext& context);
 void doBenchmarks(BenchmarkContext& context);
 
 std::string getNewAuth()
@@ -298,6 +321,15 @@ size_t appendUInt(char* string, unsigned int value)
 
 void populateData(BenchmarkContext& context)
 {
+#ifdef IMPORT_PERSISTED_PATH
+    importPersistedData(context);
+#else 
+    generateRandomData(context);
+#endif
+}
+
+void generateRandomData(BenchmarkContext& context)
+{
     auto& handler = *context.handler;
     auto& userIds = context.userIds;
     auto& threadIds = context.threadIds;
@@ -422,6 +454,32 @@ void populateData(BenchmarkContext& context)
         {
             addedParentChildRelationships += 1;
         }
+    }
+}
+
+void importPersistedData(BenchmarkContext& context)
+{
+    EventImporter importer(false, *context.entityCollection, context.writeRepositories);
+#ifdef IMPORT_PERSISTED_PATH
+    importer.import(BOOST_PP_STRINGIZE(IMPORT_PERSISTED_PATH));
+#endif
+
+    //fill context ids as they are needed by doBenchmarks()
+    for (auto& user : context.entityCollection->users().byId())
+    {
+        context.userIds.push_back(user->id());
+    }
+    for (auto& thread : context.entityCollection->threads().byId())
+    {
+        context.threadIds.push_back(thread->id());
+    }
+    for (auto& tag : context.entityCollection->tags().byId())
+    {
+        context.tagIds.push_back(tag->id());
+    }
+    for (auto& category : context.entityCollection->categories().byId())
+    {
+        context.categoryIds.push_back(category->id());
     }
 }
 

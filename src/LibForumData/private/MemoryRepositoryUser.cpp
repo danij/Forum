@@ -123,7 +123,7 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
     return status;
 }
 
-StatusCode MemoryRepositoryUser::getUserById(const IdType& id, OutStream& output) const
+StatusCode MemoryRepositoryUser::getUserById(IdTypeRef id, OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -228,7 +228,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                return;
                            }
 
-                           auto statusWithResource = addNewUser(collection, name, auth);
+                           auto statusWithResource = addNewUser(collection, generateUUIDString(), name, auth);
                            auto& user = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
@@ -244,7 +244,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
     return status;
 }
 
-StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& collection,
+StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& collection, IdTypeRef id,
                                                              StringView name, StringView auth)
 {
     auto authString = toString(auth);
@@ -263,7 +263,7 @@ StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& c
         return StatusCode::ALREADY_EXISTS;
     }
 
-    auto user = collection.createUser(generateUUIDString(), Context::getCurrentTime(), 
+    auto user = collection.createUser(id, Context::getCurrentTime(), 
                                       { Context::getCurrentUserIpAddress() });
     user->updateAuth(std::move(authString));
     user->updateName(std::move(nameString));
@@ -273,7 +273,7 @@ StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& c
     return user;
 }
 
-StatusCode MemoryRepositoryUser::changeUserName(const IdType& id, StringView newName, OutStream& output)
+StatusCode MemoryRepositoryUser::changeUserName(IdTypeRef id, StringView newName, OutStream& output)
 {
     StatusWriter status(output);
     auto config = getGlobalConfig();
@@ -334,7 +334,7 @@ StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, Id
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryUser::changeUserInfo(const IdType& id, StringView newInfo, OutStream& output)
+StatusCode MemoryRepositoryUser::changeUserInfo(IdTypeRef id, StringView newInfo, OutStream& output)
 {
     StatusWriter status(output);
 
@@ -388,7 +388,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(EntityCollection& collection, Id
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryUser::deleteUser(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryUser::deleteUser(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);
     if ( ! id)

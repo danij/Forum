@@ -1,5 +1,8 @@
 #pragma once
 
+#include "EntityCollection.h"
+#include "Repository.h"
+
 #include <cstddef>
 #include <string>
 
@@ -33,7 +36,8 @@ namespace Forum
         class EventImporter final : private boost::noncopyable
         {
         public:
-            explicit EventImporter(bool verifyChecksum);
+            explicit EventImporter(bool verifyChecksum, Entities::EntityCollection& entityCollection,
+                                   Repository::DirectWriteRepositoryCollection repositories);
             ~EventImporter();
 
             /**
