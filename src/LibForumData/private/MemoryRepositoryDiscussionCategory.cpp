@@ -118,7 +118,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const IdType& id, OutStream& output) const
+StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(IdTypeRef id, OutStream& output) const
 {
     StatusWriter status(output);
     if ( ! id)
@@ -157,7 +157,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(const I
 }
 
 
-StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringView name, const IdType& parentId,
+StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringView name, IdTypeRef parentId,
                                                                         OutStream& output)
 {
     StatusWriter status(output);
@@ -260,7 +260,7 @@ StatusWithResource<DiscussionCategoryPtr>
     return category;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(const IdType& id, StringView newName,
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(IdTypeRef id, StringView newName,
                                                                             OutStream& output)
 {
     StatusWriter status(output);
@@ -334,7 +334,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(Enti
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescription(const IdType& id,
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescription(IdTypeRef id,
                                                                                    StringView newDescription,
                                                                                    OutStream& output)
 {
@@ -396,7 +396,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
 
     return StatusCode::OK;
 }
-StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(const IdType& id, const IdType& newParentId,
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(IdTypeRef id, IdTypeRef newParentId,
                                                                               OutStream& output)
 {
     StatusWriter status(output);
@@ -505,7 +505,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(En
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOrder(const IdType& id,
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOrder(IdTypeRef id,
                                                                                     int_fast16_t newDisplayOrder,
                                                                                     OutStream& output)
 {
@@ -567,7 +567,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);
     if ( ! id)
@@ -624,7 +624,7 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(EntityCo
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(const IdType& tagId, const IdType& categoryId,
+StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(IdTypeRef tagId, IdTypeRef categoryId,
                                                                           OutStream& output)
 {
     StatusWriter status(output);
@@ -709,8 +709,8 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(const IdType& tagId,
-                                                                               const IdType& categoryId,
+StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(IdTypeRef tagId,
+                                                                               IdTypeRef categoryId,
                                                                                OutStream& output)
 {
     StatusWriter status(output);

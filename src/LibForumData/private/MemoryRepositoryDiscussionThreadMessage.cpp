@@ -25,7 +25,7 @@ MemoryRepositoryDiscussionThreadMessage::MemoryRepositoryDiscussionThreadMessage
     }
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesOfUserByCreated(const IdType& id,
+StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesOfUserByCreated(IdTypeRef id,
                                                                                                OutStream& output) const
 {
     StatusWriter status(output);
@@ -76,7 +76,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
 }
 
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(const IdType& threadId,
+StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(IdTypeRef threadId,
                                                                                     StringView content,
                                                                                     OutStream& output)
 {
@@ -215,7 +215,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
     return message;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);
     if ( ! id)
@@ -262,7 +262,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(Enti
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageContent(const IdType& id,
+StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageContent(IdTypeRef id,
                                                                                          StringView newContent,
                                                                                          StringView changeReason,
                                                                                          OutStream& output)
@@ -351,8 +351,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(const IdType& messageId,
-                                                                                const IdType& intoThreadId,
+StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(IdTypeRef messageId,
+                                                                                IdTypeRef intoThreadId,
                                                                                 OutStream& output)
 {
     StatusWriter status(output);
@@ -464,17 +464,17 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::upVoteDiscussionThreadMessage(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryDiscussionThreadMessage::upVoteDiscussionThreadMessage(IdTypeRef id, OutStream& output)
 {
     return voteDiscussionThreadMessage(id, output, true);
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::downVoteDiscussionThreadMessage(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryDiscussionThreadMessage::downVoteDiscussionThreadMessage(IdTypeRef id, OutStream& output)
 {
     return voteDiscussionThreadMessage(id, output, false);
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(const IdType& id, OutStream& output,
+StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(IdTypeRef id, OutStream& output,
                                                                                 bool up)
 {
     StatusWriter status(output);
@@ -590,7 +590,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMessage(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMessage(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);
     if ( ! id)
@@ -691,7 +691,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussionThreadMessage(const IdType& id,
+StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussionThreadMessage(IdTypeRef id,
                                                                                                 OutStream& output) const
 {
     StatusWriter status(output);
@@ -730,7 +730,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(const IdType& id, OutStream& output) const
+StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(IdTypeRef id, OutStream& output) const
 {
     StatusWriter status(output);
     PerformedByWithLastSeenUpdateGuard performedBy;
@@ -768,7 +768,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(con
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThreadMessage(const IdType& messageId,
+StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThreadMessage(IdTypeRef messageId,
                                                                                         StringView content,
                                                                                         OutStream& output)
 {
@@ -853,7 +853,7 @@ StatusWithResource<MessageCommentPtr>
     return comment;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);
     if ( ! id)

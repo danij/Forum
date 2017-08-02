@@ -110,7 +110,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreads(OutStream& out
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);
 
@@ -184,7 +184,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(const IdTyp
 }
 
 
-StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const IdType& id, OutStream& output,
+StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(IdTypeRef id, OutStream& output,
                                                                         RetrieveDiscussionThreadsBy by) const
 {
     StatusWriter status(output);
@@ -222,7 +222,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(const Id
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUser(const IdType& id, OutStream& output,
+StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUser(IdTypeRef id, OutStream& output,
                                                                                   RetrieveDiscussionThreadsBy by) const
 {
     StatusWriter status(output);
@@ -261,7 +261,7 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(const IdType& id, OutStream& output,
+StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(IdTypeRef id, OutStream& output,
                                                                          RetrieveDiscussionThreadsBy by) const
 {
     StatusWriter status(output);
@@ -298,7 +298,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(const I
     return status;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(const IdType& id, OutStream& output,
+StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(IdTypeRef id, OutStream& output,
                                                                             RetrieveDiscussionThreadsBy by) const
 {
     StatusWriter status(output);
@@ -429,7 +429,7 @@ StatusWithResource<DiscussionThreadPtr> MemoryRepositoryDiscussionThread::addNew
 }
 
 
-StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(const IdType& id, StringView newName,
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(IdTypeRef id, StringView newName,
                                                                         OutStream& output)
 {
     StatusWriter status(output);
@@ -491,7 +491,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(EntityCo
 }
 
 
-StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrder(const IdType& id, uint16_t newValue,
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrder(IdTypeRef id, uint16_t newValue,
                                                                                    OutStream& output)
 {
     StatusWriter status(output);
@@ -541,7 +541,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);
     if ( ! id)
@@ -590,7 +590,7 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(EntityCollec
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(const IdType& fromId, const IdType& intoId,
+StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(IdTypeRef fromId, IdTypeRef intoId,
                                                                     OutStream& output)
 {
     StatusWriter status(output);
@@ -703,7 +703,7 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);
     if ( ! id)
@@ -761,7 +761,7 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityC
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);
     if ( ! id)

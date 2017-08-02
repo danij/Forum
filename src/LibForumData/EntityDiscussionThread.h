@@ -150,8 +150,8 @@ namespace Forum
             void insertMessage(DiscussionThreadMessagePtr message);
             void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message);
 
-            void addVisitorSinceLastEdit(const IdType& userId);
-            bool hasVisitedSinceLastEdit(const IdType& userId) const;
+            void addVisitorSinceLastEdit(IdTypeRef userId);
+            bool hasVisitedSinceLastEdit(IdTypeRef userId) const;
             void resetVisitorsSinceLastEdit();
 
             bool addTag(EntityPointer<DiscussionTag> tag);

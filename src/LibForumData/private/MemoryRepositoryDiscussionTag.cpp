@@ -141,7 +141,7 @@ StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscus
     return tag;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(const IdType& id, StringView newName,
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(IdTypeRef id, StringView newName,
                                                                   OutStream& output)
 {
     StatusWriter status(output);
@@ -218,7 +218,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(EntityCollecti
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(const IdType& id, StringView blob,
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(IdTypeRef id, StringView blob,
                                                                     OutStream& output)
 {
     StatusWriter status(output);
@@ -272,7 +272,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(EntityCollec
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(const IdType& id, OutStream& output)
+StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);
     if ( ! id)
@@ -320,7 +320,7 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(EntityCollection& 
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(const IdType& tagId, const IdType& threadId,
+StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(IdTypeRef tagId, IdTypeRef threadId,
                                                                    OutStream& output)
 {
     StatusWriter status(output);
@@ -404,7 +404,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(const IdType& tagId, const IdType& threadId,
+StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(IdTypeRef tagId, IdTypeRef threadId,
                                                                         OutStream& output)
 {
     StatusWriter status(output);
@@ -487,7 +487,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(const IdType& fromId, const IdType& intoId,
+StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(IdTypeRef fromId, IdTypeRef intoId,
                                                               OutStream& output)
 {
     StatusWriter status(output);

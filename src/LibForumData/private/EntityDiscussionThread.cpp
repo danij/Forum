@@ -84,7 +84,7 @@ void DiscussionThread::refreshLatestMessageCreated()
     latestMessageCreated_ = (*it)->created();
 }
 
-void DiscussionThread::addVisitorSinceLastEdit(const IdType& userId)
+void DiscussionThread::addVisitorSinceLastEdit(IdTypeRef userId)
 {
     if (static_cast<int_fast32_t>(visitorsSinceLastEdit_.size()) >=
         Configuration::getGlobalConfig()->discussionThread.maxUsersInVisitedSinceLastChange)
@@ -94,7 +94,7 @@ void DiscussionThread::addVisitorSinceLastEdit(const IdType& userId)
     visitorsSinceLastEdit_.insert(userId.value());
 }
 
-bool DiscussionThread::hasVisitedSinceLastEdit(const IdType& userId) const
+bool DiscussionThread::hasVisitedSinceLastEdit(IdTypeRef userId) const
 {
     return visitorsSinceLastEdit_.find(userId.value()) != visitorsSinceLastEdit_.end();
 }
