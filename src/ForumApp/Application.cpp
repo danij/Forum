@@ -203,6 +203,7 @@ void Application::createCommandHandler()
                                                                observableRepository->writeEvents(),
                                                                persistenceConfig.outputFolder,
                                                                persistenceConfig.createNewOutputFileEverySeconds);
+        (void)persistenceObserver_; //prevent unused member warnings, no need to use is explicitly
     }
     catch(std::exception& ex)
     {
