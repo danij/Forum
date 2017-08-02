@@ -164,10 +164,10 @@ void Application::validateConfiguration()
 
 void Application::createCommandHandler()
 {
-    auto entityCollection = std::make_shared<Entities::EntityCollection>();
+    entityCollection_ = std::make_shared<Entities::EntityCollection>();
 
-    auto store = std::make_shared<MemoryStore>(entityCollection);
-    auto authorization = std::make_shared<DefaultAuthorization>(entityCollection->grantedPrivileges(), *entityCollection);
+    auto store = std::make_shared<MemoryStore>(entityCollection_);
+    auto authorization = std::make_shared<DefaultAuthorization>(entityCollection_->grantedPrivileges(), *entityCollection_);
 
     auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization);
     auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization);
@@ -187,6 +187,12 @@ void Application::createCommandHandler()
                                                        discussionCategoryRepository,
                                                        statisticsRepository,
                                                        metricsRepository);
+
+    directWriteRepositories_.user = userRepository;
+    directWriteRepositories_.discussionThread = discussionThreadRepository;
+    directWriteRepositories_.discussionThreadMessage = discussionThreadMessageRepository;
+    directWriteRepositories_.discussionTag = discussionTagRepository;
+    directWriteRepositories_.discussionCategory = discussionCategoryRepository;
 
     auto forumConfig = Configuration::getGlobalConfig();
     auto& persistenceConfig = forumConfig->persistence;
@@ -210,7 +216,7 @@ void Application::importEvents()
     auto forumConfig = Configuration::getGlobalConfig();
     auto& persistenceConfig = forumConfig->persistence;
 
-    EventImporter importer(persistenceConfig.validateChecksum);
+    EventImporter importer(persistenceConfig.validateChecksum, *entityCollection_, directWriteRepositories_);
     auto result = importer.import(persistenceConfig.inputFolder);
     if (result.success)
     {

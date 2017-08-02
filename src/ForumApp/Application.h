@@ -32,5 +32,8 @@ namespace Forum
         std::unique_ptr<Commands::CommandHandler> commandHandler_;
         std::unique_ptr<Commands::ServiceEndpointManager> endpointManager_;
         std::unique_ptr<Persistence::EventObserver> persistenceObserver_;
+
+        Entities::EntityCollectionRef entityCollection_;
+        Repository::DirectWriteRepositoryCollection directWriteRepositories_;
     };
 }
