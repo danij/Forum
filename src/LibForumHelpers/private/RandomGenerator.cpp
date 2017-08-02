@@ -9,7 +9,7 @@ boost::uuids::uuid Forum::Helpers::generateUUID()
     return localUUIDGenerator();
 }
 
-Forum::Entities::UuidString Forum::Helpers::generateUUIDString()
+Forum::Entities::IdType Forum::Helpers::generateUniqueId()
 {
     return Entities::UuidString(generateUUID());
 }

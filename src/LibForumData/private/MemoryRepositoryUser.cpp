@@ -228,7 +228,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                return;
                            }
 
-                           auto statusWithResource = addNewUser(collection, generateUUIDString(), name, auth);
+                           auto statusWithResource = addNewUser(collection, generateUniqueId(), name, auth);
                            auto& user = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 

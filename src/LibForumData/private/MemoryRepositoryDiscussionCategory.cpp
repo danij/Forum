@@ -200,7 +200,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionCategory(collection, generateUUIDString(), name, 
+                           auto statusWithResource = addNewDiscussionCategory(collection, generateUniqueId(), name, 
                                                                               parentId);
                            auto& category = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;

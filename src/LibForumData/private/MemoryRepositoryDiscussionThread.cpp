@@ -360,7 +360,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionThread(collection, generateUUIDString(), name);
+                           auto statusWithResource = addNewDiscussionThread(collection, generateUniqueId(), name);
                            auto& thread = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 

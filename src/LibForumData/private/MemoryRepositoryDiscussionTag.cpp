@@ -105,7 +105,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionTag(collection, generateUUIDString(), name);
+                           auto statusWithResource = addNewDiscussionTag(collection, generateUniqueId(), name);
                            auto& tag = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 

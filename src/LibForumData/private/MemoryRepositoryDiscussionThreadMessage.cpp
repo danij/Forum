@@ -115,7 +115,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionMessageInThread(collection, generateUUIDString(),
+                           auto statusWithResource = addNewDiscussionMessageInThread(collection, generateUniqueId(),
                                                                                      threadId, content);
                            auto& message = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
@@ -806,7 +806,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
                                return;
                            }
 
-                           auto statusWithResource = addCommentToDiscussionThreadMessage(collection, generateUUIDString(), 
+                           auto statusWithResource = addCommentToDiscussionThreadMessage(collection, generateUniqueId(), 
                                                                                          messageId, content);
                            auto& comment = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
