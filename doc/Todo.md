@@ -5,7 +5,7 @@
 - [X] Return flag if import was successful or not
 - [X] Stop application if import unsuccessful
 - [X] Implement IDirectWriteRepository for populating the memory repository directly without validations
-- [ ] Use IDirectWriteRepository for importing events read from persistent storage
+- [X] Use IDirectWriteRepository for importing events read from persistent storage
 
 ## Logging
 
