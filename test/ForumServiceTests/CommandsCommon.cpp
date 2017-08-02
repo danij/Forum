@@ -188,7 +188,7 @@ TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& han
 
 TreeType Forum::Helpers::createUser(CommandHandlerRef& handler, const std::string& name)
 {
-    return handlerToObj(handler, Command::ADD_USER, { name, static_cast<std::string>(generateUUIDString()) });
+    return handlerToObj(handler, Command::ADD_USER, { name, static_cast<std::string>(generateUniqueId()) });
 }
 
 std::string Forum::Helpers::createUserAndGetId(CommandHandlerRef& handler, const std::string& name)
