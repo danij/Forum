@@ -37,7 +37,8 @@ namespace Forum
 
             StatusCode addNewDiscussionThread(StringView name, OutStream& output) override;
             StatusWithResource<Entities::DiscussionThreadPtr>
-                       addNewDiscussionThread(Entities::EntityCollection& collection, StringView name) override;
+                       addNewDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id, 
+                                              StringView name) override;
 
             StatusCode changeDiscussionThreadName(Entities::IdTypeRef id, StringView newName,
                                                   OutStream& output) override;

@@ -19,7 +19,7 @@ namespace Forum
 
             StatusCode addNewDiscussionTag(StringView name, OutStream& output) override;
             StatusWithResource<Entities::DiscussionTagPtr>
-                addNewDiscussionTag(Entities::EntityCollection& collection, StringView name) override;
+                addNewDiscussionTag(Entities::EntityCollection& collection, Entities::IdTypeRef id, StringView name) override;
             StatusCode changeDiscussionTagName(Entities::IdTypeRef id, StringView newName, OutStream& output) override;
             StatusCode changeDiscussionTagName(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                                StringView newName) override;

@@ -360,7 +360,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionThread(collection, name);
+                           auto statusWithResource = addNewDiscussionThread(collection, generateUUIDString(), name);
                            auto& thread = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
@@ -377,11 +377,12 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
 }
 
 StatusWithResource<DiscussionThreadPtr> MemoryRepositoryDiscussionThread::addNewDiscussionThread(EntityCollection& collection,
+                                                                                                 IdTypeRef id, 
                                                                                                  StringView name)
 {
     auto currentUser = getCurrentUser(collection);
 
-    auto thread = collection.createDiscussionThread(generateUUIDString(), *currentUser, Context::getCurrentTime(),
+    auto thread = collection.createDiscussionThread(id, *currentUser, Context::getCurrentTime(),
                                                     { Context::getCurrentUserIpAddress() });
     thread->updateName(std::move(name));
     thread->updateLastUpdated(thread->latestVisibleChange() = thread->created());

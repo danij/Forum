@@ -200,7 +200,8 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionCategory(collection, name, parentId);
+                           auto statusWithResource = addNewDiscussionCategory(collection, generateUUIDString(), name, 
+                                                                              parentId);
                            auto& category = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
@@ -224,8 +225,8 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
 }
 
 StatusWithResource<DiscussionCategoryPtr>
-    MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(EntityCollection& collection, StringView name,
-                                                                 IdTypeRef parentId)
+    MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(EntityCollection& collection, IdTypeRef id,
+                                                                 StringView name, IdTypeRef parentId)
 {
     StringWithSortKey nameString(name);
 
@@ -238,7 +239,7 @@ StatusWithResource<DiscussionCategoryPtr>
     auto& indexById = collection.categories().byId();
 
     //IdType id, Timestamp created, VisitDetails creationDetails
-    auto category = collection.createDiscussionCategory(generateUUIDString(), Context::getCurrentTime(),
+    auto category = collection.createDiscussionCategory(id, Context::getCurrentTime(),
                                                         { Context::getCurrentUserIpAddress() });
     category->updateName(std::move(nameString));
 

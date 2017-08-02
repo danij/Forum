@@ -18,8 +18,8 @@ namespace Forum
             StatusCode addNewDiscussionMessageInThread(Entities::IdTypeRef threadId,
                                                        StringView content, OutStream& output) override;
             StatusWithResource<Entities::DiscussionThreadMessagePtr>
-                addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef threadId,
-                                                StringView content) override;
+                addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
+                                                Entities::IdTypeRef threadId, StringView content) override;
             StatusCode deleteDiscussionMessage(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode deleteDiscussionMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
             StatusCode changeDiscussionThreadMessageContent(Entities::IdTypeRef id, StringView newContent,
@@ -46,7 +46,7 @@ namespace Forum
             StatusCode addCommentToDiscussionThreadMessage(Entities::IdTypeRef messageId, StringView content,
                                                            OutStream& output) override;
             StatusWithResource<Entities::MessageCommentPtr>
-                addCommentToDiscussionThreadMessage(Entities::EntityCollection& collection,
+                addCommentToDiscussionThreadMessage(Entities::EntityCollection& collection, Entities::IdTypeRef commentId,
                                                     Entities::IdTypeRef messageId, StringView content) override;
 
             StatusCode getMessageComments(OutStream& output) const override;

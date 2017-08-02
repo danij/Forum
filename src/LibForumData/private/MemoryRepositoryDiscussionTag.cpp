@@ -105,7 +105,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionTag(collection, name);
+                           auto statusWithResource = addNewDiscussionTag(collection, generateUUIDString(), name);
                            auto& tag = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
@@ -121,7 +121,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
 }
 
 StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscussionTag(EntityCollection& collection,
-                                                                                        StringView name)
+                                                                                        IdTypeRef id, StringView name)
 {
     StringWithSortKey nameString(name);
 
@@ -132,7 +132,7 @@ StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscus
     }
 
     //IdType id, Timestamp created, VisitDetails creationDetails
-    auto tag = collection.createDiscussionTag(generateUUIDString(), Context::getCurrentTime(), 
+    auto tag = collection.createDiscussionTag(id, Context::getCurrentTime(), 
                                               { Context::getCurrentUserIpAddress() });
     tag->updateName(std::move(nameString));
 

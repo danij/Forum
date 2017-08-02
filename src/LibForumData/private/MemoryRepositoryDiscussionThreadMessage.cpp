@@ -115,7 +115,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionMessageInThread(collection, threadId, content);
+                           auto statusWithResource = addNewDiscussionMessageInThread(collection, generateUUIDString(),
+                                                                                     threadId, content);
                            auto& message = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
@@ -134,8 +135,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
 }
 
 StatusWithResource<DiscussionThreadMessagePtr>
-    MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection,
-                                                                             IdTypeRef threadId, StringView content)
+    MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection, 
+                                                                             IdTypeRef messageId, IdTypeRef threadId, 
+                                                                             StringView content)
 {
     auto& threadIndex = collection.threads().byId();
     auto threadIt = threadIndex.find(threadId);
@@ -147,7 +149,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
     auto currentUser = getCurrentUser(collection);
     DiscussionThreadPtr threadPtr = *threadIt;
 
-    auto message = collection.createDiscussionThreadMessage(generateUUIDString(), *currentUser, Context::getCurrentTime(),
+    auto message = collection.createDiscussionThreadMessage(messageId, *currentUser, Context::getCurrentTime(),
                                                             { Context::getCurrentUserIpAddress() });
     message->parentThread() = threadPtr;
     message->content() = content;
@@ -804,7 +806,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
                                return;
                            }
 
-                           auto statusWithResource = addCommentToDiscussionThreadMessage(collection, messageId, content);
+                           auto statusWithResource = addCommentToDiscussionThreadMessage(collection, generateUUIDString(), 
+                                                                                         messageId, content);
                            auto& comment = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
@@ -823,6 +826,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
 
 StatusWithResource<MessageCommentPtr>
     MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThreadMessage(EntityCollection& collection,
+                                                                                 IdTypeRef commentId, 
                                                                                  IdTypeRef messageId, StringView content)
 {
     auto& messageIndex = collection.threadMessages().byId();
@@ -837,7 +841,7 @@ StatusWithResource<MessageCommentPtr>
     DiscussionThreadMessage& message = *messagePtr;
 
     //IdType id, DiscussionThreadMessage& message, User& createdBy, Timestamp created, VisitDetails creationDetails
-    auto comment = collection.createMessageComment(generateUUIDString(), message, *currentUser, Context::getCurrentTime(),
+    auto comment = collection.createMessageComment(commentId, message, *currentUser, Context::getCurrentTime(),
                                                    { Context::getCurrentUserIpAddress() });
     comment->content() = content;
 

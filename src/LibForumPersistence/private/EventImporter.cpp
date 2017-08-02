@@ -122,7 +122,7 @@ struct CurrentTimeChanger final : private boost::noncopyable
     }
 
 #define CHECK_STATUS_CODE(value) \
-    if (value != StatusCode::OK) { \
+    if ((StatusCode::OK) != value && (StatusCode::NO_EFFECT != value)) { \
         FORUM_LOG_ERROR << "Unable to import event of type " << currentEventType_ << ": unexpected status code: " << value; \
     }
 
@@ -137,10 +137,18 @@ struct CurrentTimeChanger final : private boost::noncopyable
     CHECK_SIZE(size, uuidBinarySize); \
     auto variable = readAndIncrementBuffer<UuidString>(data, size);
 
-#define READ_NONEMPTY_STRING(variable, data, size) \
+#define READ_STRING(variable, data, size) \
     CHECK_SIZE(size, sizeof(BlobSizeType)); \
     auto variable = readAndIncrementBuffer<StringView>(data, size); \
+
+#define READ_NONEMPTY_STRING(variable, data, size) \
+    READ_STRING(variable, data, size) \
     CHECK_NONEMPTY_STRING(variable);
+
+#define READ_TYPE(type, variable, data, size) \
+    CHECK_SIZE(size, sizeof(type)); \
+    auto variable = readAndIncrementBuffer<type>(data, size);
+
 
 struct EventImporter::EventImporterImpl final : private boost::noncopyable
 {
@@ -197,10 +205,10 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         READ_UUID(id, data, size);
         READ_NONEMPTY_STRING(auth, data, size);
         READ_NONEMPTY_STRING(userName, data, size);
+        CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.user->addNewUser(entityCollection_, id, userName, auth).status);
        
-        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
@@ -210,10 +218,10 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
         READ_UUID(id, data, size);
         READ_NONEMPTY_STRING(newName, data, size);
+        CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.user->changeUserName(entityCollection_, id, newName));
 
-        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
@@ -223,10 +231,10 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
         READ_UUID(id, data, size);
         READ_NONEMPTY_STRING(newInfo, data, size);
+        CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.user->changeUserInfo(entityCollection_, id, newInfo));
         
-        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
@@ -235,72 +243,132 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         if ( ! processContext(contextVersion, data, size)) return false;
 
         READ_UUID(id, data, size);
+        CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.user->deleteUser(entityCollection_, id));
 
-        CHECK_READ_ALL_DATA(size);
         return true;
     }
 
     bool import_ADD_NEW_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(threadName, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThread->addNewDiscussionThread(entityCollection_, id, threadName).status);
+
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_THREAD_NAME_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(threadName, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThread->changeDiscussionThreadName(entityCollection_, id, threadName));
+                        
         return true;
     }
 
     bool import_DELETE_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThread->deleteDiscussionThread(entityCollection_, id));
+
         return true;
     }
 
     bool import_MERGE_DISCUSSION_THREADS_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        
+        READ_UUID(fromThreadId, data, size);
+        READ_UUID(intoThreadId, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThread->mergeDiscussionThreads(entityCollection_, fromThreadId, 
+                                                                                 intoThreadId));
+
         return true;
     }
 
     bool import_SUBSCRIBE_TO_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThread->subscribeToDiscussionThread(entityCollection_, id));
+
         return true;
     }
 
     bool import_UNSUBSCRIBE_FROM_DISCUSSION_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThread->unsubscribeFromDiscussionThread(entityCollection_, id));
+
         return true;
     }
 
     bool import_ADD_NEW_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(messageId, data, size);
+        READ_UUID(parentId, data, size);
+        READ_NONEMPTY_STRING(message, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addNewDiscussionMessageInThread(entityCollection_, 
+                                                                                                 messageId, parentId, 
+                                                                                                 message).status);
+
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(messageId, data, size);
+        READ_NONEMPTY_STRING(content, data, size);
+        READ_STRING(lastUpdatedReason, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->changeDiscussionThreadMessageContent(entityCollection_,
+                                                                                                      messageId, content, 
+                                                                                                      lastUpdatedReason));
+
         return true;
     }
 
     bool import_MOVE_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(messageId, data, size);
+        READ_UUID(threadId, data, size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->moveDiscussionThreadMessage(entityCollection_,
+                                                                                             messageId, 
+                                                                                             threadId));
+
         CHECK_READ_ALL_DATA(size);
         return true;
     }
@@ -308,164 +376,307 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
     bool import_DELETE_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->deleteDiscussionMessage(entityCollection_, id));
+
         return true;
     }
 
     bool import_DISCUSSION_THREAD_MESSAGE_UP_VOTE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->upVoteDiscussionThreadMessage(entityCollection_, id));
+
         return true;
     }
 
     bool import_DISCUSSION_THREAD_MESSAGE_DOWN_VOTE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->downVoteDiscussionThreadMessage(entityCollection_, id));
+
         return true;
     }
 
     bool import_DISCUSSION_THREAD_MESSAGE_RESET_VOTE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->resetVoteDiscussionThreadMessage(entityCollection_, id));
+        
         return true;
     }
 
     bool import_ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(commentId, data, size);
+        READ_UUID(messageId, data, size);
+        READ_NONEMPTY_STRING(comment, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addCommentToDiscussionThreadMessage(entityCollection_,
+                                                                                                     commentId, 
+                                                                                                     messageId, 
+                                                                                                     comment)
+                                                                                                     .status);
         return true;
     }
 
     bool import_SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+        
+        READ_UUID(id, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->setMessageCommentToSolved(entityCollection_, id));
+        
         return true;
     }
 
     bool import_ADD_NEW_DISCUSSION_TAG_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(tagName, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionTag->addNewDiscussionTag(entityCollection_, id, tagName).status);
+
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_TAG_NAME_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(tagName, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionTag->changeDiscussionTagName(entityCollection_, id, tagName));
+
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_TAG_UI_BLOB_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(uiBlob, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionTag->changeDiscussionTagUiBlob(entityCollection_, id, uiBlob));
+
         return true;
     }
 
     bool import_DELETE_DISCUSSION_TAG_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionTag->deleteDiscussionTag(entityCollection_, id));
+
         return true;
     }
 
     bool import_ADD_DISCUSSION_TAG_TO_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(tagId, data, size);
+        READ_UUID(threadId, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionTag->addDiscussionTagToThread(entityCollection_, tagId, threadId));
+        
         return true;
     }
 
     bool import_REMOVE_DISCUSSION_TAG_FROM_THREAD_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(tagId, data, size);
+        READ_UUID(threadId, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionTag->removeDiscussionTagFromThread(entityCollection_, tagId, threadId));
+
         return true;
     }
 
     bool import_MERGE_DISCUSSION_TAGS_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(fromTagId, data, size);
+        READ_UUID(intoTagId, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionTag->mergeDiscussionTags(entityCollection_, fromTagId, intoTagId));
+
         return true;
     }
 
     bool import_ADD_NEW_DISCUSSION_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(categoryId, data, size);
+        READ_UUID(parentId, data, size);
+        READ_NONEMPTY_STRING(categoryName, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionCategory->addNewDiscussionCategory(entityCollection_, categoryId,
+                                                                                     categoryName, parentId).status);
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_CATEGORY_NAME_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(categoryName, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionCategory->changeDiscussionCategoryName(entityCollection_, id, categoryName));
+
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_CATEGORY_DESCRIPTION_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(description, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionCategory->changeDiscussionCategoryDescription(entityCollection_, id, 
+                                                                                                description));
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_TYPE(int16_t, displayOrder, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionCategory->changeDiscussionCategoryDisplayOrder(entityCollection_, id, 
+                                                                                                 displayOrder));
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_CATEGORY_PARENT_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(categoryId, data, size);
+        READ_UUID(parentId, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionCategory->changeDiscussionCategoryParent(entityCollection_, categoryId,
+                                                                                           parentId));
         return true;
     }
 
     bool import_DELETE_DISCUSSION_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionCategory->deleteDiscussionCategory(entityCollection_, id));
+        
         return true;
     }
 
     bool import_ADD_DISCUSSION_TAG_TO_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(tagId, data, size);
+        READ_UUID(categoryId, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionCategory->addDiscussionTagToCategory(entityCollection_, tagId, 
+                                                                                       categoryId));
         return true;
     }
 
     bool import_REMOVE_DISCUSSION_TAG_FROM_CATEGORY_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(tagId, data, size);
+        READ_UUID(categoryId, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionCategory->removeDiscussionTagFromCategory(entityCollection_, tagId, 
+                                                                                            categoryId));
         return true;
     }
 
     bool import_INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(threadId, data, size);
+        READ_TYPE(uint32_t, nrOfVisits, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        auto it = cachedNrOfThreadVisits_.find(threadId);
+        if (it != cachedNrOfThreadVisits_.end())
+        {
+            it->second += nrOfVisits;
+        }
+        else
+        {
+            cachedNrOfThreadVisits_.insert(std::make_pair(threadId, nrOfVisits));
+        }
+
         return true;
     }
 
     bool import_CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER_v1(uint16_t contextVersion, const uint8_t* data, size_t size)
     {
         if ( ! processContext(contextVersion, data, size)) return false;
+
+        READ_UUID(id, data, size);
+        READ_TYPE(uint16_t, pinDisplayOrder, data, size);
         CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThread->changeDiscussionThreadPinDisplayOrder(entityCollection_, id, pinDisplayOrder));
+        
         return true;
     }
-
 
     bool processContext_v1(const uint8_t*& data, size_t& size)
     {
@@ -604,6 +815,66 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         return fn(contextVersion, data, size);
     }
 
+    ImportResult import(const boost::filesystem::path& sourcePath)
+    {
+        std::map<time_t, std::string> eventFileNames;
+        std::regex eventFileMatcher("^forum-(\\d+).events$", std::regex_constants::icase);
+
+        iteratePathRecursively(sourcePath, [&](auto& path)
+        {
+            std::smatch match;
+            auto fileName = path.filename().string();
+            if (std::regex_match(fileName, match, eventFileMatcher))
+            {
+                auto timestampString = match[1].str();
+                time_t timestamp{};
+
+                if ( ! boost::conversion::try_lexical_convert(timestampString, timestamp))
+                {
+                    FORUM_LOG_ERROR << "Cannot convert timestamp from " << fileName;
+                }
+                else
+                {
+                    auto fullName = path.string();
+                    eventFileNames.insert(std::make_pair(timestamp, fullName));
+                }
+            }
+        });
+
+
+        ImportResult result{};
+        for (auto& pair : eventFileNames)
+        {
+            auto currentResult = importFile(pair.second);
+            if ( ! currentResult.success)
+            {
+                break;
+            }
+            result.statistic = result.statistic + currentResult.statistic;
+        }
+
+        updateDiscussionThreadVisitCount();
+
+        return result;
+    }
+
+    void updateDiscussionThreadVisitCount()
+    {
+        auto& threads = entityCollection_.threads().byId();
+        for (auto& pair : cachedNrOfThreadVisits_)
+        {
+            auto& id = pair.first;
+            auto nrOfVisits = static_cast<int_fast64_t>(pair.second);
+
+            auto it = threads.find(id);
+            if (it != threads.end())
+            {
+                const DiscussionThread& thread = **it;
+                thread.visited() += nrOfVisits;
+            }
+        }
+    }
+
     Timestamp getCurrentTimestamp()
     {
         return currentTimestamp_;
@@ -616,9 +887,10 @@ private:
     std::vector<std::vector<std::function<bool(uint16_t, const uint8_t*, size_t)>>> importFunctions_;
     Timestamp currentTimestamp_{};
     EventType currentEventType_{};
+    std::map<UuidString, uint32_t> cachedNrOfThreadVisits_;
 };
 
-EventImporter::EventImporter(bool verifyChecksum, Entities::EntityCollection& entityCollection, 
+EventImporter::EventImporter(bool verifyChecksum, EntityCollection& entityCollection,
                              DirectWriteRepositoryCollection repositories)
     : impl_(new EventImporterImpl(verifyChecksum, entityCollection, std::move(repositories)))
 {
@@ -634,41 +906,5 @@ EventImporter::~EventImporter()
 
 ImportResult EventImporter::import(const boost::filesystem::path& sourcePath)
 {
-    std::map<time_t, std::string> eventFileNames;
-    std::regex eventFileMatcher("^forum-(\\d+).events$", std::regex_constants::icase);
-
-    iteratePathRecursively(sourcePath, [&](auto& path)
-    {
-        std::smatch match;
-        auto fileName = path.filename().string();
-        if (std::regex_match(fileName, match, eventFileMatcher))
-        {
-            auto timestampString = match[1].str();
-            time_t timestamp{};
-
-            if ( ! boost::conversion::try_lexical_convert(timestampString, timestamp))
-            {
-                FORUM_LOG_ERROR << "Cannot convert timestamp from " << fileName;
-            }
-            else
-            {
-                auto fullName = path.string();
-                eventFileNames.insert(std::make_pair(timestamp, fullName));
-            }
-        }
-    });
-
-
-    ImportResult result{};
-    for (auto& pair : eventFileNames)
-    {
-        auto currentResult = impl_->importFile(pair.second);
-        if ( ! currentResult.success)
-        {
-            break;
-        }
-        result.statistic = result.statistic + currentResult.statistic;
-    }
-
-    return result;
+    return impl_->import(sourcePath);
 }
