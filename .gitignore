@@ -48,6 +48,7 @@ Release
 *.vcxproj.*
 *.db
 *.opendb
+*.vspx
 
 #Temporary Files
 *.swp
