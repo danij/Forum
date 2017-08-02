@@ -826,6 +826,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
             recordBlob(EventType::INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS, 1, parts, std::extent<decltype(parts)>::value);
         }
+        cachedNrOfThreadVisits.clear();
     }
 
     ReadEvents& readEvents;
