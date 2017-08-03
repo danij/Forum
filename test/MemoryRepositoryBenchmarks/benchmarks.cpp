@@ -24,7 +24,9 @@
 #include "EventImporter.h"
 
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/preprocessor/stringize.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
 
 struct CleanupFixture
 {
@@ -88,10 +90,12 @@ struct BenchmarkContext
     std::vector<IdType> categoryIds;
     Entities::Timestamp currentTimestamp = 1000;
     std::shared_ptr<EventObserver> persistenceObserver;
-    Repository::DirectWriteRepositoryCollection writeRepositories;
+    DirectWriteRepositoryCollection writeRepositories;
+    std::string importFromFolder;
+    bool onlyPopulateData{ false };
 };
 
-auto createCommandHandler()
+BenchmarkContext createContext()
 {
     auto entityCollection = std::make_shared<Entities::EntityCollection>();
     auto store = std::make_shared<MemoryStore>(entityCollection);
@@ -196,19 +200,66 @@ std::string getNewAuth()
     return std::string("auth-") + std::to_string(currentAuthNumber++);
 }
 
-int main()
+int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[])
+{
+    boost::program_options::options_description options("Available options");
+    options.add_options()
+        ("help", "Display available options")
+        ("onlyPopulateData", "Only loads data from a file or by random generation")
+        ("import-folder,I", boost::program_options::value<std::string>(), "Import data from folder");
+
+    boost::program_options::variables_map arguments;
+
+    try
+    {
+        boost::program_options::store(boost::program_options::parse_command_line(argc, argv, options), arguments);
+        boost::program_options::notify(arguments);
+    }
+    catch (std::exception& ex)
+    {
+        std::cerr << "Invalid command line: " << ex.what() << '\n';
+        return 1;
+    }
+
+    if (arguments.count("help"))
+    {
+        std::cout << options << '\n';
+        return 1;
+    }
+
+    context.onlyPopulateData = arguments.count("onlyPopulateData") > 0;
+
+    if (arguments.count("import-folder"))
+    {
+        context.importFromFolder = arguments["import-folder"].as<std::string>();        
+    }
+    
+    return 0;
+}
+
+int main(int argc, const char* argv[])
 {
     CleanupFixture _;
 
-    showEntitySizes();
 
-    auto context = createCommandHandler();
+    auto context = createContext();
+    int parseCommandLineResult = parseCommandLineArgs(context, argc, argv);
+    if (parseCommandLineResult)
+    {
+        return parseCommandLineResult;
+    }
+    showEntitySizes();
 
     context.entityCollection->startBatchInsert();
     auto populationDuration = countDuration<std::chrono::milliseconds>([&]() { populateData(context); });
     context.entityCollection->stopBatchInsert();
 
     std::cout << "Populate duration: " << populationDuration << " ms\n";
+
+    if (context.onlyPopulateData)
+    {
+        return 0;
+    }
 
     std::cout << "=====\n";
     std::cout << "Forum Memory Repository Benchmarks\n";
@@ -321,11 +372,14 @@ size_t appendUInt(char* string, unsigned int value)
 
 void populateData(BenchmarkContext& context)
 {
-#ifdef IMPORT_PERSISTED_PATH
-    importPersistedData(context);
-#else 
-    generateRandomData(context);
-#endif
+    if (context.importFromFolder.size())
+    {
+        importPersistedData(context);
+    }
+    else
+    {
+        generateRandomData(context);
+    }
 }
 
 void generateRandomData(BenchmarkContext& context)
@@ -460,9 +514,7 @@ void generateRandomData(BenchmarkContext& context)
 void importPersistedData(BenchmarkContext& context)
 {
     EventImporter importer(false, *context.entityCollection, context.writeRepositories);
-#ifdef IMPORT_PERSISTED_PATH
-    importer.import(BOOST_PP_STRINGIZE(IMPORT_PERSISTED_PATH));
-#endif
+    importer.import(context.importFromFolder);
 
     //fill context ids as they are needed by doBenchmarks()
     for (auto& user : context.entityCollection->users().byId())
