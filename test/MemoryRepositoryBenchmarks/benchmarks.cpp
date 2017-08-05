@@ -93,6 +93,7 @@ struct BenchmarkContext
     DirectWriteRepositoryCollection writeRepositories;
     std::string importFromFolder;
     bool onlyPopulateData{ false };
+    bool promptBeforeBenchmark{ false };
 };
 
 BenchmarkContext createContext()
@@ -206,6 +207,7 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
     options.add_options()
         ("help", "Display available options")
         ("onlyPopulateData", "Only loads data from a file or by random generation")
+        ("promptBeforeBenchmark,p", "Prompt the user to continue before starting the benchmark")
         ("import-folder,I", boost::program_options::value<std::string>(), "Import data from folder");
 
     boost::program_options::variables_map arguments;
@@ -228,6 +230,7 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
     }
 
     context.onlyPopulateData = arguments.count("onlyPopulateData") > 0;
+    context.promptBeforeBenchmark = arguments.count("promptBeforeBenchmark") > 0;
 
     if (arguments.count("import-folder"))
     {
@@ -276,9 +279,12 @@ int main(int argc, const char* argv[])
     std::cout << "# of discussion tags/category: " << nrOfTagsPerCategoryMin << "-" << nrOfTagsPerCategoryMax << '\n';
     std::cout << "# of discussion tags/thread: " << nrOfTagsPerThreadMin << "-" << nrOfTagsPerThreadMax << '\n';
 
-    //std::string line;
-    //std::cout << "\nPress [ENTER] to start the benchmark\n";
-    //std::getline(std::cin, line);
+    if (context.promptBeforeBenchmark)
+    {
+        std::string line;
+        std::cout << "\nPress [ENTER] to start the benchmark\n";
+        std::getline(std::cin, line);
+    }
 
     doBenchmarks(context);
 }
