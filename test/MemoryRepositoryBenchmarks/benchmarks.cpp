@@ -92,6 +92,7 @@ struct BenchmarkContext
     std::shared_ptr<EventObserver> persistenceObserver;
     DirectWriteRepositoryCollection writeRepositories;
     std::string importFromFolder;
+    std::string exportToFolder;
     bool onlyPopulateData{ false };
     bool promptBeforeBenchmark{ false };
 };
@@ -125,10 +126,12 @@ BenchmarkContext createContext()
     context.writeRepositories.discussionTag = discussionTagRepository;
     context.writeRepositories.discussionCategory = discussionCategoryRepository;
 
-    //context.persistenceObserver = std::make_shared<EventObserver>(observableRepository->readEvents(),
-    //                                                              observableRepository->writeEvents(),
-    //                                                              boost::filesystem::current_path(), 3600);
-
+    if (context.exportToFolder.size() > 0)
+    {
+        context.persistenceObserver = std::make_shared<EventObserver>(observableRepository->readEvents(),
+                                                                      observableRepository->writeEvents(),
+                                                                      context.exportToFolder, 3600);
+    }
     return context;
 }
 
@@ -208,7 +211,8 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
         ("help,h", "Display available options")
         ("onlyPopulateData,o", "Only loads data from a file or by random generation")
         ("promptBeforeBenchmark,p", "Prompt the user to continue before starting the benchmark")
-        ("import-folder,i", boost::program_options::value<std::string>(), "Import data from folder");
+        ("import-folder,i", boost::program_options::value<std::string>(), "Import events from folder")
+        ("export-folder,e", boost::program_options::value<std::string>(), "Export events to folder");
 
     boost::program_options::variables_map arguments;
 
@@ -236,15 +240,19 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
     {
         context.importFromFolder = arguments["import-folder"].as<std::string>();        
     }
-    
+
+    if (arguments.count("export-folder"))
+    {
+        context.exportToFolder = arguments["export-folder"].as<std::string>();
+    }
+
     return 0;
 }
 
 int main(int argc, const char* argv[])
 {
     CleanupFixture _;
-
-
+    
     auto context = createContext();
     int parseCommandLineResult = parseCommandLineArgs(context, argc, argv);
     if (parseCommandLineResult)
