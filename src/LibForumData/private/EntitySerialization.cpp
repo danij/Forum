@@ -258,7 +258,7 @@ void writeDiscussionThreadMessages(const Collection& collection, int_fast32_t pa
         {
             if (*it)
             {
-                privilegeChecks.emplace_back(DiscussionThreadMessagePrivilegeCheck(restriction.user(), **it));
+                privilegeChecks.emplace_back(DiscussionThreadMessagePrivilegeCheck(restriction.userId(), **it));
             }
         }
     }
@@ -276,7 +276,7 @@ void writeDiscussionThreadMessages(const Collection& collection, int_fast32_t pa
                 --it;
                 if (*it)
                 {
-                    privilegeChecks.emplace_back(DiscussionThreadMessagePrivilegeCheck(restriction.user(), **it));
+                    privilegeChecks.emplace_back(DiscussionThreadMessagePrivilegeCheck(restriction.userId(), **it));
                 }
             }
         }

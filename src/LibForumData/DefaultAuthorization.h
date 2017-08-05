@@ -162,19 +162,19 @@ namespace Forum
 
         private:
 
-            AuthorizationStatus isAllowed(const Entities::User& user, const Entities::DiscussionThreadMessage& message,
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThreadMessage& message,
                                           DiscussionThreadMessagePrivilege privilege) const;
-            AuthorizationStatus isAllowed(const Entities::User& user, const Entities::DiscussionThread& thread,
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThread& thread,
                                           DiscussionThreadPrivilege privilege) const;
-            AuthorizationStatus isAllowed(const Entities::User& user, const Entities::DiscussionThread& from,
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThread& from,
                                           const Entities::DiscussionThread& into, DiscussionThreadPrivilege privilege) const;
-            AuthorizationStatus isAllowed(const Entities::User& user, const Entities::DiscussionTag& tag,
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
                                           DiscussionTagPrivilege privilege) const;
-            AuthorizationStatus isAllowed(const Entities::User& user, const Entities::DiscussionTag& from,
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& from,
                                           const Entities::DiscussionTag& into, DiscussionTagPrivilege privilege) const;
-            AuthorizationStatus isAllowed(const Entities::User& user, const Entities::DiscussionCategory& category,
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionCategory& category,
                                           DiscussionCategoryPrivilege privilege) const;
-            AuthorizationStatus isAllowed(Entities::IdType userId, ForumWidePrivilege privilege) const;
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege) const;
 
             GrantedPrivilegeStore& grantedPrivilegeStore_;
             ForumWidePrivilegeStore& forumWidePrivilegeStore_;

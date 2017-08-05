@@ -48,7 +48,7 @@ static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscu
     auto pageSize = getGlobalConfig()->discussionThread.maxThreadsPerPage;
     auto& displayContext = Context::getDisplayContext();
 
-    SerializationRestriction restriction(privilegeStore, currentUser, Context::getCurrentTime());
+    SerializationRestriction restriction(privilegeStore, currentUser.id(), Context::getCurrentTime());
 
     auto ascending = displayContext.sortOrder == Context::SortOrder::Ascending;
 
@@ -161,7 +161,8 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
                           BoolTemporaryChanger __(serializationSettings.hideVisitedThreadSinceLastChange, true);
                           status.disable();
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), 
+                                                               Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "thread", thread, restriction);
 

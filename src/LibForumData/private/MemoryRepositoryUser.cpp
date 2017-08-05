@@ -90,7 +90,7 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
         auto pageSize = getGlobalConfig()->user.maxUsersPerPage;
         auto& displayContext = Context::getDisplayContext();
 
-        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
 
         auto ascending = displayContext.sortOrder == Context::SortOrder::Ascending;
 
@@ -150,7 +150,8 @@ StatusCode MemoryRepositoryUser::getUserById(IdTypeRef id, OutStream& output) co
 
                           status.disable();
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), 
+                                                               Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "user", user, restriction);
 
@@ -191,7 +192,8 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
 
                           status.disable();
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), 
+                                                               Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "user", user, restriction);
 

@@ -65,7 +65,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
 
         status.disable();
 
-        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser, Context::getCurrentTime());
+        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
 
         writeEntitiesWithPagination(messages, "messages", output, displayContext.pageNumber, pageSize,
             displayContext.sortOrder == Context::SortOrder::Ascending, restriction);
@@ -664,7 +664,7 @@ static void writeMessageComments(const Collection& collection, OutStream& output
     auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesCommentsPerPage;
     auto& displayContext = Context::getDisplayContext();
 
-    SerializationRestriction restriction(privilegeStore, currentUser, Context::getCurrentTime());
+    SerializationRestriction restriction(privilegeStore, currentUser.id(), Context::getCurrentTime());
 
     writeEntitiesWithPagination(collection, "message_comments", output,
         displayContext.pageNumber, pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, restriction);

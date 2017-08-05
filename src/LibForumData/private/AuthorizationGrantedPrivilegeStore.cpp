@@ -51,22 +51,22 @@ static PrivilegeValueIntType getEffectivePrivilegeValue(PrivilegeValueType posit
     return optionalOrZero(positive) - optionalOrZero(negative);
 }
 
-void GrantedPrivilegeStore::updateDiscussionThreadMessagePrivilege(const Entities::User& user,
-                                                                   const Entities::DiscussionThread& thread, Timestamp now,
+void GrantedPrivilegeStore::updateDiscussionThreadMessagePrivilege(IdTypeRef userId,
+                                                                   const DiscussionThread& thread, Timestamp now,
                                                                    DiscussionThreadMessagePrivilege privilege,
                                                                    PrivilegeValueType& positiveValue,
                                                                    PrivilegeValueType& negativeValue) const
 {
-    updateDiscussionThreadMessagePrivilege(user.id(), thread.id(), now, privilege, positiveValue, negativeValue);
+    updateDiscussionThreadMessagePrivilege(userId, thread.id(), now, privilege, positiveValue, negativeValue);
     for (auto tag : thread.tags())
     {
         if (tag)
         {
-            updateDiscussionThreadMessagePrivilege(user.id(), tag->id(), now, privilege, positiveValue, negativeValue);
+            updateDiscussionThreadMessagePrivilege(userId, tag->id(), now, privilege, positiveValue, negativeValue);
         }
     }
 
-    updateDiscussionThreadMessagePrivilege(user.id(), {}, now, privilege, positiveValue, negativeValue);
+    updateDiscussionThreadMessagePrivilege(userId, {}, now, privilege, positiveValue, negativeValue);
 }
 
 static PrivilegeValueType isAllowed(PrivilegeValueType positive, PrivilegeValueType negative, PrivilegeValueType required)
@@ -77,56 +77,56 @@ static PrivilegeValueType isAllowed(PrivilegeValueType positive, PrivilegeValueT
     return (effectivePrivilegeValue >= requiredPrivilegeValue) ? effectivePrivilegeValue : PrivilegeValueType{};
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionThreadMessage& message,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionThreadMessage& message,
                                                     DiscussionThreadMessagePrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    updateDiscussionThreadMessagePrivilege(user.id(), message.id(), now, privilege, positive, negative);
+    updateDiscussionThreadMessagePrivilege(userId, message.id(), now, privilege, positive, negative);
 
     DiscussionThreadConstPtr thread = message.parentThread();
     assert(thread);
-    updateDiscussionThreadMessagePrivilege(user, *thread, now, privilege, positive, negative);
+    updateDiscussionThreadMessagePrivilege(userId, *thread, now, privilege, positive, negative);
 
     return ::isAllowed(positive, negative, message.getDiscussionThreadMessagePrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionThread& thread,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionThread& thread,
                                                     DiscussionThreadPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    updateDiscussionThreadPrivilege(user.id(), thread.id(), now, privilege, positive, negative);
+    updateDiscussionThreadPrivilege(userId, thread.id(), now, privilege, positive, negative);
 
     for (auto tag : thread.tags())
     {
         if (tag)
         {
-            updateDiscussionThreadPrivilege(user.id(), tag->id(), now, privilege, positive, negative);
+            updateDiscussionThreadPrivilege(userId, tag->id(), now, privilege, positive, negative);
         }
     }
 
-    updateDiscussionThreadPrivilege(user.id(), {}, now, privilege, positive, negative);
+    updateDiscussionThreadPrivilege(userId, {}, now, privilege, positive, negative);
 
     return ::isAllowed(positive, negative, thread.getDiscussionThreadPrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionTag& tag,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionTag& tag,
                                                     DiscussionTagPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    updateDiscussionTagPrivilege(user.id(), tag.id(), now, privilege, positive, negative);
+    updateDiscussionTagPrivilege(userId, tag.id(), now, privilege, positive, negative);
 
-    updateDiscussionTagPrivilege(user.id(), {}, now, privilege, positive, negative);
+    updateDiscussionTagPrivilege(userId, {}, now, privilege, positive, negative);
 
     return ::isAllowed(positive, negative, tag.getDiscussionTagPrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(const User& user, const DiscussionCategory& category,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionCategory& category,
                                                     DiscussionCategoryPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    updateDiscussionCategoryPrivilege(user.id(), category.id(), now, privilege, positive, negative);
+    updateDiscussionCategoryPrivilege(userId, category.id(), now, privilege, positive, negative);
 
-    updateDiscussionCategoryPrivilege(user.id(), {}, now, privilege, positive, negative);
+    updateDiscussionCategoryPrivilege(userId, {}, now, privilege, positive, negative);
 
     return ::isAllowed(positive, negative, category.getDiscussionCategoryPrivilege(privilege));
 }
@@ -158,7 +158,7 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
         ThreadValuesTuple{ DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS, {}, {}, {}, {} },
     };
 
-    auto& user = *items[0].user;
+    auto& userId = items[0].userId;
     auto& firstMessage = *items[0].message;
 
     DiscussionThreadConstPtr thread = firstMessage.parentThread();
@@ -169,7 +169,7 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
         auto privilege = std::get<0>(tuple);
         auto& positive = std::get<1>(tuple);
         auto& negative = std::get<2>(tuple);
-        updateDiscussionThreadMessagePrivilege(user, *thread, now, privilege, positive, negative);
+        updateDiscussionThreadMessagePrivilege(userId, *thread, now, privilege, positive, negative);
 
         std::get<3>(tuple) = thread->getDiscussionThreadMessagePrivilege(privilege);
     }
@@ -192,12 +192,12 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
 
             PrivilegeValueType messageLevelPositive, messageLevelNegative;
 
-            if (( ! item.user) || ( ! item.message))
+            if (( ! item.userId) || ( ! item.message))
             {
                 continue;
             }
 
-            updateDiscussionThreadMessagePrivilege(item.user->id(), item.message->id(), now, privilege,
+            updateDiscussionThreadMessagePrivilege(item.userId, item.message->id(), now, privilege,
                                                    messageLevelPositive, messageLevelNegative);
 
             auto positive = maximumPrivilegeValue(messageLevelPositive, threadLevelPositive);

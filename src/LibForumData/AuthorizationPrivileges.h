@@ -3,7 +3,6 @@
 #include "TypeHelpers.h"
 
 #include <algorithm>
-#include <array>
 #include <cstdint>
 #include <ctime>
 
