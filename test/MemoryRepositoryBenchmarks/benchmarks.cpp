@@ -205,10 +205,10 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
 {
     boost::program_options::options_description options("Available options");
     options.add_options()
-        ("help", "Display available options")
-        ("onlyPopulateData", "Only loads data from a file or by random generation")
+        ("help,h", "Display available options")
+        ("onlyPopulateData,o", "Only loads data from a file or by random generation")
         ("promptBeforeBenchmark,p", "Prompt the user to continue before starting the benchmark")
-        ("import-folder,I", boost::program_options::value<std::string>(), "Import data from folder");
+        ("import-folder,i", boost::program_options::value<std::string>(), "Import data from folder");
 
     boost::program_options::variables_map arguments;
 
