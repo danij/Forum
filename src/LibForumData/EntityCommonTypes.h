@@ -6,6 +6,8 @@
 
 #include <cstdint>
 
+#include <boost/preprocessor/cat.hpp>
+
 namespace Forum
 {
     namespace Entities
@@ -53,6 +55,18 @@ namespace Forum
 #define RETURN_TYPE(Type, Getter) \
         typename std::result_of<decltype(&Type::Getter)(Type*)>::type
 
+#define FLAT_MULTISET_COLLECTION(Type, Getter) \
+        boost::container::flat_multiset<EntityPointer<Type>, BOOST_PP_CAT(LessPtr_, Getter)<Type>>
+
+        template<typename T>
+        struct LessPtr_created
+        {
+            constexpr bool operator()(EntityPointer<T> lhs, EntityPointer<T> rhs) const
+            {
+                return lhs->created() < rhs->created();
+            }
+        };
+
         template<typename Collection, typename Entity, typename Value>
         void eraseFromNonUniqueCollection(Collection& collection, Entity toCompare, const Value& toSearch)
         {
@@ -66,7 +80,21 @@ namespace Forum
                 }
             }
         }
-        
+
+        template<typename Collection, typename Entity>
+        void eraseFromFlatMultisetCollection(Collection& collection, Entity toCompare)
+        {
+            auto range = collection.equal_range(toCompare);
+            for (auto it = range.first; it != range.second; ++it)
+            {
+                if (*it == toCompare)
+                {
+                    collection.erase(it);
+                    return;
+                }
+            }
+        }
+
         template<typename Collection, typename Entity, typename Value>
         auto findInNonUniqueCollection(Collection& collection, Entity toCompare, const Value& toSearch)
         {

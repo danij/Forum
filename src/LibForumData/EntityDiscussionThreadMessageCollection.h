@@ -11,6 +11,7 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/ranked_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
+#include <boost/container/flat_set.hpp>
 
 namespace Forum
 {
@@ -38,7 +39,7 @@ namespace Forum
         private:
             HASHED_UNIQUE_COLLECTION(DiscussionThreadMessage, id) byId_;
 
-            RANKED_COLLECTION(DiscussionThreadMessage, created) byCreated_;
+            FLAT_MULTISET_COLLECTION(DiscussionThreadMessage, created) byCreated_;
 
             std::function<void()> onPrepareCountChange_;
             std::function<void()> onCountChange_;

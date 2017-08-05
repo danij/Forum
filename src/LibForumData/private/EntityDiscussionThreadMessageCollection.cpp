@@ -22,7 +22,7 @@ bool DiscussionThreadMessageCollection::remove(DiscussionThreadMessagePtr messag
         
         byId_.erase(itById);
     }
-    eraseFromNonUniqueCollection(byCreated_, message, message->created());
+    eraseFromFlatMultisetCollection(byCreated_, message);
 
     if (onCountChange_) onCountChange_();
     return true;

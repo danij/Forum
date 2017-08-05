@@ -48,7 +48,7 @@ namespace Forum
 
             auto nth(typename TCollection::size_type n) const
             {
-                return boost::make_transform_iterator(collection_.nth(n), getPointer);
+                return boost::make_transform_iterator(collection_.nth(std::min(n, collection_.size())), getPointer);
             }
 
             template <typename TSearchType>
