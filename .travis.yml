@@ -21,6 +21,7 @@ addons:
         sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
+            - boost-latest
         packages:
             - cmake
             - gcc-6
@@ -33,6 +34,7 @@ install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
     - ${CXX} --version
     - cmake --version
+    - echo -e '#include <boost/version.hpp>\nBOOST_VERSION' | ${CXX} -E -
 
 before_script:
     - mkdir -p build && cd build
