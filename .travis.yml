@@ -28,13 +28,12 @@ addons:
             - g++-6
             - clang-4.0
             - libicu-dev
-            - libboost-all-dev
+            - libboost1.60-all-dev
 
 install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
     - ${CXX} --version
     - cmake --version
-    - echo -e '#include <boost/version.hpp>\nBOOST_VERSION' | ${CXX} -E -
 
 before_script:
     - mkdir -p build && cd build
