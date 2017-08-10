@@ -1,0 +1,43 @@
+sudo: false
+dist: trusty
+language: cpp
+
+compiler:
+    - gcc
+    - clang
+
+os:
+    - linux
+    
+env:
+    - BUILD_TYPE=RelWithDebInfo
+
+addons:
+    apt:
+        # List of whitelisted in travis packages for ubuntu-trusty can be found here:
+        #   https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-trusty
+        # List of whitelisted in travis apt-sources:
+        #   https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
+        sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-4.0
+        packages:
+            - cmake
+            - gcc-6
+            - g++-6
+            - clang-4.0
+            - libicu-dev
+            - libboost-all-dev
+
+install:
+    - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
+    - ${CXX} --version
+    - cmake --version
+
+before_script:
+    - mkdir -p build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+    - cmake --build .
+    
+script:
+    - test/ForumServiceTests/ForumServiceTests
