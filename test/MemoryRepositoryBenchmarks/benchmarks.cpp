@@ -91,6 +91,7 @@ struct BenchmarkContext
     std::vector<IdType> categoryIds;
     Entities::Timestamp currentTimestamp = 1000;
     std::shared_ptr<EventObserver> persistenceObserver;
+    ObservableRepositoryRef observableRepository;
     DirectWriteRepositoryCollection writeRepositories;
     std::string importFromFolder;
     std::string exportToFolder;
@@ -114,13 +115,14 @@ BenchmarkContext createContext()
     auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store, authorization);
     auto metricsRepository = std::make_shared<MetricsRepository>(store, authorization);
 
-    ObservableRepositoryRef observableRepository = userRepository;
-
     BenchmarkContext context;
+    
     context.entityCollection = entityCollection;
-    context.handler = std::make_shared<CommandHandler>(observableRepository, userRepository, discussionThreadRepository,
-        discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository,
-        statisticsRepository, metricsRepository);
+    context.observableRepository = userRepository;
+
+    context.handler = std::make_shared<CommandHandler>(context.observableRepository, userRepository, 
+        discussionThreadRepository, discussionThreadMessageRepository, discussionTagRepository, 
+        discussionCategoryRepository, statisticsRepository, metricsRepository);
 
     context.writeRepositories.user = userRepository;
     context.writeRepositories.discussionThread = discussionThreadRepository;
@@ -128,12 +130,6 @@ BenchmarkContext createContext()
     context.writeRepositories.discussionTag = discussionTagRepository;
     context.writeRepositories.discussionCategory = discussionCategoryRepository;
 
-    if (context.exportToFolder.size() > 0)
-    {
-        context.persistenceObserver = std::make_shared<EventObserver>(observableRepository->readEvents(),
-                                                                      observableRepository->writeEvents(),
-                                                                      context.exportToFolder, 3600);
-    }
     return context;
 }
 
@@ -248,6 +244,12 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
     if (arguments.count("export-folder"))
     {
         context.exportToFolder = arguments["export-folder"].as<std::string>();
+        if (context.exportToFolder.size() > 0)
+        {
+            context.persistenceObserver = std::make_shared<EventObserver>(context.observableRepository->readEvents(),
+                                                                          context.observableRepository->writeEvents(),
+                                                                          context.exportToFolder, 3600);
+        }
     }
 
     return 0;
