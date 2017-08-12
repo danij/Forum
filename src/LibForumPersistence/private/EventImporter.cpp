@@ -549,8 +549,21 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
 
         currentTimestamp_ = readAndIncrementBuffer<PersistentTimestampType>(data, size);
-        Context::setCurrentUserId(readAndIncrementBuffer<UuidString>(data, size));
+        auto currentUserId = readAndIncrementBuffer<UuidString>(data, size);
+
+        Context::setCurrentUserId(currentUserId);
         Context::setCurrentUserIpAddress(readAndIncrementBuffer<IpAddress>(data, size));
+
+        auto it = usersLastSeen_.find(currentUserId);
+        if (it != usersLastSeen_.end())
+        {
+            it->second = currentTimestamp_;
+        }
+        else
+        {
+            usersLastSeen_.insert(std::make_pair(currentUserId, currentTimestamp_));
+        }
+
         return true;
     }
 
@@ -715,6 +728,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
 
         updateDiscussionThreadVisitCount();
+        updateUsersLastSeen();
 
         return result;
     }
@@ -736,6 +750,23 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
     }
 
+    void updateUsersLastSeen()
+    {
+        auto& users = entityCollection_.users().byId();
+        for (auto& pair : usersLastSeen_)
+        {
+            auto& id = pair.first;
+            auto& timestamp = pair.second;
+
+            auto it = users.find(id);
+            if (it != users.end())
+            {
+                User& user = const_cast<User&>(**it);
+                user.updateLastSeen(timestamp);
+            }
+        }
+    }
+
     Timestamp getCurrentTimestamp()
     {
         return currentTimestamp_;
@@ -749,6 +780,7 @@ private:
     Timestamp currentTimestamp_{};
     EventType currentEventType_{};
     std::map<UuidString, uint32_t> cachedNrOfThreadVisits_;
+    std::map<UuidString, Timestamp> usersLastSeen_;
 };
 
 EventImporter::EventImporter(bool verifyChecksum, EntityCollection& entityCollection,
