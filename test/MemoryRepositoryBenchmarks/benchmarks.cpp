@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <random>
+#include <cstdlib>
 
 #include <unicode/uclean.h>
 
@@ -95,6 +96,7 @@ struct BenchmarkContext
     std::string exportToFolder;
     bool onlyPopulateData{ false };
     bool promptBeforeBenchmark{ false };
+    bool abortOnExit{ false };
 };
 
 BenchmarkContext createContext()
@@ -211,6 +213,7 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
         ("help,h", "Display available options")
         ("onlyPopulateData,o", "Only loads data from a file or by random generation")
         ("promptBeforeBenchmark,p", "Prompt the user to continue before starting the benchmark")
+        ("abort,a", "Abort on exit to prevent calling destructors")
         ("import-folder,i", boost::program_options::value<std::string>(), "Import events from folder")
         ("export-folder,e", boost::program_options::value<std::string>(), "Export events to folder");
 
@@ -235,6 +238,7 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
 
     context.onlyPopulateData = arguments.count("onlyPopulateData") > 0;
     context.promptBeforeBenchmark = arguments.count("promptBeforeBenchmark") > 0;
+    context.abortOnExit = arguments.count("abort") > 0;
 
     if (arguments.count("import-folder"))
     {
@@ -269,7 +273,14 @@ int main(int argc, const char* argv[])
 
     if (context.onlyPopulateData)
     {
-        return 0;
+        if (context.abortOnExit)
+        {
+            std::abort();
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     std::cout << "=====\n";
@@ -295,6 +306,11 @@ int main(int argc, const char* argv[])
     }
 
     doBenchmarks(context);
+
+    if (context.abortOnExit)
+    {
+        std::abort();
+    }
 }
 
 void showEntitySizes()
