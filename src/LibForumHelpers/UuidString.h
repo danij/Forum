@@ -1,5 +1,8 @@
 #pragma once
 
+#include <functional>
+#include <string>
+
 #include <boost/uuid/uuid.hpp>
 #include <boost/utility/string_view.hpp>
 
@@ -89,4 +92,17 @@ namespace Forum
             return value.hashValue();
         }
     }
+
+}
+
+namespace std
+{
+    template<>
+    struct hash<Forum::Entities::UuidString>
+    {
+        size_t operator()(const Forum::Entities::UuidString& value) const 
+        {
+            return value.hashValue();
+        }
+    };
 }

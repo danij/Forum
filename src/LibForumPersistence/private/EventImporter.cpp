@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <ctime>
 #include <functional>
-#include <map>
+#include <unordered_map>
 #include <numeric>
 #include <regex>
 #include <string>
@@ -779,8 +779,8 @@ private:
     std::vector<std::vector<std::function<bool(uint16_t, const uint8_t*, size_t)>>> importFunctions_;
     Timestamp currentTimestamp_{};
     EventType currentEventType_{};
-    std::map<UuidString, uint32_t> cachedNrOfThreadVisits_;
-    std::map<UuidString, Timestamp> usersLastSeen_;
+    std::unordered_map<UuidString, uint32_t> cachedNrOfThreadVisits_;
+    std::unordered_map<UuidString, Timestamp> usersLastSeen_;
 };
 
 EventImporter::EventImporter(bool verifyChecksum, EntityCollection& entityCollection,
