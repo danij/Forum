@@ -267,9 +267,12 @@ int main(int argc, const char* argv[])
     }
     showEntitySizes();
 
-    context.entityCollection->startBatchInsert();
-    auto populationDuration = countDuration<std::chrono::milliseconds>([&]() { populateData(context); });
-    context.entityCollection->stopBatchInsert();
+    auto populationDuration = countDuration<std::chrono::milliseconds>([&]()
+    {
+        context.entityCollection->startBatchInsert();
+        populateData(context);
+        context.entityCollection->stopBatchInsert();
+    });
 
     std::cout << "Populate duration: " << populationDuration << " ms\n";
 
