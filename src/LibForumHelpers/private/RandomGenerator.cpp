@@ -1,12 +1,16 @@
 #include "RandomGenerator.h"
 
+#include <mutex>
+
 #include <boost/uuid/random_generator.hpp>
 
-static thread_local boost::uuids::random_generator localUUIDGenerator;
+static boost::uuids::random_generator randomUUIDGenerator;
+static std::mutex randomUUIDGeneratorMutex;
 
 boost::uuids::uuid Forum::Helpers::generateUUID()
 {
-    return localUUIDGenerator();
+    std::lock_guard<std::mutex> guard(randomUUIDGeneratorMutex);
+    return randomUUIDGenerator();
 }
 
 Forum::Entities::UuidString Forum::Helpers::generateUniqueId()
