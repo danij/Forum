@@ -28,7 +28,7 @@ addons:
             - g++-6
             - clang-4.0
             - libicu-dev
-            - libboost1.60-all-dev
+            - libboost-all-dev
 
 install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
