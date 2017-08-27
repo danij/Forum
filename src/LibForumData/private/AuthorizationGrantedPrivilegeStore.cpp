@@ -192,7 +192,7 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
 
             PrivilegeValueType messageLevelPositive, messageLevelNegative;
 
-            if (( ! item.userId) || ( ! item.message))
+            if ( ! item.message)
             {
                 continue;
             }
