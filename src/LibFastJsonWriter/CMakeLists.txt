@@ -10,6 +10,7 @@ set(SOURCE_FILES
         private/JsonWriter.cpp)
 
 set(HEADER_FILES
+        JsonReadyString.h
         StringBuffer.h
         JsonWriter.h)
 

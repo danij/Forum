@@ -23,9 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <limits>
 #include <string>
 
+#include "JsonReadyString.h"
 #include "StringBuffer.h"
-
-#include <boost/utility/string_view.hpp>
 
 namespace Json
 {

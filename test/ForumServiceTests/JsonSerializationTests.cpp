@@ -94,3 +94,38 @@ BOOST_AUTO_TEST_CASE( Json_serialization_escapes_very_large_strings )
 
     BOOST_REQUIRE_EQUAL(expectedString, str);
 }
+
+BOOST_AUTO_TEST_CASE( JsonReadyString_can_add_quotes_for_strings_that_dont_require_escaping )
+{
+    for (auto str : {"a", "ab", "abc", "abcd", "abcde", "abcdef"})
+    {
+        auto view = boost::string_view(str);
+        auto quotedString = "\"" + std::string(str) + "\"";
+
+        JsonReadyString<5> jsonReadyString(view);
+        BOOST_REQUIRE( ! jsonReadyString.needsJsonEscape());
+        BOOST_REQUIRE_EQUAL(view, jsonReadyString.string());
+        BOOST_REQUIRE_EQUAL(quotedString, jsonReadyString.quotedString());
+
+        JsonReadyString<5> copy(jsonReadyString);
+        BOOST_REQUIRE( ! copy.needsJsonEscape());
+        BOOST_REQUIRE_EQUAL(view, copy.string());
+        BOOST_REQUIRE_EQUAL(quotedString, copy.quotedString());
+    }
+}
+
+BOOST_AUTO_TEST_CASE( JsonReadyString_does_not_add_quotes_for_strings_that_require_escaping )
+{
+    for (auto str : { "a\\", "a\\b", "ab\\c", "abc\\d", "abc\\de", "abcd\\ef" })
+    {
+        auto view = boost::string_view(str);
+
+        JsonReadyString<5> jsonReadyString(view);
+        BOOST_REQUIRE(jsonReadyString.needsJsonEscape());
+        BOOST_REQUIRE_EQUAL(view, jsonReadyString.string());
+
+        JsonReadyString<5> copy(jsonReadyString);
+        BOOST_REQUIRE(copy.needsJsonEscape());
+        BOOST_REQUIRE_EQUAL(view, copy.string());
+    }
+}
