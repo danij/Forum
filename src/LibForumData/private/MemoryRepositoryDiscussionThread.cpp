@@ -383,9 +383,8 @@ StatusWithResource<DiscussionThreadPtr> MemoryRepositoryDiscussionThread::addNew
 {
     auto currentUser = getCurrentUser(collection);
 
-    auto thread = collection.createDiscussionThread(id, *currentUser, Context::getCurrentTime(),
-                                                    { Context::getCurrentUserIpAddress() });
-    thread->updateName(std::move(name));
+    auto thread = collection.createDiscussionThread(id, *currentUser, std::move(DiscussionThread::NameType(name)), 
+                                                    Context::getCurrentTime(), { Context::getCurrentUserIpAddress() });
     thread->updateLastUpdated(thread->latestVisibleChange() = thread->created());
 
     collection.insertDiscussionThread(thread);
@@ -485,7 +484,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(EntityCo
 
     DiscussionThreadPtr thread = *it;
 
-    thread->updateName(std::move(newName));
+    thread->updateName(std::move(DiscussionThread::NameType(newName)));
     updateThreadLastUpdated(*thread, currentUser);
 
     return StatusCode::OK;

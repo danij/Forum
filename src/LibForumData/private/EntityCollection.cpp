@@ -479,19 +479,19 @@ std::unique_ptr<MessageComment>* EntityCollection::getMessageCommentPoolRoot()
     return impl_->managedEntities.messageComments.data();
 }
 
-UserPtr EntityCollection::createUser(IdType id, Timestamp created, VisitDetails creationDetails)
+UserPtr EntityCollection::createUser(IdType id, User::NameType&& name, Timestamp created, VisitDetails creationDetails)
 {
     auto result = UserPtr(static_cast<UserPtr::IndexType>(
-        impl_->managedEntities.users.add(id, created, std::move(creationDetails))));
+        impl_->managedEntities.users.add(id, std::move(name), created, std::move(creationDetails))));
     result->pointer_ = result;
     return result;
 }
 
-DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& createdBy, Timestamp created, 
-                                                             VisitDetails creationDetails)
+DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& createdBy, DiscussionThread::NameType&& name, 
+                                                             Timestamp created, VisitDetails creationDetails)
 {
     auto result = DiscussionThreadPtr(static_cast<DiscussionThreadPtr::IndexType>(impl_->managedEntities.threads.add(
-        id, createdBy, created, creationDetails)));
+        id, createdBy, std::move(name), created, creationDetails)));
     result->pointer_ = result;
     return result;
 }
@@ -503,18 +503,20 @@ DiscussionThreadMessagePtr EntityCollection::createDiscussionThreadMessage(IdTyp
         impl_->managedEntities.threadMessages.add(id, createdBy, created, creationDetails)));
 }
 
-DiscussionTagPtr EntityCollection::createDiscussionTag(IdType id, Timestamp created, VisitDetails creationDetails)
+DiscussionTagPtr EntityCollection::createDiscussionTag(IdType id, DiscussionTag::NameType&& name, Timestamp created, 
+                                                       VisitDetails creationDetails)
 {
     auto result = DiscussionTagPtr(static_cast<DiscussionTagPtr::IndexType>(impl_->managedEntities.tags.add(
-        id, created, creationDetails, *this)));
+        id, std::move(name), created, creationDetails, *this)));
     result->pointer_ = result;
     return result;
 }
 
-DiscussionCategoryPtr EntityCollection::createDiscussionCategory(IdType id, Timestamp created, VisitDetails creationDetails)
+DiscussionCategoryPtr EntityCollection::createDiscussionCategory(IdType id, DiscussionCategory::NameType&& name, 
+                                                                 Timestamp created, VisitDetails creationDetails)
 {
     auto result = DiscussionCategoryPtr(static_cast<DiscussionCategoryPtr::IndexType>(impl_->managedEntities.categories.add(
-        id, created, creationDetails, *this)));
+        id, std::move(name), created, creationDetails, *this)));
     result->pointer_ = result;
     return result;
 }

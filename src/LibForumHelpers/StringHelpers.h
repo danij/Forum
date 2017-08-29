@@ -1,8 +1,10 @@
 #pragma once
 
 #include "TypeHelpers.h"
+#include "JsonReadyString.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
@@ -138,41 +140,141 @@ namespace Forum
             size_t size_ = 0;
         };
 
-        struct StringWithSortKey final
+        namespace Detail
         {
-            StringWithSortKey() noexcept;
-            StringWithSortKey(StringView view);
+            struct SizeWithBoolAndSortKeySize
+            {
+                uint32_t boolean : 1;
+                uint32_t size : 31;
+                uint32_t sortKeySize;
 
-            StringWithSortKey(const StringWithSortKey& other);
-            StringWithSortKey(StringWithSortKey&& other) noexcept;
+                SizeWithBoolAndSortKeySize() : boolean(0), size(0), sortKeySize(0) {}
+                SizeWithBoolAndSortKeySize(size_t size) : boolean(0), size(static_cast<decltype(size)>(size)), sortKeySize(0) {}
 
-            StringWithSortKey& operator=(const StringWithSortKey& other);
-            StringWithSortKey& operator=(StringWithSortKey&& other) noexcept;
+                SizeWithBoolAndSortKeySize(const SizeWithBoolAndSortKeySize&) = default;
+                SizeWithBoolAndSortKeySize& operator=(const SizeWithBoolAndSortKeySize&) = default;
 
-            bool operator==(const StringWithSortKey& other) const;
-            bool operator<(const StringWithSortKey& other) const;
-            bool operator<=(const StringWithSortKey& other) const;
-            bool operator>(const StringWithSortKey& other) const;
-            bool operator>=(const StringWithSortKey& other) const;
+                explicit operator size_t() const noexcept
+                {
+                    return static_cast<size_t>(size);
+                }
 
-            friend void swap(StringWithSortKey& first, StringWithSortKey& second) noexcept;
-            friend std::ostream& operator<<(std::ostream& stream, const StringWithSortKey& string);
+                SizeWithBoolAndSortKeySize& operator=(size_t value) noexcept
+                {
+                    size = static_cast<decltype(size)>(value);
+                    return *this;
+                }
 
-            StringView string() const;
-            StringView sortKey() const;
+                explicit operator bool() const noexcept
+                {
+                    return boolean != 0;
+                }
 
-        private:
-            std::unique_ptr<char[]> bytes_;
-            size_t stringLength_;
-            size_t sortKeyLength_;
+                SizeWithBoolAndSortKeySize& operator=(bool value) noexcept
+                {
+                    boolean = value ? 1 : 0;
+                    return *this;
+                }
+
+                void setExtraBytesNeeded(size_t value) noexcept
+                {
+                    sortKeySize = static_cast<decltype(sortKeySize)>(value);
+                }
+            };
+        }
+
+        size_t calculateSortKey(StringView view);
+        char* getCurrentSortKey();
+        size_t getCurrentSortKeyLength();
+
+        template<size_t StackSize>
+        class JsonReadyStringWithSortKey final 
+            : public Json::JsonReadyStringBase<StackSize, JsonReadyStringWithSortKey<StackSize>, Detail::SizeWithBoolAndSortKeySize>
+        {
+        public:
+            explicit JsonReadyStringWithSortKey(StringView source);
+
+            JsonReadyStringWithSortKey(const JsonReadyStringWithSortKey& other) = default;
+            JsonReadyStringWithSortKey(JsonReadyStringWithSortKey&& other) noexcept = default;
+
+            JsonReadyStringWithSortKey& operator=(const JsonReadyStringWithSortKey& other) = default;
+            JsonReadyStringWithSortKey& operator=(JsonReadyStringWithSortKey&& other) noexcept = default;
+
+            bool operator==(const JsonReadyStringWithSortKey& other) const;
+            bool operator<(const JsonReadyStringWithSortKey& other) const;
+            bool operator<=(const JsonReadyStringWithSortKey& other) const;
+            bool operator>(const JsonReadyStringWithSortKey& other) const;
+            bool operator>=(const JsonReadyStringWithSortKey& other) const;
+
+            StringView sortKey() const noexcept;
+            size_t getExtraSize() const noexcept;
+
+            static size_t extraBytesNeeded(StringView source);
         };
 
-        void swap(StringWithSortKey& first, StringWithSortKey& second) noexcept;
-        std::ostream& operator<<(std::ostream& stream, const StringWithSortKey& string);
-
-        inline std::string toString(const StringWithSortKey& value)
+        template <size_t StackSize>
+        JsonReadyStringWithSortKey<StackSize>::JsonReadyStringWithSortKey(StringView source)
+            : Json::JsonReadyStringBase<StackSize, JsonReadyStringWithSortKey<StackSize>, Detail::SizeWithBoolAndSortKeySize>(source)
         {
-            return toString(value.string());
+            auto sortKeyStart = getCurrentSortKey();
+            auto& sizeInfo = container_.size();
+            sizeInfo.sortKeySize = getCurrentSortKeyLength();
+
+            std::copy(sortKeyStart, sortKeyStart + sizeInfo.sortKeySize, 
+                      *container_ + sizeInfo.size - sizeInfo.sortKeySize);
+        }
+
+        template <size_t StackSize>
+        bool JsonReadyStringWithSortKey<StackSize>::operator==(const JsonReadyStringWithSortKey& other) const
+        {
+            return strcmp(sortKey().data(), other.sortKey().data()) == 0;
+        }
+
+        template <size_t StackSize>
+        bool JsonReadyStringWithSortKey<StackSize>::operator<(const JsonReadyStringWithSortKey& other) const
+        {
+            return strcmp(sortKey().data(), other.sortKey().data()) < 0;
+        }
+
+        template <size_t StackSize>
+        bool JsonReadyStringWithSortKey<StackSize>::operator<=(const JsonReadyStringWithSortKey& other) const
+        {
+            return ! (*this > other);
+        }
+
+        template <size_t StackSize>
+        bool JsonReadyStringWithSortKey<StackSize>::operator>(const JsonReadyStringWithSortKey& other) const
+        {
+            return strcmp(sortKey().data(), other.sortKey().data()) > 0;
+        }
+
+        template <size_t StackSize>
+        bool JsonReadyStringWithSortKey<StackSize>::operator>=(const JsonReadyStringWithSortKey& other) const
+        {
+            return ! (*this < other);
+        }
+
+        template <size_t StackSize>
+        StringView JsonReadyStringWithSortKey<StackSize>::sortKey() const noexcept
+        {
+            auto& size = container_.size();
+            assert(size.size >= size.sortKeySize);
+            auto start = *container_ + static_cast<size_t>(size.size - size.sortKeySize);
+            return StringView(start, static_cast<size_t>(size.sortKeySize));
+        }
+
+        template <size_t StackSize>
+        size_t JsonReadyStringWithSortKey<StackSize>::extraBytesNeeded(StringView source)
+        {
+            auto result = calculateSortKey(source);
+            return static_cast<decltype(Detail::SizeWithBoolAndSortKeySize::sortKeySize)>(result);
+        }
+
+        template <size_t StackSize>
+        size_t JsonReadyStringWithSortKey<StackSize>::getExtraSize() const noexcept
+        {
+            auto& size = container_.size();
+            return static_cast<size_t>(size.sortKeySize);
         }
     }
 }

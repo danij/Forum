@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_invokes_observer )
     auto handler = createCommandHandler();
 
     auto ___ = addHandler(handler->writeEvents().onAddNewUser,
-                          [&](auto& _, auto& newUser) { newUserName = toString(newUser.name()); });
+                          [&](auto& _, auto& newUser) { newUserName = toString(newUser.name().string()); });
 
     createUserAndGetId(handler, "Foo");
     BOOST_REQUIRE_EQUAL("Foo", newUserName);
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_name_invokes_observer )
     auto ___ = addHandler(handler->writeEvents().onChangeUser,
                           [&](auto& _, auto& user, auto change)
                           {
-                              newName = toString(user.name());
+                              newName = toString(user.name().string());
                               userChange = change;
                           });
 
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_invokes_observer )
     auto handler = createCommandHandler();
 
     auto ___ = addHandler(handler->writeEvents().onDeleteUser,
-                          [&](auto& _, auto& user) { deletedUserName = toString(user.name()); });
+                          [&](auto& _, auto& user) { deletedUserName = toString(user.name().string()); });
 
     createUserAndGetId(handler, "Abc");
     auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE( Modifying_a_discussion_thread_invokes_observer )
     auto ___ = addHandler(handler->writeEvents().onChangeDiscussionThread,
                           [&](auto& _, auto& thread, auto change)
                           {
-                              newName = toString(thread.name());
+                              newName = toString(thread.name().string());
                               threadChange = change;
                           });
 
@@ -372,7 +372,7 @@ BOOST_AUTO_TEST_CASE( Observer_context_includes_user_that_performs_the_action )
                           [&](auto& context)
                           {
                               userIdFromContext = static_cast<std::string>(context.performedBy.id());
-                              userNameFromContext = toString(context.performedBy.name());
+                              userNameFromContext = toString(context.performedBy.name().string());
                           });
     user1 = createUserAndGetId(handler, "User1");
     {
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE( Observer_context_performed_by_is_the_anonymous_user )
                           [&](auto& context)
                           {
                               userIdFromContext = static_cast<std::string>(context.performedBy.id());
-                              userNameFromContext = toString(context.performedBy.name());
+                              userNameFromContext = toString(context.performedBy.name().string());
                           });
 
     handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
@@ -423,7 +423,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_invokes_observer )
     auto handler = createCommandHandler();
 
     auto ___ = addHandler(handler->writeEvents().onAddNewDiscussionTag,
-                          [&](auto& _, auto& newTag) { newTagName = toString(newTag.name()); });
+                          [&](auto& _, auto& newTag) { newTagName = toString(newTag.name().string()); });
 
     createDiscussionTagAndGetId(handler, "Foo");
     BOOST_REQUIRE_EQUAL("Foo", newTagName);
@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE( Renaming_a_discussion_tag_invokes_observer )
     auto ___ = addHandler(handler->writeEvents().onChangeDiscussionTag,
                           [&](auto& _, auto& tag, auto change)
                           {
-                              newName = toString(tag.name());
+                              newName = toString(tag.name().string());
                               tagChange = change;
                           });
 
@@ -605,7 +605,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_invokes_observer )
     auto handler = createCommandHandler();
 
     auto ___ = addHandler(handler->writeEvents().onAddNewDiscussionCategory,
-                          [&](auto& _, auto& newCategory) { newCategoryName = toString(newCategory.name()); });
+                          [&](auto& _, auto& newCategory) { newCategoryName = toString(newCategory.name().string()); });
 
     createDiscussionCategoryAndGetId(handler, "Foo");
     BOOST_REQUIRE_EQUAL("Foo", newCategoryName);
@@ -649,7 +649,7 @@ BOOST_AUTO_TEST_CASE( Renaming_a_discussion_category_invokes_observer )
     auto ___ = addHandler(handler->writeEvents().onChangeDiscussionCategory,
                           [&](auto& _, auto& category, auto change)
                           {
-                              newName = toString(category.name());
+                              newName = toString(category.name().string());
                               categoryChange = change;
                           });
 

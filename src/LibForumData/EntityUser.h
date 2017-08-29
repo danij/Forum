@@ -51,6 +51,8 @@ namespace Forum
                 Info
             };
 
+            typedef Helpers::JsonReadyStringWithSortKey<64> NameType;
+
             struct ChangeNotification
             {
                 std::function<void(const User&)> onPrepareUpdateAuth;
@@ -71,8 +73,8 @@ namespace Forum
 
             static auto& changeNotifications() { return changeNotifications_; }
 
-            User(IdType id, Timestamp created, VisitDetails creationDetails)
-                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails))
+            User(IdType id, NameType&& name, Timestamp created, VisitDetails creationDetails)
+                : id_(std::move(id)), name_(std::move(name)), created_(created), creationDetails_(std::move(creationDetails))
             {
                 threads_.onPrepareCountChange()        = [this]() { changeNotifications_.onPrepareUpdateThreadCount(*this); };
                 threads_.onCountChange()               = [this]() { changeNotifications_.onUpdateThreadCount(*this); };
@@ -98,7 +100,7 @@ namespace Forum
                 changeNotifications_.onUpdateAuth(*this);
             }
 
-            void updateName(Helpers::StringWithSortKey&& name)
+            void updateName(NameType&& name)
             {
                 changeNotifications_.onPrepareUpdateName(*this);
                 name_ = std::move(name);
@@ -127,7 +129,7 @@ namespace Forum
             VisitDetails creationDetails_;
 
             std::string auth_;
-            Helpers::StringWithSortKey name_;
+            NameType name_;
             std::string info_;
 
             Timestamp lastSeen_{0};

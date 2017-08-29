@@ -30,9 +30,10 @@ namespace Forum
             return Entities::UuidString(id) == Entities::UuidString::empty;
         }
 
-        inline bool operator==(const StringWithSortKey& first, const std::string& second)
+        template<size_t StackSize>
+        bool operator==(const JsonReadyStringWithSortKey<StackSize>& first, const std::string& second)
         {
-            return first == StringWithSortKey(StringView(second));
+            return first == JsonReadyStringWithSortKey<StackSize>(StringView(second));
         }
 
         extern const std::string sampleValidIdString;

@@ -175,8 +175,10 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                       {
                           auto& currentUser = performedBy.get(collection);
 
+                          User::NameType nameString(name);
+
                           const auto& index = collection.users().byName();
-                          auto it = index.find(name);
+                          auto it = index.find(nameString);
                           if (it == index.end())
                           {
                               status = StatusCode::NOT_FOUND;
@@ -257,7 +259,7 @@ StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& c
         return StatusCode::USER_WITH_SAME_AUTH_ALREADY_EXISTS;
     }
 
-    StringWithSortKey nameString(name);
+    User::NameType nameString(name);
 
     auto& indexByName = collection.users().byName();
     if (indexByName.find(nameString) != indexByName.end())
@@ -265,10 +267,9 @@ StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& c
         return StatusCode::ALREADY_EXISTS;
     }
 
-    auto user = collection.createUser(id, Context::getCurrentTime(), 
+    auto user = collection.createUser(id, std::move(nameString), Context::getCurrentTime(), 
                                       { Context::getCurrentUserIpAddress() });
     user->updateAuth(std::move(authString));
-    user->updateName(std::move(nameString));
 
     collection.insertUser(user);
 
@@ -322,7 +323,7 @@ StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, Id
         return StatusCode::NOT_FOUND;
     }
 
-    StringWithSortKey newNameString(newName);
+    User::NameType newNameString(newName);
 
     auto& indexByName = collection.users().byName();
     if (indexByName.find(newNameString) != indexByName.end())

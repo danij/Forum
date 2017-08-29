@@ -63,17 +63,16 @@ static constexpr size_t MaxSortKeyGenerationDestinationBufferSize = 10 * MaxSort
 static thread_local std::unique_ptr<UChar[]> SortKeyGenerationUCharBuffer(new UChar[MaxSortKeyGenerationUCharBufferSize]);
 static thread_local std::unique_ptr<uint8_t[]> SortKeyGenerationDestinationBuffer(new uint8_t[MaxSortKeyGenerationDestinationBufferSize]);
 
+static thread_local size_t CurrentSortKeyLength;
+
 static char EmptySortKeyNullTerminator = 0;
 
-StringWithSortKey::StringWithSortKey() noexcept : stringLength_(0), sortKeyLength_(1)
-{
-}
-
-StringWithSortKey::StringWithSortKey(StringView view) : StringWithSortKey()
+size_t Forum::Helpers::calculateSortKey(StringView view)
 {
     if (view.size() < 1)
     {
-        return;
+        SortKeyGenerationDestinationBuffer.get()[0] = 0;
+        return CurrentSortKeyLength = 1;
     }
 
     if (view.size() > (MaxSortKeyGenerationUCharBufferSize / 8))
@@ -81,7 +80,7 @@ StringWithSortKey::StringWithSortKey(StringView view) : StringWithSortKey()
         throw new std::runtime_error("String for which a sort key is to be generated is too big");
     }
 
-    stringLength_ = view.size();
+    auto stringLength = view.size();
 
     int32_t u16Written{};
     UErrorCode errorCode{};
@@ -100,13 +99,11 @@ StringWithSortKey::StringWithSortKey(StringView view) : StringWithSortKey()
     if (U_FAILURE(errorCode))
     {
         //use string as sort key
-        sortKeyLength_ = stringLength_ + 1;
-        bytes_ = std::unique_ptr<char[]>(new char[stringLength_ + sortKeyLength_]);
-        std::copy(view.begin(), view.end(), bytes_.get());
-        std::copy(view.begin(), view.end(), bytes_.get() + stringLength_);
-        bytes_[stringLength_ + sortKeyLength_ - 1] = 0;
+        CurrentSortKeyLength = stringLength + 1;
+        std::copy(view.begin(), view.end(), SortKeyGenerationDestinationBuffer.get());
+        SortKeyGenerationDestinationBuffer[CurrentSortKeyLength] = 0;
 
-        return;
+        return CurrentSortKeyLength;
     }
 
     auto sortKeyBuffer = SortKeyGenerationDestinationBuffer.get();
@@ -118,102 +115,23 @@ StringWithSortKey::StringWithSortKey(StringView view) : StringWithSortKey()
         sortKeyBuffer = sortKeyBufferIfThreadLocalOneIsNotYetInitialized.get();
     }
 
-    sortKeyLength_ = ucol_getSortKey(LocaleCache::instance().collator(), u16Chars, u16Written,
-                                     sortKeyBuffer, MaxSortKeyGenerationDestinationBufferSize);
+    CurrentSortKeyLength = ucol_getSortKey(LocaleCache::instance().collator(), u16Chars, u16Written,
+                                           sortKeyBuffer, MaxSortKeyGenerationDestinationBufferSize);
 
-    bytes_.reset(new char[stringLength_ + sortKeyLength_]);
-    std::copy(view.begin(), view.end(), bytes_.get());
-    std::copy(sortKeyBuffer, sortKeyBuffer + sortKeyLength_, bytes_.get() + stringLength_);
+    return CurrentSortKeyLength;
 }
 
-StringWithSortKey::StringWithSortKey(const StringWithSortKey& other)
-    : stringLength_(other.stringLength_), sortKeyLength_(other.sortKeyLength_)
+char* Forum::Helpers::getCurrentSortKey()
 {
-    if (other.bytes_)
-    {
-        auto toCopy = stringLength_ + sortKeyLength_;
-        bytes_ = std::unique_ptr<char[]>(new char[toCopy]);
-        std::copy(other.bytes_.get(), other.bytes_.get() + toCopy, bytes_.get());
-    }
+    return reinterpret_cast<char*>(SortKeyGenerationDestinationBuffer.get());
 }
 
-StringWithSortKey::StringWithSortKey(StringWithSortKey&& other) noexcept
+size_t Forum::Helpers::getCurrentSortKeyLength()
 {
-    swap(*this, other);
-}
-
-StringWithSortKey& StringWithSortKey::operator=(const StringWithSortKey& other)
-{
-    StringWithSortKey copy(other);
-    swap(*this, copy);
-    return *this;
-}
-
-StringWithSortKey& StringWithSortKey::operator=(StringWithSortKey&& other) noexcept
-{
-    swap(*this, other);
-    return *this;
-}
-
-bool StringWithSortKey::operator==(const StringWithSortKey& other) const
-{
-    return strcmp(sortKey().data(), other.sortKey().data()) == 0;
-}
-
-bool StringWithSortKey::operator<(const StringWithSortKey& other) const
-{
-    return strcmp(sortKey().data(), other.sortKey().data()) < 0;
-}
-
-bool StringWithSortKey::operator<=(const StringWithSortKey& other) const
-{
-    return ! (*this > other);
-}
-
-bool StringWithSortKey::operator>(const StringWithSortKey& other) const
-{
-    return strcmp(sortKey().data(), other.sortKey().data()) > 0;
-}
-
-bool StringWithSortKey::operator>=(const StringWithSortKey& other) const
-{
-    return ! (*this < other);
-}
-
-StringView StringWithSortKey::string() const
-{
-    if (stringLength_ < 1)
-    {
-        return StringView{};
-    }
-    return StringView(bytes_.get(), stringLength_);
-}
-
-StringView StringWithSortKey::sortKey() const
-{
-    if (sortKeyLength_ < 2)
-    {
-        return StringView(&EmptySortKeyNullTerminator, 1);
-    }
-    return StringView(bytes_.get() + stringLength_, sortKeyLength_);
+    return CurrentSortKeyLength;
 }
 
 void Forum::Helpers::cleanupStringHelpers()
 {
     LocaleCache::reset();
-}
-
-void Forum::Helpers::swap(StringWithSortKey& first, StringWithSortKey& second) noexcept
-{
-    using std::swap;
-    swap(first.bytes_, second.bytes_);
-    swap(first.stringLength_, second.stringLength_);
-    swap(first.sortKeyLength_, second.sortKeyLength_);
-}
-
-std::ostream& Forum::Helpers::operator<<(std::ostream& stream, const StringWithSortKey& string)
-{
-    auto view = string.string();
-    stream.write(view.data(), view.size());
-    return stream;
 }

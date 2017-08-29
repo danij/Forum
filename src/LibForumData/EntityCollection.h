@@ -39,13 +39,16 @@ namespace Forum
             std::unique_ptr<DiscussionCategory>*      getDiscussionCategoryPoolRoot();
             std::unique_ptr<MessageComment>*          getMessageCommentPoolRoot();
 
-            UserPtr                    createUser(IdType id, Timestamp created, VisitDetails creationDetails);
-            DiscussionThreadPtr        createDiscussionThread(IdType id, User& createdBy, Timestamp created, 
-                                                              VisitDetails creationDetails);
+            UserPtr                    createUser(IdType id, User::NameType&& name, Timestamp created, 
+                                                  VisitDetails creationDetails);
+            DiscussionThreadPtr        createDiscussionThread(IdType id, User& createdBy, DiscussionThread::NameType&& name,
+                                                              Timestamp created, VisitDetails creationDetails);
             DiscussionThreadMessagePtr createDiscussionThreadMessage(IdType id, User& createdBy, Timestamp created, 
                                                                      VisitDetails creationDetails);
-            DiscussionTagPtr           createDiscussionTag(IdType id, Timestamp created, VisitDetails creationDetails);
-            DiscussionCategoryPtr      createDiscussionCategory(IdType id, Timestamp created, VisitDetails creationDetails);
+            DiscussionTagPtr           createDiscussionTag(IdType id, DiscussionTag::NameType&& name, Timestamp created, 
+                                                           VisitDetails creationDetails);
+            DiscussionCategoryPtr      createDiscussionCategory(IdType id, DiscussionCategory::NameType&& name, 
+                                                                Timestamp created, VisitDetails creationDetails);
             MessageCommentPtr          createMessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy, 
                                                            Timestamp created, VisitDetails creationDetails);
 

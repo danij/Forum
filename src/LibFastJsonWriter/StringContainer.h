@@ -29,9 +29,16 @@ namespace Json
 
         friend void swap(StringContainer& first, StringContainer& second) noexcept
         {
-            for (size_t i = 0; i < StackSize; ++i)
+            if (StackSize >= sizeof(first.buffer_.external))
             {
-                std::swap(first.buffer_.stack[i], second.buffer_.stack[i]);
+                for (size_t i = 0; i < StackSize; ++i)
+                {
+                    std::swap(first.buffer_.stack[i], second.buffer_.stack[i]);
+                }
+            }
+            else
+            {
+                std::swap(first.buffer_.external, second.buffer_.external);
             }
             std::swap(first.size_, second.size_);
         }

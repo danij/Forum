@@ -247,6 +247,23 @@ namespace Json
             return writeNumber(value, isCommaNeeded());
         }
 
+        template <size_t StackSize, typename Derived, typename SizeType>
+        JsonWriter& operator<<(const JsonReadyStringBase<StackSize, Derived, SizeType>& jsonReadyString)
+        {
+            if (jsonReadyString.needsJsonEscape())
+            {
+                return writeEscapedString(jsonReadyString.string());
+            }
+            //string already contains quotes
+            if (isCommaNeeded())
+            {
+                writeChar(',');
+            }
+            auto string = jsonReadyString.quotedString();
+            writeString(string.data(), string.size());
+            return *this;
+        }
+
     protected:
 
         bool isCommaNeeded()

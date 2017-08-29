@@ -11,8 +11,8 @@ namespace Json
 {
     struct SizeWithBool
     {
-        uint32_t boolean: 1;
-        uint32_t size   :31;
+        uint32_t boolean : 1;
+        uint32_t size    :31;
 
         SizeWithBool() : boolean(0), size(0) {}
         SizeWithBool(size_t size) : boolean(0), size(static_cast<decltype(size)>(size)) {}
@@ -49,10 +49,10 @@ namespace Json
     public:
         explicit JsonReadyStringBase(boost::string_view source);
         JsonReadyStringBase(const JsonReadyStringBase&) = default;
-        JsonReadyStringBase(JsonReadyStringBase&&) = default;
+        JsonReadyStringBase(JsonReadyStringBase&&) noexcept = default;
 
         JsonReadyStringBase& operator=(const JsonReadyStringBase&) = default;
-        JsonReadyStringBase& operator=(JsonReadyStringBase&&) = default;
+        JsonReadyStringBase& operator=(JsonReadyStringBase&&) noexcept = default;
         
         bool needsJsonEscape() const noexcept;
 
@@ -71,10 +71,12 @@ namespace Json
     public:
         explicit JsonReadyString(boost::string_view source);
         JsonReadyString(const JsonReadyString&) = default;
-        JsonReadyString(JsonReadyString&&) = default;
+        JsonReadyString(JsonReadyString&&) noexcept = default;
 
         JsonReadyString& operator=(const JsonReadyString&) = default;
-        JsonReadyString& operator=(JsonReadyString&&) = default;
+        JsonReadyString& operator=(JsonReadyString&&) noexcept = default;
+
+        size_t getExtraSize() const noexcept;
 
         static size_t extraBytesNeeded(boost::string_view source);
     };
@@ -82,8 +84,8 @@ namespace Json
     template <size_t StackSize, typename Derived, typename SizeType>
     JsonReadyStringBase<StackSize, Derived, SizeType>::JsonReadyStringBase(boost::string_view source)
     {
-        auto bytesNeeded = source.size();
         auto sourceSize = source.size();
+        auto bytesNeeded = sourceSize;
 
         auto escapeNeeded = isEscapeNeeded(source.data(), sourceSize);
 
@@ -95,7 +97,9 @@ namespace Json
         bytesNeeded += Derived::extraBytesNeeded(source);
 
         container_.resize(bytesNeeded);
-        container_.size() = escapeNeeded;
+
+        auto& sizeInfo = container_.size();
+        sizeInfo = escapeNeeded;
 
         auto destination = *container_;
 
@@ -138,7 +142,9 @@ namespace Json
             return{};
         }
 
-        return boost::string_view(*container_, static_cast<boost::string_view::size_type>(container_.size()));
+        auto extraSize = static_cast<const Derived*>(this)->getExtraSize();
+
+        return boost::string_view(*container_, static_cast<boost::string_view::size_type>(container_.size()) - extraSize);
     }
 
     template <size_t StackSize>
@@ -149,6 +155,12 @@ namespace Json
 
     template <size_t StackSize>
     size_t JsonReadyString<StackSize>::extraBytesNeeded(boost::string_view source)
+    {
+        return 0;
+    }
+
+    template <size_t StackSize>
+    size_t JsonReadyString<StackSize>::getExtraSize() const noexcept
     {
         return 0;
     }

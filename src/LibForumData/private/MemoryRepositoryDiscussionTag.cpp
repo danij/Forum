@@ -123,7 +123,7 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
 StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscussionTag(EntityCollection& collection,
                                                                                         IdTypeRef id, StringView name)
 {
-    StringWithSortKey nameString(name);
+    DiscussionTag::NameType nameString(name);
 
     auto& indexByName = collection.tags().byName();
     if (indexByName.find(nameString) != indexByName.end())
@@ -132,10 +132,8 @@ StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscus
     }
 
     //IdType id, Timestamp created, VisitDetails creationDetails
-    auto tag = collection.createDiscussionTag(id, Context::getCurrentTime(), 
+    auto tag = collection.createDiscussionTag(id, std::move(nameString), Context::getCurrentTime(), 
                                               { Context::getCurrentUserIpAddress() });
-    tag->updateName(std::move(nameString));
-
     collection.insertDiscussionTag(tag);
 
     return tag;
@@ -173,7 +171,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(IdTypeRef id, 
                                return;
                            }
 
-                           StringWithSortKey newNameString(newName);
+                           DiscussionTag::NameType newNameString(newName);
 
                            auto& indexByName = collection.tags().byName();
                            if (indexByName.find(newNameString) != indexByName.end())
@@ -207,7 +205,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(EntityCollecti
         return StatusCode::NOT_FOUND;
     }
 
-    StringWithSortKey newNameString(newName);
+    DiscussionTag::NameType newNameString(newName);
 
     DiscussionTagPtr tagPtr = *it;
     DiscussionTag& tag = *tagPtr;

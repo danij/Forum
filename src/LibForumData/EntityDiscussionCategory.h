@@ -80,6 +80,8 @@ namespace Forum
                 Parent
             };
 
+            typedef Helpers::JsonReadyStringWithSortKey<256> NameType;
+
             struct ChangeNotification
             {
                 std::function<void(const DiscussionCategory&)> onPrepareUpdateName;
@@ -94,13 +96,13 @@ namespace Forum
 
             static auto& changeNotifications() { return changeNotifications_; }
             
-            DiscussionCategory(IdType id, Timestamp created, VisitDetails creationDetails,
+            DiscussionCategory(IdType id, NameType&& name, Timestamp created, VisitDetails creationDetails,
                                Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
-                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
+                : id_(std::move(id)), name_(std::move(name)), created_(created), creationDetails_(std::move(creationDetails)),
                   forumWidePrivileges_(forumWidePrivileges)
             {}
 
-            void updateName(Helpers::StringWithSortKey&& name)
+            void updateName(NameType&& name)
             {
                 changeNotifications_.onPrepareUpdateName(*this);
                 name_ = std::move(name);
@@ -153,7 +155,7 @@ namespace Forum
             Timestamp created_{0};
             VisitDetails creationDetails_;
 
-            Helpers::StringWithSortKey name_;
+            NameType name_;
             std::string description_;
             int_fast16_t displayOrder_{0};
             int_fast32_t messageCount_{0};

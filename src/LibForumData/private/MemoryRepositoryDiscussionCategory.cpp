@@ -180,7 +180,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           StringWithSortKey nameString(name);
+                           DiscussionCategory::NameType nameString(name);
 
                            auto& indexByName = collection.categories().byName();
                            if (indexByName.find(nameString) != indexByName.end())
@@ -230,7 +230,7 @@ StatusWithResource<DiscussionCategoryPtr>
     MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(EntityCollection& collection, IdTypeRef id,
                                                                  StringView name, IdTypeRef parentId)
 {
-    StringWithSortKey nameString(name);
+    DiscussionCategory::NameType nameString(name);
 
     auto& indexByName = collection.categories().byName();
     if (indexByName.find(nameString) != indexByName.end())
@@ -241,9 +241,8 @@ StatusWithResource<DiscussionCategoryPtr>
     auto& indexById = collection.categories().byId();
 
     //IdType id, Timestamp created, VisitDetails creationDetails
-    auto category = collection.createDiscussionCategory(id, Context::getCurrentTime(),
+    auto category = collection.createDiscussionCategory(id, std::move(nameString), Context::getCurrentTime(),
                                                         { Context::getCurrentUserIpAddress() });
-    category->updateName(std::move(nameString));
 
     if (parentId)
     {
@@ -317,7 +316,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(Enti
         return StatusCode::NOT_FOUND;
     }
 
-    StringWithSortKey newNameString(newName);
+    DiscussionCategory::NameType newNameString(newName);
 
     auto& indexByName = collection.categories().byName();
     if (indexByName.find(newNameString) != indexByName.end())

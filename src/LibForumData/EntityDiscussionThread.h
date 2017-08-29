@@ -75,7 +75,9 @@ namespace Forum
                 Name,
                 PinDisplayOrder
             };
-
+            
+            typedef Helpers::JsonReadyStringWithSortKey<1> NameType;
+            
             struct ChangeNotification
             {
                 std::function<void(const DiscussionThread&)> onPrepareUpdateName;
@@ -96,15 +98,15 @@ namespace Forum
 
             static auto& changeNotifications() { return changeNotifications_; }
 
-            DiscussionThread(IdType id, User& createdBy, Timestamp created, VisitDetails creationDetails)
-                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
+            DiscussionThread(IdType id, User& createdBy, NameType&& name, Timestamp created, VisitDetails creationDetails)
+                : id_(std::move(id)), name_(std::move(name)), created_(created), creationDetails_(std::move(creationDetails)),
                   createdBy_(createdBy)
             {
                 messages_.onPrepareCountChange() = [this]() { changeNotifications_.onPrepareUpdateMessageCount(*this); };
                 messages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
             }
 
-            void updateName(Helpers::StringWithSortKey&& name)
+            void updateName(NameType&& name)
             {
                 changeNotifications_.onPrepareUpdateName(*this);
                 name_ = std::move(name);
@@ -171,7 +173,7 @@ namespace Forum
 
             User& createdBy_;
 
-            Helpers::StringWithSortKey name_;
+            NameType name_;
             DiscussionThreadMessageCollection messages_;
 
             Timestamp lastUpdated_{0};

@@ -63,6 +63,8 @@ namespace Forum
                 UIBlob
             };
 
+            typedef Helpers::JsonReadyStringWithSortKey<64> NameType;
+
             struct ChangeNotification
             {
                 std::function<void(const DiscussionTag&)> onPrepareUpdateName;                
@@ -77,13 +79,13 @@ namespace Forum
             
             static auto& changeNotifications() { return changeNotifications_; }
 
-            DiscussionTag(IdType id, Timestamp created, VisitDetails creationDetails, 
+            DiscussionTag(IdType id, NameType&& name, Timestamp created, VisitDetails creationDetails,
                           Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
-                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
+                : id_(std::move(id)), name_(std::move(name)), created_(created), creationDetails_(std::move(creationDetails)),
                   forumWidePrivileges_(forumWidePrivileges)
             {}
 
-            void updateName(Helpers::StringWithSortKey&& name)
+            void updateName(NameType&& name)
             {
                 changeNotifications_.onPrepareUpdateName(*this);
                 name_ = std::move(name);
@@ -121,7 +123,7 @@ namespace Forum
             Timestamp created_{0};
             VisitDetails creationDetails_;
 
-            Helpers::StringWithSortKey name_;
+            NameType name_;
             std::string uiBlob_;
 
             DiscussionThreadCollectionWithHashedId threads_;

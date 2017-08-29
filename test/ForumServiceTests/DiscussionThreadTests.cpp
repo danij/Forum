@@ -618,7 +618,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_each_user_that_creat
     BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
     BOOST_REQUIRE(isIdEmpty(threads[1].createdBy.id));
-    BOOST_REQUIRE_EQUAL(anonymousUser()->name(), threads[1].createdBy.name);
+    BOOST_REQUIRE_EQUAL(anonymousUser()->name().string(), threads[1].createdBy.name);
 
     BOOST_REQUIRE( ! isIdEmpty(threads[2].id));
     BOOST_REQUIRE_EQUAL("Ghi", threads[2].name);
