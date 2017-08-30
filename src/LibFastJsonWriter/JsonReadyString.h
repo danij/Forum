@@ -121,7 +121,12 @@ namespace Json
     boost::string_view JsonReadyStringBase<StackSize, Derived, SizeType>::string() const noexcept
     {
         auto strStart = *container_;
+        auto extraSize = static_cast<const Derived*>(this)->getExtraSize();
+
         auto strSize = static_cast<boost::string_view::size_type>(container_.size());
+        assert(strSize > extraSize);
+
+        strSize -= extraSize;
 
         if ( ! needsJsonEscape())
         {
@@ -143,8 +148,12 @@ namespace Json
         }
 
         auto extraSize = static_cast<const Derived*>(this)->getExtraSize();
+        auto strSize = static_cast<boost::string_view::size_type>(container_.size());
 
-        return boost::string_view(*container_, static_cast<boost::string_view::size_type>(container_.size()) - extraSize);
+        assert(strSize > extraSize);
+        strSize -= extraSize;
+
+        return boost::string_view(*container_, strSize);
     }
 
     template <size_t StackSize>
