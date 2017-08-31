@@ -217,11 +217,11 @@ namespace Forum
             : Json::JsonReadyStringBase<StackSize, JsonReadyStringWithSortKey<StackSize>, Detail::SizeWithBoolAndSortKeySize>(source)
         {
             auto sortKeyStart = getCurrentSortKey();
-            auto& sizeInfo = container_.size();
+            auto& sizeInfo = this->container_.size();
             sizeInfo.sortKeySize = getCurrentSortKeyLength();
 
             std::copy(sortKeyStart, sortKeyStart + sizeInfo.sortKeySize, 
-                      *container_ + sizeInfo.size - sizeInfo.sortKeySize);
+                      *(this->container_) + sizeInfo.size - sizeInfo.sortKeySize);
         }
 
         template <size_t StackSize>
@@ -257,9 +257,9 @@ namespace Forum
         template <size_t StackSize>
         StringView JsonReadyStringWithSortKey<StackSize>::sortKey() const noexcept
         {
-            auto& size = container_.size();
+            auto& size = this->container_.size();
             assert(size.size >= size.sortKeySize);
-            auto start = *container_ + static_cast<size_t>(size.size - size.sortKeySize);
+            auto start = *(this->container_) + static_cast<size_t>(size.size - size.sortKeySize);
             return StringView(start, static_cast<size_t>(size.sortKeySize));
         }
 
@@ -273,7 +273,7 @@ namespace Forum
         template <size_t StackSize>
         size_t JsonReadyStringWithSortKey<StackSize>::getExtraSize() const noexcept
         {
-            auto& size = container_.size();
+            auto& size = this->container_.size();
             return static_cast<size_t>(size.sortKeySize);
         }
     }
