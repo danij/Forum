@@ -17,7 +17,7 @@ before_install:
     - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main" -y
     - sudo apt-get -qq update
     - sudo apt-get install -y --allow-unauthenticated cmake gcc-6 g++-6 clang-4.0 libicu-dev
-    - sudo add-apt-repository ppa:nschloe/boost-nightly
+    - sudo add-apt-repository ppa:nschloe/boost-nightly -y
     - sudo apt-get -qq update
     - sudo apt-get install -y --allow-unauthenticated boost1.65
 
