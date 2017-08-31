@@ -98,8 +98,8 @@ namespace Forum
             
             DiscussionCategory(IdType id, NameType&& name, Timestamp created, VisitDetails creationDetails,
                                Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
-                : id_(std::move(id)), name_(std::move(name)), created_(created), creationDetails_(std::move(creationDetails)),
-                  forumWidePrivileges_(forumWidePrivileges)
+                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
+                  name_(std::move(name)), forumWidePrivileges_(forumWidePrivileges)
             {}
 
             void updateName(NameType&& name)

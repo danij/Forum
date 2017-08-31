@@ -74,7 +74,8 @@ namespace Forum
             static auto& changeNotifications() { return changeNotifications_; }
 
             User(IdType id, NameType&& name, Timestamp created, VisitDetails creationDetails)
-                : id_(std::move(id)), name_(std::move(name)), created_(created), creationDetails_(std::move(creationDetails))
+                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
+                  name_(std::move(name))
             {
                 threads_.onPrepareCountChange()        = [this]() { changeNotifications_.onPrepareUpdateThreadCount(*this); };
                 threads_.onCountChange()               = [this]() { changeNotifications_.onUpdateThreadCount(*this); };

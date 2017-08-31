@@ -99,8 +99,8 @@ namespace Forum
             static auto& changeNotifications() { return changeNotifications_; }
 
             DiscussionThread(IdType id, User& createdBy, NameType&& name, Timestamp created, VisitDetails creationDetails)
-                : id_(std::move(id)), name_(std::move(name)), created_(created), creationDetails_(std::move(creationDetails)),
-                  createdBy_(createdBy)
+                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
+                  createdBy_(createdBy), name_(std::move(name))
             {
                 messages_.onPrepareCountChange() = [this]() { changeNotifications_.onPrepareUpdateMessageCount(*this); };
                 messages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
