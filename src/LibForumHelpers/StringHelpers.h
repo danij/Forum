@@ -273,7 +273,7 @@ namespace Forum
         template <size_t StackSize>
         size_t JsonReadyStringWithSortKey<StackSize>::getExtraSize() const noexcept
         {
-            auto& size = this->container_.size();
+            const auto& size = this->container_.size();
             return static_cast<size_t>(size.sortKeySize);
         }
     }
