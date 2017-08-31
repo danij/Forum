@@ -15,7 +15,7 @@ env:
 before_install:
     - sudo add-apt-repository "deb http://ftp.us.debian.org/debian unstable main contrib non-free" -y
     - sudo apt-get -qq update
-    - sudo apt-get -o Dpkg::Options::="--force-overwrite" install -y --allow-unauthenticated cmake gcc-6 g++-6 clang-4.0 libicu-dev libboost-all-dev
+    - sudo apt-get -o Dpkg::Options::="--force-overwrite" install -y --allow-unauthenticated cmake gcc-6 g++-6 clang-4.0 libboost-all-dev
 
 #addons:
 #    apt:
