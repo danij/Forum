@@ -65,8 +65,6 @@ static thread_local std::unique_ptr<uint8_t[]> SortKeyGenerationDestinationBuffe
 
 static thread_local size_t CurrentSortKeyLength;
 
-static char EmptySortKeyNullTerminator = 0;
-
 size_t Forum::Helpers::calculateSortKey(StringView view)
 {
     if (view.size() < 1)
