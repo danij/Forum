@@ -179,8 +179,8 @@ namespace Forum
             }
 
             const GrantedPrivilegeStore& privilegeStore() const { return privilegeStore_; }
-            const Entities::IdTypeRef            userId() const { return userId_; }
-                    Entities::Timestamp             now() const { return now_; }
+                  Entities::IdTypeRef            userId() const { return userId_; }
+                  Entities::Timestamp               now() const { return now_; }
 
             bool isAllowed(const Entities::DiscussionThreadMessage& message,
                            DiscussionThreadMessagePrivilege privilege = DiscussionThreadMessagePrivilege::VIEW) const
