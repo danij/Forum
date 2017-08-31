@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 dist: trusty
 language: cpp
 
@@ -12,23 +12,21 @@ os:
 env:
     - BUILD_TYPE=RelWithDebInfo
 
-addons:
-    apt:
-        # List of whitelisted in travis packages for ubuntu-trusty can be found here:
-        #   https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-trusty
-        # List of whitelisted in travis apt-sources:
-        #   https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
-        sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-4.0
-            - debian-sid
-        packages:
-            - cmake
-            - gcc-6
-            - g++-6
-            - clang-4.0
-            - libicu-dev
-            - libboost-all-dev
+before_install:
+    - sudo apt-get -qq update
+    - sudo apt-get install -y cmake gcc-6 g++-6 clang-4.0 libicu-dev libboost-all-dev
+
+#addons:
+#    apt:
+#        # List of whitelisted in travis packages for ubuntu-trusty can be found here:
+#        #   https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-trusty
+#        # List of whitelisted in travis apt-sources:
+#        #   https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
+#        sources:
+#            - ubuntu-toolchain-r-test
+#            - llvm-toolchain-trusty-4.0
+#            - debian-sid
+#        packages:
 
 install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
