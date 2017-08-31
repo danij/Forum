@@ -257,7 +257,7 @@ namespace Forum
         template <size_t StackSize>
         StringView JsonReadyStringWithSortKey<StackSize>::sortKey() const noexcept
         {
-            auto& size = this->container_.size();
+            const auto& size = this->container_.size();
             assert(size.size >= size.sortKeySize);
             auto start = *(this->container_) + static_cast<size_t>(size.size - size.sortKeySize);
             return StringView(start, static_cast<size_t>(size.sortKeySize));
