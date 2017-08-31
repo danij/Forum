@@ -17,11 +17,13 @@ before_install:
     - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main" -y
     - sudo apt-get -qq update
     - sudo apt-get install -y --allow-unauthenticated cmake gcc-6 g++-6 clang-4.0 libicu-dev
-# https://launchpad.net/~nschloe/+archive/ubuntu/boost-nightly/+packages
-    - sudo add-apt-repository ppa:nschloe/boost-nightly -y
-    - sudo apt-get -qq update
-    - apt-cache search boost
-    - sudo apt-get install -y --allow-unauthenticated boost1.65
+    - wget https://dl.bintray.com/boostorg/release/1.65.0/source/boost_1_65_0.tar.bz2
+    - tar -xf boost_1_65_0.tar.bz2
+    - cd boost_1_65_0
+    - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
+    - ${CXX} --version
+    - ./bootstrap.sh
+    - sudo ./b2 install
 
 #addons:
 #    apt:
