@@ -16,7 +16,7 @@ before_install:
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main" -y
     - sudo apt-get -qq update
-    - sudo apt-get install -y --allow-unauthenticated cmake gcc-6 g++-6 clang-4.0 libicu-dev libboost1.60-all-dev
+    - sudo apt-get install -y --allow-unauthenticated cmake gcc-6 g++-6 clang-4.0 libicu-dev
     - wget http://ftp.de.debian.org/debian/pool/main/b/boost-defaults/libboost-dev_1.62.0.1_amd64.deb
     - sudo dpkg -i libboost-dev_1.62.0.1_amd64.deb    
 
