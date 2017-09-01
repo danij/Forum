@@ -4,7 +4,6 @@ language: cpp
 
 compiler:
     - gcc
-    - clang
 
 os:
     - linux
@@ -17,34 +16,19 @@ before_install:
     - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main" -y
     - sudo apt-get -qq update
     - sudo apt-get install -y --allow-unauthenticated cmake gcc-6 g++-6 clang-4.0 libicu-dev
-    - wget https://dl.bintray.com/boostorg/release/1.65.0/source/boost_1_65_0.tar.bz2
-    - tar -xf boost_1_65_0.tar.bz2
-    - cd boost_1_65_0
-    - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
+    - export CXX="g++-6" CC="gcc-6"
     - ${CXX} --version
-    - ./bootstrap.sh
-    - sudo ./b2 install
-
-#addons:
-#    apt:
-#        # List of whitelisted in travis packages for ubuntu-trusty can be found here:
-#        #   https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-trusty
-#        # List of whitelisted in travis apt-sources:
-#        #   https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
-#        sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-trusty-4.0
-#            - debian-sid
-#        packages:
+    - wget https://danistorage.blob.core.windows.net/public/boost1_65.tar.bz2
+    - tar -xf boost1_65.tar.bz2    
 
 install:
-    - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
+    - export CXX="g++-6" CC="gcc-6"
     - ${CXX} --version
     - cmake --version
 
 before_script:
     - mkdir -p build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+    - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBOOST_ROOT=../boost1_65
     - cmake --build .
     
 script:
