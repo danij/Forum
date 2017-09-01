@@ -118,11 +118,11 @@ BOOST_AUTO_TEST_CASE( No_discussion_tags_are_present_before_one_is_created )
     auto handler = createCommandHandler();
     auto tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(0, tags.size());
+    BOOST_REQUIRE_EQUAL(0u, tags.size());
 
     tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(0, tags.size());
+    BOOST_REQUIRE_EQUAL(0u, tags.size());
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_returns_the_id_and_name )
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_have_no_tags_attached_by_default )
     for (auto command : GetDiscussionThreadWithTagViews)
     {
         auto threads = deserializeThreads(handlerToObj(handler, command, { tagId }).get_child("threads"));
-        BOOST_REQUIRE_EQUAL(0, threads.size());
+        BOOST_REQUIRE_EQUAL(0u, threads.size());
     }
 }
 
@@ -328,10 +328,10 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_attached_to_threads_even_if_they_ar
     auto threads = deserializeThreads(handlerToObj(handler,
                                                    Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
                                                    { tagId }).get_child("threads"));
-    BOOST_REQUIRE_EQUAL(1, threads.size());
+    BOOST_REQUIRE_EQUAL(1u, threads.size());
     BOOST_REQUIRE_EQUAL(threadId, threads[0].id);
     BOOST_REQUIRE_EQUAL("Thread", threads[0].name);
-    BOOST_REQUIRE_EQUAL(1, threads[0].tags.size());
+    BOOST_REQUIRE_EQUAL(1u, threads[0].tags.size());
     BOOST_REQUIRE_EQUAL(tagId, threads[0].tags[0].id);
     BOOST_REQUIRE_EQUAL("Tag", threads[0].tags[0].name);
 }
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_detached_from_threads )
     auto threads = deserializeThreads(handlerToObj(handler,
                                                    Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
                                                    { tagId }).get_child("threads"));
-    BOOST_REQUIRE_EQUAL(1, threads.size());
+    BOOST_REQUIRE_EQUAL(1u, threads.size());
 
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::REMOVE_DISCUSSION_TAG_FROM_THREAD,
                                                        { tagId, threadId }));
@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_detached_from_threads )
     threads = deserializeThreads(handlerToObj(handler,
                                               Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
                                               { tagId }).get_child("threads"));
-    BOOST_REQUIRE_EQUAL(0, threads.size());
+    BOOST_REQUIRE_EQUAL(0u, threads.size());
 }
 
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_detaches_it_from_threads )
@@ -405,23 +405,23 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_detaches_it_from_threads )
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_TAG, { tag1Id }));
 
     auto tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
-    BOOST_REQUIRE_EQUAL(1, tags.size());
+    BOOST_REQUIRE_EQUAL(1u, tags.size());
     BOOST_REQUIRE_EQUAL(tag2Id, tags[0].id);
     BOOST_REQUIRE_EQUAL("Tag2", tags[0].name);
     BOOST_REQUIRE_EQUAL(2, tags[0].threadCount);
 
     auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
                                              .get_child("threads"));
-    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL(2u, threads.size());
     BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
     BOOST_REQUIRE_EQUAL("Thread1", threads[0].name);
-    BOOST_REQUIRE_EQUAL(1, threads[0].tags.size());
+    BOOST_REQUIRE_EQUAL(1u, threads[0].tags.size());
     BOOST_REQUIRE_EQUAL(tag2Id, threads[0].tags[0].id);
     BOOST_REQUIRE_EQUAL("Tag2", threads[0].tags[0].name);
 
     BOOST_REQUIRE_EQUAL(thread2Id, threads[1].id);
     BOOST_REQUIRE_EQUAL("Thread2", threads[1].name);
-    BOOST_REQUIRE_EQUAL(1, threads[1].tags.size());
+    BOOST_REQUIRE_EQUAL(1u, threads[1].tags.size());
     BOOST_REQUIRE_EQUAL(tag2Id, threads[1].tags[0].id);
     BOOST_REQUIRE_EQUAL("Tag2", threads[1].tags[0].name);
 }
@@ -443,7 +443,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_detaches_it_from_tags )
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD, { thread1Id }));
 
     auto tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
-    BOOST_REQUIRE_EQUAL(2, tags.size());
+    BOOST_REQUIRE_EQUAL(2u, tags.size());
     BOOST_REQUIRE_EQUAL(tag1Id, tags[0].id);
     BOOST_REQUIRE_EQUAL("Tag1", tags[0].name);
     BOOST_REQUIRE_EQUAL(1, tags[0].threadCount);
@@ -454,10 +454,10 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_detaches_it_from_tags )
 
     auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME)
                                              .get_child("threads"));
-    BOOST_REQUIRE_EQUAL(1, threads.size());
+    BOOST_REQUIRE_EQUAL(1u, threads.size());
     BOOST_REQUIRE_EQUAL(thread2Id, threads[0].id);
     BOOST_REQUIRE_EQUAL("Thread2", threads[0].name);
-    BOOST_REQUIRE_EQUAL(2, threads[0].tags.size());
+    BOOST_REQUIRE_EQUAL(2u, threads[0].tags.size());
     BOOST_REQUIRE_EQUAL(tag1Id, threads[0].tags[0].id);
     BOOST_REQUIRE_EQUAL("Tag1", threads[0].tags[0].name);
     BOOST_REQUIRE_EQUAL(tag2Id, threads[0].tags[1].id);
@@ -532,7 +532,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_attached_to_one_tag_can_be_retrieved_so
         {
             auto threads = deserializeThreads(handlerToObj(handler, command, sortOrder, { tagId })
                                                      .get_child("threads"));
-            BOOST_REQUIRE_EQUAL(3, threads.size());
+            BOOST_REQUIRE_EQUAL(3u, threads.size());
             for (size_t i = 0; i < 3; i++)
             {
                 BOOST_REQUIRE_EQUAL(ids[index][i], threads[i].id);
@@ -609,14 +609,14 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_merged_keeping_all_discussion_threa
 
     auto tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(1, tags.size());
+    BOOST_REQUIRE_EQUAL(1u, tags.size());
     BOOST_REQUIRE_EQUAL(tag1Id, tags[0].id);
     BOOST_REQUIRE_EQUAL("Tag1", tags[0].name);
 
     auto threads = deserializeThreads(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
                                                 { tag1Id }).get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(3, threads.size());
+    BOOST_REQUIRE_EQUAL(3u, threads.size());
     BOOST_REQUIRE_EQUAL(thread1Id, threads[0].id);
     BOOST_REQUIRE_EQUAL(thread2Id, threads[1].id);
     BOOST_REQUIRE_EQUAL(thread3Id, threads[2].id);
@@ -648,7 +648,7 @@ BOOST_AUTO_TEST_CASE( Deleting_discussion_threads_updates_discussion_tag_message
 
     auto tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(1, tags.size());
+    BOOST_REQUIRE_EQUAL(1u, tags.size());
     BOOST_REQUIRE_EQUAL(tagId, tags[0].id);
     BOOST_REQUIRE_EQUAL(2, tags[0].threadCount);
     BOOST_REQUIRE_EQUAL(5, tags[0].messageCount);
@@ -657,7 +657,7 @@ BOOST_AUTO_TEST_CASE( Deleting_discussion_threads_updates_discussion_tag_message
 
     tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(1, tags.size());
+    BOOST_REQUIRE_EQUAL(1u, tags.size());
     BOOST_REQUIRE_EQUAL(tagId, tags[0].id);
     BOOST_REQUIRE_EQUAL(1, tags[0].threadCount);
     BOOST_REQUIRE_EQUAL(3, tags[0].messageCount);
@@ -690,7 +690,7 @@ BOOST_AUTO_TEST_CASE( Deleting_discussion_thread_messages_updates_discussion_tag
 
     auto tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(1, tags.size());
+    BOOST_REQUIRE_EQUAL(1u, tags.size());
     BOOST_REQUIRE_EQUAL(tagId, tags[0].id);
     BOOST_REQUIRE_EQUAL(2, tags[0].threadCount);
     BOOST_REQUIRE_EQUAL(5, tags[0].messageCount);
@@ -699,7 +699,7 @@ BOOST_AUTO_TEST_CASE( Deleting_discussion_thread_messages_updates_discussion_tag
 
     tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(1, tags.size());
+    BOOST_REQUIRE_EQUAL(1u, tags.size());
     BOOST_REQUIRE_EQUAL(tagId, tags[0].id);
     BOOST_REQUIRE_EQUAL(2, tags[0].threadCount);
     BOOST_REQUIRE_EQUAL(4, tags[0].messageCount);
@@ -731,7 +731,7 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_with_same_tag_preserves_discuss
 
     auto tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(1, tags.size());
+    BOOST_REQUIRE_EQUAL(1u, tags.size());
     BOOST_REQUIRE_EQUAL(tagId, tags[0].id);
     BOOST_REQUIRE_EQUAL(2, tags[0].threadCount);
     BOOST_REQUIRE_EQUAL(5, tags[0].messageCount);
@@ -741,7 +741,7 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_with_same_tag_preserves_discuss
 
     tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(1, tags.size());
+    BOOST_REQUIRE_EQUAL(1u, tags.size());
     BOOST_REQUIRE_EQUAL(tagId, tags[0].id);
     BOOST_REQUIRE_EQUAL(1, tags[0].threadCount);
     BOOST_REQUIRE_EQUAL(5, tags[0].messageCount);
@@ -774,7 +774,7 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_with_different_tags_updates_dis
 
     auto tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(2, tags.size());
+    BOOST_REQUIRE_EQUAL(2u, tags.size());
     BOOST_REQUIRE_EQUAL(tag1Id, tags[0].id);
     BOOST_REQUIRE_EQUAL(1, tags[0].threadCount);
     BOOST_REQUIRE_EQUAL(2, tags[0].messageCount);
@@ -787,7 +787,7 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_with_different_tags_updates_dis
 
     tags = deserializeTags(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME).get_child("tags"));
 
-    BOOST_REQUIRE_EQUAL(2, tags.size());
+    BOOST_REQUIRE_EQUAL(2u, tags.size());
     BOOST_REQUIRE_EQUAL(tag1Id, tags[0].id);
     BOOST_REQUIRE_EQUAL(0, tags[0].threadCount);
     BOOST_REQUIRE_EQUAL(0, tags[0].messageCount);

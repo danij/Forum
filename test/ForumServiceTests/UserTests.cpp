@@ -261,12 +261,12 @@ BOOST_AUTO_TEST_CASE( A_user_that_was_created_can_be_retrieved_and_has_a_distinc
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
-    BOOST_REQUIRE_EQUAL(2, retrievedNames.size());
+    BOOST_REQUIRE_EQUAL(2u, retrievedNames.size());
     BOOST_REQUIRE( ! isIdEmpty(retrievedIds[0]));
     BOOST_REQUIRE( ! isIdEmpty(retrievedIds[1]));
     BOOST_REQUIRE_NE(retrievedIds[0], retrievedIds[1]);
 
-    BOOST_REQUIRE_EQUAL(2, retrievedNames.size());
+    BOOST_REQUIRE_EQUAL(2u, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("User1", retrievedNames[0]);
     BOOST_REQUIRE_EQUAL("User2", retrievedNames[1]);
 }
@@ -304,7 +304,7 @@ BOOST_AUTO_TEST_CASE( Adding_multiple_users_with_same_name_fails )
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
-    BOOST_REQUIRE_EQUAL(1, retrievedNames.size());
+    BOOST_REQUIRE_EQUAL(1u, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("Abc", retrievedNames[0]);
 }
 
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE( Adding_multiple_users_with_same_name_but_different_case_fa
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
-    BOOST_REQUIRE_EQUAL(1, retrievedNames.size());
+    BOOST_REQUIRE_EQUAL(1u, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("Abc", retrievedNames[0]);
 }
 
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE( Adding_multiple_users_with_same_name_but_different_accents
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME).get_child("users"),
                                "name", std::back_inserter(retrievedNames), std::string());
 
-    BOOST_REQUIRE_EQUAL(1, retrievedNames.size());
+    BOOST_REQUIRE_EQUAL(1u, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("HélĹǬ", retrievedNames[0]);
 }
 
@@ -522,7 +522,7 @@ BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_their_creation_date_in_ascending_an
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED, SortOrder::Ascending)
                                .get_child("users"), "name", std::back_inserter(retrievedNames), std::string());
 
-    BOOST_REQUIRE_EQUAL(3, retrievedNames.size());
+    BOOST_REQUIRE_EQUAL(3u, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("Abc", retrievedNames[0]);
     BOOST_REQUIRE_EQUAL("Def", retrievedNames[1]);
     BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[2]);
@@ -531,7 +531,7 @@ BOOST_AUTO_TEST_CASE( Users_are_retrieved_by_their_creation_date_in_ascending_an
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_CREATED, SortOrder::Descending)
                                .get_child("users"), "name", std::back_inserter(retrievedNames), std::string());
 
-    BOOST_REQUIRE_EQUAL(3, retrievedNames.size());
+    BOOST_REQUIRE_EQUAL(3u, retrievedNames.size());
     BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[0]);
     BOOST_REQUIRE_EQUAL("Def", retrievedNames[1]);
     BOOST_REQUIRE_EQUAL("Abc", retrievedNames[2]);
@@ -699,7 +699,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
                                                                   Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
                                                                   SortOrder::Ascending, { user1 }).get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(3, user1ThreadsByName.size());
+    BOOST_REQUIRE_EQUAL(3u, user1ThreadsByName.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByName[0].id));
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByName[0].name);
     BOOST_REQUIRE_EQUAL(2000, user1ThreadsByName[0].created);
@@ -720,7 +720,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
                                                              Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
                                                              SortOrder::Descending, { user1 }).get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(3, user1ThreadsByName.size());
+    BOOST_REQUIRE_EQUAL(3u, user1ThreadsByName.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByName[0].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByName[0].name);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByName[0].created);
@@ -741,7 +741,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, SortOrder::Ascending, { user1 })
             .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(3, user1ThreadsByCreated.size());
+    BOOST_REQUIRE_EQUAL(3u, user1ThreadsByCreated.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[0].id));
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByCreated[0].name);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByCreated[0].created);
@@ -762,7 +762,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, SortOrder::Descending, { user1 })
             .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(3, user1ThreadsByCreated.size());
+    BOOST_REQUIRE_EQUAL(3u, user1ThreadsByCreated.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[0].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByCreated[0].name);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByCreated[0].created);
@@ -783,7 +783,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, SortOrder::Ascending, { user1 })
                 .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(3, user1ThreadsByLastUpdated.size());
+    BOOST_REQUIRE_EQUAL(3u, user1ThreadsByLastUpdated.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[0].id));
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByLastUpdated[0].name);
     BOOST_REQUIRE_EQUAL(1000, user1ThreadsByLastUpdated[0].created);
@@ -804,7 +804,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, SortOrder::Descending, { user1 })
             .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(3, user1ThreadsByLastUpdated.size());
+    BOOST_REQUIRE_EQUAL(3u, user1ThreadsByLastUpdated.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[0].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByLastUpdated[0].name);
     BOOST_REQUIRE_EQUAL(3000, user1ThreadsByLastUpdated[0].created);
@@ -826,7 +826,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
                                                                   SortOrder::Ascending,
                                                                   { user2 }).get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, user2ThreadsByName.size());
+    BOOST_REQUIRE_EQUAL(2u, user2ThreadsByName.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByName[0].id));
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByName[0].name);
     BOOST_REQUIRE_EQUAL(1000, user2ThreadsByName[0].created);
@@ -843,7 +843,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
                                                              SortOrder::Descending,
                                                              { user2 }).get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, user2ThreadsByName.size());
+    BOOST_REQUIRE_EQUAL(2u, user2ThreadsByName.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByName[0].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByName[0].name);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByName[0].created);
@@ -859,7 +859,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, SortOrder::Ascending, { user2 })
                 .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, user2ThreadsByCreated.size());
+    BOOST_REQUIRE_EQUAL(2u, user2ThreadsByCreated.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByCreated[0].id));
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByCreated[0].name);
     BOOST_REQUIRE_EQUAL(1000, user2ThreadsByCreated[0].created);
@@ -875,7 +875,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_CREATED, SortOrder::Descending, { user2 })
             .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, user2ThreadsByCreated.size());
+    BOOST_REQUIRE_EQUAL(2u, user2ThreadsByCreated.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByCreated[0].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByCreated[0].name);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByCreated[0].created);
@@ -891,7 +891,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, SortOrder::Ascending, { user2 })
                 .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, user2ThreadsByLastUpdated.size());
+    BOOST_REQUIRE_EQUAL(2u, user2ThreadsByLastUpdated.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByLastUpdated[0].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByLastUpdated[0].name);
     BOOST_REQUIRE_EQUAL(2000, user2ThreadsByLastUpdated[0].created);
@@ -907,7 +907,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
         handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED, SortOrder::Descending, { user2 })
             .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, user2ThreadsByLastUpdated.size());
+    BOOST_REQUIRE_EQUAL(2u, user2ThreadsByLastUpdated.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByLastUpdated[0].id));
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByLastUpdated[0].name);
     BOOST_REQUIRE_EQUAL(1000, user2ThreadsByLastUpdated[0].created);
@@ -1065,7 +1065,7 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_threads_are_no_longer_retrieved_when_re
     auto user1Threads = deserializeUserThreads(handlerToObj(handler,
                                                             Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
                                                             { user1 }).get_child("threads"));
-    BOOST_REQUIRE_EQUAL(2, user1Threads.size());
+    BOOST_REQUIRE_EQUAL(2u, user1Threads.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc", user1Threads[0].name);
     BOOST_REQUIRE( ! isIdEmpty(user1Threads[1].id));
@@ -1074,7 +1074,7 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_threads_are_no_longer_retrieved_when_re
     auto user2Threads = deserializeUserThreads(handlerToObj(handler,
                                                             Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
                                                             { user2 }).get_child("threads"));
-    BOOST_REQUIRE_EQUAL(1, user2Threads.size());
+    BOOST_REQUIRE_EQUAL(1u, user2Threads.size());
     BOOST_REQUIRE( ! isIdEmpty(user2Threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc2", user2Threads[0].name);
 }
@@ -1168,7 +1168,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_messages_created_user_can_be_retrieved_s
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, SortOrder::Ascending, { user1 })
                     .get_child("messages"));
 
-    BOOST_REQUIRE_EQUAL(3, user1Messages.size());
+    BOOST_REQUIRE_EQUAL(3u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1000-User1", user1Messages[0].content);
     BOOST_REQUIRE_EQUAL(1000, user1Messages[0].created);
@@ -1195,7 +1195,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_messages_created_user_can_be_retrieved_s
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, SortOrder::Ascending, { user2 })
                     .get_child("messages"));
 
-    BOOST_REQUIRE_EQUAL(2, user2Messages.size());
+    BOOST_REQUIRE_EQUAL(2u, user2Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user2Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1500-User2", user2Messages[0].content);
     BOOST_REQUIRE_EQUAL(1500, user2Messages[0].created);
@@ -1215,7 +1215,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_messages_created_user_can_be_retrieved_s
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, SortOrder::Descending, { user1 })
                     .get_child("messages"));
 
-    BOOST_REQUIRE_EQUAL(3, user1Messages.size());
+    BOOST_REQUIRE_EQUAL(3u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-3000-User1", user1Messages[0].content);
     BOOST_REQUIRE_EQUAL(3000, user1Messages[0].created);
@@ -1242,7 +1242,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_messages_created_user_can_be_retrieved_s
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, SortOrder::Descending, { user2 })
                     .get_child("messages"));
 
-    BOOST_REQUIRE_EQUAL(2, user2Messages.size());
+    BOOST_REQUIRE_EQUAL(2u, user2Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user2Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-2-2000-User2", user2Messages[0].content);
     BOOST_REQUIRE_EQUAL(2000, user2Messages[0].created);
@@ -1341,7 +1341,7 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_thread_messages_are_no_longer_retrieved
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, SortOrder::Ascending, { user1 })
                     .get_child("messages"));
 
-    BOOST_REQUIRE_EQUAL(3, user1Messages.size());
+    BOOST_REQUIRE_EQUAL(3u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1000-User1", user1Messages[0].content);
     BOOST_REQUIRE_EQUAL(1000, user1Messages[0].created);
@@ -1371,7 +1371,7 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_thread_messages_are_no_longer_retrieved
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, SortOrder::Ascending, { user1 })
                     .get_child("messages"));
 
-    BOOST_REQUIRE_EQUAL(2, user1Messages.size());
+    BOOST_REQUIRE_EQUAL(2u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1000-User1", user1Messages[0].content);
     BOOST_REQUIRE_EQUAL(1000, user1Messages[0].created);
@@ -1432,7 +1432,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_hides_messages_when_requestin
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, SortOrder::Ascending, { user1 })
                     .get_child("messages"));
 
-    BOOST_REQUIRE_EQUAL(3, user1Messages.size());
+    BOOST_REQUIRE_EQUAL(3u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1000-User1", user1Messages[0].content);
     BOOST_REQUIRE_EQUAL(1000, user1Messages[0].created);
@@ -1468,7 +1468,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_hides_messages_when_requestin
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, SortOrder::Ascending, { user1 })
                     .get_child("messages"));
 
-    BOOST_REQUIRE_EQUAL(1, user1Messages.size());
+    BOOST_REQUIRE_EQUAL(1u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-2-2500-User1", user1Messages[0].content);
     BOOST_REQUIRE_EQUAL(2500, user1Messages[0].created);
@@ -1512,7 +1512,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_of_users_can_be_retrieved_sorted_by_mes
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT, SortOrder::Ascending, { user1 })
                     .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL(2u, threads.size());
     BOOST_REQUIRE_EQUAL("Def", threads[0].name);
     BOOST_REQUIRE_EQUAL(1, threads[0].messageCount);
     BOOST_REQUIRE_EQUAL("Abc", threads[1].name);
@@ -1522,7 +1522,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_of_users_can_be_retrieved_sorted_by_mes
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT, SortOrder::Descending, { user1 })
                     .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL(2u, threads.size());
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
     BOOST_REQUIRE_EQUAL(2, threads[0].messageCount);
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
@@ -1538,7 +1538,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_of_users_can_be_retrieved_sorted_by_mes
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT, SortOrder::Ascending, { user1 })
                     .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL(2u, threads.size());
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
     BOOST_REQUIRE_EQUAL(0, threads[0].messageCount);
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
@@ -1548,7 +1548,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_of_users_can_be_retrieved_sorted_by_mes
             handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT, SortOrder::Descending, { user1 })
                     .get_child("threads"));
 
-    BOOST_REQUIRE_EQUAL(2, threads.size());
+    BOOST_REQUIRE_EQUAL(2u, threads.size());
     BOOST_REQUIRE_EQUAL("Def", threads[0].name);
     BOOST_REQUIRE_EQUAL(1, threads[0].messageCount);
     BOOST_REQUIRE_EQUAL("Abc", threads[1].name);
@@ -1603,7 +1603,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_involves_pagination )
     BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
 
     auto users = deserializeUsers(page.get_child("users"));
-    BOOST_REQUIRE_EQUAL(1, users.size());
+    BOOST_REQUIRE_EQUAL(1u, users.size());
 
     BOOST_REQUIRE_EQUAL(userIds[9], users[0].id);
     BOOST_REQUIRE_EQUAL("User110", users[0].name);
@@ -1617,7 +1617,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_involves_pagination )
     BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
 
     users = deserializeUsers(page.get_child("users"));
-    BOOST_REQUIRE_EQUAL(0, users.size());
+    BOOST_REQUIRE_EQUAL(0u, users.size());
 }
 
 BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descending_order )
@@ -1667,7 +1667,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descendi
     BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
 
     auto users = deserializeUsers(page.get_child("users"));
-    BOOST_REQUIRE_EQUAL(1, users.size());
+    BOOST_REQUIRE_EQUAL(1u, users.size());
 
     BOOST_REQUIRE_EQUAL(userIds[0], users[0].id);
     BOOST_REQUIRE_EQUAL("User101", users[0].name);
@@ -1681,7 +1681,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descendi
     BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
 
     users = deserializeUsers(page.get_child("users"));
-    BOOST_REQUIRE_EQUAL(0, users.size());
+    BOOST_REQUIRE_EQUAL(0u, users.size());
 }
 
 BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_thread_count )
@@ -1715,7 +1715,7 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_thread_count )
 
     auto users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_THREAD_COUNT).get_child("users"));
 
-    BOOST_REQUIRE_EQUAL(3, users.size());
+    BOOST_REQUIRE_EQUAL(3u, users.size());
 
     BOOST_REQUIRE_EQUAL(user2Id, users[0].id);
     BOOST_REQUIRE_EQUAL("User2", users[0].name);
@@ -1740,7 +1740,7 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_thread_count )
 
     users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_THREAD_COUNT).get_child("users"));
 
-    BOOST_REQUIRE_EQUAL(3, users.size());
+    BOOST_REQUIRE_EQUAL(3u, users.size());
 
     BOOST_REQUIRE_EQUAL(user2Id, users[0].id);
     BOOST_REQUIRE_EQUAL("User2", users[0].name);
@@ -1761,7 +1761,7 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_thread_count )
 
     users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_THREAD_COUNT).get_child("users"));
 
-    BOOST_REQUIRE_EQUAL(3, users.size());
+    BOOST_REQUIRE_EQUAL(3u, users.size());
 
     BOOST_REQUIRE_EQUAL(user2Id, users[0].id);
     BOOST_REQUIRE_EQUAL("User2", users[0].name);
@@ -1813,7 +1813,7 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_message_count )
 
     auto users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT).get_child("users"));
 
-    BOOST_REQUIRE_EQUAL(3, users.size());
+    BOOST_REQUIRE_EQUAL(3u, users.size());
 
     BOOST_REQUIRE_EQUAL(user2Id, users[0].id);
     BOOST_REQUIRE_EQUAL("User2", users[0].name);
@@ -1838,7 +1838,7 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_message_count )
 
     users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT).get_child("users"));
 
-    BOOST_REQUIRE_EQUAL(3, users.size());
+    BOOST_REQUIRE_EQUAL(3u, users.size());
 
     BOOST_REQUIRE_EQUAL(user2Id, users[0].id);
     BOOST_REQUIRE_EQUAL("User2", users[0].name);
@@ -1859,7 +1859,7 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_message_count )
 
     users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT).get_child("users"));
 
-    BOOST_REQUIRE_EQUAL(3, users.size());
+    BOOST_REQUIRE_EQUAL(3u, users.size());
 
     BOOST_REQUIRE_EQUAL(user2Id, users[0].id);
     BOOST_REQUIRE_EQUAL("User2", users[0].name);
@@ -1880,7 +1880,7 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_discussion_message_count )
 
     users = deserializeUsers(handlerToObj(handler, Forum::Commands::GET_USERS_BY_MESSAGE_COUNT).get_child("users"));
 
-    BOOST_REQUIRE_EQUAL(3, users.size());
+    BOOST_REQUIRE_EQUAL(3u, users.size());
 
     BOOST_REQUIRE_EQUAL(user2Id, users[0].id);
     BOOST_REQUIRE_EQUAL("User2", users[0].name);
