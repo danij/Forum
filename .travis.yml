@@ -28,7 +28,7 @@ install:
 
 before_script:
     - mkdir -p build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBOOST_ROOT=/home/travis/build/danij/Forum/boost1_65
+    - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBOOST_ROOT=${CMAKE_CURRENT_SOURCE_DIR}/boost1_65
     - cmake --build .
     
 script:
