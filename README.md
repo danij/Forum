@@ -1,4 +1,4 @@
-# Fast Forum Backend
+# Fast Forum Backend [![Build Status](https://travis-ci.org/danij/Forum.svg?branch=initial)](https://travis-ci.org/danij/Forum)
 
 Cross-platform backend software for providing a discussion forum. 
 
