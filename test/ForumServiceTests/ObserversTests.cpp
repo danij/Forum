@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE( Counting_entities_invokes_observer )
 
 BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
 {
-    int observerCalledNTimes = 0;
+    auto observerCalledNTimes = 0u;
     auto handler = createCommandHandler();
 
     auto ___ = addHandler(handler->readEvents().onGetUsers,

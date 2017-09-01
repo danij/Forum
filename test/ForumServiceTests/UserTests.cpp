@@ -1585,7 +1585,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_involves_pagination )
         BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
 
         auto users = deserializeUsers(page.get_child("users"));
-        BOOST_REQUIRE_EQUAL(pageSize, users.size());
+        BOOST_REQUIRE_EQUAL(static_cast<size_t>(pageSize), users.size());
 
         for (size_t j = 0; j < users.size(); j++)
         {
@@ -1649,7 +1649,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descendi
         BOOST_REQUIRE_EQUAL(settings.pageNumber, page.get<int>("page"));
 
         auto users = deserializeUsers(page.get_child("users"));
-        BOOST_REQUIRE_EQUAL(pageSize, users.size());
+        BOOST_REQUIRE_EQUAL(static_cast<size_t>(pageSize), users.size());
 
         for (size_t j = 0; j < users.size(); j++)
         {
