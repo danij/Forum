@@ -20,8 +20,6 @@ before_install:
     - ${CXX} --version
     - wget https://danistorage.blob.core.windows.net/public/boost1_65.tar.bz2
     - tar -xf boost1_65.tar.bz2
-    - pwd
-    - ls -l
 
 install:
     - export CXX="g++-6" CC="gcc-6"
@@ -30,7 +28,7 @@ install:
 
 before_script:
     - mkdir -p build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBOOST_ROOT=../boost1_65
+    - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBOOST_ROOT=/home/travis/build/danij/Forum/boost1_65
     - cmake --build .
     
 script:
