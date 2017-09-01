@@ -11,9 +11,9 @@ The backend supports the following:
 * Discussion tags for classifying discussion threads
 * Hierarchical discussion categories for grouping together threads that share the same tags
 * Comments for discussion messages
-* Fined grained, hierarchical access control which allows granting or revoking specific privileges to any individual user  
+* Fine grained, hierarchical access control which allows granting or revoking specific privileges to any individual user  
 * Event based persistence of data, enabling incremental backups and going back to any point in time
-* External authentication providers for stronger security and a better user experience
+* External authentication providers for stronger security and a better user experience.
 
 Text content is normalized and stored using `UTF-8` encoding. When necessary it is compared using `en_US` collation 
 with primary strength (e.g. when checking if a user name is already taken).
