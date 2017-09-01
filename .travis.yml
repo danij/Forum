@@ -19,7 +19,8 @@ before_install:
     - export CXX="g++-6" CC="gcc-6"
     - ${CXX} --version
     - wget https://danistorage.blob.core.windows.net/public/boost1_65.tar.bz2
-    - tar -xf boost1_65.tar.bz2    
+    - tar -xf boost1_65.tar.bz2
+    - pwd
 
 install:
     - export CXX="g++-6" CC="gcc-6"
