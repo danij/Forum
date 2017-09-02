@@ -36,4 +36,4 @@ script:
     - test/ForumServiceTests/ForumServiceTests
     
 after_success:
-    - coveralls -E .*boost.* --exclude tests --gcov-options '\-lp'
+    - coveralls -E .*boost.* --exclude tests --gcov gcov-6 --gcov-options '\-lp'
