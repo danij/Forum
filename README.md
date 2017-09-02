@@ -1,4 +1,4 @@
-# Fast Forum Backend [![Build Status](https://travis-ci.org/danij/Forum.svg?branch=initial)](https://travis-ci.org/danij/Forum)
+# Fast Forum Backend [![Build Status](https://travis-ci.org/danij/Forum.svg?branch=initial)](https://travis-ci.org/danij/Forum) [![Coverage Status](https://coveralls.io/repos/github/danij/Forum/badge.svg?branch=initial)](https://coveralls.io/github/danij/Forum?branch=initial)
 
 Cross-platform backend software for providing a discussion forum. 
 
