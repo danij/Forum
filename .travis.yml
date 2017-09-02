@@ -34,6 +34,7 @@ before_script:
     
 script:
     - test/ForumServiceTests/ForumServiceTests
+    - test/MemoryRepositoryBenchmarks/MemoryRepositoryBenchmarks
     
 after_success:
     - coveralls -r /home/travis/build/danij/Forum -b /home/travis/build/danij/Forum/build -E .*boost.* -E .*test.* -E .*ForumApp.* --gcov gcov-6 --gcov-options '\-lp'
