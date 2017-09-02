@@ -171,7 +171,7 @@ void execute(CommandHandler& handler, CommandType command, const std::initialize
     handler.handle(command, parametersVector);
 }
 
-const int nrOfUsers = 10000;
+const int nrOfUsers = 1000;
 const int nrOfThreads = nrOfUsers * 1;
 const int nrOfMessages = nrOfThreads * 50;
 const int nrOfTags = 100;
