@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <array>
 #include <limits>
-#include <string>
+#include <cstdint>
 
 #include "JsonReadyString.h"
 #include "StringBuffer.h"
@@ -92,7 +92,7 @@ namespace Json
         JsonWriter& operator=(const JsonWriter& other) = delete;
         JsonWriter& operator=(JsonWriter&& other) = default;
 
-        constexpr static int MaxStateDepth = 30;
+        constexpr static int MaxStateDepth = 32;
 
         JsonWriter& null();
 
@@ -106,7 +106,7 @@ namespace Json
 
         JsonWriter& newProperty(const char* name);
 
-        JsonWriter& newProperty(const std::string& name);
+        JsonWriter& newProperty(boost::string_view name);
 
         JsonWriter& newPropertyWithSafeName(const char* name, size_t length);
 
@@ -117,7 +117,10 @@ namespace Json
             return newPropertyWithSafeName(name, Length - 1);
         }
 
-        JsonWriter& newPropertyWithSafeName(const std::string& name);
+        JsonWriter& newPropertyWithSafeName(boost::string_view name)
+        {
+            return newPropertyWithSafeName(name.data(), name.size());
+        }
 
         JsonWriter& writeEscapedString(const char* value, size_t length = 0);
 
@@ -230,26 +233,30 @@ namespace Json
 
         bool isCommaNeeded()
         {
-            bool result = false;
             auto& state = peekState();
-            if (state.enumerationStarted)
-            {
-                if (state.commaRequired)
-                {
-                    if (state.propertyNameAdded)
-                    {
-                        state.propertyNameAdded = false;
-                    }
-                    else
-                    {
-                        result = true;
-                    }
-                }
-                else
-                {
-                    state.commaRequired = true;
-                }
-            }
+            //if (state.enumerationStarted)
+            //{
+            //    if (state.commaRequired)
+            //    {
+            //        if (state.propertyNameAdded)
+            //        {
+            //            state.propertyNameAdded = false;
+            //        }
+            //        else
+            //        {
+            //            result = true;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        state.commaRequired = true;
+            //    }
+            //}
+
+            auto result = state.enumerationStarted && state.commaRequired && ! state.propertyNameAdded;
+            state.commaRequired = state.enumerationStarted | state.commaRequired;
+            state.propertyNameAdded = 0;
+
             return result;
         }
 
@@ -329,9 +336,9 @@ namespace Json
             Detail::writeString<Size>(stringBufferOutput_, value);
         }
 
-        void writeString(const std::string& value)
+        void writeString(boost::string_view& value)
         {
-            writeString(value.c_str(), value.size());
+            writeString(value.data(), value.size());
         }
 
         void writeString(const char* value, size_t size)
@@ -345,13 +352,13 @@ namespace Json
         }
 
         friend JsonWriter& operator<<(JsonWriter& writer, const char* value);
-        friend JsonWriter& operator<<(JsonWriter& writer, const std::string& value);
+        friend JsonWriter& operator<<(JsonWriter& writer, boost::string_view value);
 
         struct State
         {
-            bool enumerationStarted;
-            bool commaRequired;
-            bool propertyNameAdded;
+            uint8_t enumerationStarted :1;
+            uint8_t commaRequired      :1;
+            uint8_t propertyNameAdded  :1;
         };
 
         State& peekState()
@@ -384,11 +391,6 @@ namespace Json
     inline JsonWriter& operator<<(JsonWriter& writer, const char* value)
     {
         return writer.writeEscapedString(value);
-    }
-
-    inline JsonWriter& operator<<(JsonWriter& writer, const std::string& value)
-    {
-        return writer.writeEscapedString(value.c_str(), value.length());
     }
 
     inline JsonWriter& operator<<(JsonWriter& writer, boost::string_view value)

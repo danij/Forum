@@ -25,7 +25,7 @@ using namespace Json;
 
 JsonWriter::JsonWriter(StringBuffer& stringBuffer) : stringBufferOutput_(stringBuffer)
 {
-    pushState({ false, false, false });
+    pushState({ 0, 0, 0 });
 }
 
 JsonWriter& JsonWriter::null()
@@ -44,7 +44,7 @@ JsonWriter& JsonWriter::startArray()
     {
         writeChar('[');
     }
-    pushState({ true, false, false });
+    pushState({ 1, 0, 0 });
     return *this;
 }
 
@@ -66,7 +66,7 @@ JsonWriter& JsonWriter::startObject()
     {
         writeChar('{');
     }
-    pushState({ true, false, false });
+    pushState({ 1, 0, 0 });
     return *this;
 }
 
@@ -83,16 +83,16 @@ JsonWriter& JsonWriter::newProperty(const char* name)
     writeEscapedString(name);
     writeChar(':');
 
-    peekState().propertyNameAdded = true;
+    peekState().propertyNameAdded = 1;
     return *this;
 }
 
-JsonWriter& JsonWriter::newProperty(const std::string& name)
+JsonWriter& JsonWriter::newProperty(boost::string_view name)
 {
-    writeEscapedString(name.c_str(), name.length());
+    writeEscapedString(name.data(), name.length());
     writeChar(':');
 
-    peekState().propertyNameAdded = true;
+    peekState().propertyNameAdded = 1;
     return *this;
 }
 
@@ -109,24 +109,7 @@ JsonWriter& JsonWriter::newPropertyWithSafeName(const char* name, size_t length)
     writeString(name, length);
     writeString("\":");
 
-    peekState().propertyNameAdded = true;
-    return *this;
-}
-
-JsonWriter& JsonWriter::newPropertyWithSafeName(const std::string& name)
-{
-    if (isCommaNeeded())
-    {
-        writeString(",\"");
-    }
-    else
-    {
-        writeChar('"');
-    }
-    writeString(name);
-    writeString("\":");
-
-    peekState().propertyNameAdded = true;
+    peekState().propertyNameAdded = 1;
     return *this;
 }
 
