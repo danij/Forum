@@ -13,9 +13,9 @@ env:
 
 before_install:
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main" -y
+#    - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main" -y
     - sudo apt-get -qq update
-    - sudo apt-get install -y --allow-unauthenticated cmake gcc-6 g++-6 clang-4.0 libicu-dev
+    - sudo apt-get install -y --allow-unauthenticated cmake gcc-6 g++-6 libicu-dev
     - export CXX="g++-6" CC="gcc-6"
     - ${CXX} --version
     - wget https://danistorage.blob.core.windows.net/public/boost1_65.tar.bz2
