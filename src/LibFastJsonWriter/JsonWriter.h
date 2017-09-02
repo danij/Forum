@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <iostream>
 #include <array>
 #include <limits>
 #include <string>
@@ -30,98 +29,61 @@ namespace Json
 {
     namespace Detail
     {
-        inline void writeChar(std::ostream* streamOutput, StringBuffer* stringBufferOutput, char value)
+        inline void writeChar(StringBuffer& stringBufferOutput, char value)
         {
-            if (stringBufferOutput)
-            {
-                stringBufferOutput->write(value);
-            }
-            else
-            {
-                *streamOutput << value;
-            }
+            stringBufferOutput.write(value);
         }
 
-        inline void writeString(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char* value, size_t size)
+        inline void writeString(StringBuffer& stringBufferOutput, const char* value, size_t size)
         {
-            if (stringBufferOutput)
-            {
-                stringBufferOutput->write(value, size);
-            }
-            else
-            {
-                streamOutput->write(value, size);
-            }
+            stringBufferOutput.write(value, size);
         }
 
         template<size_t Size>
-        void writeString(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[Size])
+        void writeString(StringBuffer& stringBufferOutput, const char(&value)[Size])
         {
             //ignore null terminator
-            writeString(streamOutput, stringBufferOutput, value, Size - 1);
+            writeString(stringBufferOutput, value, Size - 1);
         }
 
         template <>
-        inline void writeString<1>(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[0 + 1])
+        inline void writeString<1>(StringBuffer& stringBufferOutput, const char(&value)[0 + 1])
         {
             //ignore null terminator
         }
 
         template <>
-        inline void writeString<2>(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[1 + 1])
+        inline void writeString<2>(StringBuffer& stringBufferOutput, const char(&value)[1 + 1])
         {
             //ignore null terminator
-            writeChar(streamOutput, stringBufferOutput, value[0]);
+            writeChar(stringBufferOutput, value[0]);
         }
 
         template <>
-        inline void writeString<3>(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[2 + 1])
+        inline void writeString<3>(StringBuffer& stringBufferOutput, const char(&value)[2 + 1])
         {
             //ignore null terminator
-            if (stringBufferOutput)
-            {
-                stringBufferOutput->write(*reinterpret_cast<const uint16_t*>(value));
-            }
-            else
-            {
-                writeString(streamOutput, stringBufferOutput, value, 2);
-            }
+            stringBufferOutput.write(*reinterpret_cast<const uint16_t*>(value));
         }
 
         template <>
-        inline void writeString<5>(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[4 + 1])
+        inline void writeString<5>(StringBuffer& stringBufferOutput, const char(&value)[4 + 1])
         {
             //ignore null terminator
-            if (stringBufferOutput)
-            {
-                stringBufferOutput->write(*reinterpret_cast<const uint32_t*>(value));
-            }
-            else
-            {
-                writeString(streamOutput, stringBufferOutput, value, 4);
-            }
+            stringBufferOutput.write(*reinterpret_cast<const uint32_t*>(value));
         }
 
         template <>
-        inline void writeString<9>(std::ostream* streamOutput, StringBuffer* stringBufferOutput, const char(&value)[8 + 1])
+        inline void writeString<9>(StringBuffer& stringBufferOutput, const char(&value)[8 + 1])
         {
             //ignore null terminator
-            if (stringBufferOutput)
-            {
-                stringBufferOutput->write(*reinterpret_cast<const uint64_t*>(value));
-            }
-            else
-            {
-                writeString(streamOutput, stringBufferOutput, value, 8);
-            }
+            stringBufferOutput.write(*reinterpret_cast<const uint64_t*>(value));
         }
     }
 
     class JsonWriter final
     {
     public:
-        explicit JsonWriter(std::ostream& stream);
-        //explicit JsonWriter(std::string& stringBuffer);
         explicit JsonWriter(StringBuffer& stringBuffer);
 
         JsonWriter(const JsonWriter&) = delete;
@@ -364,7 +326,7 @@ namespace Json
         template<size_t Size>
         void writeString(const char(&value)[Size])
         {
-            Detail::writeString<Size>(streamOutput_, stringBufferOutput_, value);
+            Detail::writeString<Size>(stringBufferOutput_, value);
         }
 
         void writeString(const std::string& value)
@@ -374,12 +336,12 @@ namespace Json
 
         void writeString(const char* value, size_t size)
         {
-            Detail::writeString(streamOutput_, stringBufferOutput_, value, size);
+            Detail::writeString(stringBufferOutput_, value, size);
         }
 
         void writeChar(char value)
         {
-            Detail::writeChar(streamOutput_, stringBufferOutput_, value);
+            Detail::writeChar(stringBufferOutput_, value);
         }
 
         friend JsonWriter& operator<<(JsonWriter& writer, const char* value);
@@ -407,8 +369,7 @@ namespace Json
             stateStack_.at(++stateIndex_) = state;
         }
 
-        std::ostream* streamOutput_ = nullptr;
-        StringBuffer* stringBufferOutput_ = nullptr;
+        StringBuffer& stringBufferOutput_;
 
         std::array<State, MaxStateDepth> stateStack_;
         int stateIndex_ = -1;

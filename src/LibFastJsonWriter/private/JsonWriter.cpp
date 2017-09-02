@@ -23,17 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Json;
 
-JsonWriter::JsonWriter(std::ostream& stream) : streamOutput_(&stream)
-{
-    pushState({ false, false, false });
-}
-
-//JsonWriter::JsonWriter(std::string& string) : stringOutput_(&string)
-//{
-//    pushState({ false, false, false });
-//}
-
-JsonWriter::JsonWriter(StringBuffer& stringBuffer) : stringBufferOutput_(&stringBuffer)
+JsonWriter::JsonWriter(StringBuffer& stringBuffer) : stringBufferOutput_(stringBuffer)
 {
     pushState({ false, false, false });
 }
