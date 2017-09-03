@@ -1,6 +1,8 @@
 #include "EntityDiscussionCategory.h"
 #include "EntityCollection.h"
 
+#include <map>
+
 using namespace Forum;
 using namespace Forum::Entities;
 using namespace Forum::Authorization;
@@ -191,20 +193,52 @@ void DiscussionCategory::updateMessageCount(DiscussionThreadPtr thread, int_fast
     changeNotifications_.onUpdateMessageCount(*this);
 }
 
-void DiscussionCategory::resetTotals()
-{
-    totalThreads_.clear();
-}
-
 void DiscussionCategory::recalculateTotals()
 {
-    executeOnCategoryAndAllParents(*this, [this](auto& category)
+    std::map<DiscussionThreadPtr, int_fast32_t> newThreads;
+    std::vector<DiscussionThreadPtr> toRemove;
+
+    executeOnCategoryAndAllParents(*this, [this, &newThreads](auto& category)
     {
         for (auto thread : threads_.byId())
         {
-            totalThreads_.add(thread);
+            auto it = newThreads.find(thread);
+            if (it == newThreads.end())
+            {
+                newThreads.insert(std::make_pair(thread, 1));
+            }
+            else
+            {
+                it->second += 1;
+            }
         }
     });
+
+    //remove threads that are not part of newThreads
+    for (auto thread : totalThreads_.byId())
+    {
+        if (newThreads.find(thread) == newThreads.end())
+        {
+            toRemove.push_back(thread);
+        }
+    }
+    for (auto thread : toRemove)
+    {
+        totalThreads_.remove(thread);
+    }
+
+    //add new threads with corresponding reference count
+    for (auto pair : newThreads)
+    {
+        if (totalThreads_.contains(pair.first))
+        {
+            totalThreads_.updateReferenceCount(pair.first, pair.second);
+        }
+        else
+        {
+            totalThreads_.add(pair.first);
+        }
+    }
 }
 
 PrivilegeValueType DiscussionCategory::getDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege) const

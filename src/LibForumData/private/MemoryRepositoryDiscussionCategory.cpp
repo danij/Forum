@@ -452,12 +452,6 @@ static void updateCategoryParent(EntityCollection& collection, DiscussionCategor
     for (DiscussionCategoryPtr currentCategory : collection.categories().byId())
     {
         assert(currentCategory);
-        currentCategory->resetTotals();
-    }
-
-    for (DiscussionCategoryPtr currentCategory : collection.categories().byId())
-    {
-        assert(currentCategory);
         currentCategory->recalculateTotals();
     }
 }

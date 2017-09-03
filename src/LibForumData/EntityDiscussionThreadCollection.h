@@ -143,6 +143,10 @@ namespace Forum
             */
             void decreaseReferenceCount(DiscussionThreadPtr thread);
 
+            bool contains(DiscussionThreadPtr thread);
+
+            void updateReferenceCount(DiscussionThreadPtr thread, int_fast32_t newCount);
+
             /**
             * Removes a thread completely, even if the reference count is > 1
             * Used when a thread is permanently deleted
@@ -156,7 +160,8 @@ namespace Forum
 
             auto count()        const { return byId_.size(); }
             auto messageCount() const { return messageCount_; }
-            auto byId()         const { return Helpers::toConst(byId_); }
+            auto& byId()              { return byId_; }
+            auto  byId()        const { return Helpers::toConst(byId_); }
 
             auto& byLatestMessageCreated() { return byLatestMessageCreated_; }
             auto& messageCount()           { return messageCount_; }

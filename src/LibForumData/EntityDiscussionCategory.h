@@ -145,7 +145,6 @@ namespace Forum
 
             void updateMessageCount(DiscussionThreadPtr thread, int_fast32_t delta);
 
-            void resetTotals();
             void recalculateTotals();
 
         private:

@@ -250,6 +250,23 @@ void DiscussionThreadCollectionWithReferenceCountAndMessageCount::decreaseRefere
     }
 }
 
+bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::contains(DiscussionThreadPtr thread)
+{
+    auto it = referenceCount_.find(thread);
+    return it != referenceCount_.end();
+}
+
+void DiscussionThreadCollectionWithReferenceCountAndMessageCount::updateReferenceCount(DiscussionThreadPtr thread,
+                                                                                       int_fast32_t newCount)
+{
+    assert(newCount > 0);
+    auto it = referenceCount_.find(thread);
+    if (it != referenceCount_.end())
+    {
+        it->second = newCount;
+    }
+}
+
 bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::remove(DiscussionThreadPtr thread)
 {
     assert(thread);
