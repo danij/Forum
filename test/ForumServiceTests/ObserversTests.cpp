@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_info_invokes_observer )
     auto ___ = addHandler(handler->writeEvents().onChangeUser,
                           [&](auto& _, auto& user, auto change)
                           {
-                              newInfo = toString(user.info());
+                              newInfo = toString(user.info().string());
                               userChange = change;
                           });
 
