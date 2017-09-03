@@ -97,7 +97,7 @@ private:
     }
 
     FileAppender appender_;
-    static constexpr size_t MaxBlobsInQueue = 10000;
+    static constexpr size_t MaxBlobsInQueue = 32768;
     boost::lockfree::queue<Blob, boost::lockfree::capacity<MaxBlobsInQueue>> queue_;
     std::thread writeThread_;
     std::atomic_bool stopWriteThread_{ false };
