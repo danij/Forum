@@ -30,7 +30,7 @@ namespace Forum
             void prepareUpdateName(DiscussionThreadPtr thread);
             void updateName(DiscussionThreadPtr thread);
 
-            void stopBatchInsert();
+            virtual void stopBatchInsert();
 
             void prepareUpdateLastUpdated(DiscussionThreadPtr thread);
             void updateLastUpdated(DiscussionThreadPtr thread);
@@ -41,8 +41,8 @@ namespace Forum
             void prepareUpdateMessageCount(DiscussionThreadPtr thread);
             void updateMessageCount(DiscussionThreadPtr thread);
 
-            void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread);
-            void updatePinDisplayOrder(DiscussionThreadPtr thread);
+            virtual void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) {} //empty, only used in subclass
+            virtual void updatePinDisplayOrder(DiscussionThreadPtr thread) {} //empty, only used in subclass
 
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
@@ -54,14 +54,12 @@ namespace Forum
             auto byLastUpdated()          const { return Helpers::toConst(byLastUpdated_); }
             auto byLatestMessageCreated() const { return Helpers::toConst(byLatestMessageCreated_); }
             auto byMessageCount()         const { return Helpers::toConst(byMessageCount_); }
-            auto byPinDisplayOrder()      const { return Helpers::toConst(byPinDisplayOrder_); }
 
             auto& byName()                 { return byName_; }
             auto& byCreated()              { return byCreated_; }
             auto& byLastUpdated()          { return byLastUpdated_; }
             auto& byLatestMessageCreated() { return byLatestMessageCreated_; }
             auto& byMessageCount()         { return byMessageCount_; }
-            auto& byPinDisplayOrder()      { return byPinDisplayOrder_; }
             
         private:
 
@@ -78,16 +76,13 @@ namespace Forum
 
             RANKED_COLLECTION(DiscussionThread, messageCount) byMessageCount_;
             decltype(byMessageCount_)::nth_index<0>::type::iterator byMessageCountUpdateIt_;
-            
-            ORDERED_COLLECTION(DiscussionThread, pinDisplayOrder) byPinDisplayOrder_;
-            decltype(byPinDisplayOrder_)::nth_index<0>::type::iterator byPinDisplayOrderUpdateIt_;
 
             std::function<void()> onPrepareCountChange_;
             std::function<void()> onCountChange_;
         };
 
-        class DiscussionThreadCollectionWithHashedId final : public DiscussionThreadCollectionBase, 
-                                                             private boost::noncopyable
+        class DiscussionThreadCollectionWithHashedId : public DiscussionThreadCollectionBase,
+                                                       private boost::noncopyable
         {
         public:
             bool add(DiscussionThreadPtr thread) override;
@@ -100,6 +95,25 @@ namespace Forum
 
         private:
             HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
+        };
+
+        class DiscussionThreadCollectionWithHashedIdAndPinOrder final : public DiscussionThreadCollectionWithHashedId
+        {
+        public:
+            bool add(DiscussionThreadPtr thread) override;
+            bool remove(DiscussionThreadPtr thread) override;
+
+            void stopBatchInsert() override;
+
+            void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) override;
+            void updatePinDisplayOrder(DiscussionThreadPtr thread) override;
+
+            auto  byPinDisplayOrder() const { return Helpers::toConst(byPinDisplayOrder_); }
+            auto& byPinDisplayOrder()       { return byPinDisplayOrder_; }
+
+        private:
+            ORDERED_COLLECTION(DiscussionThread, pinDisplayOrder) byPinDisplayOrder_;
+            decltype(byPinDisplayOrder_)::nth_index<0>::type::iterator byPinDisplayOrderUpdateIt_;
         };
 
         class DiscussionThreadCollectionWithOrderedId final : public DiscussionThreadCollectionBase, 

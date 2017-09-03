@@ -165,8 +165,8 @@ namespace Forum
             VisitDetails lastUpdatedDetails_;
             std::string lastUpdatedReason_;
             UserPtr lastUpdatedBy_;
-            
-            DiscussionThreadCollectionWithHashedId threads_;
+
+            DiscussionThreadCollectionWithHashedIdAndPinOrder threads_;
             DiscussionThreadCollectionWithReferenceCountAndMessageCount totalThreads_;
 
             std::set<DiscussionTagPtr> tags_;

@@ -28,7 +28,32 @@ MemoryRepositoryDiscussionThread::MemoryRepositoryDiscussionThread(MemoryStoreRe
 }
 
 template<typename ThreadsCollection>
-static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscussionThreadsBy by,
+inline void writePinnedDiscussionThreads(const ThreadsCollection&, Json::JsonWriter&, SerializationRestriction&)
+{
+    //do nothing
+}
+
+template<>
+inline void writePinnedDiscussionThreads<DiscussionThreadCollectionWithHashedIdAndPinOrder>
+        (const DiscussionThreadCollectionWithHashedIdAndPinOrder& collection, Json::JsonWriter& writer,
+         SerializationRestriction& restriction)
+{
+    writer.newPropertyWithSafeName("pinned_threads");
+    writer.startArray();
+
+    auto it = collection.byPinDisplayOrder().rbegin();
+    auto end = collection.byPinDisplayOrder().rend();
+
+    for (; (it != end) && ((*it)->pinDisplayOrder() > 0); ++it)
+    {
+        serialize(writer, **it, restriction);
+    }
+
+    writer.endArray();
+}
+
+template<typename ThreadsCollection>
+static void writeDiscussionThreads(const ThreadsCollection& collection, RetrieveDiscussionThreadsBy by,
                                    OutStream& output, const GrantedPrivilegeStore& privilegeStore, const User& currentUser)
 {
     BoolTemporaryChanger _(serializationSettings.visitedThreadSinceLastChange, false);
@@ -58,18 +83,7 @@ static void writeDiscussionThreads(ThreadsCollection&& collection, RetrieveDiscu
 
     if (0 == displayContext.pageNumber)
     {
-        writer.newPropertyWithSafeName("pinned_threads");
-        writer.startArray();
-
-        auto it = collection.byPinDisplayOrder().rbegin();
-        auto end = collection.byPinDisplayOrder().rend();
-
-        for (; (it != end) && ((*it)->pinDisplayOrder() > 0); ++it)
-        {
-            serialize(writer, **it, restriction);
-        }
-
-        writer.endArray();
+        writePinnedDiscussionThreads(collection, writer, restriction);
     }
 
     switch (by)

@@ -172,18 +172,18 @@ void execute(CommandHandler& handler, CommandType command, const std::initialize
     handler.handle(command, parametersVector);
 }
 
-const int nrOfUsers = 1000;
-const int nrOfThreads = nrOfUsers * 1;
-const int nrOfMessages = nrOfThreads * 50;
+const int nrOfUsers = 400000;
+const int nrOfThreads = 800000;
+const int nrOfMessages = 10000000;
 const int nrOfTags = 100;
-const int nrOfCategories = 100;
-const int nrOfCategoryParentChildRelationships = 20;
+const int nrOfCategories = 200;
+const int nrOfCategoryParentChildRelationships = 50;
 const int nrOfTagsPerCategoryMin = 1;
 const int nrOfTagsPerCategoryMax = 4;
 const int nrOfTagsPerThreadMin = 1;
 const int nrOfTagsPerThreadMax = 4;
-const float messageContentLengthMean = 1000;
-const float messageContentLengthStddev = 200;
+const float messageContentLengthMean = 400;
+const float messageContentLengthStddev = 100;
 const int retries = 1000;
 
 static std::atomic_int currentAuthNumber{ 1 };

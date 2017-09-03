@@ -15,7 +15,6 @@ bool DiscussionThreadCollectionBase::add(DiscussionThreadPtr thread)
         byLastUpdated_.insert(thread);
         byLatestMessageCreated_.insert(thread);
         byMessageCount_.insert(thread);
-        byPinDisplayOrder_.insert(thread);
     }
 
     if (onCountChange_) onCountChange_();
@@ -34,7 +33,6 @@ bool DiscussionThreadCollectionBase::remove(DiscussionThreadPtr thread)
         eraseFromNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
         eraseFromNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
         eraseFromNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
-        eraseFromNonUniqueCollection(byPinDisplayOrder_, thread, thread->pinDisplayOrder());
     }
 
     if (onCountChange_) onCountChange_();
@@ -74,12 +72,6 @@ void DiscussionThreadCollectionBase::stopBatchInsert()
     for (DiscussionThreadPtr thread : byName_)
     {
         byMessageCount_.insert(thread);
-    }
-
-    byPinDisplayOrder_.clear();
-    for (DiscussionThreadPtr thread : byName_)
-    {
-        byPinDisplayOrder_.insert(thread);
     }
 }
 
@@ -134,23 +126,6 @@ void DiscussionThreadCollectionBase::updateMessageCount(DiscussionThreadPtr thre
     }
 }
 
-void DiscussionThreadCollectionBase::prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    byPinDisplayOrderUpdateIt_ = findInNonUniqueCollection(byPinDisplayOrder_, thread, thread->pinDisplayOrder());
-}
-
-void DiscussionThreadCollectionBase::updatePinDisplayOrder(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    if (byPinDisplayOrderUpdateIt_ != byPinDisplayOrder_.end())
-    {
-        byPinDisplayOrder_.replace(byPinDisplayOrderUpdateIt_, thread);
-    }
-}
-
 bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
 {
     if ( ! std::get<1>(byId_.insert(thread))) return false;
@@ -172,6 +147,52 @@ bool DiscussionThreadCollectionWithHashedId::remove(DiscussionThreadPtr thread)
 bool DiscussionThreadCollectionWithHashedId::contains(DiscussionThreadPtr thread) const
 {
     return byId_.find(thread->id()) != byId_.end();
+}
+
+bool DiscussionThreadCollectionWithHashedIdAndPinOrder::add(DiscussionThreadPtr thread)
+{
+    if ( ! DiscussionThreadCollectionWithHashedId::add(thread)) return false;
+
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        byPinDisplayOrder_.insert(thread);
+    }
+    return true;
+}
+
+bool DiscussionThreadCollectionWithHashedIdAndPinOrder::remove(DiscussionThreadPtr thread)
+{
+    if ( ! DiscussionThreadCollectionWithHashedId::remove(thread)) return false;
+    eraseFromNonUniqueCollection(byPinDisplayOrder_, thread, thread->pinDisplayOrder());
+    return true;
+}
+
+void DiscussionThreadCollectionWithHashedIdAndPinOrder::stopBatchInsert()
+{
+    if ( ! Context::isBatchInsertInProgress()) return;
+
+    byPinDisplayOrder_.clear();
+    for (DiscussionThreadPtr thread : byId())
+    {
+        byPinDisplayOrder_.insert(thread);
+    }
+}
+
+void DiscussionThreadCollectionWithHashedIdAndPinOrder::prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    byPinDisplayOrderUpdateIt_ = findInNonUniqueCollection(byPinDisplayOrder_, thread, thread->pinDisplayOrder());
+}
+
+void DiscussionThreadCollectionWithHashedIdAndPinOrder::updatePinDisplayOrder(DiscussionThreadPtr thread)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    if (byPinDisplayOrderUpdateIt_ != byPinDisplayOrder_.end())
+    {
+        byPinDisplayOrder_.replace(byPinDisplayOrderUpdateIt_, thread);
+    }
 }
 
 bool DiscussionThreadCollectionWithOrderedId::add(DiscussionThreadPtr thread)
