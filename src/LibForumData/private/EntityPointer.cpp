@@ -12,13 +12,15 @@ using namespace Forum::Entities::Private;
  */
 static EntityCollection* globalEntityCollection = nullptr;
 
+inline EntityCollection& getGlobalEntityCollectionInline()
+{
+    assert(globalEntityCollection);
+    return *globalEntityCollection;
+}
+
 EntityCollection& Private::getGlobalEntityCollection()
 {
-    if (nullptr == globalEntityCollection)
-    {
-        throw std::runtime_error("Global EntityCollection is empty");
-    }
-    return *globalEntityCollection;
+    return getGlobalEntityCollectionInline();
 }
 
 void Private::setGlobalEntityCollection(EntityCollection* collection)
@@ -29,35 +31,35 @@ void Private::setGlobalEntityCollection(EntityCollection* collection)
 template<>
 User* Private::getEntityFromGlobalCollection<User>(size_t index)
 {
-    return getGlobalEntityCollection().getUserPoolRoot()[index].get();
+    return getGlobalEntityCollectionInline().getUserPoolRoot()[index].get();
 }
 
 template<>
 DiscussionThread* Private::getEntityFromGlobalCollection<DiscussionThread>(size_t index)
 {
-    return getGlobalEntityCollection().getDiscussionThreadPoolRoot()[index].get();
+    return getGlobalEntityCollectionInline().getDiscussionThreadPoolRoot()[index].get();
 }
 
 template<>
 DiscussionThreadMessage* Private::getEntityFromGlobalCollection<DiscussionThreadMessage>(size_t index)
 {
-    return getGlobalEntityCollection().getDiscussionThreadMessagePoolRoot()[index].get();
+    return getGlobalEntityCollectionInline().getDiscussionThreadMessagePoolRoot()[index].get();
 }
 
 template<>
 DiscussionTag* Private::getEntityFromGlobalCollection<DiscussionTag>(size_t index)
 {
-    return getGlobalEntityCollection().getDiscussionTagPoolRoot()[index].get();
+    return getGlobalEntityCollectionInline().getDiscussionTagPoolRoot()[index].get();
 }
 
 template<>
 DiscussionCategory* Private::getEntityFromGlobalCollection<DiscussionCategory>(size_t index)
 {
-    return getGlobalEntityCollection().getDiscussionCategoryPoolRoot()[index].get();
+    return getGlobalEntityCollectionInline().getDiscussionCategoryPoolRoot()[index].get();
 }
 
 template<>
 MessageComment* Private::getEntityFromGlobalCollection<MessageComment>(size_t index)
 {
-    return getGlobalEntityCollection().getMessageCommentPoolRoot()[index].get();
+    return getGlobalEntityCollectionInline().getMessageCommentPoolRoot()[index].get();
 }
