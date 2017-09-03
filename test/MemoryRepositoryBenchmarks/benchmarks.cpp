@@ -96,6 +96,7 @@ struct BenchmarkContext
     std::string importFromFolder;
     std::string exportToFolder;
     bool onlyPopulateData{ false };
+    bool promptBeforeStart{ false };
     bool promptBeforeBenchmark{ false };
     bool abortOnExit{ false };
 };
@@ -208,6 +209,7 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
     options.add_options()
         ("help,h", "Display available options")
         ("onlyPopulateData,o", "Only loads data from a file or by random generation")
+        ("promptBeforeStart,s", "Prompt the user to continue before starting the data population")
         ("promptBeforeBenchmark,p", "Prompt the user to continue before starting the benchmark")
         ("abort,a", "Abort on exit to prevent calling destructors")
         ("import-folder,i", boost::program_options::value<std::string>(), "Import events from folder")
@@ -233,6 +235,7 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
     }
 
     context.onlyPopulateData = arguments.count("onlyPopulateData") > 0;
+    context.promptBeforeStart = arguments.count("promptBeforeStart") > 0;
     context.promptBeforeBenchmark = arguments.count("promptBeforeBenchmark") > 0;
     context.abortOnExit = arguments.count("abort") > 0;
 
@@ -266,6 +269,13 @@ int main(int argc, const char* argv[])
         return parseCommandLineResult;
     }
     showEntitySizes();
+
+    if (context.promptBeforeStart)
+    {
+        std::string line;
+        std::cout << "\nPress [ENTER] to start the data population\n";
+        std::getline(std::cin, line);
+    }
 
     auto populationDuration = countDuration<std::chrono::milliseconds>([&]()
     {
