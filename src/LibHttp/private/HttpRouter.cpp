@@ -24,14 +24,14 @@ void RequestState::extractExtraPathParts(size_t nrOfPathCharactersUsedInRoute)
         }
         if (path[i] == '/')
         {
-            extraPathParts[nrOfExtraPathParts++] = StringView(path + currentPartStartIndex, i - currentPartStartIndex);
+            extraPathParts[nrOfExtraPathParts++] = HttpStringView(path + currentPartStartIndex, i - currentPartStartIndex);
             currentPartStartIndex = i + 1;
         }
     }
     auto lastPartLength = request.path.size() - currentPartStartIndex;
     if ((lastPartLength > 0) && (lastPartLength <= request.path.size()))
     {
-        extraPathParts[nrOfExtraPathParts++] = StringView(path + currentPartStartIndex, lastPartLength);
+        extraPathParts[nrOfExtraPathParts++] = HttpStringView(path + currentPartStartIndex, lastPartLength);
     }
 }
 
@@ -97,7 +97,7 @@ void HttpRouter::forward(const HttpRequest& request, HttpResponseBuilder& respon
     }
 }
 
-void HttpRouter::addRoute(StringView pathLowerCase, HttpVerb verb, HandlerFn&& handler)
+void HttpRouter::addRoute(HttpStringView pathLowerCase, HttpVerb verb, HandlerFn&& handler)
 {
     routes_[getFirstIndexForRoutes(pathLowerCase.data(), pathLowerCase.length())][static_cast<size_t>(verb)].emplace(pathLowerCase, handler);
 }

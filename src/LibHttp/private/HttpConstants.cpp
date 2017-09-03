@@ -7,7 +7,7 @@
 
 using namespace Http;
 
-static StringView statusCodes[] =
+static HttpStringView statusCodes[] =
 {
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
@@ -40,17 +40,17 @@ static StringView statusCodes[] =
     { "Network Authentication Required", 31 }
 };
 
-StringView Http::getStatusCodeString(HttpStatusCode code)
+HttpStringView Http::getStatusCodeString(HttpStatusCode code)
 {
     static_assert(std::extent<decltype(statusCodes)>::value >= (HTTP_STATUS_CODES_COUNT - 1),
                   "statusCodes array is not big enough");
 
-    StringView result;
+    HttpStringView result;
     if (code > 0 && code < HttpStatusCode::HTTP_STATUS_CODES_COUNT)
     {
         result = statusCodes[code];
     }
-    return result.size() ? result : StringView("Unknown", 7);
+    return result.size() ? result : HttpStringView("Unknown", 7);
 }
 
 static int hashHeaderName(const char* text, size_t size)

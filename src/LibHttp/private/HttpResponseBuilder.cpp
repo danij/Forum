@@ -6,7 +6,7 @@
 
 using namespace Http;
 
-static const StringView simpleResponseHeaders{"Connection: close\r\nContent-Length: 0\r\n"};
+static const HttpStringView simpleResponseHeaders{"Connection: close\r\nContent-Length: 0\r\n"};
 
 size_t Http::buildSimpleResponseFromStatusCode(HttpStatusCode code, int_fast8_t majorVersion, int_fast8_t minorVersion,
                                                char* buffer)
@@ -77,7 +77,7 @@ void HttpResponseBuilder::writeResponseCode(const HttpRequest& request, HttpStat
     writeResponseCode(request.versionMajor, request.versionMinor, code);
 }
 
-void HttpResponseBuilder::writeHeader(StringView name, StringView value)
+void HttpResponseBuilder::writeHeader(HttpStringView name, HttpStringView value)
 {
     assert(ProtocolState::ResponseCodeWritten == protocolState_);
 
@@ -87,11 +87,11 @@ void HttpResponseBuilder::writeHeader(StringView name, StringView value)
     write("\r\n");
 }
 
-void HttpResponseBuilder::writeHeader(StringView name, int value)
+void HttpResponseBuilder::writeHeader(HttpStringView name, int value)
 {
     char buffer[50];
     auto written = sprintf(buffer, "%d", value);
-    writeHeader(name, StringView(buffer, written));
+    writeHeader(name, HttpStringView(buffer, written));
 }
 
 //based on information from http://www.ietf.org/rfc/rfc6265.txt
@@ -119,7 +119,7 @@ static const char ReservedCharactersForUrlEncodingWithoutSlash[] =
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 };
 
-void HttpResponseBuilder::writeCookie(StringView name, StringView value, CookieExtra extra)
+void HttpResponseBuilder::writeCookie(HttpStringView name, HttpStringView value, CookieExtra extra)
 {
     assert(name.length() < MaxPercentEncodingInputSize);
     assert(value.length() < MaxPercentEncodingInputSize);

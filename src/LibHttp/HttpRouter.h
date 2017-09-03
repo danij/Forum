@@ -21,7 +21,7 @@ namespace Http
         HttpResponseBuilder& response;
 
         static constexpr size_t MaxExtraPathParts = 32;
-        StringView extraPathParts[MaxExtraPathParts];
+        HttpStringView extraPathParts[MaxExtraPathParts];
         size_t nrOfExtraPathParts = 0;
 
     private:
@@ -47,7 +47,7 @@ namespace Http
          * @param handler Handler that will be called if the route is matched.
          *
          */
-        void addRoute(StringView pathLowerCase, HttpVerb verb, HandlerFn&& handler);
+        void addRoute(HttpStringView pathLowerCase, HttpVerb verb, HandlerFn&& handler);
 
         /**
          * Registers a route to be used if no other route matches
@@ -58,13 +58,13 @@ namespace Http
 
         struct StringViewByLengthGreater
         {
-            constexpr bool operator()(StringView first, StringView second) const
+            constexpr bool operator()(HttpStringView first, HttpStringView second) const
             {
                 return std::make_tuple(first.length(), first) > std::make_tuple(second.length(), second);
             }
         };
 
-        typedef std::map<StringView, HandlerFn, StringViewByLengthGreater> MapType;
+        typedef std::map<HttpStringView, HandlerFn, StringViewByLengthGreater> MapType;
         MapType routes_[FirstIndexMaxValue][static_cast<size_t>(HttpVerb::HTTP_VERBS_COUNT)];
 
         HandlerFn defaultRoute_;

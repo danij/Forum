@@ -10,7 +10,7 @@
 
 namespace Http
 {
-    typedef boost::string_view StringView;
+    typedef boost::string_view HttpStringView;
 
     /**
      * Matches a string against another one, optionally ignoring case
@@ -51,13 +51,13 @@ namespace Http
     }
 
     template<size_t AgainstSize>
-    bool matchStringUpperOrLower(StringView view, const char(&against)[AgainstSize])
+    bool matchStringUpperOrLower(HttpStringView view, const char(&against)[AgainstSize])
     {
         return matchStringUpperOrLower(view.data(), view.size(), against);
     }
 
     template<typename T>
-    void fromStringOrDefault(StringView view, T& toChange, T defaultValue)
+    void fromStringOrDefault(HttpStringView view, T& toChange, T defaultValue)
     {
         if ( ! boost::conversion::try_lexical_convert(view.data(), view.size(), toChange))
         {
@@ -65,7 +65,7 @@ namespace Http
         }
     }
 
-    inline void trimLeadingChar(StringView& view, char toTrim)
+    inline void trimLeadingChar(HttpStringView& view, char toTrim)
     {
         size_t toRemove = 0;
         for (auto c : view)
@@ -154,9 +154,9 @@ namespace Http
         return reinterpret_cast<char*>(destination) - value;
     }
 
-    inline StringView viewAfterDecodingUrlEncodingInPlace(char* value, size_t size)
+    inline HttpStringView viewAfterDecodingUrlEncodingInPlace(char* value, size_t size)
     {
-        return StringView(value, decodeUrlEncodingInPlace(value, size));
+        return HttpStringView(value, decodeUrlEncodingInPlace(value, size));
     }
 
     static const char ReservedCharactersForUrlEncoding[] =
@@ -175,7 +175,7 @@ namespace Http
     static constexpr size_t MaxPercentEncodingOutputSize = MaxPercentEncodingInputSize * 3;
 
     template<size_t OutputSize, size_t TableSize>
-    StringView percentEncode(StringView input, char (&output)[OutputSize], const char (&table)[TableSize])
+    HttpStringView percentEncode(HttpStringView input, char (&output)[OutputSize], const char (&table)[TableSize])
     {
         static_assert(TableSize > std::numeric_limits<uint8_t>::max(), "Not enough entries in table");
         if ((input.size() * 3) > OutputSize)
@@ -198,7 +198,7 @@ namespace Http
             }
         }
 
-        return StringView(output, currentOutput - output);
+        return HttpStringView(output, currentOutput - output);
     }
 
     /**
@@ -206,7 +206,7 @@ namespace Http
      * as listed under https://tools.ietf.org/html/rfc3986#section-2.3
      */
     template<size_t Size>
-    StringView urlEncode(StringView input, char (&output)[Size])
+    HttpStringView urlEncode(HttpStringView input, char (&output)[Size])
     {
         return percentEncode(input, output, ReservedCharactersForUrlEncoding);
     }
@@ -218,7 +218,7 @@ namespace Http
     * @return A view to a thread-local buffer.
     */
     template<size_t TableSize>
-    StringView percentEncode(StringView input, const char (&table)[TableSize])
+    HttpStringView percentEncode(HttpStringView input, const char (&table)[TableSize])
     {
         static thread_local char output[MaxPercentEncodingOutputSize];
         return percentEncode(input, output, table);
@@ -230,7 +230,7 @@ namespace Http
      *
      * @return A view to a thread-local buffer.
      */
-    inline StringView urlEncode(StringView input)
+    inline HttpStringView urlEncode(HttpStringView input)
     {
         static thread_local char output[MaxPercentEncodingOutputSize];
         return urlEncode(input, output);

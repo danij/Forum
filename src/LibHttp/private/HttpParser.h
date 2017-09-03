@@ -85,9 +85,9 @@ namespace Http
         char* parsePathStartsAt_;
         char* parseVersionStartsAt_;
         char* parseHeaderNameStartsAt_;
-        StringView parseCurrentHeaderName_;
+        HttpStringView parseCurrentHeaderName_;
         char* parseHeaderValueStartsAt_;
-        StringView parseCurrentHeaderValue_;
+        HttpStringView parseCurrentHeaderValue_;
         size_t expectedContentLength_ = 0;
         size_t maxContentLength_;
         size_t requestBodyBytesProcessed_ = 0;

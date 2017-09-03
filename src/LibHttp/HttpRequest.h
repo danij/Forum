@@ -22,21 +22,21 @@ namespace Http
     {
         //StringViews point to addresses inside the header buffer
         HttpVerb verb = HttpVerb::UNKNOWN;
-        StringView path;
+        HttpStringView path;
         int_fast8_t versionMajor = 1, versionMinor = 0;
         bool keepConnectionAlive = false;
         boost::asio::ip::address remoteAddress;
-        StringView headers[Request::HttpHeader::HTTP_HEADERS_COUNT];
+        HttpStringView headers[Request::HttpHeader::HTTP_HEADERS_COUNT];
 
         static constexpr size_t MaxQueryPairs = 64;
-        std::pair<StringView, StringView> queryPairs[MaxQueryPairs];
+        std::pair<HttpStringView, HttpStringView> queryPairs[MaxQueryPairs];
         size_t nrOfQueryPairs = 0;
 
         static constexpr size_t MaxCookies = 32;
-        std::pair<StringView, StringView> cookies[MaxCookies];
+        std::pair<HttpStringView, HttpStringView> cookies[MaxCookies];
         size_t nrOfCookies = 0;
 
-        std::array<StringView, Buffer::MaximumBuffersForRequestBody> requestContentBuffers;
+        std::array<HttpStringView, Buffer::MaximumBuffersForRequestBody> requestContentBuffers;
         size_t nrOfRequestContentBuffers = 0;
     };
 }

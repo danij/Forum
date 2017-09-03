@@ -119,7 +119,7 @@ void Parser::parsePath(char*& buffer, size_t& size)
 {
     if ( ! copyUntil(' ', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
-    request_.path = StringView(parsePathStartsAt_, headerBuffer_ + headerSize_ - parsePathStartsAt_);
+    request_.path = HttpStringView(parsePathStartsAt_, headerBuffer_ + headerSize_ - parsePathStartsAt_);
     interpretPathString();
     trimLeadingChar(request_.path, '/');
 
@@ -220,8 +220,8 @@ void Parser::parseHeaderName(char*& buffer, size_t& size)
     {
         if ( ! copyUntil(':', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
-        parseCurrentHeaderName_ = StringView(parseHeaderNameStartsAt_,
-                                             headerBuffer_ + headerSize_ - 1 - parseHeaderNameStartsAt_);
+        parseCurrentHeaderName_ = HttpStringView(parseHeaderNameStartsAt_,
+                                                 headerBuffer_ + headerSize_ - 1 - parseHeaderNameStartsAt_);
 
         currentParser_ = &Parser::parseHeaderSpacing;
     }
@@ -250,8 +250,8 @@ void Parser::parseHeaderValue(char*& buffer, size_t& size)
 {
     if ( ! copyUntil('\r', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
-    parseCurrentHeaderValue_ = StringView(parseHeaderValueStartsAt_,
-                                          headerBuffer_ + headerSize_ - 1 - parseHeaderValueStartsAt_);
+    parseCurrentHeaderValue_ = HttpStringView(parseHeaderValueStartsAt_,
+                                              headerBuffer_ + headerSize_ - 1 - parseHeaderValueStartsAt_);
 
     currentParser_ = &Parser::parseNewLine;
     auto currentHeader = Request::matchHttpHeader(parseCurrentHeaderName_.data(), parseCurrentHeaderName_.size());

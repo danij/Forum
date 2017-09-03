@@ -98,9 +98,9 @@ namespace Http
         HTTP_STATUS_CODES_COUNT
     };
 
-    typedef boost::string_view StringView;
+    typedef boost::string_view HttpStringView;
 
-    StringView getStatusCodeString(HttpStatusCode code);
+    HttpStringView getStatusCodeString(HttpStatusCode code);
 
     namespace Request
     {

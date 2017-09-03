@@ -104,7 +104,7 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
                     break;
                 }
                 request.requestContentBuffers[request.nrOfRequestContentBuffers++] =
-                    StringView(boost::asio::buffer_cast<const char*>(buffer), boost::asio::buffer_size(buffer));
+                    HttpStringView(boost::asio::buffer_cast<const char*>(buffer), boost::asio::buffer_size(buffer));
             }
 
             //add remote endpoint

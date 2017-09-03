@@ -37,13 +37,13 @@ namespace Http
             return *this;
         }
 
-        CookieExtra& domain(StringView value)
+        CookieExtra& domain(HttpStringView value)
         {
             cookieDomain = value;
             return *this;
         }
 
-        CookieExtra& path(StringView value)
+        CookieExtra& path(HttpStringView value)
         {
             cookiePath = value;
             return *this;
@@ -63,8 +63,8 @@ namespace Http
 
         boost::optional<time_t> expires;
         boost::optional<uint32_t> cookieMaxAge;
-        StringView cookieDomain;
-        StringView cookiePath;
+        HttpStringView cookieDomain;
+        HttpStringView cookiePath;
         bool isSecure = false;
         bool isHttpOnly = false;
     };
@@ -83,33 +83,33 @@ namespace Http
 
         void writeResponseCode(int majorVersion, int minorVersion, HttpStatusCode code);
         void writeResponseCode(const HttpRequest& request, HttpStatusCode code);
-        void writeHeader(StringView name, StringView value);
-        void writeHeader(StringView name, int value);
+        void writeHeader(HttpStringView name, HttpStringView value);
+        void writeHeader(HttpStringView name, int value);
 
         template<size_t NameSize>
-        void writeHeader(const char (&name)[NameSize], StringView value)
+        void writeHeader(const char (&name)[NameSize], HttpStringView value)
         {
-            writeHeader(StringView(name, NameSize - 1), value);
+            writeHeader(HttpStringView(name, NameSize - 1), value);
         }
 
         template<size_t NameSize>
         void writeHeader(const char(&name)[NameSize], int value)
         {
-            writeHeader(StringView(name, NameSize - 1), value);
+            writeHeader(HttpStringView(name, NameSize - 1), value);
         }
 
         template<size_t NameSize, size_t ValueSize>
         void writeHeader(const char(&name)[NameSize], const char (&value)[ValueSize])
         {
-            writeHeader(StringView(name, NameSize - 1), StringView(value, ValueSize - 1));
+            writeHeader(HttpStringView(name, NameSize - 1), HttpStringView(value, ValueSize - 1));
         }
 
-        void writeCookie(StringView name, StringView value, CookieExtra extra = {});
+        void writeCookie(HttpStringView name, HttpStringView value, CookieExtra extra = {});
 
         template<size_t NameSize>
-        void writeCookie(const char(&name)[NameSize], StringView value, CookieExtra extra = {})
+        void writeCookie(const char(&name)[NameSize], HttpStringView value, CookieExtra extra = {})
         {
-            writeCookie(StringView(name, NameSize - 1), value, std::move(extra));
+            writeCookie(HttpStringView(name, NameSize - 1), value, std::move(extra));
         }
 
         void writeBody(const char* value, size_t length);
@@ -121,7 +121,7 @@ namespace Http
             writeFn_(data, size, writeState_);
         }
 
-        void write(StringView view)
+        void write(HttpStringView view)
         {
             write(view.data(), view.size());
         }
