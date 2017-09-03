@@ -145,7 +145,8 @@ namespace Forum
 
             void updateMessageCount(DiscussionThreadPtr thread, int_fast32_t delta);
 
-            void recalculateTotals();
+            void removeTotalsFromChild(const DiscussionCategory& childCategory);
+            void addTotalsFromChild(const DiscussionCategory& childCategory);
 
         private:
             static ChangeNotification changeNotifications_;

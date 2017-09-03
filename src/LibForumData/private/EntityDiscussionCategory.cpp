@@ -193,52 +193,20 @@ void DiscussionCategory::updateMessageCount(DiscussionThreadPtr thread, int_fast
     changeNotifications_.onUpdateMessageCount(*this);
 }
 
-void DiscussionCategory::recalculateTotals()
+void DiscussionCategory::removeTotalsFromChild(const DiscussionCategory& childCategory)
 {
-    std::map<DiscussionThreadPtr, int_fast32_t> newThreads;
-    std::vector<DiscussionThreadPtr> toRemove;
-
-    executeOnCategoryAndAllParents(*this, [this, &newThreads](auto& category)
+    executeOnCategoryAndAllParents(*this, [&childCategory](DiscussionCategory& category)
     {
-        for (auto thread : threads_.byId())
-        {
-            auto it = newThreads.find(thread);
-            if (it == newThreads.end())
-            {
-                newThreads.insert(std::make_pair(thread, 1));
-            }
-            else
-            {
-                it->second += 1;
-            }
-        }
+        category.totalThreads_.decreaseReferenceCount(childCategory.totalThreads_);
     });
+}
 
-    //remove threads that are not part of newThreads
-    for (auto thread : totalThreads_.byId())
+void DiscussionCategory::addTotalsFromChild(const DiscussionCategory& childCategory)
+{
+    executeOnCategoryAndAllParents(*this, [&childCategory](DiscussionCategory& category)
     {
-        if (newThreads.find(thread) == newThreads.end())
-        {
-            toRemove.push_back(thread);
-        }
-    }
-    for (auto thread : toRemove)
-    {
-        totalThreads_.remove(thread);
-    }
-
-    //add new threads with corresponding reference count
-    for (auto pair : newThreads)
-    {
-        if (totalThreads_.contains(pair.first))
-        {
-            totalThreads_.updateReferenceCount(pair.first, pair.second);
-        }
-        else
-        {
-            totalThreads_.add(pair.first);
-        }
-    }
+        category.totalThreads_.add(childCategory.totalThreads_);
+    });
 }
 
 PrivilegeValueType DiscussionCategory::getDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege) const

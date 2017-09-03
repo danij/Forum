@@ -444,15 +444,19 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(Id
 static void updateCategoryParent(EntityCollection& collection, DiscussionCategory& category,
                                  DiscussionCategoryPtr newParentPtr, const UserPtr currentUser)
 {
+    auto oldParent = category.parent();
+
     category.parent() = newParentPtr;
     updateLastUpdated(category, currentUser);
 
-    //changing a parent requires updating totals
-    //until there's a visible performance penalty, simply update all totals
-    for (DiscussionCategoryPtr currentCategory : collection.categories().byId())
+    if (oldParent)
     {
-        assert(currentCategory);
-        currentCategory->recalculateTotals();
+        oldParent->removeTotalsFromChild(category);
+    }
+
+    if (newParentPtr)
+    {
+        newParentPtr->addTotalsFromChild(category);
     }
 }
 

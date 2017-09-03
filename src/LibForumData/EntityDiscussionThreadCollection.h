@@ -136,16 +136,14 @@ namespace Forum
         {
         public:
             bool add(DiscussionThreadPtr thread);
+            void add(const DiscussionThreadCollectionWithReferenceCountAndMessageCount& collection);
 
             /**
             * Reduces the reference count of the thread, removing it once the count drops to 0
             * Used when a thread is no longer referenced via a tag
             */
             void decreaseReferenceCount(DiscussionThreadPtr thread);
-
-            bool contains(DiscussionThreadPtr thread);
-
-            void updateReferenceCount(DiscussionThreadPtr thread, int_fast32_t newCount);
+            void decreaseReferenceCount(const DiscussionThreadCollectionWithReferenceCountAndMessageCount& collection);
 
             /**
             * Removes a thread completely, even if the reference count is > 1
@@ -169,6 +167,8 @@ namespace Forum
             DiscussionThreadMessagePtr latestMessage() const;
 
         private:
+            bool add(DiscussionThreadPtr thread, int_fast32_t amount);
+
             HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
             
             RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;

@@ -220,18 +220,34 @@ bool DiscussionThreadCollectionWithOrderedId::contains(DiscussionThreadPtr threa
 
 bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::add(DiscussionThreadPtr thread)
 {
+    return add(thread, 1);
+}
+
+bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::add(DiscussionThreadPtr thread, int_fast32_t amount)
+{
     auto it = referenceCount_.find(thread);
 
     if (it == referenceCount_.end() && std::get<1>(byId_.insert(thread)))
     {
         byLatestMessageCreated_.insert(thread);
 
-        referenceCount_.insert(std::make_pair(thread, 1));
+        referenceCount_.insert(std::make_pair(thread, amount));
         messageCount_ += thread->messageCount();
         return true;
     }
-    it->second += 1;
+    {
+        it->second += amount;
+    }
     return false;
+}
+
+void DiscussionThreadCollectionWithReferenceCountAndMessageCount::add(
+        const DiscussionThreadCollectionWithReferenceCountAndMessageCount& collection)
+{
+    for (auto pair : collection.referenceCount_)
+    {
+        add(pair.first, pair.second);
+    }
 }
 
 void DiscussionThreadCollectionWithReferenceCountAndMessageCount::decreaseReferenceCount(DiscussionThreadPtr thread)
@@ -243,27 +259,33 @@ void DiscussionThreadCollectionWithReferenceCountAndMessageCount::decreaseRefere
     {
         return;
     }
-    if (it->second < 2)
+    if (--(it->second) < 1)
     {
         referenceCount_.erase(it);
         remove(thread);
     }
 }
 
-bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::contains(DiscussionThreadPtr thread)
-{
-    auto it = referenceCount_.find(thread);
-    return it != referenceCount_.end();
-}
 
-void DiscussionThreadCollectionWithReferenceCountAndMessageCount::updateReferenceCount(DiscussionThreadPtr thread,
-                                                                                       int_fast32_t newCount)
+void DiscussionThreadCollectionWithReferenceCountAndMessageCount::decreaseReferenceCount(
+        const DiscussionThreadCollectionWithReferenceCountAndMessageCount& collection)
 {
-    assert(newCount > 0);
-    auto it = referenceCount_.find(thread);
-    if (it != referenceCount_.end())
+    std::vector<DiscussionThreadPtr> toRemove;
+
+    for (auto pair : collection.referenceCount_)
     {
-        it->second = newCount;
+        auto it = referenceCount_.find(pair.first);
+        if (it == referenceCount_.end()) continue;
+        it->second -= pair.second;
+        if (it->second < 1)
+        {
+            toRemove.push_back(it->first);
+        }
+    }
+
+    for (auto thread : toRemove)
+    {
+        referenceCount_.erase(thread);
     }
 }
 
