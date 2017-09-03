@@ -4,9 +4,9 @@
 
 #include <cassert>
 #include <cstdint>
-#include <functional>
 
 #include <boost/utility/string_view.hpp>
+#include <boost/functional/hash.hpp>
 
 namespace Json
 {
@@ -191,7 +191,7 @@ namespace std
     {
         size_t operator()(const Json::JsonReadyStringBase<StackSize, Derived, SizeType>& value) const
         {
-            return hash<boost::string_view>{}(value.string());
+            return boost::hash<boost::string_view>{}(value.string());
         }
     };
 }
