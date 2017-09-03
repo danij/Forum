@@ -154,9 +154,9 @@ namespace Forum
 
             Timestamp lastSeen_{0};
             
-            DiscussionThreadCollectionWithOrderedId threads_;
-            DiscussionThreadCollectionWithOrderedId subscribedThreads_;
-                                    
+            DiscussionThreadCollectionWithHashedId threads_;
+            DiscussionThreadCollectionWithHashedId subscribedThreads_;
+
             DiscussionThreadMessageCollection threadMessages_;
             std::unique_ptr<std::set<DiscussionThreadMessagePtr>> votedMessages_;
             
