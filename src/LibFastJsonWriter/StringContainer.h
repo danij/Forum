@@ -19,6 +19,8 @@ namespace Json
         StringContainer& operator=(const StringContainer& other);
         StringContainer& operator=(StringContainer&& other) noexcept;
 
+        bool operator==(const StringContainer& other) const noexcept;
+
         void resize(size_t newSize);
 
         char* operator*() noexcept;
@@ -115,6 +117,18 @@ namespace Json
     {
         swap(*this, other);
         return *this;
+    }
+
+    template <size_t StackSize, typename SizeType>
+    bool StringContainer<StackSize, SizeType>::operator==(const StringContainer& other) const noexcept
+    {
+        auto fistSize = size();
+        if (fistSize != other.size()) return false;
+
+        auto first = static_cast<const char*>(*this);
+        auto second = static_cast<const char*>(other);
+
+        return memcmp(first, second, fistSize);
     }
 
     template <size_t StackSize, typename SizeType>

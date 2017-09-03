@@ -30,7 +30,7 @@ namespace Forum
             const auto& auth()              const { return auth_; }
             const auto& name()              const { return name_; }
 
-             StringView info()              const { return info_; }
+            const auto& info()              const { return info_; }
 
                    auto lastSeen()          const { return lastSeen_; }
 
@@ -41,8 +41,16 @@ namespace Forum
                    auto threadCount()       const { return threads_.count(); }
                    auto messageCount()      const { return threadMessages_.count(); }
                    
-                   auto votedMessages()     const { return Helpers::toConst(votedMessages_); }
-            const auto& messageComments()   const { return messageComments_; }
+            auto votedMessages()     const
+            {
+                if ( ! votedMessages_) return Helpers::toConst(emptyVotedMessages_);
+                return Helpers::toConst(*votedMessages_);
+            }
+            const auto& messageComments()   const
+            {
+                if ( ! messageComments_) return emptyMessageComments_;
+                return *messageComments_;
+            }
 
             enum ChangeType : uint32_t
             {
@@ -52,6 +60,7 @@ namespace Forum
             };
 
             typedef Helpers::JsonReadyStringWithSortKey<64> NameType;
+            typedef Json::JsonReadyString< 4> InfoType;
 
             struct ChangeNotification
             {
@@ -75,7 +84,7 @@ namespace Forum
 
             User(IdType id, NameType&& name, Timestamp created, VisitDetails creationDetails)
                 : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
-                  name_(std::move(name))
+                  name_(std::move(name)), info_({})
             {
                 threads_.onPrepareCountChange()        = [this]() { changeNotifications_.onPrepareUpdateThreadCount(*this); };
                 threads_.onCountChange()               = [this]() { changeNotifications_.onUpdateThreadCount(*this); };
@@ -84,15 +93,23 @@ namespace Forum
                 threadMessages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
             }
 
-            explicit User(StringView name) : id_(IdType::empty), name_(name)
+            explicit User(StringView name) : id_(IdType::empty), name_(name), info_({})
             {}
 
             auto& info()              { return info_; }
             auto& threads()           { return threads_; }
             auto& subscribedThreads() { return subscribedThreads_; }
             auto& threadMessages()    { return threadMessages_; }
-            auto& votedMessages()     { return votedMessages_; }
-            auto& messageComments()   { return messageComments_; }
+            auto& votedMessages()
+            {
+                if ( ! votedMessages_) votedMessages_.reset(new std::set<DiscussionThreadMessagePtr>);
+                return *votedMessages_;
+            }
+            auto& messageComments()
+            {
+                if ( ! messageComments_) messageComments_.reset(new MessageCommentCollection);
+                return *messageComments_;
+            }
 
             void updateAuth(std::string&& value)
             {
@@ -119,11 +136,13 @@ namespace Forum
 
             void registerVote(DiscussionThreadMessagePtr message)
             {
-                votedMessages_.insert(message);
+                votedMessages().insert(message);
             }
 
         private:
             static ChangeNotification changeNotifications_;
+            static const std::set<DiscussionThreadMessagePtr> emptyVotedMessages_;
+            static const MessageCommentCollection emptyMessageComments_;
 
             IdType id_;
             Timestamp created_{0};
@@ -131,7 +150,7 @@ namespace Forum
 
             std::string auth_;
             NameType name_;
-            std::string info_;
+            InfoType info_;
 
             Timestamp lastSeen_{0};
             
@@ -139,9 +158,9 @@ namespace Forum
             DiscussionThreadCollectionWithOrderedId subscribedThreads_;
                                     
             DiscussionThreadMessageCollection threadMessages_;
-            std::set<DiscussionThreadMessagePtr> votedMessages_;
+            std::unique_ptr<std::set<DiscussionThreadMessagePtr>> votedMessages_;
             
-            MessageCommentCollection messageComments_;
+            std::unique_ptr<MessageCommentCollection> messageComments_;
         };
 
         typedef EntityPointer<User> UserPtr;

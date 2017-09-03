@@ -278,11 +278,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onChangeUserInfo(ObserverContext context, const User& user)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
+        auto userInfo = user.info().string();
+
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(user.info().data()), static_cast<SizeType>(user.info().size()), true }
+            { reinterpret_cast<const char*>(userInfo.data()), static_cast<SizeType>(userInfo.size()), true }
         };
 
         recordBlob(EventType::CHANGE_USER_INFO, 1, parts, std::extent<decltype(parts)>::value);

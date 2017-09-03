@@ -386,7 +386,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(EntityCollection& collection, Id
     }
 
     UserPtr user = *it;
-    user->info() = toString(newInfo);
+    user->info() = User::InfoType(newInfo);
 
     return StatusCode::OK;
 }

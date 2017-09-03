@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <functional>
 
 #include <boost/utility/string_view.hpp>
 
@@ -54,6 +55,8 @@ namespace Json
         JsonReadyStringBase& operator=(const JsonReadyStringBase&) = default;
         JsonReadyStringBase& operator=(JsonReadyStringBase&&) noexcept = default;
         
+        bool operator==(const JsonReadyStringBase&) const noexcept;
+
         bool needsJsonEscape() const noexcept;
 
         boost::string_view string() const noexcept;
@@ -109,6 +112,12 @@ namespace Json
             destination[sourceSize] = '"';
         }
         std::copy(source.begin(), source.end(), destination);
+    }
+
+    template <size_t StackSize, typename Derived, typename SizeType>
+    bool JsonReadyStringBase<StackSize, Derived, SizeType>::operator==(const JsonReadyStringBase& other) const noexcept
+    {
+        return container_ == other.container_;
     }
 
     template <size_t StackSize, typename Derived, typename SizeType>
@@ -173,4 +182,16 @@ namespace Json
     {
         return 0;
     }
+}
+
+namespace std
+{
+    template<size_t StackSize, typename Derived, typename SizeType>
+    struct hash<Json::JsonReadyStringBase<StackSize, Derived, SizeType>>
+    {
+        size_t operator()(const Json::JsonReadyStringBase<StackSize, Derived, SizeType>& value) const
+        {
+            return hash<boost::string_view>{}(value.string());
+        }
+    };
 }
