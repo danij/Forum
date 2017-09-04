@@ -41,7 +41,7 @@ AuthorizationStatus DefaultAuthorization::changeUserName(const User& currentUser
 {
     if (currentUser.id() == user.id())
     {
-        return AuthorizationStatus::OK;
+        return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_OWN_USER_NAME);;
     }
     return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_NAME);
 }
@@ -50,9 +50,9 @@ AuthorizationStatus DefaultAuthorization::changeUserInfo(const User& currentUser
 {
     if (currentUser.id() == user.id())
     {
-        return AuthorizationStatus::OK;
+        return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_OWN_USER_INFO);
     }
-    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_NAME);
+    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_INFO);
 }
 
 AuthorizationStatus DefaultAuthorization::deleteUser(const User& currentUser, const User& user) const
