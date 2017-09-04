@@ -41,7 +41,7 @@ namespace Forum
             boost::optional<bool> allowDisplayDiscussionThreadMessageIpAddress = boost::none;
 
             bool hideLatestMessage = false;
-            bool hidePermissions = false;
+            bool hidePrivileges = false;
         };
 
         extern thread_local SerializationSettings serializationSettings;
@@ -66,5 +66,21 @@ namespace Forum
 
         Json::JsonWriter& serialize(Json::JsonWriter& writer, const User& user,
                                     const Authorization::SerializationRestriction& restriction);
+
+        template<typename Entity, typename PrivilegeArray>
+        static void writePrivileges(Json::JsonWriter& writer, const Entity& entity, const PrivilegeArray& privilegeArray,
+                                    const Authorization::SerializationRestriction& restriction)
+        {
+            writer.newPropertyWithSafeName("privileges");
+            writer.startArray();
+            for (auto& tuple : privilegeArray)
+            {
+                if (restriction.isAllowed(entity, std::get<0>(tuple)))
+                {
+                    writer.writeSafeString(std::get<1>(tuple));
+                }
+            }
+            writer.endArray();
+        }
     }
 }

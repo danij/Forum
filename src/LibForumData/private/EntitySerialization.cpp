@@ -84,22 +84,6 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
     return writer;
 }
 
-template<typename Entity, typename PrivilegeArray>
-static void writePermissions(JsonWriter& writer, const Entity& entity, const PrivilegeArray& privilegeArray,
-                             const SerializationRestriction& restriction)
-{
-    writer.newPropertyWithSafeName("permissions");
-    writer.startArray();
-    for (auto& tuple : privilegeArray)
-    {
-        if (restriction.isAllowed(entity, std::get<0>(tuple)))
-        {
-            writer.writeSafeString(std::get<1>(tuple));
-        }
-    }
-    writer.endArray();
-}
-
 JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessage& message,
                                 const SerializationRestriction& restriction)
 {
@@ -125,7 +109,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
 
     if (allowViewUserOverride && ( ! serializationSettings.hideDiscussionThreadCreatedBy))
     {
-        BoolTemporaryChanger _(serializationSettings.hidePermissions, true);
+        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
         writer.newPropertyWithSafeName("createdBy");
         serialize(writer, message.createdBy(), restriction);
@@ -136,7 +120,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         assert(parentThread);
 
         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
-        BoolTemporaryChanger __(serializationSettings.hidePermissions, true);
+        BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
 
         writer.newPropertyWithSafeName("parentThread");
         serialize(writer, *parentThread, restriction);
@@ -174,9 +158,9 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         writeVotes(writer, "downVotes", message.downVotes());
     }
 
-    if ( ! serializationSettings.hidePermissions)
+    if ( ! serializationSettings.hidePrivileges)
     {
-        writePermissions(writer, message, DiscussionThreadMessagePrivilegesToSerialize, restriction);
+        writePrivileges(writer, message, DiscussionThreadMessagePrivilegesToSerialize, restriction);
     }
 
     writer << objEnd;
@@ -192,7 +176,7 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage
         << propertySafeName("created", latestMessage.created());
     writer.newPropertyWithSafeName("createdBy");
 
-    BoolTemporaryChanger _(serializationSettings.hidePermissions, true);
+    BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
     serialize(writer, latestMessage.createdBy(), restriction);
 
@@ -232,14 +216,14 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const MessageComment& commen
 
     if ( ! serializationSettings.hideMessageCommentMessage)
     {
-        BoolTemporaryChanger _(serializationSettings.hidePermissions, true);
+        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
         writer.newPropertyWithSafeName("message");
         serialize(writer, comment.parentMessage(), restriction);
     }
     if ( ! serializationSettings.hideMessageCommentUser)
     {
-        BoolTemporaryChanger _(serializationSettings.hidePermissions, true);
+        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
         writer.newPropertyWithSafeName("createdBy");
         serialize(writer, comment.createdBy(), restriction);
@@ -338,7 +322,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
             << propertySafeName("subscribedUsersCount", thread.subscribedUsersCount());
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
     {
-        BoolTemporaryChanger _(serializationSettings.hidePermissions, true);
+        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
         writer.newPropertyWithSafeName("createdBy");
         serialize(writer, thread.createdBy(), restriction);
@@ -351,7 +335,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
 
     if (messageCount)
     {
-        BoolTemporaryChanger _(serializationSettings.hidePermissions, true);
+        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
         writeLatestMessage(writer, **messagesIndex.rbegin(), restriction);
     }
@@ -371,7 +355,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
     {
         BoolTemporaryChanger _(serializationSettings.hideDiscussionCategoriesOfTags, true);
         BoolTemporaryChanger __(serializationSettings.hideLatestMessage, true);
-        BoolTemporaryChanger ___(serializationSettings.hidePermissions, true);
+        BoolTemporaryChanger ___(serializationSettings.hidePrivileges, true);
 
         writer.newPropertyWithSafeName("tags");
         writer << arrayStart;
@@ -385,7 +369,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
         BoolTemporaryChanger _(serializationSettings.hideDiscussionCategoryParent, true);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryTags, true);
         BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
-        BoolTemporaryChanger ____(serializationSettings.hidePermissions, true);
+        BoolTemporaryChanger ____(serializationSettings.hidePrivileges, true);
 
         writer.newPropertyWithSafeName("categories");
         writer << arrayStart;
@@ -399,9 +383,9 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
            << propertySafeName("visited", thread.visited().load())
            << propertySafeName("voteScore", thread.voteScore());
 
-    if ( ! serializationSettings.hidePermissions)
+    if ( ! serializationSettings.hidePrivileges)
     {
-        writePermissions(writer, thread, DiscussionThreadPrivilegesToSerialize, restriction);
+        writePrivileges(writer, thread, DiscussionThreadPrivilegesToSerialize, restriction);
     }
 
     writer << objEnd;
@@ -422,7 +406,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag,
 
     if ( ! serializationSettings.hideLatestMessage)
     {
-        BoolTemporaryChanger _(serializationSettings.hidePermissions, true);
+        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
         writeLatestMessage(writer, tag.threads(), restriction);
     }
@@ -430,7 +414,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag,
     {
         BoolTemporaryChanger _(serializationSettings.hideDiscussionCategoryTags, true);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryParent, true);
-        BoolTemporaryChanger ___(serializationSettings.hidePermissions, true);
+        BoolTemporaryChanger ___(serializationSettings.hidePrivileges, true);
 
         writer.newPropertyWithSafeName("categories");
         writer << arrayStart;
@@ -441,9 +425,9 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag,
         writer << arrayEnd;
     }
 
-    if ( ! serializationSettings.hidePermissions)
+    if ( ! serializationSettings.hidePrivileges)
     {
-        writePermissions(writer, tag, DiscussionTagPrivilegesToSerialize, restriction);
+        writePrivileges(writer, tag, DiscussionTagPrivilegesToSerialize, restriction);
     }
 
     writer << objEnd;
@@ -471,7 +455,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
         auto latestMessage = category.latestMessage();
         if (latestMessage)
         {
-            BoolTemporaryChanger _(serializationSettings.hidePermissions, true);
+            BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
             writeLatestMessage(writer, *latestMessage, restriction);
         }
@@ -479,7 +463,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
     if ( ! serializationSettings.hideDiscussionCategoryTags)
     {
         BoolTemporaryChanger _(serializationSettings.hideDiscussionCategoriesOfTags, true);
-        BoolTemporaryChanger __(serializationSettings.hidePermissions, true);
+        BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
 
         writeArraySafeName(writer, "tags", category.tags().begin(), category.tags().end(), restriction);
     }
@@ -506,7 +490,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
         if (DiscussionCategoryConstPtr parent = category.parent())
         {
             BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
-            BoolTemporaryChanger __(serializationSettings.hidePermissions, true);
+            BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
 
             depth += 1;
             writer.newPropertyWithSafeName("parent");
@@ -514,9 +498,9 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
         };
     }
 
-    if ( ! serializationSettings.hidePermissions)
+    if ( ! serializationSettings.hidePrivileges)
     {
-        writePermissions(writer, category, DiscussionCategoryPrivilegesToSerialize, restriction);
+        writePrivileges(writer, category, DiscussionCategoryPrivilegesToSerialize, restriction);
     }
 
     writer
