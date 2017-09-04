@@ -10,6 +10,12 @@ void GrantedPrivilegeStore::grantDiscussionThreadMessagePrivilege(IdTypeRef user
                                                                   DiscussionThreadMessagePrivilege privilege,
                                                                   PrivilegeValueIntType value, Timestamp expiresAt)
 {
+    if (0 == value)
+    {
+        IdPrivilegeTuple toSearch{ userId, entityId, static_cast<EnumIntType>(privilege) };
+        discussionThreadMessageSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityIdPrivilege>().erase(toSearch);
+        return;
+    }
     discussionThreadMessageSpecificPrivileges_.insert(
             PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
 }
@@ -18,6 +24,12 @@ void GrantedPrivilegeStore::grantDiscussionThreadPrivilege(IdTypeRef userId, IdT
                                                            DiscussionThreadPrivilege privilege,
                                                            PrivilegeValueIntType value, Timestamp expiresAt)
 {
+    if (0 == value)
+    {
+        IdPrivilegeTuple toSearch{ userId, entityId, static_cast<EnumIntType>(privilege) };
+        discussionThreadSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityIdPrivilege>().erase(toSearch);
+        return;
+    }
     discussionThreadSpecificPrivileges_.insert(
             PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
 }
@@ -26,6 +38,12 @@ void GrantedPrivilegeStore::grantDiscussionTagPrivilege(IdTypeRef userId, IdType
                                                         DiscussionTagPrivilege privilege,
                                                         PrivilegeValueIntType value, Timestamp expiresAt)
 {
+    if (0 == value)
+    {
+        IdPrivilegeTuple toSearch{ userId, entityId, static_cast<EnumIntType>(privilege) };
+        discussionTagSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityIdPrivilege>().erase(toSearch);
+        return;
+    }
     discussionTagSpecificPrivileges_.insert(
             PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
 }
@@ -34,6 +52,12 @@ void GrantedPrivilegeStore::grantDiscussionCategoryPrivilege(IdTypeRef userId, I
                                                              DiscussionCategoryPrivilege privilege,
                                                              PrivilegeValueIntType value, Timestamp expiresAt)
 {
+    if (0 == value)
+    {
+        IdPrivilegeTuple toSearch{ userId, entityId, static_cast<EnumIntType>(privilege) };
+        discussionCategorySpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityIdPrivilege>().erase(toSearch);
+        return;
+    }
     discussionCategorySpecificPrivileges_.insert(
             PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
 }
@@ -42,6 +66,12 @@ void GrantedPrivilegeStore::grantForumWidePrivilege(IdTypeRef userId, IdTypeRef 
                                                     ForumWidePrivilege privilege,
                                                     PrivilegeValueIntType value, Timestamp expiresAt)
 {
+    if (0 == value)
+    {
+        IdPrivilegeTuple toSearch{ userId, entityId, static_cast<EnumIntType>(privilege) };
+        forumWideSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityIdPrivilege>().erase(toSearch);
+        return;
+    }
     forumWideSpecificPrivileges_.insert(
             PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
 }
