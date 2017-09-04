@@ -106,7 +106,10 @@ namespace Forum
             virtual StatusCode changeUserInfo(Entities::IdTypeRef id, StringView newInfo, OutStream& output) = 0;
             virtual StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) = 0;
 
+            //privileges
             virtual StatusCode getCurrentUserPrivileges(OutStream& output) const = 0;
+            virtual StatusCode getDiscussionThreadMessageRequiredPrivileges(OutStream& output) const = 0;
+
         };
         typedef std::shared_ptr<IUserRepository> UserRepositoryRef;
 
@@ -156,6 +159,10 @@ namespace Forum
                                                       OutStream& output) = 0;
             virtual StatusCode subscribeToDiscussionThread(Entities::IdTypeRef id, OutStream& output) = 0;
             virtual StatusCode unsubscribeFromDiscussionThread(Entities::IdTypeRef id, OutStream& output) = 0;
+
+            //privileges
+            virtual StatusCode getDiscussionThreadMessageRequiredPrivileges(Entities::IdTypeRef threadId,
+                                                                            OutStream& output) const = 0;
         };
         typedef std::shared_ptr<IDiscussionThreadRepository> DiscussionThreadRepositoryRef;
 
@@ -209,6 +216,11 @@ namespace Forum
             virtual StatusCode addCommentToDiscussionThreadMessage(Entities::IdTypeRef messageId,
                                                                    StringView content, OutStream& output) = 0;
             virtual StatusCode setMessageCommentToSolved(Entities::IdTypeRef id, OutStream& output) = 0;
+
+            //privileges
+            virtual StatusCode getDiscussionThreadMessageRequiredPrivileges(Entities::IdTypeRef messageId,
+                                                                            OutStream& output) const = 0;
+
         };
         typedef std::shared_ptr<IDiscussionThreadMessageRepository> DiscussionThreadMessageRepositoryRef;
 
@@ -261,6 +273,11 @@ namespace Forum
                                                              Entities::IdTypeRef threadId, OutStream& output) = 0;
             virtual StatusCode mergeDiscussionTags(Entities::IdTypeRef fromId, Entities::IdTypeRef intoId,
                                                    OutStream& output) = 0;
+
+            //privileges
+            virtual StatusCode getDiscussionThreadMessageRequiredPrivileges(Entities::IdTypeRef tagId,
+                                                                            OutStream& output) const = 0;
+
         };
         typedef std::shared_ptr<IDiscussionTagRepository> DiscussionTagRepositoryRef;
 

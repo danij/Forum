@@ -141,6 +141,12 @@ AuthorizationStatus DefaultAuthorization::unsubscribeFromDiscussionThread(const 
     return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::UNSUBSCRIBE);
 }
 
+AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessageById(const User& currentUser,
+                                                                         const DiscussionThreadMessage& message) const 
+{
+    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW);
+}
+
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessagesOfUserByCreated(const User& currentUser,
                                                                                      const User& user) const
 {
@@ -219,6 +225,12 @@ AuthorizationStatus DefaultAuthorization::setMessageCommentToSolved(const User& 
                                                                     const MessageComment& comment) const
 {
     return isAllowed(currentUser.id(), comment.parentMessage(), DiscussionThreadMessagePrivilege::SET_COMMENT_TO_SOLVED);
+}
+
+AuthorizationStatus DefaultAuthorization::getDiscussionTagById(const User& currentUser,
+                                                               const DiscussionTag& tag) const
+{
+    return isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionTags(const User& currentUser) const

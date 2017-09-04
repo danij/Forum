@@ -87,6 +87,8 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadMessageAuthorization)
 
+            virtual AuthorizationStatus getDiscussionThreadMessageById(const Entities::User& currentUser,
+                                                                       const Entities::DiscussionThreadMessage& message) const = 0;
             virtual AuthorizationStatus getDiscussionThreadMessagesOfUserByCreated(const Entities::User& currentUser,
                                                                                    const Entities::User& user) const = 0;
 
@@ -129,6 +131,8 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionTagAuthorization)
 
+            virtual AuthorizationStatus getDiscussionTagById(const Entities::User& currentUser,
+                                                             const Entities::DiscussionTag& tag) const = 0;
             virtual AuthorizationStatus getDiscussionTags(const Entities::User& currentUser) const = 0;
 
             virtual AuthorizationStatus addNewDiscussionTag(const Entities::User& currentUser,

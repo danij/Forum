@@ -440,11 +440,11 @@ StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdType
 StatusCode MemoryRepositoryUser::getCurrentUserPrivileges(OutStream& output) const
 {
     StatusWriter status(output);
+
     PerformedByWithLastSeenUpdateGuard performedBy;
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          status = StatusCode::OK;
                           status.disable();
 
                           auto& currentUser = performedBy.get(collection);
@@ -460,6 +460,25 @@ StatusCode MemoryRepositoryUser::getCurrentUserPrivileges(OutStream& output) con
                           writer.endObject();
 
                           readEvents().onGetCurrentUserPrivileges(createObserverContext(currentUser));
+                      });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::getDiscussionThreadMessageRequiredPrivileges(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          status.disable();
+
+                          auto& currentUser = performedBy.get(collection);
+        
+                          writeDiscussionThreadMessageRequiredPrivileges(collection, output);
+
+                          readEvents().onGetDiscussionThreadMessageRequiredPrivileges(createObserverContext(currentUser));
                       });
     return status;
 }

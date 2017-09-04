@@ -41,6 +41,10 @@ namespace Forum
                                            OutStream& output) override;
             StatusCode mergeDiscussionTags(Entities::EntityCollection& collection, Entities::IdTypeRef fromId,
                                            Entities::IdTypeRef intoId) override;
+
+            StatusCode getDiscussionThreadMessageRequiredPrivileges(Entities::IdTypeRef tagId,
+                                                                    OutStream& output) const override;
+
         private:
             Authorization::DiscussionTagAuthorizationRef authorization_;
         };

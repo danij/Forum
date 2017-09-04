@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TypeHelpers.h"
+#include "StringHelpers.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -35,6 +36,24 @@ namespace Forum
             COUNT
         };
 
+        const StringView DiscussionThreadMessagePrivilegeStrings[] = 
+        {
+            "view",
+            "view_creator_user",
+            "view_ip_address",
+            "view_votes",
+            "up_vote",
+            "down_vote",
+            "reset_vote",
+            "add_comment",
+            "set_comment_to_solved",
+            "get_message_comments",
+            "change_content",
+            "delete",
+            "move",
+            "adjust_privilege"
+        };
+
         const std::pair<DiscussionThreadMessagePrivilege, StringView> DiscussionThreadMessagePrivilegesToSerialize[] =
         {
             { DiscussionThreadMessagePrivilege::UP_VOTE, "up_vote" },
@@ -50,6 +69,13 @@ namespace Forum
             DELETE,
 
             COUNT
+        };
+
+        const StringView DiscussionThreadMessageDefaultPrivilegeDurationStrings[] =
+        {
+            "reset_vote",
+            "change_content",
+            "delete"
         };
 
         enum class DiscussionThreadPrivilege : EnumIntType
@@ -68,6 +94,21 @@ namespace Forum
             ADJUST_PRIVILEGE,
 
             COUNT
+        };
+
+        const StringView DiscussionThreadPrivilegeStrings[] = 
+        {
+            "view",
+            "subscribe",
+            "unsubscribe",
+            "add_message",
+            "change_name",
+            "change_pin_display_order",
+            "add_tag",
+            "remove_tag",
+            "delete",
+            "merge",
+            "adjust_privilege"
         };
 
         const std::pair<DiscussionThreadPrivilege, StringView> DiscussionThreadPrivilegesToSerialize[] =
@@ -94,6 +135,18 @@ namespace Forum
             COUNT
         };
 
+        const StringView DiscussionTagPrivilegeStrings[] = 
+        {
+            "view",
+            "get_discussion_threads",
+            "change_name",
+            "change_uiblob",
+            "delete",
+            "merge",
+            "adjust_privilege"
+        };
+
+
         const std::pair<DiscussionTagPrivilege, StringView> DiscussionTagPrivilegesToSerialize[] =
         {
             { DiscussionTagPrivilege::CHANGE_NAME, "change_name" },
@@ -116,6 +169,20 @@ namespace Forum
             ADJUST_PRIVILEGE,
 
             COUNT
+        };
+
+        const StringView DiscussionCategoryPrivilegeStrings[] = 
+        {
+            "view",
+            "get_discussion_threads",
+            "change_name",
+            "change_description",
+            "change_parent",
+            "change_displayorder",
+            "add_tag",
+            "remove_tag",
+            "delete",
+            "adjust_privilege"
         };
 
         const std::pair<DiscussionCategoryPrivilege, StringView> DiscussionCategoryPrivilegesToSerialize[] =
@@ -158,6 +225,34 @@ namespace Forum
             ADJUST_FORUM_WIDE_PRIVILEGE,
 
             COUNT
+        };
+
+        const StringView ForumWidePrivilegeStrings[] = 
+        {
+            "add_user",
+            "login",
+            "get_entities_count",
+            "get_version",
+            "get_all_users",
+            "get_user_info",
+            "get_discussion_threads_of_user",
+            "get_discussion_thread_messages_of_user",
+            "get_subscribed_discussion_threads_of_user",
+            "get_all_discussion_categories",
+            "get_discussion_categories_from_root",
+            "get_all_discussion_tags",
+            "get_all_discussion_threads",
+            "get_all_message_comments",
+            "get_message_comments_of_user",
+            "add_discussion_category",
+            "add_discussion_tag",
+            "add_discussion_thread",
+            "change_own_user_name",
+            "change_own_user_info",
+            "change_any_user_name",
+            "change_any_user_info",
+            "delete_any_user",
+            "adjust_forum_wide_privilege"
         };
 
         const std::pair<ForumWidePrivilege, StringView> ForumWidePrivilegesToSerialize[] =

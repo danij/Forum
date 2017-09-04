@@ -914,3 +914,39 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(En
 
     return StatusCode::OK;
 }
+
+StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessageRequiredPrivileges(
+        IdTypeRef messageId, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection);
+
+                          const auto& index = collection.threadMessages().byId();
+                          auto it = index.find(messageId);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& message = **it;
+
+                          if ( ! (status = authorization_->getDiscussionThreadMessageById(currentUser, message)))
+                          {
+                              return;
+                          }
+                          
+                          status.disable();
+
+                          writeDiscussionThreadMessageRequiredPrivileges(message, output);
+
+                          readEvents().onGetDiscussionThreadMessageRequiredPrivilegesFromThreadMessage(
+                                  createObserverContext(currentUser), message);
+                      });
+    return status;
+}

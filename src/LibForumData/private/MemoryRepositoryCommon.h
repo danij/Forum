@@ -95,6 +95,9 @@ namespace Forum
 
             static bool doesNotContainLeadingOrTrailingWhitespace(StringView& input);
 
+            static void writeDiscussionThreadMessageRequiredPrivileges(
+                    const Authorization::DiscussionThreadMessagePrivilegeStore& store, OutStream& output);
+
             MemoryStoreRef store_;
         };
 

@@ -64,6 +64,8 @@ namespace Forum
             AuthorizationStatus unsubscribeFromDiscussionThread(const Entities::User& currentUser,
                                                                 const Entities::DiscussionThread& thread) const override { return {}; }
 
+            AuthorizationStatus getDiscussionThreadMessageById(const Entities::User& currentUser,
+                                                               const Entities::DiscussionThreadMessage& message) const { return {}; }
             AuthorizationStatus getDiscussionThreadMessagesOfUserByCreated(const Entities::User& currentUser,
                                                                            const Entities::User& user) const override { return {}; }
 
@@ -97,6 +99,9 @@ namespace Forum
                                                                     StringView content) const override { return {}; }
             AuthorizationStatus setMessageCommentToSolved(const Entities::User& currentUser,
                                                           const Entities::MessageComment& comment) const override { return {}; }
+
+            AuthorizationStatus getDiscussionTagById(const Entities::User& currentUser, 
+                                                     const Entities::DiscussionTag& tag) const override { return {}; }
 
             AuthorizationStatus getDiscussionTags(const Entities::User& currentUser) const override { return {}; }
 

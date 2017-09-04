@@ -58,6 +58,16 @@ namespace Forum
                                          const Entities::DiscussionCategory&)> onGetDiscussionThreadsOfCategory;
 
             boost::signals2::signal<void(ObserverContext)> onGetCurrentUserPrivileges;
+            boost::signals2::signal<void(ObserverContext)> onGetDiscussionThreadMessageRequiredPrivileges;
+            boost::signals2::signal<void(ObserverContext,
+                                         const Entities::DiscussionThreadMessage&)> 
+                                                onGetDiscussionThreadMessageRequiredPrivilegesFromThreadMessage;
+            boost::signals2::signal<void(ObserverContext, 
+                                         const Entities::DiscussionThread&)> 
+                                                onGetDiscussionThreadMessageRequiredPrivilegesFromThread;
+            boost::signals2::signal<void(ObserverContext, 
+                                         const Entities::DiscussionTag&)> 
+                                                onGetDiscussionThreadMessageRequiredPrivilegesFromTag;
         };
 
         struct WriteEvents : private boost::noncopyable

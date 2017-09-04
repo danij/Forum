@@ -12,6 +12,7 @@
 #include <unicode/ustring.h>
 
 using namespace Forum;
+using namespace Forum::Authorization;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
@@ -133,4 +134,29 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
     if (U_FAILURE(errorCode)) return false;
 
     return (u_isUWhiteSpace(u32Chars[0]) == FALSE) && (u_isUWhiteSpace(u32Chars[1]) == FALSE);
+}
+
+void MemoryRepositoryBase::writeDiscussionThreadMessageRequiredPrivileges(
+        const DiscussionThreadMessagePrivilegeStore& store, OutStream& output)
+{
+    Json::JsonWriter writer(output);
+    writer.startObject();
+    writer.newPropertyWithSafeName("privileges");
+    writer.startArray();
+
+    for (EnumIntType i = 0; i < static_cast<EnumIntType>(DiscussionThreadMessagePrivilege::COUNT); ++i)
+    {
+        auto privilege = static_cast<DiscussionThreadMessagePrivilege>(i);
+        auto value = store.getDiscussionThreadMessagePrivilege(privilege);
+        if (value)
+        {
+            writer.startObject();
+            writer.newPropertyWithSafeName("name") << DiscussionThreadMessagePrivilegeStrings[i];
+            writer.newPropertyWithSafeName("value") << *value;
+            writer.endObject();
+        }
+    }
+
+    writer.endArray();
+    writer.endObject();
 }

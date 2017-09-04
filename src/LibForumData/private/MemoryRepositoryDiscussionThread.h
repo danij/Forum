@@ -59,6 +59,9 @@ namespace Forum
             StatusCode unsubscribeFromDiscussionThread(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode unsubscribeFromDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
+            StatusCode getDiscussionThreadMessageRequiredPrivileges(Entities::IdTypeRef threadId,
+                                                                    OutStream& output) const override;
+
         private:
             Authorization::DiscussionThreadAuthorizationRef authorization_;
         };

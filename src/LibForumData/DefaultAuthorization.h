@@ -81,6 +81,8 @@ namespace Forum
             AuthorizationStatus getMessageCommentsOfUser(const Entities::User& currentUser,
                                                          const Entities::User& user) const override;
 
+            AuthorizationStatus getDiscussionThreadMessageById(const Entities::User& currentUser,
+                                                               const Entities::DiscussionThreadMessage& message) const override;
             AuthorizationStatus addNewDiscussionMessageInThread(const Entities::User& currentUser,
                                                                 const Entities::DiscussionThread& thread,
                                                                 StringView content) const override;
@@ -106,6 +108,8 @@ namespace Forum
             AuthorizationStatus setMessageCommentToSolved(const Entities::User& currentUser,
                                                           const Entities::MessageComment& comment) const override;
 
+            AuthorizationStatus getDiscussionTagById(const Entities::User& currentUser,
+                                                     const Entities::DiscussionTag& tag) const override;
             AuthorizationStatus getDiscussionTags(const Entities::User& currentUser) const override;
 
             AuthorizationStatus addNewDiscussionTag(const Entities::User& currentUser, StringView name) const override;

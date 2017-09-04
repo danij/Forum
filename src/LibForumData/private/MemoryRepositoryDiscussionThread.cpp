@@ -831,3 +831,39 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(Ent
     currentUser->subscribedThreads().remove(thread);
     return StatusCode::OK;
 }
+
+StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadMessageRequiredPrivileges(IdTypeRef threadId, 
+                                                                                          OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection);
+
+                          const auto& index = collection.threads().byId();
+                          auto it = index.find(threadId);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& thread = **it;
+
+                          if ( ! (status = authorization_->getDiscussionThreadById(currentUser, thread)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          writeDiscussionThreadMessageRequiredPrivileges(thread, output);
+
+                          readEvents().onGetDiscussionThreadMessageRequiredPrivilegesFromThread(
+                                  createObserverContext(currentUser), thread);
+                      });
+    return status;
+}

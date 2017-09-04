@@ -29,6 +29,7 @@ namespace Forum
             StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
             StatusCode getCurrentUserPrivileges(OutStream& output) const override;
+            StatusCode getDiscussionThreadMessageRequiredPrivileges(OutStream& output) const override;
 
         private:
             Authorization::UserAuthorizationRef authorization_;
