@@ -41,28 +41,30 @@ namespace Forum
             boost::optional<bool> allowDisplayDiscussionThreadMessageIpAddress = boost::none;
 
             bool hideLatestMessage = false;
+            bool hidePermissions = false;
         };
 
         extern thread_local SerializationSettings serializationSettings;
 
         Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThreadMessage& thread,
-                const Authorization::SerializationRestriction& restriction);
+                                    const Authorization::SerializationRestriction& restriction);
 
         Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThread& thread,
-                const Authorization::SerializationRestriction& restriction);
+                                    const Authorization::SerializationRestriction& restriction);
 
         Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionTag& tag,
-                const Authorization::SerializationRestriction& restriction);
+                                    const Authorization::SerializationRestriction& restriction);
 
         Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionCategory& category,
-                const Authorization::SerializationRestriction& restriction);
+                                    const Authorization::SerializationRestriction& restriction);
 
         /**
          * The restriction parameter is not yet used by these two functions, just keeping a uniform interface
          */
         Json::JsonWriter& serialize(Json::JsonWriter& writer, const MessageComment& messageComment,
-                const Authorization::SerializationRestriction& restriction);
+                                    const Authorization::SerializationRestriction& restriction);
+
         Json::JsonWriter& serialize(Json::JsonWriter& writer, const User& user,
-                const Authorization::SerializationRestriction& restriction);
+                                    const Authorization::SerializationRestriction& restriction);
     }
 }
