@@ -867,3 +867,39 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadMessageRequiredP
                       });
     return status;
 }
+
+StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadRequiredPrivileges(IdTypeRef threadId, 
+                                                                                   OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection);
+
+                          const auto& index = collection.threads().byId();
+                          auto it = index.find(threadId);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& thread = **it;
+
+                          if ( ! (status = authorization_->getDiscussionThreadById(currentUser, thread)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          writeDiscussionThreadRequiredPrivileges(thread, output);
+
+                          readEvents().onGetDiscussionThreadRequiredPrivilegesFromThread(
+                                  createObserverContext(currentUser), thread);
+                      });
+    return status;
+}

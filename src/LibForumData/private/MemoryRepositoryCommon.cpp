@@ -136,22 +136,22 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
     return (u_isUWhiteSpace(u32Chars[0]) == FALSE) && (u_isUWhiteSpace(u32Chars[1]) == FALSE);
 }
 
-void MemoryRepositoryBase::writeDiscussionThreadMessageRequiredPrivileges(
-        const DiscussionThreadMessagePrivilegeStore& store, OutStream& output)
+template<typename Store, typename Enum, typename Fn>
+void writeRequiredPrivileges(const Store& store, Enum maxValue, OutStream& output, const StringView* strings, Fn&& fn)
 {
     Json::JsonWriter writer(output);
     writer.startObject();
     writer.newPropertyWithSafeName("privileges");
     writer.startArray();
 
-    for (EnumIntType i = 0; i < static_cast<EnumIntType>(DiscussionThreadMessagePrivilege::COUNT); ++i)
+    for (EnumIntType i = 0; i < static_cast<EnumIntType>(maxValue); ++i)
     {
-        auto privilege = static_cast<DiscussionThreadMessagePrivilege>(i);
-        auto value = store.getDiscussionThreadMessagePrivilege(privilege);
+        auto privilege = static_cast<Enum>(i);
+        auto value = fn(store, privilege);
         if (value)
         {
             writer.startObject();
-            writer.newPropertyWithSafeName("name") << DiscussionThreadMessagePrivilegeStrings[i];
+            writer.newPropertyWithSafeName("name") << strings[i];
             writer.newPropertyWithSafeName("value") << *value;
             writer.endObject();
         }
@@ -159,4 +159,26 @@ void MemoryRepositoryBase::writeDiscussionThreadMessageRequiredPrivileges(
 
     writer.endArray();
     writer.endObject();
+}
+
+void MemoryRepositoryBase::writeDiscussionThreadMessageRequiredPrivileges(
+        const DiscussionThreadMessagePrivilegeStore& store, OutStream& output)
+{
+    writeRequiredPrivileges(store, DiscussionThreadMessagePrivilege::COUNT, output, 
+                            DiscussionThreadMessagePrivilegeStrings,
+                            [](const DiscussionThreadMessagePrivilegeStore& _store, DiscussionThreadMessagePrivilege _privilege)
+                            {
+                                return _store.getDiscussionThreadMessagePrivilege(_privilege);
+                            });
+}
+
+void MemoryRepositoryBase::writeDiscussionThreadRequiredPrivileges(const DiscussionThreadPrivilegeStore& store, 
+                                                                   OutStream& output)
+{
+    writeRequiredPrivileges(store, DiscussionThreadPrivilege::COUNT, output,
+                            DiscussionThreadPrivilegeStrings,
+                            [](const DiscussionThreadPrivilegeStore& _store, DiscussionThreadPrivilege _privilege)
+                            {
+                                return _store.getDiscussionThreadPrivilege(_privilege);
+                            });
 }

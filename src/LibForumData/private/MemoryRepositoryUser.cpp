@@ -482,3 +482,22 @@ StatusCode MemoryRepositoryUser::getDiscussionThreadMessageRequiredPrivileges(Ou
                       });
     return status;
 }
+
+StatusCode MemoryRepositoryUser::getDiscussionThreadRequiredPrivileges(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          status.disable();
+
+                          auto& currentUser = performedBy.get(collection);
+        
+                          writeDiscussionThreadRequiredPrivileges(collection, output);
+
+                          readEvents().onGetDiscussionThreadRequiredPrivileges(createObserverContext(currentUser));
+                      });
+    return status;
+}

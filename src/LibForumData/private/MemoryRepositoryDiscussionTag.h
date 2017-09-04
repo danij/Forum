@@ -44,7 +44,8 @@ namespace Forum
 
             StatusCode getDiscussionThreadMessageRequiredPrivileges(Entities::IdTypeRef tagId,
                                                                     OutStream& output) const override;
-
+            StatusCode getDiscussionThreadRequiredPrivileges(Entities::IdTypeRef tagId,
+                                                             OutStream& output) const override;
         private:
             Authorization::DiscussionTagAuthorizationRef authorization_;
         };
