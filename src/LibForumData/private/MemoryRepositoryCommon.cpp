@@ -193,3 +193,14 @@ void MemoryRepositoryBase::writeDiscussionTagRequiredPrivileges(const Discussion
                                 return _store.getDiscussionTagPrivilege(_privilege);
                             });
 }
+
+void MemoryRepositoryBase::writeDiscussionCategoryRequiredPrivileges(const DiscussionCategoryPrivilegeStore& store, 
+                                                                     OutStream& output)
+{
+    writeRequiredPrivileges(store, DiscussionCategoryPrivilege::COUNT, output,
+                            DiscussionCategoryPrivilegeStrings,
+                            [](const DiscussionCategoryPrivilegeStore& _store, DiscussionCategoryPrivilege _privilege)
+                            {
+                                return _store.getDiscussionCategoryPrivilege(_privilege);
+                            });
+}

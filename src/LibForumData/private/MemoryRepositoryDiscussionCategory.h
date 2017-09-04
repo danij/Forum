@@ -54,6 +54,9 @@ namespace Forum
                                                        OutStream& output) override;
             StatusCode removeDiscussionTagFromCategory(Entities::EntityCollection& collection,
                                                        Entities::IdTypeRef tagId, Entities::IdTypeRef categoryId) override;
+
+            StatusCode getDiscussionCategoryRequiredPrivileges(Entities::IdTypeRef categoryId,
+                                                               OutStream& output) const override;
         private:
             Authorization::DiscussionCategoryAuthorizationRef authorization_;
         };

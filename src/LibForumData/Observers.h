@@ -79,6 +79,10 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext, 
                                          const Entities::DiscussionTag&)> 
                                                 onGetDiscussionTagRequiredPrivilegesFromTag;
+            boost::signals2::signal<void(ObserverContext)> onGetDiscussionCategoryRequiredPrivileges;
+            boost::signals2::signal<void(ObserverContext, 
+                                         const Entities::DiscussionCategory&)> 
+                                                onGetDiscussionCategoryRequiredPrivilegesFromCategory;
         };
 
         struct WriteEvents : private boost::noncopyable

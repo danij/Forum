@@ -101,6 +101,8 @@ namespace Forum
                     const Authorization::DiscussionThreadPrivilegeStore& store, OutStream& output);
             static void writeDiscussionTagRequiredPrivileges(
                     const Authorization::DiscussionTagPrivilegeStore& store, OutStream& output);
+            static void writeDiscussionCategoryRequiredPrivileges(
+                    const Authorization::DiscussionCategoryPrivilegeStore& store, OutStream& output);
 
             MemoryStoreRef store_;
         };

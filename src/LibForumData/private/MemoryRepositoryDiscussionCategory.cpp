@@ -794,3 +794,39 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
 
     return StatusCode::OK;
 }
+
+StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryRequiredPrivileges(IdTypeRef categoryId, 
+                                                                                       OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection);
+
+                          const auto& index = collection.categories().byId();
+                          auto it = index.find(categoryId);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& category = **it;
+
+                          if ( ! (status = authorization_->getDiscussionCategoryById(currentUser, category)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          writeDiscussionCategoryRequiredPrivileges(category, output);
+
+                          readEvents().onGetDiscussionCategoryRequiredPrivilegesFromCategory(
+                                  createObserverContext(currentUser), category);
+                      });
+    return status;
+}
