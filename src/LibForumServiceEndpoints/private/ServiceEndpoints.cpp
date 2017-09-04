@@ -103,26 +103,18 @@ static StringView getPointerToEntireRequestBody(const Http::HttpRequest& request
     return StringView(currentRequestContent.data(), currentRequestContent.size());
 }
 
-void AbstractEndpoint::handleDefault(Http::RequestState& requestState, View view, Command command,
-                                     ExecuteCommandFn executeCommand)
+void AbstractEndpoint::handle(Http::RequestState& requestState, ExecuteFn executeCommand)
 {
     assert(nullptr != executeCommand);
 
     currentParameters.clear();
     updateContextForRequest(requestState.request);
 
-    auto result = executeCommand(requestState, commandHandler_, view, command, currentParameters);
+    auto result = executeCommand(requestState, commandHandler_, currentParameters);
 
     requestState.response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
     requestState.response.writeHeader("Content-Type", "application/json");
     requestState.response.writeBodyAndContentLength(result.output.data(), result.output.size());
-}
-
-CommandHandler::Result AbstractEndpoint::defaultExecuteView(const Http::RequestState& requestState,
-                                                            CommandHandler& commandHandler, View view, Command command,
-                                                            std::vector<StringView>& parameters)
-{
-    return commandHandler.handle(view, parameters);
 }
 
 MetricsEndpoint::MetricsEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
@@ -131,7 +123,11 @@ MetricsEndpoint::MetricsEndpoint(CommandHandler& handler) : AbstractEndpoint(han
 
 void MetricsEndpoint::getVersion(Http::RequestState& requestState)
 {
-    handleDefault(requestState, View::SHOW_VERSION, {}, defaultExecuteView);
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::SHOW_VERSION, parameters);
+    });
 }
 
 StatisticsEndpoint::StatisticsEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
@@ -140,7 +136,11 @@ StatisticsEndpoint::StatisticsEndpoint(CommandHandler& handler) : AbstractEndpoi
 
 void StatisticsEndpoint::getEntitiesCount(Http::RequestState& requestState)
 {
-    handleDefault(requestState, View::COUNT_ENTITIES, {}, defaultExecuteView);
+    handle(requestState,
+           [](const Http::RequestState& _, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::COUNT_ENTITIES, parameters);
+    });
 }
 
 UsersEndpoint::UsersEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
@@ -156,14 +156,17 @@ static const char OrderByMessageCount[] = "mMeEsSsSaAgGeEcCoOuUnNtT";
 
 void UsersEndpoint::getCurrentUserPrivileges(Http::RequestState& requestState)
 {
-    handleDefault(requestState, View::GET_CURRENT_USER_PRIVILEGES, {}, defaultExecuteView);
+    handle(requestState, 
+           [](const Http::RequestState& _, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::GET_CURRENT_USER_PRIVILEGES, parameters);
+    });
 }
 
 void UsersEndpoint::getAll(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         auto view = View::GET_USERS_BY_NAME;
         auto& request = requestState.request;
@@ -199,9 +202,8 @@ void UsersEndpoint::getAll(Http::RequestState& requestState)
 
 void UsersEndpoint::getUserById(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_USER_BY_ID, parameters);
@@ -210,9 +212,8 @@ void UsersEndpoint::getUserById(Http::RequestState& requestState)
 
 void UsersEndpoint::getUserByName(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_USER_BY_NAME, parameters);
@@ -221,9 +222,8 @@ void UsersEndpoint::getUserByName(Http::RequestState& requestState)
 
 void UsersEndpoint::add(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
         return commandHandler.handle(Command::ADD_USER, parameters);
@@ -232,9 +232,8 @@ void UsersEndpoint::add(Http::RequestState& requestState)
 
 void UsersEndpoint::remove(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(Command::DELETE_USER, parameters);
@@ -243,9 +242,8 @@ void UsersEndpoint::remove(Http::RequestState& requestState)
 
 void UsersEndpoint::changeName(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -255,9 +253,8 @@ void UsersEndpoint::changeName(Http::RequestState& requestState)
 
 void UsersEndpoint::changeInfo(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -271,9 +268,8 @@ DiscussionThreadsEndpoint::DiscussionThreadsEndpoint(CommandHandler& handler) : 
 
 void DiscussionThreadsEndpoint::getAll(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         auto view = View::GET_DISCUSSION_THREADS_BY_NAME;
         auto& request = requestState.request;
@@ -305,9 +301,8 @@ void DiscussionThreadsEndpoint::getAll(Http::RequestState& requestState)
 
 void DiscussionThreadsEndpoint::getThreadById(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_DISCUSSION_THREAD_BY_ID, parameters);
@@ -316,9 +311,8 @@ void DiscussionThreadsEndpoint::getThreadById(Http::RequestState& requestState)
 
 void DiscussionThreadsEndpoint::getThreadsOfUser(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         auto view = View::GET_DISCUSSION_THREADS_OF_USER_BY_NAME;
         auto& request = requestState.request;
@@ -351,9 +345,8 @@ void DiscussionThreadsEndpoint::getThreadsOfUser(Http::RequestState& requestStat
 
 void DiscussionThreadsEndpoint::getThreadsWithTag(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         auto view = View::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME;
         auto& request = requestState.request;
@@ -386,9 +379,8 @@ void DiscussionThreadsEndpoint::getThreadsWithTag(Http::RequestState& requestSta
 
 void DiscussionThreadsEndpoint::getThreadsOfCategory(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         auto view = View::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME;
         auto& request = requestState.request;
@@ -421,9 +413,8 @@ void DiscussionThreadsEndpoint::getThreadsOfCategory(Http::RequestState& request
 
 void DiscussionThreadsEndpoint::getSubscribedThreadsOfUser(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         auto view = View::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_NAME;
         auto& request = requestState.request;
@@ -456,9 +447,8 @@ void DiscussionThreadsEndpoint::getSubscribedThreadsOfUser(Http::RequestState& r
 
 void DiscussionThreadsEndpoint::add(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
         return commandHandler.handle(Command::ADD_DISCUSSION_THREAD, parameters);
@@ -467,9 +457,8 @@ void DiscussionThreadsEndpoint::add(Http::RequestState& requestState)
 
 void DiscussionThreadsEndpoint::remove(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(Command::DELETE_DISCUSSION_THREAD, parameters);
@@ -478,9 +467,8 @@ void DiscussionThreadsEndpoint::remove(Http::RequestState& requestState)
 
 void DiscussionThreadsEndpoint::changeName(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -490,9 +478,8 @@ void DiscussionThreadsEndpoint::changeName(Http::RequestState& requestState)
 
 void DiscussionThreadsEndpoint::changePinDisplayOrder(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-        [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-            std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -502,9 +489,8 @@ void DiscussionThreadsEndpoint::changePinDisplayOrder(Http::RequestState& reques
 
 void DiscussionThreadsEndpoint::merge(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(requestState.extraPathParts[1]);
@@ -514,9 +500,8 @@ void DiscussionThreadsEndpoint::merge(Http::RequestState& requestState)
 
 void DiscussionThreadsEndpoint::subscribe(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(Command::SUBSCRIBE_TO_THREAD, parameters);
@@ -525,9 +510,8 @@ void DiscussionThreadsEndpoint::subscribe(Http::RequestState& requestState)
 
 void DiscussionThreadsEndpoint::unsubscribe(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(Command::UNSUBSCRIBE_FROM_THREAD, parameters);
@@ -536,9 +520,8 @@ void DiscussionThreadsEndpoint::unsubscribe(Http::RequestState& requestState)
 
 void DiscussionThreadsEndpoint::addTag(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[1]);
         parameters.push_back(requestState.extraPathParts[0]);
@@ -548,9 +531,8 @@ void DiscussionThreadsEndpoint::addTag(Http::RequestState& requestState)
 
 void DiscussionThreadsEndpoint::removeTag(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[1]);
         parameters.push_back(requestState.extraPathParts[0]);
@@ -564,9 +546,8 @@ DiscussionThreadMessagesEndpoint::DiscussionThreadMessagesEndpoint(CommandHandle
 
 void DiscussionThreadMessagesEndpoint::getThreadMessagesOfUser(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, parameters);
@@ -575,14 +556,17 @@ void DiscussionThreadMessagesEndpoint::getThreadMessagesOfUser(Http::RequestStat
 
 void DiscussionThreadMessagesEndpoint::getAllComments(Http::RequestState& requestState)
 {
-    return handleDefault(requestState, View::GET_MESSAGE_COMMENTS, {}, defaultExecuteView);
+    handle(requestState,
+           [](const Http::RequestState& _, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::GET_MESSAGE_COMMENTS, parameters);
+    });
 }
 
 void DiscussionThreadMessagesEndpoint::getCommentsOfMessage(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_MESSAGE_COMMENTS_OF_DISCUSSION_THREAD_MESSAGE, parameters);
@@ -591,9 +575,8 @@ void DiscussionThreadMessagesEndpoint::getCommentsOfMessage(Http::RequestState& 
 
 void DiscussionThreadMessagesEndpoint::getCommentsOfUser(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_MESSAGE_COMMENTS_OF_USER, parameters);
@@ -602,9 +585,8 @@ void DiscussionThreadMessagesEndpoint::getCommentsOfUser(Http::RequestState& req
 
 void DiscussionThreadMessagesEndpoint::add(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -614,9 +596,8 @@ void DiscussionThreadMessagesEndpoint::add(Http::RequestState& requestState)
 
 void DiscussionThreadMessagesEndpoint::remove(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(Command::DELETE_DISCUSSION_THREAD_MESSAGE, parameters);
@@ -625,9 +606,8 @@ void DiscussionThreadMessagesEndpoint::remove(Http::RequestState& requestState)
 
 void DiscussionThreadMessagesEndpoint::changeContent(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -637,9 +617,8 @@ void DiscussionThreadMessagesEndpoint::changeContent(Http::RequestState& request
 
 void DiscussionThreadMessagesEndpoint::move(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(requestState.extraPathParts[1]);
@@ -649,9 +628,8 @@ void DiscussionThreadMessagesEndpoint::move(Http::RequestState& requestState)
 
 void DiscussionThreadMessagesEndpoint::upVote(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(requestState.extraPathParts[1]);
@@ -661,9 +639,8 @@ void DiscussionThreadMessagesEndpoint::upVote(Http::RequestState& requestState)
 
 void DiscussionThreadMessagesEndpoint::downVote(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(requestState.extraPathParts[1]);
@@ -673,9 +650,8 @@ void DiscussionThreadMessagesEndpoint::downVote(Http::RequestState& requestState
 
 void DiscussionThreadMessagesEndpoint::resetVote(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(requestState.extraPathParts[1]);
@@ -685,9 +661,8 @@ void DiscussionThreadMessagesEndpoint::resetVote(Http::RequestState& requestStat
 
 void DiscussionThreadMessagesEndpoint::addComment(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -697,9 +672,8 @@ void DiscussionThreadMessagesEndpoint::addComment(Http::RequestState& requestSta
 
 void DiscussionThreadMessagesEndpoint::setCommentSolved(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(Command::SET_MESSAGE_COMMENT_SOLVED, parameters);
@@ -712,9 +686,8 @@ DiscussionTagsEndpoint::DiscussionTagsEndpoint(CommandHandler& handler) : Abstra
 
 void DiscussionTagsEndpoint::getAll(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         auto view = View::GET_DISCUSSION_TAGS_BY_NAME;
         auto& request = requestState.request;
@@ -738,9 +711,8 @@ void DiscussionTagsEndpoint::getAll(Http::RequestState& requestState)
 
 void DiscussionTagsEndpoint::add(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
         return commandHandler.handle(Command::ADD_DISCUSSION_TAG, parameters);
@@ -749,9 +721,8 @@ void DiscussionTagsEndpoint::add(Http::RequestState& requestState)
 
 void DiscussionTagsEndpoint::remove(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(Command::DELETE_DISCUSSION_TAG, parameters);
@@ -760,9 +731,8 @@ void DiscussionTagsEndpoint::remove(Http::RequestState& requestState)
 
 void DiscussionTagsEndpoint::changeName(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -772,9 +742,8 @@ void DiscussionTagsEndpoint::changeName(Http::RequestState& requestState)
 
 void DiscussionTagsEndpoint::changeUiBlob(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -784,9 +753,8 @@ void DiscussionTagsEndpoint::changeUiBlob(Http::RequestState& requestState)
 
 void DiscussionTagsEndpoint::merge(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(requestState.extraPathParts[1]);
@@ -800,9 +768,8 @@ DiscussionCategoriesEndpoint::DiscussionCategoriesEndpoint(CommandHandler& handl
 
 void DiscussionCategoriesEndpoint::getAll(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         auto view = View::GET_DISCUSSION_CATEGORIES_BY_NAME;
         auto& request = requestState.request;
@@ -826,14 +793,17 @@ void DiscussionCategoriesEndpoint::getAll(Http::RequestState& requestState)
 
 void DiscussionCategoriesEndpoint::getRootCategories(Http::RequestState& requestState)
 {
-    return handleDefault(requestState, View::GET_DISCUSSION_CATEGORIES_FROM_ROOT, {}, defaultExecuteView);
+    handle(requestState,
+           [](const Http::RequestState& _, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::GET_DISCUSSION_CATEGORIES_FROM_ROOT, parameters);
+    });
 }
 
 void DiscussionCategoriesEndpoint::getCategoryById(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-        [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-            std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_DISCUSSION_CATEGORY_BY_ID, parameters);
@@ -842,9 +812,8 @@ void DiscussionCategoriesEndpoint::getCategoryById(Http::RequestState& requestSt
 
 void DiscussionCategoriesEndpoint::add(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
         return commandHandler.handle(Command::ADD_DISCUSSION_CATEGORY, parameters);
@@ -853,9 +822,8 @@ void DiscussionCategoriesEndpoint::add(Http::RequestState& requestState)
 
 void DiscussionCategoriesEndpoint::remove(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(Command::DELETE_DISCUSSION_CATEGORY, parameters);
@@ -864,9 +832,8 @@ void DiscussionCategoriesEndpoint::remove(Http::RequestState& requestState)
 
 void DiscussionCategoriesEndpoint::changeName(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -876,9 +843,8 @@ void DiscussionCategoriesEndpoint::changeName(Http::RequestState& requestState)
 
 void DiscussionCategoriesEndpoint::changeDescription(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -888,9 +854,8 @@ void DiscussionCategoriesEndpoint::changeDescription(Http::RequestState& request
 
 void DiscussionCategoriesEndpoint::changeParent(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -900,9 +865,8 @@ void DiscussionCategoriesEndpoint::changeParent(Http::RequestState& requestState
 
 void DiscussionCategoriesEndpoint::changeDisplayOrder(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
@@ -912,9 +876,8 @@ void DiscussionCategoriesEndpoint::changeDisplayOrder(Http::RequestState& reques
 
 void DiscussionCategoriesEndpoint::addTag(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[1]);
         parameters.push_back(requestState.extraPathParts[0]);
@@ -924,9 +887,8 @@ void DiscussionCategoriesEndpoint::addTag(Http::RequestState& requestState)
 
 void DiscussionCategoriesEndpoint::removeTag(Http::RequestState& requestState)
 {
-    handleDefault(requestState, {}, {},
-                  [](const Http::RequestState& requestState, CommandHandler& commandHandler, View _, Command __,
-                     std::vector<StringView>& parameters)
+    handle(requestState, 
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[1]);
         parameters.push_back(requestState.extraPathParts[0]);

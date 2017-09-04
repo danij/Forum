@@ -17,14 +17,10 @@ namespace Forum
             explicit AbstractEndpoint(CommandHandler& handler);
 
         protected:
-            typedef CommandHandler::Result(*ExecuteCommandFn)(const Http::RequestState&, CommandHandler&, View, Command,
-                                                              std::vector<StringView>&);
+            typedef CommandHandler::Result (*ExecuteFn)(const Http::RequestState&, CommandHandler&, 
+                                                        std::vector<StringView>&);
 
-            void handleDefault(Http::RequestState& requestState, View view, Command command,
-                               ExecuteCommandFn executeCommand);
-
-            static CommandHandler::Result defaultExecuteView(const Http::RequestState&, CommandHandler&, View, Command,
-                                                             std::vector<StringView>&);
+            void handle(Http::RequestState& requestState, ExecuteFn executeCommand);
 
             CommandHandler& commandHandler_;
         };
