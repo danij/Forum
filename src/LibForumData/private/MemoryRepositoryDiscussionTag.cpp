@@ -652,3 +652,39 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionThreadRequiredPrivileges(
                       });
     return status;
 }
+
+StatusCode MemoryRepositoryDiscussionTag::getDiscussionTagRequiredPrivileges(IdTypeRef tagId, 
+                                                                             OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection);
+
+                          const auto& index = collection.tags().byId();
+                          auto it = index.find(tagId);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& tag = **it;
+
+                          if ( ! (status = authorization_->getDiscussionTagById(currentUser, tag)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          writeDiscussionTagRequiredPrivileges(tag, output);
+
+                          readEvents().onGetDiscussionTagRequiredPrivilegesFromTag(
+                                  createObserverContext(currentUser), tag);
+                      });
+    return status;
+}

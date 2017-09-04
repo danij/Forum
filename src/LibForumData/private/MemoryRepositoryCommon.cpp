@@ -182,3 +182,14 @@ void MemoryRepositoryBase::writeDiscussionThreadRequiredPrivileges(const Discuss
                                 return _store.getDiscussionThreadPrivilege(_privilege);
                             });
 }
+
+void MemoryRepositoryBase::writeDiscussionTagRequiredPrivileges(const DiscussionTagPrivilegeStore& store, 
+                                                                OutStream& output)
+{
+    writeRequiredPrivileges(store, DiscussionTagPrivilege::COUNT, output,
+                            DiscussionTagPrivilegeStrings,
+                            [](const DiscussionTagPrivilegeStore& _store, DiscussionTagPrivilege _privilege)
+                            {
+                                return _store.getDiscussionTagPrivilege(_privilege);
+                            });
+}

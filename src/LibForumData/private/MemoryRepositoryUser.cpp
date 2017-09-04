@@ -501,3 +501,22 @@ StatusCode MemoryRepositoryUser::getDiscussionThreadRequiredPrivileges(OutStream
                       });
     return status;
 }
+
+StatusCode MemoryRepositoryUser::getDiscussionTagRequiredPrivileges(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          status.disable();
+
+                          auto& currentUser = performedBy.get(collection);
+        
+                          writeDiscussionTagRequiredPrivileges(collection, output);
+
+                          readEvents().onGetDiscussionTagRequiredPrivileges(createObserverContext(currentUser));
+                      });
+    return status;
+}

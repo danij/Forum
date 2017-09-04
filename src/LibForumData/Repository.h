@@ -111,7 +111,7 @@ namespace Forum
 
             virtual StatusCode getDiscussionThreadMessageRequiredPrivileges(OutStream& output) const = 0;
             virtual StatusCode getDiscussionThreadRequiredPrivileges(OutStream& output) const = 0;
-
+            virtual StatusCode getDiscussionTagRequiredPrivileges(OutStream& output) const = 0;
         };
         typedef std::shared_ptr<IUserRepository> UserRepositoryRef;
 
@@ -283,6 +283,8 @@ namespace Forum
                                                                             OutStream& output) const = 0;
             virtual StatusCode getDiscussionThreadRequiredPrivileges(Entities::IdTypeRef tagId,
                                                                      OutStream& output) const = 0;
+            virtual StatusCode getDiscussionTagRequiredPrivileges(Entities::IdTypeRef tagId,
+                                                                  OutStream& output) const = 0;
         };
         typedef std::shared_ptr<IDiscussionTagRepository> DiscussionTagRepositoryRef;
 
