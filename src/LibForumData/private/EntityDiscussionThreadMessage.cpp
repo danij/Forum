@@ -4,9 +4,20 @@
 using namespace Forum::Entities;
 using namespace Forum::Authorization;
 
-PrivilegeValueType DiscussionThreadMessage::getDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege) const
+PrivilegeValueType DiscussionThreadMessage::getDiscussionThreadMessagePrivilege(
+        DiscussionThreadMessagePrivilege privilege) const
 {
-    assert(parentThread_);
+    auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
+    if (result) return result;
     
-    return getDiscussionThreadMessagePrivilege(privilege, parentThread_->getDiscussionThreadMessagePrivilege(privilege));
+    assert(parentThread_);
+    return parentThread_->getDiscussionThreadMessagePrivilege(privilege);
+}
+
+PrivilegeValueType DiscussionThreadMessage::getDiscussionThreadMessagePrivilege(
+        DiscussionThreadMessagePrivilege privilege, PrivilegeValueType discussionThreadLevelValue) const
+{
+    auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
+
+    return result ? result : discussionThreadLevelValue;
 }

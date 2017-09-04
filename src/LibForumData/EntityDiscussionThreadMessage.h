@@ -100,14 +100,11 @@ namespace Forum
 
             Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(
                     Authorization::DiscussionThreadMessagePrivilege privilege) const override;
-            
+
+            //optimization should the discussionThreadLevelValue already be available
             Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(
                     Authorization::DiscussionThreadMessagePrivilege privilege,
-                    Authorization::PrivilegeValueType discussionThreadLevelValue) const
-            {
-                auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
-                return Authorization::minimumPrivilegeValue(result, discussionThreadLevelValue);
-            }
+                    Authorization::PrivilegeValueType discussionThreadLevelValue) const;
 
             enum ChangeType : uint32_t
             {

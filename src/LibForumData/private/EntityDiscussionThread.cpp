@@ -24,10 +24,12 @@ DiscussionThreadMessage::VoteScoreType DiscussionThread::voteScore() const
 PrivilegeValueType DiscussionThread::getDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege) const
 {
     auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
+    if (result) return result;
+
     for (auto tag : tags_)
     {
         assert(tag);
-        result = minimumPrivilegeValue(result, tag->getDiscussionThreadMessagePrivilege(privilege));
+        result = maximumPrivilegeValue(result, tag->getDiscussionThreadMessagePrivilege(privilege));
     }
     return result;
 }
@@ -35,10 +37,12 @@ PrivilegeValueType DiscussionThread::getDiscussionThreadMessagePrivilege(Discuss
 PrivilegeValueType DiscussionThread::getDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege) const
 {
     auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege);
+    if (result) return result;
+
     for (auto tag : tags_)
     {
         assert(tag);
-        result = minimumPrivilegeValue(result, tag->getDiscussionThreadPrivilege(privilege));
+        result = maximumPrivilegeValue(result, tag->getDiscussionThreadPrivilege(privilege));
     }
     return result;
 }
@@ -51,7 +55,7 @@ PrivilegeDefaultDurationType DiscussionThread::getDiscussionThreadMessageDefault
     for (auto tag : tags_)
     {
         assert(tag);
-        result = maximumPrivilegeDefaultDuration(result, tag->getDiscussionThreadMessageDefaultPrivilegeDuration(privilege));
+        result = minimumPrivilegeDefaultDuration(result, tag->getDiscussionThreadMessageDefaultPrivilegeDuration(privilege));
     }
     return result;
 }

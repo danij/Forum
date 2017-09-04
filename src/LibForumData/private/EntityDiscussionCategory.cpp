@@ -211,7 +211,8 @@ void DiscussionCategory::addTotalsFromChild(const DiscussionCategory& childCateg
 
 PrivilegeValueType DiscussionCategory::getDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege) const
 {
-    return minimumPrivilegeValue(
-        DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege(privilege),
-        forumWidePrivileges_.getDiscussionCategoryPrivilege(privilege));
+    auto result = DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege(privilege);
+    if (result) return result;
+
+    return forumWidePrivileges_.getDiscussionCategoryPrivilege(privilege);
 }

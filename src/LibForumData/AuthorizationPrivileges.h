@@ -236,7 +236,7 @@ namespace Forum
 
 
         inline PrivilegeDefaultDurationType minimumPrivilegeDefaultDuration(PrivilegeDefaultDurationType first,
-            PrivilegeDefaultDurationType second)
+                                                                            PrivilegeDefaultDurationType second)
         {
             if ( ! first) return second;
             if ( ! second) return first;
@@ -245,7 +245,7 @@ namespace Forum
         }
 
         inline PrivilegeDefaultDurationType maximumPrivilegeDefaultDuration(PrivilegeDefaultDurationType first,
-            PrivilegeDefaultDurationType second)
+                                                                            PrivilegeDefaultDurationType second)
         {
             if ( ! first) return second;
             if ( ! second) return first;
@@ -258,7 +258,7 @@ namespace Forum
             DECLARE_ABSTRACT_MANDATORY(DiscussionThreadMessagePrivilegeStore)
 
             void setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege,
-                PrivilegeValueIntType value)
+                                                     PrivilegeValueIntType value)
             {
                 if (privilege < DiscussionThreadMessagePrivilege::COUNT)
                 {
@@ -266,7 +266,8 @@ namespace Forum
                 }
             }
 
-            virtual PrivilegeValueType getDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege) const
+            virtual PrivilegeValueType getDiscussionThreadMessagePrivilege(
+                    DiscussionThreadMessagePrivilege privilege) const
             {
                 if (privilege < DiscussionThreadMessagePrivilege::COUNT)
                 {
@@ -285,7 +286,7 @@ namespace Forum
             DECLARE_ABSTRACT_MANDATORY(DiscussionThreadPrivilegeStore)
 
             void setDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege,
-                PrivilegeValueIntType value)
+                                              PrivilegeValueIntType value)
             {
                 if (privilege < DiscussionThreadPrivilege::COUNT)
                 {
@@ -302,8 +303,8 @@ namespace Forum
                 return{};
             }
 
-            void setDiscussionThreadMessageDefaultPrivilegeDuration(DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                PrivilegeDefaultDurationIntType value)
+            void setDiscussionThreadMessageDefaultPrivilegeDuration(
+                    DiscussionThreadMessageDefaultPrivilegeDuration privilege, PrivilegeDefaultDurationIntType value)
             {
                 if (privilege < DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)
                 {
@@ -311,7 +312,8 @@ namespace Forum
                 }
             }
 
-            virtual PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(DiscussionThreadMessageDefaultPrivilegeDuration privilege) const
+            virtual PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(
+                    DiscussionThreadMessageDefaultPrivilegeDuration privilege) const
             {
                 if (privilege < DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)
                 {
@@ -403,7 +405,7 @@ namespace Forum
             }
 
             void setForumWideDefaultPrivilegeDuration(ForumWideDefaultPrivilegeDuration privilege,
-                PrivilegeDefaultDurationIntType value)
+                                                      PrivilegeDefaultDurationIntType value)
             {
                 if (privilege < ForumWideDefaultPrivilegeDuration::COUNT)
                 {
@@ -411,7 +413,8 @@ namespace Forum
                 }
             }
 
-            virtual PrivilegeDefaultDurationType getForumWideDefaultPrivilegeDuration(ForumWideDefaultPrivilegeDuration privilege) const
+            virtual PrivilegeDefaultDurationType getForumWideDefaultPrivilegeDuration(
+                    ForumWideDefaultPrivilegeDuration privilege) const
             {
                 if (privilege < ForumWideDefaultPrivilegeDuration::COUNT)
                 {

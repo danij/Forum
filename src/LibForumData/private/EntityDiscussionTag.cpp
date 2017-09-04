@@ -9,16 +9,18 @@ DiscussionTag::ChangeNotification DiscussionTag::changeNotifications_;
 
 PrivilegeValueType DiscussionTag::getDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege) const
 {
-    return minimumPrivilegeValue(
-        DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege),
-        forumWidePrivileges_.getDiscussionThreadMessagePrivilege(privilege));
+    auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
+    if (result) return result;
+    
+    return forumWidePrivileges_.getDiscussionThreadMessagePrivilege(privilege);
 }
 
 PrivilegeValueType DiscussionTag::getDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege) const
 {
-    return minimumPrivilegeValue(
-        DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege),
-        forumWidePrivileges_.getDiscussionThreadPrivilege(privilege));
+    auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege);
+    if (result) return result;
+
+    return forumWidePrivileges_.getDiscussionThreadPrivilege(privilege);
 }
 
 PrivilegeDefaultDurationType DiscussionTag::getDiscussionThreadMessageDefaultPrivilegeDuration(DiscussionThreadMessageDefaultPrivilegeDuration privilege) const
@@ -31,9 +33,10 @@ PrivilegeDefaultDurationType DiscussionTag::getDiscussionThreadMessageDefaultPri
 
 PrivilegeValueType DiscussionTag::getDiscussionTagPrivilege(DiscussionTagPrivilege privilege) const
 {
-    return minimumPrivilegeValue(
-        DiscussionTagPrivilegeStore::getDiscussionTagPrivilege(privilege),
-        forumWidePrivileges_.getDiscussionTagPrivilege(privilege));
+    auto result = DiscussionTagPrivilegeStore::getDiscussionTagPrivilege(privilege);
+    if (result) return result;
+
+    return forumWidePrivileges_.getDiscussionTagPrivilege(privilege);
 }
 
 bool DiscussionTag::insertDiscussionThread(DiscussionThreadPtr thread)

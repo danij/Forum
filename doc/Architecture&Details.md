@@ -174,7 +174,7 @@ Each user can be assigned a numeric value `[-32000 .. 32000]` for a privilege. P
   
 Privileges are hierarchical, e.g. one can control discussion thread message related privileges for a whole thread at once,
  or even for all threads that are assigned a specific tag. If a required value is specified at multiple levels, the 
- minimum value is used.
+ one at the closest level takes priority, or the maximum is performed between multiple values at the same level.
   
 ![Privilege Inheritance](privileges.png)
 
