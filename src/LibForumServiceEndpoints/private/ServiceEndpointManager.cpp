@@ -43,6 +43,9 @@ void ServiceEndpointManager::registerRoutes(Http::HttpRouter& router)
     router.addRoute("statistics/entitycount/", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->statisticsEndpoint.getEntitiesCount(state);});
 
+    router.addRoute("privileges/", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->usersEndpoint.getCurrentUserPrivileges(state);});
+
     router.addRoute("users/", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->usersEndpoint.getAll(state);});
     router.addRoute("users/id", Http::HttpVerb::GET,

@@ -154,6 +154,11 @@ static const char OrderByLastUpdated[] = "lLaAsStTuUpPdDaAtTeEdD";
 static const char OrderByThreadCount[] = "tThHrReEaAdDcCoOuUnNtT";
 static const char OrderByMessageCount[] = "mMeEsSsSaAgGeEcCoOuUnNtT";
 
+void UsersEndpoint::getCurrentUserPrivileges(Http::RequestState& requestState)
+{
+    handleDefault(requestState, View::GET_CURRENT_USER_PRIVILEGES, {}, defaultExecuteView);
+}
+
 void UsersEndpoint::getAll(Http::RequestState& requestState)
 {
     handleDefault(requestState, {}, {},

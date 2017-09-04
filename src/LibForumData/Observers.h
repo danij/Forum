@@ -56,6 +56,8 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext)> onGetRootDiscussionCategories;
             boost::signals2::signal<void(ObserverContext,
                                          const Entities::DiscussionCategory&)> onGetDiscussionThreadsOfCategory;
+
+            boost::signals2::signal<void(ObserverContext)> onGetCurrentUserPrivileges;
         };
 
         struct WriteEvents : private boost::noncopyable

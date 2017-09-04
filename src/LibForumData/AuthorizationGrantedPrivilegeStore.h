@@ -206,6 +206,12 @@ namespace Forum
                 return static_cast<bool>(privilegeStore_.isAllowed(userId_, category, privilege, now_));
             }
 
+            bool isAllowed(const ForumWidePrivilegeStore& forumWidePrivilegeStore, 
+                           ForumWidePrivilege privilege = ForumWidePrivilege::LOGIN) const
+            {
+                return static_cast<bool>(privilegeStore_.isAllowed(userId_, forumWidePrivilegeStore, privilege, now_));
+            }
+
         private:
             const GrantedPrivilegeStore& privilegeStore_;
             Entities::IdTypeRef userId_;

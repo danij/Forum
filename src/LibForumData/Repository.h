@@ -105,6 +105,8 @@ namespace Forum
             virtual StatusCode changeUserName(Entities::IdTypeRef id, StringView newName, OutStream& output) = 0;
             virtual StatusCode changeUserInfo(Entities::IdTypeRef id, StringView newInfo, OutStream& output) = 0;
             virtual StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) = 0;
+
+            virtual StatusCode getCurrentUserPrivileges(OutStream& output) const = 0;
         };
         typedef std::shared_ptr<IUserRepository> UserRepositoryRef;
 

@@ -50,6 +50,8 @@ namespace Forum
         public:
             explicit UsersEndpoint(CommandHandler& handler);
 
+            void getCurrentUserPrivileges(Http::RequestState& requestState);
+
             void getAll(Http::RequestState& requestState);
             void getUserById(Http::RequestState& requestState);
             void getUserByName(Http::RequestState& requestState);

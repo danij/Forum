@@ -436,3 +436,30 @@ StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdType
 
     return StatusCode::OK;
 }
+
+StatusCode MemoryRepositoryUser::getCurrentUserPrivileges(OutStream& output) const
+{
+    StatusWriter status(output);
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          status = StatusCode::OK;
+                          status.disable();
+
+                          auto& currentUser = performedBy.get(collection);
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), 
+                                                               Context::getCurrentTime());
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+                          
+                          writePrivileges(writer, collection, ForumWidePrivilegesToSerialize, restriction);
+
+                          writer.endObject();
+
+                          readEvents().onGetCurrentUserPrivileges(createObserverContext(currentUser));
+                      });
+    return status;
+}

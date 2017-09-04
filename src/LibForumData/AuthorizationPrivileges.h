@@ -158,6 +158,30 @@ namespace Forum
             COUNT
         };
 
+        const std::pair<ForumWidePrivilege, StringView> ForumWidePrivilegesToSerialize[] =
+        {
+            { ForumWidePrivilege::GET_ENTITIES_COUNT, "get_entities_count" },
+            { ForumWidePrivilege::GET_VERSION, "get_version" },
+            { ForumWidePrivilege::GET_ALL_USERS, "get_all_users" },
+            { ForumWidePrivilege::GET_USER_INFO, "get_user_info" },
+            { ForumWidePrivilege::GET_DISCUSSION_THREADS_OF_USER, "get_discussion_threads_of_user" },
+            { ForumWidePrivilege::GET_DISCUSSION_THREAD_MESSAGES_OF_USER, "get_discussion_thread_messages_of_user" },
+            { ForumWidePrivilege::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER, "get_subscribed_discussion_threads_of_user" },
+            { ForumWidePrivilege::GET_ALL_DISCUSSION_CATEGORIES, "get_all_discussion_categories" },
+            { ForumWidePrivilege::GET_DISCUSSION_CATEGORIES_FROM_ROOT, "get_discussion_categories_from_root" },
+            { ForumWidePrivilege::GET_ALL_DISCUSSION_TAGS, "get_all_discussion_tags" },
+            { ForumWidePrivilege::GET_ALL_DISCUSSION_THREADS, "get_all_discussion_threads" },
+            { ForumWidePrivilege::GET_ALL_MESSAGE_COMMENTS, "get_all_message_comments" },
+            { ForumWidePrivilege::GET_MESSAGE_COMMENTS_OF_USER, "get_message_comments_of_user" },
+            { ForumWidePrivilege::ADD_DISCUSSION_CATEGORY, "add_discussion_category" },
+            { ForumWidePrivilege::ADD_DISCUSSION_TAG, "add_discussion_tag" },
+            { ForumWidePrivilege::ADD_DISCUSSION_THREAD, "add_discussion_thread" },
+            { ForumWidePrivilege::CHANGE_ANY_USER_NAME, "change_any_user_name" },
+            { ForumWidePrivilege::CHANGE_ANY_USER_INFO, "change_any_user_info" },
+            { ForumWidePrivilege::DELETE_ANY_USER, "delete_any_user" },
+            { ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, "adjust_forum_wide_privilege" }
+        };
+
         enum class ForumWideDefaultPrivilegeDuration : EnumIntType
         {
             CHANGE_DISCUSSION_THREAD_NAME,
