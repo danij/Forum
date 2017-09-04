@@ -24,11 +24,19 @@ AuthorizationStatus DefaultAuthorization::getUsers(const User& currentUser) cons
 
 AuthorizationStatus DefaultAuthorization::getUserById(const User& currentUser, const User& user) const
 {
+    if (currentUser.id() == user.id())
+    {
+        return AuthorizationStatus::OK;
+    }
     return isAllowed(currentUser.id(), ForumWidePrivilege::GET_USER_INFO);
 }
 
 AuthorizationStatus DefaultAuthorization::getUserByName(const User& currentUser, const User& user) const
 {
+    if (currentUser.id() == user.id())
+    {
+        return AuthorizationStatus::OK;
+    }
     return isAllowed(currentUser.id(), ForumWidePrivilege::GET_USER_INFO);
 }
 
