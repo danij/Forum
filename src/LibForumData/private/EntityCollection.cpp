@@ -380,9 +380,11 @@ struct EntityCollection::Impl
     {
         if ( ! activate) assert(batchInsertInProgress_);
 
-        Context::setBatchInsertInProgres(batchInsertInProgress_ = activate);
-
-        if (activate) return;
+        if (activate)
+        {
+            Context::setBatchInsertInProgres(batchInsertInProgress_ = activate);
+            return;
+        }
 
         users_.stopBatchInsert();
 
@@ -405,6 +407,8 @@ struct EntityCollection::Impl
         tags_.stopBatchInsert();
 
         categories_.stopBatchInsert();
+
+        Context::setBatchInsertInProgres(batchInsertInProgress_ = activate);
     }
 };
 
