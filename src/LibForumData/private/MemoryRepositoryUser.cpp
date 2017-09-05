@@ -492,3 +492,29 @@ StatusCode MemoryRepositoryUser::getRequiredPrivileges(OutStream& output) const
                       });
     return status;
 }
+
+StatusCode MemoryRepositoryUser::getDefaultPrivilegeDurations(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          status = StatusCode::OK;
+                          status.disable();
+
+                          auto& currentUser = performedBy.get(collection);
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+
+                          writeForumWideDefaultPrivilegeDurations(collection, writer);
+                          writeDiscussionThreadMessageDefaultPrivilegeDurations(collection, writer);
+
+                          writer.endObject();
+
+                          readEvents().onGetForumWideDefaultPrivilegeDurations(createObserverContext(currentUser));
+                      });
+    return status;
+}

@@ -30,6 +30,7 @@ namespace Forum
 
             StatusCode getCurrentUserPrivileges(OutStream& output) const override;
             StatusCode getRequiredPrivileges(OutStream& output) const override;
+            StatusCode getDefaultPrivilegeDurations(OutStream& output) const override;
 
         private:
             Authorization::UserAuthorizationRef authorization_;

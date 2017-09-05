@@ -820,7 +820,6 @@ StatusCode MemoryRepositoryDiscussionCategory::getRequiredPrivileges(IdTypeRef c
                               return;
                           }
 
-                          status = StatusCode::OK;
                           status.disable();
 
                           Json::JsonWriter writer(output);

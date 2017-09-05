@@ -940,7 +940,6 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getRequiredPrivileges(IdType
                               return;
                           }
                           
-                          status = StatusCode::OK;
                           status.disable();
 
                           Json::JsonWriter writer(output);

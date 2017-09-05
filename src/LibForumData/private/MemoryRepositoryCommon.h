@@ -107,6 +107,11 @@ namespace Forum
             static void writeForumWideRequiredPrivileges(
                     const Authorization::ForumWidePrivilegeStore& store, Json::JsonWriter& writer);
 
+            static void writeDiscussionThreadMessageDefaultPrivilegeDurations(
+                    const Authorization::DiscussionThreadPrivilegeStore& store, Json::JsonWriter& writer);
+            static void writeForumWideDefaultPrivilegeDurations(
+                    const Authorization::ForumWidePrivilegeStore& store, Json::JsonWriter& writer);
+            
             MemoryStoreRef store_;
         };
 

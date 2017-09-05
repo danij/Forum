@@ -43,6 +43,7 @@ namespace Forum
                                            Entities::IdTypeRef intoId) override;
 
             StatusCode getRequiredPrivileges(Entities::IdTypeRef tagId, OutStream& output) const override;
+            StatusCode getDefaultPrivilegeDurations(Entities::IdTypeRef tagId, OutStream& output) const override;
         private:
             Authorization::DiscussionTagAuthorizationRef authorization_;
         };

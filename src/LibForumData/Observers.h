@@ -71,6 +71,15 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext, 
                                          const Entities::DiscussionCategory&)> 
                                                 onGetRequiredPrivilegesFromCategory;
+
+            boost::signals2::signal<void(ObserverContext)> onGetForumWideDefaultPrivilegeDurations;
+            boost::signals2::signal<void(ObserverContext, 
+                                         const Entities::DiscussionThread&)> 
+                                                onGetDefaultPrivilegeDurationsFromThread;
+            boost::signals2::signal<void(ObserverContext, 
+                                         const Entities::DiscussionTag&)> 
+                                                onGetDefaultPrivilegeDurationsFromTag;
+
         };
 
         struct WriteEvents : private boost::noncopyable

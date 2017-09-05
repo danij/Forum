@@ -139,7 +139,7 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
 }
 
 template<typename Store, typename Enum, typename Fn>
-void writeRequiredPrivileges(const Store& store, Enum maxValue, JsonWriter& writer, const StringView* strings, Fn fn)
+void writePrivilegeValues(const Store& store, Enum maxValue, JsonWriter& writer, const StringView* strings, Fn fn)
 {
     writer.startArray();
 
@@ -163,42 +163,55 @@ void MemoryRepositoryBase::writeDiscussionThreadMessageRequiredPrivileges(
         const DiscussionThreadMessagePrivilegeStore& store, JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussion_thread_message_privileges");
-    writeRequiredPrivileges(store, DiscussionThreadMessagePrivilege::COUNT, writer, 
-                            DiscussionThreadMessagePrivilegeStrings, 
-                            &DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege);
+    writePrivilegeValues(store, DiscussionThreadMessagePrivilege::COUNT, writer, DiscussionThreadMessagePrivilegeStrings, 
+                         &DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege);
 }
 
 void MemoryRepositoryBase::writeDiscussionThreadRequiredPrivileges(const DiscussionThreadPrivilegeStore& store, 
                                                                    JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussion_thread_privileges");
-    writeRequiredPrivileges(store, DiscussionThreadPrivilege::COUNT, writer,
-                            DiscussionThreadPrivilegeStrings,
-                            &DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege);
+    writePrivilegeValues(store, DiscussionThreadPrivilege::COUNT, writer, DiscussionThreadPrivilegeStrings,
+                         &DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege);
 }
 
 void MemoryRepositoryBase::writeDiscussionTagRequiredPrivileges(const DiscussionTagPrivilegeStore& store, 
                                                                 JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussion_tag_privileges");
-    writeRequiredPrivileges(store, DiscussionTagPrivilege::COUNT, writer,
-                            DiscussionTagPrivilegeStrings,
-                            &DiscussionTagPrivilegeStore::getDiscussionTagPrivilege);
+    writePrivilegeValues(store, DiscussionTagPrivilege::COUNT, writer, DiscussionTagPrivilegeStrings,
+                         &DiscussionTagPrivilegeStore::getDiscussionTagPrivilege);
 }
 
 void MemoryRepositoryBase::writeDiscussionCategoryRequiredPrivileges(const DiscussionCategoryPrivilegeStore& store,
                                                                      JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussion_category_privileges");
-    writeRequiredPrivileges(store, DiscussionCategoryPrivilege::COUNT, writer,
-                            DiscussionCategoryPrivilegeStrings,
-                            &DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege);
+    writePrivilegeValues(store, DiscussionCategoryPrivilege::COUNT, writer, DiscussionCategoryPrivilegeStrings,
+                         &DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege);
 }
 
 void MemoryRepositoryBase::writeForumWideRequiredPrivileges(const ForumWidePrivilegeStore& store, JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("forum_wide_privileges");
-    writeRequiredPrivileges(store, ForumWidePrivilege::COUNT, writer,
-                            ForumWidePrivilegeStrings,
-                            &ForumWidePrivilegeStore::getForumWidePrivilege);
+    writePrivilegeValues(store, ForumWidePrivilege::COUNT, writer, ForumWidePrivilegeStrings,
+                         &ForumWidePrivilegeStore::getForumWidePrivilege);
+}
+
+void MemoryRepositoryBase::writeDiscussionThreadMessageDefaultPrivilegeDurations(const DiscussionThreadPrivilegeStore& store,
+                                                                                 JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("discussion_thread_message_default_durations");
+    writePrivilegeValues(store, DiscussionThreadMessageDefaultPrivilegeDuration::COUNT, writer,
+                         DiscussionThreadMessageDefaultPrivilegeDurationStrings,
+                         &DiscussionThreadPrivilegeStore::getDiscussionThreadMessageDefaultPrivilegeDuration);
+}
+
+void MemoryRepositoryBase::writeForumWideDefaultPrivilegeDurations(const ForumWidePrivilegeStore& store, 
+                                                                   JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("forum_wide_default_durations");
+    writePrivilegeValues(store, ForumWideDefaultPrivilegeDuration::COUNT, writer,
+                         ForumWideDefaultPrivilegeDurationStrings,
+                         &ForumWidePrivilegeStore::getForumWideDefaultPrivilegeDuration);
 }

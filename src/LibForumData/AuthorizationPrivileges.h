@@ -289,6 +289,12 @@ namespace Forum
             COUNT
         };
 
+        const StringView ForumWideDefaultPrivilegeDurationStrings[] =
+        {
+            "change_discussion_thread_name",
+            "delete_discussion_thread"
+        };
+
         typedef int16_t PrivilegeValueIntType;
         typedef boost::optional<PrivilegeValueIntType> PrivilegeValueType;
         typedef time_t PrivilegeDefaultDurationIntType;

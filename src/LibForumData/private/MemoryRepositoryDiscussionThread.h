@@ -60,6 +60,7 @@ namespace Forum
             StatusCode unsubscribeFromDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
             StatusCode getRequiredPrivileges(Entities::IdTypeRef threadId, OutStream& output) const override;
+            StatusCode getDefaultPrivilegeDurations(Entities::IdTypeRef threadId, OutStream& output) const override;
 
         private:
             Authorization::DiscussionThreadAuthorizationRef authorization_;
