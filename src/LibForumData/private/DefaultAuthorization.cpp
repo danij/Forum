@@ -415,3 +415,33 @@ AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, ForumWideP
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
+
+void DefaultAuthorization::enumerateDiscussionThreadMessagePrivileges(IdTypeRef id,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    grantedPrivilegeStore_.enumerateDiscussionThreadMessagePrivileges(id, std::move(callback));
+}
+
+void DefaultAuthorization::enumerateDiscussionThreadPrivileges(IdTypeRef id,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    grantedPrivilegeStore_.enumerateDiscussionThreadPrivileges(id, std::move(callback));
+}
+
+void DefaultAuthorization::enumerateDiscussionTagPrivileges(IdTypeRef id,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    grantedPrivilegeStore_.enumerateDiscussionTagPrivileges(id, std::move(callback));
+}
+
+void DefaultAuthorization::enumerateDiscussionCategoryPrivileges(IdTypeRef id,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    grantedPrivilegeStore_.enumerateDiscussionCategoryPrivileges(id, std::move(callback));
+}
+
+void DefaultAuthorization::enumerateForumWidePrivileges(IdTypeRef id,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    grantedPrivilegeStore_.enumerateForumWidePrivileges(id, std::move(callback));
+}

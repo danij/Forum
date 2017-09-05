@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Authorization.h"
 #include "ContextProviders.h"
 #include "EntityCollection.h"
 #include "Observers.h"
@@ -111,6 +112,22 @@ namespace Forum
                     const Authorization::DiscussionThreadPrivilegeStore& store, Json::JsonWriter& writer);
             static void writeForumWideDefaultPrivilegeDurations(
                     const Authorization::ForumWidePrivilegeStore& store, Json::JsonWriter& writer);
+
+            static void writeDiscussionThreadMessageRequiredPrivileges(
+                    const Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                    const Authorization::IDiscussionThreadMessageEnumeratePrivileges& store, Json::JsonWriter& writer);
+            static void writeDiscussionThreadRequiredPrivileges(
+                    const Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                    const Authorization::IDiscussionThreadEnumeratePrivileges& store, Json::JsonWriter& writer);
+            static void writeDiscussionTagRequiredPrivileges(
+                    const Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                    const Authorization::IDiscussionTagEnumeratePrivileges& store, Json::JsonWriter& writer);
+            static void writeDiscussionCategoryRequiredPrivileges(
+                    const Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                    const Authorization::IDiscussionCategoryEnumeratePrivileges& store, Json::JsonWriter& writer);
+            static void writeForumWideRequiredPrivileges(
+                    const Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                    const Authorization::IForumWideEnumeratePrivileges& store, Json::JsonWriter& writer);
             
             MemoryStoreRef store_;
         };

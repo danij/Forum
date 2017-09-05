@@ -445,6 +445,7 @@ StatusCode MemoryRepositoryUser::getCurrentUserPrivileges(OutStream& output) con
 
     collection().read([&](const EntityCollection& collection)
                       {
+                          status = StatusCode::OK;
                           status.disable();
 
                           auto& currentUser = performedBy.get(collection);
@@ -515,6 +516,35 @@ StatusCode MemoryRepositoryUser::getDefaultPrivilegeDurations(OutStream& output)
                           writer.endObject();
 
                           readEvents().onGetForumWideDefaultPrivilegeDurations(createObserverContext(currentUser));
+                      });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::getAssignedPrivileges(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          status = StatusCode::OK;
+                          status.disable();
+
+                          auto& currentUser = performedBy.get(collection);
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+
+                          writeForumWideRequiredPrivileges(collection, {}, *authorization_, writer);
+                          writeDiscussionCategoryRequiredPrivileges(collection, {}, *authorization_, writer);
+                          writeDiscussionTagRequiredPrivileges(collection, {}, *authorization_, writer);
+                          writeDiscussionThreadRequiredPrivileges(collection, {}, *authorization_, writer);
+                          writeDiscussionThreadMessageRequiredPrivileges(collection, {}, *authorization_, writer);
+
+                          writer.endObject();
+
+                          readEvents().onGetForumWideRequiredPrivileges(createObserverContext(currentUser));
                       });
     return status;
 }

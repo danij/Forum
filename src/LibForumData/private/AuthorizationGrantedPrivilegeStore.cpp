@@ -309,3 +309,59 @@ void GrantedPrivilegeStore::updatePrivilege(const PrivilegeEntryCollection& coll
         }
     }
 }
+
+void GrantedPrivilegeStore::enumerateDiscussionThreadMessagePrivileges(IdTypeRef id,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    auto range = discussionThreadMessageSpecificPrivileges_
+            .get<PrivilegeEntryCollectionByEntityId>().equal_range(id);
+
+    for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
+    {
+        callback(entry.entityId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+    }
+}
+
+void GrantedPrivilegeStore::enumerateDiscussionThreadPrivileges(IdTypeRef id,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    auto range = discussionThreadSpecificPrivileges_.get<PrivilegeEntryCollectionByEntityId>().equal_range(id);
+
+    for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
+    {
+        callback(entry.entityId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+    }
+}
+
+void GrantedPrivilegeStore::enumerateDiscussionTagPrivileges(IdTypeRef id,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    auto range = discussionTagSpecificPrivileges_.get<PrivilegeEntryCollectionByEntityId>().equal_range(id);
+
+    for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
+    {
+        callback(entry.entityId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+    }
+}
+
+void GrantedPrivilegeStore::enumerateDiscussionCategoryPrivileges(IdTypeRef id,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    auto range = discussionCategorySpecificPrivileges_.get<PrivilegeEntryCollectionByEntityId>().equal_range(id);
+
+    for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
+    {
+        callback(entry.entityId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+    }
+}
+
+void GrantedPrivilegeStore::enumerateForumWidePrivileges(IdTypeRef _,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    auto range = forumWideSpecificPrivileges_.get<PrivilegeEntryCollectionByEntityId>().equal_range(IdType{});
+
+    for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
+    {
+        callback(entry.entityId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+    }
+}

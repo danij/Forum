@@ -954,3 +954,43 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getRequiredPrivileges(IdType
                       });
     return status;
 }
+
+StatusCode MemoryRepositoryDiscussionThreadMessage::getAssignedPrivileges(IdTypeRef messageId, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection);
+
+                          const auto& index = collection.threadMessages().byId();
+                          auto it = index.find(messageId);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& message = **it;
+
+                          if ( ! (status = authorization_->getDiscussionThreadMessageById(currentUser, message)))
+                          {
+                              return;
+                          }
+                          
+                          status.disable();
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+
+                          writeDiscussionThreadMessageRequiredPrivileges(collection, message.id(), *authorization_, writer);
+
+                          writer.endObject();
+
+                          readEvents().onGetRequiredPrivilegesFromThreadMessage(createObserverContext(currentUser), 
+                                                                                message);
+                      });
+    return status;
+}

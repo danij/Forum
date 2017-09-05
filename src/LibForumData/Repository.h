@@ -110,6 +110,7 @@ namespace Forum
             virtual StatusCode getCurrentUserPrivileges(OutStream& output) const = 0;
             virtual StatusCode getRequiredPrivileges(OutStream& output) const = 0;
             virtual StatusCode getDefaultPrivilegeDurations(OutStream& output) const = 0;
+            virtual StatusCode getAssignedPrivileges(OutStream& output) const = 0;
         };
         typedef std::shared_ptr<IUserRepository> UserRepositoryRef;
 
@@ -163,6 +164,7 @@ namespace Forum
             //privileges
             virtual StatusCode getRequiredPrivileges(Entities::IdTypeRef threadId, OutStream& output) const = 0;
             virtual StatusCode getDefaultPrivilegeDurations(Entities::IdTypeRef threadId, OutStream& output) const = 0;
+            virtual StatusCode getAssignedPrivileges(Entities::IdTypeRef threadId, OutStream& output) const = 0;
         };
         typedef std::shared_ptr<IDiscussionThreadRepository> DiscussionThreadRepositoryRef;
 
@@ -219,6 +221,7 @@ namespace Forum
 
             //privileges
             virtual StatusCode getRequiredPrivileges(Entities::IdTypeRef messageId, OutStream& output) const = 0;
+            virtual StatusCode getAssignedPrivileges(Entities::IdTypeRef messageId, OutStream& output) const = 0;
 
         };
         typedef std::shared_ptr<IDiscussionThreadMessageRepository> DiscussionThreadMessageRepositoryRef;
@@ -275,6 +278,7 @@ namespace Forum
             //privileges
             virtual StatusCode getRequiredPrivileges(Entities::IdTypeRef tagId, OutStream& output) const = 0;
             virtual StatusCode getDefaultPrivilegeDurations(Entities::IdTypeRef tagId, OutStream& output) const = 0;
+            virtual StatusCode getAssignedPrivileges(Entities::IdTypeRef tagId, OutStream& output) const = 0;
         };
         typedef std::shared_ptr<IDiscussionTagRepository> DiscussionTagRepositoryRef;
 
@@ -331,6 +335,7 @@ namespace Forum
                                                                OutStream& output) = 0;
             //privileges
             virtual StatusCode getRequiredPrivileges(Entities::IdTypeRef categoryId, OutStream& output) const = 0;
+            virtual StatusCode getAssignedPrivileges(Entities::IdTypeRef categoryId, OutStream& output) const = 0;
         };
         typedef std::shared_ptr<IDiscussionCategoryRepository> DiscussionCategoryRepositoryRef;
 

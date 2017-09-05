@@ -215,3 +215,111 @@ void MemoryRepositoryBase::writeForumWideDefaultPrivilegeDurations(const ForumWi
                          ForumWideDefaultPrivilegeDurationStrings,
                          &ForumWidePrivilegeStore::getForumWideDefaultPrivilegeDuration);
 }
+
+struct AssignedPrivilegeWriter final
+{
+    AssignedPrivilegeWriter(JsonWriter& writer, const EntityCollection& collection, const StringView* strings)
+            : writer_(writer), collection_(collection), strings_(strings)
+    {        
+    }
+
+    AssignedPrivilegeWriter(const AssignedPrivilegeWriter&) = default;
+    AssignedPrivilegeWriter(AssignedPrivilegeWriter&&) = default;
+
+    AssignedPrivilegeWriter& operator=(const AssignedPrivilegeWriter&) = default;
+    AssignedPrivilegeWriter& operator=(AssignedPrivilegeWriter&&) = default;
+
+    void operator()(IdTypeRef userId, EnumIntType privilege, PrivilegeValueIntType privilegeValue, Timestamp expiresAt)
+    {
+        writer_.startObject();
+        writer_.newPropertyWithSafeName("id") << userId;
+
+        if (userId == anonymousUserId())
+        {
+            writer_.newPropertyWithSafeName("name") << anonymousUser()->name();
+        }
+        else
+        {
+            const auto& index = collection_.users().byId();
+            auto it = index.find(userId);
+            if (it != index.end())
+            {
+                writer_.newPropertyWithSafeName("name") << (**it).name();
+            }
+        }
+
+        writer_.newPropertyWithSafeName("privilege") << strings_[privilege];
+        writer_.newPropertyWithSafeName("value") << strings_[privilegeValue];
+        writer_.newPropertyWithSafeName("expires") << strings_[expiresAt];
+        writer_.endObject();
+    }
+private:
+    JsonWriter& writer_;
+    const EntityCollection& collection_;
+    const StringView* strings_;
+};
+
+void MemoryRepositoryBase::writeDiscussionThreadMessageRequiredPrivileges(const EntityCollection& collection, IdTypeRef id,
+                                                                          const IDiscussionThreadMessageEnumeratePrivileges& store, 
+                                                                          JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("discussion_thread_message_privileges");
+    writer.startArray();
+
+    store.enumerateDiscussionThreadMessagePrivileges(id,
+            AssignedPrivilegeWriter(writer, collection, DiscussionThreadMessagePrivilegeStrings));
+
+    writer.endArray();
+}
+
+void MemoryRepositoryBase::writeDiscussionThreadRequiredPrivileges(const EntityCollection& collection, IdTypeRef id,
+                                                                   const IDiscussionThreadEnumeratePrivileges& store, 
+                                                                   JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("discussion_thread_privileges");
+    writer.startArray();
+
+    store.enumerateDiscussionThreadPrivileges(id,
+            AssignedPrivilegeWriter(writer, collection, DiscussionThreadPrivilegeStrings));
+
+    writer.endArray();
+}
+
+void MemoryRepositoryBase::writeDiscussionTagRequiredPrivileges(const EntityCollection& collection, IdTypeRef id,
+                                                                const IDiscussionTagEnumeratePrivileges& store, 
+                                                                JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("discussion_tag_privileges");
+    writer.startArray();
+
+    store.enumerateDiscussionTagPrivileges(id,
+            AssignedPrivilegeWriter(writer, collection, DiscussionTagPrivilegeStrings));
+
+    writer.endArray();
+}
+
+void MemoryRepositoryBase::writeDiscussionCategoryRequiredPrivileges(const EntityCollection& collection, IdTypeRef id,
+                                                                     const IDiscussionCategoryEnumeratePrivileges& store, 
+                                                                     JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("discussion_category_privileges");
+    writer.startArray();
+
+    store.enumerateDiscussionCategoryPrivileges(id,
+            AssignedPrivilegeWriter(writer, collection, DiscussionCategoryPrivilegeStrings));
+
+    writer.endArray();
+}
+
+void MemoryRepositoryBase::writeForumWideRequiredPrivileges(const EntityCollection& collection, IdTypeRef id,
+                                                            const IForumWideEnumeratePrivileges& store, 
+                                                            JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("forum_wide_privileges");
+    writer.startArray();
+
+    store.enumerateForumWidePrivileges(id,
+            AssignedPrivilegeWriter(writer, collection, ForumWidePrivilegeStrings));
+
+    writer.endArray();
+}

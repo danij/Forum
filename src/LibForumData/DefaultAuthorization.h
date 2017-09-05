@@ -164,6 +164,22 @@ namespace Forum
 
             AuthorizationStatus getVersion(const Entities::User& currentUser) const override;
 
+            void enumerateDiscussionThreadMessagePrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
+            void enumerateDiscussionThreadPrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
+            void enumerateDiscussionTagPrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
+            void enumerateDiscussionCategoryPrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
+            void enumerateForumWidePrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
+
         private:
 
             AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThreadMessage& message,

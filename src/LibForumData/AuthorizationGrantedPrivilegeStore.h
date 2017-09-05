@@ -85,6 +85,22 @@ namespace Forum
 
             void computeDiscussionThreadMessageVisibilityAllowed(DiscussionThreadMessagePrivilegeCheck* items,
                                                                  size_t nrOfItems, Entities::Timestamp now) const;
+
+            void enumerateDiscussionThreadMessagePrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+            void enumerateDiscussionThreadPrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+            void enumerateDiscussionTagPrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+            void enumerateDiscussionCategoryPrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+            void enumerateForumWidePrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
         private:
 
             void updateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId, 

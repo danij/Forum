@@ -606,7 +606,6 @@ StatusCode MemoryRepositoryDiscussionTag::getRequiredPrivileges(IdTypeRef tagId,
                               return;
                           }
 
-                          status = StatusCode::OK;
                           status.disable();
 
                           Json::JsonWriter writer(output);
@@ -658,6 +657,47 @@ StatusCode MemoryRepositoryDiscussionTag::getDefaultPrivilegeDurations(IdTypeRef
                           writer.endObject();
 
                           readEvents().onGetDefaultPrivilegeDurationsFromTag(createObserverContext(currentUser), tag);
+                      });
+    return status;
+}
+
+StatusCode MemoryRepositoryDiscussionTag::getAssignedPrivileges(IdTypeRef tagId, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection);
+
+                          const auto& index = collection.tags().byId();
+                          auto it = index.find(tagId);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& tag = **it;
+
+                          if ( ! (status = authorization_->getDiscussionTagById(currentUser, tag)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+
+                          writeDiscussionTagRequiredPrivileges(collection, tag.id(), *authorization_, writer);
+                          writeDiscussionThreadRequiredPrivileges(collection, tag.id(), *authorization_, writer);
+                          writeDiscussionThreadMessageRequiredPrivileges(collection, tag.id(), *authorization_, writer);
+
+                          writer.endObject();
+
+                          readEvents().onGetRequiredPrivilegesFromTag(createObserverContext(currentUser), tag);
                       });
     return status;
 }

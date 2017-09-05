@@ -56,6 +56,8 @@ namespace Forum
                                                        Entities::IdTypeRef tagId, Entities::IdTypeRef categoryId) override;
 
             StatusCode getRequiredPrivileges(Entities::IdTypeRef categoryId, OutStream& output) const override;
+            StatusCode getAssignedPrivileges(Entities::IdTypeRef categoryId, OutStream& output) const override;
+
         private:
             Authorization::DiscussionCategoryAuthorizationRef authorization_;
         };

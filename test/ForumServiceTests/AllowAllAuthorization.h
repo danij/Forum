@@ -157,6 +157,23 @@ namespace Forum
             AuthorizationStatus getEntitiesCount(const Entities::User& currentUser) const override { return {}; }
 
             AuthorizationStatus getVersion(const Entities::User& currentUser) const override { return {}; }
+
+
+            void enumerateDiscussionThreadMessagePrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override { return; }
+            void enumerateDiscussionThreadPrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override { return; }
+            void enumerateDiscussionTagPrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override { return; }
+            void enumerateDiscussionCategoryPrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override { return; }
+            void enumerateForumWidePrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override { return; }
         };
     }
 }

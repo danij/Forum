@@ -61,6 +61,7 @@ namespace Forum
 
             StatusCode getRequiredPrivileges(Entities::IdTypeRef threadId, OutStream& output) const override;
             StatusCode getDefaultPrivilegeDurations(Entities::IdTypeRef threadId, OutStream& output) const override;
+            StatusCode getAssignedPrivileges(Entities::IdTypeRef threadId, OutStream& output) const override;
 
         private:
             Authorization::DiscussionThreadAuthorizationRef authorization_;

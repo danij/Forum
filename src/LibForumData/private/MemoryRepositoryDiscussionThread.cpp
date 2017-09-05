@@ -857,7 +857,6 @@ StatusCode MemoryRepositoryDiscussionThread::getRequiredPrivileges(IdTypeRef thr
                               return;
                           }
 
-                          status = StatusCode::OK;
                           status.disable();
 
                           Json::JsonWriter writer(output);
@@ -908,6 +907,46 @@ StatusCode MemoryRepositoryDiscussionThread::getDefaultPrivilegeDurations(IdType
                           writer.endObject();
 
                           readEvents().onGetDefaultPrivilegeDurationsFromThread(createObserverContext(currentUser), thread);
+                      });
+    return status;
+}
+
+StatusCode MemoryRepositoryDiscussionThread::getAssignedPrivileges(IdTypeRef threadId, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection);
+
+                          const auto& index = collection.threads().byId();
+                          auto it = index.find(threadId);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& thread = **it;
+
+                          if ( ! (status = authorization_->getDiscussionThreadById(currentUser, thread)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+
+                          writeDiscussionThreadRequiredPrivileges(collection, thread.id(), *authorization_, writer);
+                          writeDiscussionThreadMessageRequiredPrivileges(collection, thread.id(), *authorization_, writer);
+
+                          writer.endObject();
+
+                          readEvents().onGetRequiredPrivilegesFromThread(createObserverContext(currentUser), thread);
                       });
     return status;
 }
