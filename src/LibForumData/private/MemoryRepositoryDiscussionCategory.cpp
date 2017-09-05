@@ -33,7 +33,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
 
     collection().read([&](const EntityCollection& collection)
     {
-        auto& currentUser = performedBy.get(collection);
+        auto& currentUser = performedBy.get(collection, *store_);
 
         if ( ! (status = authorization_->getDiscussionCategories(currentUser)))
         {
@@ -88,7 +88,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           if ( ! (status = authorization_->getDiscussionCategoriesFromRoot(currentUser)))
                           {
@@ -130,7 +130,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(IdTypeR
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& index = collection.categories().byId();
                           auto it = index.find(id);
@@ -803,7 +803,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getRequiredPrivileges(IdTypeRef c
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& index = collection.categories().byId();
                           auto it = index.find(categoryId);
@@ -842,7 +842,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getAssignedPrivileges(IdTypeRef c
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& index = collection.categories().byId();
                           auto it = index.find(categoryId);

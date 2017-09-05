@@ -115,7 +115,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreads(OutStream& out
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           writeDiscussionThreads(collection.threads(), by, output, collection.grantedPrivileges(), currentUser);
 
@@ -135,7 +135,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& index = collection.threads().byId();
                           auto it = index.find(id);
@@ -211,7 +211,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(IdTypeRe
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& indexById = collection.users().byId();
                           auto it = indexById.find(id);
@@ -249,7 +249,7 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& indexById = collection.users().byId();
                           auto it = indexById.find(id);
@@ -288,7 +288,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(IdTypeR
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& indexById = collection.tags().byId();
                           auto it = indexById.find(id);
@@ -325,7 +325,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(IdTy
 
     collection().read([&](const EntityCollection& collection)
                      {
-                         auto& currentUser = performedBy.get(collection);
+                         auto& currentUser = performedBy.get(collection, *store_);
 
                          const auto& indexById = collection.categories().byId();
                          auto it = indexById.find(id);
@@ -840,7 +840,7 @@ StatusCode MemoryRepositoryDiscussionThread::getRequiredPrivileges(IdTypeRef thr
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& index = collection.threads().byId();
                           auto it = index.find(threadId);
@@ -880,7 +880,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDefaultPrivilegeDurations(IdType
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& index = collection.threads().byId();
                           auto it = index.find(threadId);
@@ -919,7 +919,7 @@ StatusCode MemoryRepositoryDiscussionThread::getAssignedPrivileges(IdTypeRef thr
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& index = collection.threads().byId();
                           auto it = index.find(threadId);

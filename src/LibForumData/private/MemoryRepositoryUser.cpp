@@ -78,7 +78,7 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
 
     collection().read([&](const EntityCollection& collection)
     {
-        auto& currentUser = performedBy.get(collection);
+        auto& currentUser = performedBy.get(collection, *store_);
 
         if ( ! (status = authorization_->getUsers(currentUser)))
         {
@@ -131,7 +131,7 @@ StatusCode MemoryRepositoryUser::getUserById(IdTypeRef id, OutStream& output) co
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& index = collection.users().byId();
                           auto it = index.find(id);
@@ -173,7 +173,7 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           User::NameType nameString(name);
 
@@ -448,7 +448,7 @@ StatusCode MemoryRepositoryUser::getCurrentUserPrivileges(OutStream& output) con
                           status = StatusCode::OK;
                           status.disable();
 
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), 
                                                                Context::getCurrentTime());
@@ -476,7 +476,7 @@ StatusCode MemoryRepositoryUser::getRequiredPrivileges(OutStream& output) const
                           status = StatusCode::OK;
                           status.disable();
 
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           Json::JsonWriter writer(output);
                           writer.startObject();
@@ -505,7 +505,7 @@ StatusCode MemoryRepositoryUser::getDefaultPrivilegeDurations(OutStream& output)
                           status = StatusCode::OK;
                           status.disable();
 
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           Json::JsonWriter writer(output);
                           writer.startObject();
@@ -531,7 +531,7 @@ StatusCode MemoryRepositoryUser::getAssignedPrivileges(OutStream& output) const
                           status = StatusCode::OK;
                           status.disable();
 
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           Json::JsonWriter writer(output);
                           writer.startObject();

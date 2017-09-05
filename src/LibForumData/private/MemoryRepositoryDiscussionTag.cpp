@@ -32,7 +32,7 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
 
     collection().read([&](const EntityCollection& collection)
     {
-        auto& currentUser = performedBy.get(collection);
+        auto& currentUser = performedBy.get(collection, *store_);
 
         if ( ! (status = authorization_->getDiscussionTags(currentUser)))
         {
@@ -589,7 +589,7 @@ StatusCode MemoryRepositoryDiscussionTag::getRequiredPrivileges(IdTypeRef tagId,
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& index = collection.tags().byId();
                           auto it = index.find(tagId);
@@ -630,7 +630,7 @@ StatusCode MemoryRepositoryDiscussionTag::getDefaultPrivilegeDurations(IdTypeRef
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& index = collection.tags().byId();
                           auto it = index.find(tagId);
@@ -669,7 +669,7 @@ StatusCode MemoryRepositoryDiscussionTag::getAssignedPrivileges(IdTypeRef tagId,
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          auto& currentUser = performedBy.get(collection);
+                          auto& currentUser = performedBy.get(collection, *store_);
 
                           const auto& index = collection.tags().byId();
                           auto it = index.find(tagId);

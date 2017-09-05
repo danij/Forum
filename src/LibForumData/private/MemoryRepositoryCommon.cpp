@@ -31,7 +31,7 @@ PerformedByWithLastSeenUpdateGuard::~PerformedByWithLastSeenUpdateGuard()
     if (lastSeenUpdate_) lastSeenUpdate_();
 }
 
-PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& collection)
+PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& collection, const MemoryStore& store)
 {
     const auto& index = collection.users().byId();
     auto it = index.find(Context::getCurrentUserId());
@@ -46,7 +46,21 @@ PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& 
 
     if ((result.lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
     {
-        const_cast<User&>(result).updateLastSeen(now);
+        auto& userId = result.id();
+        const auto& mutableCollection = store.collection;
+        lastSeenUpdate_ = [&mutableCollection, now, &userId]()
+                          {
+                              mutableCollection.write([&](EntityCollection& collectionToModify)
+                              {
+                                  auto& indexToModify = collectionToModify.users().byId();
+                                  auto itToModify = indexToModify.find(userId);
+                                  if (itToModify != indexToModify.end())
+                                  {
+                                      UserPtr userToModify = *itToModify;
+                                      userToModify->updateLastSeen(now);
+                                  }
+                              });
+                          };
     }
     return result;
 }

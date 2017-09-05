@@ -39,7 +39,7 @@ namespace Forum
             /**
             * Get the current user that performs the action and optionally schedule the update of last seen
             */
-            PerformedByType get(const Entities::EntityCollection& collection);
+            PerformedByType get(const Entities::EntityCollection& collection, const MemoryStore& store);
 
             /**
             * Get the current user that performs the action and optionally also perform the update of last seen

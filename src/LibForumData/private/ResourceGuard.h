@@ -25,7 +25,7 @@ namespace Forum
             }
 
             template<typename TAction>
-            void write(TAction&& action)
+            void write(TAction&& action) const /* lock is taken anyway so always allow access */
             {
                 std::unique_lock<decltype(mutex_)> lock(mutex_);
                 action(*resource_);
