@@ -390,46 +390,46 @@ struct EntityCollection::Impl
 
         users_.stopBatchInsert();
 
-        std::future<void> futures[5];
-        auto futureIndex = 0;
-
-        futures[futureIndex++] = std::move(std::async(std::launch::async, [this]()
+        std::future<void> futures[] =
         {
-            for (UserPtr user : this->users_.byId())
+            std::async(std::launch::async, [this]()
             {
-                user->threads().stopBatchInsert();
-            }
-        }));
+                for (UserPtr user : this->users_.byId())
+                {
+                    user->threads().stopBatchInsert();
+                }
+            }),
 
-        futures[futureIndex++] = std::move(std::async(std::launch::async, [this]()
-        {
-            for (UserPtr user : this->users_.byId())
+            std::async(std::launch::async, [this]()
             {
-                user->subscribedThreads().stopBatchInsert();
-            }
-        }));
+                for (UserPtr user : this->users_.byId())
+                {
+                    user->subscribedThreads().stopBatchInsert();
+                }
+            }),
 
-        futures[futureIndex++] = std::move(std::async(std::launch::async, [this]()
-        {
-            for (DiscussionTagPtr tag : this->tags_.byId())
+            std::async(std::launch::async, [this]()
             {
-                tag->threads().stopBatchInsert();
-            }
-        }));
+                for (DiscussionTagPtr tag : this->tags_.byId())
+                {
+                    tag->threads().stopBatchInsert();
+                }
+            }),
 
-        futures[futureIndex++] = std::move(std::async(std::launch::async, [this]()
-        {
-            for (DiscussionCategoryPtr category : this->categories_.byId())
+            std::async(std::launch::async, [this]()
             {
-                category->threads().stopBatchInsert();
-            }
-        }));
+                for (DiscussionCategoryPtr category : this->categories_.byId())
+                {
+                    category->threads().stopBatchInsert();
+                }
+            }),
 
-        futures[futureIndex++] = std::move(std::async(std::launch::async, [this]()
-        {
-            this->tags_.stopBatchInsert();
-            this->categories_.stopBatchInsert();
-        }));
+            std::async(std::launch::async, [this]()
+            {
+                this->tags_.stopBatchInsert();
+                this->categories_.stopBatchInsert();
+            })
+        };
 
         for (auto& future : futures)
         {
