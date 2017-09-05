@@ -24,6 +24,8 @@ namespace Forum
             bool remove(DiscussionThreadMessagePtr message);
             void clear();
 
+            void stopBatchInsert();
+
             auto& onPrepareCountChange() { return onPrepareCountChange_; }
             auto& onCountChange()        { return onCountChange_; }
 

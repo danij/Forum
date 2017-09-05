@@ -396,6 +396,22 @@ struct EntityCollection::Impl
             {
                 for (UserPtr user : this->users_.byId())
                 {
+                    user->threadMessages().stopBatchInsert();
+                }
+            }),
+
+            std::async(std::launch::async, [this]()
+            {
+                for (DiscussionThreadPtr thread : this->threads_.byId())
+                {
+                    thread->messages().stopBatchInsert();
+                }
+            }),
+            
+            std::async(std::launch::async, [this]()
+            {
+                for (UserPtr user : this->users_.byId())
+                {
                     user->threads().stopBatchInsert();
                 }
             }),
