@@ -578,6 +578,15 @@ void importPersistedData(BenchmarkContext& context)
     {
         context.categoryIds.push_back(category->id());
     }
+
+    std::cout << "---\n";
+    std::cout << "Imported:\n";
+    std::cout << "    Users: " << context.userIds.size() << "\n";
+    std::cout << "    Discussion threads: " << context.threadIds.size() << "\n";
+    std::cout << "    Discussion thread messages: " << context.entityCollection->threadMessages().count() << "\n";
+    std::cout << "    Discussion tags: " << context.tagIds.size() << "\n";
+    std::cout << "    Discussion categories: " << context.categoryIds.size() << "\n";
+    std::cout << "---\n";
 }
 
 void doBenchmarks(BenchmarkContext& context)
