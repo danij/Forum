@@ -795,8 +795,7 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryRequiredPrivileges(IdTypeRef categoryId, 
-                                                                                       OutStream& output) const
+StatusCode MemoryRepositoryDiscussionCategory::getRequiredPrivileges(IdTypeRef categoryId, OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -821,12 +820,17 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryRequiredPriv
                               return;
                           }
 
+                          status = StatusCode::OK;
                           status.disable();
 
-                          writeDiscussionCategoryRequiredPrivileges(category, output);
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
 
-                          readEvents().onGetDiscussionCategoryRequiredPrivilegesFromCategory(
-                                  createObserverContext(currentUser), category);
+                          writeDiscussionCategoryRequiredPrivileges(category, writer);
+
+                          writer.endObject();
+
+                          readEvents().onGetRequiredPrivilegesFromCategory(createObserverContext(currentUser), category);
                       });
     return status;
 }

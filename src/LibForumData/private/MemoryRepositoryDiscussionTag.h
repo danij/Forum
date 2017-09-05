@@ -42,12 +42,7 @@ namespace Forum
             StatusCode mergeDiscussionTags(Entities::EntityCollection& collection, Entities::IdTypeRef fromId,
                                            Entities::IdTypeRef intoId) override;
 
-            StatusCode getDiscussionThreadMessageRequiredPrivileges(Entities::IdTypeRef tagId,
-                                                                    OutStream& output) const override;
-            StatusCode getDiscussionThreadRequiredPrivileges(Entities::IdTypeRef tagId,
-                                                             OutStream& output) const override;
-            StatusCode getDiscussionTagRequiredPrivileges(Entities::IdTypeRef tagId,
-                                                          OutStream& output) const override;
+            StatusCode getRequiredPrivileges(Entities::IdTypeRef tagId, OutStream& output) const override;
         private:
             Authorization::DiscussionTagAuthorizationRef authorization_;
         };

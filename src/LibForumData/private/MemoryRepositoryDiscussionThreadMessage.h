@@ -56,11 +56,9 @@ namespace Forum
             StatusCode setMessageCommentToSolved(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode setMessageCommentToSolved(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
-            StatusCode getDiscussionThreadMessageRequiredPrivileges(Entities::IdTypeRef messageId,
-                                                                    OutStream& output) const override;
+            StatusCode getRequiredPrivileges(Entities::IdTypeRef messageId, OutStream& output) const override;
 
-
-        private:
+            private:
             StatusCode voteDiscussionThreadMessage(Entities::IdTypeRef id, OutStream& output, bool up);
             StatusCode voteDiscussionThreadMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id, bool up);
 

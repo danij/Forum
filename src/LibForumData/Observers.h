@@ -58,31 +58,19 @@ namespace Forum
                                          const Entities::DiscussionCategory&)> onGetDiscussionThreadsOfCategory;
 
             boost::signals2::signal<void(ObserverContext)> onGetCurrentUserPrivileges;
-            boost::signals2::signal<void(ObserverContext)> onGetDiscussionThreadMessageRequiredPrivileges;
+            boost::signals2::signal<void(ObserverContext)> onGetForumWideRequiredPrivileges;
             boost::signals2::signal<void(ObserverContext,
                                          const Entities::DiscussionThreadMessage&)> 
-                                                onGetDiscussionThreadMessageRequiredPrivilegesFromThreadMessage;
+                                                onGetRequiredPrivilegesFromThreadMessage;
             boost::signals2::signal<void(ObserverContext, 
                                          const Entities::DiscussionThread&)> 
-                                                onGetDiscussionThreadMessageRequiredPrivilegesFromThread;
+                                                onGetRequiredPrivilegesFromThread;
             boost::signals2::signal<void(ObserverContext, 
                                          const Entities::DiscussionTag&)> 
-                                                onGetDiscussionThreadMessageRequiredPrivilegesFromTag;
-            boost::signals2::signal<void(ObserverContext)> onGetDiscussionThreadRequiredPrivileges;
-            boost::signals2::signal<void(ObserverContext, 
-                                         const Entities::DiscussionThread&)> 
-                                                onGetDiscussionThreadRequiredPrivilegesFromThread;
-            boost::signals2::signal<void(ObserverContext, 
-                                         const Entities::DiscussionTag&)> 
-                                                onGetDiscussionThreadRequiredPrivilegesFromTag;
-            boost::signals2::signal<void(ObserverContext)> onGetDiscussionTagRequiredPrivileges;
-            boost::signals2::signal<void(ObserverContext, 
-                                         const Entities::DiscussionTag&)> 
-                                                onGetDiscussionTagRequiredPrivilegesFromTag;
-            boost::signals2::signal<void(ObserverContext)> onGetDiscussionCategoryRequiredPrivileges;
+                                                onGetRequiredPrivilegesFromTag;
             boost::signals2::signal<void(ObserverContext, 
                                          const Entities::DiscussionCategory&)> 
-                                                onGetDiscussionCategoryRequiredPrivilegesFromCategory;
+                                                onGetRequiredPrivilegesFromCategory;
         };
 
         struct WriteEvents : private boost::noncopyable

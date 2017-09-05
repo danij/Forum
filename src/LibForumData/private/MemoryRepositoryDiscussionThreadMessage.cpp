@@ -915,8 +915,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(En
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessageRequiredPrivileges(
-        IdTypeRef messageId, OutStream& output) const
+StatusCode MemoryRepositoryDiscussionThreadMessage::getRequiredPrivileges(IdTypeRef messageId, OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -941,12 +940,18 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessageRe
                               return;
                           }
                           
+                          status = StatusCode::OK;
                           status.disable();
 
-                          writeDiscussionThreadMessageRequiredPrivileges(message, output);
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
 
-                          readEvents().onGetDiscussionThreadMessageRequiredPrivilegesFromThreadMessage(
-                                  createObserverContext(currentUser), message);
+                          writeDiscussionThreadMessageRequiredPrivileges(message, writer);
+
+                          writer.endObject();
+
+                          readEvents().onGetRequiredPrivilegesFromThreadMessage(createObserverContext(currentUser), 
+                                                                                message);
                       });
     return status;
 }

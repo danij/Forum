@@ -464,7 +464,7 @@ StatusCode MemoryRepositoryUser::getCurrentUserPrivileges(OutStream& output) con
     return status;
 }
 
-StatusCode MemoryRepositoryUser::getDiscussionThreadMessageRequiredPrivileges(OutStream& output) const
+StatusCode MemoryRepositoryUser::getRequiredPrivileges(OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -472,70 +472,23 @@ StatusCode MemoryRepositoryUser::getDiscussionThreadMessageRequiredPrivileges(Ou
 
     collection().read([&](const EntityCollection& collection)
                       {
+                          status = StatusCode::OK;
                           status.disable();
 
                           auto& currentUser = performedBy.get(collection);
-        
-                          writeDiscussionThreadMessageRequiredPrivileges(collection, output);
 
-                          readEvents().onGetDiscussionThreadMessageRequiredPrivileges(createObserverContext(currentUser));
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+
+                          writeForumWideRequiredPrivileges(collection, writer);
+                          writeDiscussionCategoryRequiredPrivileges(collection, writer);
+                          writeDiscussionTagRequiredPrivileges(collection, writer);
+                          writeDiscussionThreadRequiredPrivileges(collection, writer);
+                          writeDiscussionThreadMessageRequiredPrivileges(collection, writer);
+
+                          writer.endObject();
+
+                          readEvents().onGetForumWideRequiredPrivileges(createObserverContext(currentUser));
                       });
-    return status;
-}
-
-StatusCode MemoryRepositoryUser::getDiscussionThreadRequiredPrivileges(OutStream& output) const
-{
-    StatusWriter status(output);
-
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          status.disable();
-
-                          auto& currentUser = performedBy.get(collection);
-        
-                          writeDiscussionThreadRequiredPrivileges(collection, output);
-
-                          readEvents().onGetDiscussionThreadRequiredPrivileges(createObserverContext(currentUser));
-                      });
-    return status;
-}
-
-StatusCode MemoryRepositoryUser::getDiscussionTagRequiredPrivileges(OutStream& output) const
-{
-    StatusWriter status(output);
-
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          status.disable();
-
-                          auto& currentUser = performedBy.get(collection);
-        
-                          writeDiscussionTagRequiredPrivileges(collection, output);
-
-                          readEvents().onGetDiscussionTagRequiredPrivileges(createObserverContext(currentUser));
-                      });
-    return status;
-}
-
-StatusCode MemoryRepositoryUser::getDiscussionCategoryRequiredPrivileges(OutStream& output) const
-{
-    StatusWriter status(output);
-
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-    {
-        status.disable();
-
-        auto& currentUser = performedBy.get(collection);
-
-        writeDiscussionCategoryRequiredPrivileges(collection, output);
-
-        readEvents().onGetDiscussionCategoryRequiredPrivileges(createObserverContext(currentUser));
-    });
     return status;
 }

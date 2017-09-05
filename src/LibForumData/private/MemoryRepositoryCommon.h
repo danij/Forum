@@ -5,6 +5,7 @@
 #include "Observers.h"
 #include "Repository.h"
 #include "ResourceGuard.h"
+#include "JsonWriter.h"
 
 #include <boost/core/noncopyable.hpp>
 #include <boost/optional.hpp>
@@ -96,13 +97,15 @@ namespace Forum
             static bool doesNotContainLeadingOrTrailingWhitespace(StringView& input);
 
             static void writeDiscussionThreadMessageRequiredPrivileges(
-                    const Authorization::DiscussionThreadMessagePrivilegeStore& store, OutStream& output);
+                    const Authorization::DiscussionThreadMessagePrivilegeStore& store, Json::JsonWriter& writer);
             static void writeDiscussionThreadRequiredPrivileges(
-                    const Authorization::DiscussionThreadPrivilegeStore& store, OutStream& output);
+                    const Authorization::DiscussionThreadPrivilegeStore& store, Json::JsonWriter& writer);
             static void writeDiscussionTagRequiredPrivileges(
-                    const Authorization::DiscussionTagPrivilegeStore& store, OutStream& output);
+                    const Authorization::DiscussionTagPrivilegeStore& store, Json::JsonWriter& writer);
             static void writeDiscussionCategoryRequiredPrivileges(
-                    const Authorization::DiscussionCategoryPrivilegeStore& store, OutStream& output);
+                    const Authorization::DiscussionCategoryPrivilegeStore& store, Json::JsonWriter& writer);
+            static void writeForumWideRequiredPrivileges(
+                    const Authorization::ForumWidePrivilegeStore& store, Json::JsonWriter& writer);
 
             MemoryStoreRef store_;
         };

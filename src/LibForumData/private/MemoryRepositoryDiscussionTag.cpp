@@ -581,8 +581,7 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& 
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionTag::getDiscussionThreadMessageRequiredPrivileges(IdTypeRef tagId, 
-                                                                                       OutStream& output) const
+StatusCode MemoryRepositoryDiscussionTag::getRequiredPrivileges(IdTypeRef tagId, OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -607,84 +606,19 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionThreadMessageRequiredPriv
                               return;
                           }
 
+                          status = StatusCode::OK;
                           status.disable();
 
-                          writeDiscussionThreadMessageRequiredPrivileges(tag, output);
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
 
-                          readEvents().onGetDiscussionThreadMessageRequiredPrivilegesFromTag(
-                                  createObserverContext(currentUser), tag);
-                      });
-    return status;
-}
+                          writeDiscussionTagRequiredPrivileges(tag, writer);
+                          writeDiscussionThreadRequiredPrivileges(tag, writer);
+                          writeDiscussionThreadMessageRequiredPrivileges(tag, writer);
 
-StatusCode MemoryRepositoryDiscussionTag::getDiscussionThreadRequiredPrivileges(IdTypeRef tagId, 
-                                                                                OutStream& output) const
-{
-    StatusWriter status(output);
+                          writer.endObject();
 
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          auto& currentUser = performedBy.get(collection);
-
-                          const auto& index = collection.tags().byId();
-                          auto it = index.find(tagId);
-                          if (it == index.end())
-                          {
-                              status = StatusCode::NOT_FOUND;
-                              return;
-                          }
-
-                          auto& tag = **it;
-
-                          if ( ! (status = authorization_->getDiscussionTagById(currentUser, tag)))
-                          {
-                              return;
-                          }
-
-                          status.disable();
-
-                          writeDiscussionThreadRequiredPrivileges(tag, output);
-
-                          readEvents().onGetDiscussionThreadRequiredPrivilegesFromTag(
-                                  createObserverContext(currentUser), tag);
-                      });
-    return status;
-}
-
-StatusCode MemoryRepositoryDiscussionTag::getDiscussionTagRequiredPrivileges(IdTypeRef tagId, 
-                                                                             OutStream& output) const
-{
-    StatusWriter status(output);
-
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          auto& currentUser = performedBy.get(collection);
-
-                          const auto& index = collection.tags().byId();
-                          auto it = index.find(tagId);
-                          if (it == index.end())
-                          {
-                              status = StatusCode::NOT_FOUND;
-                              return;
-                          }
-
-                          auto& tag = **it;
-
-                          if ( ! (status = authorization_->getDiscussionTagById(currentUser, tag)))
-                          {
-                              return;
-                          }
-
-                          status.disable();
-
-                          writeDiscussionTagRequiredPrivileges(tag, output);
-
-                          readEvents().onGetDiscussionTagRequiredPrivilegesFromTag(
-                                  createObserverContext(currentUser), tag);
+                          readEvents().onGetRequiredPrivilegesFromTag(createObserverContext(currentUser), tag);
                       });
     return status;
 }

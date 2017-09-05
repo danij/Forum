@@ -832,8 +832,7 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(Ent
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadMessageRequiredPrivileges(IdTypeRef threadId, 
-                                                                                          OutStream& output) const
+StatusCode MemoryRepositoryDiscussionThread::getRequiredPrivileges(IdTypeRef threadId, OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -858,48 +857,18 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadMessageRequiredP
                               return;
                           }
 
+                          status = StatusCode::OK;
                           status.disable();
 
-                          writeDiscussionThreadMessageRequiredPrivileges(thread, output);
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
 
-                          readEvents().onGetDiscussionThreadMessageRequiredPrivilegesFromThread(
-                                  createObserverContext(currentUser), thread);
-                      });
-    return status;
-}
+                          writeDiscussionThreadRequiredPrivileges(thread, writer);
+                          writeDiscussionThreadMessageRequiredPrivileges(thread, writer);
 
-StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadRequiredPrivileges(IdTypeRef threadId, 
-                                                                                   OutStream& output) const
-{
-    StatusWriter status(output);
+                          writer.endObject();
 
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          auto& currentUser = performedBy.get(collection);
-
-                          const auto& index = collection.threads().byId();
-                          auto it = index.find(threadId);
-                          if (it == index.end())
-                          {
-                              status = StatusCode::NOT_FOUND;
-                              return;
-                          }
-
-                          auto& thread = **it;
-
-                          if ( ! (status = authorization_->getDiscussionThreadById(currentUser, thread)))
-                          {
-                              return;
-                          }
-
-                          status.disable();
-
-                          writeDiscussionThreadRequiredPrivileges(thread, output);
-
-                          readEvents().onGetDiscussionThreadRequiredPrivilegesFromThread(
-                                  createObserverContext(currentUser), thread);
+                          readEvents().onGetRequiredPrivilegesFromThread(createObserverContext(currentUser), thread);
                       });
     return status;
 }

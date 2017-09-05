@@ -18,6 +18,8 @@ using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 
+using namespace Json;
+
 /**
  * Retrieves the user that is performing the current action and also performs an update on the last seen if needed
  * The update is performed on the spot if a write lock is held or
@@ -137,17 +139,14 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
 }
 
 template<typename Store, typename Enum, typename Fn>
-void writeRequiredPrivileges(const Store& store, Enum maxValue, OutStream& output, const StringView* strings, Fn&& fn)
+void writeRequiredPrivileges(const Store& store, Enum maxValue, JsonWriter& writer, const StringView* strings, Fn fn)
 {
-    Json::JsonWriter writer(output);
-    writer.startObject();
-    writer.newPropertyWithSafeName("privileges");
     writer.startArray();
 
     for (EnumIntType i = 0; i < static_cast<EnumIntType>(maxValue); ++i)
     {
         auto privilege = static_cast<Enum>(i);
-        auto value = fn(store, privilege);
+        auto value = (store.*fn)(privilege);
         if (value)
         {
             writer.startObject();
@@ -158,49 +157,48 @@ void writeRequiredPrivileges(const Store& store, Enum maxValue, OutStream& outpu
     }
 
     writer.endArray();
-    writer.endObject();
 }
 
 void MemoryRepositoryBase::writeDiscussionThreadMessageRequiredPrivileges(
-        const DiscussionThreadMessagePrivilegeStore& store, OutStream& output)
+        const DiscussionThreadMessagePrivilegeStore& store, JsonWriter& writer)
 {
-    writeRequiredPrivileges(store, DiscussionThreadMessagePrivilege::COUNT, output, 
-                            DiscussionThreadMessagePrivilegeStrings,
-                            [](const DiscussionThreadMessagePrivilegeStore& _store, DiscussionThreadMessagePrivilege _privilege)
-                            {
-                                return _store.getDiscussionThreadMessagePrivilege(_privilege);
-                            });
+    writer.newPropertyWithSafeName("discussion_thread_message_privileges");
+    writeRequiredPrivileges(store, DiscussionThreadMessagePrivilege::COUNT, writer, 
+                            DiscussionThreadMessagePrivilegeStrings, 
+                            &DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege);
 }
 
 void MemoryRepositoryBase::writeDiscussionThreadRequiredPrivileges(const DiscussionThreadPrivilegeStore& store, 
-                                                                   OutStream& output)
+                                                                   JsonWriter& writer)
 {
-    writeRequiredPrivileges(store, DiscussionThreadPrivilege::COUNT, output,
+    writer.newPropertyWithSafeName("discussion_thread_privileges");
+    writeRequiredPrivileges(store, DiscussionThreadPrivilege::COUNT, writer,
                             DiscussionThreadPrivilegeStrings,
-                            [](const DiscussionThreadPrivilegeStore& _store, DiscussionThreadPrivilege _privilege)
-                            {
-                                return _store.getDiscussionThreadPrivilege(_privilege);
-                            });
+                            &DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege);
 }
 
 void MemoryRepositoryBase::writeDiscussionTagRequiredPrivileges(const DiscussionTagPrivilegeStore& store, 
-                                                                OutStream& output)
+                                                                JsonWriter& writer)
 {
-    writeRequiredPrivileges(store, DiscussionTagPrivilege::COUNT, output,
+    writer.newPropertyWithSafeName("discussion_tag_privileges");
+    writeRequiredPrivileges(store, DiscussionTagPrivilege::COUNT, writer,
                             DiscussionTagPrivilegeStrings,
-                            [](const DiscussionTagPrivilegeStore& _store, DiscussionTagPrivilege _privilege)
-                            {
-                                return _store.getDiscussionTagPrivilege(_privilege);
-                            });
+                            &DiscussionTagPrivilegeStore::getDiscussionTagPrivilege);
 }
 
-void MemoryRepositoryBase::writeDiscussionCategoryRequiredPrivileges(const DiscussionCategoryPrivilegeStore& store, 
-                                                                     OutStream& output)
+void MemoryRepositoryBase::writeDiscussionCategoryRequiredPrivileges(const DiscussionCategoryPrivilegeStore& store,
+                                                                     JsonWriter& writer)
 {
-    writeRequiredPrivileges(store, DiscussionCategoryPrivilege::COUNT, output,
+    writer.newPropertyWithSafeName("discussion_category_privileges");
+    writeRequiredPrivileges(store, DiscussionCategoryPrivilege::COUNT, writer,
                             DiscussionCategoryPrivilegeStrings,
-                            [](const DiscussionCategoryPrivilegeStore& _store, DiscussionCategoryPrivilege _privilege)
-                            {
-                                return _store.getDiscussionCategoryPrivilege(_privilege);
-                            });
+                            &DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege);
+}
+
+void MemoryRepositoryBase::writeForumWideRequiredPrivileges(const ForumWidePrivilegeStore& store, JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("forum_wide_privileges");
+    writeRequiredPrivileges(store, ForumWidePrivilege::COUNT, writer,
+                            ForumWidePrivilegeStrings,
+                            &ForumWidePrivilegeStore::getForumWidePrivilege);
 }
