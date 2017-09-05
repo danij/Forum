@@ -4,6 +4,8 @@
 #include "StateHelpers.h"
 #include "ContextProviders.h"
 
+#include <future>
+
 using namespace Forum::Authorization;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
@@ -388,25 +390,51 @@ struct EntityCollection::Impl
 
         users_.stopBatchInsert();
 
-        for (UserPtr user : users_.byId())
+        std::future<void> futures[5];
+        auto futureIndex = 0;
+
+        futures[futureIndex++] = std::move(std::async(std::launch::async, [this]()
         {
-            user->threads().stopBatchInsert();
-            user->subscribedThreads().stopBatchInsert();
-        }
+            for (UserPtr user : this->users_.byId())
+            {
+                user->threads().stopBatchInsert();
+            }
+        }));
 
-        for (DiscussionTagPtr tag : tags_.byId())
+        futures[futureIndex++] = std::move(std::async(std::launch::async, [this]()
         {
-            tag->threads().stopBatchInsert();
-        }
+            for (UserPtr user : this->users_.byId())
+            {
+                user->subscribedThreads().stopBatchInsert();
+            }
+        }));
 
-        for (DiscussionCategoryPtr category : categories_.byId())
+        futures[futureIndex++] = std::move(std::async(std::launch::async, [this]()
         {
-            category->threads().stopBatchInsert();
+            for (DiscussionTagPtr tag : this->tags_.byId())
+            {
+                tag->threads().stopBatchInsert();
+            }
+        }));
+
+        futures[futureIndex++] = std::move(std::async(std::launch::async, [this]()
+        {
+            for (DiscussionCategoryPtr category : this->categories_.byId())
+            {
+                category->threads().stopBatchInsert();
+            }
+        }));
+
+        futures[futureIndex++] = std::move(std::async(std::launch::async, [this]()
+        {
+            this->tags_.stopBatchInsert();
+            this->categories_.stopBatchInsert();
+        }));
+
+        for (auto& future : futures)
+        {
+            future.get();
         }
-
-        tags_.stopBatchInsert();
-
-        categories_.stopBatchInsert();
 
         Context::setBatchInsertInProgres(batchInsertInProgress_ = activate);
     }
