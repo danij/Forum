@@ -61,6 +61,9 @@ namespace Forum
             auto& byLatestMessageCreated() { return byLatestMessageCreated_; }
             auto& byMessageCount()         { return byMessageCount_; }
             
+        protected:
+            virtual void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) = 0;
+
         private:
 
             RANKED_COLLECTION(DiscussionThread, name) byName_;
@@ -92,6 +95,9 @@ namespace Forum
 
              auto byId() const { return Helpers::toConst(byId_); }
             auto& byId()       { return byId_; }
+
+        protected:
+            void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) override;
 
         private:
             HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
@@ -127,6 +133,9 @@ namespace Forum
 
              auto byId() const { return Helpers::toConst(byId_); }
             auto& byId()       { return byId_; }
+
+        protected:
+            void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) override;
 
         private:
             ORDERED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;

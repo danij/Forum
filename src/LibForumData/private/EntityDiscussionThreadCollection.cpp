@@ -7,11 +7,10 @@ bool DiscussionThreadCollectionBase::add(DiscussionThreadPtr thread)
 {
     if (onPrepareCountChange_) onPrepareCountChange_();
 
-    byName_.insert(thread);
-    byCreated_.insert(thread);
-
     if ( ! Context::isBatchInsertInProgress())
     {
+        byName_.insert(thread);
+        byCreated_.insert(thread);
         byLastUpdated_.insert(thread);
         byLatestMessageCreated_.insert(thread);
         byMessageCount_.insert(thread);
@@ -25,11 +24,10 @@ bool DiscussionThreadCollectionBase::remove(DiscussionThreadPtr thread)
 {
     if (onPrepareCountChange_) onPrepareCountChange_();
 
-    eraseFromNonUniqueCollection(byName_, thread, thread->name());
-    eraseFromNonUniqueCollection(byCreated_, thread, thread->created());
-
     if ( ! Context::isBatchInsertInProgress())
     {
+        eraseFromNonUniqueCollection(byName_, thread, thread->name());
+        eraseFromNonUniqueCollection(byCreated_, thread, thread->created());
         eraseFromNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
         eraseFromNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
         eraseFromNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
@@ -39,39 +37,40 @@ bool DiscussionThreadCollectionBase::remove(DiscussionThreadPtr thread)
     return true;
 }
 
+void DiscussionThreadCollectionBase::stopBatchInsert()
+{
+    if ( ! Context::isBatchInsertInProgress()) return;
+
+    byName_.clear();
+    byCreated_.clear();
+    byLastUpdated_.clear();
+    byLatestMessageCreated_.clear();
+    byMessageCount_.clear();
+
+    iterateAllThreads([&](DiscussionThreadPtr thread)
+    {
+        byName_.insert(thread);
+        byCreated_.insert(thread);
+        byLastUpdated_.insert(thread);
+        byLatestMessageCreated_.insert(thread);
+        byMessageCount_.insert(thread);
+    });
+}
+
 void DiscussionThreadCollectionBase::prepareUpdateName(DiscussionThreadPtr thread)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     byNameUpdateIt_ = findInNonUniqueCollection(byName_, thread, thread->name());
 }
 
 void DiscussionThreadCollectionBase::updateName(DiscussionThreadPtr thread)
 {
+    if (Context::isBatchInsertInProgress()) return;
+
     if (byNameUpdateIt_ != byName_.end())
     {
         byName_.replace(byNameUpdateIt_, thread);
-    }
-}
-
-void DiscussionThreadCollectionBase::stopBatchInsert()
-{
-    if ( ! Context::isBatchInsertInProgress()) return;
-
-    byLastUpdated_.clear();
-    for (DiscussionThreadPtr thread : byName_)
-    {
-        byLastUpdated_.insert(thread);
-    }
-
-    byLatestMessageCreated_.clear();
-    for (DiscussionThreadPtr thread : byName_)
-    {
-        byLatestMessageCreated_.insert(thread);
-    }
-
-    byMessageCount_.clear();
-    for (DiscussionThreadPtr thread : byName_)
-    {
-        byMessageCount_.insert(thread);
     }
 }
 
@@ -149,6 +148,14 @@ bool DiscussionThreadCollectionWithHashedId::contains(DiscussionThreadPtr thread
     return byId_.find(thread->id()) != byId_.end();
 }
 
+void DiscussionThreadCollectionWithHashedId::iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback)
+{
+    for (auto ptr : byId())
+    {
+        callback(ptr);
+    }
+}
+
 bool DiscussionThreadCollectionWithHashedIdAndPinOrder::add(DiscussionThreadPtr thread)
 {
     if ( ! DiscussionThreadCollectionWithHashedId::add(thread)) return false;
@@ -216,6 +223,14 @@ bool DiscussionThreadCollectionWithOrderedId::remove(DiscussionThreadPtr thread)
 bool DiscussionThreadCollectionWithOrderedId::contains(DiscussionThreadPtr thread) const
 {
     return byId_.find(thread->id()) != byId_.end();
+}
+
+void DiscussionThreadCollectionWithOrderedId::iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback)
+{
+    for (auto ptr : byId())
+    {
+        callback(ptr);
+    }
 }
 
 bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::add(DiscussionThreadPtr thread)
