@@ -5,7 +5,7 @@
 #include "TypeHelpers.h"
 
 #include <functional>
-#include <map>
+#include <unordered_map>
 
 #include <boost/noncopyable.hpp>
 
@@ -186,7 +186,7 @@ namespace Forum
             decltype(byLatestMessageCreated_)::nth_index<0>::type::iterator byLatestMessageCreatedUpdateIt_;
 
             int_fast32_t messageCount_ = 0;
-            std::map<DiscussionThreadPtr, int_fast32_t> referenceCount_;
+            std::unordered_map<DiscussionThreadPtr, int_fast32_t> referenceCount_;
         };
     }
 }

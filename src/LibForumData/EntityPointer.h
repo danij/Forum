@@ -177,6 +177,11 @@ namespace Forum
                 return index_ >= other.index_;
             }
 
+            size_t hashValue() const
+            {
+                return static_cast<size_t>(index_);
+            }
+
         private:
             IndexType index_;
         };
@@ -192,4 +197,16 @@ namespace Forum
             EntityPointer<T> pointer_;
         };
     }
+}
+
+namespace std
+{
+    template<typename T>
+    struct hash<Forum::Entities::EntityPointer<T>>
+    {
+        size_t operator()(Forum::Entities::EntityPointer<T> value) const
+        {
+            return value.hashValue();
+        }
+    };
 }
