@@ -46,6 +46,68 @@ namespace Forum
             StatusCode getDefaultPrivilegeDurations(Entities::IdTypeRef tagId, OutStream& output) const override;
             StatusCode getAssignedPrivileges(Entities::IdTypeRef tagId, OutStream& output) const override;
 
+            StatusCode changeDiscussionThreadMessageRequiredPrivilegeForTag(
+                    Entities::IdTypeRef tagId, Authorization::DiscussionThreadMessagePrivilege privilege,
+                    Authorization::PrivilegeValueIntType value, OutStream& output) override;
+            StatusCode changeDiscussionThreadMessageRequiredPrivilegeForTag(
+                    Entities::EntityCollection& collection,
+                    Entities::IdTypeRef tagId, Authorization::DiscussionThreadMessagePrivilege privilege,
+                    Authorization::PrivilegeValueIntType value) override;
+            StatusCode changeDiscussionThreadRequiredPrivilegeForTag(
+                    Entities::IdTypeRef tagId, Authorization::DiscussionThreadPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value, OutStream& output) override;
+            StatusCode changeDiscussionThreadRequiredPrivilegeForTag(
+                    Entities::EntityCollection& collection,
+                    Entities::IdTypeRef tagId, Authorization::DiscussionThreadPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value) override;
+            StatusCode changeDiscussionTagRequiredPrivilegeForTag(
+                    Entities::IdTypeRef tagId, Authorization::DiscussionTagPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value, OutStream& output) override;
+            StatusCode changeDiscussionTagRequiredPrivilegeForTag(
+                    Entities::EntityCollection& collection,
+                    Entities::IdTypeRef tagId, Authorization::DiscussionTagPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value) override;
+
+            StatusCode changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
+                    Entities::IdTypeRef tagId, Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) override;
+            StatusCode changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
+                    Entities::EntityCollection& collection,
+                    Entities::IdTypeRef tagId, Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    Authorization::PrivilegeDefaultDurationIntType value) override;
+
+            StatusCode assignDiscussionThreadMessagePrivilegeForTag(
+                    Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
+                    Authorization::DiscussionThreadMessagePrivilege privilege,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    OutStream& output) override;
+            StatusCode assignDiscussionThreadMessagePrivilegeForTag(
+                    Entities::EntityCollection& collection, Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
+                    Authorization::DiscussionThreadMessagePrivilege privilege,
+                    Authorization::PrivilegeValueIntType value,
+                    Authorization::PrivilegeDefaultDurationIntType duration) override;
+            StatusCode assignDiscussionThreadPrivilegeForTag(
+                    Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
+                    Authorization::DiscussionThreadPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    OutStream& output) override;
+            StatusCode assignDiscussionThreadPrivilegeForTag(
+                    Entities::EntityCollection& collection, Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
+                    Authorization::DiscussionThreadPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value,
+                    Authorization::PrivilegeDefaultDurationIntType duration) override;
+            StatusCode assignDiscussionTagPrivilegeForTag(
+                    Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
+                    Authorization::DiscussionTagPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    OutStream& output) override;
+            StatusCode assignDiscussionTagPrivilegeForTag(
+                    Entities::EntityCollection& collection, Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
+                    Authorization::DiscussionTagPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value,
+                    Authorization::PrivilegeDefaultDurationIntType duration) override;
+
+
         private:
             Authorization::DiscussionTagAuthorizationRef authorization_;
         };

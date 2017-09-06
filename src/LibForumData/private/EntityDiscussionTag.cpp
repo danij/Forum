@@ -11,7 +11,7 @@ PrivilegeValueType DiscussionTag::getDiscussionThreadMessagePrivilege(Discussion
 {
     auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
     if (result) return result;
-    
+
     return forumWidePrivileges_.getDiscussionThreadMessagePrivilege(privilege);
 }
 

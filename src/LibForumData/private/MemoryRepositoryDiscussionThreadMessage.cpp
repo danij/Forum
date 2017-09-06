@@ -135,8 +135,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
 }
 
 StatusWithResource<DiscussionThreadMessagePtr>
-    MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection, 
-                                                                             IdTypeRef messageId, IdTypeRef threadId, 
+    MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection,
+                                                                             IdTypeRef messageId, IdTypeRef threadId,
                                                                              StringView content)
 {
     auto& threadIndex = collection.threads().byId();
@@ -572,7 +572,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
 
     DiscussionThreadPtr parentThread = message.parentThread();
     assert(parentThread);
-    
+
     auto resetVotePrivilegeDuration = optionalOrZero(parentThread->getDiscussionThreadMessageDefaultPrivilegeDuration(
             DiscussionThreadMessageDefaultPrivilegeDuration::RESET_VOTE));
     if (resetVotePrivilegeDuration > 0)
@@ -806,7 +806,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
                                return;
                            }
 
-                           auto statusWithResource = addCommentToDiscussionThreadMessage(collection, generateUniqueId(), 
+                           auto statusWithResource = addCommentToDiscussionThreadMessage(collection, generateUniqueId(),
                                                                                          messageId, content);
                            auto& comment = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
@@ -826,7 +826,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
 
 StatusWithResource<MessageCommentPtr>
     MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThreadMessage(EntityCollection& collection,
-                                                                                 IdTypeRef commentId, 
+                                                                                 IdTypeRef commentId,
                                                                                  IdTypeRef messageId, StringView content)
 {
     auto& messageIndex = collection.threadMessages().byId();
@@ -939,7 +939,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getRequiredPrivileges(IdType
                           {
                               return;
                           }
-                          
+
                           status.disable();
 
                           Json::JsonWriter writer(output);
@@ -949,7 +949,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getRequiredPrivileges(IdType
 
                           writer.endObject();
 
-                          readEvents().onGetRequiredPrivilegesFromThreadMessage(createObserverContext(currentUser), 
+                          readEvents().onGetRequiredPrivilegesFromThreadMessage(createObserverContext(currentUser),
                                                                                 message);
                       });
     return status;
@@ -979,7 +979,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getAssignedPrivileges(IdType
                           {
                               return;
                           }
-                          
+
                           status.disable();
 
                           Json::JsonWriter writer(output);
@@ -989,8 +989,33 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getAssignedPrivileges(IdType
 
                           writer.endObject();
 
-                          readEvents().onGetAssignedPrivilegesFromThreadMessage(createObserverContext(currentUser), 
+                          readEvents().onGetAssignedPrivilegesFromThreadMessage(createObserverContext(currentUser),
                                                                                 message);
                       });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(
+        IdTypeRef messageId, DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(
+        EntityCollection& collection, IdTypeRef messageId, DiscussionThreadMessagePrivilege privilege,
+        PrivilegeValueIntType value)
+{
+    return {};
+}
+
+StatusCode MemoryRepositoryDiscussionThreadMessage::assignDiscussionThreadMessagePrivilegeToDiscussionThreadMessage(
+        IdTypeRef messageId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionThreadMessage::assignDiscussionThreadMessagePrivilegeToDiscussionThreadMessage(
+        EntityCollection& collection,IdTypeRef messageId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
 }

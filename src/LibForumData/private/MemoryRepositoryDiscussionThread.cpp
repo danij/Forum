@@ -175,7 +175,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
                           BoolTemporaryChanger __(serializationSettings.hideVisitedThreadSinceLastChange, true);
                           status.disable();
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), 
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
                                                                Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "thread", thread, restriction);
@@ -268,7 +268,7 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
 
                           status.disable();
-                          writeDiscussionThreads(user.subscribedThreads(), by, output, collection.grantedPrivileges(), 
+                          writeDiscussionThreads(user.subscribedThreads(), by, output, collection.grantedPrivileges(),
                                                  currentUser);
 
                           readEvents().onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
@@ -392,7 +392,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
 }
 
 StatusWithResource<DiscussionThreadPtr> MemoryRepositoryDiscussionThread::addNewDiscussionThread(EntityCollection& collection,
-                                                                                                 IdTypeRef id, 
+                                                                                                 IdTypeRef id,
                                                                                                  StringView name)
 {
     auto currentUser = getCurrentUser(collection);
@@ -949,4 +949,65 @@ StatusCode MemoryRepositoryDiscussionThread::getAssignedPrivileges(IdTypeRef thr
                           readEvents().onGetAssignedPrivilegesFromThread(createObserverContext(currentUser), thread);
                       });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadMessageRequiredPrivilegeForThread(
+        IdTypeRef threadId, DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadMessageRequiredPrivilegeForThread(
+        EntityCollection& collection, IdTypeRef threadId, DiscussionThreadMessagePrivilege privilege,
+        PrivilegeValueIntType value)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadRequiredPrivilegeForThread(
+        IdTypeRef threadId, DiscussionThreadPrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadRequiredPrivilegeForThread(
+        EntityCollection& collection, IdTypeRef threadId, DiscussionThreadPrivilege privilege,
+        PrivilegeValueIntType value)
+{
+    return {};
+}
+
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
+        IdTypeRef threadId, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+        PrivilegeDefaultDurationIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
+        EntityCollection& collection, IdTypeRef threadId, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+        PrivilegeDefaultDurationIntType value)
+{
+    return {};
+}
+
+StatusCode MemoryRepositoryDiscussionThread::assignDiscussionThreadMessagePrivilegeForThread(
+        IdTypeRef threadId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionThread::assignDiscussionThreadMessagePrivilegeForThread(
+        EntityCollection& collection, IdTypeRef threadId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionThread::assignDiscussionThreadPrivilegeForThread(
+        IdTypeRef threadId, IdTypeRef userId, DiscussionThreadPrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionThread::assignDiscussionThreadPrivilegeForThread(
+        EntityCollection& collection, IdTypeRef threadId, IdTypeRef userId, DiscussionThreadPrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
 }

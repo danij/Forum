@@ -58,6 +58,24 @@ namespace Forum
             StatusCode getRequiredPrivileges(Entities::IdTypeRef categoryId, OutStream& output) const override;
             StatusCode getAssignedPrivileges(Entities::IdTypeRef categoryId, OutStream& output) const override;
 
+            StatusCode changeDiscussionCategoryRequiredPrivilegeForCategory(
+                    Entities::IdTypeRef categoryId, Authorization::DiscussionCategoryPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value, OutStream& output) override;
+            StatusCode changeDiscussionCategoryRequiredPrivilegeForCategory(
+                    Entities::EntityCollection& collection,
+                    Entities::IdTypeRef categoryId, Authorization::DiscussionCategoryPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value) override;
+
+            StatusCode assignDiscussionCategoryPrivilege(
+                    Entities::IdTypeRef categoryId, Entities::IdTypeRef userId,
+                    Authorization::DiscussionCategoryPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    OutStream& output) override;
+            StatusCode assignDiscussionCategoryPrivilege(
+                    Entities::EntityCollection& collection, Entities::IdTypeRef categoryId, Entities::IdTypeRef userId,
+                    Authorization::DiscussionCategoryPrivilege privilege,
+                    Authorization::PrivilegeValueIntType value,
+                    Authorization::PrivilegeDefaultDurationIntType duration) override;
         private:
             Authorization::DiscussionCategoryAuthorizationRef authorization_;
         };

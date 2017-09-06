@@ -132,7 +132,7 @@ StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscus
     }
 
     //IdType id, Timestamp created, VisitDetails creationDetails
-    auto tag = collection.createDiscussionTag(id, std::move(nameString), Context::getCurrentTime(), 
+    auto tag = collection.createDiscussionTag(id, std::move(nameString), Context::getCurrentTime(),
                                               { Context::getCurrentUserIpAddress() });
     collection.insertDiscussionTag(tag);
 
@@ -700,4 +700,86 @@ StatusCode MemoryRepositoryDiscussionTag::getAssignedPrivileges(IdTypeRef tagId,
                           readEvents().onGetAssignedPrivilegesFromTag(createObserverContext(currentUser), tag);
                       });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionThreadMessageRequiredPrivilegeForTag(
+        IdTypeRef tagId, DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionThreadMessageRequiredPrivilegeForTag(
+        EntityCollection& collection, IdTypeRef tagId, DiscussionThreadMessagePrivilege privilege,
+        PrivilegeValueIntType value)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionThreadRequiredPrivilegeForTag(
+        IdTypeRef tagId, DiscussionThreadPrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionThreadRequiredPrivilegeForTag(
+        EntityCollection& collection, IdTypeRef tagId, DiscussionThreadPrivilege privilege, PrivilegeValueIntType value)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagRequiredPrivilegeForTag(
+        IdTypeRef tagId, DiscussionTagPrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagRequiredPrivilegeForTag(
+        EntityCollection& collection, IdTypeRef tagId, DiscussionTagPrivilege privilege, PrivilegeValueIntType value)
+{
+    return {};
+}
+
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
+        IdTypeRef tagId, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+        PrivilegeDefaultDurationIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionTag::changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
+        EntityCollection& collection, IdTypeRef tagId, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+        PrivilegeDefaultDurationIntType value)
+{
+    return {};
+}
+
+StatusCode MemoryRepositoryDiscussionTag::assignDiscussionThreadMessagePrivilegeForTag(
+        IdTypeRef tagId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value,
+        PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionTag::assignDiscussionThreadMessagePrivilegeForTag(
+        EntityCollection& collection, IdTypeRef tagId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionTag::assignDiscussionThreadPrivilegeForTag(
+        IdTypeRef tagId, IdTypeRef userId, DiscussionThreadPrivilege privilege, PrivilegeValueIntType value,
+        PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionTag::assignDiscussionThreadPrivilegeForTag(
+        EntityCollection& collection, IdTypeRef tagId, IdTypeRef userId, DiscussionThreadPrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionTag::assignDiscussionTagPrivilegeForTag(
+        IdTypeRef tagId, IdTypeRef userId, DiscussionTagPrivilege privilege, PrivilegeValueIntType value,
+        PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionTag::assignDiscussionTagPrivilegeForTag(
+        EntityCollection& collection, IdTypeRef tagId, IdTypeRef userId, DiscussionTagPrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
 }

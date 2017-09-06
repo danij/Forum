@@ -150,7 +150,7 @@ StatusCode MemoryRepositoryUser::getUserById(IdTypeRef id, OutStream& output) co
 
                           status.disable();
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), 
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
                                                                Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "user", user, restriction);
@@ -194,7 +194,7 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
 
                           status.disable();
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), 
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
                                                                Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "user", user, restriction);
@@ -267,7 +267,7 @@ StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& c
         return StatusCode::ALREADY_EXISTS;
     }
 
-    auto user = collection.createUser(id, std::move(nameString), Context::getCurrentTime(), 
+    auto user = collection.createUser(id, std::move(nameString), Context::getCurrentTime(),
                                       { Context::getCurrentUserIpAddress() });
     user->updateAuth(std::move(authString));
 
@@ -330,7 +330,7 @@ StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, Id
     {
         return StatusCode::ALREADY_EXISTS;
     }
-    
+
     UserPtr user = *it;
     user->updateName(std::move(newNameString));
 
@@ -450,12 +450,12 @@ StatusCode MemoryRepositoryUser::getCurrentUserPrivileges(OutStream& output) con
 
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), 
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
                                                                Context::getCurrentTime());
 
                           Json::JsonWriter writer(output);
                           writer.startObject();
-                          
+
                           writePrivileges(writer, collection, ForumWidePrivilegesToSerialize, restriction);
 
                           writer.endObject();
@@ -559,7 +559,7 @@ StatusCode MemoryRepositoryUser::getAssignedPrivileges(IdTypeRef userId, OutStre
                       {
                           status = StatusCode::OK;
                           status.disable();
-                      
+
                           if (userId != anonymousUserId())
                           {
                               auto& indexById = collection.users().byId();
@@ -575,15 +575,151 @@ StatusCode MemoryRepositoryUser::getAssignedPrivileges(IdTypeRef userId, OutStre
 
                           Json::JsonWriter writer(output);
                           writer.startObject();
-                      
+
                           writeForumWideUserAssignedPrivileges(collection, userId, writer);
                           writeDiscussionCategoryUserAssignedPrivileges(collection, userId, writer);
                           writeDiscussionTagUserAssignedPrivileges(collection, userId, writer);
                           writeDiscussionThreadUserAssignedPrivileges(collection, userId, writer);
-                      
+
                           writer.endObject();
-                      
+
                           readEvents().onGetForumWideAssignedPrivileges(createObserverContext(currentUser));
                       });
     return status;
+}
+
+StatusCode MemoryRepositoryUser::changeDiscussionThreadMessageRequiredPrivilege(
+        DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeDiscussionThreadMessageRequiredPrivilege(
+        EntityCollection& collection, DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeDiscussionThreadRequiredPrivilege(
+        DiscussionThreadPrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeDiscussionThreadRequiredPrivilege(
+        EntityCollection& collection, DiscussionThreadPrivilege privilege, PrivilegeValueIntType value)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeDiscussionTagRequiredPrivilege(
+        DiscussionTagPrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeDiscussionTagRequiredPrivilege(
+        EntityCollection& collection, DiscussionTagPrivilege privilege, PrivilegeValueIntType value)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeDiscussionCategoryRequiredPrivilege(
+        DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeDiscussionCategoryRequiredPrivilege(
+        EntityCollection& collection, DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeForumWideRequiredPrivilege(
+        ForumWidePrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeForumWideRequiredPrivilege(
+        EntityCollection& collection, ForumWidePrivilege privilege, PrivilegeValueIntType value)
+{
+    return {};
+}
+
+StatusCode MemoryRepositoryUser::changeDiscussionThreadMessageDefaultPrivilegeDuration(
+        DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+        PrivilegeDefaultDurationIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeDiscussionThreadMessageDefaultPrivilegeDuration(
+        EntityCollection& collection, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+        PrivilegeDefaultDurationIntType value)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeForumWideMessageDefaultPrivilegeDuration(
+        ForumWideDefaultPrivilegeDuration privilege, PrivilegeDefaultDurationIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::changeForumWideMessageDefaultPrivilegeDuration(
+        EntityCollection& collection, ForumWideDefaultPrivilegeDuration privilege,
+        PrivilegeDefaultDurationIntType value)
+{
+    return {};
+}
+
+StatusCode MemoryRepositoryUser::assignDiscussionThreadMessagePrivilege(
+        IdTypeRef userId, DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value,
+        PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::assignDiscussionThreadMessagePrivilege(
+        EntityCollection& collection, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::assignDiscussionThreadPrivilege(
+        IdTypeRef userId, DiscussionThreadPrivilege privilege, PrivilegeValueIntType value,
+        PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::assignDiscussionThreadPrivilege(
+        EntityCollection& collection, IdTypeRef userId, DiscussionThreadPrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::assignDiscussionTagPrivilege(
+        IdTypeRef userId, DiscussionTagPrivilege privilege, PrivilegeValueIntType value,
+        PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::assignDiscussionTagPrivilege(
+        EntityCollection& collection, IdTypeRef userId, DiscussionTagPrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::assignDiscussionCategoryPrivilege(
+        IdTypeRef userId, DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value,
+        PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::assignDiscussionCategoryPrivilege(
+        EntityCollection& collection, IdTypeRef userId, DiscussionCategoryPrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::assignForumWidePrivilege(
+        IdTypeRef userId, ForumWidePrivilege privilege, PrivilegeValueIntType value,
+        PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryUser::assignForumWidePrivilege(
+        EntityCollection& collection, IdTypeRef userId, ForumWidePrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
 }

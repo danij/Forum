@@ -109,7 +109,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
 
                           status.disable();
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), 
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
                                                                Context::getCurrentTime());
 
                           writeArraySafeName(output, "categories", indexBegin, indexRootEnd, restriction);
@@ -148,7 +148,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(IdTypeR
                           status.disable();
                           BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), 
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
                                                                Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "category", **it, restriction);
@@ -202,7 +202,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionCategory(collection, generateUniqueId(), name, 
+                           auto statusWithResource = addNewDiscussionCategory(collection, generateUniqueId(), name,
                                                                               parentId);
                            auto& category = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
@@ -871,4 +871,29 @@ StatusCode MemoryRepositoryDiscussionCategory::getAssignedPrivileges(IdTypeRef c
                           readEvents().onGetAssignedPrivilegesFromCategory(createObserverContext(currentUser), category);
                       });
     return status;
+}
+
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryRequiredPrivilegeForCategory(
+        IdTypeRef categoryId, DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryRequiredPrivilegeForCategory(
+        EntityCollection& collection, IdTypeRef categoryId, DiscussionCategoryPrivilege privilege,
+        PrivilegeValueIntType value)
+{
+    return {};
+}
+
+StatusCode MemoryRepositoryDiscussionCategory::assignDiscussionCategoryPrivilege(
+        IdTypeRef categoryId, IdTypeRef userId, DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value,
+        PrivilegeDefaultDurationIntType duration, OutStream& output)
+{
+    return {};
+}
+StatusCode MemoryRepositoryDiscussionCategory::assignDiscussionCategoryPrivilege(
+        EntityCollection& collection, IdTypeRef categoryId, IdTypeRef userId, DiscussionCategoryPrivilege privilege,
+        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
+{
+    return {};
 }
