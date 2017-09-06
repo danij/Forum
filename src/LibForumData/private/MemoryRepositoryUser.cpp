@@ -599,7 +599,7 @@ StatusCode MemoryRepositoryUser::getAssignedPrivileges(IdTypeRef userId, OutStre
 
                           if (userId != anonymousUserId())
                           {
-                              auto& indexById = collection.users().byId();
+                              const auto& indexById = collection.users().byId();
                               auto it = indexById.find(userId);
                               if (it == indexById.end())
                               {
