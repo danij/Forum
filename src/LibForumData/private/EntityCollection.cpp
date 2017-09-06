@@ -442,6 +442,8 @@ struct EntityCollection::Impl
 
             std::async(std::launch::async, [this]()
             {
+                this->threads_.stopBatchInsert();
+                this->threadMessages_.stopBatchInsert();
                 this->tags_.stopBatchInsert();
                 this->categories_.stopBatchInsert();
             })
