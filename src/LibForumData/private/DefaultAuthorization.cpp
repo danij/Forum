@@ -445,3 +445,33 @@ void DefaultAuthorization::enumerateForumWidePrivileges(IdTypeRef id,
 {
     grantedPrivilegeStore_.enumerateForumWidePrivileges(id, std::move(callback));
 }
+
+void DefaultAuthorization::enumerateDiscussionThreadMessagePrivilegesAssignedToUser(IdTypeRef userId,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    grantedPrivilegeStore_.enumerateDiscussionThreadMessagePrivileges(userId, std::move(callback));
+}
+
+void DefaultAuthorization::enumerateDiscussionThreadPrivilegesAssignedToUser(IdTypeRef userId,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    grantedPrivilegeStore_.enumerateDiscussionThreadPrivileges(userId, std::move(callback));
+}
+
+void DefaultAuthorization::enumerateDiscussionTagPrivilegesAssignedToUser(IdTypeRef userId,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    grantedPrivilegeStore_.enumerateDiscussionTagPrivileges(userId, std::move(callback));
+}
+
+void DefaultAuthorization::enumerateDiscussionCategoryPrivilegesAssignedToUser(IdTypeRef userId,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    grantedPrivilegeStore_.enumerateDiscussionCategoryPrivileges(userId, std::move(callback));
+}
+
+void DefaultAuthorization::enumerateForumWidePrivilegesAssignedToUser(IdTypeRef userId,
+        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+{
+    grantedPrivilegeStore_.enumerateForumWidePrivileges(userId, std::move(callback));
+}

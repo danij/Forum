@@ -273,6 +273,76 @@ private:
     const StringView* strings_;
 };
 
+struct UserAssignedPrivilegeWriter final
+{
+    typedef void(*WriteNameFunction)(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer);
+
+    UserAssignedPrivilegeWriter(JsonWriter& writer, const EntityCollection& collection, const StringView* strings,
+                                WriteNameFunction writeName)
+            : writer_(writer), collection_(collection), strings_(strings), writeName_(writeName)
+    {        
+    }
+
+    UserAssignedPrivilegeWriter(const UserAssignedPrivilegeWriter&) = default;
+    UserAssignedPrivilegeWriter(UserAssignedPrivilegeWriter&&) = default;
+
+    UserAssignedPrivilegeWriter& operator=(const UserAssignedPrivilegeWriter&) = default;
+    UserAssignedPrivilegeWriter& operator=(UserAssignedPrivilegeWriter&&) = default;
+
+    void operator()(IdTypeRef entityId, EnumIntType privilege, PrivilegeValueIntType privilegeValue, Timestamp expiresAt)
+    {
+        writer_.startObject();
+        writer_.newPropertyWithSafeName("id") << entityId;
+
+        writeName_(collection_, entityId, writer_);
+
+        writer_.newPropertyWithSafeName("privilege") << strings_[privilege];
+        writer_.newPropertyWithSafeName("value") << strings_[privilegeValue];
+        writer_.newPropertyWithSafeName("expires") << strings_[expiresAt];
+        writer_.endObject();
+    }
+private:
+    JsonWriter& writer_;
+    const EntityCollection& collection_;
+    const StringView* strings_;
+    WriteNameFunction writeName_;
+};
+
+static void writeDiscussionThreadName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+{
+    const auto& index = collection.threads().byId();
+    auto it = index.find(entityId);
+    if (it != index.end())
+    {
+        writer.newPropertyWithSafeName("name") << (**it).name();
+    }
+}
+
+static void writeDiscussionTagName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+{
+    const auto& index = collection.tags().byId();
+    auto it = index.find(entityId);
+    if (it != index.end())
+    {
+        writer.newPropertyWithSafeName("name") << (**it).name();
+    }
+}
+
+static void writeDiscussionCategoryName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+{
+    const auto& index = collection.categories().byId();
+    auto it = index.find(entityId);
+    if (it != index.end())
+    {
+        writer.newPropertyWithSafeName("name") << (**it).name();
+    }
+}
+
+static void writeForumWideName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+{
+    //do nothing
+}
+
 void MemoryRepositoryBase::writeDiscussionThreadMessageAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                           const IDiscussionThreadMessageEnumeratePrivileges& store, 
                                                                           JsonWriter& writer)
@@ -334,6 +404,60 @@ void MemoryRepositoryBase::writeForumWideAssignedPrivileges(const EntityCollecti
 
     store.enumerateForumWidePrivileges(id,
             AssignedPrivilegeWriter(writer, collection, ForumWidePrivilegeStrings));
+
+    writer.endArray();
+}
+
+void MemoryRepositoryBase::writeDiscussionThreadUserAssignedPrivileges(const EntityCollection& collection, 
+                                                                       IdTypeRef userId,
+                                                                       const IDiscussionThreadEnumeratePrivileges& store, 
+                                                                       JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("discussion_thread_privileges");
+    writer.startArray();
+
+    store.enumerateDiscussionThreadPrivilegesAssignedToUser(userId,
+            UserAssignedPrivilegeWriter(writer, collection, DiscussionThreadPrivilegeStrings, writeDiscussionThreadName));
+
+    writer.endArray();
+}
+
+void MemoryRepositoryBase::writeDiscussionTagUserAssignedPrivileges(const EntityCollection& collection, IdTypeRef userId,
+                                                                    const IDiscussionTagEnumeratePrivileges& store, 
+                                                                    JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("discussion_tag_privileges");
+    writer.startArray();
+
+    store.enumerateDiscussionTagPrivilegesAssignedToUser(userId,
+            UserAssignedPrivilegeWriter(writer, collection, DiscussionTagPrivilegeStrings, writeDiscussionTagName));
+
+    writer.endArray();
+}
+
+void MemoryRepositoryBase::writeDiscussionCategoryUserAssignedPrivileges(const EntityCollection& collection, 
+                                                                         IdTypeRef userId,
+                                                                         const IDiscussionCategoryEnumeratePrivileges& store, 
+                                                                         JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("discussion_category_privileges");
+    writer.startArray();
+
+    store.enumerateDiscussionCategoryPrivilegesAssignedToUser(userId,
+            UserAssignedPrivilegeWriter(writer, collection, DiscussionCategoryPrivilegeStrings, writeDiscussionCategoryName));
+
+    writer.endArray();
+}
+
+void MemoryRepositoryBase::writeForumWideUserAssignedPrivileges(const EntityCollection& collection, IdTypeRef userId,
+                                                                const IForumWideEnumeratePrivileges& store, 
+                                                                JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("forum_wide_privileges");
+    writer.startArray();
+
+    store.enumerateForumWidePrivilegesAssignedToUser(userId,
+            UserAssignedPrivilegeWriter(writer, collection, ForumWidePrivilegeStrings, writeForumWideName));
 
     writer.endArray();
 }

@@ -80,6 +80,20 @@ namespace Forum
                                          const Entities::DiscussionTag&)> 
                                                 onGetDefaultPrivilegeDurationsFromTag;
 
+            boost::signals2::signal<void(ObserverContext)> onGetForumWideAssignedPrivileges;
+            boost::signals2::signal<void(ObserverContext,
+                                         const Entities::DiscussionThreadMessage&)> 
+                                                onGetAssignedPrivilegesFromThreadMessage;
+            boost::signals2::signal<void(ObserverContext, 
+                                         const Entities::DiscussionThread&)> 
+                                                onGetAssignedPrivilegesFromThread;
+            boost::signals2::signal<void(ObserverContext, 
+                                         const Entities::DiscussionTag&)> 
+                                                onGetAssignedPrivilegesFromTag;
+            boost::signals2::signal<void(ObserverContext, 
+                                         const Entities::DiscussionCategory&)> 
+                                                onGetAssignedPrivilegesFromCategory;
+
         };
 
         struct WriteEvents : private boost::noncopyable

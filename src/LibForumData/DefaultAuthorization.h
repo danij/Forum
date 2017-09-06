@@ -179,6 +179,22 @@ namespace Forum
             void enumerateForumWidePrivileges(Entities::IdTypeRef id,
                     std::function<void(Entities::IdTypeRef, EnumIntType,
                                        PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
+            
+            void enumerateDiscussionThreadMessagePrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
+            void enumerateDiscussionThreadPrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
+            void enumerateDiscussionTagPrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
+            void enumerateDiscussionCategoryPrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
+            void enumerateForumWidePrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
 
         private:
 

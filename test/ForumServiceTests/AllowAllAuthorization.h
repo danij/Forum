@@ -174,6 +174,22 @@ namespace Forum
             void enumerateForumWidePrivileges(Entities::IdTypeRef id,
                     std::function<void(Entities::IdTypeRef, EnumIntType,
                                        PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override { return; }
+
+            void enumerateDiscussionThreadMessagePrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override { return; }
+            void enumerateDiscussionThreadPrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override { return; }
+            void enumerateDiscussionTagPrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override { return; }
+            void enumerateDiscussionCategoryPrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override { return; }
+            void enumerateForumWidePrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override { return; }
         };
     }
 }

@@ -111,6 +111,7 @@ namespace Forum
             virtual StatusCode getRequiredPrivileges(OutStream& output) const = 0;
             virtual StatusCode getDefaultPrivilegeDurations(OutStream& output) const = 0;
             virtual StatusCode getAssignedPrivileges(OutStream& output) const = 0;
+            virtual StatusCode getAssignedPrivileges(Entities::IdTypeRef userId, OutStream& output) const = 0;
         };
         typedef std::shared_ptr<IUserRepository> UserRepositoryRef;
 

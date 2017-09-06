@@ -128,7 +128,20 @@ namespace Forum
             static void writeForumWideAssignedPrivileges(
                     const Entities::EntityCollection& collection, Entities::IdTypeRef id,
                     const Authorization::IForumWideEnumeratePrivileges& store, Json::JsonWriter& writer);
-            
+
+            static void writeDiscussionThreadUserAssignedPrivileges(
+                    const Entities::EntityCollection& collection, Entities::IdTypeRef userId,
+                    const Authorization::IDiscussionThreadEnumeratePrivileges& store, Json::JsonWriter& writer);
+            static void writeDiscussionTagUserAssignedPrivileges(
+                    const Entities::EntityCollection& collection, Entities::IdTypeRef userId,
+                    const Authorization::IDiscussionTagEnumeratePrivileges& store, Json::JsonWriter& writer);
+            static void writeDiscussionCategoryUserAssignedPrivileges(
+                    const Entities::EntityCollection& collection, Entities::IdTypeRef userId,
+                    const Authorization::IDiscussionCategoryEnumeratePrivileges& store, Json::JsonWriter& writer);
+            static void writeForumWideUserAssignedPrivileges(
+                    const Entities::EntityCollection& collection, Entities::IdTypeRef userId,
+                    const Authorization::IForumWideEnumeratePrivileges& store, Json::JsonWriter& writer);
+                        
             MemoryStoreRef store_;
         };
 

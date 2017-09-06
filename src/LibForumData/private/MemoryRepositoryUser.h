@@ -32,6 +32,7 @@ namespace Forum
             StatusCode getRequiredPrivileges(OutStream& output) const override;
             StatusCode getDefaultPrivilegeDurations(OutStream& output) const override;
             StatusCode getAssignedPrivileges(OutStream& output) const override;
+            StatusCode getAssignedPrivileges(Entities::IdTypeRef id, OutStream& output) const override;
 
         private:
             Authorization::UserAuthorizationRef authorization_;

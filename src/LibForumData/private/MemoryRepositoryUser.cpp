@@ -548,3 +548,42 @@ StatusCode MemoryRepositoryUser::getAssignedPrivileges(OutStream& output) const
                       });
     return status;
 }
+
+StatusCode MemoryRepositoryUser::getAssignedPrivileges(IdTypeRef userId, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          status = StatusCode::OK;
+                          status.disable();
+                      
+                          if (userId != anonymousUserId())
+                          {
+                              auto& indexById = collection.users().byId();
+                              auto it = indexById.find(userId);
+                              if (it == indexById.end())
+                              {
+                                  status = StatusCode::NOT_FOUND;
+                                  return;
+                              }
+                          }
+
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+                      
+                          writeForumWideUserAssignedPrivileges(collection, userId, *authorization_, writer);
+                          writeDiscussionCategoryUserAssignedPrivileges(collection, userId, *authorization_, writer);
+                          writeDiscussionTagUserAssignedPrivileges(collection, userId, *authorization_, writer);
+                          writeDiscussionThreadUserAssignedPrivileges(collection, userId, *authorization_, writer);
+                      
+                          writer.endObject();
+                      
+                          readEvents().onGetForumWideAssignedPrivileges(createObserverContext(currentUser));
+                      });
+    return status;
+}

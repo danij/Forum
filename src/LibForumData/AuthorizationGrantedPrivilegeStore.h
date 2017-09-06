@@ -101,6 +101,23 @@ namespace Forum
             void enumerateForumWidePrivileges(Entities::IdTypeRef id,
                     std::function<void(Entities::IdTypeRef, EnumIntType,
                                        PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+
+            void enumerateDiscussionThreadMessagePrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+            void enumerateDiscussionThreadPrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+            void enumerateDiscussionTagPrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+            void enumerateDiscussionCategoryPrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+            void enumerateForumWidePrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+
         private:
 
             void updateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId, 

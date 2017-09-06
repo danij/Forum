@@ -26,6 +26,9 @@ namespace Forum
             virtual void enumerateDiscussionThreadMessagePrivileges(Entities::IdTypeRef id,
                     std::function<void(Entities::IdTypeRef, EnumIntType,
                                        PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
+            virtual void enumerateDiscussionThreadMessagePrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
         };
 
         class IDiscussionThreadEnumeratePrivileges : public IDiscussionThreadMessageEnumeratePrivileges
@@ -34,6 +37,9 @@ namespace Forum
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadEnumeratePrivileges)
 
             virtual void enumerateDiscussionThreadPrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
+            virtual void enumerateDiscussionThreadPrivilegesAssignedToUser(Entities::IdTypeRef userId,
                     std::function<void(Entities::IdTypeRef, EnumIntType,
                                        PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
         };
@@ -46,6 +52,9 @@ namespace Forum
             virtual void enumerateDiscussionTagPrivileges(Entities::IdTypeRef id,
                     std::function<void(Entities::IdTypeRef, EnumIntType,
                                        PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
+            virtual void enumerateDiscussionTagPrivilegesAssignedToUser(Entities::IdTypeRef userId,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
         };
 
         class IDiscussionCategoryEnumeratePrivileges
@@ -54,6 +63,9 @@ namespace Forum
             DECLARE_INTERFACE_MANDATORY(IDiscussionCategoryEnumeratePrivileges)
 
             virtual void enumerateDiscussionCategoryPrivileges(Entities::IdTypeRef id,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
+            virtual void enumerateDiscussionCategoryPrivilegesAssignedToUser(Entities::IdTypeRef id,
                     std::function<void(Entities::IdTypeRef, EnumIntType,
                                        PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
         };
@@ -65,6 +77,9 @@ namespace Forum
             DECLARE_INTERFACE_MANDATORY(IForumWideEnumeratePrivileges)
 
             virtual void enumerateForumWidePrivileges(Entities::IdTypeRef,
+                    std::function<void(Entities::IdTypeRef, EnumIntType,
+                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
+            virtual void enumerateForumWidePrivilegesAssignedToUser(Entities::IdTypeRef,
                     std::function<void(Entities::IdTypeRef, EnumIntType,
                                        PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
         };
