@@ -69,8 +69,14 @@ namespace Forum
 
             PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThreadMessage& message,
                                          DiscussionThreadMessagePrivilege privilege, Entities::Timestamp now) const;
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThread& thread,
+                                         DiscussionThreadMessagePrivilege privilege, Entities::Timestamp now) const;
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
+                                         DiscussionThreadMessagePrivilege privilege, Entities::Timestamp now) const;
 
             PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThread& thread,
+                                         DiscussionThreadPrivilege privilege, Entities::Timestamp now) const;
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
                                          DiscussionThreadPrivilege privilege, Entities::Timestamp now) const;
 
             PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
@@ -79,6 +85,18 @@ namespace Forum
             PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionCategory& category,
                                          DiscussionCategoryPrivilege privilege, Entities::Timestamp now) const;
 
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, 
+                                         const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+                                         DiscussionThreadMessagePrivilege privilege, Entities::Timestamp now) const;
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, 
+                                         const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+                                         DiscussionThreadPrivilege privilege, Entities::Timestamp now) const;
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, 
+                                         const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+                                         DiscussionTagPrivilege privilege, Entities::Timestamp now) const;
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, 
+                                         const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+                                         DiscussionCategoryPrivilege privilege, Entities::Timestamp now) const;
             PrivilegeValueType isAllowed(Entities::IdTypeRef userId, 
                                          const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                          ForumWidePrivilege privilege, Entities::Timestamp now) const;

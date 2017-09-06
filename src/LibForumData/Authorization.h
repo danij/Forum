@@ -105,6 +105,22 @@ namespace Forum
                                                        const Entities::User& user, StringView newInfo) const = 0;
             virtual AuthorizationStatus deleteUser(const Entities::User& currentUser,
                                                    const Entities::User& user) const = 0;
+
+            virtual AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                               DiscussionThreadMessagePrivilege privilege,
+                                                                               PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionThreadPrivilege(const Entities::User& currentUser,
+                                                                        DiscussionThreadPrivilege privilege,
+                                                                        PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionTagPrivilege(const Entities::User& currentUser,
+                                                                     DiscussionTagPrivilege privilege,
+                                                                     PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
+                                                                          DiscussionCategoryPrivilege privilege,
+                                                                          PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateForumWidePrivilege(const Entities::User& currentUser,
+                                                                 ForumWidePrivilege privilege,
+                                                                 PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IUserAuthorization> UserAuthorizationRef;
 
@@ -146,6 +162,15 @@ namespace Forum
                                                                     const Entities::DiscussionThread& thread) const = 0;
             virtual AuthorizationStatus unsubscribeFromDiscussionThread(const Entities::User& currentUser,
                                                                         const Entities::DiscussionThread& thread) const = 0;
+
+            virtual AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                               const Entities::DiscussionThread& thread,
+                                                                               DiscussionThreadMessagePrivilege privilege,
+                                                                               PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionThreadPrivilege(const Entities::User& currentUser,
+                                                                        const Entities::DiscussionThread& thread,
+                                                                        DiscussionThreadPrivilege privilege,
+                                                                        PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IDiscussionThreadAuthorization> DiscussionThreadAuthorizationRef;
 
@@ -190,6 +215,11 @@ namespace Forum
                                                                             StringView content) const = 0;
             virtual AuthorizationStatus setMessageCommentToSolved(const Entities::User& currentUser,
                                                                   const Entities::MessageComment& comment) const = 0;
+
+            virtual AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                               const Entities::DiscussionThreadMessage& message,
+                                                                               DiscussionThreadMessagePrivilege privilege,
+                                                                               PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IDiscussionThreadMessageAuthorization> DiscussionThreadMessageAuthorizationRef;
 
@@ -222,6 +252,19 @@ namespace Forum
             virtual AuthorizationStatus mergeDiscussionTags(const Entities::User& currentUser,
                                                             const Entities::DiscussionTag& from,
                                                             const Entities::DiscussionTag& into) const = 0;
+
+            virtual AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                               const Entities::DiscussionTag& tag,
+                                                                               DiscussionThreadMessagePrivilege privilege,
+                                                                               PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionThreadPrivilege(const Entities::User& currentUser,
+                                                                        const Entities::DiscussionTag& tag,
+                                                                        DiscussionThreadPrivilege privilege,
+                                                                        PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionTagPrivilege(const Entities::User& currentUser,
+                                                                     const Entities::DiscussionTag& tag,
+                                                                     DiscussionTagPrivilege privilege,
+                                                                     PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IDiscussionTagAuthorization> DiscussionTagAuthorizationRef;
 
@@ -259,6 +302,11 @@ namespace Forum
             virtual AuthorizationStatus removeDiscussionTagFromCategory(const Entities::User& currentUser,
                                                                         const Entities::DiscussionTag& tag,
                                                                         const Entities::DiscussionCategory& category) const = 0;
+
+            virtual AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
+                                                                          const Entities::DiscussionCategory& category,
+                                                                          DiscussionCategoryPrivilege privilege,
+                                                                          PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IDiscussionCategoryAuthorization> DiscussionCategoryAuthorizationRef;
 

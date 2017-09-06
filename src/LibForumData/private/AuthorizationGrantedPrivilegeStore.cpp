@@ -90,10 +90,8 @@ void GrantedPrivilegeStore::updateDiscussionThreadMessagePrivilege(IdTypeRef use
     updateDiscussionThreadMessagePrivilege(userId, thread.id(), now, privilege, positiveValue, negativeValue);
     for (auto tag : thread.tags())
     {
-        if (tag)
-        {
-            updateDiscussionThreadMessagePrivilege(userId, tag->id(), now, privilege, positiveValue, negativeValue);
-        }
+        assert(tag);
+        updateDiscussionThreadMessagePrivilege(userId, tag->id(), now, privilege, positiveValue, negativeValue);
     }
 
     updateDiscussionThreadMessagePrivilege(userId, {}, now, privilege, positiveValue, negativeValue);
@@ -121,6 +119,26 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
 }
 
 PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionThread& thread,
+                                                    DiscussionThreadMessagePrivilege privilege, Timestamp now) const
+{
+    PrivilegeValueType positive, negative;
+    updateDiscussionThreadMessagePrivilege(userId, thread, now, privilege, positive, negative);
+
+    return ::isAllowed(positive, negative, thread.getDiscussionThreadMessagePrivilege(privilege));
+}
+
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionTag& tag,
+                                                    DiscussionThreadMessagePrivilege privilege, Timestamp now) const
+{
+    PrivilegeValueType positive, negative;
+    
+    updateDiscussionThreadMessagePrivilege(userId, tag.id(), now, privilege, positive, negative);
+    updateDiscussionThreadMessagePrivilege(userId, {}, now, privilege, positive, negative);
+
+    return ::isAllowed(positive, negative, tag.getDiscussionThreadMessagePrivilege(privilege));
+}
+
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionThread& thread,
                                                     DiscussionThreadPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
@@ -128,15 +146,24 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
 
     for (auto tag : thread.tags())
     {
-        if (tag)
-        {
-            updateDiscussionThreadPrivilege(userId, tag->id(), now, privilege, positive, negative);
-        }
+        assert(tag);
+        updateDiscussionThreadPrivilege(userId, tag->id(), now, privilege, positive, negative);
     }
 
     updateDiscussionThreadPrivilege(userId, {}, now, privilege, positive, negative);
 
     return ::isAllowed(positive, negative, thread.getDiscussionThreadPrivilege(privilege));
+}
+
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionTag& tag,
+                                                    DiscussionThreadPrivilege privilege, Timestamp now) const
+{
+    PrivilegeValueType positive, negative;
+
+    updateDiscussionThreadPrivilege(userId, tag.id(), now, privilege, positive, negative);
+    updateDiscussionThreadPrivilege(userId, {}, now, privilege, positive, negative);
+
+    return ::isAllowed(positive, negative, tag.getDiscussionThreadPrivilege(privilege));
 }
 
 PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionTag& tag,
@@ -159,6 +186,46 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
     updateDiscussionCategoryPrivilege(userId, {}, now, privilege, positive, negative);
 
     return ::isAllowed(positive, negative, category.getDiscussionCategoryPrivilege(privilege));
+}
+
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+                                                    DiscussionThreadMessagePrivilege privilege, Timestamp now) const
+{
+    PrivilegeValueType positive, negative;
+
+    updateDiscussionThreadMessagePrivilege(userId, {}, now, privilege, positive, negative);
+
+    return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionThreadMessagePrivilege(privilege));
+}
+
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+                                                    DiscussionThreadPrivilege privilege, Timestamp now) const
+{
+    PrivilegeValueType positive, negative;
+
+    updateDiscussionThreadPrivilege(userId, {}, now, privilege, positive, negative);
+
+    return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionThreadPrivilege(privilege));
+}
+
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+                                                    DiscussionTagPrivilege privilege, Timestamp now) const
+{
+    PrivilegeValueType positive, negative;
+
+    updateDiscussionTagPrivilege(userId, {}, now, privilege, positive, negative);
+
+    return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionTagPrivilege(privilege));
+}
+
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+                                                    DiscussionCategoryPrivilege privilege, Timestamp now) const
+{
+    PrivilegeValueType positive, negative;
+
+    updateDiscussionCategoryPrivilege(userId, {}, now, privilege, positive, negative);
+
+    return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionCategoryPrivilege(privilege));
 }
 
 PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
