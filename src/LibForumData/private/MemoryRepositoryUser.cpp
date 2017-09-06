@@ -536,15 +536,15 @@ StatusCode MemoryRepositoryUser::getAssignedPrivileges(OutStream& output) const
                           Json::JsonWriter writer(output);
                           writer.startObject();
 
-                          writeForumWideRequiredPrivileges(collection, {}, *authorization_, writer);
-                          writeDiscussionCategoryRequiredPrivileges(collection, {}, *authorization_, writer);
-                          writeDiscussionTagRequiredPrivileges(collection, {}, *authorization_, writer);
-                          writeDiscussionThreadRequiredPrivileges(collection, {}, *authorization_, writer);
-                          writeDiscussionThreadMessageRequiredPrivileges(collection, {}, *authorization_, writer);
+                          writeForumWideAssignedPrivileges(collection, {}, *authorization_, writer);
+                          writeDiscussionCategoryAssignedPrivileges(collection, {}, *authorization_, writer);
+                          writeDiscussionTagAssignedPrivileges(collection, {}, *authorization_, writer);
+                          writeDiscussionThreadAssignedPrivileges(collection, {}, *authorization_, writer);
+                          writeDiscussionThreadMessageAssignedPrivileges(collection, {}, *authorization_, writer);
 
                           writer.endObject();
 
-                          readEvents().onGetForumWideRequiredPrivileges(createObserverContext(currentUser));
+                          readEvents().onGetForumWideAssignedPrivileges(createObserverContext(currentUser));
                       });
     return status;
 }

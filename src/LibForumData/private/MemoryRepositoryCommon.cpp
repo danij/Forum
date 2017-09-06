@@ -273,7 +273,7 @@ private:
     const StringView* strings_;
 };
 
-void MemoryRepositoryBase::writeDiscussionThreadMessageRequiredPrivileges(const EntityCollection& collection, IdTypeRef id,
+void MemoryRepositoryBase::writeDiscussionThreadMessageAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                           const IDiscussionThreadMessageEnumeratePrivileges& store, 
                                                                           JsonWriter& writer)
 {
@@ -286,7 +286,7 @@ void MemoryRepositoryBase::writeDiscussionThreadMessageRequiredPrivileges(const 
     writer.endArray();
 }
 
-void MemoryRepositoryBase::writeDiscussionThreadRequiredPrivileges(const EntityCollection& collection, IdTypeRef id,
+void MemoryRepositoryBase::writeDiscussionThreadAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                    const IDiscussionThreadEnumeratePrivileges& store, 
                                                                    JsonWriter& writer)
 {
@@ -299,7 +299,7 @@ void MemoryRepositoryBase::writeDiscussionThreadRequiredPrivileges(const EntityC
     writer.endArray();
 }
 
-void MemoryRepositoryBase::writeDiscussionTagRequiredPrivileges(const EntityCollection& collection, IdTypeRef id,
+void MemoryRepositoryBase::writeDiscussionTagAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                 const IDiscussionTagEnumeratePrivileges& store, 
                                                                 JsonWriter& writer)
 {
@@ -312,7 +312,7 @@ void MemoryRepositoryBase::writeDiscussionTagRequiredPrivileges(const EntityColl
     writer.endArray();
 }
 
-void MemoryRepositoryBase::writeDiscussionCategoryRequiredPrivileges(const EntityCollection& collection, IdTypeRef id,
+void MemoryRepositoryBase::writeDiscussionCategoryAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                      const IDiscussionCategoryEnumeratePrivileges& store, 
                                                                      JsonWriter& writer)
 {
@@ -325,7 +325,7 @@ void MemoryRepositoryBase::writeDiscussionCategoryRequiredPrivileges(const Entit
     writer.endArray();
 }
 
-void MemoryRepositoryBase::writeForumWideRequiredPrivileges(const EntityCollection& collection, IdTypeRef id,
+void MemoryRepositoryBase::writeForumWideAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                             const IForumWideEnumeratePrivileges& store, 
                                                             JsonWriter& writer)
 {

@@ -691,13 +691,13 @@ StatusCode MemoryRepositoryDiscussionTag::getAssignedPrivileges(IdTypeRef tagId,
                           Json::JsonWriter writer(output);
                           writer.startObject();
 
-                          writeDiscussionTagRequiredPrivileges(collection, tag.id(), *authorization_, writer);
-                          writeDiscussionThreadRequiredPrivileges(collection, tag.id(), *authorization_, writer);
-                          writeDiscussionThreadMessageRequiredPrivileges(collection, tag.id(), *authorization_, writer);
+                          writeDiscussionTagAssignedPrivileges(collection, tag.id(), *authorization_, writer);
+                          writeDiscussionThreadAssignedPrivileges(collection, tag.id(), *authorization_, writer);
+                          writeDiscussionThreadMessageAssignedPrivileges(collection, tag.id(), *authorization_, writer);
 
                           writer.endObject();
 
-                          readEvents().onGetRequiredPrivilegesFromTag(createObserverContext(currentUser), tag);
+                          readEvents().onGetAssignedPrivilegesFromTag(createObserverContext(currentUser), tag);
                       });
     return status;
 }

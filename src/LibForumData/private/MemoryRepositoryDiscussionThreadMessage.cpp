@@ -985,11 +985,11 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getAssignedPrivileges(IdType
                           Json::JsonWriter writer(output);
                           writer.startObject();
 
-                          writeDiscussionThreadMessageRequiredPrivileges(collection, message.id(), *authorization_, writer);
+                          writeDiscussionThreadMessageAssignedPrivileges(collection, message.id(), *authorization_, writer);
 
                           writer.endObject();
 
-                          readEvents().onGetRequiredPrivilegesFromThreadMessage(createObserverContext(currentUser), 
+                          readEvents().onGetAssignedPrivilegesFromThreadMessage(createObserverContext(currentUser), 
                                                                                 message);
                       });
     return status;

@@ -941,12 +941,12 @@ StatusCode MemoryRepositoryDiscussionThread::getAssignedPrivileges(IdTypeRef thr
                           Json::JsonWriter writer(output);
                           writer.startObject();
 
-                          writeDiscussionThreadRequiredPrivileges(collection, thread.id(), *authorization_, writer);
-                          writeDiscussionThreadMessageRequiredPrivileges(collection, thread.id(), *authorization_, writer);
+                          writeDiscussionThreadAssignedPrivileges(collection, thread.id(), *authorization_, writer);
+                          writeDiscussionThreadMessageAssignedPrivileges(collection, thread.id(), *authorization_, writer);
 
                           writer.endObject();
 
-                          readEvents().onGetRequiredPrivilegesFromThread(createObserverContext(currentUser), thread);
+                          readEvents().onGetAssignedPrivilegesFromThread(createObserverContext(currentUser), thread);
                       });
     return status;
 }

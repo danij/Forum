@@ -113,19 +113,19 @@ namespace Forum
             static void writeForumWideDefaultPrivilegeDurations(
                     const Authorization::ForumWidePrivilegeStore& store, Json::JsonWriter& writer);
 
-            static void writeDiscussionThreadMessageRequiredPrivileges(
+            static void writeDiscussionThreadMessageAssignedPrivileges(
                     const Entities::EntityCollection& collection, Entities::IdTypeRef id,
                     const Authorization::IDiscussionThreadMessageEnumeratePrivileges& store, Json::JsonWriter& writer);
-            static void writeDiscussionThreadRequiredPrivileges(
+            static void writeDiscussionThreadAssignedPrivileges(
                     const Entities::EntityCollection& collection, Entities::IdTypeRef id,
                     const Authorization::IDiscussionThreadEnumeratePrivileges& store, Json::JsonWriter& writer);
-            static void writeDiscussionTagRequiredPrivileges(
+            static void writeDiscussionTagAssignedPrivileges(
                     const Entities::EntityCollection& collection, Entities::IdTypeRef id,
                     const Authorization::IDiscussionTagEnumeratePrivileges& store, Json::JsonWriter& writer);
-            static void writeDiscussionCategoryRequiredPrivileges(
+            static void writeDiscussionCategoryAssignedPrivileges(
                     const Entities::EntityCollection& collection, Entities::IdTypeRef id,
                     const Authorization::IDiscussionCategoryEnumeratePrivileges& store, Json::JsonWriter& writer);
-            static void writeForumWideRequiredPrivileges(
+            static void writeForumWideAssignedPrivileges(
                     const Entities::EntityCollection& collection, Entities::IdTypeRef id,
                     const Authorization::IForumWideEnumeratePrivileges& store, Json::JsonWriter& writer);
             

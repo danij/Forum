@@ -864,11 +864,11 @@ StatusCode MemoryRepositoryDiscussionCategory::getAssignedPrivileges(IdTypeRef c
                           Json::JsonWriter writer(output);
                           writer.startObject();
 
-                          writeDiscussionCategoryRequiredPrivileges(collection, category.id(), *authorization_, writer);
+                          writeDiscussionCategoryAssignedPrivileges(collection, category.id(), *authorization_, writer);
 
                           writer.endObject();
 
-                          readEvents().onGetRequiredPrivilegesFromCategory(createObserverContext(currentUser), category);
+                          readEvents().onGetAssignedPrivilegesFromCategory(createObserverContext(currentUser), category);
                       });
     return status;
 }
