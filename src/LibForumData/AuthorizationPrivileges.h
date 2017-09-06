@@ -36,7 +36,7 @@ namespace Forum
             COUNT
         };
 
-        const StringView DiscussionThreadMessagePrivilegeStrings[] = 
+        const StringView DiscussionThreadMessagePrivilegeStrings[] =
         {
             "view",
             "view_creator_user",
@@ -96,7 +96,7 @@ namespace Forum
             COUNT
         };
 
-        const StringView DiscussionThreadPrivilegeStrings[] = 
+        const StringView DiscussionThreadPrivilegeStrings[] =
         {
             "view",
             "subscribe",
@@ -135,7 +135,7 @@ namespace Forum
             COUNT
         };
 
-        const StringView DiscussionTagPrivilegeStrings[] = 
+        const StringView DiscussionTagPrivilegeStrings[] =
         {
             "view",
             "get_discussion_threads",
@@ -171,7 +171,7 @@ namespace Forum
             COUNT
         };
 
-        const StringView DiscussionCategoryPrivilegeStrings[] = 
+        const StringView DiscussionCategoryPrivilegeStrings[] =
         {
             "view",
             "get_discussion_threads",
@@ -227,7 +227,7 @@ namespace Forum
             COUNT
         };
 
-        const StringView ForumWidePrivilegeStrings[] = 
+        const StringView ForumWidePrivilegeStrings[] =
         {
             "add_user",
             "login",
@@ -302,6 +302,8 @@ namespace Forum
 
         static constexpr PrivilegeValueIntType MinPrivilegeValue = -32000;
         static constexpr PrivilegeValueIntType MaxPrivilegeValue = 32000;
+        static constexpr PrivilegeDefaultDurationIntType UnlimitedDuration =
+                std::numeric_limits<PrivilegeDefaultDurationIntType>::max();
 
         template<typename T>
         T optionalOrZero(boost::optional<T> value)

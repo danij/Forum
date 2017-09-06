@@ -238,6 +238,43 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
 
                            writeEvents().onAddNewUser(createObserverContext(*currentUser), *user);
 
+                           if (1 == collection.users().count())
+                           {
+                               //this is the first user, so grant all privileges
+                               Json::StringBuffer nullOutput;
+
+                               for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionThreadMessagePrivilege::COUNT); p < n; ++p)
+                               {
+                                   auto privilege = static_cast<DiscussionThreadMessagePrivilege>(p);
+                                   assignDiscussionThreadMessagePrivilege(user->id(), privilege, MaxPrivilegeValue,
+                                                                          UnlimitedDuration, nullOutput);
+                               }
+                               for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionThreadPrivilege::COUNT); p < n; ++p)
+                               {
+                                   auto privilege = static_cast<DiscussionThreadPrivilege>(p);
+                                   assignDiscussionThreadPrivilege(user->id(), privilege, MaxPrivilegeValue,
+                                                                   UnlimitedDuration, nullOutput);
+                               }
+                               for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionTagPrivilege::COUNT); p < n; ++p)
+                               {
+                                   auto privilege = static_cast<DiscussionTagPrivilege>(p);
+                                   assignDiscussionTagPrivilege(user->id(), privilege, MaxPrivilegeValue,
+                                                                UnlimitedDuration, nullOutput);
+                               }
+                               for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionCategoryPrivilege::COUNT); p < n; ++p)
+                               {
+                                   auto privilege = static_cast<DiscussionCategoryPrivilege>(p);
+                                   assignDiscussionCategoryPrivilege(user->id(), privilege, MaxPrivilegeValue,
+                                                                     UnlimitedDuration, nullOutput);
+                               }
+                               for (EnumIntType p = 0, n = static_cast<EnumIntType>(ForumWidePrivilege::COUNT); p < n; ++p)
+                               {
+                                   auto privilege = static_cast<ForumWidePrivilege>(p);
+                                   assignForumWidePrivilege(user->id(), privilege, MaxPrivilegeValue,
+                                                            UnlimitedDuration, nullOutput);
+                               }
+                           }
+
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", user->id());
