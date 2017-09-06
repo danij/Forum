@@ -436,7 +436,7 @@ struct EntityCollection::Impl
             {
                 for (DiscussionCategoryPtr category : this->categories_.byId())
                 {
-                    category->threads().stopBatchInsert();
+                    category->stopBatchInsert();
                 }
             }),
 

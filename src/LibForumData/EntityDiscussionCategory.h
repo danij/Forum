@@ -119,6 +119,12 @@ namespace Forum
                 changeNotifications_.onUpdateDisplayOrder(*this);
             }
 
+            void stopBatchInsert()
+            {
+                threads_.stopBatchInsert();
+                totalThreads_.stopBatchInsert();
+            }
+
             auto& parent()             { return parent_; }
             auto& description()        { return description_; }
 

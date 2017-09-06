@@ -161,6 +161,8 @@ namespace Forum
             bool remove(DiscussionThreadPtr thread);
 
             void clear();
+
+            void stopBatchInsert();
             
             void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread);
             void updateLatestMessageCreated(DiscussionThreadPtr thread);
