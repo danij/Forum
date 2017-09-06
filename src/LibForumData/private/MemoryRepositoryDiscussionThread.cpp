@@ -941,8 +941,8 @@ StatusCode MemoryRepositoryDiscussionThread::getAssignedPrivileges(IdTypeRef thr
                           Json::JsonWriter writer(output);
                           writer.startObject();
 
-                          writeDiscussionThreadAssignedPrivileges(collection, thread.id(), *authorization_, writer);
-                          writeDiscussionThreadMessageAssignedPrivileges(collection, thread.id(), *authorization_, writer);
+                          writeDiscussionThreadAssignedPrivileges(collection, thread.id(), writer);
+                          writeDiscussionThreadMessageAssignedPrivileges(collection, thread.id(), writer);
 
                           writer.endObject();
 

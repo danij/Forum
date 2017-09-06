@@ -164,38 +164,6 @@ namespace Forum
 
             AuthorizationStatus getVersion(const Entities::User& currentUser) const override;
 
-            void enumerateDiscussionThreadMessagePrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
-            void enumerateDiscussionThreadPrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
-            void enumerateDiscussionTagPrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
-            void enumerateDiscussionCategoryPrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
-            void enumerateForumWidePrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
-            
-            void enumerateDiscussionThreadMessagePrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
-            void enumerateDiscussionThreadPrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
-            void enumerateDiscussionTagPrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
-            void enumerateDiscussionCategoryPrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
-            void enumerateForumWidePrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const override;
-
             AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        const Entities::DiscussionThreadMessage& message,
                                                                        DiscussionThreadMessagePrivilege privilege,

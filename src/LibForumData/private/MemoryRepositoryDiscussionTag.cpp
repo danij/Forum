@@ -691,9 +691,9 @@ StatusCode MemoryRepositoryDiscussionTag::getAssignedPrivileges(IdTypeRef tagId,
                           Json::JsonWriter writer(output);
                           writer.startObject();
 
-                          writeDiscussionTagAssignedPrivileges(collection, tag.id(), *authorization_, writer);
-                          writeDiscussionThreadAssignedPrivileges(collection, tag.id(), *authorization_, writer);
-                          writeDiscussionThreadMessageAssignedPrivileges(collection, tag.id(), *authorization_, writer);
+                          writeDiscussionTagAssignedPrivileges(collection, tag.id(), writer);
+                          writeDiscussionThreadAssignedPrivileges(collection, tag.id(), writer);
+                          writeDiscussionThreadMessageAssignedPrivileges(collection, tag.id(), writer);
 
                           writer.endObject();
 

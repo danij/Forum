@@ -985,7 +985,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getAssignedPrivileges(IdType
                           Json::JsonWriter writer(output);
                           writer.startObject();
 
-                          writeDiscussionThreadMessageAssignedPrivileges(collection, message.id(), *authorization_, writer);
+                          writeDiscussionThreadMessageAssignedPrivileges(collection, message.id(), writer);
 
                           writer.endObject();
 

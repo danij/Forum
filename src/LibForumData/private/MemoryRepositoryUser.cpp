@@ -536,11 +536,11 @@ StatusCode MemoryRepositoryUser::getAssignedPrivileges(OutStream& output) const
                           Json::JsonWriter writer(output);
                           writer.startObject();
 
-                          writeForumWideAssignedPrivileges(collection, {}, *authorization_, writer);
-                          writeDiscussionCategoryAssignedPrivileges(collection, {}, *authorization_, writer);
-                          writeDiscussionTagAssignedPrivileges(collection, {}, *authorization_, writer);
-                          writeDiscussionThreadAssignedPrivileges(collection, {}, *authorization_, writer);
-                          writeDiscussionThreadMessageAssignedPrivileges(collection, {}, *authorization_, writer);
+                          writeForumWideAssignedPrivileges(collection, {}, writer);
+                          writeDiscussionCategoryAssignedPrivileges(collection, {}, writer);
+                          writeDiscussionTagAssignedPrivileges(collection, {}, writer);
+                          writeDiscussionThreadAssignedPrivileges(collection, {}, writer);
+                          writeDiscussionThreadMessageAssignedPrivileges(collection, {}, writer);
 
                           writer.endObject();
 
@@ -576,10 +576,10 @@ StatusCode MemoryRepositoryUser::getAssignedPrivileges(IdTypeRef userId, OutStre
                           Json::JsonWriter writer(output);
                           writer.startObject();
                       
-                          writeForumWideUserAssignedPrivileges(collection, userId, *authorization_, writer);
-                          writeDiscussionCategoryUserAssignedPrivileges(collection, userId, *authorization_, writer);
-                          writeDiscussionTagUserAssignedPrivileges(collection, userId, *authorization_, writer);
-                          writeDiscussionThreadUserAssignedPrivileges(collection, userId, *authorization_, writer);
+                          writeForumWideUserAssignedPrivileges(collection, userId, writer);
+                          writeDiscussionCategoryUserAssignedPrivileges(collection, userId, writer);
+                          writeDiscussionTagUserAssignedPrivileges(collection, userId, writer);
+                          writeDiscussionThreadUserAssignedPrivileges(collection, userId, writer);
                       
                           writer.endObject();
                       

@@ -4,7 +4,6 @@
 #include "Entities.h"
 #include "AuthorizationPrivileges.h"
 
-#include <functional>
 #include <memory>
 
 namespace Forum
@@ -18,73 +17,7 @@ namespace Forum
             THROTTLED
         };
 
-        class IDiscussionThreadMessageEnumeratePrivileges
-        {
-        public:
-            DECLARE_INTERFACE_MANDATORY(IDiscussionThreadMessageEnumeratePrivileges)
-
-            virtual void enumerateDiscussionThreadMessagePrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
-            virtual void enumerateDiscussionThreadMessagePrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
-        };
-
-        class IDiscussionThreadEnumeratePrivileges : public IDiscussionThreadMessageEnumeratePrivileges
-        {
-        public:
-            DECLARE_INTERFACE_MANDATORY(IDiscussionThreadEnumeratePrivileges)
-
-            virtual void enumerateDiscussionThreadPrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
-            virtual void enumerateDiscussionThreadPrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
-        };
-
-        class IDiscussionTagEnumeratePrivileges : public IDiscussionThreadEnumeratePrivileges
-        {
-        public:
-            DECLARE_INTERFACE_MANDATORY(IDiscussionTagEnumeratePrivileges)
-
-            virtual void enumerateDiscussionTagPrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
-            virtual void enumerateDiscussionTagPrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
-        };
-
-        class IDiscussionCategoryEnumeratePrivileges
-        {
-        public:
-            DECLARE_INTERFACE_MANDATORY(IDiscussionCategoryEnumeratePrivileges)
-
-            virtual void enumerateDiscussionCategoryPrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
-            virtual void enumerateDiscussionCategoryPrivilegesAssignedToUser(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
-        };
-
-        class IForumWideEnumeratePrivileges : public IDiscussionTagEnumeratePrivileges,
-                                              public IDiscussionCategoryEnumeratePrivileges
-        {
-        public:
-            DECLARE_INTERFACE_MANDATORY(IForumWideEnumeratePrivileges)
-
-            virtual void enumerateForumWidePrivileges(Entities::IdTypeRef,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
-            virtual void enumerateForumWidePrivilegesAssignedToUser(Entities::IdTypeRef,
-                    std::function<void(Entities::IdTypeRef, EnumIntType,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const = 0;
-        };
-
-        class IUserAuthorization : public IForumWideEnumeratePrivileges
+        class IUserAuthorization
         {
         public:
             DECLARE_INTERFACE_MANDATORY(IUserAuthorization)
@@ -125,7 +58,7 @@ namespace Forum
         typedef std::shared_ptr<IUserAuthorization> UserAuthorizationRef;
 
 
-        class IDiscussionThreadAuthorization : public IDiscussionThreadEnumeratePrivileges
+        class IDiscussionThreadAuthorization
         {
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadAuthorization)
@@ -175,7 +108,7 @@ namespace Forum
         typedef std::shared_ptr<IDiscussionThreadAuthorization> DiscussionThreadAuthorizationRef;
 
 
-        class IDiscussionThreadMessageAuthorization : public IDiscussionThreadMessageEnumeratePrivileges
+        class IDiscussionThreadMessageAuthorization
         {
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadMessageAuthorization)
@@ -224,7 +157,7 @@ namespace Forum
         typedef std::shared_ptr<IDiscussionThreadMessageAuthorization> DiscussionThreadMessageAuthorizationRef;
 
 
-        class IDiscussionTagAuthorization : public IDiscussionTagEnumeratePrivileges
+        class IDiscussionTagAuthorization
         {
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionTagAuthorization)
@@ -269,7 +202,7 @@ namespace Forum
         typedef std::shared_ptr<IDiscussionTagAuthorization> DiscussionTagAuthorizationRef;
 
 
-        class IDiscussionCategoryAuthorization : public IDiscussionCategoryEnumeratePrivileges
+        class IDiscussionCategoryAuthorization
         {
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionCategoryAuthorization)

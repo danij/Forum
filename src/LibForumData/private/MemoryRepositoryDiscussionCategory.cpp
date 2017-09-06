@@ -864,7 +864,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getAssignedPrivileges(IdTypeRef c
                           Json::JsonWriter writer(output);
                           writer.startObject();
 
-                          writeDiscussionCategoryAssignedPrivileges(collection, category.id(), *authorization_, writer);
+                          writeDiscussionCategoryAssignedPrivileges(collection, category.id(), writer);
 
                           writer.endObject();
 
