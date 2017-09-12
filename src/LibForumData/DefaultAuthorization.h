@@ -167,45 +167,56 @@ namespace Forum
             AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        const Entities::DiscussionThreadMessage& message,
                                                                        DiscussionThreadMessagePrivilege privilege,
+                                                                       PrivilegeValueIntType oldValue,
                                                                        PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        const Entities::DiscussionThread& thread,
                                                                        DiscussionThreadMessagePrivilege privilege,
+                                                                       PrivilegeValueIntType oldValue,
                                                                        PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadPrivilege(const Entities::User& currentUser,
                                                                 const Entities::DiscussionThread& thread,
                                                                 DiscussionThreadPrivilege privilege,
+                                                                PrivilegeValueIntType oldValue,
                                                                 PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        const Entities::DiscussionTag& tag,
                                                                        DiscussionThreadMessagePrivilege privilege,
+                                                                       PrivilegeValueIntType oldValue,
                                                                        PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadPrivilege(const Entities::User& currentUser,
                                                                 const Entities::DiscussionTag& tag,
                                                                 DiscussionThreadPrivilege privilege,
+                                                                PrivilegeValueIntType oldValue,
                                                                 PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionTagPrivilege(const Entities::User& currentUser,
                                                              const Entities::DiscussionTag& tag,
                                                              DiscussionTagPrivilege privilege,
+                                                             PrivilegeValueIntType oldValue,
                                                              PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
                                                                   const Entities::DiscussionCategory& category,
                                                                   DiscussionCategoryPrivilege privilege,
+                                                                  PrivilegeValueIntType oldValue,
                                                                   PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        DiscussionThreadMessagePrivilege privilege,
+                                                                       PrivilegeValueIntType oldValue,
                                                                        PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadPrivilege(const Entities::User& currentUser,
                                                                 DiscussionThreadPrivilege privilege,
+                                                                PrivilegeValueIntType oldValue,
                                                                 PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionTagPrivilege(const Entities::User& currentUser,
                                                              DiscussionTagPrivilege privilege,
+                                                             PrivilegeValueIntType oldValue,
                                                              PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
                                                                   DiscussionCategoryPrivilege privilege,
+                                                                  PrivilegeValueIntType oldValue,
                                                                   PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateForumWidePrivilege(const Entities::User& currentUser,
-                                                         ForumWidePrivilege privilege,
+                                                         ForumWidePrivilege privilege, PrivilegeValueIntType oldValue,
                                                          PrivilegeValueIntType newValue) const override;
         private:
             AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThreadMessage& message,
@@ -232,15 +243,15 @@ namespace Forum
             AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionCategory& category,
                                           DiscussionCategoryPrivilege privilege, PrivilegeValueType& with) const;
 
-            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionThreadMessagePrivilege privilege, 
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
                                           PrivilegeValueType& with) const;
-            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionThreadPrivilege privilege, 
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionThreadPrivilege privilege,
                                           PrivilegeValueType& with) const;
-            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionTagPrivilege privilege, 
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionTagPrivilege privilege,
                                           PrivilegeValueType& with) const;
-            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionCategoryPrivilege privilege, 
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionCategoryPrivilege privilege,
                                           PrivilegeValueType& with) const;
-            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege, 
+            AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege,
                                           PrivilegeValueType& with) const;
 
             GrantedPrivilegeStore& grantedPrivilegeStore_;
