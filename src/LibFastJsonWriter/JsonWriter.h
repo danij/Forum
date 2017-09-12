@@ -303,12 +303,14 @@ namespace Json
             char* digit = bufferEnd - 1;
 
             bool addSign = false;
-            if (value < 0)
+            if (std::numeric_limits<T>::is_signed)
             {
-                addSign = true;
-                value = -value;
+                if (value < 0)
+                {
+                    addSign = true;
+                    value = -value;
+                }
             }
-
             *digit-- = (value % 10) + '0';
             while (value > 9)
             {
