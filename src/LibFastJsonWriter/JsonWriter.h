@@ -81,7 +81,71 @@ namespace Json
         }
     }
 
-    size_t escapeString(const char* value, size_t length, char* destination);
+    const unsigned char toEscape[] =
+    {
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x62, 0x74, 0x6E, 0xFF, 0x66, 0x72, 0xFF, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0x00, 0x00, 0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2F,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5C, 0x00, 0x00, 0x00
+    };
+    constexpr int toEscapeLength = sizeof(toEscape) / sizeof(toEscape[0]);
+
+    const char hexDigits[16] = {
+        '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+    };
+
+    template<typename OutputBuffer>
+    void Json::escapeString(const char* value, size_t length, OutputBuffer& destination)
+    {
+        static thread_local char twoCharEscapeBuffer[2+1] = { '\\', 0, 0 };
+        static thread_local char sixCharEscapeBuffer[6+1] = { '\\', 'u', '0', '0', 0, 0, 0 };
+
+        auto directWriteFrom = value;
+        auto endValue = value + length;
+
+        while (value < endValue)
+        {
+            unsigned char c = static_cast<unsigned char>(*value);
+            if (c < toEscapeLength)
+            {
+                auto r = toEscape[c];
+                if (r)
+                {
+                    //escape needed
+                    if (directWriteFrom < value)
+                    {
+                        //flush previous characters that don't require escaping
+                        Detail::writeString(destination, directWriteFrom, value - directWriteFrom);
+                    }
+                    directWriteFrom = value + 1; //skip the current character as it needs escaping
+                    if (r < 0xFF)
+                    {
+                        //we have a special character for the escape
+                        twoCharEscapeBuffer[1] = static_cast<char>(r);
+                        Detail::writeString(destination, twoCharEscapeBuffer);
+                    }
+                    else
+                    {
+                        //we must use the six-character sequence
+                        //simplified as we only escape control characters this way
+                        sixCharEscapeBuffer[4] = hexDigits[c / 16];
+                        sixCharEscapeBuffer[5] = hexDigits[c % 16];
+                        Detail::writeString(destination, sixCharEscapeBuffer);
+                    }
+                }
+            }
+            ++value;
+        }
+
+        if (directWriteFrom < value)
+        {
+            //write remaining characters that don't require escaping
+            Detail::writeString(destination, directWriteFrom, value - directWriteFrom);
+        }
+    }
 
     template<typename OutputBuffer>
     class JsonWriterBase final
@@ -220,22 +284,7 @@ namespace Json
                 length = strlen(value);
             }
 
-            constexpr size_t MaxSizeMultiplier = 6;
-            constexpr size_t MaxTake = 4096;
-            char buffer[MaxTake * MaxSizeMultiplier];
-
-            while (length > MaxTake)
-            {
-                auto escaped = escapeString(value, MaxTake, buffer);
-                writeString(buffer, escaped);
-                value += escaped;
-                length -= escaped;
-            }
-            if (length > 0)
-            {
-                auto escaped = escapeString(value, length, buffer);
-                writeString(buffer, escaped);
-            }
+            escapeString(value, length, stringBufferOutput_);
 
             writeChar('"');
             return *this;
