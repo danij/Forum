@@ -307,16 +307,19 @@ int main(int argc, const char* argv[])
     std::cout << "Forum Memory Repository Benchmarks\n";
     std::cout << "=====\n\n";
 
-    std::cout << "# of users: " << nrOfUsers << '\n';
-    std::cout << "# of discussion threads: " << nrOfThreads << '\n';
-    std::cout << "# of discussion messages: " << nrOfMessages << '\n';
-    std::cout << "\tDiscussion message length: mean = " << messageContentLengthMean <<
-                                          ", stddev = " << messageContentLengthStddev << "\n\n";
-    std::cout << "# of discussion tags: " << nrOfTags << '\n';
-    std::cout << "# of discussion categories: " << nrOfCategories
-              << " (" << nrOfCategoryParentChildRelationships << " parent-child)\n";
-    std::cout << "# of discussion tags/category: " << nrOfTagsPerCategoryMin << "-" << nrOfTagsPerCategoryMax << '\n';
-    std::cout << "# of discussion tags/thread: " << nrOfTagsPerThreadMin << "-" << nrOfTagsPerThreadMax << '\n';
+    if (context.importFromFolder.size() < 1)
+    {
+        std::cout << "# of users: " << nrOfUsers << '\n';
+        std::cout << "# of discussion threads: " << nrOfThreads << '\n';
+        std::cout << "# of discussion messages: " << nrOfMessages << '\n';
+        std::cout << "\tDiscussion message length: mean = " << messageContentLengthMean <<
+                                              ", stddev = " << messageContentLengthStddev << "\n\n";
+        std::cout << "# of discussion tags: " << nrOfTags << '\n';
+        std::cout << "# of discussion categories: " << nrOfCategories
+                  << " (" << nrOfCategoryParentChildRelationships << " parent-child)\n";
+        std::cout << "# of discussion tags/category: " << nrOfTagsPerCategoryMin << "-" << nrOfTagsPerCategoryMax << '\n';
+        std::cout << "# of discussion tags/thread: " << nrOfTagsPerThreadMin << "-" << nrOfTagsPerThreadMax << '\n';
+    }
 
     if (context.promptBeforeBenchmark)
     {
