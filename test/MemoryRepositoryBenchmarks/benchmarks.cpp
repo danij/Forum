@@ -15,6 +15,7 @@
 #include "MemoryRepositoryDiscussionThreadMessage.h"
 #include "MemoryRepositoryDiscussionTag.h"
 #include "MemoryRepositoryDiscussionCategory.h"
+#include "MemoryRepositoryAuthorization.h"
 #include "MemoryRepositoryStatistics.h"
 #include "MetricsRepository.h"
 #include "ContextProviderMocks.h"
@@ -108,7 +109,10 @@ BenchmarkContext createContext()
 
     auto authorization = std::make_shared<DefaultAuthorization>(entityCollection->grantedPrivileges(), *entityCollection);
 
-    auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization);
+    auto authorizationRepository = std::make_shared<MemoryRepositoryAuthorization>(
+        store, authorization, authorization, authorization, authorization, authorization);
+
+    auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization, authorizationRepository);
     auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization);
     auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, authorization);
     auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
@@ -117,19 +121,20 @@ BenchmarkContext createContext()
     auto metricsRepository = std::make_shared<MetricsRepository>(store, authorization);
 
     BenchmarkContext context;
-    
+
     context.entityCollection = entityCollection;
     context.observableRepository = userRepository;
 
-    context.handler = std::make_shared<CommandHandler>(context.observableRepository, userRepository, 
-        discussionThreadRepository, discussionThreadMessageRepository, discussionTagRepository, 
-        discussionCategoryRepository, statisticsRepository, metricsRepository);
+    context.handler = std::make_shared<CommandHandler>(context.observableRepository, userRepository,
+        discussionThreadRepository, discussionThreadMessageRepository, discussionTagRepository,
+        discussionCategoryRepository, authorizationRepository, statisticsRepository, metricsRepository);
 
     context.writeRepositories.user = userRepository;
     context.writeRepositories.discussionThread = discussionThreadRepository;
     context.writeRepositories.discussionThreadMessage = discussionThreadMessageRepository;
     context.writeRepositories.discussionTag = discussionTagRepository;
     context.writeRepositories.discussionCategory = discussionCategoryRepository;
+    context.writeRepositories.authorizationRepository = authorizationRepository;
 
     return context;
 }
@@ -241,7 +246,7 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
 
     if (arguments.count("import-folder"))
     {
-        context.importFromFolder = arguments["import-folder"].as<std::string>();        
+        context.importFromFolder = arguments["import-folder"].as<std::string>();
     }
 
     if (arguments.count("export-folder"))
@@ -261,7 +266,7 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
 int main(int argc, const char* argv[])
 {
     CleanupFixture _;
-    
+
     auto context = createContext();
     int parseCommandLineResult = parseCommandLineArgs(context, argc, argv);
     if (parseCommandLineResult)

@@ -28,6 +28,7 @@ set(SOURCE_FILES
         private/MemoryRepositoryDiscussionThreadMessage.cpp
         private/MemoryRepositoryDiscussionTag.cpp
         private/MemoryRepositoryDiscussionCategory.cpp
+        private/MemoryRepositoryAuthorization.cpp
         private/MetricsRepository.cpp
         private/EntitySerialization.cpp
         private/DefaultAuthorization.cpp
@@ -69,6 +70,7 @@ set(HEADER_FILES
         private/MemoryRepositoryDiscussionThreadMessage.h
         private/MemoryRepositoryDiscussionTag.h
         private/MemoryRepositoryDiscussionCategory.h
+        private/MemoryRepositoryAuthorization.h
         private/MetricsRepository.h
         private/ThrottlingCheck.h)
 

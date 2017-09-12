@@ -7,6 +7,7 @@
 #include "MemoryRepositoryDiscussionThreadMessage.h"
 #include "MemoryRepositoryDiscussionTag.h"
 #include "MemoryRepositoryDiscussionCategory.h"
+#include "MemoryRepositoryAuthorization.h"
 #include "MemoryRepositoryStatistics.h"
 #include "MetricsRepository.h"
 #include "TestHelpers.h"
@@ -28,7 +29,10 @@ std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
 
     auto store = std::make_shared<MemoryStore>(std::make_shared<Entities::EntityCollection>());
 
-    auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization);
+    auto authorizationRepository = std::make_shared<MemoryRepositoryAuthorization>(
+            store, authorization, authorization, authorization, authorization, authorization);
+
+    auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization, authorizationRepository);
     auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization);
     auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, authorization);
     auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
@@ -39,7 +43,7 @@ std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
     ObservableRepositoryRef observableRepository = userRepository;
 
     return std::make_shared<CommandHandler>(observableRepository, userRepository, discussionThreadRepository,
-        discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository,
+        discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository, authorizationRepository,
         statisticsRepository, metricsRepository);
 }
 

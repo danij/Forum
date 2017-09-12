@@ -12,6 +12,7 @@
 #include "MemoryRepositoryDiscussionThreadMessage.h"
 #include "MemoryRepositoryDiscussionTag.h"
 #include "MemoryRepositoryDiscussionCategory.h"
+#include "MemoryRepositoryAuthorization.h"
 #include "MemoryRepositoryStatistics.h"
 #include "MetricsRepository.h"
 
@@ -169,7 +170,10 @@ void Application::createCommandHandler()
     auto store = std::make_shared<MemoryStore>(entityCollection_);
     auto authorization = std::make_shared<DefaultAuthorization>(entityCollection_->grantedPrivileges(), *entityCollection_);
 
-    auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization);
+    auto authorizationRepository = std::make_shared<MemoryRepositoryAuthorization>(
+            store, authorization, authorization, authorization, authorization, authorization);
+
+    auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization, authorizationRepository);
     auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization);
     auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, authorization);
     auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
@@ -185,6 +189,7 @@ void Application::createCommandHandler()
                                                        discussionThreadMessageRepository,
                                                        discussionTagRepository,
                                                        discussionCategoryRepository,
+                                                       authorizationRepository,
                                                        statisticsRepository,
                                                        metricsRepository);
 
@@ -193,6 +198,7 @@ void Application::createCommandHandler()
     directWriteRepositories_.discussionThreadMessage = discussionThreadMessageRepository;
     directWriteRepositories_.discussionTag = discussionTagRepository;
     directWriteRepositories_.discussionCategory = discussionCategoryRepository;
+    directWriteRepositories_.authorizationRepository = authorizationRepository;
 
     auto forumConfig = Configuration::getGlobalConfig();
     auto& persistenceConfig = forumConfig->persistence;

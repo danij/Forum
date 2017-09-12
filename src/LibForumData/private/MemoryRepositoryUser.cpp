@@ -61,8 +61,10 @@ static bool isValidUserName(StringView input)
     return true;
 }
 
-MemoryRepositoryUser::MemoryRepositoryUser(MemoryStoreRef store, UserAuthorizationRef authorization)
-    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization))
+MemoryRepositoryUser::MemoryRepositoryUser(MemoryStoreRef store, UserAuthorizationRef authorization,
+                                           AuthorizationRepositoryRef authorizationRepository)
+    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization)),
+      authorizationRepository_(authorizationRepository)
 {
     if ( ! authorization_)
     {
@@ -246,32 +248,32 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionThreadMessagePrivilege::COUNT); p < n; ++p)
                                {
                                    auto privilege = static_cast<DiscussionThreadMessagePrivilege>(p);
-                                   assignDiscussionThreadMessagePrivilege(user->id(), privilege, MaxPrivilegeValue,
-                                                                          UnlimitedDuration, nullOutput);
+                                   authorizationRepository_->assignDiscussionThreadMessagePrivilege(
+                                           user->id(), privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
                                }
                                for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionThreadPrivilege::COUNT); p < n; ++p)
                                {
                                    auto privilege = static_cast<DiscussionThreadPrivilege>(p);
-                                   assignDiscussionThreadPrivilege(user->id(), privilege, MaxPrivilegeValue,
-                                                                   UnlimitedDuration, nullOutput);
+                                   authorizationRepository_->assignDiscussionThreadPrivilege(
+                                           user->id(), privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
                                }
                                for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionTagPrivilege::COUNT); p < n; ++p)
                                {
                                    auto privilege = static_cast<DiscussionTagPrivilege>(p);
-                                   assignDiscussionTagPrivilege(user->id(), privilege, MaxPrivilegeValue,
-                                                                UnlimitedDuration, nullOutput);
+                                   authorizationRepository_->assignDiscussionTagPrivilege(
+                                           user->id(), privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
                                }
                                for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionCategoryPrivilege::COUNT); p < n; ++p)
                                {
                                    auto privilege = static_cast<DiscussionCategoryPrivilege>(p);
-                                   assignDiscussionCategoryPrivilege(user->id(), privilege, MaxPrivilegeValue,
-                                                                     UnlimitedDuration, nullOutput);
+                                   authorizationRepository_->assignDiscussionCategoryPrivilege(
+                                           user->id(), privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
                                }
                                for (EnumIntType p = 0, n = static_cast<EnumIntType>(ForumWidePrivilege::COUNT); p < n; ++p)
                                {
                                    auto privilege = static_cast<ForumWidePrivilege>(p);
-                                   assignForumWidePrivilege(user->id(), privilege, MaxPrivilegeValue,
-                                                            UnlimitedDuration, nullOutput);
+                                   authorizationRepository_->assignForumWidePrivilege(
+                                           user->id(), privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
                                }
                            }
 
@@ -472,291 +474,4 @@ StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdType
     collection.deleteUser(*it);
 
     return StatusCode::OK;
-}
-
-StatusCode MemoryRepositoryUser::getCurrentUserPrivileges(OutStream& output) const
-{
-    StatusWriter status(output);
-
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          status = StatusCode::OK;
-                          status.disable();
-
-                          auto& currentUser = performedBy.get(collection, *store_);
-
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
-                                                               Context::getCurrentTime());
-
-                          Json::JsonWriter writer(output);
-                          writer.startObject();
-
-                          writePrivileges(writer, collection, ForumWidePrivilegesToSerialize, restriction);
-
-                          writer.endObject();
-
-                          readEvents().onGetCurrentUserPrivileges(createObserverContext(currentUser));
-                      });
-    return status;
-}
-
-StatusCode MemoryRepositoryUser::getRequiredPrivileges(OutStream& output) const
-{
-    StatusWriter status(output);
-
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          status = StatusCode::OK;
-                          status.disable();
-
-                          auto& currentUser = performedBy.get(collection, *store_);
-
-                          Json::JsonWriter writer(output);
-                          writer.startObject();
-
-                          writeForumWideRequiredPrivileges(collection, writer);
-                          writeDiscussionCategoryRequiredPrivileges(collection, writer);
-                          writeDiscussionTagRequiredPrivileges(collection, writer);
-                          writeDiscussionThreadRequiredPrivileges(collection, writer);
-                          writeDiscussionThreadMessageRequiredPrivileges(collection, writer);
-
-                          writer.endObject();
-
-                          readEvents().onGetForumWideRequiredPrivileges(createObserverContext(currentUser));
-                      });
-    return status;
-}
-
-StatusCode MemoryRepositoryUser::getDefaultPrivilegeDurations(OutStream& output) const
-{
-    StatusWriter status(output);
-
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          status = StatusCode::OK;
-                          status.disable();
-
-                          auto& currentUser = performedBy.get(collection, *store_);
-
-                          Json::JsonWriter writer(output);
-                          writer.startObject();
-
-                          writeForumWideDefaultPrivilegeDurations(collection, writer);
-                          writeDiscussionThreadMessageDefaultPrivilegeDurations(collection, writer);
-
-                          writer.endObject();
-
-                          readEvents().onGetForumWideDefaultPrivilegeDurations(createObserverContext(currentUser));
-                      });
-    return status;
-}
-
-StatusCode MemoryRepositoryUser::getAssignedPrivileges(OutStream& output) const
-{
-    StatusWriter status(output);
-
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          status = StatusCode::OK;
-                          status.disable();
-
-                          auto& currentUser = performedBy.get(collection, *store_);
-
-                          Json::JsonWriter writer(output);
-                          writer.startObject();
-
-                          writeForumWideAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionCategoryAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionTagAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionThreadAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionThreadMessageAssignedPrivileges(collection, {}, writer);
-
-                          writer.endObject();
-
-                          readEvents().onGetForumWideAssignedPrivileges(createObserverContext(currentUser));
-                      });
-    return status;
-}
-
-StatusCode MemoryRepositoryUser::getAssignedPrivileges(IdTypeRef userId, OutStream& output) const
-{
-    StatusWriter status(output);
-
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          status = StatusCode::OK;
-                          status.disable();
-
-                          if (userId != anonymousUserId())
-                          {
-                              const auto& indexById = collection.users().byId();
-                              auto it = indexById.find(userId);
-                              if (it == indexById.end())
-                              {
-                                  status = StatusCode::NOT_FOUND;
-                                  return;
-                              }
-                          }
-
-                          auto& currentUser = performedBy.get(collection, *store_);
-
-                          Json::JsonWriter writer(output);
-                          writer.startObject();
-
-                          writeForumWideUserAssignedPrivileges(collection, userId, writer);
-                          writeDiscussionCategoryUserAssignedPrivileges(collection, userId, writer);
-                          writeDiscussionTagUserAssignedPrivileges(collection, userId, writer);
-                          writeDiscussionThreadUserAssignedPrivileges(collection, userId, writer);
-
-                          writer.endObject();
-
-                          readEvents().onGetForumWideAssignedPrivileges(createObserverContext(currentUser));
-                      });
-    return status;
-}
-
-StatusCode MemoryRepositoryUser::changeDiscussionThreadMessageRequiredPrivilege(
-        DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeDiscussionThreadMessageRequiredPrivilege(
-        EntityCollection& collection, DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeDiscussionThreadRequiredPrivilege(
-        DiscussionThreadPrivilege privilege, PrivilegeValueIntType value, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeDiscussionThreadRequiredPrivilege(
-        EntityCollection& collection, DiscussionThreadPrivilege privilege, PrivilegeValueIntType value)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeDiscussionTagRequiredPrivilege(
-        DiscussionTagPrivilege privilege, PrivilegeValueIntType value, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeDiscussionTagRequiredPrivilege(
-        EntityCollection& collection, DiscussionTagPrivilege privilege, PrivilegeValueIntType value)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeDiscussionCategoryRequiredPrivilege(
-        DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeDiscussionCategoryRequiredPrivilege(
-        EntityCollection& collection, DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeForumWideRequiredPrivilege(
-        ForumWidePrivilege privilege, PrivilegeValueIntType value, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeForumWideRequiredPrivilege(
-        EntityCollection& collection, ForumWidePrivilege privilege, PrivilegeValueIntType value)
-{
-    return {};
-}
-
-StatusCode MemoryRepositoryUser::changeDiscussionThreadMessageDefaultPrivilegeDuration(
-        DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType value, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeDiscussionThreadMessageDefaultPrivilegeDuration(
-        EntityCollection& collection, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType value)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeForumWideMessageDefaultPrivilegeDuration(
-        ForumWideDefaultPrivilegeDuration privilege, PrivilegeDefaultDurationIntType value, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::changeForumWideMessageDefaultPrivilegeDuration(
-        EntityCollection& collection, ForumWideDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType value)
-{
-    return {};
-}
-
-StatusCode MemoryRepositoryUser::assignDiscussionThreadMessagePrivilege(
-        IdTypeRef userId, DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value,
-        PrivilegeDefaultDurationIntType duration, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::assignDiscussionThreadMessagePrivilege(
-        EntityCollection& collection, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
-        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::assignDiscussionThreadPrivilege(
-        IdTypeRef userId, DiscussionThreadPrivilege privilege, PrivilegeValueIntType value,
-        PrivilegeDefaultDurationIntType duration, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::assignDiscussionThreadPrivilege(
-        EntityCollection& collection, IdTypeRef userId, DiscussionThreadPrivilege privilege,
-        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::assignDiscussionTagPrivilege(
-        IdTypeRef userId, DiscussionTagPrivilege privilege, PrivilegeValueIntType value,
-        PrivilegeDefaultDurationIntType duration, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::assignDiscussionTagPrivilege(
-        EntityCollection& collection, IdTypeRef userId, DiscussionTagPrivilege privilege,
-        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::assignDiscussionCategoryPrivilege(
-        IdTypeRef userId, DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value,
-        PrivilegeDefaultDurationIntType duration, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::assignDiscussionCategoryPrivilege(
-        EntityCollection& collection, IdTypeRef userId, DiscussionCategoryPrivilege privilege,
-        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::assignForumWidePrivilege(
-        IdTypeRef userId, ForumWidePrivilege privilege, PrivilegeValueIntType value,
-        PrivilegeDefaultDurationIntType duration, OutStream& output)
-{
-    return {};
-}
-StatusCode MemoryRepositoryUser::assignForumWidePrivilege(
-        EntityCollection& collection, IdTypeRef userId, ForumWidePrivilege privilege,
-        PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
-{
-    return {};
 }

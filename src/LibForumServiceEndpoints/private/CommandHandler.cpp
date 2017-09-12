@@ -88,6 +88,7 @@ struct CommandHandler::CommandHandlerImpl
     DiscussionThreadMessageRepositoryRef discussionThreadMessageRepository;
     DiscussionTagRepositoryRef discussionTagRepository;
     DiscussionCategoryRepositoryRef discussionCategoryRepository;
+    AuthorizationRepositoryRef authorizationRepository;
     StatisticsRepositoryRef statisticsRepository;
     MetricsRepositoryRef metricsRepository;
 
@@ -139,7 +140,7 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( GET_CURRENT_USER_PRIVILEGES )
     {
-        return userRepository->getCurrentUserPrivileges(output);
+        return authorizationRepository->getCurrentUserPrivileges(output);
     }
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_NAME )
@@ -616,6 +617,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     DiscussionThreadMessageRepositoryRef discussionThreadMessageRepository,
     DiscussionTagRepositoryRef discussionTagRepository,
     DiscussionCategoryRepositoryRef discussionCategoryRepository,
+    AuthorizationRepositoryRef authorizationRepository,
     StatisticsRepositoryRef statisticsRepository,
     MetricsRepositoryRef metricsRepository) : impl_(new CommandHandlerImpl)
 {
@@ -625,6 +627,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     impl_->discussionThreadMessageRepository = discussionThreadMessageRepository;
     impl_->discussionTagRepository = discussionTagRepository;
     impl_->discussionCategoryRepository = discussionCategoryRepository;
+    impl_->authorizationRepository = authorizationRepository;
     impl_->statisticsRepository = statisticsRepository;
     impl_->metricsRepository = metricsRepository;
 

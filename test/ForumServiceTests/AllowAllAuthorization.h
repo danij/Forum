@@ -11,6 +11,7 @@ namespace Forum
                                       public IDiscussionThreadMessageAuthorization,
                                       public IDiscussionTagAuthorization,
                                       public IDiscussionCategoryAuthorization,
+                                      public IForumWideAuthorization,
                                       public IStatisticsAuthorization,
                                       public IMetricsAuthorization
         {

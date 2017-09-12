@@ -38,27 +38,6 @@ namespace Forum
                                                        const Entities::User& user, StringView newInfo) const = 0;
             virtual AuthorizationStatus deleteUser(const Entities::User& currentUser,
                                                    const Entities::User& user) const = 0;
-
-            virtual AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
-                                                                               DiscussionThreadMessagePrivilege privilege,
-                                                                               PrivilegeValueIntType oldValue,
-                                                                               PrivilegeValueIntType newValue) const = 0;
-            virtual AuthorizationStatus updateDiscussionThreadPrivilege(const Entities::User& currentUser,
-                                                                        DiscussionThreadPrivilege privilege,
-                                                                        PrivilegeValueIntType oldValue,
-                                                                        PrivilegeValueIntType newValue) const = 0;
-            virtual AuthorizationStatus updateDiscussionTagPrivilege(const Entities::User& currentUser,
-                                                                     DiscussionTagPrivilege privilege,
-                                                                     PrivilegeValueIntType oldValue,
-                                                                     PrivilegeValueIntType newValue) const = 0;
-            virtual AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
-                                                                          DiscussionCategoryPrivilege privilege,
-                                                                          PrivilegeValueIntType oldValue,
-                                                                          PrivilegeValueIntType newValue) const = 0;
-            virtual AuthorizationStatus updateForumWidePrivilege(const Entities::User& currentUser,
-                                                                 ForumWidePrivilege privilege,
-                                                                 PrivilegeValueIntType oldValue,
-                                                                 PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IUserAuthorization> UserAuthorizationRef;
 
@@ -254,6 +233,34 @@ namespace Forum
                                                                           PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IDiscussionCategoryAuthorization> DiscussionCategoryAuthorizationRef;
+
+        class IForumWideAuthorization
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IForumWideAuthorization)
+
+            virtual AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                               DiscussionThreadMessagePrivilege privilege,
+                                                                               PrivilegeValueIntType oldValue,
+                                                                               PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionThreadPrivilege(const Entities::User& currentUser,
+                                                                        DiscussionThreadPrivilege privilege,
+                                                                        PrivilegeValueIntType oldValue,
+                                                                        PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionTagPrivilege(const Entities::User& currentUser,
+                                                                     DiscussionTagPrivilege privilege,
+                                                                     PrivilegeValueIntType oldValue,
+                                                                     PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
+                                                                          DiscussionCategoryPrivilege privilege,
+                                                                          PrivilegeValueIntType oldValue,
+                                                                          PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateForumWidePrivilege(const Entities::User& currentUser,
+                                                                 ForumWidePrivilege privilege,
+                                                                 PrivilegeValueIntType oldValue,
+                                                                 PrivilegeValueIntType newValue) const = 0;
+        };
+        typedef std::shared_ptr<IForumWideAuthorization> ForumWideAuthorizationRef;
 
         class IStatisticsAuthorization
         {

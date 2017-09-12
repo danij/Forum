@@ -56,27 +56,6 @@ namespace Forum
             StatusCode setMessageCommentToSolved(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode setMessageCommentToSolved(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
-            StatusCode getRequiredPrivileges(Entities::IdTypeRef messageId, OutStream& output) const override;
-            StatusCode getAssignedPrivileges(Entities::IdTypeRef messageId, OutStream& output) const override;
-
-            StatusCode changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(
-                    Entities::IdTypeRef messageId, Authorization::DiscussionThreadMessagePrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, OutStream& output) override;
-            StatusCode changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(
-                    Entities::EntityCollection& collection,
-                    Entities::IdTypeRef messageId, Authorization::DiscussionThreadMessagePrivilege privilege,
-                    Authorization::PrivilegeValueIntType value) override;
-
-            StatusCode assignDiscussionThreadMessagePrivilegeToDiscussionThreadMessage(
-                    Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadMessagePrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
-                    OutStream& output) override;
-            StatusCode assignDiscussionThreadMessagePrivilegeToDiscussionThreadMessage(
-                    Entities::EntityCollection& collection,Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadMessagePrivilege privilege,
-                    Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
         private:
             StatusCode voteDiscussionThreadMessage(Entities::IdTypeRef id, OutStream& output, bool up);
             StatusCode voteDiscussionThreadMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id, bool up);
