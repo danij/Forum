@@ -21,12 +21,12 @@ namespace Json
         SizeWithBool(const SizeWithBool&) = default;
         SizeWithBool& operator=(const SizeWithBool&) = default;
 
-        explicit operator size_t() const noexcept 
+        explicit operator size_t() const noexcept
         {
             return static_cast<size_t>(size);
         }
 
-        SizeWithBool& operator=(size_t value) noexcept 
+        SizeWithBool& operator=(size_t value) noexcept
         {
             size = static_cast<decltype(size)>(value);
             return *this;
@@ -54,7 +54,7 @@ namespace Json
 
         JsonReadyStringBase& operator=(const JsonReadyStringBase&) = default;
         JsonReadyStringBase& operator=(JsonReadyStringBase&&) noexcept = default;
-        
+
         bool operator==(const JsonReadyStringBase&) const noexcept;
 
         bool needsJsonEscape() const noexcept;

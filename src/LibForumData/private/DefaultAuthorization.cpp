@@ -162,7 +162,7 @@ AuthorizationStatus DefaultAuthorization::unsubscribeFromDiscussionThread(const 
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessageById(const User& currentUser,
-                                                                         const DiscussionThreadMessage& message) const 
+                                                                         const DiscussionThreadMessage& message) const
 {
     PrivilegeValueType with;
     return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW, with);
@@ -258,7 +258,7 @@ AuthorizationStatus DefaultAuthorization::setMessageCommentToSolved(const User& 
                                                                     const MessageComment& comment) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), comment.parentMessage(), 
+    return isAllowed(currentUser.id(), comment.parentMessage(),
                      DiscussionThreadMessagePrivilege::SET_COMMENT_TO_SOLVED, with);
 }
 
@@ -490,7 +490,7 @@ AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, const Disc
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionThreadMessagePrivilege privilege, 
+AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
                                                     PrivilegeValueType& with) const
 {
     return (with = grantedPrivilegeStore_.isAllowed(userId, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
@@ -498,7 +498,7 @@ AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, Discussion
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionThreadPrivilege privilege, 
+AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionThreadPrivilege privilege,
                                                     PrivilegeValueType& with) const
 {
     return (with = grantedPrivilegeStore_.isAllowed(userId, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
@@ -506,7 +506,7 @@ AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, Discussion
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionTagPrivilege privilege, 
+AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionTagPrivilege privilege,
                                                     PrivilegeValueType& with) const
 {
     return (with = grantedPrivilegeStore_.isAllowed(userId, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
@@ -514,14 +514,14 @@ AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, Discussion
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionCategoryPrivilege privilege, 
+AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionCategoryPrivilege privilege,
                                                     PrivilegeValueType& with) const
 {
     return (with = grantedPrivilegeStore_.isAllowed(userId, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, ForumWidePrivilege privilege, 
+AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, ForumWidePrivilege privilege,
                                                     PrivilegeValueType& with) const
 {
     return (with = grantedPrivilegeStore_.isAllowed(userId, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
@@ -560,7 +560,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     {
         return status;
     }
-    return allowPrivilegeChange(newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;    
+    return allowPrivilegeChange(newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const User& currentUser,
@@ -574,7 +574,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
     {
         return status;
     }
-    return allowPrivilegeChange(newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;    
+    return allowPrivilegeChange(newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege(const User& currentUser,
@@ -588,7 +588,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     {
         return status;
     }
-    return allowPrivilegeChange(newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;    
+    return allowPrivilegeChange(newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const User& currentUser,
@@ -685,7 +685,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(cons
     return allowPrivilegeChange(newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::updateForumWidePrivilege(const User& currentUser, 
+AuthorizationStatus DefaultAuthorization::updateForumWidePrivilege(const User& currentUser,
                                                                    ForumWidePrivilege privilege,
                                                                    PrivilegeValueIntType newValue) const
 {

@@ -23,7 +23,7 @@ namespace Forum
         {
         public:
             const auto& id()              const { return id_; }
-            
+
                    auto created()         const { return created_; }
             const auto& creationDetails() const { return creationDetails_; }
 
@@ -37,7 +37,7 @@ namespace Forum
 
             MessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy, Timestamp created,
                            VisitDetails creationDetails)
-                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)), 
+                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
                   createdBy_(createdBy), message_(message)
             {}
 
@@ -48,7 +48,7 @@ namespace Forum
             IdType id_;
             Timestamp created_{0};
             VisitDetails creationDetails_;
-            
+
             User& createdBy_;
             DiscussionThreadMessage& message_;
 
@@ -56,7 +56,7 @@ namespace Forum
 
             bool solved_ = false;
         };
-        
+
         typedef EntityPointer<MessageComment> MessageCommentPtr;
         typedef EntityPointer<const MessageComment> MessageCommentConstPtr;
     }

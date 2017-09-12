@@ -92,7 +92,7 @@ bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread)
     }
 
     changeNotifications_.onUpdateMessageCount(*this);
-    
+
     executeOnCategoryAndAllParents(*this, [&](auto& category)
     {
         category.totalThreads_.remove(thread);
@@ -118,7 +118,7 @@ void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(Discussi
     if ( ! referencedByOtherTags)
     {
         deleteDiscussionThread(thread);
-        
+
         //release separate references held by this category and parents, if reference count drops to 0
         executeOnCategoryAndAllParents(*this, [&](auto& category)
         {

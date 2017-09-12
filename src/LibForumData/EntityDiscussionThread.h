@@ -34,7 +34,7 @@ namespace Forum
             const auto& creationDetails()           const { return creationDetails_; }
 
             const auto& createdBy()                 const { return createdBy_; }
-            
+
             const auto& name()                      const { return name_; }
 
             const auto& messages()                  const { return messages_; }
@@ -45,19 +45,19 @@ namespace Forum
              StringView lastUpdatedReason()         const { return lastUpdatedReason_; }
 
                    auto lastUpdatedBy()             const { return lastUpdatedBy_.toConst(); }
-            
+
                    auto latestVisibleChange()       const { return latestVisibleChange_; }
 
                    auto latestMessageCreated()      const { return latestMessageCreated_; }
 
                    auto nrOfVisitorsSinceLastEdit() const { return visitorsSinceLastEdit_.size(); }
-                   
+
                    auto tags()                      const { return Helpers::toConst(tags_); }
                    auto categories()                const { return Helpers::toConst(categories_); }
 
                    auto subscribedUsers()           const { return Helpers::toConst(subscribedUsers_); }
                    auto subscribedUsersCount()      const { return subscribedUsers_.size(); }
-                   
+
                    auto pinDisplayOrder()           const { return pinDisplayOrder_; }
 
             DiscussionThreadMessage::VoteScoreType voteScore() const;
@@ -75,9 +75,9 @@ namespace Forum
                 Name,
                 PinDisplayOrder
             };
-            
+
             typedef Helpers::JsonReadyStringWithSortKey<1> NameType;
-            
+
             struct ChangeNotification
             {
                 std::function<void(const DiscussionThread&)> onPrepareUpdateName;
@@ -138,7 +138,7 @@ namespace Forum
             auto& messages()         { return messages_; }
             auto& tags()             { return tags_; }
             auto& categories()       { return categories_; }
-                                     
+
             auto& subscribedUsers()  { return subscribedUsers_; }
             bool& aboutToBeDeleted() { return aboutToBeDeleted_; }
 

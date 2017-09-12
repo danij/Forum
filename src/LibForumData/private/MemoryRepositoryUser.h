@@ -125,10 +125,6 @@ namespace Forum
                     Authorization::ForumWidePrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
                     Authorization::PrivilegeDefaultDurationIntType duration) override;
-
-
-
-
         private:
             Authorization::UserAuthorizationRef authorization_;
         };

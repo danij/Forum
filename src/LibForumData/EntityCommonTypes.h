@@ -27,7 +27,7 @@ namespace Forum
         {
             Helpers::IpAddress ip;
         };
-        
+
 #define HASHED_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::hashed_non_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>

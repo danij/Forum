@@ -44,15 +44,15 @@ namespace Forum
             const auto& lastUpdatedDetails() const { return lastUpdatedDetails_; }
              StringView lastUpdatedReason()  const { return lastUpdatedReason_; }
                    auto lastUpdatedBy()      const { return lastUpdatedBy_.toConst(); }
-                   
+
             const auto& threads()            const { return threads_; }
                    auto threadCount()        const { return threads_.count(); }
 
                    auto messageCount()       const { return messageCount_; }
-                   
+
                    auto threadTotalCount()   const { return totalThreads_.count(); }
                    auto messageTotalCount()  const { return totalThreads_.messageCount(); }
-                   
+
                    /**
                    * Returns the latest message based on all thread references held
                    */
@@ -95,7 +95,7 @@ namespace Forum
             };
 
             static auto& changeNotifications() { return changeNotifications_; }
-            
+
             DiscussionCategory(IdType id, NameType&& name, Timestamp created, VisitDetails creationDetails,
                                Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
                 : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
@@ -132,7 +132,7 @@ namespace Forum
             auto& lastUpdatedDetails() { return lastUpdatedDetails_; }
             auto& lastUpdatedReason()  { return lastUpdatedReason_; }
             auto& lastUpdatedBy()      { return lastUpdatedBy_; }
-            
+
             auto& threads()            { return threads_; }
             auto& tags()               { return tags_; }
             auto& children()           { return children_; }

@@ -22,7 +22,7 @@ namespace Forum
         {
             EntityCollection& getGlobalEntityCollection();
             void setGlobalEntityCollection(EntityCollection* collection);
-            
+
             template<typename T>
             T* getEntityFromGlobalCollection(size_t index)
             {
@@ -47,7 +47,7 @@ namespace Forum
             template<>
             MessageComment* getEntityFromGlobalCollection<MessageComment>(size_t index);
         }
-        
+
         template<typename T>
         class StoresEntityPointer;
 
@@ -70,10 +70,10 @@ namespace Forum
             typedef typename std::add_pointer<typename std::add_const<T>::type>::type PtrToConstT;
 
             static constexpr IndexType Invalid = -1;
-            
+
             EntityPointer() : index_(Invalid)
             {}
-            
+
             explicit EntityPointer(IndexType index) : index_(index)
             {}
 
@@ -136,7 +136,7 @@ namespace Forum
                 assert(operator bool());
                 return ptr();
             }
-            
+
             operator PtrToConstT() const
             {
                 return ptr();
@@ -185,7 +185,7 @@ namespace Forum
         private:
             IndexType index_;
         };
-        
+
         template<typename T>
         class StoresEntityPointer
         {

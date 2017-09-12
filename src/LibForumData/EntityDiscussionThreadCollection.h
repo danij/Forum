@@ -46,9 +46,9 @@ namespace Forum
 
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
-                                     
+
             auto count()                  const { return byName_.size(); }
-                                          
+
             auto byName()                 const { return Helpers::toConst(byName_); }
             auto byCreated()              const { return Helpers::toConst(byCreated_); }
             auto byLastUpdated()          const { return Helpers::toConst(byLastUpdated_); }
@@ -60,7 +60,7 @@ namespace Forum
             auto& byLastUpdated()          { return byLastUpdated_; }
             auto& byLatestMessageCreated() { return byLatestMessageCreated_; }
             auto& byMessageCount()         { return byMessageCount_; }
-            
+
         protected:
             virtual void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) = 0;
 
@@ -122,7 +122,7 @@ namespace Forum
             decltype(byPinDisplayOrder_)::nth_index<0>::type::iterator byPinDisplayOrderUpdateIt_;
         };
 
-        class DiscussionThreadCollectionWithOrderedId final : public DiscussionThreadCollectionBase, 
+        class DiscussionThreadCollectionWithOrderedId final : public DiscussionThreadCollectionBase,
                                                               private boost::noncopyable
         {
         public:
@@ -163,7 +163,7 @@ namespace Forum
             void clear();
 
             void stopBatchInsert();
-            
+
             void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread);
             void updateLatestMessageCreated(DiscussionThreadPtr thread);
 
@@ -181,7 +181,7 @@ namespace Forum
             bool add(DiscussionThreadPtr thread, int_fast32_t amount);
 
             HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
-            
+
             RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
             decltype(byLatestMessageCreated_)::nth_index<0>::type::iterator byLatestMessageCreatedUpdateIt_;
 

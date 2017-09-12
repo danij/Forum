@@ -9,7 +9,7 @@ PrivilegeValueType DiscussionThreadMessage::getDiscussionThreadMessagePrivilege(
 {
     auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
     if (result) return result;
-    
+
     assert(parentThread_);
     return parentThread_->getDiscussionThreadMessagePrivilege(privilege);
 }

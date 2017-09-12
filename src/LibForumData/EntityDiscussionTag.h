@@ -40,7 +40,7 @@ namespace Forum
             const auto& lastUpdatedDetails() const { return lastUpdatedDetails_; }
              StringView lastUpdatedReason()  const { return lastUpdatedReason_; }
                    auto lastUpdatedBy()      const { return lastUpdatedBy_.toConst(); }
-            
+
                    auto threadCount()        const { return threads_.count(); }
 
                    auto messageCount()       const { return messageCount_; }
@@ -67,7 +67,7 @@ namespace Forum
 
             struct ChangeNotification
             {
-                std::function<void(const DiscussionTag&)> onPrepareUpdateName;                
+                std::function<void(const DiscussionTag&)> onPrepareUpdateName;
                 std::function<void(const DiscussionTag&)> onUpdateName;
 
                 std::function<void(const DiscussionTag&)> onPrepareUpdateThreadCount;
@@ -76,7 +76,7 @@ namespace Forum
                 std::function<void(const DiscussionTag&)> onPrepareUpdateMessageCount;
                 std::function<void(const DiscussionTag&)> onUpdateMessageCount;
             };
-            
+
             static auto& changeNotifications() { return changeNotifications_; }
 
             DiscussionTag(IdType id, NameType&& name, Timestamp created, VisitDetails creationDetails,
@@ -132,7 +132,7 @@ namespace Forum
             VisitDetails lastUpdatedDetails_;
             std::string lastUpdatedReason_;
             EntityPointer<User> lastUpdatedBy_;
-            
+
             int_fast32_t messageCount_{0};
             std::set<EntityPointer<DiscussionCategory>> categories_;
 

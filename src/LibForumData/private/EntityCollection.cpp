@@ -407,7 +407,7 @@ struct EntityCollection::Impl
                     thread->messages().stopBatchInsert();
                 }
             }),
-            
+
             std::async(std::launch::async, [this]()
             {
                 for (UserPtr user : this->users_.byId())
@@ -477,7 +477,7 @@ EntityCollection::EntityCollection()
 
     Private::setGlobalEntityCollection(this);
     impl_->setEventListeners();
-    
+
     anonymousUser_ = UserPtr(static_cast<UserPtr::IndexType>(impl_->managedEntities.users.add("<anonymous>")));
     anonymousUserId_ = anonymousUser_->id();
 }
@@ -537,7 +537,7 @@ UserPtr EntityCollection::createUser(IdType id, User::NameType&& name, Timestamp
     return result;
 }
 
-DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& createdBy, DiscussionThread::NameType&& name, 
+DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& createdBy, DiscussionThread::NameType&& name,
                                                              Timestamp created, VisitDetails creationDetails)
 {
     auto result = DiscussionThreadPtr(static_cast<DiscussionThreadPtr::IndexType>(impl_->managedEntities.threads.add(
@@ -546,14 +546,14 @@ DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& cr
     return result;
 }
 
-DiscussionThreadMessagePtr EntityCollection::createDiscussionThreadMessage(IdType id, User& createdBy, 
+DiscussionThreadMessagePtr EntityCollection::createDiscussionThreadMessage(IdType id, User& createdBy,
                                                                            Timestamp created, VisitDetails creationDetails)
 {
     return DiscussionThreadMessagePtr(static_cast<DiscussionThreadMessagePtr::IndexType>(
         impl_->managedEntities.threadMessages.add(id, createdBy, created, creationDetails)));
 }
 
-DiscussionTagPtr EntityCollection::createDiscussionTag(IdType id, DiscussionTag::NameType&& name, Timestamp created, 
+DiscussionTagPtr EntityCollection::createDiscussionTag(IdType id, DiscussionTag::NameType&& name, Timestamp created,
                                                        VisitDetails creationDetails)
 {
     auto result = DiscussionTagPtr(static_cast<DiscussionTagPtr::IndexType>(impl_->managedEntities.tags.add(
@@ -562,7 +562,7 @@ DiscussionTagPtr EntityCollection::createDiscussionTag(IdType id, DiscussionTag:
     return result;
 }
 
-DiscussionCategoryPtr EntityCollection::createDiscussionCategory(IdType id, DiscussionCategory::NameType&& name, 
+DiscussionCategoryPtr EntityCollection::createDiscussionCategory(IdType id, DiscussionCategory::NameType&& name,
                                                                  Timestamp created, VisitDetails creationDetails)
 {
     auto result = DiscussionCategoryPtr(static_cast<DiscussionCategoryPtr::IndexType>(impl_->managedEntities.categories.add(
@@ -571,7 +571,7 @@ DiscussionCategoryPtr EntityCollection::createDiscussionCategory(IdType id, Disc
     return result;
 }
 
-MessageCommentPtr EntityCollection::createMessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy, 
+MessageCommentPtr EntityCollection::createMessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy,
                                                          Timestamp created, VisitDetails creationDetails)
 {
     return MessageCommentPtr(static_cast<MessageCommentPtr::IndexType>(impl_->managedEntities.messageComments.add(

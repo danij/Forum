@@ -85,19 +85,19 @@ namespace Forum
             PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionCategory& category,
                                          DiscussionCategoryPrivilege privilege, Entities::Timestamp now) const;
 
-            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, 
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId,
                                          const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                          DiscussionThreadMessagePrivilege privilege, Entities::Timestamp now) const;
-            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, 
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId,
                                          const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                          DiscussionThreadPrivilege privilege, Entities::Timestamp now) const;
-            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, 
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId,
                                          const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                          DiscussionTagPrivilege privilege, Entities::Timestamp now) const;
-            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, 
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId,
                                          const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                          DiscussionCategoryPrivilege privilege, Entities::Timestamp now) const;
-            PrivilegeValueType isAllowed(Entities::IdTypeRef userId, 
+            PrivilegeValueType isAllowed(Entities::IdTypeRef userId,
                                          const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                          ForumWidePrivilege privilege, Entities::Timestamp now) const;
 
@@ -138,26 +138,26 @@ namespace Forum
 
         private:
 
-            void updateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId, 
+            void updateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId,
                                                         const Entities::DiscussionThread& thread,
-                                                        Entities::Timestamp now, 
+                                                        Entities::Timestamp now,
                                                         DiscussionThreadMessagePrivilege privilege,
-                                                        PrivilegeValueType& positiveValue, 
+                                                        PrivilegeValueType& positiveValue,
                                                         PrivilegeValueType& negativeValue) const;
 
-            void updateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, 
+            void updateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
                                                         Entities::Timestamp now, DiscussionThreadMessagePrivilege privilege,
                                                         PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
-            void updateDiscussionThreadPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, 
+            void updateDiscussionThreadPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
                                                  Entities::Timestamp now, DiscussionThreadPrivilege privilege,
                                                  PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
-            void updateDiscussionTagPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, 
+            void updateDiscussionTagPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
                                               Entities::Timestamp now, DiscussionTagPrivilege privilege,
                                               PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const ;
 
-            void updateDiscussionCategoryPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, 
+            void updateDiscussionCategoryPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
                                                    Entities::Timestamp now, DiscussionCategoryPrivilege privilege,
                                                    PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
@@ -223,7 +223,7 @@ namespace Forum
 
         struct SerializationRestriction final : private boost::noncopyable
         {
-            SerializationRestriction(const GrantedPrivilegeStore& privilegeStore, Entities::IdTypeRef userId, 
+            SerializationRestriction(const GrantedPrivilegeStore& privilegeStore, Entities::IdTypeRef userId,
                                      Entities::Timestamp now)
                 : privilegeStore_(privilegeStore), userId_(userId), now_(now)
             {
@@ -257,7 +257,7 @@ namespace Forum
                 return static_cast<bool>(privilegeStore_.isAllowed(userId_, category, privilege, now_));
             }
 
-            bool isAllowed(const ForumWidePrivilegeStore& forumWidePrivilegeStore, 
+            bool isAllowed(const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                            ForumWidePrivilege privilege = ForumWidePrivilege::LOGIN) const
             {
                 return static_cast<bool>(privilegeStore_.isAllowed(userId_, forumWidePrivilegeStore, privilege, now_));

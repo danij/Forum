@@ -106,8 +106,6 @@ namespace Forum
                     Authorization::DiscussionTagPrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
                     Authorization::PrivilegeDefaultDurationIntType duration) override;
-
-
         private:
             Authorization::DiscussionTagAuthorizationRef authorization_;
         };

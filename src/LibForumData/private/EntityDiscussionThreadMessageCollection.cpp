@@ -24,7 +24,7 @@ bool DiscussionThreadMessageCollection::remove(DiscussionThreadMessagePtr messag
     {
         auto itById = byId_.find(message->id());
         if (itById == byId_.end()) return false;
-        
+
         byId_.erase(itById);
     }
     eraseFromFlatMultisetCollection(byCreated_, message);

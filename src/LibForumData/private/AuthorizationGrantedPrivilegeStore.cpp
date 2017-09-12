@@ -131,7 +131,7 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
                                                     DiscussionThreadMessagePrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    
+
     updateDiscussionThreadMessagePrivilege(userId, tag.id(), now, privilege, positive, negative);
     updateDiscussionThreadMessagePrivilege(userId, {}, now, privilege, positive, negative);
 
@@ -301,7 +301,7 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
             auto positive = maximumPrivilegeValue(messageLevelPositive, info.positive);
             auto negative = minimumPrivilegeValue(messageLevelNegative, info.negative);
 
-            *(info.boolToUpdate) = static_cast<bool>(::isAllowed(positive, negative, 
+            *(info.boolToUpdate) = static_cast<bool>(::isAllowed(positive, negative,
                     item.message->getDiscussionThreadMessagePrivilege(info.privilege, info.required)));
         }
     }

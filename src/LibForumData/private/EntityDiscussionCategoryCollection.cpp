@@ -22,7 +22,7 @@ bool DiscussionCategoryCollection::remove(DiscussionCategoryPtr category)
     {
         auto itById = byId_.find(category->id());
         if (itById == byId_.end()) return false;
-        
+
         byId_.erase(itById);
     }
     {
@@ -46,7 +46,7 @@ void DiscussionCategoryCollection::stopBatchInsert()
     {
         byMessageCount_.insert(category);
     }
-        
+
     byDisplayOrderRootPriority_.clear();
     for (DiscussionCategoryPtr category : byId_)
     {
@@ -88,14 +88,14 @@ void DiscussionCategoryCollection::prepareUpdateDisplayOrderRootPriority(Discuss
 {
     if (Context::isBatchInsertInProgress()) return;
 
-    byDisplayOrderRootPriorityUpdateIt_ = findInNonUniqueCollection(byDisplayOrderRootPriority_, category, 
+    byDisplayOrderRootPriorityUpdateIt_ = findInNonUniqueCollection(byDisplayOrderRootPriority_, category,
                                                                     category->displayOrderWithRootPriority());
 }
 
 void DiscussionCategoryCollection::updateDisplayOrderRootPriority(DiscussionCategoryPtr category)
 {
     if (Context::isBatchInsertInProgress()) return;
-    
+
     if (byDisplayOrderRootPriorityUpdateIt_ != byDisplayOrderRootPriority_.end())
     {
         byDisplayOrderRootPriority_.replace(byDisplayOrderRootPriorityUpdateIt_, category);

@@ -184,7 +184,7 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage
 }
 
 template<typename ThreadCollection>
-static void writeLatestMessage(JsonWriter& writer, const ThreadCollection& threads, 
+static void writeLatestMessage(JsonWriter& writer, const ThreadCollection& threads,
                                const SerializationRestriction& restriction)
 {
     auto index = threads.byLatestMessageCreated();

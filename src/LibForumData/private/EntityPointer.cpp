@@ -7,7 +7,7 @@ using namespace Forum::Entities::Private;
 /**
  * Only one EntityCollection is used at a time during the runtime of the application or it's tests
  * Thus memory can be saved by keeping only an index to entities stored in vector collections.
- * 
+ *
  * Memory management also becomes easier than with std::shared/weak_ptrs
  */
 static EntityCollection* globalEntityCollection = nullptr;

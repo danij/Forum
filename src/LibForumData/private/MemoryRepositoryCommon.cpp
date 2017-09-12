@@ -177,11 +177,11 @@ void MemoryRepositoryBase::writeDiscussionThreadMessageRequiredPrivileges(
         const DiscussionThreadMessagePrivilegeStore& store, JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussion_thread_message_privileges");
-    writePrivilegeValues(store, DiscussionThreadMessagePrivilege::COUNT, writer, DiscussionThreadMessagePrivilegeStrings, 
+    writePrivilegeValues(store, DiscussionThreadMessagePrivilege::COUNT, writer, DiscussionThreadMessagePrivilegeStrings,
                          &DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege);
 }
 
-void MemoryRepositoryBase::writeDiscussionThreadRequiredPrivileges(const DiscussionThreadPrivilegeStore& store, 
+void MemoryRepositoryBase::writeDiscussionThreadRequiredPrivileges(const DiscussionThreadPrivilegeStore& store,
                                                                    JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussion_thread_privileges");
@@ -189,7 +189,7 @@ void MemoryRepositoryBase::writeDiscussionThreadRequiredPrivileges(const Discuss
                          &DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege);
 }
 
-void MemoryRepositoryBase::writeDiscussionTagRequiredPrivileges(const DiscussionTagPrivilegeStore& store, 
+void MemoryRepositoryBase::writeDiscussionTagRequiredPrivileges(const DiscussionTagPrivilegeStore& store,
                                                                 JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussion_tag_privileges");
@@ -221,7 +221,7 @@ void MemoryRepositoryBase::writeDiscussionThreadMessageDefaultPrivilegeDurations
                          &DiscussionThreadPrivilegeStore::getDiscussionThreadMessageDefaultPrivilegeDuration);
 }
 
-void MemoryRepositoryBase::writeForumWideDefaultPrivilegeDurations(const ForumWidePrivilegeStore& store, 
+void MemoryRepositoryBase::writeForumWideDefaultPrivilegeDurations(const ForumWidePrivilegeStore& store,
                                                                    JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("forum_wide_default_durations");
@@ -234,7 +234,7 @@ struct AssignedPrivilegeWriter final
 {
     AssignedPrivilegeWriter(JsonWriter& writer, const EntityCollection& collection, const StringView* strings)
             : writer_(writer), collection_(collection), strings_(strings)
-    {        
+    {
     }
 
     AssignedPrivilegeWriter(const AssignedPrivilegeWriter&) = default;
@@ -280,7 +280,7 @@ struct UserAssignedPrivilegeWriter final
     UserAssignedPrivilegeWriter(JsonWriter& writer, const EntityCollection& collection, const StringView* strings,
                                 WriteNameFunction writeName)
             : writer_(writer), collection_(collection), strings_(strings), writeName_(writeName)
-    {        
+    {
     }
 
     UserAssignedPrivilegeWriter(const UserAssignedPrivilegeWriter&) = default;
@@ -403,7 +403,7 @@ void MemoryRepositoryBase::writeForumWideAssignedPrivileges(const EntityCollecti
     writer.endArray();
 }
 
-void MemoryRepositoryBase::writeDiscussionThreadUserAssignedPrivileges(const EntityCollection& collection, 
+void MemoryRepositoryBase::writeDiscussionThreadUserAssignedPrivileges(const EntityCollection& collection,
                                                                        IdTypeRef userId, JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussion_thread_privileges");
@@ -427,7 +427,7 @@ void MemoryRepositoryBase::writeDiscussionTagUserAssignedPrivileges(const Entity
     writer.endArray();
 }
 
-void MemoryRepositoryBase::writeDiscussionCategoryUserAssignedPrivileges(const EntityCollection& collection, 
+void MemoryRepositoryBase::writeDiscussionCategoryUserAssignedPrivileges(const EntityCollection& collection,
                                                                          IdTypeRef userId, JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussion_category_privileges");

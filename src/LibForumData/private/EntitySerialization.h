@@ -68,7 +68,7 @@ namespace Forum
                                     const Authorization::SerializationRestriction& restriction);
 
         template<typename Entity, typename PrivilegeArray>
-        static void writePrivileges(Json::JsonWriter& writer, const Entity& entity, 
+        static void writePrivileges(Json::JsonWriter& writer, const Entity& entity,
                                     const PrivilegeArray& privilegeArray,
                                     const Authorization::SerializationRestriction& restriction)
         {

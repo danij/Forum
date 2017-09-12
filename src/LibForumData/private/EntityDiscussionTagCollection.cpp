@@ -21,7 +21,7 @@ bool DiscussionTagCollection::remove(DiscussionTagPtr tag)
     {
         auto itById = byId_.find(tag->id());
         if (itById == byId_.end()) return false;
-        
+
         byId_.erase(itById);
     }
     {

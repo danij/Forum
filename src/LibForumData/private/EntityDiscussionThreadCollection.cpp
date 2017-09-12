@@ -128,7 +128,7 @@ void DiscussionThreadCollectionBase::updateMessageCount(DiscussionThreadPtr thre
 bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
 {
     if ( ! std::get<1>(byId_.insert(thread))) return false;
-    
+
     return DiscussionThreadCollectionBase::add(thread);
 }
 
@@ -137,7 +137,7 @@ bool DiscussionThreadCollectionWithHashedId::remove(DiscussionThreadPtr thread)
     {
         auto itById = byId_.find(thread->id());
         if (itById == byId_.end()) return false;
-        
+
         byId_.erase(itById);
     }
     return DiscussionThreadCollectionBase::remove(thread);
@@ -210,7 +210,7 @@ void DiscussionThreadCollectionWithHashedIdAndPinOrder::updatePinDisplayOrder(Di
 bool DiscussionThreadCollectionWithOrderedId::add(DiscussionThreadPtr thread)
 {
     if ( ! std::get<1>(byId_.insert(thread))) return false;
-    
+
     return DiscussionThreadCollectionBase::add(thread);
 }
 
@@ -219,7 +219,7 @@ bool DiscussionThreadCollectionWithOrderedId::remove(DiscussionThreadPtr thread)
     {
         auto itById = byId_.find(thread->id());
         if (itById == byId_.end()) return false;
-        
+
         byId_.erase(itById);
     }
     return DiscussionThreadCollectionBase::remove(thread);

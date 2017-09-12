@@ -26,7 +26,7 @@ namespace Forum
 
                    auto created()           const { return created_; }
             const auto& creationDetails()   const { return creationDetails_; }
-                           
+
             const auto& auth()              const { return auth_; }
             const auto& name()              const { return name_; }
 
@@ -40,7 +40,7 @@ namespace Forum
 
                    auto threadCount()       const { return threads_.count(); }
                    auto messageCount()      const { return threadMessages_.count(); }
-                   
+
             auto votedMessages()     const
             {
                 if ( ! votedMessages_) return Helpers::toConst(emptyVotedMessages_);
@@ -69,13 +69,13 @@ namespace Forum
 
                 std::function<void(const User&)> onPrepareUpdateName;
                 std::function<void(const User&)> onUpdateName;
-                
+
                 std::function<void(const User&)> onPrepareUpdateLastSeen;
                 std::function<void(const User&)> onUpdateLastSeen;
-                
+
                 std::function<void(const User&)> onPrepareUpdateThreadCount;
                 std::function<void(const User&)> onUpdateThreadCount;
-                
+
                 std::function<void(const User&)> onPrepareUpdateMessageCount;
                 std::function<void(const User&)> onUpdateMessageCount;
             };
@@ -153,13 +153,13 @@ namespace Forum
             InfoType info_;
 
             Timestamp lastSeen_{0};
-            
+
             DiscussionThreadCollectionWithHashedId threads_;
             DiscussionThreadCollectionWithHashedId subscribedThreads_;
 
             DiscussionThreadMessageCollection threadMessages_;
             std::unique_ptr<std::set<DiscussionThreadMessagePtr>> votedMessages_;
-            
+
             std::unique_ptr<MessageCommentCollection> messageComments_;
         };
 

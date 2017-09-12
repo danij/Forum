@@ -40,7 +40,7 @@ namespace Forum
                    auto parentThread()        const { return parentThread_.toConst(); }
 
              StringView content()             const { return content_; }
-            
+
             const auto& comments() const
             {
                 static const MessageCommentCollection emptyMessageCommentCollection;
@@ -64,7 +64,7 @@ namespace Forum
             {
                 return lastUpdated_ ? lastUpdated_->reason_ : StringView{};
             }
-              
+
             auto lastUpdatedBy() const
             {
                 return lastUpdated_ ? lastUpdated_->by_.toConst() : EntityPointer<const User>{};
@@ -82,7 +82,7 @@ namespace Forum
                 static const VoteCollection emptyVoteCollection;
                 return Helpers::toConst(upVotes_ ? *upVotes_ : emptyVoteCollection);
             }
-            
+
             auto downVotes() const
             {
                 static const VoteCollection emptyVoteCollection;
@@ -96,7 +96,7 @@ namespace Forum
                 if (downVotes_) downVoteCount = static_cast<VoteScoreType>(downVotes_->size());
 
                 return upVoteCount - downVoteCount;
-            } 
+            }
 
             Authorization::PrivilegeValueType getDiscussionThreadMessagePrivilege(
                     Authorization::DiscussionThreadMessagePrivilege privilege) const override;
@@ -113,7 +113,7 @@ namespace Forum
             };
 
             DiscussionThreadMessage(IdType id, User& createdBy, Timestamp created, VisitDetails creationDetails)
-                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)), 
+                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
                   createdBy_(createdBy)
             {}
 
@@ -121,7 +121,7 @@ namespace Forum
             auto& parentThread()        { return parentThread_; }
 
             auto& content()             { return content_; }
-            
+
             auto* comments()            { return comments_.get(); }
             void  addComment(MessageCommentPtr comment)
             {
@@ -135,7 +135,7 @@ namespace Forum
             }
 
             auto& solvedCommentsCount() { return solvedCommentsCount_; }
-              
+
             void updateLastUpdated(Timestamp at)
             {
                 if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedLazy());
@@ -199,7 +199,7 @@ namespace Forum
                 EntityPointer<User> by_;
             };
             std::unique_ptr<LastUpdatedLazy> lastUpdated_;
-            
+
             std::unique_ptr<MessageCommentCollection> comments_;
             int32_t solvedCommentsCount_{0};
 

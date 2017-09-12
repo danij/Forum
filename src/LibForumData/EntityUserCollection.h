@@ -32,7 +32,7 @@ namespace Forum
 
             void prepareUpdateLastSeen(UserPtr user);
             void updateLastSeen(UserPtr user);
-            
+
             void prepareUpdateThreadCount(UserPtr user);
             void updateThreadCount(UserPtr user);
 
@@ -56,7 +56,7 @@ namespace Forum
             auto& byLastSeen()     { return byLastSeen_; }
             auto& byThreadCount()  { return byThreadCount_; }
             auto& byMessageCount() { return byMessageCount_; }
-            
+
         private:
             HASHED_UNIQUE_COLLECTION(User, id) byId_;
             HASHED_UNIQUE_COLLECTION(User, auth) byAuth_;
@@ -72,7 +72,7 @@ namespace Forum
 
             RANKED_COLLECTION(User, threadCount) byThreadCount_;
             decltype(byThreadCount_)::nth_index<0>::type::iterator byThreadCountUpdateIt_;
-            
+
             RANKED_COLLECTION(User, messageCount) byMessageCount_;
             decltype(byMessageCount_)::nth_index<0>::type::iterator byMessageCountUpdateIt_;
         };

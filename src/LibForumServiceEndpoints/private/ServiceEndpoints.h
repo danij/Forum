@@ -17,7 +17,7 @@ namespace Forum
             explicit AbstractEndpoint(CommandHandler& handler);
 
         protected:
-            typedef CommandHandler::Result (*ExecuteFn)(const Http::RequestState&, CommandHandler&, 
+            typedef CommandHandler::Result (*ExecuteFn)(const Http::RequestState&, CommandHandler&,
                                                         std::vector<StringView>&);
 
             void handle(Http::RequestState& requestState, ExecuteFn executeCommand);

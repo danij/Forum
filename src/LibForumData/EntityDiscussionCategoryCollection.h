@@ -28,7 +28,7 @@ namespace Forum
 
             void prepareUpdateMessageCount(DiscussionCategoryPtr category);
             void updateMessageCount(DiscussionCategoryPtr category);
-            
+
             void prepareUpdateDisplayOrderRootPriority(DiscussionCategoryPtr category);
             void updateDisplayOrderRootPriority(DiscussionCategoryPtr category);
 

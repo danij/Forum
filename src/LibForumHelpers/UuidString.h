@@ -100,7 +100,7 @@ namespace std
     template<>
     struct hash<Forum::Entities::UuidString>
     {
-        size_t operator()(const Forum::Entities::UuidString& value) const 
+        size_t operator()(const Forum::Entities::UuidString& value) const
         {
             return value.hashValue();
         }

@@ -188,7 +188,7 @@ namespace Forum
         size_t getCurrentSortKeyLength();
 
         template<size_t StackSize>
-        class JsonReadyStringWithSortKey final 
+        class JsonReadyStringWithSortKey final
             : public Json::JsonReadyStringBase<StackSize, JsonReadyStringWithSortKey<StackSize>, Detail::SizeWithBoolAndSortKeySize>
         {
         public:
@@ -220,7 +220,7 @@ namespace Forum
             auto& sizeInfo = this->container_.size();
             sizeInfo.sortKeySize = getCurrentSortKeyLength();
 
-            std::copy(sortKeyStart, sortKeyStart + sizeInfo.sortKeySize, 
+            std::copy(sortKeyStart, sortKeyStart + sizeInfo.sortKeySize,
                       *(this->container_) + sizeInfo.size - sizeInfo.sortKeySize);
         }
 

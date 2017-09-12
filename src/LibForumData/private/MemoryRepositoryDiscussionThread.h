@@ -37,7 +37,7 @@ namespace Forum
 
             StatusCode addNewDiscussionThread(StringView name, OutStream& output) override;
             StatusWithResource<Entities::DiscussionThreadPtr>
-                       addNewDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id, 
+                       addNewDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                               StringView name) override;
 
             StatusCode changeDiscussionThreadName(Entities::IdTypeRef id, StringView newName,
@@ -106,8 +106,6 @@ namespace Forum
                     Authorization::DiscussionThreadPrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
                     Authorization::PrivilegeDefaultDurationIntType duration) override;
-
-
         private:
             Authorization::DiscussionThreadAuthorizationRef authorization_;
         };

@@ -100,7 +100,7 @@ namespace Forum
             AuthorizationStatus setMessageCommentToSolved(const Entities::User& currentUser,
                                                           const Entities::MessageComment& comment) const override { return {}; }
 
-            AuthorizationStatus getDiscussionTagById(const Entities::User& currentUser, 
+            AuthorizationStatus getDiscussionTagById(const Entities::User& currentUser,
                                                      const Entities::DiscussionTag& tag) const override { return {}; }
 
             AuthorizationStatus getDiscussionTags(const Entities::User& currentUser) const override { return {}; }
@@ -198,7 +198,7 @@ namespace Forum
             AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
                                                                   DiscussionCategoryPrivilege privilege,
                                                                   PrivilegeValueIntType newValue) const override { return {}; }
-            AuthorizationStatus updateForumWidePrivilege(const Entities::User& currentUser, 
+            AuthorizationStatus updateForumWidePrivilege(const Entities::User& currentUser,
                                                          ForumWidePrivilege privilege,
                                                          PrivilegeValueIntType newValue) const override { return {}; }
         };

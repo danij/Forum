@@ -19,7 +19,7 @@ namespace Forum
         public:
             bool add(MessageCommentPtr comment);
             bool remove(MessageCommentPtr comment);
-            
+
             auto count()          const { return byId_.size(); }
 
             auto byId()           const { return Helpers::toConst(byId_); }

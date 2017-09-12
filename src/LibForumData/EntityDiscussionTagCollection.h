@@ -24,7 +24,7 @@ namespace Forum
 
             void prepareUpdateName(DiscussionTagPtr tag);
             void updateName(DiscussionTagPtr tag);
-            
+
             void prepareUpdateMessageCount(DiscussionTagPtr tag);
             void updateMessageCount(DiscussionTagPtr tag);
 
