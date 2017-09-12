@@ -84,7 +84,10 @@ namespace Json
     class JsonWriter final
     {
     public:
-        explicit JsonWriter(StringBuffer& stringBuffer);
+        explicit JsonWriter(StringBuffer& stringBuffer) : stringBufferOutput_(stringBuffer)
+        {
+            pushState({ 0, 0, 0 });
+        }
 
         JsonWriter(const JsonWriter&) = delete;
         JsonWriter(JsonWriter&&) = default;
@@ -94,21 +97,97 @@ namespace Json
 
         constexpr static int MaxStateDepth = 32;
 
-        JsonWriter& null();
+        JsonWriter& null()
+        {
+            if (isCommaNeeded())
+            {
+                writeString(",null");
+            }
+            else
+            {
+                writeString("null");
+            }
+            return *this;
+        }
 
-        JsonWriter& startArray();
+        JsonWriter& startArray()
+        {
+            if (isCommaNeeded())
+            {
+                writeString(",[");
+            }
+            else
+            {
+                writeChar('[');
+            }
+            pushState({ 1, 0, 0 });
+            return *this;
+        }
 
-        JsonWriter& endArray();
+        JsonWriter& endArray()
+        {
+            writeChar(']');
 
-        JsonWriter& startObject();
+            popState();
+            return *this;
+        }
 
-        JsonWriter& endObject();
+        JsonWriter& startObject()
+        {
+            if (isCommaNeeded())
+            {
+                writeString(",{");
+            }
+            else
+            {
+                writeChar('{');
+            }
+            pushState({ 1, 0, 0 });
+            return *this;
+        }
 
-        JsonWriter& newProperty(const char* name);
+        JsonWriter& endObject()
+        {
+            writeChar('}');
 
-        JsonWriter& newProperty(boost::string_view name);
+            popState();
+            return *this;
+        }
 
-        JsonWriter& newPropertyWithSafeName(const char* name, size_t length);
+        JsonWriter& newProperty(const char* name)
+        {
+            writeEscapedString(name);
+            writeChar(':');
+
+            peekState().propertyNameAdded = 1;
+            return *this;
+        }
+
+        JsonWriter& newProperty(boost::string_view name)
+        {
+            writeEscapedString(name.data(), name.length());
+            writeChar(':');
+
+            peekState().propertyNameAdded = 1;
+            return *this;
+        }
+
+        JsonWriter& newPropertyWithSafeName(const char* name, size_t length)
+        {
+            if (isCommaNeeded())
+            {
+                writeString(",\"");
+            }
+            else
+            {
+                writeChar('"');
+            }
+            writeString(name, length);
+            writeString("\":");
+
+            peekState().propertyNameAdded = 1;
+            return *this;
+        }
 
         template<size_t Length>
         JsonWriter& newPropertyWithSafeName(const char(&name)[Length])
