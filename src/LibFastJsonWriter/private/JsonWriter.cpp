@@ -18,8 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "JsonWriter.h"
 
-#include <cstring>
-#include <string>
+#include <algorithm>
 
 using namespace Json;
 
@@ -56,27 +55,21 @@ bool Json::isEscapeNeeded(const char* value, size_t length)
     return false;
 }
 
-JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
+size_t writeString(char*& destination, const char* source, size_t length)
 {
-    if (isCommaNeeded())
-    {
-        writeString(",\"");
-    }
-    else
-    {
-        writeChar('"');
-    }
+    std::copy(source, source + length, destination);
+    destination += length;
+    return length;
+}
 
-    if (length == 0)
-    {
-        length = strlen(value);
-    }
-
+size_t Json::escapeString(const char* value, size_t length, char* destination)
+{
     static thread_local char twoCharEscapeBuffer[2] = {'\\', 0};
     static thread_local char sixCharEscapeBuffer[6] = {'\\', 'u', '0', '0', 0, 0};
 
     auto directWriteFrom = value;
     auto endValue = value + length;
+    size_t written = 0;
 
     while (value < endValue)
     {
@@ -90,14 +83,14 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
                 if (directWriteFrom < value)
                 {
                     //flush previous characters that don't require escaping
-                    writeString(directWriteFrom, value - directWriteFrom);
+                    written += writeString(destination, directWriteFrom, value - directWriteFrom);
                 }
                 directWriteFrom = value + 1; //skip the current character as it needs escaping
                 if (r < 0xFF)
                 {
                     //we have a special character for the escape
                     twoCharEscapeBuffer[1] = static_cast<char>(r);
-                    writeString(twoCharEscapeBuffer, 2);
+                    written += writeString(destination, twoCharEscapeBuffer, 2);
                 }
                 else
                 {
@@ -105,7 +98,7 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
                     //simplified as we only escape control characters this way
                     sixCharEscapeBuffer[4] = hexDigits[c / 16];
                     sixCharEscapeBuffer[5] = hexDigits[c % 16];
-                    writeString(sixCharEscapeBuffer, 6);
+                    written += writeString(destination, sixCharEscapeBuffer, 6);
                 }
             }
         }
@@ -115,10 +108,8 @@ JsonWriter& JsonWriter::writeEscapedString(const char* value, size_t length)
     if (directWriteFrom < value)
     {
         //write remaining characters that don't require escaping
-        writeString(directWriteFrom, value - directWriteFrom);
+        written += writeString(destination, directWriteFrom, value - directWriteFrom);
     }
 
-    writeChar('"');
-
-    return *this;
+    return written;
 }

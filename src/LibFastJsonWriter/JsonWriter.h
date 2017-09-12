@@ -81,23 +81,26 @@ namespace Json
         }
     }
 
-    class JsonWriter final
+    size_t escapeString(const char* value, size_t length, char* destination);
+
+    template<typename OutputBuffer>
+    class JsonWriterBase final
     {
     public:
-        explicit JsonWriter(StringBuffer& stringBuffer) : stringBufferOutput_(stringBuffer)
+        explicit JsonWriterBase(OutputBuffer& stringBuffer) : stringBufferOutput_(stringBuffer)
         {
             pushState({ 0, 0, 0 });
         }
 
-        JsonWriter(const JsonWriter&) = delete;
-        JsonWriter(JsonWriter&&) = default;
+        JsonWriterBase(const JsonWriterBase&) = delete;
+        JsonWriterBase(JsonWriterBase&&) = default;
 
-        JsonWriter& operator=(const JsonWriter& other) = delete;
-        JsonWriter& operator=(JsonWriter&& other) = default;
+        JsonWriterBase& operator=(const JsonWriterBase& other) = delete;
+        JsonWriterBase& operator=(JsonWriterBase&& other) = default;
 
         constexpr static int MaxStateDepth = 32;
 
-        JsonWriter& null()
+        JsonWriterBase& null()
         {
             if (isCommaNeeded())
             {
@@ -110,7 +113,7 @@ namespace Json
             return *this;
         }
 
-        JsonWriter& startArray()
+        JsonWriterBase& startArray()
         {
             if (isCommaNeeded())
             {
@@ -124,7 +127,7 @@ namespace Json
             return *this;
         }
 
-        JsonWriter& endArray()
+        JsonWriterBase& endArray()
         {
             writeChar(']');
 
@@ -132,7 +135,7 @@ namespace Json
             return *this;
         }
 
-        JsonWriter& startObject()
+        JsonWriterBase& startObject()
         {
             if (isCommaNeeded())
             {
@@ -146,7 +149,7 @@ namespace Json
             return *this;
         }
 
-        JsonWriter& endObject()
+        JsonWriterBase& endObject()
         {
             writeChar('}');
 
@@ -154,7 +157,7 @@ namespace Json
             return *this;
         }
 
-        JsonWriter& newProperty(const char* name)
+        JsonWriterBase& newProperty(const char* name)
         {
             writeEscapedString(name);
             writeChar(':');
@@ -163,7 +166,7 @@ namespace Json
             return *this;
         }
 
-        JsonWriter& newProperty(boost::string_view name)
+        JsonWriterBase& newProperty(boost::string_view name)
         {
             writeEscapedString(name.data(), name.length());
             writeChar(':');
@@ -172,7 +175,7 @@ namespace Json
             return *this;
         }
 
-        JsonWriter& newPropertyWithSafeName(const char* name, size_t length)
+        JsonWriterBase& newPropertyWithSafeName(const char* name, size_t length)
         {
             if (isCommaNeeded())
             {
@@ -190,25 +193,60 @@ namespace Json
         }
 
         template<size_t Length>
-        JsonWriter& newPropertyWithSafeName(const char(&name)[Length])
+        JsonWriterBase& newPropertyWithSafeName(const char(&name)[Length])
         {
             //ignore null terminator
             return newPropertyWithSafeName(name, Length - 1);
         }
 
-        JsonWriter& newPropertyWithSafeName(boost::string_view name)
+        JsonWriterBase& newPropertyWithSafeName(boost::string_view name)
         {
             return newPropertyWithSafeName(name.data(), name.size());
         }
 
-        JsonWriter& writeEscapedString(const char* value, size_t length = 0);
+        JsonWriterBase& writeEscapedString(const char* value, size_t length = 0)
+        {
+            if (isCommaNeeded())
+            {
+                writeString(",\"");
+            }
+            else
+            {
+                writeChar('"');
+            }
 
-        JsonWriter& writeEscapedString(boost::string_view value)
+            if (length == 0)
+            {
+                length = strlen(value);
+            }
+
+            constexpr size_t MaxSizeMultiplier = 6;
+            constexpr size_t MaxTake = 4096;
+            char buffer[MaxTake * MaxSizeMultiplier];
+
+            while (length > MaxTake)
+            {
+                auto escaped = escapeString(value, MaxTake, buffer);
+                writeString(buffer, escaped);
+                value += escaped;
+                length -= escaped;
+            }
+            if (length > 0)
+            {
+                auto escaped = escapeString(value, length, buffer);
+                writeString(buffer, escaped);
+            }
+
+            writeChar('"');
+            return *this;
+        }
+
+        JsonWriterBase& writeEscapedString(boost::string_view value)
         {
             return writeEscapedString(value.data(), value.size());
         }
 
-        JsonWriter& writeSafeString(const char* value, size_t length)
+        JsonWriterBase& writeSafeString(const char* value, size_t length)
         {
             if (isCommaNeeded())
             {
@@ -223,12 +261,12 @@ namespace Json
             return *this;
         }
 
-        JsonWriter& writeSafeString(boost::string_view value)
+        JsonWriterBase& writeSafeString(boost::string_view value)
         {
             return writeSafeString(value.data(), value.size());
         }
 
-        JsonWriter& operator<<(bool value)
+        JsonWriterBase& operator<<(bool value)
         {
             if (isCommaNeeded())
             {
@@ -241,58 +279,68 @@ namespace Json
             return *this;
         }
 
-        JsonWriter& operator<<(char value)
+        JsonWriterBase& operator<<(char value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriter& operator<<(unsigned char value)
+        JsonWriterBase& operator<<(unsigned char value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriter& operator<<(short value)
+        JsonWriterBase& operator<<(short value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriter& operator<<(unsigned short value)
+        JsonWriterBase& operator<<(unsigned short value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriter& operator<<(int value)
+        JsonWriterBase& operator<<(int value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriter& operator<<(unsigned int value)
+        JsonWriterBase& operator<<(unsigned int value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriter& operator<<(long value)
+        JsonWriterBase& operator<<(long value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriter& operator<<(unsigned long value)
+        JsonWriterBase& operator<<(unsigned long value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriter& operator<<(long long value)
+        JsonWriterBase& operator<<(long long value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriter& operator<<(unsigned long long value)
+        JsonWriterBase& operator<<(unsigned long long value)
         {
             return writeNumber(value, isCommaNeeded());
+        }
+
+        JsonWriterBase& operator<<(const char* value)
+        {
+            return writeEscapedString(value);
+        }
+
+        JsonWriterBase& operator<<(boost::string_view value)
+        {
+            return writeEscapedString(value);
         }
 
         template <size_t StackSize, typename Derived, typename SizeType>
-        JsonWriter& operator<<(const JsonReadyStringBase<StackSize, Derived, SizeType>& jsonReadyString)
+        JsonWriterBase& operator<<(const JsonReadyStringBase<StackSize, Derived, SizeType>& jsonReadyString)
         {
             if (jsonReadyString.needsJsonEscape())
             {
@@ -350,7 +398,7 @@ namespace Json
         }
 
         template<typename T>
-        typename std::enable_if<std::numeric_limits<T>::is_integer, JsonWriter&>::type
+        typename std::enable_if<std::numeric_limits<T>::is_integer, JsonWriterBase&>::type
             writeNumber(T value, bool includeComma)
         {
             //minimum integer values cannot be negated
@@ -432,9 +480,6 @@ namespace Json
             Detail::writeChar(stringBufferOutput_, value);
         }
 
-        friend JsonWriter& operator<<(JsonWriter& writer, const char* value);
-        friend JsonWriter& operator<<(JsonWriter& writer, boost::string_view value);
-
         struct State
         {
             uint8_t enumerationStarted :1;
@@ -457,65 +502,65 @@ namespace Json
             stateStack_.at(++stateIndex_) = state;
         }
 
-        StringBuffer& stringBufferOutput_;
+        OutputBuffer& stringBufferOutput_;
 
         std::array<State, MaxStateDepth> stateStack_;
         int stateIndex_ = -1;
     };
 
-    template <typename T>
-    JsonWriter& operator<<(JsonWriter& writer, const T* value)
+    typedef JsonWriterBase<StringBuffer> JsonWriter;
+
+    template<typename OutputBuffer, typename T>
+    JsonWriterBase<OutputBuffer>& operator<<(JsonWriterBase<OutputBuffer>& writer, const T* value)
     {
         return value ? (writer << *value) : writer.null();
     }
 
-    inline JsonWriter& operator<<(JsonWriter& writer, const char* value)
-    {
-        return writer.writeEscapedString(value);
-    }
-
-    inline JsonWriter& operator<<(JsonWriter& writer, boost::string_view value)
-    {
-        return writer.writeEscapedString(value);
-    }
-
-    inline JsonWriter& operator<<(JsonWriter& writer, JsonWriter& (* manipulator)(JsonWriter&))
+    template<typename OutputBuffer>
+    JsonWriterBase<OutputBuffer>& operator<<(JsonWriterBase<OutputBuffer>& writer,
+                                             JsonWriterBase<OutputBuffer>& (* manipulator)(JsonWriterBase<OutputBuffer>&))
     {
         return manipulator(writer);
     }
 
-    inline JsonWriter& nullObj(JsonWriter& writer)
+    template<typename OutputBuffer>
+    JsonWriterBase<OutputBuffer>& nullObj(JsonWriterBase<OutputBuffer>& writer)
     {
         writer.null();
         return writer;
     }
 
-    inline JsonWriter& objStart(JsonWriter& writer)
+    template<typename OutputBuffer>
+    JsonWriterBase<OutputBuffer>& objStart(JsonWriterBase<OutputBuffer>& writer)
     {
         writer.startObject();
         return writer;
     }
 
-    inline JsonWriter& objEnd(JsonWriter& writer)
+    template<typename OutputBuffer>
+    JsonWriterBase<OutputBuffer>& objEnd(JsonWriterBase<OutputBuffer>& writer)
     {
         writer.endObject();
         return writer;
     }
 
-    inline JsonWriter& arrayStart(JsonWriter& writer)
+    template<typename OutputBuffer>
+    JsonWriterBase<OutputBuffer>& arrayStart(JsonWriterBase<OutputBuffer>& writer)
     {
         writer.startArray();
         return writer;
     }
 
-    inline JsonWriter& arrayEnd(JsonWriter& writer)
+    template<typename OutputBuffer>
+    JsonWriterBase<OutputBuffer>& arrayEnd(JsonWriterBase<OutputBuffer>& writer)
     {
         writer.endArray();
         return writer;
     }
 
-    template<typename ForwardIterator>
-    JsonWriter& writeArray(JsonWriter& writer, ForwardIterator begin, ForwardIterator end)
+    template<typename OutputBuffer, typename ForwardIterator>
+    JsonWriterBase<OutputBuffer>& writeArray(JsonWriterBase<OutputBuffer>& writer, ForwardIterator begin,
+                                             ForwardIterator end)
     {
         writer.startArray();
         while (begin != end)
@@ -528,8 +573,9 @@ namespace Json
         return writer;
     }
 
-    template<typename ForwardIterator, typename ActionType>
-    JsonWriter& writeArray(JsonWriter& writer, ForwardIterator begin, ForwardIterator end, ActionType preWriteAction)
+    template<typename OutputBuffer, typename ForwardIterator, typename ActionType>
+    JsonWriterBase<OutputBuffer>& writeArray(JsonWriterBase<OutputBuffer>& writer, ForwardIterator begin,
+                                             ForwardIterator end, ActionType preWriteAction)
     {
         writer.startArray();
         while (begin != end)
@@ -542,10 +588,10 @@ namespace Json
         return writer;
     }
 
-    template<typename T1, typename T2>
+    template<typename OutputBuffer, typename T1, typename T2>
     struct JsonWriterManipulatorWithTwoParams
     {
-        typedef JsonWriter& (* Function)(JsonWriter&, const T1&, const T2&);
+        typedef JsonWriterBase<OutputBuffer>& (* Function)(JsonWriterBase<OutputBuffer>&, const T1&, const T2&);
 
         Function function;
         const T1& argument1;
@@ -578,53 +624,60 @@ namespace Json
         { }
     };
 
-    template<typename T1, typename T2>
-    JsonWriter& operator<<(JsonWriter& writer, JsonWriterManipulatorWithTwoParams<T1, T2> manipulator)
+    template<typename OutputBuffer, typename T1, typename T2>
+    JsonWriterBase<OutputBuffer>& operator<<(JsonWriterBase<OutputBuffer>& writer,
+                                         JsonWriterManipulatorWithTwoParams<OutputBuffer, T1, T2> manipulator)
     {
         return manipulator.function(writer, manipulator.argument1, manipulator.argument2);
     }
 
-    template<typename T1, size_t T1Size, typename T2>
-    JsonWriter& operator<<(JsonWriter& writer, JsonWriterManipulatorPropertySafeNameArray<T1, T1Size, T2> manipulator)
+    template<typename OutputBuffer, typename T1, size_t T1Size, typename T2>
+    JsonWriterBase<OutputBuffer>& operator<<(JsonWriterBase<OutputBuffer>& writer,
+                                             JsonWriterManipulatorPropertySafeNameArray<T1, T1Size, T2> manipulator)
     {
         writer.newPropertyWithSafeName<T1Size>(manipulator.argument1) << manipulator.argument2;
         return writer;
     }
 
-    template<typename T1, size_t T1Size, typename T2, size_t T2Size>
-    JsonWriter& operator<<(JsonWriter& writer, JsonWriterManipulatorPropertySafeNameArrayValueArray<T1, T1Size, T2, T2Size> manipulator)
+    template<typename OutputBuffer, typename T1, size_t T1Size, typename T2, size_t T2Size>
+    JsonWriterBase<OutputBuffer>& operator<<(JsonWriterBase<OutputBuffer>& writer,
+                                             JsonWriterManipulatorPropertySafeNameArrayValueArray<T1, T1Size, T2, T2Size> manipulator)
     {
-        writer.newPropertyWithSafeName<T1Size>(manipulator.argument1) << boost::string_view(manipulator.argument2, T2Size - 1);
+        writer.newPropertyWithSafeName<T1Size>(manipulator.argument1)
+            << boost::string_view(manipulator.argument2, T2Size - 1);
         return writer;
     }
 
-    template<typename StringType, typename ValueType>
-    JsonWriter& _property(JsonWriter& writer, const StringType& name, const ValueType& value)
+    template<typename OutputBuffer, typename StringType, typename ValueType>
+    JsonWriterBase<OutputBuffer>& _property(JsonWriterBase<OutputBuffer>& writer, const StringType& name,
+                                            const ValueType& value)
     {
         writer.newProperty(name) << value;
         return writer;
     }
 
-    template<typename StringType, typename ValueType>
-    JsonWriter& _propertySafe(JsonWriter& writer, const StringType& name, const ValueType& value)
+    template<typename OutputBuffer, typename StringType, typename ValueType>
+    JsonWriterBase<OutputBuffer>& _propertySafe(JsonWriterBase<OutputBuffer>& writer, const StringType& name,
+                                                const ValueType& value)
     {
         writer.newPropertyWithSafeName(name) << value;
         return writer;
     }
 
-    template<typename StringType, typename ValueType>
-    JsonWriterManipulatorWithTwoParams<StringType, ValueType> property(const StringType& name,
-                                                                       const ValueType& value)
+    template<typename OutputBuffer, typename StringType, typename ValueType>
+    JsonWriterManipulatorWithTwoParams<OutputBuffer, StringType, ValueType> property(const StringType& name,
+                                                                                     const ValueType& value)
     {
-        return JsonWriterManipulatorWithTwoParams<StringType, ValueType>(_property<StringType, ValueType>, name, value);
+        return JsonWriterManipulatorWithTwoParams<OutputBuffer, StringType, ValueType>(
+                _property<StringType, ValueType>, name, value);
     }
 
-    template<typename StringType, typename ValueType>
-    JsonWriterManipulatorWithTwoParams<StringType, ValueType> propertySafeName(const StringType& name,
-                                                                               const ValueType& value)
+    template<typename OutputBuffer, typename StringType, typename ValueType>
+    JsonWriterManipulatorWithTwoParams<OutputBuffer, StringType, ValueType> propertySafeName(const StringType& name,
+                                                                                             const ValueType& value)
     {
-        return JsonWriterManipulatorWithTwoParams<StringType, ValueType>(_propertySafe<StringType, ValueType>, name,
-                                                                         value);
+        return JsonWriterManipulatorWithTwoParams<OutputBuffer, StringType, ValueType>(
+                _propertySafe<StringType, ValueType>, name, value);
     }
 
     template<size_t StringSize, typename ValueType>
@@ -651,8 +704,9 @@ namespace Json
         { }
     };
 
-    template<typename ForwardIterator>
-    JsonWriter& operator<<(JsonWriter& writer, const IteratorPair<ForwardIterator>& pair)
+    template<typename OutputBuffer, typename ForwardIterator>
+    JsonWriterBase<OutputBuffer>& operator<<(JsonWriterBase<OutputBuffer>& writer,
+                                             const IteratorPair<ForwardIterator>& pair)
     {
         return writeArray(writer, pair.begin, pair.end);
     }
@@ -662,5 +716,4 @@ namespace Json
     {
         return IteratorPair<ForwardIterator>(begin, end);
     }
-
 }
