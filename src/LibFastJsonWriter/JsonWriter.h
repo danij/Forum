@@ -567,6 +567,17 @@ namespace Json
         { }
     };
 
+    template<typename T1, size_t T1Size, typename T2, size_t T2Size>
+    struct JsonWriterManipulatorPropertySafeNameArrayValueArray
+    {
+        const T1(&argument1)[T1Size];
+        const T2(&argument2)[T2Size];
+
+        JsonWriterManipulatorPropertySafeNameArrayValueArray(const T1(&arg1)[T1Size], const T2(&arg2)[T2Size]) :
+                argument1(arg1), argument2(arg2)
+        { }
+    };
+
     template<typename T1, typename T2>
     JsonWriter& operator<<(JsonWriter& writer, JsonWriterManipulatorWithTwoParams<T1, T2> manipulator)
     {
@@ -577,6 +588,13 @@ namespace Json
     JsonWriter& operator<<(JsonWriter& writer, JsonWriterManipulatorPropertySafeNameArray<T1, T1Size, T2> manipulator)
     {
         writer.newPropertyWithSafeName<T1Size>(manipulator.argument1) << manipulator.argument2;
+        return writer;
+    }
+
+    template<typename T1, size_t T1Size, typename T2, size_t T2Size>
+    JsonWriter& operator<<(JsonWriter& writer, JsonWriterManipulatorPropertySafeNameArrayValueArray<T1, T1Size, T2, T2Size> manipulator)
+    {
+        writer.newPropertyWithSafeName<T1Size>(manipulator.argument1) << boost::string_view(manipulator.argument2, T2Size - 1);
         return writer;
     }
 
@@ -614,6 +632,13 @@ namespace Json
                                                                                                    const ValueType& value)
     {
         return JsonWriterManipulatorPropertySafeNameArray<const char, StringSize, ValueType>(name, value);
+    }
+
+    template<size_t StringSize, size_t ValueSize>
+    JsonWriterManipulatorPropertySafeNameArrayValueArray<const char, StringSize, const char, ValueSize> propertySafeName(
+            const char(&name)[StringSize], const char(&value)[ValueSize])
+    {
+        return JsonWriterManipulatorPropertySafeNameArrayValueArray<const char, StringSize, const char, ValueSize>(name, value);
     }
 
     template<typename ForwardIterator>
