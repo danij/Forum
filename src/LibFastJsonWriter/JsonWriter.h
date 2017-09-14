@@ -98,7 +98,7 @@ namespace Json
     };
 
     template<typename OutputBuffer>
-    void Json::escapeString(const char* value, size_t length, OutputBuffer& destination)
+    void escapeString(const char* value, size_t length, OutputBuffer& destination)
     {
         static thread_local char twoCharEscapeBuffer[2+1] = { '\\', 0, 0 };
         static thread_local char sixCharEscapeBuffer[6+1] = { '\\', 'u', '0', '0', 0, 0, 0 };
