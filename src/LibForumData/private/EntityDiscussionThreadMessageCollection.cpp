@@ -1,6 +1,9 @@
 #include "EntityDiscussionThreadMessageCollection.h"
 #include "ContextProviders.h"
 
+#include <algorithm>
+#include <vector>
+
 using namespace Forum::Entities;
 
 bool DiscussionThreadMessageCollection::add(DiscussionThreadMessagePtr message)
@@ -45,8 +48,13 @@ void DiscussionThreadMessageCollection::stopBatchInsert()
 
     byCreated_.clear();
 
-    for (DiscussionThreadMessagePtr message : byId_)
+    //sort the values so that insertion into byCreated_ works faster
+    std::vector<DiscussionThreadMessagePtr> temp(byId_.begin(), byId_.end());
+
+    std::sort(temp.begin(), temp.end(), [](DiscussionThreadMessagePtr first, DiscussionThreadMessagePtr second)
     {
-        byCreated_.insert(message);
-    }
+        return first->created() < second->created();
+    });
+
+    byCreated_.insert(boost::container::ordered_range, temp.begin(), temp.end());
 }
