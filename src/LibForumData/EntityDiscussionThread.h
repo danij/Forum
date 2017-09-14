@@ -8,6 +8,7 @@
 #include <atomic>
 #include <string>
 #include <set>
+#include <unordered_set>
 
 #include <boost/noncopyable.hpp>
 
@@ -198,7 +199,7 @@ namespace Forum
 
             std::set<EntityPointer<DiscussionTag>> tags_;
             std::set<EntityPointer<DiscussionCategory>> categories_;
-            std::set<EntityPointer<User>> subscribedUsers_;
+            std::unordered_set<EntityPointer<User>> subscribedUsers_;
         };
 
         typedef EntityPointer<DiscussionThread> DiscussionThreadPtr;
