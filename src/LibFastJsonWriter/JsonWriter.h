@@ -98,7 +98,7 @@ namespace Json
     };
 
     template<typename OutputBuffer>
-    void Json::escapeString(const char* value, size_t length, OutputBuffer& destination)
+    void escapeString(const char* value, size_t length, OutputBuffer& destination)
     {
         static thread_local char twoCharEscapeBuffer[2+1] = { '\\', 0, 0 };
         static thread_local char sixCharEscapeBuffer[6+1] = { '\\', 'u', '0', '0', 0, 0, 0 };
@@ -388,6 +388,17 @@ namespace Json
             return writeEscapedString(value);
         }
 
+        template<typename T>
+        JsonWriterBase& operator<<(const T* value)
+        {
+            return value ? (*this << *value) : null();
+        }
+
+        JsonWriterBase& operator<<(JsonWriterBase& (* manipulator)(JsonWriterBase&))
+        {
+            return manipulator(*this);
+        }
+
         template <size_t StackSize, typename Derived, typename SizeType>
         JsonWriterBase& operator<<(const JsonReadyStringBase<StackSize, Derived, SizeType>& jsonReadyString)
         {
@@ -559,19 +570,6 @@ namespace Json
 
     typedef JsonWriterBase<StringBuffer> JsonWriter;
 
-    template<typename OutputBuffer, typename T>
-    JsonWriterBase<OutputBuffer>& operator<<(JsonWriterBase<OutputBuffer>& writer, const T* value)
-    {
-        return value ? (writer << *value) : writer.null();
-    }
-
-    template<typename OutputBuffer>
-    JsonWriterBase<OutputBuffer>& operator<<(JsonWriterBase<OutputBuffer>& writer,
-                                             JsonWriterBase<OutputBuffer>& (* manipulator)(JsonWriterBase<OutputBuffer>&))
-    {
-        return manipulator(writer);
-    }
-
     template<typename OutputBuffer>
     JsonWriterBase<OutputBuffer>& nullObj(JsonWriterBase<OutputBuffer>& writer)
     {
@@ -675,7 +673,7 @@ namespace Json
 
     template<typename OutputBuffer, typename T1, typename T2>
     JsonWriterBase<OutputBuffer>& operator<<(JsonWriterBase<OutputBuffer>& writer,
-                                         JsonWriterManipulatorWithTwoParams<OutputBuffer, T1, T2> manipulator)
+                                             JsonWriterManipulatorWithTwoParams<OutputBuffer, T1, T2> manipulator)
     {
         return manipulator.function(writer, manipulator.argument1, manipulator.argument2);
     }
@@ -684,25 +682,22 @@ namespace Json
     JsonWriterBase<OutputBuffer>& operator<<(JsonWriterBase<OutputBuffer>& writer,
                                              JsonWriterManipulatorPropertySafeNameArray<T1, T1Size, T2> manipulator)
     {
-        writer.newPropertyWithSafeName<T1Size>(manipulator.argument1) << manipulator.argument2;
-        return writer;
+        return writer.newPropertyWithSafeName(manipulator.argument1) << manipulator.argument2;
     }
 
     template<typename OutputBuffer, typename T1, size_t T1Size, typename T2, size_t T2Size>
     JsonWriterBase<OutputBuffer>& operator<<(JsonWriterBase<OutputBuffer>& writer,
                                              JsonWriterManipulatorPropertySafeNameArrayValueArray<T1, T1Size, T2, T2Size> manipulator)
     {
-        writer.newPropertyWithSafeName<T1Size>(manipulator.argument1)
-            << boost::string_view(manipulator.argument2, T2Size - 1);
-        return writer;
+        return writer.newPropertyWithSafeName(manipulator.argument1)
+                << boost::string_view(manipulator.argument2, T2Size - 1);
     }
 
     template<typename OutputBuffer, typename StringType, typename ValueType>
     JsonWriterBase<OutputBuffer>& _property(JsonWriterBase<OutputBuffer>& writer, const StringType& name,
                                             const ValueType& value)
     {
-        writer.newProperty(name) << value;
-        return writer;
+        return writer.newProperty(name) << value;
     }
 
     template<typename OutputBuffer, typename StringType, typename ValueType>
