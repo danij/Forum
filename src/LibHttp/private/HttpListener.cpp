@@ -114,7 +114,7 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
                 auto xForwardedFor = request.headers[Http::Request::X_Forwarded_For];
                 auto toCopy = std::min(std::extent<decltype(nullTerminatedAddressBuffer)>::value - 1, xForwardedFor.size());
                 std::copy(xForwardedFor.data(), xForwardedFor.data() + toCopy, nullTerminatedAddressBuffer);
-                nullTerminatedAddressBuffer[toCopy + 1] = 0;
+                nullTerminatedAddressBuffer[toCopy] = 0;
 
                 boost::system::error_code parseAddressCode;
                 auto address = boost::asio::ip::address::from_string(nullTerminatedAddressBuffer, parseAddressCode);
