@@ -1,6 +1,6 @@
 # Fast Forum Backend 
-[![Build Status](https://travis-ci.org/danij/Forum.svg?branch=initial)](https://travis-ci.org/danij/Forum) 
-[![Coverage Status](https://coveralls.io/repos/github/danij/Forum/badge.svg?branch=initial)](https://coveralls.io/github/danij/Forum?branch=initial)
+[![Build Status](https://travis-ci.org/danij/Forum.svg?branch=master)](https://travis-ci.org/danij/Forum) 
+[![Coverage Status](https://coveralls.io/repos/github/danij/Forum/badge.svg?branch=master)](https://coveralls.io/github/danij/Forum?branch=master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/13668/badge.svg)](https://scan.coverity.com/projects/danij-forum) 
 
 
