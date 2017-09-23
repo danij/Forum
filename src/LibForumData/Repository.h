@@ -356,7 +356,7 @@ namespace Forum
                     Entities::IdTypeRef messageId, Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value, OutStream& output) = 0;
 
-            virtual StatusCode assignDiscussionThreadMessagePrivilegeToDiscussionThreadMessage(
+            virtual StatusCode assignDiscussionThreadMessagePrivilegeForThreadMessage(
                     Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
                     Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
