@@ -435,7 +435,7 @@ namespace Forum
                     Entities::IdTypeRef categoryId, Authorization::DiscussionCategoryPrivilege privilege,
                     Authorization::PrivilegeValueIntType value, OutStream& output) = 0;
 
-            virtual StatusCode assignDiscussionCategoryPrivilege(
+            virtual StatusCode assignDiscussionCategoryPrivilegeForCategory(
                     Entities::IdTypeRef categoryId, Entities::IdTypeRef userId,
                     Authorization::DiscussionCategoryPrivilege privilege,
                     Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
@@ -508,7 +508,7 @@ namespace Forum
                     Entities::IdTypeRef messageId, Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value) = 0;
 
-            virtual StatusCode assignDiscussionThreadMessagePrivilegeToDiscussionThreadMessage(
+            virtual StatusCode assignDiscussionThreadMessagePrivilegeForThreadMessage(
                     Entities::EntityCollection& collection,Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
                     Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
@@ -584,7 +584,7 @@ namespace Forum
                     Entities::IdTypeRef categoryId, Authorization::DiscussionCategoryPrivilege privilege,
                     Authorization::PrivilegeValueIntType value) = 0;
 
-            virtual StatusCode assignDiscussionCategoryPrivilege(
+            virtual StatusCode assignDiscussionCategoryPrivilegeForCategory(
                     Entities::EntityCollection& collection, Entities::IdTypeRef categoryId, Entities::IdTypeRef userId,
                     Authorization::DiscussionCategoryPrivilege privilege,
                     Authorization::PrivilegeValueIntType value,

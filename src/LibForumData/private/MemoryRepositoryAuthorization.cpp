@@ -1,6 +1,7 @@
 #include "MemoryRepositoryAuthorization.h"
 #include "EntitySerialization.h"
 #include "OutputHelpers.h"
+#include "ContextProviders.h"
 
 using namespace Forum;
 using namespace Forum::Authorization;
@@ -495,18 +496,91 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilegeToDiscussionThreadMessage(
+StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilegeForThreadMessage(
         IdTypeRef messageId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! messageId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto& messageIndexById = collection.threadMessages().byId();
+                           auto messageIt = messageIndexById.find(messageId);
+                           if (messageIt == messageIndexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           const DiscussionThreadMessage& message = **messageIt;
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = threadMessageAuthorization_->assignDiscussionThreadMessagePrivilege(
+                                   *currentUser, message, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignDiscussionThreadMessagePrivilegeForThreadMessage(
+                                   createObserverContext(*currentUser), message, *targetUser, privilege, value);
+
+                           status = assignDiscussionThreadMessagePrivilegeForThreadMessage(
+                                   collection, messageId, userId, privilege, value, duration);
+                       });
+    return status;
 }
 
-StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilegeToDiscussionThreadMessage(
+StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilegeForThreadMessage(
         EntityCollection& collection,IdTypeRef messageId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! messageId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto& indexById = collection.threadMessages().byId();
+    auto it = indexById.find(messageId);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+    DiscussionThreadMessagePtr message = *it;
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(userId, messageId, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }
 
 //
@@ -822,25 +896,174 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         IdTypeRef threadId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! threadId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto& threadIndexById = collection.threads().byId();
+                           auto threadIt = threadIndexById.find(threadId);
+                           if (threadIt == threadIndexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           const DiscussionThread& thread = **threadIt;
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = threadAuthorization_->assignDiscussionThreadMessagePrivilege(
+                                   *currentUser, thread, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignDiscussionThreadMessagePrivilegeForThread(
+                                   createObserverContext(*currentUser), thread, *targetUser, privilege, value);
+
+                           status = assignDiscussionThreadMessagePrivilegeForThread(
+                                   collection, threadId, userId, privilege, value, duration);
+                       });
+    return status;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilegeForThread(
         EntityCollection& collection, IdTypeRef threadId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! threadId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto& indexById = collection.threads().byId();
+    auto it = indexById.find(threadId);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+    DiscussionThreadPtr thread = *it;
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(userId, threadId, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilegeForThread(
         IdTypeRef threadId, IdTypeRef userId, DiscussionThreadPrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! threadId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto& threadIndexById = collection.threads().byId();
+                           auto threadIt = threadIndexById.find(threadId);
+                           if (threadIt == threadIndexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           const DiscussionThread& thread = **threadIt;
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = threadAuthorization_->assignDiscussionThreadPrivilege(
+                                   *currentUser, thread, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignDiscussionThreadPrivilegeForThread(
+                                   createObserverContext(*currentUser), thread, *targetUser, privilege, value);
+
+                           status = assignDiscussionThreadPrivilegeForThread(
+                                   collection, threadId, userId, privilege, value, duration);
+                       });
+    return status;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilegeForThread(
         EntityCollection& collection, IdTypeRef threadId, IdTypeRef userId, DiscussionThreadPrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! threadId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto& indexById = collection.threads().byId();
+    auto it = indexById.find(threadId);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+    DiscussionThreadPtr thread = *it;
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantDiscussionThreadPrivilege(userId, threadId, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }
 
 //
@@ -1218,37 +1441,261 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         IdTypeRef tagId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value,
         PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! tagId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto& tagIndexById = collection.tags().byId();
+                           auto tagIt = tagIndexById.find(tagId);
+                           if (tagIt == tagIndexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           const DiscussionTag& tag = **tagIt;
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = tagAuthorization_->assignDiscussionThreadMessagePrivilege(
+                                   *currentUser, tag, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignDiscussionThreadMessagePrivilegeForTag(
+                                   createObserverContext(*currentUser), tag, *targetUser, privilege, value);
+
+                           status = assignDiscussionThreadMessagePrivilegeForTag(
+                                   collection, tagId, userId, privilege, value, duration);
+                       });
+    return status;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilegeForTag(
         EntityCollection& collection, IdTypeRef tagId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! tagId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto& indexById = collection.tags().byId();
+    auto it = indexById.find(tagId);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+    DiscussionTagPtr tag = *it;
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(userId, tagId, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilegeForTag(
         IdTypeRef tagId, IdTypeRef userId, DiscussionThreadPrivilege privilege, PrivilegeValueIntType value,
         PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! tagId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto& tagIndexById = collection.tags().byId();
+                           auto tagIt = tagIndexById.find(tagId);
+                           if (tagIt == tagIndexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           const DiscussionTag& tag = **tagIt;
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = tagAuthorization_->assignDiscussionThreadPrivilege(
+                                   *currentUser, tag, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignDiscussionThreadPrivilegeForTag(
+                                   createObserverContext(*currentUser), tag, *targetUser, privilege, value);
+
+                           status = assignDiscussionThreadPrivilegeForThread(
+                                   collection, tagId, userId, privilege, value, duration);
+                       });
+    return status;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilegeForTag(
         EntityCollection& collection, IdTypeRef tagId, IdTypeRef userId, DiscussionThreadPrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! tagId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto& indexById = collection.tags().byId();
+    auto it = indexById.find(tagId);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+    DiscussionTagPtr tag = *it;
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantDiscussionThreadPrivilege(userId, tagId, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilegeForTag(
         IdTypeRef tagId, IdTypeRef userId, DiscussionTagPrivilege privilege, PrivilegeValueIntType value,
         PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! tagId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto& tagIndexById = collection.tags().byId();
+                           auto tagIt = tagIndexById.find(tagId);
+                           if (tagIt == tagIndexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           const DiscussionTag& tag = **tagIt;
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = tagAuthorization_->assignDiscussionTagPrivilege(
+                                   *currentUser, tag, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignDiscussionTagPrivilegeForTag(
+                                   createObserverContext(*currentUser), tag, *targetUser, privilege, value);
+
+                           status = assignDiscussionTagPrivilegeForTag(
+                                   collection, tagId, userId, privilege, value, duration);
+                       });
+    return status;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilegeForTag(
         EntityCollection& collection, IdTypeRef tagId, IdTypeRef userId, DiscussionTagPrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! tagId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto& indexById = collection.tags().byId();
+    auto it = indexById.find(tagId);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+    DiscussionTagPtr tag = *it;
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantDiscussionTagPrivilege(userId, tagId, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }
 
 //
@@ -1395,17 +1842,91 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionCategoryRequiredPrivil
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
+StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilegeForCategory(
         IdTypeRef categoryId, IdTypeRef userId, DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value,
         PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! categoryId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto& categoryIndexById = collection.categories().byId();
+                           auto categoryIt = categoryIndexById.find(categoryId);
+                           if (categoryIt == categoryIndexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           const DiscussionCategory& category = **categoryIt;
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = categoryAuthorization_->assignDiscussionCategoryPrivilege(
+                                   *currentUser, category, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignDiscussionCategoryPrivilegeForCategory(
+                                   createObserverContext(*currentUser), category, *targetUser, privilege, value);
+
+                           status = assignDiscussionCategoryPrivilegeForCategory(
+                                   collection, categoryId, userId, privilege, value, duration);
+                       });
+    return status;
 }
-StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
+
+StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilegeForCategory(
         EntityCollection& collection, IdTypeRef categoryId, IdTypeRef userId, DiscussionCategoryPrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! categoryId || ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value)
+        || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    auto& indexById = collection.categories().byId();
+    auto it = indexById.find(categoryId);
+    if (it == indexById.end())
+    {
+        return StatusCode::NOT_FOUND;
+    }
+    DiscussionCategoryPtr category = *it;
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantDiscussionCategoryPrivilege(userId, categoryId, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }
 
 //
@@ -1870,59 +2391,338 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         IdTypeRef userId, DiscussionThreadMessagePrivilege privilege, PrivilegeValueIntType value,
         PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = forumWideAuthorization_->assignDiscussionThreadMessagePrivilege(
+                                   *currentUser, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignDiscussionThreadMessagePrivilegeForumWide(
+                                   createObserverContext(*currentUser), *targetUser, privilege, value);
+
+                           status = assignDiscussionThreadMessagePrivilege(
+                                   collection, userId, privilege, value, duration);
+                       });
+    return status;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege(
         EntityCollection& collection, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(userId, {}, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         IdTypeRef userId, DiscussionThreadPrivilege privilege, PrivilegeValueIntType value,
         PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = forumWideAuthorization_->assignDiscussionThreadPrivilege(
+                                   *currentUser, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignDiscussionThreadPrivilegeForumWide(
+                                   createObserverContext(*currentUser), *targetUser, privilege, value);
+
+                           status = assignDiscussionThreadPrivilege(
+                                   collection, userId, privilege, value, duration);
+                       });
+    return status;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         EntityCollection& collection, IdTypeRef userId, DiscussionThreadPrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantDiscussionThreadPrivilege(userId, {}, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
         IdTypeRef userId, DiscussionTagPrivilege privilege, PrivilegeValueIntType value,
         PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = forumWideAuthorization_->assignDiscussionTagPrivilege(
+                                   *currentUser, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignDiscussionTagPrivilegeForumWide(
+                                   createObserverContext(*currentUser), *targetUser, privilege, value);
+
+                           status = assignDiscussionTagPrivilege(
+                                   collection, userId, privilege, value, duration);
+                       });
+    return status;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
         EntityCollection& collection, IdTypeRef userId, DiscussionTagPrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantDiscussionTagPrivilege(userId, {}, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
         IdTypeRef userId, DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value,
         PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = forumWideAuthorization_->assignDiscussionCategoryPrivilege(
+                                   *currentUser, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignDiscussionCategoryPrivilegeForumWide(
+                                   createObserverContext(*currentUser), *targetUser, privilege, value);
+
+                           status = assignDiscussionCategoryPrivilege(
+                                   collection, userId, privilege, value, duration);
+                       });
+    return status;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
         EntityCollection& collection, IdTypeRef userId, DiscussionCategoryPrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantDiscussionCategoryPrivilege(userId, {}, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
         IdTypeRef userId, ForumWidePrivilege privilege, PrivilegeValueIntType value,
         PrivilegeDefaultDurationIntType duration, OutStream& output)
 {
-    return {};
+    StatusWriter status(output);
+    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto targetUser = anonymousUser();
+                           if (userId != anonymousUserId())
+                           {
+                               auto& userIndexById = collection.users().byId();
+                               auto userIt = userIndexById.find(userId);
+                               if (userIt == userIndexById.end())
+                               {
+                                   status = StatusCode::NOT_FOUND;
+                                   return;
+                               }
+                               targetUser = *userIt;
+                           }
+
+                           if ( ! (status = forumWideAuthorization_->assignForumWidePrivilege(
+                                   *currentUser, *targetUser, privilege, value)))
+                           {
+                               return;
+                           }
+
+                           writeEvents().assignForumWidePrivilege(
+                                   createObserverContext(*currentUser), *targetUser, privilege, value);
+
+                           status = assignForumWidePrivilege(
+                                   collection, userId, privilege, value, duration);
+                       });
+    return status;
 }
+
 StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
         EntityCollection& collection, IdTypeRef userId, ForumWidePrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
 {
-    return {};
+    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    if (userId != anonymousUserId())
+    {
+        auto& userIndexById = collection.users().byId();
+        auto userIt = userIndexById.find(userId);
+        if (userIt == userIndexById.end())
+        {
+            return StatusCode::NOT_FOUND;
+        }
+    }
+
+    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
+    collection.grantedPrivileges().grantForumWidePrivilege(userId, {}, privilege, value, expiresAt);
+
+    return StatusCode::OK;
 }

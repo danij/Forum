@@ -303,8 +303,7 @@ namespace Forum
 
         static constexpr PrivilegeValueIntType MinPrivilegeValue = -32000;
         static constexpr PrivilegeValueIntType MaxPrivilegeValue = 32000;
-        static constexpr PrivilegeDefaultDurationIntType UnlimitedDuration =
-                std::numeric_limits<PrivilegeDefaultDurationIntType>::max();
+        static constexpr PrivilegeDefaultDurationIntType UnlimitedDuration = 0;
 
         template<typename T>
         T optionalOrZero(boost::optional<T> value)
@@ -385,12 +384,17 @@ namespace Forum
             return std::max(*first, *second);
         }
 
-        inline auto calculatePrivilegeExpires(PrivilegeDefaultDurationIntType start,
-                                              PrivilegeDefaultDurationIntType duration)
+        inline PrivilegeDefaultDurationIntType calculatePrivilegeExpires(PrivilegeDefaultDurationIntType start,
+                                                                         PrivilegeDefaultDurationIntType duration)
         {
             static_assert(sizeof(PrivilegeDefaultDurationIntType) >= 8, "PrivilegeDefaultDurationIntType should be at least 64-bit wide");
 
-            auto maxHalf = std::numeric_limits<PrivilegeDefaultDurationIntType>::max() / 2;
+            if (duration == UnlimitedDuration)
+            {
+                return 0;
+            }
+
+            constexpr auto maxHalf = std::numeric_limits<PrivilegeDefaultDurationIntType>::max() / 2;
             assert(start >= 0);
             assert(start < maxHalf);
 

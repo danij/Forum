@@ -94,6 +94,16 @@ namespace Forum
                     const Entities::User& currentUser, const Entities::DiscussionThread& thread,
                     DiscussionThreadMessageDefaultPrivilegeDuration privilege,
                     PrivilegeDefaultDurationIntType newValue) const = 0;
+            virtual AuthorizationStatus assignDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                               const Entities::DiscussionThread& thread,
+                                                                               const Entities::User& targetUser,
+                                                                               DiscussionThreadMessagePrivilege privilege,
+                                                                               PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus assignDiscussionThreadPrivilege(const Entities::User& currentUser,
+                                                                        const Entities::DiscussionThread& thread,
+                                                                        const Entities::User& targetUser,
+                                                                        DiscussionThreadPrivilege privilege,
+                                                                        PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IDiscussionThreadAuthorization> DiscussionThreadAuthorizationRef;
 
@@ -143,6 +153,11 @@ namespace Forum
                                                                                const Entities::DiscussionThreadMessage& message,
                                                                                DiscussionThreadMessagePrivilege privilege,
                                                                                PrivilegeValueType oldValue,
+                                                                               PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus assignDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                               const Entities::DiscussionThreadMessage& message,
+                                                                               const Entities::User& targetUser,
+                                                                               DiscussionThreadMessagePrivilege privilege,
                                                                                PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IDiscussionThreadMessageAuthorization> DiscussionThreadMessageAuthorizationRef;
@@ -196,6 +211,21 @@ namespace Forum
                     const Entities::User& currentUser, const Entities::DiscussionTag& tag,
                     DiscussionThreadMessageDefaultPrivilegeDuration privilege,
                     PrivilegeDefaultDurationIntType newValue) const = 0;
+            virtual AuthorizationStatus assignDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                               const Entities::DiscussionTag& tag,
+                                                                               const Entities::User& targetUser,
+                                                                               DiscussionThreadMessagePrivilege privilege,
+                                                                               PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus assignDiscussionThreadPrivilege(const Entities::User& currentUser,
+                                                                        const Entities::DiscussionTag& tag,
+                                                                        const Entities::User& targetUser,
+                                                                        DiscussionThreadPrivilege privilege,
+                                                                        PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus assignDiscussionTagPrivilege(const Entities::User& currentUser,
+                                                                     const Entities::DiscussionTag& tag,
+                                                                     const Entities::User& targetUser,
+                                                                     DiscussionTagPrivilege privilege,
+                                                                     PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IDiscussionTagAuthorization> DiscussionTagAuthorizationRef;
 
@@ -239,6 +269,11 @@ namespace Forum
                                                                           DiscussionCategoryPrivilege privilege,
                                                                           PrivilegeValueType oldValue,
                                                                           PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus assignDiscussionCategoryPrivilege(const Entities::User& currentUser,
+                                                                          const Entities::DiscussionCategory& category,
+                                                                          const Entities::User& targetUser,
+                                                                          DiscussionCategoryPrivilege privilege,
+                                                                          PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IDiscussionCategoryAuthorization> DiscussionCategoryAuthorizationRef;
 
@@ -273,6 +308,26 @@ namespace Forum
             virtual AuthorizationStatus updateForumWideDefaultPrivilegeDuration(
                     const Entities::User& currentUser, ForumWideDefaultPrivilegeDuration privilege,
                     PrivilegeDefaultDurationIntType newValue) const = 0;
+            virtual AuthorizationStatus assignDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                               const Entities::User& targetUser,
+                                                                               DiscussionThreadMessagePrivilege privilege,
+                                                                               PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus assignDiscussionThreadPrivilege(const Entities::User& currentUser,
+                                                                        const Entities::User& targetUser,
+                                                                        DiscussionThreadPrivilege privilege,
+                                                                        PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus assignDiscussionTagPrivilege(const Entities::User& currentUser,
+                                                                     const Entities::User& targetUser,
+                                                                     DiscussionTagPrivilege privilege,
+                                                                     PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus assignDiscussionCategoryPrivilege(const Entities::User& currentUser,
+                                                                          const Entities::User& targetUser,
+                                                                          DiscussionCategoryPrivilege privilege,
+                                                                          PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus assignForumWidePrivilege(const Entities::User& currentUser,
+                                                                 const Entities::User& targetUser,
+                                                                 ForumWidePrivilege privilege,
+                                                                 PrivilegeValueIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IForumWideAuthorization> ForumWideAuthorizationRef;
 

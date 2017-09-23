@@ -33,12 +33,12 @@ namespace Forum
                     Entities::IdTypeRef messageId, Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value) override;
 
-            StatusCode assignDiscussionThreadMessagePrivilegeToDiscussionThreadMessage(
+            StatusCode assignDiscussionThreadMessagePrivilegeForThreadMessage(
                     Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
                     Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
                     OutStream& output) override;
-            StatusCode assignDiscussionThreadMessagePrivilegeToDiscussionThreadMessage(
+            StatusCode assignDiscussionThreadMessagePrivilegeForThreadMessage(
                     Entities::EntityCollection& collection,Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
                     Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
@@ -174,12 +174,12 @@ namespace Forum
                     Entities::IdTypeRef categoryId, Authorization::DiscussionCategoryPrivilege privilege,
                     Authorization::PrivilegeValueIntType value) override;
 
-            StatusCode assignDiscussionCategoryPrivilege(
+            StatusCode assignDiscussionCategoryPrivilegeForCategory(
                     Entities::IdTypeRef categoryId, Entities::IdTypeRef userId,
                     Authorization::DiscussionCategoryPrivilege privilege,
                     Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
                     OutStream& output) override;
-            StatusCode assignDiscussionCategoryPrivilege(
+            StatusCode assignDiscussionCategoryPrivilegeForCategory(
                     Entities::EntityCollection& collection, Entities::IdTypeRef categoryId, Entities::IdTypeRef userId,
                     Authorization::DiscussionCategoryPrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
