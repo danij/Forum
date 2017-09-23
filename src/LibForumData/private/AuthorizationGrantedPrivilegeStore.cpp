@@ -183,6 +183,13 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
     PrivilegeValueType positive, negative;
     updateDiscussionCategoryPrivilege(userId, category.id(), now, privilege, positive, negative);
 
+    auto parent = category.parent();
+    while (parent)
+    {
+        updateDiscussionCategoryPrivilege(userId, parent->id(), now, privilege, positive, negative);
+        parent = parent->parent();
+    }
+
     updateDiscussionCategoryPrivilege(userId, {}, now, privilege, positive, negative);
 
     return ::isAllowed(positive, negative, category.getDiscussionCategoryPrivilege(privilege));
