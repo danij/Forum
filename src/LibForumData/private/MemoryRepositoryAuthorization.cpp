@@ -501,6 +501,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
 {
     return {};
 }
+
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilegeToDiscussionThreadMessage(
         EntityCollection& collection,IdTypeRef messageId, IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
         PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
@@ -1431,7 +1432,8 @@ StatusCode MemoryRepositoryAuthorization::getCurrentUserPrivileges(OutStream& ou
                           JsonWriter writer(output);
                           writer.startObject();
 
-                          writePrivileges(writer, collection, ForumWidePrivilegesToSerialize, restriction);
+                          writePrivileges(writer, collection, ForumWidePrivilegesToSerialize,
+                                          ForumWidePrivilegeStrings, restriction);
 
                           writer.endObject();
 

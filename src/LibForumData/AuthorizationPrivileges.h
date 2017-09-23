@@ -55,12 +55,12 @@ namespace Forum
             "adjust_privilege"
         };
 
-        const std::pair<DiscussionThreadMessagePrivilege, StringView> DiscussionThreadMessagePrivilegesToSerialize[] =
+        const DiscussionThreadMessagePrivilege DiscussionThreadMessagePrivilegesToSerialize[] =
         {
-            { DiscussionThreadMessagePrivilege::UP_VOTE, "up_vote" },
-            { DiscussionThreadMessagePrivilege::DOWN_VOTE, "down_vote" },
-            { DiscussionThreadMessagePrivilege::CHANGE_CONTENT, "change_content" },
-            { DiscussionThreadMessagePrivilege::DELETE, "delete" }
+            DiscussionThreadMessagePrivilege::UP_VOTE,
+            DiscussionThreadMessagePrivilege::DOWN_VOTE,
+            DiscussionThreadMessagePrivilege::CHANGE_CONTENT,
+            DiscussionThreadMessagePrivilege::DELETE
         };
 
         enum class DiscussionThreadMessageDefaultPrivilegeDuration : EnumIntType
@@ -112,14 +112,14 @@ namespace Forum
             "adjust_privilege"
         };
 
-        const std::pair<DiscussionThreadPrivilege, StringView> DiscussionThreadPrivilegesToSerialize[] =
+        const DiscussionThreadPrivilege DiscussionThreadPrivilegesToSerialize[] =
         {
-            { DiscussionThreadPrivilege::ADD_MESSAGE, "add_message" },
-            { DiscussionThreadPrivilege::CHANGE_NAME, "change_name" },
-            { DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER, "change_pin_display_order" },
-            { DiscussionThreadPrivilege::ADD_TAG, "add_tag" },
-            { DiscussionThreadPrivilege::REMOVE_TAG, "remove_tag" },
-            { DiscussionThreadPrivilege::DELETE, "delete" },
+            DiscussionThreadPrivilege::ADD_MESSAGE,
+            DiscussionThreadPrivilege::CHANGE_NAME,
+            DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER,
+            DiscussionThreadPrivilege::ADD_TAG,
+            DiscussionThreadPrivilege::REMOVE_TAG,
+            DiscussionThreadPrivilege::DELETE
         };
 
         enum class DiscussionTagPrivilege : EnumIntType
@@ -148,11 +148,11 @@ namespace Forum
         };
 
 
-        const std::pair<DiscussionTagPrivilege, StringView> DiscussionTagPrivilegesToSerialize[] =
+        const DiscussionTagPrivilege DiscussionTagPrivilegesToSerialize[] =
         {
-            { DiscussionTagPrivilege::CHANGE_NAME, "change_name" },
-            { DiscussionTagPrivilege::CHANGE_UIBLOB, "change_uiblob" },
-            { DiscussionTagPrivilege::DELETE, "delete" }
+            DiscussionTagPrivilege::CHANGE_NAME,
+            DiscussionTagPrivilege::CHANGE_UIBLOB,
+            DiscussionTagPrivilege::DELETE,
         };
 
         enum class DiscussionCategoryPrivilege : EnumIntType
@@ -186,15 +186,15 @@ namespace Forum
             "adjust_privilege"
         };
 
-        const std::pair<DiscussionCategoryPrivilege, StringView> DiscussionCategoryPrivilegesToSerialize[] =
+        const DiscussionCategoryPrivilege DiscussionCategoryPrivilegesToSerialize[] =
         {
-            { DiscussionCategoryPrivilege::CHANGE_NAME, "change_name" },
-            { DiscussionCategoryPrivilege::CHANGE_DESCRIPTION, "change_description" },
-            { DiscussionCategoryPrivilege::CHANGE_PARENT, "change_parent" },
-            { DiscussionCategoryPrivilege::CHANGE_DISPLAYORDER, "change_displayorder" },
-            { DiscussionCategoryPrivilege::ADD_TAG, "add_tag" },
-            { DiscussionCategoryPrivilege::REMOVE_TAG, "remove_tag" },
-            { DiscussionCategoryPrivilege::DELETE, "delete" }
+            DiscussionCategoryPrivilege::CHANGE_NAME,
+            DiscussionCategoryPrivilege::CHANGE_DESCRIPTION,
+            DiscussionCategoryPrivilege::CHANGE_PARENT,
+            DiscussionCategoryPrivilege::CHANGE_DISPLAYORDER,
+            DiscussionCategoryPrivilege::ADD_TAG,
+            DiscussionCategoryPrivilege::REMOVE_TAG,
+            DiscussionCategoryPrivilege::DELETE
         };
 
         enum class ForumWidePrivilege : EnumIntType
@@ -256,30 +256,30 @@ namespace Forum
             "adjust_forum_wide_privilege"
         };
 
-        const std::pair<ForumWidePrivilege, StringView> ForumWidePrivilegesToSerialize[] =
+        const ForumWidePrivilege ForumWidePrivilegesToSerialize[] =
         {
-            { ForumWidePrivilege::GET_ENTITIES_COUNT, "get_entities_count" },
-            { ForumWidePrivilege::GET_VERSION, "get_version" },
-            { ForumWidePrivilege::GET_ALL_USERS, "get_all_users" },
-            { ForumWidePrivilege::GET_USER_INFO, "get_user_info" },
-            { ForumWidePrivilege::GET_DISCUSSION_THREADS_OF_USER, "get_discussion_threads_of_user" },
-            { ForumWidePrivilege::GET_DISCUSSION_THREAD_MESSAGES_OF_USER, "get_discussion_thread_messages_of_user" },
-            { ForumWidePrivilege::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER, "get_subscribed_discussion_threads_of_user" },
-            { ForumWidePrivilege::GET_ALL_DISCUSSION_CATEGORIES, "get_all_discussion_categories" },
-            { ForumWidePrivilege::GET_DISCUSSION_CATEGORIES_FROM_ROOT, "get_discussion_categories_from_root" },
-            { ForumWidePrivilege::GET_ALL_DISCUSSION_TAGS, "get_all_discussion_tags" },
-            { ForumWidePrivilege::GET_ALL_DISCUSSION_THREADS, "get_all_discussion_threads" },
-            { ForumWidePrivilege::GET_ALL_MESSAGE_COMMENTS, "get_all_message_comments" },
-            { ForumWidePrivilege::GET_MESSAGE_COMMENTS_OF_USER, "get_message_comments_of_user" },
-            { ForumWidePrivilege::ADD_DISCUSSION_CATEGORY, "add_discussion_category" },
-            { ForumWidePrivilege::ADD_DISCUSSION_TAG, "add_discussion_tag" },
-            { ForumWidePrivilege::ADD_DISCUSSION_THREAD, "add_discussion_thread" },
-            { ForumWidePrivilege::CHANGE_OWN_USER_NAME, "change_own_user_name" },
-            { ForumWidePrivilege::CHANGE_OWN_USER_INFO, "change_own_user_info" },
-            { ForumWidePrivilege::CHANGE_ANY_USER_NAME, "change_any_user_name" },
-            { ForumWidePrivilege::CHANGE_ANY_USER_INFO, "change_any_user_info" },
-            { ForumWidePrivilege::DELETE_ANY_USER, "delete_any_user" },
-            { ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, "adjust_forum_wide_privilege" }
+            ForumWidePrivilege::GET_ENTITIES_COUNT,
+            ForumWidePrivilege::GET_VERSION,
+            ForumWidePrivilege::GET_ALL_USERS,
+            ForumWidePrivilege::GET_USER_INFO,
+            ForumWidePrivilege::GET_DISCUSSION_THREADS_OF_USER,
+            ForumWidePrivilege::GET_DISCUSSION_THREAD_MESSAGES_OF_USER,
+            ForumWidePrivilege::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER,
+            ForumWidePrivilege::GET_ALL_DISCUSSION_CATEGORIES,
+            ForumWidePrivilege::GET_DISCUSSION_CATEGORIES_FROM_ROOT,
+            ForumWidePrivilege::GET_ALL_DISCUSSION_TAGS,
+            ForumWidePrivilege::GET_ALL_DISCUSSION_THREADS,
+            ForumWidePrivilege::GET_ALL_MESSAGE_COMMENTS,
+            ForumWidePrivilege::GET_MESSAGE_COMMENTS_OF_USER,
+            ForumWidePrivilege::ADD_DISCUSSION_CATEGORY,
+            ForumWidePrivilege::ADD_DISCUSSION_TAG,
+            ForumWidePrivilege::ADD_DISCUSSION_THREAD,
+            ForumWidePrivilege::CHANGE_OWN_USER_NAME,
+            ForumWidePrivilege::CHANGE_OWN_USER_INFO,
+            ForumWidePrivilege::CHANGE_ANY_USER_NAME,
+            ForumWidePrivilege::CHANGE_ANY_USER_INFO,
+            ForumWidePrivilege::DELETE_ANY_USER,
+            ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE
         };
 
         enum class ForumWideDefaultPrivilegeDuration : EnumIntType
