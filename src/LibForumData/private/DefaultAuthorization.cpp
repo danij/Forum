@@ -529,17 +529,17 @@ AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, ForumWideP
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-static bool allowPrivilegeChange(PrivilegeValueIntType oldValue, PrivilegeValueIntType newValue,
+static bool allowPrivilegeChange(PrivilegeValueType oldValue, PrivilegeValueIntType newValue,
                                  PrivilegeValueType currentPermissions)
 {
     PrivilegeValueIntType currentPermissionsValue = currentPermissions ? *currentPermissions : 0;
-    return (oldValue <= currentPermissionsValue) && (newValue <= currentPermissionsValue);
+    return ((! oldValue) || (oldValue <= currentPermissionsValue)) && (newValue <= currentPermissionsValue);
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege(const User& currentUser,
                                                                                  const DiscussionThreadMessage& message,
                                                                                  DiscussionThreadMessagePrivilege privilege,
-                                                                                 PrivilegeValueIntType oldValue,
+                                                                                 PrivilegeValueType oldValue,
                                                                                  PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
@@ -554,7 +554,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege(const User& currentUser,
                                                                                  const DiscussionThread& thread,
                                                                                  DiscussionThreadMessagePrivilege privilege,
-                                                                                 PrivilegeValueIntType oldValue,
+                                                                                 PrivilegeValueType oldValue,
                                                                                  PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
@@ -569,7 +569,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const User& currentUser,
                                                                           const DiscussionThread& thread,
                                                                           DiscussionThreadPrivilege privilege,
-                                                                          PrivilegeValueIntType oldValue,
+                                                                          PrivilegeValueType oldValue,
                                                                           PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
@@ -584,7 +584,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege(const User& currentUser,
                                                                                  const DiscussionTag& tag,
                                                                                  DiscussionThreadMessagePrivilege privilege,
-                                                                                 PrivilegeValueIntType oldValue,
+                                                                                 PrivilegeValueType oldValue,
                                                                                  PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
@@ -599,7 +599,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const User& currentUser,
                                                                           const DiscussionTag& tag,
                                                                           DiscussionThreadPrivilege privilege,
-                                                                          PrivilegeValueIntType oldValue,
+                                                                          PrivilegeValueType oldValue,
                                                                           PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
@@ -614,7 +614,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
 AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const User& currentUser,
                                                                        const DiscussionTag& tag,
                                                                        DiscussionTagPrivilege privilege,
-                                                                       PrivilegeValueIntType oldValue,
+                                                                       PrivilegeValueType oldValue,
                                                                        PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
@@ -629,7 +629,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const Use
 AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(const User& currentUser,
                                                                             const DiscussionCategory& category,
                                                                             DiscussionCategoryPrivilege privilege,
-                                                                            PrivilegeValueIntType oldValue,
+                                                                            PrivilegeValueType oldValue,
                                                                             PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
@@ -643,7 +643,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(cons
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege(const User& currentUser,
                                                                                  DiscussionThreadMessagePrivilege privilege,
-                                                                                 PrivilegeValueIntType oldValue,
+                                                                                 PrivilegeValueType oldValue,
                                                                                  PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
@@ -657,7 +657,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const User& currentUser,
                                                                           DiscussionThreadPrivilege privilege,
-                                                                          PrivilegeValueIntType oldValue,
+                                                                          PrivilegeValueType oldValue,
                                                                           PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
@@ -671,7 +671,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const User& currentUser,
                                                                        DiscussionTagPrivilege privilege,
-                                                                       PrivilegeValueIntType oldValue,
+                                                                       PrivilegeValueType oldValue,
                                                                        PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
@@ -685,7 +685,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const Use
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(const User& currentUser,
                                                                             DiscussionCategoryPrivilege privilege,
-                                                                            PrivilegeValueIntType oldValue,
+                                                                            PrivilegeValueType oldValue,
                                                                             PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
@@ -699,7 +699,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(cons
 
 AuthorizationStatus DefaultAuthorization::updateForumWidePrivilege(const User& currentUser,
                                                                    ForumWidePrivilege privilege,
-                                                                   PrivilegeValueIntType oldValue,
+                                                                   PrivilegeValueType oldValue,
                                                                    PrivilegeValueIntType newValue) const
 {
     PrivilegeValueType with;
