@@ -748,6 +748,11 @@ WriteEvents& CommandHandler::writeEvents()
 
 CommandHandler::Result CommandHandler::handle(Command command, const std::vector<StringView>& parameters)
 {
+    if (Context::disableCommands())
+    {
+        return { StatusCode::NOT_ALLOWED, {} };
+    }
+
     StatusCode statusCode;
     if (command >= 0 && command < LAST_COMMAND)
     {

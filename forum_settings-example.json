@@ -46,6 +46,7 @@
         "listenPort": 8081,
         "connectionTimeoutSeconds": 20,
         "trustIpFromXForwardedFor": false
+        "disableCommands": false
     },
 
     "logging": {

@@ -1,6 +1,7 @@
 #include "Configuration.h"
 
 #include <boost/property_tree/json_parser.hpp>
+#include "ContextProviders.h"
 
 static std::shared_ptr<const Forum::Configuration::Config> currentConfig =
         std::make_shared<const Forum::Configuration::Config>();
@@ -62,6 +63,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(service.listenPort);
     LOAD_CONFIG_VALUE(service.connectionTimeoutSeconds);
     LOAD_CONFIG_VALUE(service.trustIpFromXForwardedFor);
+    LOAD_CONFIG_VALUE(service.disableCommands);
 
     LOAD_CONFIG_VALUE(logging.settingsFile);
 
@@ -71,4 +73,6 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(persistence.createNewOutputFileEverySeconds);
 
     setGlobalConfig(config);
+
+    Context::setDisableCommands(config.service.disableCommands);
 }

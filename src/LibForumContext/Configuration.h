@@ -69,6 +69,7 @@ namespace Forum
             uint16_t listenPort = 8081;
             int_fast16_t connectionTimeoutSeconds = 20;
             bool trustIpFromXForwardedFor = false;
+            bool disableCommands = false;
         };
 
         struct LoggingConfig

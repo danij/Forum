@@ -46,6 +46,16 @@ namespace Forum
          */
         void setBatchInsertInProgres(bool value);
 
+        /**
+         * Returns whether commands on only views should be allowed
+         */
+        bool disableCommands();
+
+        /**
+         * Sets whether commands should be allowed (if FALSE only views will be allowed)
+         */
+        void setDisableCommands(bool value);
+
         enum class SortOrder
         {
             Ascending,
