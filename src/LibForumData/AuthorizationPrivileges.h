@@ -4,6 +4,7 @@
 #include "StringHelpers.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstdint>
 #include <ctime>
 
@@ -382,6 +383,22 @@ namespace Forum
             if ( ! second) return first;
 
             return std::max(*first, *second);
+        }
+
+        inline auto calculatePrivilegeExpires(PrivilegeDefaultDurationIntType start,
+                                              PrivilegeDefaultDurationIntType duration)
+        {
+            static_assert(sizeof(PrivilegeDefaultDurationIntType) >= 8, "PrivilegeDefaultDurationIntType should be at least 64-bit wide");
+
+            auto maxHalf = std::numeric_limits<PrivilegeDefaultDurationIntType>::max() / 2;
+            assert(start >= 0);
+            assert(start < maxHalf);
+
+            if (duration >= maxHalf)
+            {
+                duration -= start;
+            }
+            return start + duration;
         }
 
         struct DiscussionThreadMessagePrivilegeStore

@@ -191,6 +191,20 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext,
                                          Authorization::ForumWidePrivilege,
                                          Authorization::PrivilegeValueIntType)> changeForumWideRequiredPrivilege;
+
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&,
+                                         Authorization::DiscussionThreadMessageDefaultPrivilegeDuration,
+                                         Authorization::PrivilegeDefaultDurationIntType)> changeDiscussionThreadMessageDefaultPrivilegeDurationForThread;
+            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&,
+                                         Authorization::DiscussionThreadMessageDefaultPrivilegeDuration,
+                                         Authorization::PrivilegeDefaultDurationIntType)> changeDiscussionThreadMessageDefaultPrivilegeDurationForTag;
+            boost::signals2::signal<void(ObserverContext,
+                                         Authorization::DiscussionThreadMessageDefaultPrivilegeDuration,
+                                         Authorization::PrivilegeDefaultDurationIntType)> changeDiscussionThreadMessageDefaultPrivilegeDurationForumWide;
+
+            boost::signals2::signal<void(ObserverContext,
+                                         Authorization::ForumWideDefaultPrivilegeDuration,
+                                         Authorization::PrivilegeDefaultDurationIntType)> changeForumWideDefaultPrivilegeDuration;
         };
     }
 }

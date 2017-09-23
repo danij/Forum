@@ -231,10 +231,10 @@ namespace Forum
                     Entities::EntityCollection& collection,
                     Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
                     Authorization::PrivilegeDefaultDurationIntType value) override;
-            StatusCode changeForumWideMessageDefaultPrivilegeDuration(
+            StatusCode changeForumWideDefaultPrivilegeDuration(
                     Authorization::ForumWideDefaultPrivilegeDuration privilege,
                     Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) override;
-            StatusCode changeForumWideMessageDefaultPrivilegeDuration(
+            StatusCode changeForumWideDefaultPrivilegeDuration(
                     Entities::EntityCollection& collection,
                     Authorization::ForumWideDefaultPrivilegeDuration privilege,
                     Authorization::PrivilegeDefaultDurationIntType value) override;

@@ -90,6 +90,10 @@ namespace Forum
                                                                         DiscussionThreadPrivilege privilege,
                                                                         PrivilegeValueType oldValue,
                                                                         PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, const Entities::DiscussionThread& thread,
+                    DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IDiscussionThreadAuthorization> DiscussionThreadAuthorizationRef;
 
@@ -188,6 +192,10 @@ namespace Forum
                                                                      DiscussionTagPrivilege privilege,
                                                                      PrivilegeValueType oldValue,
                                                                      PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, const Entities::DiscussionTag& tag,
+                    DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IDiscussionTagAuthorization> DiscussionTagAuthorizationRef;
 
@@ -259,6 +267,12 @@ namespace Forum
                                                                  ForumWidePrivilege privilege,
                                                                  PrivilegeValueType oldValue,
                                                                  PrivilegeValueIntType newValue) const = 0;
+            virtual AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const = 0;
+            virtual AuthorizationStatus updateForumWideDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, ForumWideDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const = 0;
         };
         typedef std::shared_ptr<IForumWideAuthorization> ForumWideAuthorizationRef;
 

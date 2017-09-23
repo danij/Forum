@@ -169,6 +169,10 @@ namespace Forum
                                                                 DiscussionThreadPrivilege privilege,
                                                                 PrivilegeValueType oldValue,
                                                                 PrivilegeValueIntType newValue) const override { return {}; }
+            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, const Entities::DiscussionThread& thread,
+                    DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override { return {}; }
             AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        const Entities::DiscussionThreadMessage& message,
                                                                        DiscussionThreadMessagePrivilege privilege,
@@ -189,6 +193,10 @@ namespace Forum
                                                              DiscussionTagPrivilege privilege,
                                                              PrivilegeValueType oldValue,
                                                              PrivilegeValueIntType newValue) const override { return {}; }
+            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, const Entities::DiscussionTag& tag,
+                    DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override { return {}; }
             AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
                                                                   const Entities::DiscussionCategory& category,
                                                                   DiscussionCategoryPrivilege privilege,
@@ -213,6 +221,12 @@ namespace Forum
             AuthorizationStatus updateForumWidePrivilege(const Entities::User& currentUser,
                                                          ForumWidePrivilege privilege, PrivilegeValueType oldValue,
                                                          PrivilegeValueIntType newValue) const override { return {}; }
+            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override { return {}; }
+            AuthorizationStatus updateForumWideDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, ForumWideDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override { return {}; }
         };
     }
 }

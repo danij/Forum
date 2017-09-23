@@ -180,6 +180,10 @@ namespace Forum
                                                                 DiscussionThreadPrivilege privilege,
                                                                 PrivilegeValueType oldValue,
                                                                 PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, const Entities::DiscussionThread& thread,
+                    DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        const Entities::DiscussionTag& tag,
                                                                        DiscussionThreadMessagePrivilege privilege,
@@ -195,6 +199,10 @@ namespace Forum
                                                              DiscussionTagPrivilege privilege,
                                                              PrivilegeValueType oldValue,
                                                              PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, const Entities::DiscussionTag& tag,
+                    DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override;
             AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
                                                                   const Entities::DiscussionCategory& category,
                                                                   DiscussionCategoryPrivilege privilege,
@@ -219,6 +227,13 @@ namespace Forum
             AuthorizationStatus updateForumWidePrivilege(const Entities::User& currentUser,
                                                          ForumWidePrivilege privilege, PrivilegeValueType oldValue,
                                                          PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override;
+            AuthorizationStatus updateForumWideDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, ForumWideDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override;
+
         private:
             AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThreadMessage& message,
                                           DiscussionThreadMessagePrivilege privilege, PrivilegeValueType& with) const;

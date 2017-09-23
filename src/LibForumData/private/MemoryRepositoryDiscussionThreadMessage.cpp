@@ -188,7 +188,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
 
         if (valueNeeded > 0)
         {
-            auto expiresAt = message->created() + changePrivilegeDuration;
+            auto expiresAt = calculatePrivilegeExpires(message->created(), changePrivilegeDuration);
 
             collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
                     currentUser->id(), message->id(), privilege, valueNeeded, expiresAt);
@@ -205,7 +205,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
 
         if (valueNeeded)
         {
-            auto expiresAt = message->created() + changePrivilegeDuration;
+            auto expiresAt = calculatePrivilegeExpires(message->created(), changePrivilegeDuration);
 
             collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
                     currentUser->id(), message->id(), privilege, valueNeeded, expiresAt);
@@ -581,7 +581,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
         auto valueNeeded = optionalOrZero(parentThread->getDiscussionThreadMessagePrivilege(privilege));
         if (valueNeeded > 0)
         {
-            auto expiresAt = timestamp + resetVotePrivilegeDuration;
+            auto expiresAt = calculatePrivilegeExpires(timestamp, resetVotePrivilegeDuration);
 
             collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
                     currentUser->id(), message.id(), privilege, valueNeeded, expiresAt);

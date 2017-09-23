@@ -468,7 +468,7 @@ namespace Forum
             virtual StatusCode changeDiscussionThreadMessageDefaultPrivilegeDuration(
                     Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
                     Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) = 0;
-            virtual StatusCode changeForumWideMessageDefaultPrivilegeDuration(
+            virtual StatusCode changeForumWideDefaultPrivilegeDuration(
                     Authorization::ForumWideDefaultPrivilegeDuration privilege,
                     Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) = 0;
 
@@ -612,7 +612,7 @@ namespace Forum
                     Entities::EntityCollection& collection,
                     Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
                     Authorization::PrivilegeDefaultDurationIntType value) = 0;
-            virtual StatusCode changeForumWideMessageDefaultPrivilegeDuration(
+            virtual StatusCode changeForumWideDefaultPrivilegeDuration(
                     Entities::EntityCollection& collection,
                     Authorization::ForumWideDefaultPrivilegeDuration privilege,
                     Authorization::PrivilegeDefaultDurationIntType value) = 0;

@@ -415,7 +415,7 @@ StatusWithResource<DiscussionThreadPtr> MemoryRepositoryDiscussionThread::addNew
 
         if (valueNeeded > 0)
         {
-            auto expiresAt = thread->created() + changePrivilegeDuration;
+            auto expiresAt = calculatePrivilegeExpires(thread->created(), changePrivilegeDuration);
 
             collection.grantedPrivileges().grantDiscussionThreadPrivilege(
                 currentUser->id(), thread->id(), privilege, valueNeeded, expiresAt);
@@ -432,7 +432,7 @@ StatusWithResource<DiscussionThreadPtr> MemoryRepositoryDiscussionThread::addNew
 
         if (valueNeeded)
         {
-            auto expiresAt = thread->created() + changePrivilegeDuration;
+            auto expiresAt = calculatePrivilegeExpires(thread->created(), changePrivilegeDuration);
 
             collection.grantedPrivileges().grantDiscussionThreadPrivilege(
                 currentUser->id(), thread->id(), privilege, valueNeeded, expiresAt);
