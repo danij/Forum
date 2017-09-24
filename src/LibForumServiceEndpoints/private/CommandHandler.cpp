@@ -15,6 +15,7 @@ using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
+using namespace Forum::Authorization;
 
 #define COMMAND_HANDLER_METHOD(name) \
     StatusCode name(const std::vector<StringView>& parameters, OutStream& output)
@@ -120,6 +121,22 @@ struct CommandHandler::CommandHandlerImpl
         return true;
     }
 
+    template<typename PrivilegeType, typename PrivilegeStringsType>
+    static bool parsePrivilege(StringView value, PrivilegeType& output, PrivilegeStringsType& strings)
+    {
+        int i = 0;
+        for (auto str : strings)
+        {
+            if (str == value)
+            {
+                output = static_cast<PrivilegeType>(i);
+                return true;
+            }
+            i += 1;
+        }
+        return false;
+    }
+
     COMMAND_HANDLER_METHOD( SHOW_VERSION )
     {
         return metricsRepository->getVersion(output);
@@ -136,11 +153,6 @@ struct CommandHandler::CommandHandlerImpl
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
         return userRepository->addNewUser(normalizedParam, parameters[1], output);
-    }
-
-    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES )
-    {
-        return authorizationRepository->getForumWideCurrentUserPrivileges(output);
     }
 
     COMMAND_HANDLER_METHOD( GET_USERS_BY_NAME )
@@ -602,6 +614,513 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output,
                                                                           RetrieveDiscussionThreadsBy::MessageCount);
     }
+
+
+    COMMAND_HANDLER_METHOD( GET_REQUIRED_PRIVILEGES_FOR_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return authorizationRepository->getRequiredPrivilegesForThreadMessage(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ASSIGNED_PRIVILEGES_FOR_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return authorizationRepository->getAssignedPrivilegesForThreadMessage(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 3)) return INVALID_PARAMETERS;
+
+        DiscussionThreadMessagePrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(
+                parameters[0], privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
+
+        DiscussionThreadMessagePrivilege privilege;
+        if ( ! parsePrivilege(parameters[2], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignDiscussionThreadMessagePrivilegeForThreadMessage(
+                parameters[0], parameters[1], privilege, value, duration, output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_REQUIRED_PRIVILEGES_FOR_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return authorizationRepository->getRequiredPrivilegesForThread(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DEFAULT_PRIVILEGE_DURATIONS_FOR_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return authorizationRepository->getDefaultPrivilegeDurationsForThread(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ASSIGNED_PRIVILEGES_FOR_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return authorizationRepository->getAssignedPrivilegesForThread(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, 3)) return INVALID_PARAMETERS;
+
+        DiscussionThreadMessagePrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionThreadMessageRequiredPrivilegeForThread(
+                parameters[0], privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, 3)) return INVALID_PARAMETERS;
+
+        DiscussionThreadPrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionThreadPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionThreadRequiredPrivilegeForThread(
+                parameters[0], privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, 3)) return INVALID_PARAMETERS;
+
+        DiscussionThreadMessageDefaultPrivilegeDuration privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionThreadMessageDefaultPrivilegeDurationStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
+                parameters[0], privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
+
+        DiscussionThreadMessagePrivilege privilege;
+        if ( ! parsePrivilege(parameters[2], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignDiscussionThreadMessagePrivilegeForThread(
+                parameters[0], parameters[1], privilege, value, duration, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
+
+        DiscussionThreadPrivilege privilege;
+        if ( ! parsePrivilege(parameters[2], privilege, DiscussionThreadPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignDiscussionThreadPrivilegeForThread(
+                parameters[0], parameters[1], privilege, value, duration, output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_REQUIRED_PRIVILEGES_FOR_TAG )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return authorizationRepository->getRequiredPrivilegesForTag(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DEFAULT_PRIVILEGE_DURATIONS_FOR_TAG )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return authorizationRepository->getDefaultPrivilegeDurationsForTag(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ASSIGNED_PRIVILEGES_FOR_TAG )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return authorizationRepository->getAssignedPrivilegesForTag(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_TAG )
+    {
+        if ( ! checkNumberOfParameters(parameters, 3)) return INVALID_PARAMETERS;
+
+        DiscussionThreadMessagePrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionThreadMessageRequiredPrivilegeForTag(
+                parameters[0], privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_TAG )
+    {
+        if ( ! checkNumberOfParameters(parameters, 3)) return INVALID_PARAMETERS;
+
+        DiscussionThreadPrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionThreadPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionThreadRequiredPrivilegeForTag(
+                parameters[0], privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FOR_TAG )
+    {
+        if ( ! checkNumberOfParameters(parameters, 3)) return INVALID_PARAMETERS;
+
+        DiscussionTagPrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionTagPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionTagRequiredPrivilegeForTag(
+                parameters[0], privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_TAG )
+    {
+        if ( ! checkNumberOfParameters(parameters, 3)) return INVALID_PARAMETERS;
+
+        DiscussionThreadMessageDefaultPrivilegeDuration privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionThreadMessageDefaultPrivilegeDurationStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
+                parameters[0], privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_TAG )
+    {
+        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
+
+        DiscussionThreadMessagePrivilege privilege;
+        if ( ! parsePrivilege(parameters[2], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignDiscussionThreadMessagePrivilegeForTag(
+                parameters[0], parameters[1], privilege, value, duration, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_TAG )
+    {
+        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
+
+        DiscussionThreadPrivilege privilege;
+        if ( ! parsePrivilege(parameters[2], privilege, DiscussionThreadPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignDiscussionThreadPrivilegeForTag(
+                parameters[0], parameters[1], privilege, value, duration, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_TAG_PRIVILEGE_FOR_TAG )
+    {
+        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
+
+        DiscussionTagPrivilege privilege;
+        if ( ! parsePrivilege(parameters[2], privilege, DiscussionTagPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignDiscussionTagPrivilegeForTag(parameters[0], parameters[1], privilege, value, duration, output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_REQUIRED_PRIVILEGES_FOR_CATEGORY )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return authorizationRepository->getRequiredPrivilegesForCategory(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ASSIGNED_PRIVILEGES_FOR_CATEGORY )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return authorizationRepository->getAssignedPrivilegesForCategory(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FOR_CATEGORY )
+    {
+        if ( ! checkNumberOfParameters(parameters, 3)) return INVALID_PARAMETERS;
+
+        DiscussionCategoryPrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionCategoryPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionCategoryRequiredPrivilegeForCategory(
+                parameters[0], privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE_FOR_CATEGORY )
+    {
+        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
+
+        DiscussionCategoryPrivilege privilege;
+        if ( ! parsePrivilege(parameters[2], privilege, DiscussionCategoryPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignDiscussionCategoryPrivilegeForCategory(
+                parameters[0], parameters[1], privilege, value, duration, output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES )
+    {
+        return authorizationRepository->getForumWideCurrentUserPrivileges(output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_REQUIRED_PRIVILEGES )
+    {
+        return authorizationRepository->getForumWideRequiredPrivileges(output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATIONS )
+    {
+        return authorizationRepository->getForumWideDefaultPrivilegeDurations(output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_ASSIGNED_PRIVILEGES )
+    {
+        return authorizationRepository->getForumWideAssignedPrivileges(output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_ASSIGNED_PRIVILEGES_FOR_USER )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return authorizationRepository->getForumWideAssignedPrivilegesForUser(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+
+        DiscussionThreadMessagePrivilege privilege;
+        if ( ! parsePrivilege(parameters[0], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[1], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionThreadMessageRequiredPrivilege(privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+
+        DiscussionThreadPrivilege privilege;
+        if ( ! parsePrivilege(parameters[0], privilege, DiscussionThreadPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[1], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionThreadRequiredPrivilege(privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+
+        DiscussionTagPrivilege privilege;
+        if ( ! parsePrivilege(parameters[0], privilege, DiscussionTagPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[1], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionTagRequiredPrivilege(privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+
+        DiscussionCategoryPrivilege privilege;
+        if ( ! parsePrivilege(parameters[0], privilege, DiscussionCategoryPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[1], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionCategoryRequiredPrivilege(privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_FORUM_WIDE_REQUIRED_PRIVILEGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+
+        ForumWidePrivilege privilege;
+        if ( ! parsePrivilege(parameters[0], privilege, ForumWidePrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[1], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeForumWideRequiredPrivilege(privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+
+        DiscussionThreadMessageDefaultPrivilegeDuration privilege;
+        if ( ! parsePrivilege(parameters[0], privilege, DiscussionThreadMessageDefaultPrivilegeDurationStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[1], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeDiscussionThreadMessageDefaultPrivilegeDuration(privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATION )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+
+        ForumWideDefaultPrivilegeDuration privilege;
+        if ( ! parsePrivilege(parameters[0], privilege, ForumWideDefaultPrivilegeDurationStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[1], value)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->changeForumWideDefaultPrivilegeDuration(privilege, value, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 4)) return INVALID_PARAMETERS;
+
+        DiscussionThreadMessagePrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[3], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignDiscussionThreadMessagePrivilege(
+                parameters[0], privilege, value, duration, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_PRIVILEGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 4)) return INVALID_PARAMETERS;
+
+        DiscussionThreadPrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionThreadPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[3], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignDiscussionThreadPrivilege(
+                parameters[0], privilege, value, duration, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_TAG_PRIVILEGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 4)) return INVALID_PARAMETERS;
+
+        DiscussionTagPrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionTagPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[3], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignDiscussionTagPrivilege(
+                parameters[0], privilege, value, duration, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 4)) return INVALID_PARAMETERS;
+
+        DiscussionCategoryPrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, DiscussionCategoryPrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[3], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignDiscussionCategoryPrivilege(
+                parameters[0], privilege, value, duration, output);
+    }
+
+    COMMAND_HANDLER_METHOD( ASSIGN_FORUM_WIDE_PRIVILEGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 4)) return INVALID_PARAMETERS;
+
+        ForumWidePrivilege privilege;
+        if ( ! parsePrivilege(parameters[1], privilege, ForumWidePrivilegeStrings)) return INVALID_PARAMETERS;
+
+        PrivilegeValueIntType value{ 0 };
+        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+
+        PrivilegeDefaultDurationIntType duration{ 0 };
+        if ( ! convertTo(parameters[3], duration)) return INVALID_PARAMETERS;
+
+        return authorizationRepository->assignForumWidePrivilege(
+                parameters[0], privilege, value, duration, output);
+    }
 };
 
 
@@ -674,6 +1193,40 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setCommandHandler(ADD_DISCUSSION_TAG_TO_CATEGORY);
     setCommandHandler(REMOVE_DISCUSSION_TAG_FROM_CATEGORY);
 
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD_MESSAGE);
+    setCommandHandler(ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD_MESSAGE);
+
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD);
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_THREAD);
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_THREAD);
+    setCommandHandler(ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD);
+    setCommandHandler(ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_THREAD);
+
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_TAG);
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_TAG);
+    setCommandHandler(CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FOR_TAG);
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_TAG);
+    setCommandHandler(ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_TAG);
+    setCommandHandler(ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_TAG);
+    setCommandHandler(ASSIGN_DISCUSSION_TAG_PRIVILEGE_FOR_TAG);
+
+    setCommandHandler(CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FOR_CATEGORY);
+    setCommandHandler(ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE_FOR_CATEGORY);
+
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE);
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE);
+    setCommandHandler(CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE);
+    setCommandHandler(CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE);
+    setCommandHandler(CHANGE_FORUM_WIDE_REQUIRED_PRIVILEGE);
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION);
+    setCommandHandler(CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATION);
+    setCommandHandler(ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE);
+    setCommandHandler(ASSIGN_DISCUSSION_THREAD_PRIVILEGE);
+    setCommandHandler(ASSIGN_DISCUSSION_TAG_PRIVILEGE);
+    setCommandHandler(ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE);
+    setCommandHandler(ASSIGN_FORUM_WIDE_PRIVILEGE);
+
+
     setViewHandler(SHOW_VERSION);
     setViewHandler(COUNT_ENTITIES);
 
@@ -726,6 +1279,22 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT);
+
+    setViewHandler(GET_REQUIRED_PRIVILEGES_FOR_THREAD_MESSAGE);
+    setViewHandler(GET_ASSIGNED_PRIVILEGES_FOR_THREAD_MESSAGE);
+    setViewHandler(GET_REQUIRED_PRIVILEGES_FOR_THREAD);
+    setViewHandler(GET_DEFAULT_PRIVILEGE_DURATIONS_FOR_THREAD);
+    setViewHandler(GET_ASSIGNED_PRIVILEGES_FOR_THREAD);
+    setViewHandler(GET_REQUIRED_PRIVILEGES_FOR_TAG);
+    setViewHandler(GET_DEFAULT_PRIVILEGE_DURATIONS_FOR_TAG);
+    setViewHandler(GET_ASSIGNED_PRIVILEGES_FOR_TAG);
+    setViewHandler(GET_REQUIRED_PRIVILEGES_FOR_CATEGORY);
+    setViewHandler(GET_ASSIGNED_PRIVILEGES_FOR_CATEGORY);
+    setViewHandler(GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES);
+    setViewHandler(GET_FORUM_WIDE_REQUIRED_PRIVILEGES);
+    setViewHandler(GET_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATIONS);
+    setViewHandler(GET_FORUM_WIDE_ASSIGNED_PRIVILEGES);
+    setViewHandler(GET_FORUM_WIDE_ASSIGNED_PRIVILEGES_FOR_USER);
 }
 
 CommandHandler::~CommandHandler()
