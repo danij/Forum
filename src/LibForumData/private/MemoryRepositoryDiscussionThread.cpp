@@ -692,8 +692,9 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
 
     updateThreadLastUpdated(threadInto, currentUser);
 
-    for (auto& message : threadFrom.messages().byId())
+    for (DiscussionThreadMessagePtr message : threadFrom.messages().byId())
     {
+        message->parentThread() = threadIntoPtr;
         threadInto.insertMessage(message);
     }
 
