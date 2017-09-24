@@ -271,23 +271,23 @@ namespace Forum
             AuthorizationStatus assignDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        const Entities::User& targetUser,
                                                                        DiscussionThreadMessagePrivilege privilege,
-                                                                       PrivilegeValueIntType newValue) const = 0;
+                                                                       PrivilegeValueIntType newValue) const override;
             AuthorizationStatus assignDiscussionThreadPrivilege(const Entities::User& currentUser,
                                                                 const Entities::User& targetUser,
                                                                 DiscussionThreadPrivilege privilege,
-                                                                PrivilegeValueIntType newValue) const = 0;
+                                                                PrivilegeValueIntType newValue) const override;
             AuthorizationStatus assignDiscussionTagPrivilege(const Entities::User& currentUser,
                                                              const Entities::User& targetUser,
                                                              DiscussionTagPrivilege privilege,
-                                                             PrivilegeValueIntType newValue) const = 0;
+                                                             PrivilegeValueIntType newValue) const override;
             AuthorizationStatus assignDiscussionCategoryPrivilege(const Entities::User& currentUser,
                                                                   const Entities::User& targetUser,
                                                                   DiscussionCategoryPrivilege privilege,
-                                                                  PrivilegeValueIntType newValue) const = 0;
+                                                                  PrivilegeValueIntType newValue) const override;
             AuthorizationStatus assignForumWidePrivilege(const Entities::User& currentUser,
                                                          const Entities::User& targetUser,
                                                          ForumWidePrivilege privilege,
-                                                         PrivilegeValueIntType newValue) const = 0;
+                                                         PrivilegeValueIntType newValue) const override;
         private:
             AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThreadMessage& message,
                                           DiscussionThreadMessagePrivilege privilege, PrivilegeValueType& with) const;
