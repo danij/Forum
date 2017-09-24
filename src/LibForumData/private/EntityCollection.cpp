@@ -203,6 +203,27 @@ struct EntityCollection::Impl
             assert(category);
             category->updateMessageCount(message->parentThread(), -1);
         }
+
+        auto& upVotes = message->upVotes();
+        if (upVotes)
+        {
+            for (auto pair : *upVotes)
+            {
+                UserPtr user = pair.first;
+                assert(user);
+                user->removeVote(message);
+            }
+        }
+        auto& downVotes = message->downVotes();
+        if (downVotes)
+        {
+            for (auto pair : *downVotes)
+            {
+                UserPtr user = pair.first;
+                assert(user);
+                user->removeVote(message);
+            }
+        }
     }
 
     void insertDiscussionTag(DiscussionTagPtr tag)

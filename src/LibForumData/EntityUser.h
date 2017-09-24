@@ -139,6 +139,16 @@ namespace Forum
                 votedMessages().insert(message);
             }
 
+            void removeVote(DiscussionThreadMessagePtr message)
+            {
+                auto set = votedMessages();
+                auto it = set.find(message);
+                if (it != set.end())
+                {
+                    set.erase(it);
+                }
+            }
+
         private:
             static ChangeNotification changeNotifications_;
             static const std::set<DiscussionThreadMessagePtr> emptyVotedMessages_;

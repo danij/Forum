@@ -160,6 +160,10 @@ namespace Forum
                 lastUpdated_->by_ = by;
             }
 
+            auto& upVotes() { return upVotes_; }
+
+            auto& downVotes() { return downVotes_; }
+
             void addUpVote(EntityPointer<User> user, const Timestamp& at)
             {
                 if ( ! upVotes_) upVotes_.reset(new VoteCollection);
