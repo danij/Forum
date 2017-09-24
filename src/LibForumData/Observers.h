@@ -57,7 +57,7 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext,
                                          const Entities::DiscussionCategory&)> onGetDiscussionThreadsOfCategory;
 
-            boost::signals2::signal<void(ObserverContext)> onGetCurrentUserPrivileges;
+            boost::signals2::signal<void(ObserverContext)> onGetForumWideCurrentUserPrivileges;
             boost::signals2::signal<void(ObserverContext)> onGetForumWideRequiredPrivileges;
             boost::signals2::signal<void(ObserverContext,
                                          const Entities::DiscussionThreadMessage&)>
@@ -81,6 +81,8 @@ namespace Forum
                                                 onGetDefaultPrivilegeDurationsFromTag;
 
             boost::signals2::signal<void(ObserverContext)> onGetForumWideAssignedPrivileges;
+            boost::signals2::signal<void(ObserverContext,
+                                         const Entities::User&)> onGetForumWideAssignedPrivilegesForUser;
             boost::signals2::signal<void(ObserverContext,
                                          const Entities::DiscussionThreadMessage&)>
                                                 onGetAssignedPrivilegesFromThreadMessage;

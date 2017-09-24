@@ -187,11 +187,11 @@ namespace Forum
             //
             //forum wide
             //
-            StatusCode getCurrentUserPrivileges(OutStream& output) const override;
-            StatusCode getRequiredPrivileges(OutStream& output) const override;
-            StatusCode getDefaultPrivilegeDurations(OutStream& output) const override;
-            StatusCode getAssignedPrivileges(OutStream& output) const override;
-            StatusCode getAssignedPrivileges(Entities::IdTypeRef id, OutStream& output) const override;
+            StatusCode getForumWideCurrentUserPrivileges(OutStream& output) const override;
+            StatusCode getForumWideRequiredPrivileges(OutStream& output) const override;
+            StatusCode getForumWideDefaultPrivilegeDurations(OutStream& output) const override;
+            StatusCode getForumWideAssignedPrivileges(OutStream& output) const override;
+            StatusCode getForumWideAssignedPrivilegesForUser(Entities::IdTypeRef id, OutStream& output) const override;
 
             StatusCode changeDiscussionThreadMessageRequiredPrivilege(
                     Authorization::DiscussionThreadMessagePrivilege privilege,

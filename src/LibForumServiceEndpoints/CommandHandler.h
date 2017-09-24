@@ -64,7 +64,7 @@ namespace Forum
             SHOW_VERSION = 0,
             COUNT_ENTITIES,
 
-            GET_CURRENT_USER_PRIVILEGES,
+            GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES,
 
             GET_USERS_BY_NAME,
             GET_USERS_BY_CREATED,

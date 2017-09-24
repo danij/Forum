@@ -443,11 +443,11 @@ namespace Forum
             //
             //forum wide
             //
-            virtual StatusCode getCurrentUserPrivileges(OutStream& output) const = 0;
-            virtual StatusCode getRequiredPrivileges(OutStream& output) const = 0;
-            virtual StatusCode getDefaultPrivilegeDurations(OutStream& output) const = 0;
-            virtual StatusCode getAssignedPrivileges(OutStream& output) const = 0;
-            virtual StatusCode getAssignedPrivileges(Entities::IdTypeRef userId, OutStream& output) const = 0;
+            virtual StatusCode getForumWideCurrentUserPrivileges(OutStream& output) const = 0;
+            virtual StatusCode getForumWideRequiredPrivileges(OutStream& output) const = 0;
+            virtual StatusCode getForumWideDefaultPrivilegeDurations(OutStream& output) const = 0;
+            virtual StatusCode getForumWideAssignedPrivileges(OutStream& output) const = 0;
+            virtual StatusCode getForumWideAssignedPrivilegesForUser(Entities::IdTypeRef userId, OutStream& output) const = 0;
 
             virtual StatusCode changeDiscussionThreadMessageRequiredPrivilege(
                     Authorization::DiscussionThreadMessagePrivilege privilege,

@@ -159,7 +159,7 @@ void UsersEndpoint::getCurrentUserPrivileges(Http::RequestState& requestState)
     handle(requestState,
            [](const Http::RequestState& _, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
-        return commandHandler.handle(View::GET_CURRENT_USER_PRIVILEGES, parameters);
+        return commandHandler.handle(View::GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES, parameters);
     });
 }
 

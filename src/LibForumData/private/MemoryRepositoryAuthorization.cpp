@@ -1927,7 +1927,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilegeForCa
 //
 
 
-StatusCode MemoryRepositoryAuthorization::getCurrentUserPrivileges(OutStream& output) const
+StatusCode MemoryRepositoryAuthorization::getForumWideCurrentUserPrivileges(OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -1951,12 +1951,12 @@ StatusCode MemoryRepositoryAuthorization::getCurrentUserPrivileges(OutStream& ou
 
                           writer.endObject();
 
-                          readEvents().onGetCurrentUserPrivileges(createObserverContext(currentUser));
+                          readEvents().onGetForumWideCurrentUserPrivileges(createObserverContext(currentUser));
                       });
     return status;
 }
 
-StatusCode MemoryRepositoryAuthorization::getRequiredPrivileges(OutStream& output) const
+StatusCode MemoryRepositoryAuthorization::getForumWideRequiredPrivileges(OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -1985,7 +1985,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivileges(OutStream& outpu
     return status;
 }
 
-StatusCode MemoryRepositoryAuthorization::getDefaultPrivilegeDurations(OutStream& output) const
+StatusCode MemoryRepositoryAuthorization::getForumWideDefaultPrivilegeDurations(OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -2011,7 +2011,7 @@ StatusCode MemoryRepositoryAuthorization::getDefaultPrivilegeDurations(OutStream
     return status;
 }
 
-StatusCode MemoryRepositoryAuthorization::getAssignedPrivileges(OutStream& output) const
+StatusCode MemoryRepositoryAuthorization::getForumWideAssignedPrivileges(OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -2040,7 +2040,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivileges(OutStream& outpu
     return status;
 }
 
-StatusCode MemoryRepositoryAuthorization::getAssignedPrivileges(IdTypeRef userId, OutStream& output) const
+StatusCode MemoryRepositoryAuthorization::getForumWideAssignedPrivilegesForUser(IdTypeRef userId, OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -2051,6 +2051,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivileges(IdTypeRef userId
                           status = StatusCode::OK;
                           status.disable();
 
+                          const User* userPtr = anonymousUser();
                           if (userId != anonymousUserId())
                           {
                               const auto& indexById = collection.users().byId();
@@ -2060,6 +2061,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivileges(IdTypeRef userId
                                   status = StatusCode::NOT_FOUND;
                                   return;
                               }
+                              userPtr = *it;
                           }
 
                           auto& currentUser = performedBy.get(collection, *store_);
@@ -2074,7 +2076,8 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivileges(IdTypeRef userId
 
                           writer.endObject();
 
-                          readEvents().onGetForumWideAssignedPrivileges(createObserverContext(currentUser));
+                          readEvents().onGetForumWideAssignedPrivilegesForUser(createObserverContext(currentUser),
+                                                                               *userPtr);
                       });
     return status;
 }
