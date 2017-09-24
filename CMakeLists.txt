@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(Forum CXX)
+project(Forum C CXX)
 enable_testing()
 
 include(TestBigEndian)
