@@ -565,7 +565,6 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
     {
         return StatusCode::NOT_FOUND;
     }
-    DiscussionThreadMessagePtr message = *it;
 
     if (userId != anonymousUserId())
     {
@@ -961,7 +960,6 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
     {
         return StatusCode::NOT_FOUND;
     }
-    DiscussionThreadPtr thread = *it;
 
     if (userId != anonymousUserId())
     {
@@ -1048,7 +1046,6 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilegeForThre
     {
         return StatusCode::NOT_FOUND;
     }
-    DiscussionThreadPtr thread = *it;
 
     if (userId != anonymousUserId())
     {
@@ -1506,7 +1503,6 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
     {
         return StatusCode::NOT_FOUND;
     }
-    DiscussionTagPtr tag = *it;
 
     if (userId != anonymousUserId())
     {
@@ -1593,7 +1589,6 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilegeForTag(
     {
         return StatusCode::NOT_FOUND;
     }
-    DiscussionTagPtr tag = *it;
 
     if (userId != anonymousUserId())
     {
@@ -1680,7 +1675,6 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilegeForTag(
     {
         return StatusCode::NOT_FOUND;
     }
-    DiscussionTagPtr tag = *it;
 
     if (userId != anonymousUserId())
     {
@@ -1911,7 +1905,6 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilegeForCa
     {
         return StatusCode::NOT_FOUND;
     }
-    DiscussionCategoryPtr category = *it;
 
     if (userId != anonymousUserId())
     {
