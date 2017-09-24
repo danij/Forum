@@ -61,7 +61,7 @@ bool DiscussionCategory::insertDiscussionThread(DiscussionThreadPtr thread)
     }
 
     //don't use updateMessageCount() as insertDiscussionThread will take care of that for totals
-    messageCount_ += thread->messageCount();
+    messageCount_ += static_cast<decltype(messageCount_)>(thread->messageCount());
     thread->addCategory(pointer());
 
     changeNotifications_.onUpdateMessageCount(*this);

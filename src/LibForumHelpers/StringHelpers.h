@@ -71,7 +71,7 @@ namespace Forum
             {
                 return view;
             }
-            for (int i = view.size() - 1; i >= 0; --i)
+            for (size_t i = view.size() - 1; i >= 0; --i)
             {
                 if (isFirstByteInUTF8Sequence(view[i]))
                 {
@@ -149,7 +149,9 @@ namespace Forum
                 uint32_t sortKeySize;
 
                 SizeWithBoolAndSortKeySize() : boolean(0), size(0), sortKeySize(0) {}
-                SizeWithBoolAndSortKeySize(size_t size) : boolean(0), size(static_cast<decltype(size)>(size)), sortKeySize(0) {}
+                SizeWithBoolAndSortKeySize(size_t size)
+                    : boolean(0), size(static_cast<decltype(SizeWithBoolAndSortKeySize::size)>(size)), sortKeySize(0)
+                {}
 
                 SizeWithBoolAndSortKeySize(const SizeWithBoolAndSortKeySize&) = default;
                 SizeWithBoolAndSortKeySize& operator=(const SizeWithBoolAndSortKeySize&) = default;
@@ -218,7 +220,7 @@ namespace Forum
         {
             auto sortKeyStart = getCurrentSortKey();
             auto& sizeInfo = this->container_.size();
-            sizeInfo.sortKeySize = getCurrentSortKeyLength();
+            sizeInfo.sortKeySize = static_cast<decltype(sizeInfo.sortKeySize)>(getCurrentSortKeyLength());
 
             std::copy(sortKeyStart, sortKeyStart + sizeInfo.sortKeySize,
                       *(this->container_) + sizeInfo.size - sizeInfo.sortKeySize);
