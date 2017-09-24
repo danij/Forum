@@ -177,7 +177,7 @@ namespace Forum
                                                                        const Entities::DiscussionThread& thread,
                                                                        const Entities::User& targetUser,
                                                                        DiscussionThreadMessagePrivilege privilege,
-                                                                       PrivilegeValueIntType newValue) const { return {}; }
+                                                                       PrivilegeValueIntType newValue) const override { return {}; }
             AuthorizationStatus assignDiscussionThreadPrivilege(const Entities::User& currentUser,
                                                                 const Entities::DiscussionThread& thread,
                                                                 const Entities::User& targetUser,
@@ -211,17 +211,17 @@ namespace Forum
                                                                        const Entities::DiscussionTag& tag,
                                                                        const Entities::User& targetUser,
                                                                        DiscussionThreadMessagePrivilege privilege,
-                                                                       PrivilegeValueIntType newValue) const { return {}; }
+                                                                       PrivilegeValueIntType newValue) const override { return {}; }
             AuthorizationStatus assignDiscussionThreadPrivilege(const Entities::User& currentUser,
                                                                 const Entities::DiscussionTag& tag,
                                                                 const Entities::User& targetUser,
                                                                 DiscussionThreadPrivilege privilege,
-                                                                PrivilegeValueIntType newValue) const { return {}; }
+                                                                PrivilegeValueIntType newValue) const override { return {}; }
             AuthorizationStatus assignDiscussionTagPrivilege(const Entities::User& currentUser,
                                                              const Entities::DiscussionTag& tag,
                                                              const Entities::User& targetUser,
                                                              DiscussionTagPrivilege privilege,
-                                                             PrivilegeValueIntType newValue) const { return {}; }
+                                                             PrivilegeValueIntType newValue) const override { return {}; }
             AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
                                                                   const Entities::DiscussionCategory& category,
                                                                   DiscussionCategoryPrivilege privilege,
@@ -265,23 +265,23 @@ namespace Forum
             AuthorizationStatus assignDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        const Entities::User& targetUser,
                                                                        DiscussionThreadMessagePrivilege privilege,
-                                                                       PrivilegeValueIntType newValue) const { return {}; }
+                                                                       PrivilegeValueIntType newValue) const override { return {}; }
             AuthorizationStatus assignDiscussionThreadPrivilege(const Entities::User& currentUser,
                                                                 const Entities::User& targetUser,
                                                                 DiscussionThreadPrivilege privilege,
-                                                                PrivilegeValueIntType newValue) const { return {}; }
+                                                                PrivilegeValueIntType newValue) const override { return {}; }
             AuthorizationStatus assignDiscussionTagPrivilege(const Entities::User& currentUser,
                                                              const Entities::User& targetUser,
                                                              DiscussionTagPrivilege privilege,
-                                                             PrivilegeValueIntType newValue) const { return {}; }
+                                                             PrivilegeValueIntType newValue) const override { return {}; }
             AuthorizationStatus assignDiscussionCategoryPrivilege(const Entities::User& currentUser,
                                                                   const Entities::User& targetUser,
                                                                   DiscussionCategoryPrivilege privilege,
-                                                                  PrivilegeValueIntType newValue) const { return {}; }
+                                                                  PrivilegeValueIntType newValue) const override { return {}; }
             AuthorizationStatus assignForumWidePrivilege(const Entities::User& currentUser,
                                                          const Entities::User& targetUser,
                                                          ForumWidePrivilege privilege,
-                                                         PrivilegeValueIntType newValue) const { return{}; }
+                                                         PrivilegeValueIntType newValue) const override { return{}; }
         };
     }
 }
