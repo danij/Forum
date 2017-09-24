@@ -283,6 +283,10 @@ struct EntityCollection::Impl
     void deleteMessageComment(MessageCommentPtr comment)
     {
         assert(comment);
+
+        User& user = comment->createdBy();
+        user.messageComments().remove(comment);
+
         messageComments_.remove(comment);
     }
 
