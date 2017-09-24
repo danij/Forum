@@ -284,6 +284,12 @@ struct EntityCollection::Impl
             tag->removeCategory(categoryPtr);
         }
 
+        for (DiscussionThreadPtr thread : category.threads().byId())
+        {
+            assert(thread);
+            thread->removeCategory(categoryPtr);
+        }
+
         managedEntities.categories.remove(categoryPtr.index());
     }
 
