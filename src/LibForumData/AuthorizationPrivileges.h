@@ -14,7 +14,7 @@ namespace Forum
 {
     namespace Authorization
     {
-        typedef uint_fast32_t EnumIntType;
+        typedef uint_fast16_t EnumIntType;
 
         enum class DiscussionThreadMessagePrivilege : EnumIntType
         {
