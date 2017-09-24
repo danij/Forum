@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.2)
 project(Forum CXX)
 enable_testing()
 
+include(TestBigEndian)
+TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
+if(IS_BIG_ENDIAN)
+    message(FATAL_ERROR "Big endian is currently not supported by this project")
+endif()
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Werror -Wno-error=deprecated-declarations")
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
