@@ -198,7 +198,7 @@ void Application::createCommandHandler()
     directWriteRepositories_.discussionThreadMessage = discussionThreadMessageRepository;
     directWriteRepositories_.discussionTag = discussionTagRepository;
     directWriteRepositories_.discussionCategory = discussionCategoryRepository;
-    directWriteRepositories_.authorizationRepository = authorizationRepository;
+    directWriteRepositories_.authorization = authorizationRepository;
 
     auto forumConfig = Configuration::getGlobalConfig();
     auto& persistenceConfig = forumConfig->persistence;

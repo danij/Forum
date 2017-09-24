@@ -134,7 +134,7 @@ BenchmarkContext createContext()
     context.writeRepositories.discussionThreadMessage = discussionThreadMessageRepository;
     context.writeRepositories.discussionTag = discussionTagRepository;
     context.writeRepositories.discussionCategory = discussionCategoryRepository;
-    context.writeRepositories.authorizationRepository = authorizationRepository;
+    context.writeRepositories.authorization = authorizationRepository;
 
     return context;
 }

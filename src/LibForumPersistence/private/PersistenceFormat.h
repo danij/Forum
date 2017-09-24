@@ -19,7 +19,7 @@ namespace Forum
 
         typedef int64_t PersistentTimestampType;
 
-        typedef int16_t PersistentPrivilegeEnumType;
+        typedef uint16_t PersistentPrivilegeEnumType;
         typedef int16_t PersistentPrivilegeValueType;
         typedef int64_t PersistentPrivilegeDurationType;
 

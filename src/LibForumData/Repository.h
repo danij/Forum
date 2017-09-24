@@ -509,7 +509,7 @@ namespace Forum
                     Authorization::PrivilegeValueIntType value) = 0;
 
             virtual StatusCode assignDiscussionThreadMessagePrivilegeForThreadMessage(
-                    Entities::EntityCollection& collection,Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
+                    Entities::EntityCollection& collection, Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
                     Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
                     Authorization::PrivilegeDefaultDurationIntType duration) = 0;
@@ -682,7 +682,7 @@ namespace Forum
             DiscussionThreadMessageDirectWriteRepositoryRef discussionThreadMessage;
             DiscussionTagDirectWriteRepositoryRef discussionTag;
             DiscussionCategoryDirectWriteRepositoryRef discussionCategory;
-            AuthorizationRepositoryRef authorizationRepository;
+            AuthorizationDirectWriteRepositoryRef authorization;
         };
     }
 }
