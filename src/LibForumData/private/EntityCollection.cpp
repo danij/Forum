@@ -290,6 +290,13 @@ struct EntityCollection::Impl
             thread->removeCategory(categoryPtr);
         }
 
+        auto parent = category.parent();
+        if (parent)
+        {
+            parent->removeTotalsFromChild(category);
+            parent->removeChild(categoryPtr);
+        }
+
         managedEntities.categories.remove(categoryPtr.index());
     }
 

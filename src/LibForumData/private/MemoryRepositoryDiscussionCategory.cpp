@@ -441,8 +441,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(Id
     return status;
 }
 
-static void updateCategoryParent(EntityCollection& collection, DiscussionCategory& category,
-                                 DiscussionCategoryPtr newParentPtr, const UserPtr currentUser)
+static void updateCategoryParent(DiscussionCategory& category, DiscussionCategoryPtr newParentPtr, UserPtr currentUser)
 {
     auto oldParent = category.parent();
 
@@ -499,7 +498,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(En
 
     auto currentUser = getCurrentUser(collection);
 
-    updateCategoryParent(collection, category, newParentPtr, currentUser);
+    updateCategoryParent(category, newParentPtr, currentUser);
 
     return StatusCode::OK;
 }
@@ -615,7 +614,7 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(EntityCo
 
     for (DiscussionCategoryPtr childCategory : category->children())
     {
-        updateCategoryParent(collection, *childCategory, {}, currentUser);
+        updateCategoryParent(*childCategory, {}, currentUser);
     }
 
     collection.deleteDiscussionCategory(category);
