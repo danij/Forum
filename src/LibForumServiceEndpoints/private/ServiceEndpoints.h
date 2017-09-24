@@ -46,8 +46,6 @@ namespace Forum
         public:
             explicit UsersEndpoint(CommandHandler& handler);
 
-            void getCurrentUserPrivileges(Http::RequestState& requestState);
-
             void getAll(Http::RequestState& requestState);
             void getUserById(Http::RequestState& requestState);
             void getUserByName(Http::RequestState& requestState);
@@ -133,6 +131,57 @@ namespace Forum
             void changeDisplayOrder(Http::RequestState& requestState);
             void addTag(Http::RequestState& requestState);
             void removeTag(Http::RequestState& requestState);
+        };
+
+        class AuthorizationEndpoint : private AbstractEndpoint
+        {
+        public:
+            explicit AuthorizationEndpoint(CommandHandler& handler);
+
+            void getRequiredPrivilegesForThreadMessage(Http::RequestState& requestState);
+            void getAssignedPrivilegesForThreadMessage(Http::RequestState& requestState);
+            void getRequiredPrivilegesForThread(Http::RequestState& requestState);
+            void getDefaultPrivilegeDurationsForThread(Http::RequestState& requestState);
+            void getAssignedPrivilegesForThread(Http::RequestState& requestState);
+            void getRequiredPrivilegesForTag(Http::RequestState& requestState);
+            void getDefaultPrivilegeDurationsForTag(Http::RequestState& requestState);
+            void getAssignedPrivilegesForTag(Http::RequestState& requestState);
+            void getRequiredPrivilegesForCategory(Http::RequestState& requestState);
+            void getAssignedPrivilegesForCategory(Http::RequestState& requestState);
+            void getForumWideCurrentUserPrivileges(Http::RequestState& requestState);
+            void getForumWideRequiredPrivileges(Http::RequestState& requestState);
+            void getForumWideDefaultPrivilegeDurations(Http::RequestState& requestState);
+            void getForumWideAssignedPrivileges(Http::RequestState& requestState);
+            void getForumWideAssignedPrivilegesForUser(Http::RequestState& requestState);
+
+            void changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(Http::RequestState& requestState);
+            void assignDiscussionThreadMessagePrivilegeForThreadMessage(Http::RequestState& requestState);
+            void changeDiscussionThreadMessageRequiredPrivilegeForThread(Http::RequestState& requestState);
+            void changeDiscussionThreadRequiredPrivilegeForThread(Http::RequestState& requestState);
+            void changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(Http::RequestState& requestState);
+            void assignDiscussionThreadMessagePrivilegeForThread(Http::RequestState& requestState);
+            void assignDiscussionThreadPrivilegeForThread(Http::RequestState& requestState);
+            void changeDiscussionThreadMessageRequiredPrivilegeForTag(Http::RequestState& requestState);
+            void changeDiscussionThreadRequiredPrivilegeForTag(Http::RequestState& requestState);
+            void changeDiscussionTagRequiredPrivilegeForTag(Http::RequestState& requestState);
+            void changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(Http::RequestState& requestState);
+            void assignDiscussionThreadMessagePrivilegeForTag(Http::RequestState& requestState);
+            void assignDiscussionThreadPrivilegeForTag(Http::RequestState& requestState);
+            void assignDiscussionTagPrivilegeForTag(Http::RequestState& requestState);
+            void changeDiscussionCategoryRequiredPrivilegeForCategory(Http::RequestState& requestState);
+            void assignDiscussionCategoryPrivilegeForCategory(Http::RequestState& requestState);
+            void changeDiscussionThreadMessageRequiredPrivilege(Http::RequestState& requestState);
+            void changeDiscussionThreadRequiredPrivilege(Http::RequestState& requestState);
+            void changeDiscussionTagRequiredPrivilege(Http::RequestState& requestState);
+            void changeDiscussionCategoryRequiredPrivilege(Http::RequestState& requestState);
+            void changeForumWideRequiredPrivilege(Http::RequestState& requestState);
+            void changeDiscussionThreadMessageDefaultPrivilegeDuration(Http::RequestState& requestState);
+            void changeForumWideDefaultPrivilegeDuration(Http::RequestState& requestState);
+            void assignDiscussionThreadMessagePrivilege(Http::RequestState& requestState);
+            void assignDiscussionThreadPrivilege(Http::RequestState& requestState);
+            void assignDiscussionTagPrivilege(Http::RequestState& requestState);
+            void assignDiscussionCategoryPrivilege(Http::RequestState& requestState);
+            void assignForumWidePrivilege(Http::RequestState& requestState);
         };
     }
 }

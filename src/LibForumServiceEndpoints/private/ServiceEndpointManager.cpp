@@ -9,7 +9,7 @@ struct ServiceEndpointManager::ServiceEndpointManagerImpl
     explicit ServiceEndpointManagerImpl(CommandHandler& handler)
         : commandHandler(handler), metricsEndpoint(handler), statisticsEndpoint(handler),
           usersEndpoint(handler), threadsEndpoint(handler), threadMessagesEndpoint(handler),
-          tagsEndpoint(handler), categoriesEndpoint(handler)
+          tagsEndpoint(handler), categoriesEndpoint(handler), authorizationEndpoint(handler)
     {
     }
 
@@ -21,6 +21,7 @@ struct ServiceEndpointManager::ServiceEndpointManagerImpl
     DiscussionThreadMessagesEndpoint threadMessagesEndpoint;
     DiscussionTagsEndpoint tagsEndpoint;
     DiscussionCategoriesEndpoint categoriesEndpoint;
+    AuthorizationEndpoint authorizationEndpoint;
 };
 
 ServiceEndpointManager::ServiceEndpointManager(CommandHandler& handler)
@@ -42,9 +43,6 @@ void ServiceEndpointManager::registerRoutes(Http::HttpRouter& router)
                     [this](auto& state) { this->impl_->metricsEndpoint.getVersion(state);});
     router.addRoute("statistics/entitycount/", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->statisticsEndpoint.getEntitiesCount(state);});
-
-    router.addRoute("privileges/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->usersEndpoint.getCurrentUserPrivileges(state);});
 
     router.addRoute("users/", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->usersEndpoint.getAll(state);});
@@ -154,5 +152,93 @@ void ServiceEndpointManager::registerRoutes(Http::HttpRouter& router)
                     [this](auto& state) { this->impl_->categoriesEndpoint.addTag(state);});
     router.addRoute("categories/tag", Http::HttpVerb::DELETE,
                     [this](auto& state) { this->impl_->categoriesEndpoint.removeTag(state);});
+
+    router.addRoute("privileges/required/thread_message", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getRequiredPrivilegesForThreadMessage(state);});
+    router.addRoute("privileges/assigned/thread_message", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getAssignedPrivilegesForThreadMessage(state);});
+    router.addRoute("privileges/required/thread", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getRequiredPrivilegesForThread(state);});
+    router.addRoute("privileges/durations/thread", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getDefaultPrivilegeDurationsForThread(state);});
+    router.addRoute("privileges/assigned/thread_message", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getAssignedPrivilegesForThread(state);});
+    router.addRoute("privileges/required/tag", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getRequiredPrivilegesForTag(state);});
+    router.addRoute("privileges/durations/tag", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getDefaultPrivilegeDurationsForTag(state);});
+    router.addRoute("privileges/assigned/tag", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getAssignedPrivilegesForTag(state);});
+    router.addRoute("privileges/required/category", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getRequiredPrivilegesForCategory(state);});
+    router.addRoute("privileges/assigned/thread_message", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getAssignedPrivilegesForCategory(state);});
+    router.addRoute("privileges/forum_wide/current_user", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getForumWideCurrentUserPrivileges(state);});
+    router.addRoute("privileges/required/forum_wide", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getForumWideRequiredPrivileges(state);});
+    router.addRoute("privileges/durations/forum_wide", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getForumWideDefaultPrivilegeDurations(state);});
+    router.addRoute("privileges/assinged/forum_wide", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getForumWideAssignedPrivileges(state);});
+    router.addRoute("privileges/assinged/forum_wide/user", Http::HttpVerb::GET,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.getForumWideAssignedPrivilegesForUser(state);});
+
+    router.addRoute("privileges/thread_message/required/thread_message", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(state);});
+    router.addRoute("privileges/thread_message/assign/thread_message", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignDiscussionThreadMessagePrivilegeForThreadMessage(state);});
+    router.addRoute("privileges/thread_message/required/thread", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilegeForThread(state);});
+    router.addRoute("privileges/thread/required/thread", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionThreadRequiredPrivilegeForThread(state);});
+    router.addRoute("privileges/thread_message/duration/thread", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(state);});
+    router.addRoute("privileges/thread_message/assign/thread", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignDiscussionThreadMessagePrivilegeForThread(state);});
+    router.addRoute("privileges/thread/assign/thread", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignDiscussionThreadPrivilegeForThread(state);});
+    router.addRoute("privileges/thread_message/required/tag", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilegeForTag(state);});
+    router.addRoute("privileges/thread/required/tag", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionThreadRequiredPrivilegeForTag(state);});
+    router.addRoute("privileges/tag/required/tag", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionTagRequiredPrivilegeForTag(state);});
+    router.addRoute("privileges/thread_message/duration/tag", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(state);});
+    router.addRoute("privileges/thread_message/assign/tag", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignDiscussionThreadMessagePrivilegeForTag(state);});
+    router.addRoute("privileges/thread/assign/tag", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignDiscussionThreadPrivilegeForTag(state);});
+    router.addRoute("privileges/tag/required/tag", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignDiscussionTagPrivilegeForTag(state);});
+    router.addRoute("privileges/category/required/category", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionCategoryRequiredPrivilegeForCategory(state);});
+    router.addRoute("privileges/category/assign/category", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignDiscussionCategoryPrivilegeForCategory(state);});
+    router.addRoute("privileges/thread_message/required/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilege(state);});
+    router.addRoute("privileges/thread/required/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionThreadRequiredPrivilege(state);});
+    router.addRoute("privileges/tag/required/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionTagRequiredPrivilege(state);});
+    router.addRoute("privileges/category/required/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionCategoryRequiredPrivilege(state);});
+    router.addRoute("privileges/forum_wide/required/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeForumWideRequiredPrivilege(state);});
+    router.addRoute("privileges/thread_message/duration/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeDiscussionThreadMessageDefaultPrivilegeDuration(state);});
+    router.addRoute("privileges/forum_wide/duration/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.changeForumWideDefaultPrivilegeDuration(state);});
+    router.addRoute("privileges/thread_message/assign/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignDiscussionThreadMessagePrivilege(state);});
+    router.addRoute("privileges/thread/assign/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignDiscussionThreadPrivilege(state);});
+    router.addRoute("privileges/tag/assign/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignDiscussionTagPrivilege(state);});
+    router.addRoute("privileges/category/assign/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignDiscussionCategoryPrivilege(state);});
+    router.addRoute("privileges/forum_wide/assign/forum_wide", Http::HttpVerb::POST,
+                    [this](auto& state) { this->impl_->authorizationEndpoint.assignForumWidePrivilege(state);});
 
 }

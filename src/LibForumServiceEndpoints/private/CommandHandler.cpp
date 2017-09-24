@@ -874,7 +874,8 @@ struct CommandHandler::CommandHandlerImpl
         PrivilegeDefaultDurationIntType duration{ 0 };
         if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
 
-        return authorizationRepository->assignDiscussionTagPrivilegeForTag(parameters[0], parameters[1], privilege, value, duration, output);
+        return authorizationRepository->assignDiscussionTagPrivilegeForTag(
+                parameters[0], parameters[1], privilege, value, duration, output);
     }
 
     COMMAND_HANDLER_METHOD( GET_REQUIRED_PRIVILEGES_FOR_CATEGORY )
