@@ -49,21 +49,22 @@ struct EntityCollection::Impl
         users_.add(user);
     }
 
-    void deleteUser(UserPtr user)
+    void deleteUser(UserPtr userPtr)
     {
-        assert(user);
-        if ( ! users_.remove(user))
+        assert(userPtr);
+        if ( ! users_.remove(userPtr))
         {
             return;
         }
+        User& user = *userPtr;
 
-        for (DiscussionThreadMessagePtr message : user->votedMessages())
+        for (DiscussionThreadMessagePtr message : user.votedMessages())
         {
             assert(message);
-            message->removeVote(user);
+            message->removeVote(userPtr);
         }
 
-        for (MessageCommentPtr comment : user->messageComments().byId())
+        for (MessageCommentPtr comment : user.messageComments().byId())
         {
             assert(comment);
             if (comment->solved())
@@ -73,16 +74,16 @@ struct EntityCollection::Impl
             comment->parentMessage().removeComment(comment);
         }
 
-        for (DiscussionThreadPtr thread : user->subscribedThreads().byId())
+        for (DiscussionThreadPtr thread : user.subscribedThreads().byId())
         {
             assert(thread);
-            thread->subscribedUsers().erase(user);
+            thread->subscribedUsers().erase(userPtr);
         }
 
         {
             //no need to delete the message from the user as we're deleting the whole user anyway
             BoolTemporaryChanger changer(alsoDeleteMessagesFromUser, false);
-            for (auto& message : user->threadMessages().byId())
+            for (auto& message : user.threadMessages().byId())
             {
                 assert(message);
                 //Each discussion message holds a reference to the user that created it and the parent thread
@@ -93,7 +94,7 @@ struct EntityCollection::Impl
         {
             //no need to delete the thread from the user as we're deleting the whole user anyway
             BoolTemporaryChanger changer(alsoDeleteThreadsFromUser, false);
-            for (auto& thread : user->threads().byId())
+            for (auto& thread : user.threads().byId())
             {
                 assert(thread);
                 //Each discussion thread holds a reference to the user that created it
@@ -101,6 +102,8 @@ struct EntityCollection::Impl
                 deleteDiscussionThread(thread);
             }
         }
+
+        managedEntities.users.remove(userPtr.index());
     }
 
     void insertDiscussionThread(DiscussionThreadPtr thread)
@@ -117,7 +120,6 @@ struct EntityCollection::Impl
         {
             return;
         }
-
         DiscussionThread& thread = *threadPtr;
 
         thread.aboutToBeDeleted() = true;
@@ -152,6 +154,8 @@ struct EntityCollection::Impl
             assert(user);
             user->subscribedThreads().remove(threadPtr);
         }
+
+        managedEntities.threads.remove(threadPtr.index());
     }
 
     void insertDiscussionThreadMessage(DiscussionThreadMessagePtr message)
@@ -160,20 +164,21 @@ struct EntityCollection::Impl
         threadMessages_.add(message);
     }
 
-    void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message)
+    void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr messagePtr)
     {
-        assert(message);
-        if ( ! threadMessages_.remove(message))
+        assert(messagePtr);
+        if ( ! threadMessages_.remove(messagePtr))
         {
             return;
         }
+        DiscussionThreadMessage& message = *messagePtr;
 
         if (alsoDeleteMessagesFromUser)
         {
-            message->createdBy().threadMessages().remove(message);
+            message.createdBy().threadMessages().remove(messagePtr);
         }
 
-        auto messageComments = message->comments();
+        auto messageComments = message.comments();
         if (messageComments)
         {
             for (MessageCommentPtr comment : messageComments->byId())
@@ -182,13 +187,35 @@ struct EntityCollection::Impl
             }
         }
 
-        DiscussionThread& parentThread = *(message->parentThread());
+        auto& upVotes = message.upVotes();
+        if (upVotes)
+        {
+            for (auto pair : *upVotes)
+            {
+                UserPtr user = pair.first;
+                assert(user);
+                user->removeVote(messagePtr);
+            }
+        }
+        auto& downVotes = message.downVotes();
+        if (downVotes)
+        {
+            for (auto pair : *downVotes)
+            {
+                UserPtr user = pair.first;
+                assert(user);
+                user->removeVote(messagePtr);
+            }
+        }
+
+        DiscussionThread& parentThread = *(message.parentThread());
         if (parentThread.aboutToBeDeleted())
         {
+            managedEntities.threadMessages.remove(messagePtr.index());
             return;
         }
 
-        parentThread.deleteDiscussionThreadMessage(message);
+        parentThread.deleteDiscussionThreadMessage(messagePtr);
         parentThread.resetVisitorsSinceLastEdit();
         parentThread.latestVisibleChange() = Context::getCurrentTime();
 
@@ -201,29 +228,10 @@ struct EntityCollection::Impl
         for (DiscussionCategoryPtr category : parentThread.categories())
         {
             assert(category);
-            category->updateMessageCount(message->parentThread(), -1);
+            category->updateMessageCount(message.parentThread(), -1);
         }
 
-        auto& upVotes = message->upVotes();
-        if (upVotes)
-        {
-            for (auto pair : *upVotes)
-            {
-                UserPtr user = pair.first;
-                assert(user);
-                user->removeVote(message);
-            }
-        }
-        auto& downVotes = message->downVotes();
-        if (downVotes)
-        {
-            for (auto pair : *downVotes)
-            {
-                UserPtr user = pair.first;
-                assert(user);
-                user->removeVote(message);
-            }
-        }
+        managedEntities.threadMessages.remove(messagePtr.index());
     }
 
     void insertDiscussionTag(DiscussionTagPtr tag)
@@ -232,25 +240,27 @@ struct EntityCollection::Impl
         tags_.add(tag);
     }
 
-    void deleteDiscussionTag(DiscussionTagPtr tag)
+    void deleteDiscussionTag(DiscussionTagPtr tagPtr)
     {
-        assert(tag);
-
-        if ( ! tags_.remove (tag))
+        assert(tagPtr);
+        if ( ! tags_.remove (tagPtr))
         {
             return;
         }
+        DiscussionTag& tag = *tagPtr;
 
-        for (DiscussionCategoryPtr category : tag->categories())
+        for (DiscussionCategoryPtr category : tag.categories())
         {
             assert(category);
-            category->removeTag(tag);
+            category->removeTag(tagPtr);
         }
-        for (DiscussionThreadPtr thread : tag->threads().byId())
+        for (DiscussionThreadPtr thread : tag.threads().byId())
         {
             assert(thread);
-            thread->removeTag(tag);
+            thread->removeTag(tagPtr);
         }
+
+        managedEntities.tags.remove(tagPtr.index());
     }
 
     void insertDiscussionCategory(DiscussionCategoryPtr category)
@@ -259,19 +269,22 @@ struct EntityCollection::Impl
         categories_.add(category);
     }
 
-    void deleteDiscussionCategory(DiscussionCategoryPtr category)
+    void deleteDiscussionCategory(DiscussionCategoryPtr categoryPtr)
     {
-        assert(category);
-
-        if ( ! categories_.remove(category))
+        assert(categoryPtr);
+        if ( ! categories_.remove(categoryPtr))
         {
             return;
         }
-        for (DiscussionTagPtr tag : category->tags())
+        DiscussionCategory& category = *categoryPtr;
+
+        for (DiscussionTagPtr tag : category.tags())
         {
             assert(tag);
-            tag->removeCategory(category);
+            tag->removeCategory(categoryPtr);
         }
+
+        managedEntities.categories.remove(categoryPtr.index());
     }
 
     void insertMessageComment(MessageCommentPtr comment)
@@ -280,14 +293,19 @@ struct EntityCollection::Impl
         messageComments_.add(comment);
     }
 
-    void deleteMessageComment(MessageCommentPtr comment)
+    void deleteMessageComment(MessageCommentPtr commentPtr)
     {
-        assert(comment);
+        assert(commentPtr);
+        if ( ! messageComments_.remove(commentPtr))
+        {
+            return;
+        }
+        MessageComment& comment = *commentPtr;
 
-        User& user = comment->createdBy();
-        user.messageComments().remove(comment);
+        User& user = comment.createdBy();
+        user.messageComments().remove(commentPtr);
 
-        messageComments_.remove(comment);
+        managedEntities.messageComments.remove(commentPtr.index());
     }
 
     void setEventListeners()

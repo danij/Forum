@@ -148,6 +148,11 @@ namespace Forum
                 return ptr();
             }
 
+            auto index() const
+            {
+                return index_;
+            }
+
             bool operator==(EntityPointer other) const
             {
                 return index_ == other.index_;
