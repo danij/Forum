@@ -708,11 +708,10 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
     //the number of tags associated to a category, so search the category in the tag
     if ( ! tag.addCategory(categoryPtr))
     {
-        //actually already added, but return ok
         FORUM_LOG_WARNING << "Discussion tag " << static_cast<std::string>(tagId)
                           << " is already added to discussion category: " << static_cast<std::string>(categoryId);
 
-        return StatusCode::OK;
+        return StatusCode::NO_EFFECT;
     }
 
     auto currentUser = getCurrentUser(collection);

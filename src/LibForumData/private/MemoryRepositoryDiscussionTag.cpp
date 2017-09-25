@@ -399,10 +399,9 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     //the number of threads associated to a tag, so search the tag in the thread
     if ( ! thread.addTag(tagPtr))
     {
-        //actually already added, but return ok
         FORUM_LOG_WARNING << "Discussion tag " << static_cast<std::string>(tagId)
                           << " is already added to discussion thread: " << static_cast<std::string>(threadId);
-        return StatusCode::OK;
+        return StatusCode::NO_EFFECT;
     }
 
     tag.insertDiscussionThread(threadPtr);
