@@ -134,6 +134,10 @@ int Application::run(int argc, const char* argv[])
 
     events.onApplicationStart();
 
+    auto config = Configuration::getGlobalConfig();
+
+    FORUM_LOG_INFO << "Starting to listen under "
+                   << config->service.listenIPAddress << ":" << config->service.listenPort;
     httpListener_->startListening();
 
     getIOServiceProvider().start();
@@ -141,7 +145,7 @@ int Application::run(int argc, const char* argv[])
 
     httpListener_->stopListening();
 
-    BOOST_LOG_TRIVIAL(info) << "Stopped listening for HTTP connections";
+    FORUM_LOG_INFO << "Stopped listening for HTTP connections";
 
     events.beforeApplicationStop();
 
