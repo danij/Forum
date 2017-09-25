@@ -322,7 +322,7 @@ void Parser::interpretPathString()
     auto pathStart = parsePathStartsAt_;
     char c;
     int keyStart = 0, keyEnd = 0, valueStart = 0, valueEnd = 0;
-    for (int i = 0, n = request_.path.size(); i < n; ++i)
+    for (int i = 0, n = static_cast<int>(request_.path.size()); i < n; ++i)
     {
         c = request_.path[i];
         switch (state)
@@ -368,7 +368,7 @@ void Parser::interpretCookies(char* value, size_t size)
     auto cookieStart = value;
     int nameStart = 0, nameEnd = 0, valueStart = 0, valueEnd = 0;
 
-    for (size_t i = 0; i < size; ++i)
+    for (int i = 0; i < static_cast<int>(size); ++i)
     {
         auto c = value[i];
 

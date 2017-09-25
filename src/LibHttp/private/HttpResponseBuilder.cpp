@@ -242,6 +242,6 @@ void HttpResponseBuilder::writeBody(const char* value, size_t length)
 void HttpResponseBuilder::writeBodyAndContentLength(const char* value, size_t length)
 {
     assert(ProtocolState::ResponseCodeWritten == protocolState_);
-    writeHeader("Content-Length", length);
+    writeHeader("Content-Length", static_cast<int>(length));
     writeBody(value, length);
 }
