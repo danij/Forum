@@ -708,10 +708,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
     //the number of tags associated to a category, so search the category in the tag
     if ( ! tag.addCategory(categoryPtr))
     {
-        FORUM_LOG_WARNING << "Discussion tag " << static_cast<std::string>(tagId)
-                          << " is already added to discussion category: " << static_cast<std::string>(categoryId);
-
-        return StatusCode::NO_EFFECT;
+        return StatusCode::OK;
     }
 
     auto currentUser = getCurrentUser(collection);
@@ -800,9 +797,7 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
     //the number of tags associated to a category, so search the category in the tag
     if ( ! tag.removeCategory(categoryPtr))
     {
-        FORUM_LOG_WARNING << "Discussion tag " << static_cast<std::string>(tagId)
-                          << " was not found on discussion category: " << static_cast<std::string>(categoryId);
-        return StatusCode::NO_EFFECT;
+        return StatusCode::OK;
     }
 
     auto currentUser = getCurrentUser(collection);

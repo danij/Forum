@@ -399,9 +399,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     //the number of threads associated to a tag, so search the tag in the thread
     if ( ! thread.addTag(tagPtr))
     {
-        FORUM_LOG_WARNING << "Discussion tag " << static_cast<std::string>(tagId)
-                          << " is already added to discussion thread: " << static_cast<std::string>(threadId);
-        return StatusCode::NO_EFFECT;
+        return StatusCode::OK;
     }
 
     tag.insertDiscussionThread(threadPtr);
@@ -486,9 +484,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
     if ( ! thread.removeTag(tagPtr))
     {
         //tag was not added to the thread
-        FORUM_LOG_WARNING << "Discussion tag " << static_cast<std::string>(tagId)
-                          << " was not found on discussion thread: " << static_cast<std::string>(threadId);
-        return StatusCode::NO_EFFECT;
+        return StatusCode::OK;
     }
 
     tag.deleteDiscussionThread(threadPtr);
