@@ -227,8 +227,13 @@ void Application::importEvents()
     auto forumConfig = Configuration::getGlobalConfig();
     auto& persistenceConfig = forumConfig->persistence;
 
+    entityCollection_->startBatchInsert();
+
     EventImporter importer(persistenceConfig.validateChecksum, *entityCollection_, directWriteRepositories_);
     auto result = importer.import(persistenceConfig.inputFolder);
+
+    entityCollection_->stopBatchInsert();
+
     if (result.success)
     {
         FORUM_LOG_INFO << "Finished importing " << result.statistic.importedBlobs << " events out of "
