@@ -708,7 +708,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
     //the number of tags associated to a category, so search the category in the tag
     if ( ! tag.addCategory(categoryPtr))
     {
-        return StatusCode::OK;
+        return StatusCode::NO_EFFECT;
     }
 
     auto currentUser = getCurrentUser(collection);
@@ -797,7 +797,7 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
     //the number of tags associated to a category, so search the category in the tag
     if ( ! tag.removeCategory(categoryPtr))
     {
-        return StatusCode::OK;
+        return StatusCode::NO_EFFECT;
     }
 
     auto currentUser = getCurrentUser(collection);

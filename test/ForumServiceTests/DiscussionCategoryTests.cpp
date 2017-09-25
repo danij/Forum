@@ -577,11 +577,11 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_attached_to_categories_even_if_they
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Category");
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
 
-    for (size_t i = 0; i < 2; i++)
-    {
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY,
-                                                           { tagId, categoryId }));
-    }
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY,
+                                                       { tagId, categoryId }));
+                                                       
+    assertStatusCodeEqual(StatusCode::NO_EFFECT, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY,
+                                                              { tagId, categoryId }));
 
     auto category = getCategory(handler, categoryId);
 

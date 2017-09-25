@@ -399,7 +399,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     //the number of threads associated to a tag, so search the tag in the thread
     if ( ! thread.addTag(tagPtr))
     {
-        return StatusCode::OK;
+        return StatusCode::NO_EFFECT;
     }
 
     tag.insertDiscussionThread(threadPtr);
@@ -484,7 +484,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
     if ( ! thread.removeTag(tagPtr))
     {
         //tag was not added to the thread
-        return StatusCode::OK;
+        return StatusCode::NO_EFFECT;
     }
 
     tag.deleteDiscussionThread(threadPtr);
