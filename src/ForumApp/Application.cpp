@@ -273,7 +273,7 @@ void Application::initializeLogging()
 
     if (settingsFile.size() < 1) return;
 
-    std::ifstream file(settingsFile);
+    std::ifstream file(settingsFile, std::ios::in);
     if ( ! file)
     {
         std::cerr << "Unable to find log settings file: " << settingsFile << '\n';
