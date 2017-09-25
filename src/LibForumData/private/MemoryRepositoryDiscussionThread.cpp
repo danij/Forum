@@ -781,8 +781,8 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityC
 
     if ( ! std::get<1>(thread->subscribedUsers().insert(currentUser)))
     {
-        FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
-                          << " is already subscribed to the discussion thread " << static_cast<std::string>(id);
+        //FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
+        //                  << " is already subscribed to the discussion thread " << static_cast<std::string>(id);
 
         return StatusCode::NO_EFFECT;
     }
@@ -843,8 +843,8 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(Ent
 
     if (0 == thread->subscribedUsers().erase(currentUser))
     {
-        FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
-                          << " was not subscribed to the discussion thread " << static_cast<std::string>(id);
+        //FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
+        //                  << " was not subscribed to the discussion thread " << static_cast<std::string>(id);
 
         return StatusCode::NO_EFFECT;
     }
