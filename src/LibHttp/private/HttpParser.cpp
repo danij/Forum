@@ -313,7 +313,7 @@ void Parser::interpretImportantHeaders()
     }
 
     auto cookieValue = request_.headers[Request::HttpHeader::Cookie];
-    interpretCookies(const_cast<char*>(cookieValue.data()), cookieValue.size());
+    interpretCookies(const_cast<char*>(cookieValue.data()), static_cast<int>(cookieValue.size()));
 }
 
 void Parser::interpretPathString()
@@ -362,13 +362,13 @@ void Parser::interpretPathString()
     }
 }
 
-void Parser::interpretCookies(char* value, size_t size)
+void Parser::interpretCookies(char* value, int size)
 {
     int state = 0;
     auto cookieStart = value;
     int nameStart = 0, nameEnd = 0, valueStart = 0, valueEnd = 0;
 
-    for (int i = 0; i < static_cast<int>(size); ++i)
+    for (int i = 0; i < size; ++i)
     {
         auto c = value[i];
 
