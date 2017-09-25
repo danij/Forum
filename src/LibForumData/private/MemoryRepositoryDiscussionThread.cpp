@@ -7,6 +7,7 @@
 #include "RandomGenerator.h"
 #include "StateHelpers.h"
 #include "StringHelpers.h"
+#include "Logging.h"
 
 #include <utility>
 
@@ -491,6 +492,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(EntityCo
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -543,6 +545,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -596,6 +599,7 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(EntityCollec
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -673,15 +677,23 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
 {
     auto currentUser = getCurrentUser(collection);
 
+    if (fromId == intoId)
+    {
+        FORUM_LOG_ERROR << "Cannot merge discussion thread into self: " << static_cast<std::string>(fromId);
+        return StatusCode::NO_EFFECT;
+    }
+
     auto& indexById = collection.threads().byId();
     auto itFrom = indexById.find(fromId);
     if (itFrom == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(fromId);
         return StatusCode::NOT_FOUND;
     }
     auto itInto = indexById.find(intoId);
     if (itInto == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(intoId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -760,6 +772,7 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityC
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -768,6 +781,9 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityC
 
     if ( ! std::get<1>(thread->subscribedUsers().insert(currentUser)))
     {
+        FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
+                          << " is already subscribed to the discussion thread " << static_cast<std::string>(id);
+
         return StatusCode::NO_EFFECT;
     }
 
@@ -818,6 +834,7 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(Ent
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -826,6 +843,9 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(Ent
 
     if (0 == thread->subscribedUsers().erase(currentUser))
     {
+        FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
+                          << " was not subscribed to the discussion thread " << static_cast<std::string>(id);
+
         return StatusCode::NO_EFFECT;
     }
 

@@ -7,6 +7,7 @@
 #include "RandomGenerator.h"
 #include "StateHelpers.h"
 #include "StringHelpers.h"
+#include "Logging.h"
 
 using namespace Forum;
 using namespace Forum::Configuration;
@@ -143,6 +144,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
     auto threadIt = threadIndex.find(threadId);
     if (threadIt == threadIndex.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -255,6 +257,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(Enti
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
     collection.deleteDiscussionThreadMessage(*it);
@@ -326,6 +329,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -433,6 +437,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
     auto messageIt = messagesIndexById.find(messageId);
     if (messageIt == messagesIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -440,6 +445,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
     auto itInto = threadsIndexById.find(intoThreadId);
     if (itInto == threadsIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(intoThreadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -452,6 +458,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
 
     if (threadFromPtr == threadIntoPtr)
     {
+        FORUM_LOG_WARNING << "Threa thread into which to move the discussion thread message is the same as the current one: "
+                          << static_cast<std::string>(intoThreadId);
+
         return StatusCode::NO_EFFECT;
     }
 
@@ -546,6 +555,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
     DiscussionThreadMessagePtr messagePtr = *it;
@@ -555,6 +565,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
 
     if (message.hasVoted(currentUser))
     {
+        FORUM_LOG_WARNING << "User "
+                          << static_cast<std::string>(currentUser->id()) << " has already voted discussion thread message "
+                          << static_cast<std::string>(message.id());
         return StatusCode::NO_EFFECT;
     }
 
@@ -643,6 +656,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
     DiscussionThreadMessagePtr messagePtr = *it;
@@ -652,6 +666,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
 
     if ( ! message.removeVote(currentUser))
     {
+        FORUM_LOG_WARNING << "Could not find discussion vote of user "
+                          << static_cast<std::string>(currentUser->id()) << " for discussion thread message "
+                          << static_cast<std::string>(message.id());
         return StatusCode::NO_EFFECT;
     }
     return StatusCode::OK;
@@ -833,6 +850,7 @@ StatusWithResource<MessageCommentPtr>
     auto messageIt = messageIndex.find(messageId);
     if (messageIt == messageIndex.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -898,6 +916,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(En
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -906,6 +925,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(En
 
     if (comment.solved())
     {
+        FORUM_LOG_WARNING << "Comment " << static_cast<std::string>(comment.id()) << " is already solved";
         return StatusCode::NO_EFFECT;
     }
 

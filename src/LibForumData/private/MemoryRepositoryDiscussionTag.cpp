@@ -6,6 +6,7 @@
 #include "OutputHelpers.h"
 #include "RandomGenerator.h"
 #include "StringHelpers.h"
+#include "Logging.h"
 
 using namespace Forum;
 using namespace Forum::Configuration;
@@ -128,6 +129,7 @@ StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscus
     auto& indexByName = collection.tags().byName();
     if (indexByName.find(nameString) != indexByName.end())
     {
+        FORUM_LOG_ERROR << "A discussion tag with this name already exists: " << name;
         return StatusCode::ALREADY_EXISTS;
     }
 
@@ -202,6 +204,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(EntityCollecti
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -261,6 +264,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(EntityCollec
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -311,6 +315,7 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(EntityCollection& 
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -371,6 +376,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -378,6 +384,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     auto threadIt = threadIndexById.find(threadId);
     if (threadIt == threadIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -393,6 +400,8 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     if ( ! thread.addTag(tagPtr))
     {
         //actually already added, but return ok
+        FORUM_LOG_WARNING << "Discussion tag " << static_cast<std::string>(tagId)
+                          << " is already added to discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::OK;
     }
 
@@ -456,6 +465,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
     auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -463,6 +473,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
     auto threadIt = threadIndexById.find(threadId);
     if (threadIt == threadIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -476,6 +487,8 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
     if ( ! thread.removeTag(tagPtr))
     {
         //tag was not added to the thread
+        FORUM_LOG_WARNING << "Discussion tag " << static_cast<std::string>(tagId)
+                          << " was not found on discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NO_EFFECT;
     }
 
@@ -537,15 +550,23 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(IdTypeRef fromId, 
 StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& collection, IdTypeRef fromId,
                                                               IdTypeRef intoId)
 {
+    if (fromId == intoId)
+    {
+        FORUM_LOG_ERROR << "Cannot merge discussion tag into itself: " << static_cast<std::string>(fromId);
+        return StatusCode::NO_EFFECT;
+    }
+
     auto& indexById = collection.tags().byId();
     auto itFrom = indexById.find(fromId);
     if (itFrom == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(fromId);
         return StatusCode::NOT_FOUND;
     }
     auto itInto = indexById.find(intoId);
     if (itInto == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(intoId);
         return StatusCode::NOT_FOUND;
     }
 

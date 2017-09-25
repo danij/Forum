@@ -2,6 +2,7 @@
 #include "EntitySerialization.h"
 #include "OutputHelpers.h"
 #include "ContextProviders.h"
+#include "Logging.h"
 
 using namespace Forum;
 using namespace Forum::Authorization;
@@ -487,6 +488,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
     auto it = indexById.find(messageId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -563,6 +565,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
     auto it = indexById.find(messageId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -572,6 +575,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }
@@ -758,6 +762,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
     auto it = indexById.find(threadId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -820,6 +825,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadRequiredPrivileg
     auto it = indexById.find(threadId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -882,6 +888,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageDefaultPr
     auto it = indexById.find(threadId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -958,6 +965,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
     auto it = indexById.find(threadId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -967,6 +975,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }
@@ -1044,6 +1053,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilegeForThre
     auto it = indexById.find(threadId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -1053,6 +1063,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilegeForThre
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }
@@ -1241,6 +1252,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
     auto it = indexById.find(tagId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -1302,6 +1314,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadRequiredPrivileg
     auto it = indexById.find(tagId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -1363,6 +1376,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionTagRequiredPrivilegeFo
     auto it = indexById.find(tagId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -1425,6 +1439,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageDefaultPr
     auto it = indexById.find(tagId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -1501,6 +1516,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
     auto it = indexById.find(tagId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -1510,6 +1526,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }
@@ -1587,6 +1604,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilegeForTag(
     auto it = indexById.find(tagId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -1596,6 +1614,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilegeForTag(
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }
@@ -1673,6 +1692,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilegeForTag(
     auto it = indexById.find(tagId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -1682,6 +1702,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilegeForTag(
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }
@@ -1827,6 +1848,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionCategoryRequiredPrivil
     auto it = indexById.find(categoryId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(categoryId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -1903,6 +1925,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilegeForCa
     auto it = indexById.find(categoryId);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(categoryId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -1912,6 +1935,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilegeForCa
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }
@@ -2441,6 +2465,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }
@@ -2509,6 +2534,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }
@@ -2577,6 +2603,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }
@@ -2645,6 +2672,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }
@@ -2713,6 +2741,7 @@ StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
         auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
+            FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
             return StatusCode::NOT_FOUND;
         }
     }

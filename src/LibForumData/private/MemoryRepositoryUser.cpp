@@ -7,6 +7,7 @@
 #include "RandomGenerator.h"
 #include "StateHelpers.h"
 #include "StringHelpers.h"
+#include "Logging.h"
 
 #include <unicode/ustring.h>
 #include <unicode/uchar.h>
@@ -300,6 +301,7 @@ StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& c
     auto& indexByAuth = collection.users().byAuth();
     if (indexByAuth.find(authString) != indexByAuth.end())
     {
+        FORUM_LOG_ERROR << "A user with this auth already exists: " << auth;
         return StatusCode::USER_WITH_SAME_AUTH_ALREADY_EXISTS;
     }
 
@@ -308,6 +310,7 @@ StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& c
     auto& indexByName = collection.users().byName();
     if (indexByName.find(nameString) != indexByName.end())
     {
+        FORUM_LOG_ERROR << "A user with this name already exists: " << name;
         return StatusCode::ALREADY_EXISTS;
     }
 
@@ -364,6 +367,7 @@ StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, Id
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -372,6 +376,7 @@ StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, Id
     auto& indexByName = collection.users().byName();
     if (indexByName.find(newNameString) != indexByName.end())
     {
+        FORUM_LOG_ERROR << "A user with this name already exists: " << newName;
         return StatusCode::ALREADY_EXISTS;
     }
 
@@ -426,6 +431,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(EntityCollection& collection, Id
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -473,6 +479,7 @@ StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdType
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 

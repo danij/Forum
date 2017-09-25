@@ -7,6 +7,7 @@
 #include "RandomGenerator.h"
 #include "StateHelpers.h"
 #include "StringHelpers.h"
+#include "Logging.h"
 
 using namespace Forum;
 using namespace Forum::Configuration;
@@ -235,6 +236,7 @@ StatusWithResource<DiscussionCategoryPtr>
     auto& indexByName = collection.categories().byName();
     if (indexByName.find(nameString) != indexByName.end())
     {
+        FORUM_LOG_ERROR << "A discussion category with this name already exists: " << name;
         return StatusCode::ALREADY_EXISTS;
     }
 
@@ -313,6 +315,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(Enti
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -321,6 +324,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(Enti
     auto& indexByName = collection.categories().byName();
     if (indexByName.find(newNameString) != indexByName.end())
     {
+        FORUM_LOG_ERROR << "A discussion category with this name already exists: " << newName;
         return StatusCode::ALREADY_EXISTS;
     }
 
@@ -384,6 +388,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -466,6 +471,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(En
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -481,6 +487,9 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(En
         //check that the new parent is not a child of the current category
         if (newParentPtr->hasAncestor(categoryPtr))
         {
+            FORUM_LOG_ERROR << "Circular reference not allowed when assigning new parent "
+                            << static_cast<std::string>(newParentId) << " to discussion category "
+                            << static_cast<std::string>(category.id());
             return StatusCode::CIRCULAR_REFERENCE_NOT_ALLOWED;
         }
     }
@@ -552,6 +561,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -606,6 +616,7 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(EntityCo
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -676,6 +687,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
     auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -683,6 +695,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
     auto categoryIt = categoryIndexById.find(categoryId);
     if (categoryIt == categoryIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(categoryId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -696,6 +709,9 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
     if ( ! tag.addCategory(categoryPtr))
     {
         //actually already added, but return ok
+        FORUM_LOG_WARNING << "Discussion tag " << static_cast<std::string>(tagId)
+                          << " is already added to discussion category: " << static_cast<std::string>(categoryId);
+
         return StatusCode::OK;
     }
 
@@ -764,6 +780,7 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
     auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -771,6 +788,7 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
     auto categoryIt = categoryIndexById.find(categoryId);
     if (categoryIt == categoryIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(categoryId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -783,6 +801,8 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
     //the number of tags associated to a category, so search the category in the tag
     if ( ! tag.removeCategory(categoryPtr))
     {
+        FORUM_LOG_WARNING << "Discussion tag " << static_cast<std::string>(tagId)
+                          << " was not found on discussion category: " << static_cast<std::string>(categoryId);
         return StatusCode::NO_EFFECT;
     }
 
