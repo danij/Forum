@@ -41,10 +41,9 @@ void DiscussionTagCollection::stopBatchInsert()
     if ( ! Context::isBatchInsertInProgress()) return;
 
     byMessageCount_.clear();
-    for (DiscussionTagPtr tag : byId_)
-    {
-        byMessageCount_.insert(tag);
-    }
+
+    auto byIdIndex = byId_;
+    byMessageCount_.insert(byId_.begin(), byId_.end());
 }
 
 void DiscussionTagCollection::prepareUpdateName(DiscussionTagPtr tag)

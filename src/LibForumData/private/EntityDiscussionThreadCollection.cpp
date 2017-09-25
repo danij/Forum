@@ -184,10 +184,9 @@ void DiscussionThreadCollectionWithHashedIdAndPinOrder::stopBatchInsert()
     if ( ! Context::isBatchInsertInProgress()) return;
 
     byPinDisplayOrder_.clear();
-    for (DiscussionThreadPtr thread : byId())
-    {
-        byPinDisplayOrder_.insert(thread);
-    }
+
+    auto byIdIndex = byId();
+    byPinDisplayOrder_.insert(byIdIndex.begin(), byIdIndex.end());
 }
 
 void DiscussionThreadCollectionWithHashedIdAndPinOrder::prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread)
@@ -343,10 +342,9 @@ void DiscussionThreadCollectionWithReferenceCountAndMessageCount::stopBatchInser
     if ( ! Context::isBatchInsertInProgress()) return;
 
     byLatestMessageCreated_.clear();
-    for (DiscussionThreadPtr thread : byId())
-    {
-        byLatestMessageCreated_.insert(thread);
-    }
+
+    auto byIdIndex = byId();
+    byLatestMessageCreated_.insert(byIdIndex.begin(), byIdIndex.end());
 }
 
 void DiscussionThreadCollectionWithReferenceCountAndMessageCount::prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread)
