@@ -77,7 +77,7 @@ int Application::run(int argc, const char* argv[])
     options.add_options()
             ("help", "Display available options")
             ("version", "Display the current version")
-            ("config", boost::program_options::value<std::string>(), "Specify the location of the configuration file");
+            ("config,c", boost::program_options::value<std::string>(), "Specify the location of the configuration file");
 
     boost::program_options::variables_map arguments;
 
