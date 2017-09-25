@@ -80,6 +80,7 @@ include_directories(
         ../LibFastJsonWriter
         ../LibForumContext
         ../LibForumHelpers
+        ../Logging
         ${Boost_INCLUDE_DIRS})
 
 add_library(ForumData SHARED
