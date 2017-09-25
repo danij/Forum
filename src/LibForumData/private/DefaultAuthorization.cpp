@@ -531,7 +531,7 @@ static bool allowPrivilegeChange(PrivilegeValueType oldValue, PrivilegeValueIntT
                                  PrivilegeValueType currentPermissions)
 {
     PrivilegeValueIntType currentPermissionsValue = currentPermissions ? *currentPermissions : 0;
-    return ((! oldValue) || (oldValue <= currentPermissionsValue)) && (newValue <= currentPermissionsValue);
+    return ((! oldValue) || (oldValue < currentPermissionsValue)) && (newValue < currentPermissionsValue);
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege(const User& currentUser,
