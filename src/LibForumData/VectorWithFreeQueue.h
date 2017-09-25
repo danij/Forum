@@ -43,7 +43,9 @@ namespace Forum
             }
 
         private:
-            std::vector<std::unique_ptr<T>> vector_;
+
+            static constexpr size_t InitialNumberOfItems = 131072;
+            std::vector<std::unique_ptr<T>> vector_{ InitialNumberOfItems };
             std::queue<IndexType> freeIndexes_;
         };
     }
