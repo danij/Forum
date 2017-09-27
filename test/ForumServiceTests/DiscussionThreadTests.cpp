@@ -173,8 +173,25 @@ struct SerializedDiscussionThread
     }
 };
 
+struct SerializedDiscussionThreadMessageRank
+{
+    std::string id;
+    std::string parentId;
+    uint32_t rank;
+    uint32_t pageSize;
+
+    void populate(const boost::property_tree::ptree& tree)
+    {
+        id = tree.get<std::string>("id");
+        parentId = tree.get<std::string>("parentId");
+        rank = tree.get<uint32_t>("rank");
+        pageSize = tree.get<uint32_t>("pageSize");
+    }
+};
+
 CREATE_FUNCTION_ALIAS(deserializeThread, deserializeEntity<SerializedDiscussionThread>)
 CREATE_FUNCTION_ALIAS(deserializeThreads, deserializeEntities<SerializedDiscussionThread>)
+CREATE_FUNCTION_ALIAS(deserializeThreadMessageRank, deserializeEntity<SerializedDiscussionThreadMessageRank>)
 
 BOOST_AUTO_TEST_CASE( Discussion_thread_count_is_initially_zero )
 {
@@ -2891,6 +2908,68 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thre
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
     BOOST_REQUIRE_EQUAL(3000, thread.latestVisibleChangeAt);
+}
+
+
+BOOST_AUTO_TEST_CASE( Discussion_thread_message_rank_can_be_retrieved )
+{
+    auto handler = createCommandHandler();
+    auto userId = createUserAndGetId(handler, "User");
+    std::string threadId, message1Id, message2Id, message3Id, message4Id;
+
+    LoggedInUserChanger _(userId);
+    {
+        TimestampChanger __(1000);
+        threadId = createDiscussionThreadAndGetId(handler, "Thread");
+        message1Id = createDiscussionMessageAndGetId(handler, threadId, "Message1");
+    }
+    {
+        TimestampChanger __(2000);
+        message2Id = createDiscussionMessageAndGetId(handler, threadId, "Message2");
+    }
+    {
+        TimestampChanger __(2000);
+        message3Id = createDiscussionMessageAndGetId(handler, threadId, "Message3");
+    }
+    {
+        TimestampChanger __(3000);
+        message4Id = createDiscussionMessageAndGetId(handler, threadId, "Message4");
+    }
+
+    auto returnObject = handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGE_RANK, { threadId });
+    assertStatusCodeEqual(StatusCode::NOT_FOUND, returnObject);
+
+    auto message1Rank = deserializeThreadMessageRank(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGE_RANK, { message1Id }));
+
+    BOOST_REQUIRE_EQUAL(message1Id, message1Rank.id);
+    BOOST_REQUIRE_EQUAL(threadId, message1Rank.parentId);
+    BOOST_REQUIRE_EQUAL(0, message1Rank.rank);
+    BOOST_REQUIRE_EQUAL(20, message1Rank.pageSize);
+
+    auto message2Rank = deserializeThreadMessageRank(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGE_RANK, { message2Id }));
+
+    BOOST_REQUIRE_EQUAL(message2Id, message2Rank.id);
+    BOOST_REQUIRE_EQUAL(threadId, message2Rank.parentId);
+    BOOST_REQUIRE_EQUAL(1, message2Rank.rank);
+    BOOST_REQUIRE_EQUAL(20, message2Rank.pageSize);
+
+    auto message3Rank = deserializeThreadMessageRank(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGE_RANK, { message3Id }));
+
+    BOOST_REQUIRE_EQUAL(message3Id, message3Rank.id);
+    BOOST_REQUIRE_EQUAL(threadId, message3Rank.parentId);
+    BOOST_REQUIRE_EQUAL(2, message3Rank.rank);
+    BOOST_REQUIRE_EQUAL(20, message3Rank.pageSize);
+
+    auto message4Rank = deserializeThreadMessageRank(
+            handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_MESSAGE_RANK, { message4Id }));
+
+    BOOST_REQUIRE_EQUAL(message4Id, message4Rank.id);
+    BOOST_REQUIRE_EQUAL(threadId, message4Rank.parentId);
+    BOOST_REQUIRE_EQUAL(3, message4Rank.rank);
+    BOOST_REQUIRE_EQUAL(20, message4Rank.pageSize);
 }
 
 //BOOST_AUTO_TEST_CASE( Users_can_add_comments_to_discussion_messages_if_formatting_constraints_are_respected )

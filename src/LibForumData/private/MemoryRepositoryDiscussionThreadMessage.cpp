@@ -76,6 +76,58 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
     return status;
 }
 
+StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessageRank(IdTypeRef id, OutStream& output) const
+{
+    StatusWriter status(output);
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    if ( ! id)
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          const auto& indexById = collection.threadMessages().byId();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          const DiscussionThreadMessage& message = **it;
+
+                          if ( ! (status = authorization_->getDiscussionThreadMessageRank(currentUser, message)))
+                          {
+                              return;
+                          }
+
+                          assert(message.parentThread());
+                          const DiscussionThread& parentThread = *message.parentThread();
+
+                          auto rank = parentThread.messages().findRankByCreated(message.id());
+                          if ( ! rank)
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
+
+                          status.writeNow([&](auto& writer)
+                                          {
+                                              writer << Json::propertySafeName("id", message.id());
+                                              writer << Json::propertySafeName("parentId", parentThread.id());
+                                              writer << Json::propertySafeName("rank", *rank);
+                                              writer << Json::propertySafeName("pageSize", pageSize);
+                                          });
+
+                          readEvents().onGetDiscussionThreadMessageRank(createObserverContext(currentUser), message);
+                      });
+    return status;
+}
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(IdTypeRef threadId,
                                                                                     StringView content,

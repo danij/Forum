@@ -400,6 +400,12 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadMessageRepository->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
     }
 
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREAD_MESSAGE_RANK )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadMessageRepository->getDiscussionThreadMessageRank(parameters[0], output);
+    }
+
     COMMAND_HANDLER_METHOD( ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
@@ -1258,6 +1264,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
 
     setViewHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED);
+    setViewHandler(GET_DISCUSSION_THREAD_MESSAGE_RANK);
 
     setViewHandler(GET_MESSAGE_COMMENTS);
     setViewHandler(GET_MESSAGE_COMMENTS_OF_DISCUSSION_THREAD_MESSAGE);

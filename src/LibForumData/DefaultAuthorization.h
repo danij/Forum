@@ -75,6 +75,8 @@ namespace Forum
 
             AuthorizationStatus getDiscussionThreadMessagesOfUserByCreated(const Entities::User& currentUser,
                                                                            const Entities::User& user) const override;
+            AuthorizationStatus getDiscussionThreadMessageRank(const Entities::User& currentUser,
+                                                               const Entities::DiscussionThreadMessage& message) const override;
 
             AuthorizationStatus getMessageComments(const Entities::User& currentUser) const override;
             AuthorizationStatus getMessageCommentsOfDiscussionThreadMessage(const Entities::User& currentUser,

@@ -42,6 +42,7 @@ namespace Forum
 
             StatusCode getDiscussionThreadMessagesOfUserByCreated(Entities::IdTypeRef id,
                                                                   OutStream& output) const override;
+            StatusCode getDiscussionThreadMessageRank(Entities::IdTypeRef id, OutStream& output) const override;
 
             StatusCode addCommentToDiscussionThreadMessage(Entities::IdTypeRef messageId, StringView content,
                                                            OutStream& output) override;

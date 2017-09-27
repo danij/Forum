@@ -545,6 +545,16 @@ void DiscussionThreadMessagesEndpoint::getThreadMessagesOfUser(Http::RequestStat
     });
 }
 
+void DiscussionThreadMessagesEndpoint::getRankOfMessage(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::GET_DISCUSSION_THREAD_MESSAGE_RANK, parameters);
+    });
+}
+
 void DiscussionThreadMessagesEndpoint::getAllComments(Http::RequestState& requestState)
 {
     handle(requestState,
@@ -573,7 +583,6 @@ void DiscussionThreadMessagesEndpoint::getCommentsOfUser(Http::RequestState& req
         return commandHandler.handle(View::GET_MESSAGE_COMMENTS_OF_USER, parameters);
     });
 }
-
 void DiscussionThreadMessagesEndpoint::add(Http::RequestState& requestState)
 {
     handle(requestState,

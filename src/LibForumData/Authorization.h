@@ -117,6 +117,8 @@ namespace Forum
                                                                        const Entities::DiscussionThreadMessage& message) const = 0;
             virtual AuthorizationStatus getDiscussionThreadMessagesOfUserByCreated(const Entities::User& currentUser,
                                                                                    const Entities::User& user) const = 0;
+            virtual AuthorizationStatus getDiscussionThreadMessageRank(const Entities::User& currentUser,
+                                                                       const Entities::DiscussionThreadMessage& message) const = 0;
 
             virtual AuthorizationStatus getMessageComments(const Entities::User& currentUser) const = 0;
             virtual AuthorizationStatus getMessageCommentsOfDiscussionThreadMessage(const Entities::User& currentUser,

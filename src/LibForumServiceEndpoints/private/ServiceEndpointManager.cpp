@@ -98,6 +98,8 @@ void ServiceEndpointManager::registerRoutes(Http::HttpRouter& router)
                      [this](auto& state) { this->impl_->threadMessagesEndpoint.getCommentsOfMessage(state);});
     router.addRoute("thread_messages/comments/user", Http::HttpVerb::GET,
                      [this](auto& state) { this->impl_->threadMessagesEndpoint.getCommentsOfUser(state);});
+    router.addRoute("thread_messages/rank", Http::HttpVerb::GET,
+                     [this](auto& state) { this->impl_->threadMessagesEndpoint.getRankOfMessage(state);});
     router.addRoute("thread_messages", Http::HttpVerb::POST,
                     [this](auto& state) { this->impl_->threadMessagesEndpoint.add(state);});
     router.addRoute("thread_messages", Http::HttpVerb::DELETE,

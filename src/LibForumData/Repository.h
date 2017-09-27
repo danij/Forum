@@ -187,6 +187,7 @@ namespace Forum
 
             virtual StatusCode getDiscussionThreadMessagesOfUserByCreated(Entities::IdTypeRef id,
                                                                           OutStream& output) const = 0;
+            virtual StatusCode getDiscussionThreadMessageRank(Entities::IdTypeRef id, OutStream& output) const = 0;
 
             virtual StatusCode getMessageComments(OutStream& output) const = 0;
             virtual StatusCode getMessageCommentsOfDiscussionThreadMessage(Entities::IdTypeRef id,

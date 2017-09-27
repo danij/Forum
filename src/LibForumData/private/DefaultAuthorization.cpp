@@ -175,6 +175,13 @@ AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessagesOfUserByCre
     return isAllowed(currentUser.id(), ForumWidePrivilege::GET_DISCUSSION_THREAD_MESSAGES_OF_USER, with);
 }
 
+AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessageRank(const User& currentUser,
+                                                                         const DiscussionThreadMessage& message) const
+{
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW, with);
+}
+
 AuthorizationStatus DefaultAuthorization::getMessageComments(const User& currentUser) const
 {
     PrivilegeValueType with;
