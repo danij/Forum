@@ -106,7 +106,17 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionTag(collection, generateUniqueId(), name);
+                           DiscussionTag::NameType nameString(name);
+
+                           auto& indexByName = collection.tags().byName();
+                           if (indexByName.find(nameString) != indexByName.end())
+                           {
+                               status = StatusCode::ALREADY_EXISTS;
+                               return;
+                           }
+
+                           auto statusWithResource = addNewDiscussionTag(collection, generateUniqueId(),
+                                                                         std::move(nameString));
                            auto& tag = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
@@ -124,17 +134,22 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
 StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscussionTag(EntityCollection& collection,
                                                                                         IdTypeRef id, StringView name)
 {
-    DiscussionTag::NameType nameString(name);
+    return addNewDiscussionTag(collection, id, DiscussionTag::NameType(name));
+}
 
+StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscussionTag(EntityCollection& collection,
+                                                                                        IdTypeRef id,
+                                                                                        DiscussionTag::NameType&& name)
+{
     auto& indexByName = collection.tags().byName();
-    if (indexByName.find(nameString) != indexByName.end())
+    if (indexByName.find(name) != indexByName.end())
     {
-        FORUM_LOG_ERROR << "A discussion tag with this name already exists: " << name;
+        FORUM_LOG_ERROR << "A discussion tag with this name already exists: " << name.string();
         return StatusCode::ALREADY_EXISTS;
     }
 
     //IdType id, Timestamp created, VisitDetails creationDetails
-    auto tag = collection.createDiscussionTag(id, std::move(nameString), Context::getCurrentTime(),
+    auto tag = collection.createDiscussionTag(id, std::move(name), Context::getCurrentTime(),
                                               { Context::getCurrentUserIpAddress() });
     collection.insertDiscussionTag(tag);
 

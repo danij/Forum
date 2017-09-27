@@ -54,7 +54,12 @@ namespace Forum
                                                        OutStream& output) override;
             StatusCode removeDiscussionTagFromCategory(Entities::EntityCollection& collection,
                                                        Entities::IdTypeRef tagId, Entities::IdTypeRef categoryId) override;
+
         private:
+            StatusCode changeDiscussionCategoryName(Entities::EntityCollection& collection,
+                                                    Entities::IdTypeRef id,
+                                                    Entities::DiscussionCategory::NameType&& newName);
+
             Authorization::DiscussionCategoryAuthorizationRef authorization_;
         };
     }

@@ -236,7 +236,16 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                return;
                            }
 
-                           auto statusWithResource = addNewUser(collection, generateUniqueId(), name, auth);
+                           User::NameType nameString(name);
+                           auto& indexByName = collection.users().byName();
+                           if (indexByName.find(nameString) != indexByName.end())
+                           {
+                               status = StatusCode::ALREADY_EXISTS;
+                               return;
+                           }
+
+                           auto statusWithResource = addNewUser(collection, generateUniqueId(), std::move(nameString),
+                                                                auth);
                            auto& user = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
@@ -296,6 +305,12 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
 StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& collection, IdTypeRef id,
                                                              StringView name, StringView auth)
 {
+    return addNewUser(collection, id, User::NameType(name), auth);
+}
+
+StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& collection, IdTypeRef id,
+                                                             User::NameType&& name, StringView auth)
+{
     auto authString = toString(auth);
 
     auto& indexByAuth = collection.users().byAuth();
@@ -305,16 +320,14 @@ StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& c
         return StatusCode::USER_WITH_SAME_AUTH_ALREADY_EXISTS;
     }
 
-    User::NameType nameString(name);
-
     auto& indexByName = collection.users().byName();
-    if (indexByName.find(nameString) != indexByName.end())
+    if (indexByName.find(name) != indexByName.end())
     {
-        FORUM_LOG_ERROR << "A user with this name already exists: " << name;
+        FORUM_LOG_ERROR << "A user with this name already exists: " << name.string();
         return StatusCode::ALREADY_EXISTS;
     }
 
-    auto user = collection.createUser(id, std::move(nameString), Context::getCurrentTime(),
+    auto user = collection.createUser(id, std::move(name), Context::getCurrentTime(),
                                       { Context::getCurrentUserIpAddress() });
     user->updateAuth(std::move(authString));
 
@@ -349,12 +362,21 @@ StatusCode MemoryRepositoryUser::changeUserName(IdTypeRef id, StringView newName
                            }
                            auto& user = **it;
 
+                           User::NameType newNameString(newName);
+
+                           auto& indexByName = collection.users().byName();
+                           if (indexByName.find(newNameString) != indexByName.end())
+                           {
+                               status = StatusCode::ALREADY_EXISTS;
+                               return;
+                           }
+
                            if ( ! (status = authorization_->changeUserName(*currentUser, user, newName)))
                            {
                                return;
                            }
 
-                           if ( ! (status = changeUserName(collection, id, newName))) return;
+                           if ( ! (status = changeUserName(collection, id, std::move(newNameString)))) return;
 
                            writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Name);
                        });
@@ -362,6 +384,11 @@ StatusCode MemoryRepositoryUser::changeUserName(IdTypeRef id, StringView newName
 }
 
 StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, IdTypeRef id, StringView newName)
+{
+    return changeUserName(collection, id, User::NameType(newName));
+}
+
+StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, IdTypeRef id, User::NameType&& newName)
 {
     auto& indexById = collection.users().byId();
     auto it = indexById.find(id);
@@ -371,17 +398,15 @@ StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, Id
         return StatusCode::NOT_FOUND;
     }
 
-    User::NameType newNameString(newName);
-
     auto& indexByName = collection.users().byName();
-    if (indexByName.find(newNameString) != indexByName.end())
+    if (indexByName.find(newName) != indexByName.end())
     {
-        FORUM_LOG_ERROR << "A user with this name already exists: " << newName;
+        FORUM_LOG_ERROR << "A user with this name already exists: " << newName.string();
         return StatusCode::ALREADY_EXISTS;
     }
 
     UserPtr user = *it;
-    user->updateName(std::move(newNameString));
+    user->updateName(std::move(newName));
 
     return StatusCode::OK;
 }

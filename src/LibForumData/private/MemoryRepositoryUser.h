@@ -30,6 +30,12 @@ namespace Forum
             StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
         private:
+            StatusWithResource<Entities::UserPtr> addNewUser(Entities::EntityCollection& collection,
+                                                             Entities::IdTypeRef id, Entities::User::NameType&& name,
+                                                             StringView auth);
+            StatusCode changeUserName(Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                                      Entities::User::NameType&& newName);
+
             Authorization::UserAuthorizationRef authorization_;
             AuthorizationRepositoryRef authorizationRepository_;
         };

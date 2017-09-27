@@ -295,12 +295,21 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(IdTy
                                return;
                            }
 
+                           DiscussionCategory::NameType newNameString(newName);
+
+                           auto& indexByName = collection.categories().byName();
+                           if (indexByName.find(newNameString) != indexByName.end())
+                           {
+                               status = StatusCode::ALREADY_EXISTS;
+                               return;
+                           }
+
                            if ( ! (status = authorization_->changeDiscussionCategoryName(*currentUser, **it, newName)))
                            {
                                return;
                            }
 
-                           if ( ! (status = changeDiscussionCategoryName(collection, id, newName))) return;
+                           if ( ! (status = changeDiscussionCategoryName(collection, id, std::move(newNameString)))) return;
 
                            writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), **it,
                                                                     DiscussionCategory::ChangeType::Name);
@@ -311,6 +320,13 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(IdTy
 StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(EntityCollection& collection,
                                                                             IdTypeRef id, StringView newName)
 {
+    return changeDiscussionCategoryName(collection, id,  DiscussionCategory::NameType(newName));
+}
+
+StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(EntityCollection& collection,
+                                                                            IdTypeRef id,
+                                                                            DiscussionCategory::NameType&& newName)
+{
     auto& indexById = collection.categories().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
@@ -319,12 +335,10 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(Enti
         return StatusCode::NOT_FOUND;
     }
 
-    DiscussionCategory::NameType newNameString(newName);
-
     auto& indexByName = collection.categories().byName();
-    if (indexByName.find(newNameString) != indexByName.end())
+    if (indexByName.find(newName) != indexByName.end())
     {
-        FORUM_LOG_ERROR << "A discussion category with this name already exists: " << newName;
+        FORUM_LOG_ERROR << "A discussion category with this name already exists: " << newName.string();
         return StatusCode::ALREADY_EXISTS;
     }
 
@@ -333,7 +347,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(Enti
     DiscussionCategoryPtr categoryPtr = *it;
     DiscussionCategory& category = *categoryPtr;
 
-    category.updateName(std::move(newNameString));
+    category.updateName(std::move(newName));
     updateLastUpdated(category, currentUser);
 
     return StatusCode::OK;
@@ -424,13 +438,20 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(Id
                                return;
                            }
 
-                           auto& thread = **it;
+                           DiscussionCategoryPtr categoryPtr = *it;
+                           auto& category = **it;
                            auto newParentIt = indexById.find(newParentId);
                            DiscussionCategoryPtr newParentPtr; //might be empty
 
                            if (newParentIt != indexById.end())
                            {
                                newParentPtr = *newParentIt;
+
+                               if (newParentPtr->hasAncestor(categoryPtr))
+                               {
+                                   status = StatusCode::CIRCULAR_REFERENCE_NOT_ALLOWED;
+                                   return;
+                               }
                            }
 
                            if ( ! (status = authorization_->changeDiscussionCategoryParent(*currentUser, **it, newParentPtr.ptr())))
@@ -440,7 +461,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(Id
 
                            if ( ! (status = changeDiscussionCategoryParent(collection, id, newParentId))) return;
 
-                           writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), thread,
+                           writeEvents().onChangeDiscussionCategory(createObserverContext(*currentUser), category,
                                                                     DiscussionCategory::ChangeType::Parent);
                        });
     return status;
