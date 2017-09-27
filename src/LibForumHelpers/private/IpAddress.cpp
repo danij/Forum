@@ -10,7 +10,7 @@ IpAddress::IpAddress()
     data_.int32[0] = data_.int32[1] = data_.int32[2] = data_.int32[3] = 0;
 }
 
-IpAddress::IpAddress(const boost::asio::ip::address& value)
+IpAddress::IpAddress(const boost::asio::ip::address& value) : IpAddress()
 {
     if (value.is_v4())
     {
@@ -24,7 +24,7 @@ IpAddress::IpAddress(const boost::asio::ip::address& value)
     }
 }
 
-IpAddress::IpAddress(const char* string)
+IpAddress::IpAddress(const char* string) : IpAddress()
 {
     boost::system::error_code ec;
     auto address = boost::asio::ip::address::from_string(string, ec);
@@ -101,7 +101,7 @@ static int writeUInt16Hex(char* buffer, uint8_t mostSignificant, uint8_t leastSi
 
 size_t IpAddress::toString(char* buffer, size_t bufferSize) const noexcept
 {
-    if (isv4())
+    if (isV4())
     {
         assert(bufferSize >= MaxIPv4CharacterCount);
 
