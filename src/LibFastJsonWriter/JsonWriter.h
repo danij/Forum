@@ -63,21 +63,21 @@ namespace Json
         inline void writeString<3>(StringBuffer& stringBufferOutput, const char(&value)[2 + 1])
         {
             //ignore null terminator
-            stringBufferOutput.write(*reinterpret_cast<const uint16_t*>(value));
+            stringBufferOutput.writeFixed<2>(value);
         }
 
         template <>
         inline void writeString<5>(StringBuffer& stringBufferOutput, const char(&value)[4 + 1])
         {
             //ignore null terminator
-            stringBufferOutput.write(*reinterpret_cast<const uint32_t*>(value));
+            stringBufferOutput.writeFixed<4>(value);
         }
 
         template <>
         inline void writeString<9>(StringBuffer& stringBufferOutput, const char(&value)[8 + 1])
         {
             //ignore null terminator
-            stringBufferOutput.write(*reinterpret_cast<const uint64_t*>(value));
+            stringBufferOutput.writeFixed<8>(value);
         }
     }
 

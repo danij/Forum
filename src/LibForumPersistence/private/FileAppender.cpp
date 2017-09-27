@@ -1,5 +1,6 @@
 #include "FileAppender.h"
 #include "PersistenceFormat.h"
+#include "TypeHelpers.h"
 #include "Logging.h"
 
 #include <cstdio>
@@ -10,6 +11,7 @@
 
 using namespace Forum;
 using namespace Forum::Persistence;
+using namespace Forum::Helpers;
 
 FileAppender::FileAppender(const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
     : destinationFolder_(destinationFolder), refreshEverySeconds_(refreshEverySeconds), lastFileNameCreatedAt_(0)
@@ -48,11 +50,10 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
         auto blobCRC32 = crc32(blob.buffer, blob.size);
 
         auto prefix = prefixBuffer;
-        *reinterpret_cast<std::add_pointer<std::remove_const<decltype(MagicPrefix)>::type>::type>(prefix) = MagicPrefix;
-        prefix += sizeof(MagicPrefix);
-        *reinterpret_cast<std::add_pointer<decltype(blobSize)>::type>(prefix) = blobSize;
-        prefix += sizeof(blobSize);
-        *reinterpret_cast<std::add_pointer<decltype(blobCRC32)>::type>(prefix) = blobCRC32;
+
+        writeValue(prefix, MagicPrefix); prefix += sizeof(MagicPrefix);
+        writeValue(prefix, blobSize); prefix += sizeof(blobSize);
+        writeValue(prefix, blobCRC32);
 
         fwrite(prefixBuffer, 1, prefixSize, file);
 

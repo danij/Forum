@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <ctime>
+#include <cstring>
 #include <functional>
 #include <unordered_map>
 #include <numeric>
@@ -46,9 +47,10 @@ static void iteratePathRecursively(const boost::filesystem::path& sourcePath, Fn
 }
 
 template<typename T>
-T readAndIncrementBuffer(const uint8_t*& data, size_t& size)
+T readAndIncrementBuffer(const unsigned char*& data, size_t& size)
 {
-    auto result = *reinterpret_cast<typename std::add_pointer<typename std::add_const<T>::type>::type>(data);
+    T result;
+    memcpy(&result, data, sizeof(T));
     data += sizeof(T); size -= sizeof(T);
 
     return result;
@@ -939,7 +941,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             boost::interprocess::mapped_region region(mapping, mappingMode);
             region.advise(boost::interprocess::mapped_region::advice_sequential);
 
-            return iterateBlobsInFile(reinterpret_cast<const uint8_t*>(region.get_address()), region.get_size());
+            return iterateBlobsInFile(reinterpret_cast<const unsigned char*>(region.get_address()), region.get_size());
         }
         catch(boost::interprocess::interprocess_exception& ex)
         {
@@ -948,7 +950,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
     }
 
-    ImportResult iterateBlobsInFile(const uint8_t* data, size_t size)
+    ImportResult iterateBlobsInFile(const unsigned char* data, size_t size)
     {
         ImportResult result{};
         CurrentTimeChanger _([this]() { return this->getCurrentTimestamp(); });

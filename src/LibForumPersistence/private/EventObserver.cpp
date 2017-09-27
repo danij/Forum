@@ -2,6 +2,7 @@
 #include "PersistenceBlob.h"
 #include "PersistenceFormat.h"
 #include "FileAppender.h"
+#include "TypeHelpers.h"
 #include "Logging.h"
 
 #include <atomic>
@@ -13,6 +14,7 @@
 #include <thread>
 #include <type_traits>
 #include <vector>
+#include <cstring>
 
 #include <boost/lockfree/queue.hpp>
 
@@ -21,6 +23,7 @@ using namespace Forum::Persistence;
 using namespace Forum::Repository;
 using namespace Forum::Entities;
 using namespace Forum::Authorization;
+using namespace Forum::Helpers;
 
 struct BlobPart
 {
@@ -152,21 +155,17 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         auto blob = Blob(totalSize);
 
         char* buffer = blob.buffer;
-        *reinterpret_cast<EventType*>(buffer) = eventType;
-        buffer += sizeof(eventType);
 
-        *reinterpret_cast<std::add_pointer<decltype(version)>::type>(buffer) = version;
-        buffer += sizeof(version);
-
-        *reinterpret_cast<std::add_pointer<std::remove_const<decltype(ContextVersion)>::type>::type>(buffer) = ContextVersion;
-        buffer += sizeof(ContextVersion);
+        writeValue(buffer, eventType); buffer += sizeof(eventType);
+        writeValue(buffer, version); buffer += sizeof(version);
+        writeValue(buffer, ContextVersion); buffer += sizeof(ContextVersion);
 
         for (size_t i = 0; i < nrOfParts; ++i)
         {
             const auto& part = parts[i];
             if (part.includeSizePrefix)
             {
-                *reinterpret_cast<std::add_pointer<decltype(BlobPart::size)>::type>(buffer) = part.size;
+                writeValue(buffer, part.size);
                 buffer += sizeof(part.size);
             }
             if (part.size > 0)
