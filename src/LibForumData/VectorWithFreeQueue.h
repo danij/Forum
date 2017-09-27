@@ -44,8 +44,12 @@ namespace Forum
 
         private:
 
+#if defined(DEBUG) || defined(_DEBUG)
+            std::vector<std::unique_ptr<T>> vector_;
+#else
             static constexpr size_t InitialNumberOfItems = 131072;
             std::vector<std::unique_ptr<T>> vector_{ InitialNumberOfItems };
+#endif
             std::queue<IndexType> freeIndexes_;
         };
     }
