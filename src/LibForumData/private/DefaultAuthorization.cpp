@@ -527,11 +527,20 @@ AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, ForumWideP
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-static bool allowPrivilegeChange(PrivilegeValueType oldValue, PrivilegeValueIntType newValue,
+static bool allowPrivilegeUpdate(PrivilegeValueType oldValue, PrivilegeValueIntType newValue,
                                  PrivilegeValueType currentPermissions)
 {
     PrivilegeValueIntType currentPermissionsValue = currentPermissions ? *currentPermissions : 0;
-    return ((! oldValue) || (oldValue < currentPermissionsValue)) && (newValue < currentPermissionsValue);
+    return ((! oldValue) || (std::abs(*oldValue) <= currentPermissionsValue))
+        && (std::abs(newValue) <= currentPermissionsValue);
+}
+
+static bool allowPrivilegeAssignment(PrivilegeValueType oldValue, PrivilegeValueIntType newValue,
+    PrivilegeValueType currentPermissions)
+{
+    PrivilegeValueIntType currentPermissionsValue = currentPermissions ? *currentPermissions : 0;
+    return (( ! oldValue) || (std::abs(*oldValue) < currentPermissionsValue))
+        && (std::abs(newValue) < currentPermissionsValue);
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege(const User& currentUser,
@@ -546,7 +555,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::assignDiscussionThreadMessagePrivilege(const User& currentUser,
@@ -565,7 +574,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadMessagePrivilege
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), message, privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege(const User& currentUser,
@@ -580,7 +589,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const User& currentUser,
@@ -595,7 +604,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 
@@ -624,7 +633,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadMessagePrivilege
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), thread, privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const User& currentUser,
@@ -643,7 +652,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const 
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), thread, privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 
@@ -659,7 +668,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const User& currentUser,
@@ -674,7 +683,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const User& currentUser,
@@ -689,7 +698,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const Use
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessageDefaultPrivilegeDuration(
@@ -717,7 +726,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadMessagePrivilege
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), tag, privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const User& currentUser,
@@ -736,7 +745,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const 
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), tag, privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::assignDiscussionTagPrivilege(const User& currentUser,
@@ -755,7 +764,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionTagPrivilege(const Use
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), tag, privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(const User& currentUser,
@@ -770,7 +779,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(cons
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege(const User& currentUser,
@@ -784,7 +793,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const User& currentUser,
@@ -798,7 +807,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const User& currentUser,
@@ -812,7 +821,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const Use
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(const User& currentUser,
@@ -826,7 +835,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(cons
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::assignDiscussionCategoryPrivilege(const User& currentUser,
@@ -845,7 +854,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionCategoryPrivilege(cons
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), category, privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateForumWidePrivilege(const User& currentUser,
@@ -859,7 +868,7 @@ AuthorizationStatus DefaultAuthorization::updateForumWidePrivilege(const User& c
     {
         return status;
     }
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessageDefaultPrivilegeDuration(
@@ -895,7 +904,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadMessagePrivilege
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const User& currentUser,
@@ -913,7 +922,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const 
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::assignDiscussionTagPrivilege(const User& currentUser,
@@ -931,7 +940,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionTagPrivilege(const Use
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::assignDiscussionCategoryPrivilege(const User& currentUser,
@@ -949,7 +958,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionCategoryPrivilege(cons
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::assignForumWidePrivilege(const User& currentUser,
@@ -967,5 +976,5 @@ AuthorizationStatus DefaultAuthorization::assignForumWidePrivilege(const User& c
     PrivilegeValueType oldValue;
     isAllowed(targetUser.id(), privilege, oldValue);
 
-    return allowPrivilegeChange(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
+    return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
