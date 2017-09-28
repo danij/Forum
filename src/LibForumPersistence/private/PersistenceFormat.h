@@ -23,6 +23,8 @@ namespace Forum
         typedef int16_t PersistentPrivilegeValueType;
         typedef int64_t PersistentPrivilegeDurationType;
 
+        //Changing existing enum members breaks backwards compatibility
+
         enum EventType : uint32_t
         {
             UNKNOWN = 0,

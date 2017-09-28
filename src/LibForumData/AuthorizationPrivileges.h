@@ -16,6 +16,8 @@ namespace Forum
     {
         typedef uint_fast16_t EnumIntType;
 
+        //Changing existing enum members breaks backwards compatibility
+
         enum class DiscussionThreadMessagePrivilege : EnumIntType
         {
             VIEW,
