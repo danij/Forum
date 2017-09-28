@@ -62,7 +62,7 @@ namespace Forum
         typedef Json::StringBuffer OutStream;
 
         template<typename T>
-        struct StatusWithResource
+        struct StatusWithResource final
         {
             StatusWithResource(T resource, StatusCode status) : resource(std::move(resource)), status(status)
             {
@@ -657,6 +657,7 @@ namespace Forum
         };
         typedef std::shared_ptr<IObservableRepository> ObservableRepositoryRef;
 
+
         class IStatisticsRepository
         {
         public:
@@ -676,7 +677,7 @@ namespace Forum
         };
         typedef std::shared_ptr<IMetricsRepository> MetricsRepositoryRef;
 
-        struct DirectWriteRepositoryCollection
+        struct DirectWriteRepositoryCollection final
         {
             UserDirectWriteRepositoryRef user;
             DiscussionThreadDirectWriteRepositoryRef discussionThread;

@@ -195,7 +195,7 @@ namespace Forum
 
             Helpers::ImmutableString content_;
 
-            struct LastUpdatedLazy
+            struct LastUpdatedLazy final
             {
                 Timestamp at_{0};
                 VisitDetails details_;

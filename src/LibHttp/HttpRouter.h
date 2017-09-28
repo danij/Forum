@@ -9,7 +9,7 @@
 
 namespace Http
 {
-    struct RequestState
+    struct RequestState final
     {
         RequestState(const HttpRequest& request, HttpResponseBuilder& response, size_t nrOfPathCharactersUsedInRoute)
             : request(request), response(response)

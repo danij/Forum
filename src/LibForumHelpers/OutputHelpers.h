@@ -137,7 +137,7 @@ namespace Forum
         /**
          * Helper for writing a status message in the output if no other output is provided
          */
-        struct StatusWriter : boost::noncopyable
+        struct StatusWriter final : boost::noncopyable
         {
             /**
              * Initializes the helper with the stream to write to and the default status code

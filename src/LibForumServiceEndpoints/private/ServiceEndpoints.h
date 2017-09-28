@@ -14,6 +14,8 @@ namespace Forum
         class AbstractEndpoint
         {
         public:
+            DECLARE_ABSTRACT_MANDATORY(AbstractEndpoint)
+
             explicit AbstractEndpoint(CommandHandler& handler);
 
         protected:

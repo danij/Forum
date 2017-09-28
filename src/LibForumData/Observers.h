@@ -12,7 +12,7 @@ namespace Forum
     {
         typedef const Entities::User& PerformedByType;
 
-        struct ObserverContext_
+        struct ObserverContext_ final
         {
             PerformedByType performedBy;
             const Entities::Timestamp timestamp;
@@ -29,7 +29,7 @@ namespace Forum
         //Do not polute all observer methods with const Struct&
         typedef const ObserverContext_& ObserverContext;
 
-        struct ReadEvents : private boost::noncopyable
+        struct ReadEvents final : private boost::noncopyable
         {
             boost::signals2::signal<void(ObserverContext)> onGetEntitiesCount;
 
@@ -97,10 +97,9 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext,
                                          const Entities::DiscussionCategory&)>
                                                 onGetAssignedPrivilegesFromCategory;
-
         };
 
-        struct WriteEvents : private boost::noncopyable
+        struct WriteEvents final : private boost::noncopyable
         {
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onAddNewUser;
             boost::signals2::signal<void(ObserverContext, const Entities::User&, Entities::User::ChangeType)> onChangeUser;

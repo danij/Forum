@@ -16,7 +16,7 @@ namespace Forum
 {
     namespace Entities
     {
-        struct SerializationSettings
+        struct SerializationSettings final
         {
             bool hideDiscussionThreadCreatedBy = false;
             bool hideDiscussionThreadMessages = false;

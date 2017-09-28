@@ -9,7 +9,7 @@ namespace Forum
     namespace Entities
     {
         template<typename T>
-        class VectorWithFreeQueue
+        class VectorWithFreeQueue final
         {
         public:
             typedef typename std::vector<T>::size_type IndexType;

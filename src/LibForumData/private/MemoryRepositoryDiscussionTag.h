@@ -46,7 +46,6 @@ namespace Forum
                     addNewDiscussionTag(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                         Entities::DiscussionTag::NameType&& name);
 
-
             Authorization::DiscussionTagAuthorizationRef authorization_;
         };
     }

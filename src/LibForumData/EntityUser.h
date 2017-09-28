@@ -62,7 +62,7 @@ namespace Forum
             typedef Helpers::JsonReadyStringWithSortKey<64> NameType;
             typedef Json::JsonReadyString< 4> InfoType;
 
-            struct ChangeNotification
+            struct ChangeNotification final
             {
                 std::function<void(const User&)> onPrepareUpdateAuth;
                 std::function<void(const User&)> onUpdateAuth;

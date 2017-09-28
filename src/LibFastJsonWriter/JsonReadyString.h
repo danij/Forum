@@ -10,7 +10,7 @@
 
 namespace Json
 {
-    struct SizeWithBool
+    struct SizeWithBool final
     {
         uint32_t boolean : 1;
         uint32_t size    :31;
@@ -49,6 +49,8 @@ namespace Json
     {
     public:
         explicit JsonReadyStringBase(boost::string_view source);
+        virtual ~JsonReadyStringBase() = default;
+
         JsonReadyStringBase(const JsonReadyStringBase&) = default;
         JsonReadyStringBase(JsonReadyStringBase&&) noexcept = default;
 

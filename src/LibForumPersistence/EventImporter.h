@@ -13,7 +13,7 @@ namespace Forum
 {
     namespace Persistence
     {
-        struct ImportStatistic
+        struct ImportStatistic final
         {
             size_t readBlobs = 0;
             size_t importedBlobs = 0;
@@ -27,7 +27,7 @@ namespace Forum
             }
         };
 
-        struct ImportResult
+        struct ImportResult final
         {
             ImportStatistic statistic;
             bool success = true;

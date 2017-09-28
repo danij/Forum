@@ -13,7 +13,7 @@ namespace Forum
 {
     namespace Repository
     {
-        struct MemoryStore : private boost::noncopyable
+        struct MemoryStore final : private boost::noncopyable
         {
             explicit MemoryStore(Entities::EntityCollectionRef collection) : collection(std::move(collection))
             {}
