@@ -587,6 +587,8 @@ void importPersistedData(BenchmarkContext& context)
         context.categoryIds.push_back(category->id());
     }
 
+    currentAuthNumber = context.userIds.size() + 1000;
+
     std::cout << "---\n";
     std::cout << "Imported:\n";
     std::cout << "    Users: " << context.userIds.size() << "\n";
