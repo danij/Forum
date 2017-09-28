@@ -70,7 +70,7 @@ namespace Forum
             AuthorizationStatus getDiscussionThreadMessagesOfUserByCreated(const Entities::User& currentUser,
                                                                            const Entities::User& user) const override { return {}; }
             AuthorizationStatus getDiscussionThreadMessageRank(const Entities::User& currentUser,
-                                                               const Entities::DiscussionThreadMessage& message) const { return {}; }
+                                                               const Entities::DiscussionThreadMessage& message) const override { return {}; }
 
             AuthorizationStatus getMessageComments(const Entities::User& currentUser) const override { return {}; }
             AuthorizationStatus getMessageCommentsOfDiscussionThreadMessage(const Entities::User& currentUser,
