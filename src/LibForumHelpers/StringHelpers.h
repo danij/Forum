@@ -71,7 +71,7 @@ namespace Forum
             {
                 return view;
             }
-            for (size_t i = view.size() - 1; i >= 0; --i)
+            for (int i = static_cast<int>(view.size()) - 1; i >= 0; --i)
             {
                 if (isFirstByteInUTF8Sequence(view[i]))
                 {
@@ -142,7 +142,7 @@ namespace Forum
 
         namespace Detail
         {
-            struct SizeWithBoolAndSortKeySize
+            struct SizeWithBoolAndSortKeySize final
             {
                 uint32_t boolean : 1;
                 uint32_t size : 31;
