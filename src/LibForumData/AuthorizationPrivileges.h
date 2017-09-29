@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstdint>
 #include <ctime>
+#include <memory>
 
 #include <boost/optional.hpp>
 
@@ -416,6 +417,11 @@ namespace Forum
             {
                 if (privilege < DiscussionThreadMessagePrivilege::COUNT)
                 {
+                    if ( ! discussionThreadMessagePrivileges_)
+                    {
+                        discussionThreadMessagePrivileges_.reset(
+                                new PrivilegeValueType[static_cast<EnumIntType>(DiscussionThreadMessagePrivilege::COUNT)]);
+                    }
                     discussionThreadMessagePrivileges_[static_cast<EnumIntType>(privilege)] = value;
                 }
             }
@@ -423,7 +429,7 @@ namespace Forum
             virtual PrivilegeValueType getDiscussionThreadMessagePrivilege(
                     DiscussionThreadMessagePrivilege privilege) const
             {
-                if (privilege < DiscussionThreadMessagePrivilege::COUNT)
+                if ((privilege < DiscussionThreadMessagePrivilege::COUNT) && discussionThreadMessagePrivileges_)
                 {
                     return discussionThreadMessagePrivileges_[static_cast<EnumIntType>(privilege)];
                 }
@@ -431,8 +437,7 @@ namespace Forum
             }
 
         private:
-            PrivilegeValueType discussionThreadMessagePrivileges_
-                [static_cast<EnumIntType>(DiscussionThreadMessagePrivilege::COUNT)];
+            std::unique_ptr<PrivilegeValueType[]> discussionThreadMessagePrivileges_;
         };
 
         struct DiscussionThreadPrivilegeStore : public DiscussionThreadMessagePrivilegeStore
