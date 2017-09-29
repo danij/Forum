@@ -348,6 +348,12 @@ void showEntitySizes()
     std::cout << "DiscussionCategory                     " << std::setw(5) << sizeof(Entities::DiscussionCategory) << '\n';
     std::cout << "MessageComment                         " << std::setw(5) << sizeof(Entities::MessageComment) << '\n';
     std::cout << "-\n";
+    std::cout << "IdType                                 " << std::setw(5) << sizeof(Entities::IdType) << '\n';
+    std::cout << "Timestamp                              " << std::setw(5) << sizeof(Entities::Timestamp) << '\n';
+    std::cout << "VisitDetails                           " << std::setw(5) << sizeof(Entities::VisitDetails) << '\n';
+    std::cout << "EntityPointer<DiscussionThread>        " << std::setw(5) << sizeof(Entities::DiscussionThreadPtr) << '\n';
+    std::cout << "ImmutableString                        " << std::setw(5) << sizeof(Helpers::ImmutableString) << '\n';
+    std::cout << "-\n";
     std::cout << "UserCollection                         " << std::setw(5) << sizeof(Entities::UserCollection) << '\n';
     std::cout << "DiscussionThreadCollectionHash         " << std::setw(5) << sizeof(Entities::DiscussionThreadCollectionWithHashedId) << '\n';
     std::cout << "DiscussionThreadCollectionOrdered      " << std::setw(5) << sizeof(Entities::DiscussionThreadCollectionWithOrderedId) << '\n';
@@ -356,6 +362,7 @@ void showEntitySizes()
     std::cout << "DiscussionCategoryCollection           " << std::setw(5) << sizeof(Entities::DiscussionCategoryCollection) << '\n';
     std::cout << "MessageCommentCollection               " << std::setw(5) << sizeof(Entities::MessageCommentCollection) << '\n';
     std::cout << "-\n";
+    std::cout << "PrivilegeValueType                     " << std::setw(5) << sizeof(Authorization::PrivilegeValueType) << '\n';
     std::cout << "DiscussionThreadMessagePrivilegeStore  " << std::setw(5) << sizeof(Authorization::DiscussionThreadMessagePrivilegeStore) << '\n';
     std::cout << "DiscussionThreadPrivilegeStore         " << std::setw(5) << sizeof(Authorization::DiscussionThreadPrivilegeStore) << '\n';
     std::cout << "DiscussionTagPrivilegeStore            " << std::setw(5) << sizeof(Authorization::DiscussionTagPrivilegeStore) << '\n';
