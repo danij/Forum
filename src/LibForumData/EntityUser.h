@@ -164,7 +164,7 @@ namespace Forum
 
             Timestamp lastSeen_{0};
 
-            DiscussionThreadCollectionWithHashedId threads_;
+            DiscussionThreadCollectionWithOrderedId threads_;
             DiscussionThreadCollectionWithHashedId subscribedThreads_;
 
             DiscussionThreadMessageCollection threadMessages_;
