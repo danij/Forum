@@ -23,9 +23,17 @@ namespace Forum
          */
         typedef int_fast64_t Timestamp;
 
-        struct VisitDetails
+        struct VisitDetails final
         {
             Helpers::IpAddress ip;
+        };
+
+        struct LastUpdatedInfo final
+        {
+            Timestamp at{0};
+            VisitDetails details;
+            std::string reason;
+            EntityPointer<User> by;
         };
 
 #define HASHED_COLLECTION(Type, Getter) \

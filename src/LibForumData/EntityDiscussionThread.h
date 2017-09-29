@@ -41,11 +41,26 @@ namespace Forum
             const auto& messages()                  const { return messages_; }
                    auto messageCount()              const { return messages_.count(); }
 
-                   auto lastUpdated()               const { return lastUpdated_; }
-            const auto& lastUpdatedDetails()        const { return lastUpdatedDetails_; }
-             StringView lastUpdatedReason()         const { return lastUpdatedReason_; }
+            auto lastUpdated() const
+            {
+                return lastUpdated_ ? lastUpdated_->at : Timestamp{ 0 };
+            }
 
-                   auto lastUpdatedBy()             const { return lastUpdatedBy_.toConst(); }
+            const auto& lastUpdatedDetails() const
+            {
+                static const VisitDetails lastUpdatedDetailsDefault{};
+                return lastUpdated_ ? lastUpdated_->details : lastUpdatedDetailsDefault;
+            }
+
+            StringView lastUpdatedReason() const
+            {
+                return lastUpdated_ ? lastUpdated_->reason : StringView{};
+            }
+
+            auto lastUpdatedBy() const
+            {
+                return lastUpdated_ ? lastUpdated_->by.toConst() : EntityPointer<const User>{};
+            }
 
                    auto latestVisibleChange()       const { return latestVisibleChange_; }
 
@@ -116,17 +131,33 @@ namespace Forum
 
             void updateLastUpdated(Timestamp value)
             {
-                if (lastUpdated_ == value) return;
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedInfo());
+                if (lastUpdated_->at == value) return;
 
                 changeNotifications_.onPrepareUpdateLastUpdated(*this);
-                lastUpdated_ = value;
+                lastUpdated_->at = value;
                 changeNotifications_.onUpdateLastUpdated(*this);
             }
 
-            auto& lastUpdatedDetails()  { return lastUpdatedDetails_; }
-            auto& lastUpdatedReason()   { return lastUpdatedReason_; }
+            void updateLastUpdatedDetails(VisitDetails&& details)
+            {
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedInfo());
+                lastUpdated_->details = std::move(details);
+            }
+
+            void updateLastUpdatedReason(std::string&& reason)
+            {
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedInfo());
+                lastUpdated_->reason = std::move(reason);
+            }
+
+            void updateLastUpdatedBy(EntityPointer<User> by)
+            {
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedInfo());
+                lastUpdated_->by = by;
+            }
+
             auto& latestVisibleChange() { return latestVisibleChange_; }
-            auto& lastUpdatedBy()       { return lastUpdatedBy_; }
 
             /**
             * Thread-safe reference to the number of times the thread was visited.
@@ -177,10 +208,7 @@ namespace Forum
             NameType name_;
             DiscussionThreadMessageCollection messages_;
 
-            Timestamp lastUpdated_{0};
-            VisitDetails lastUpdatedDetails_;
-            std::string lastUpdatedReason_;
-            EntityPointer<User> lastUpdatedBy_;
+            std::unique_ptr<LastUpdatedInfo> lastUpdated_;
 
             //store the timestamp of the latest visibile change in order to be able to
             //detect when to return a status that nothing has changed since a provided timestamp

@@ -115,8 +115,8 @@ namespace Forum
         inline void updateThreadLastUpdated(Entities::DiscussionThread& thread, Entities::UserPtr currentUser)
         {
             thread.updateLastUpdated(thread.latestVisibleChange() = Context::getCurrentTime());
-            thread.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();
-            thread.lastUpdatedBy() = currentUser;
+            thread.updateLastUpdatedDetails({ Context::getCurrentUserIpAddress() });
+            thread.updateLastUpdatedBy(currentUser);
         }
     }
 }
