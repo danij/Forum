@@ -37,6 +37,11 @@ namespace Forum
                     && data_.int32[1] == 0;
             }
 
+            auto nrOfBytes() const noexcept
+            {
+                return isV4() ? 4 : 16;
+            }
+
             const uint8_t* data() const { return data_.bytes; }
             const uint32_t* intData() const { return data_.int32; }
 
@@ -62,9 +67,8 @@ namespace Forum
 
             bool operator<(const IpAddress& other) const
             {
-                auto nrOfBytes = isV4() ? 4 : 16;
-                return std::lexicographical_compare(data_.bytes, data_.bytes + nrOfBytes,
-                                                    other.data_.bytes, other.data_.bytes + nrOfBytes);
+                return std::lexicographical_compare(data_.bytes, data_.bytes + nrOfBytes(),
+                                                    other.data_.bytes, other.data_.bytes + nrOfBytes());
             }
 
             bool operator<=(const IpAddress& other) const
@@ -74,9 +78,8 @@ namespace Forum
 
             bool operator>(const IpAddress& other) const
             {
-                auto nrOfBytes = isV4() ? 4 : 16;
-                return std::lexicographical_compare(other.data_.bytes, other.data_.bytes + nrOfBytes,
-                                                    data_.bytes, data_.bytes + nrOfBytes);
+                return std::lexicographical_compare(other.data_.bytes, other.data_.bytes + nrOfBytes(),
+                                                    data_.bytes, data_.bytes + nrOfBytes());
             }
 
             bool operator>=(const IpAddress& other) const
