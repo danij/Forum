@@ -699,6 +699,10 @@ void DiscussionTagsEndpoint::getAll(Http::RequestState& requestState)
 
             if (Http::matchStringUpperOrLower(name, OrderBy))
             {
+                if (Http::matchStringUpperOrLower(value, OrderByThreadCount))
+                {
+                    view = View::GET_DISCUSSION_TAGS_BY_THREAD_COUNT;
+                }
                 if (Http::matchStringUpperOrLower(value, OrderByMessageCount))
                 {
                     view = View::GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT;

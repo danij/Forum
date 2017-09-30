@@ -450,6 +450,11 @@ struct CommandHandler::CommandHandlerImpl
         return discussionTagRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::Name);
     }
 
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_THREAD_COUNT )
+    {
+        return discussionTagRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::ThreadCount);
+    }
+
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT )
     {
         return discussionTagRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::MessageCount);
@@ -1271,6 +1276,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_MESSAGE_COMMENTS_OF_USER);
 
     setViewHandler(GET_DISCUSSION_TAGS_BY_NAME);
+    setViewHandler(GET_DISCUSSION_TAGS_BY_THREAD_COUNT);
     setViewHandler(GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT);
 
     setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME);

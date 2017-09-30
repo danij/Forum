@@ -50,6 +50,7 @@ namespace Forum
         enum class RetrieveDiscussionTagsBy
         {
             Name,
+            ThreadCount,
             MessageCount
         };
 

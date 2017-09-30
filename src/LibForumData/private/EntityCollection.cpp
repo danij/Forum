@@ -419,11 +419,11 @@ struct EntityCollection::Impl
     void onUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::updatePinDisplayOrder); }
 
     void onPrepareUpdateDiscussionTagName        (const DiscussionTag& tag) { tags_.prepareUpdateName(tag.pointer()); }
-    void onPrepareUpdateDiscussionTagThreadCount (const DiscussionTag& tag) { }
+    void onPrepareUpdateDiscussionTagThreadCount (const DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.prepareUpdateThreadCount(tag.pointer());}
     void onPrepareUpdateDiscussionTagMessageCount(const DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.prepareUpdateMessageCount(tag.pointer()); }
 
     void onUpdateDiscussionTagName        (const DiscussionTag& tag) { tags_.updateName(tag.pointer()); }
-    void onUpdateDiscussionTagThreadCount (const DiscussionTag& tag) { /*TODO add retrieval of tags sorted by thread count*/ }
+    void onUpdateDiscussionTagThreadCount (const DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.updateThreadCount(tag.pointer()); }
     void onUpdateDiscussionTagMessageCount(const DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.updateMessageCount(tag.pointer()); }
 
     void onPrepareUpdateDiscussionCategoryName        (const DiscussionCategory& category) { categories_.prepareUpdateName(category.pointer()); }
