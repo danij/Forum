@@ -228,6 +228,9 @@ namespace Forum
 
             ADJUST_FORUM_WIDE_PRIVILEGE,
 
+            CHANGE_OWN_USER_TITLE,
+            CHANGE_ANY_USER_TITLE,
+
             COUNT
         };
 

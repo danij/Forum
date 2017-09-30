@@ -31,6 +31,7 @@ namespace Forum
             const auto& name()              const { return name_; }
 
             const auto& info()              const { return info_; }
+            const auto& title()             const { return title_; }
 
                    auto lastSeen()          const { return lastSeen_; }
 
@@ -56,11 +57,13 @@ namespace Forum
             {
                 None = 0,
                 Name,
-                Info
+                Info,
+                Title,
             };
 
             typedef Helpers::JsonReadyStringWithSortKey<64> NameType;
-            typedef Json::JsonReadyString< 4> InfoType;
+            typedef Json::JsonReadyString<4> InfoType;
+            typedef Json::JsonReadyString<4> TitleType;
 
             struct ChangeNotification final
             {
@@ -84,7 +87,7 @@ namespace Forum
 
             User(IdType id, NameType&& name, Timestamp created, VisitDetails creationDetails)
                 : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
-                  name_(std::move(name)), info_({})
+                  name_(std::move(name)), info_({}), title_({})
             {
                 threads_.onPrepareCountChange()        = [this]() { changeNotifications_.onPrepareUpdateThreadCount(*this); };
                 threads_.onCountChange()               = [this]() { changeNotifications_.onUpdateThreadCount(*this); };
@@ -93,10 +96,11 @@ namespace Forum
                 threadMessages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
             }
 
-            explicit User(StringView name) : id_(IdType::empty), name_(name), info_({})
+            explicit User(StringView name) : id_(IdType::empty), name_(name), info_({}), title_({})
             {}
 
             auto& info()              { return info_; }
+            auto& title()             { return title_; }
             auto& threads()           { return threads_; }
             auto& subscribedThreads() { return subscribedThreads_; }
             auto& threadMessages()    { return threadMessages_; }
@@ -161,6 +165,7 @@ namespace Forum
             std::string auth_;
             NameType name_;
             InfoType info_;
+            TitleType title_;
 
             Timestamp lastSeen_{0};
 

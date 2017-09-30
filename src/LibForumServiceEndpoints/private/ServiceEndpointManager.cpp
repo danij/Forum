@@ -58,6 +58,8 @@ void ServiceEndpointManager::registerRoutes(Http::HttpRouter& router)
                     [this](auto& state) { this->impl_->usersEndpoint.changeName(state);});
     router.addRoute("users/info", Http::HttpVerb::PUT,
                     [this](auto& state) { this->impl_->usersEndpoint.changeInfo(state);});
+    router.addRoute("users/title", Http::HttpVerb::PUT,
+                    [this](auto& state) { this->impl_->usersEndpoint.changeTitle(state);});
 
     router.addRoute("threads", Http::HttpVerb::GET,
                     [this](auto& state) { this->impl_->threadsEndpoint.getAll(state);});

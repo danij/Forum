@@ -466,6 +466,61 @@ StatusCode MemoryRepositoryUser::changeUserInfo(EntityCollection& collection, Id
     return StatusCode::OK;
 }
 
+StatusCode MemoryRepositoryUser::changeUserTitle(IdTypeRef id, StringView newTitle, OutStream& output)
+{
+    StatusWriter status(output);
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(newTitle, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->user.minTitleLength, config->user.maxTitleLength);
+
+    if (validationCode != StatusCode::OK)
+    {
+        return status = validationCode;
+    }
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+                           auto& indexById = collection.users().byId();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           auto& user = **it;
+
+                           if ( ! (status = authorization_->changeUserTitle(*currentUser, user, newTitle)))
+                           {
+                               return;
+                           }
+
+                           if ( ! (status = changeUserInfo(collection, id, newTitle))) return;
+
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Title);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::changeUserTitle(EntityCollection& collection, IdTypeRef id, StringView newTitle)
+{
+    auto& indexById = collection.users().byId();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    UserPtr user = *it;
+    user->title() = User::TitleType(newTitle);
+
+    return StatusCode::OK;
+}
+
 StatusCode MemoryRepositoryUser::deleteUser(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);

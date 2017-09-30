@@ -183,6 +183,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_USER ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_USER_NAME ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_USER_INFO ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_USER_TITLE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_USER ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_NAME ) },
@@ -271,6 +272,14 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.user->changeUserInfo(entityCollection_, id, newInfo));
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( CHANGE_USER_TITLE, 1 )
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(newTitle, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.user->changeUserTitle(entityCollection_, id, newTitle));
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( DELETE_USER, 1 )

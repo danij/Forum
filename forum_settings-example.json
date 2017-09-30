@@ -4,6 +4,8 @@
         "maxNameLength": 20,
         "minInfoLength": 0,
         "maxInfoLength": 1024,
+        "minTitleLength": 0,
+        "maxTitleLength": 64,
         "lastSeenUpdatePrecision": 300,
         "maxUsersPerPage": 20
     },

@@ -210,6 +210,14 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->changeUserInfo(parameters[0], normalizedParam, output);
     }
 
+    COMMAND_HANDLER_METHOD( CHANGE_USER_TITLE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        return userRepository->changeUserTitle(parameters[0], normalizedParam, output);
+    }
+
     COMMAND_HANDLER_METHOD( DELETE_USER )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -1165,6 +1173,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setCommandHandler(ADD_USER);
     setCommandHandler(CHANGE_USER_NAME);
     setCommandHandler(CHANGE_USER_INFO);
+    setCommandHandler(CHANGE_USER_TITLE);
     setCommandHandler(DELETE_USER);
 
     setCommandHandler(ADD_DISCUSSION_THREAD);

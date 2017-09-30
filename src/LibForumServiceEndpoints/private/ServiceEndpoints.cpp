@@ -253,6 +253,17 @@ void UsersEndpoint::changeInfo(Http::RequestState& requestState)
     });
 }
 
+void UsersEndpoint::changeTitle(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_USER_TITLE, parameters);
+    });
+}
+
 DiscussionThreadsEndpoint::DiscussionThreadsEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
 {
 }
