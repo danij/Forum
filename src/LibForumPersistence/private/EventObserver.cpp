@@ -1499,9 +1499,9 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     std::map<IdType, uint32_t> cachedNrOfThreadVisits;
 };
 
-const PersistentTimestampType Forum::Persistence::EventObserver::EventObserverImpl::ZeroTimestamp{ 0 };
-const Helpers::IpAddress Forum::Persistence::EventObserver::EventObserverImpl::ZeroIpAddress{};
-const std::chrono::seconds Forum::Persistence::EventObserver::EventObserverImpl::timerThreadCheckEverySeconds{ 1 };
+const PersistentTimestampType EventObserver::EventObserverImpl::ZeroTimestamp{ 0 };
+const IpAddress EventObserver::EventObserverImpl::ZeroIpAddress{};
+const std::chrono::seconds EventObserver::EventObserverImpl::timerThreadCheckEverySeconds{ 1 };
 
 
 EventObserver::EventObserver(ReadEvents& readEvents, WriteEvents& writeEvents,
