@@ -199,6 +199,12 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->getUserByName(normalizedParam, output);
     }
 
+    COMMAND_HANDLER_METHOD( GET_USER_LOGO )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return userRepository->getUserLogo(parameters[0], output);
+    }
+
     COMMAND_HANDLER_METHOD( CHANGE_USER_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
@@ -229,6 +235,18 @@ struct CommandHandler::CommandHandlerImpl
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
         return userRepository->changeUserSignature(parameters[0], normalizedParam, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_USER_LOGO )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        return userRepository->changeUserLogo(parameters[0], parameters[1], output);
+    }
+
+    COMMAND_HANDLER_METHOD( DELETE_USER_LOGO )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return userRepository->deleteUserLogo(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( DELETE_USER )
@@ -1188,6 +1206,8 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setCommandHandler(CHANGE_USER_INFO);
     setCommandHandler(CHANGE_USER_TITLE);
     setCommandHandler(CHANGE_USER_SIGNATURE);
+    setCommandHandler(CHANGE_USER_LOGO);
+    setCommandHandler(DELETE_USER_LOGO);
     setCommandHandler(DELETE_USER);
 
     setCommandHandler(ADD_DISCUSSION_THREAD);
@@ -1275,6 +1295,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_USERS_ONLINE);
     setViewHandler(GET_USER_BY_ID);
     setViewHandler(GET_USER_BY_NAME);
+    setViewHandler(GET_USER_LOGO);
 
     setViewHandler(GET_DISCUSSION_THREADS_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_BY_CREATED);

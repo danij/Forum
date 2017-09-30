@@ -105,6 +105,11 @@ static StringView getPointerToEntireRequestBody(const Http::HttpRequest& request
 
 void AbstractEndpoint::handle(Http::RequestState& requestState, ExecuteFn executeCommand)
 {
+    handleBinary(requestState, "application/json", executeCommand);
+}
+
+void AbstractEndpoint::handleBinary(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand)
+{
     assert(nullptr != executeCommand);
 
     currentParameters.clear();
@@ -114,7 +119,7 @@ void AbstractEndpoint::handle(Http::RequestState& requestState, ExecuteFn execut
 
     requestState.response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
     requestState.response.writeHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    requestState.response.writeHeader("Content-Type", "application/json");
+    requestState.response.writeHeader("Content-Type", contentType);
     requestState.response.writeBodyAndContentLength(result.output.data(), result.output.size());
 }
 
@@ -221,6 +226,16 @@ void UsersEndpoint::getUserByName(Http::RequestState& requestState)
     });
 }
 
+void UsersEndpoint::getUserLogo(Http::RequestState& requestState)
+{
+    handleBinary(requestState, "image/png",
+                 [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::GET_USER_LOGO, parameters);
+    });
+}
+
 void UsersEndpoint::add(Http::RequestState& requestState)
 {
     handle(requestState,
@@ -282,6 +297,27 @@ void UsersEndpoint::changeSignature(Http::RequestState& requestState)
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
         return commandHandler.handle(Command::CHANGE_USER_SIGNATURE, parameters);
+    });
+}
+
+void UsersEndpoint::changeLogo(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::CHANGE_USER_LOGO, parameters);
+    });
+}
+
+void UsersEndpoint::deleteLogo(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::DELETE_USER_LOGO, parameters);
     });
 }
 

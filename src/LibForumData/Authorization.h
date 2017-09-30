@@ -40,6 +40,10 @@ namespace Forum
                                                         const Entities::User& user, StringView newTitle) const = 0;
             virtual AuthorizationStatus changeUserSignature(const Entities::User& currentUser,
                                                             const Entities::User& user, StringView newSignature) const = 0;
+            virtual AuthorizationStatus changeUserLogo(const Entities::User& currentUser,
+                                                       const Entities::User& user, StringView newLogo) const = 0;
+            virtual AuthorizationStatus deleteUserLogo(const Entities::User& currentUser,
+                                                       const Entities::User& user) const = 0;
             virtual AuthorizationStatus deleteUser(const Entities::User& currentUser,
                                                    const Entities::User& user) const = 0;
         };

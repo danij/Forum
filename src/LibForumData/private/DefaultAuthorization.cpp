@@ -91,6 +91,27 @@ AuthorizationStatus DefaultAuthorization::changeUserSignature(const User& curren
     return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_SIGNATURE, with);
 }
 
+AuthorizationStatus DefaultAuthorization::changeUserLogo(const User& currentUser, const User& user,
+                                                         StringView newLogo) const
+{
+    PrivilegeValueType with;
+    if (currentUser.id() == user.id())
+    {
+        return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_OWN_USER_LOGO, with);
+    }
+    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_LOGO, with);
+}
+
+AuthorizationStatus DefaultAuthorization::deleteUserLogo(const User& currentUser, const User& user) const
+{
+    PrivilegeValueType with;
+    if (currentUser.id() == user.id())
+    {
+        return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_OWN_USER_LOGO, with);
+    }
+    return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ANY_USER_LOGO, with);
+}
+
 AuthorizationStatus DefaultAuthorization::deleteUser(const User& currentUser, const User& user) const
 {
     PrivilegeValueType with;

@@ -232,6 +232,10 @@ namespace Forum
             CHANGE_ANY_USER_TITLE,
             CHANGE_OWN_USER_SIGNATURE,
             CHANGE_ANY_USER_SIGNATURE,
+            CHANGE_OWN_USER_LOGO,
+            CHANGE_ANY_USER_LOGO,
+            DELETE_OWN_USER_LOGO,
+            DELETE_ANY_USER_LOGO,
 
             COUNT
         };

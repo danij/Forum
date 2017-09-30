@@ -38,6 +38,9 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(user.lastSeenUpdatePrecision);
     LOAD_CONFIG_VALUE(user.maxUsersPerPage);
     LOAD_CONFIG_VALUE(user.onlineUsersIntervalSeconds);
+    LOAD_CONFIG_VALUE(user.maxLogoBinarySize);
+    LOAD_CONFIG_VALUE(user.maxLogoWidth);
+    LOAD_CONFIG_VALUE(user.maxLogoHeight);
 
     LOAD_CONFIG_VALUE(discussionThread.minNameLength);
     LOAD_CONFIG_VALUE(discussionThread.maxNameLength);

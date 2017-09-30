@@ -18,6 +18,8 @@ namespace Forum
             CHANGE_USER_INFO,
             CHANGE_USER_TITLE,
             CHANGE_USER_SIGNATURE,
+            CHANGE_USER_LOGO,
+            DELETE_USER_LOGO,
             DELETE_USER,
 
             ADD_DISCUSSION_THREAD,
@@ -107,6 +109,7 @@ namespace Forum
             GET_USERS_ONLINE,
             GET_USER_BY_ID,
             GET_USER_BY_NAME,
+            GET_USER_LOGO,
 
             GET_DISCUSSION_THREADS_BY_NAME,
             GET_DISCUSSION_THREADS_BY_CREATED,

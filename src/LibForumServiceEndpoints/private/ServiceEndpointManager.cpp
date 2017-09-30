@@ -59,6 +59,9 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "users/info",      HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeInfo) },
         { "users/title",     HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeTitle) },
         { "users/signature", HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeSignature) },
+        { "users/logo",      HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserLogo) },
+        { "users/logo",      HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeLogo) },
+        { "users/logo",      HttpVerb::DELETE, ENDPOINT_DELEGATE(usersEndpoint.deleteLogo) },
 
         { "threads",                 HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getAll) },
         { "threads/id",              HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getThreadById) },

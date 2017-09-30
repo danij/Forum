@@ -23,6 +23,7 @@ namespace Forum
                                                         std::vector<StringView>&);
 
             void handle(Http::RequestState& requestState, ExecuteFn executeCommand);
+            void handleBinary(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand);
 
             CommandHandler& commandHandler_;
         };
@@ -52,6 +53,7 @@ namespace Forum
             void getOnline(Http::RequestState& requestState);
             void getUserById(Http::RequestState& requestState);
             void getUserByName(Http::RequestState& requestState);
+            void getUserLogo(Http::RequestState& requestState);
 
             void add(Http::RequestState& requestState);
             void remove(Http::RequestState& requestState);
@@ -59,6 +61,8 @@ namespace Forum
             void changeInfo(Http::RequestState& requestState);
             void changeTitle(Http::RequestState& requestState);
             void changeSignature(Http::RequestState& requestState);
+            void changeLogo(Http::RequestState& requestState);
+            void deleteLogo(Http::RequestState& requestState);
         };
 
         class DiscussionThreadsEndpoint : private AbstractEndpoint

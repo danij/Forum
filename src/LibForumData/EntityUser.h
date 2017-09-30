@@ -33,6 +33,8 @@ namespace Forum
             const auto& info()              const { return info_; }
             const auto& title()             const { return title_; }
             const auto& signature()         const { return signature_; }
+             StringView logo()              const { return logo_; }
+                   bool hasLogo()           const { return logo_.size() > 0; }
 
                    auto lastSeen()          const { return lastSeen_; }
 
@@ -60,7 +62,8 @@ namespace Forum
                 Name,
                 Info,
                 Title,
-                Signature
+                Signature,
+                Logo,
             };
 
             typedef Helpers::JsonReadyStringWithSortKey<64> NameType;
@@ -105,6 +108,8 @@ namespace Forum
             auto& info()              { return info_; }
             auto& title()             { return title_; }
             auto& signature()         { return signature_; }
+            auto& logo()              { return logo_; }
+
             auto& threads()           { return threads_; }
             auto& subscribedThreads() { return subscribedThreads_; }
             auto& threadMessages()    { return threadMessages_; }
@@ -171,6 +176,7 @@ namespace Forum
             InfoType info_;
             TitleType title_;
             SignatureType signature_;
+            std::string logo_;
 
             Timestamp lastSeen_{0};
 

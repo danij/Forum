@@ -290,6 +290,9 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         case User::Signature:
             onChangeUserSignature(context, user);
             break;
+        case User::Logo:
+            onChangeUserLogo(context, user);
+            break;
         default:
             break;
         }
@@ -353,6 +356,21 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         };
 
         recordBlob(EventType::CHANGE_USER_SIGNATURE, 1, parts, std::extent<decltype(parts)>::value);
+    }
+
+    void onChangeUserLogo(ObserverContext context, const User& user)
+    {
+        PersistentTimestampType contextTimestamp = context.timestamp;
+        auto& userLogo = user.logo();
+
+        BlobPart parts[] =
+        {
+            ADD_CONTEXT_BLOB_PARTS,
+            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
+            { reinterpret_cast<const char*>(userLogo.data()), static_cast<SizeType>(userLogo.size()), true }
+        };
+
+        recordBlob(EventType::CHANGE_USER_LOGO, 1, parts, std::extent<decltype(parts)>::value);
     }
 
     void onDeleteUser(ObserverContext context, const User& user)

@@ -95,6 +95,9 @@ namespace Forum
 
             static bool doesNotContainLeadingOrTrailingWhitespace(StringView& input);
 
+            static StatusCode validateImage(StringView content, uint_fast32_t maxBinarySize, uint_fast32_t maxWidth,
+                                            uint_fast32_t maxHeight);
+
             MemoryStoreRef store_;
         };
 

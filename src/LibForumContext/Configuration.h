@@ -28,6 +28,9 @@ namespace Forum
              * When returning the currently online users, look for users last seen within the specified seconds
              */
             uint_fast32_t onlineUsersIntervalSeconds = 15 * 60;
+            uint_fast32_t maxLogoBinarySize = 32768;
+            uint_fast32_t maxLogoWidth = 128;
+            uint_fast32_t maxLogoHeight = 128;
         };
 
         struct DiscussionThreadConfig

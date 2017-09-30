@@ -261,6 +261,47 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
     return status;
 }
 
+StatusCode MemoryRepositoryUser::getUserLogo(IdTypeRef id, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          const auto& index = collection.users().byId();
+                          auto it = index.find(id);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& user = **it;
+
+                          if ( ! (status = authorization_->getUserById(currentUser, user)))
+                          {
+                              return;
+                          }
+
+                          if ( ! user.hasLogo())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          status.disable();
+
+                          const auto& logo = user.logo();
+                          output.write(logo.data(), logo.size());
+
+                          readEvents().onGetUserLogo(createObserverContext(currentUser), user);
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, OutStream& output)
 {
     StatusWriter status(output);
@@ -626,6 +667,107 @@ StatusCode MemoryRepositoryUser::changeUserSignature(EntityCollection& collectio
 
     UserPtr user = *it;
     user->signature() = User::SignatureType(newSignature);
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepositoryUser::changeUserLogo(IdTypeRef id, StringView newLogo, OutStream& output)
+{
+    StatusWriter status(output);
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateImage(newLogo, config->user.maxLogoBinarySize, config->user.maxLogoWidth,
+                                        config->user.maxLogoHeight);
+
+    if (validationCode != StatusCode::OK)
+    {
+        return status = validationCode;
+    }
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+                           auto& indexById = collection.users().byId();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           auto& user = **it;
+
+                           if ( ! (status = authorization_->changeUserLogo(*currentUser, user, newLogo)))
+                           {
+                               return;
+                           }
+
+                           if ( ! (status = changeUserLogo(collection, id, newLogo))) return;
+
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Logo);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::changeUserLogo(EntityCollection& collection, IdTypeRef id, StringView newLogo)
+{
+    auto& indexById = collection.users().byId();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    UserPtr user = *it;
+    user->logo() = toString(newLogo);
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepositoryUser::deleteUserLogo(IdTypeRef id, OutStream& output)
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+                           auto& indexById = collection.users().byId();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           auto& user = **it;
+
+                           if ( ! (status = authorization_->deleteUserLogo(*currentUser, user)))
+                           {
+                               return;
+                           }
+
+                           if ( ! (status = deleteUserLogo(collection, id))) return;
+
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Logo);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::deleteUserLogo(EntityCollection& collection, IdTypeRef id)
+{
+    auto& indexById = collection.users().byId();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    UserPtr user = *it;
+    user->logo() = {};
 
     return StatusCode::OK;
 }

@@ -33,6 +33,10 @@ namespace Forum
                                                 const Entities::User& user, StringView newTitle) const override { return {}; }
             AuthorizationStatus changeUserSignature(const Entities::User& currentUser,
                                                     const Entities::User& user, StringView newSignature) const override { return {}; }
+            AuthorizationStatus changeUserLogo(const Entities::User& currentUser,
+                                               const Entities::User& user, StringView newLogo) const override { return {}; }
+            AuthorizationStatus deleteUserLogo(const Entities::User& currentUser,
+                                               const Entities::User& user) const override { return {}; }
             AuthorizationStatus deleteUser(const Entities::User& currentUser,
                                            const Entities::User& user) const override { return {}; }
 

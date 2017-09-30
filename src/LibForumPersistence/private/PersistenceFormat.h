@@ -96,7 +96,8 @@ namespace Forum
             ASSIGN_FORUM_WIDE_PRIVILEGE,
 
             CHANGE_USER_TITLE,
-            CHANGE_USER_SIGNATURE
+            CHANGE_USER_SIGNATURE,
+            CHANGE_USER_LOGO
         };
 
         static constexpr MagicPrefixType MagicPrefix = 0xFFFFFFFFFFFFFFFF;

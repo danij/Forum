@@ -102,12 +102,16 @@ namespace Forum
 
             virtual StatusCode getUserById(Entities::IdTypeRef id, OutStream& output) const = 0;
             virtual StatusCode getUserByName(StringView name, OutStream& output) const = 0;
+            virtual StatusCode getUserLogo(Entities::IdTypeRef id, OutStream& output) const = 0;
 
             virtual StatusCode addNewUser(StringView name, StringView auth, OutStream& output) = 0;
             virtual StatusCode changeUserName(Entities::IdTypeRef id, StringView newName, OutStream& output) = 0;
             virtual StatusCode changeUserInfo(Entities::IdTypeRef id, StringView newInfo, OutStream& output) = 0;
             virtual StatusCode changeUserTitle(Entities::IdTypeRef id, StringView newTitle, OutStream& output) = 0;
             virtual StatusCode changeUserSignature(Entities::IdTypeRef id, StringView newSignature, OutStream& output) = 0;
+            virtual StatusCode changeUserLogo(Entities::IdTypeRef id, StringView newLogo, OutStream& output) = 0;
+            virtual StatusCode deleteUserLogo(Entities::IdTypeRef id, OutStream& output) = 0;
+
             virtual StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) = 0;
         };
         typedef std::shared_ptr<IUserRepository> UserRepositoryRef;
@@ -128,6 +132,9 @@ namespace Forum
                                                StringView newTitle) = 0;
             virtual StatusCode changeUserSignature(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                                    StringView newSignature) = 0;
+            virtual StatusCode changeUserLogo(Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                                              StringView newLogo) = 0;
+            virtual StatusCode deleteUserLogo(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
             virtual StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
         };
         typedef std::shared_ptr<IUserDirectWriteRepository> UserDirectWriteRepositoryRef;

@@ -6,10 +6,13 @@
 #include "OutputHelpers.h"
 
 #include <algorithm>
+#include <tuple>
 #include <type_traits>
 
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
+
+#include <boost/optional.hpp>
 
 using namespace Forum;
 using namespace Forum::Authorization;
@@ -148,4 +151,39 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
     if (U_FAILURE(errorCode)) return false;
 
     return (u_isUWhiteSpace(u32Chars[0]) == FALSE) && (u_isUWhiteSpace(u32Chars[1]) == FALSE);
+}
+
+static boost::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView content)
+{
+    return{};//TODO: update
+}
+
+StatusCode MemoryRepositoryBase::validateImage(StringView content, uint_fast32_t maxBinarySize, uint_fast32_t maxWidth,
+                                               uint_fast32_t maxHeight)
+{
+    if (content.size() < 1)
+    {
+        return StatusCode::VALUE_TOO_SHORT;
+    }
+    if (content.size() > maxBinarySize)
+    {
+        return StatusCode::VALUE_TOO_LONG;
+    }
+
+    auto pngSize = getPNGSize(content);
+    if ( ! pngSize)
+    {
+        return StatusCode::INVALID_PARAMETERS;
+    }
+
+    if ((std::get<0>(*pngSize) < 1) || (std::get<1>(*pngSize) < 1))
+    {
+        return StatusCode::VALUE_TOO_SHORT;
+    }
+    if ((std::get<0>(*pngSize) > maxWidth) || (std::get<1>(*pngSize) > maxHeight))
+    {
+        return StatusCode::VALUE_TOO_LONG;
+    }
+
+    return StatusCode::OK;
 }

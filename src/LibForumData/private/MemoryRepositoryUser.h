@@ -19,6 +19,7 @@ namespace Forum
 
             StatusCode getUserById(Entities::IdTypeRef id, OutStream& output) const override;
             StatusCode getUserByName(StringView name, OutStream& output) const override;
+            StatusCode getUserLogo(Entities::IdTypeRef id, OutStream& output) const override;
 
             StatusCode addNewUser(StringView name, StringView auth, OutStream& output) override;
             StatusWithResource<Entities::UserPtr> addNewUser(Entities::EntityCollection& collection,
@@ -32,6 +33,11 @@ namespace Forum
             StatusCode changeUserSignature(Entities::IdTypeRef id, StringView newSignature, OutStream& output) override;
             StatusCode changeUserSignature(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                            StringView newSignature) override;
+            StatusCode changeUserLogo(Entities::IdTypeRef id, StringView newLogo, OutStream& output) override;
+            StatusCode changeUserLogo(Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                                      StringView newLogo) override;
+            StatusCode deleteUserLogo(Entities::IdTypeRef id, OutStream& output) override;
+            StatusCode deleteUserLogo(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
             StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
