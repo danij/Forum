@@ -147,7 +147,8 @@ StatusCode MemoryRepositoryUser::getUsersOnline(OutStream& output) const
                                                                Context::getCurrentTime());
 
                           auto onlineUsersIntervalSeconds = getGlobalConfig()->user.onlineUsersIntervalSeconds;
-                          auto onlineUsersTimeLimit = Context::getCurrentTime() - onlineUsersIntervalSeconds;
+                          auto onlineUsersTimeLimit =
+                                  static_cast<Timestamp>(Context::getCurrentTime() - onlineUsersIntervalSeconds);
 
                           Json::JsonWriter writer(output);
 
