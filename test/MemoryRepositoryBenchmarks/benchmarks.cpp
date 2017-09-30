@@ -353,7 +353,7 @@ void showEntitySizes()
     std::cout << "VisitDetails                           " << std::setw(5) << sizeof(Entities::VisitDetails) << '\n';
     std::cout << "LastUpdatedInfo                        " << std::setw(5) << sizeof(Entities::LastUpdatedInfo) << '\n';
     std::cout << "EntityPointer<DiscussionThread>        " << std::setw(5) << sizeof(Entities::DiscussionThreadPtr) << '\n';
-    std::cout << "ImmutableString                        " << std::setw(5) << sizeof(Helpers::ImmutableString) << '\n';
+    std::cout << "WholeChangeableString                  " << std::setw(5) << sizeof(Helpers::WholeChangeableString) << '\n';
     std::cout << "std::string                            " << std::setw(5) << sizeof(std::string) << '\n';
     std::cout << "-\n";
     std::cout << "UserCollection                         " << std::setw(5) << sizeof(Entities::UserCollection) << '\n';
