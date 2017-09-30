@@ -37,6 +37,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(user.maxSignatureLength);
     LOAD_CONFIG_VALUE(user.lastSeenUpdatePrecision);
     LOAD_CONFIG_VALUE(user.maxUsersPerPage);
+    LOAD_CONFIG_VALUE(user.onlineUsersIntervalSeconds);
 
     LOAD_CONFIG_VALUE(discussionThread.minNameLength);
     LOAD_CONFIG_VALUE(discussionThread.maxNameLength);

@@ -104,6 +104,7 @@ namespace Forum
             GET_USERS_BY_LAST_SEEN,
             GET_USERS_BY_THREAD_COUNT,
             GET_USERS_BY_MESSAGE_COUNT,
+            GET_USERS_ONLINE,
             GET_USER_BY_ID,
             GET_USER_BY_NAME,
 

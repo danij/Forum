@@ -180,6 +180,11 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->getUsers(output, RetrieveUsersBy::MessageCount);
     }
 
+    COMMAND_HANDLER_METHOD( GET_USERS_ONLINE )
+    {
+        return userRepository->getUsersOnline(output);
+    }
+
     COMMAND_HANDLER_METHOD( GET_USER_BY_ID )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -1267,6 +1272,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_USERS_BY_LAST_SEEN);
     setViewHandler(GET_USERS_BY_THREAD_COUNT);
     setViewHandler(GET_USERS_BY_MESSAGE_COUNT);
+    setViewHandler(GET_USERS_ONLINE);
     setViewHandler(GET_USER_BY_ID);
     setViewHandler(GET_USER_BY_NAME);
 

@@ -98,6 +98,7 @@ namespace Forum
             DECLARE_INTERFACE_MANDATORY(IUserRepository)
 
             virtual StatusCode getUsers(OutStream& output, RetrieveUsersBy by) const = 0;
+            virtual StatusCode getUsersOnline(OutStream& output) const = 0;
 
             virtual StatusCode getUserById(Entities::IdTypeRef id, OutStream& output) const = 0;
             virtual StatusCode getUserByName(StringView name, OutStream& output) const = 0;

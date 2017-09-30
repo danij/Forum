@@ -126,6 +126,60 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
     return status;
 }
 
+StatusCode MemoryRepositoryUser::getUsersOnline(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          if ( ! (status = authorization_->getUsers(currentUser)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
+                                                               Context::getCurrentTime());
+
+                          auto onlineUsersIntervalSeconds = getGlobalConfig()->user.onlineUsersIntervalSeconds;
+                          auto onlineUsersTimeLimit = Context::getCurrentTime() - onlineUsersIntervalSeconds;
+
+                          Json::JsonWriter writer(output);
+
+                          writer.startObject();
+                          writer.newPropertyWithSafeName("online_users");
+
+                          writer.startArray();
+
+                          auto index = collection.users().byLastSeen();
+                          for (auto it = index.rbegin(), itEnd = index.rend(); it != itEnd; ++it)
+                          {
+                              const User* userPtr = *it;
+                              assert(userPtr);
+
+                              if (userPtr->lastSeen() < onlineUsersTimeLimit)
+                              {
+                                  break;
+                              }
+                              else
+                              {
+                                  serialize(writer, *userPtr, restriction);
+                              }
+                          }
+
+                          writer.endArray();
+                          writer.endObject();
+
+                          readEvents().onGetUsersOnline(createObserverContext(currentUser));
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryUser::getUserById(IdTypeRef id, OutStream& output) const
 {
     StatusWriter status(output);

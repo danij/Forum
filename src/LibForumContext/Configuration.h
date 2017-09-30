@@ -24,6 +24,10 @@ namespace Forum
              */
             int_fast32_t lastSeenUpdatePrecision = 300;
             int_fast32_t maxUsersPerPage = 20;
+            /**
+             * When returning the currently online users, look for users last seen within the specified seconds
+             */
+            uint_fast32_t onlineUsersIntervalSeconds = 15 * 60;
         };
 
         struct DiscussionThreadConfig

@@ -15,6 +15,7 @@ namespace Forum
                                           AuthorizationRepositoryRef authorizationRepository);
 
             StatusCode getUsers(OutStream& output, RetrieveUsersBy by) const override;
+            StatusCode getUsersOnline(OutStream& output) const override;
 
             StatusCode getUserById(Entities::IdTypeRef id, OutStream& output) const override;
             StatusCode getUserByName(StringView name, OutStream& output) const override;

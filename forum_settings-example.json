@@ -9,7 +9,8 @@
         "minSignatureLength": 0,
         "maxSignatureLength": 256,
         "lastSeenUpdatePrecision": 300,
-        "maxUsersPerPage": 20
+        "maxUsersPerPage": 20,
+        "onlineUsersIntervalSeconds" : 900
     },
 
     "discussionThread": {
