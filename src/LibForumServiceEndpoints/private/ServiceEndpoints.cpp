@@ -113,6 +113,7 @@ void AbstractEndpoint::handle(Http::RequestState& requestState, ExecuteFn execut
     auto result = executeCommand(requestState, commandHandler_, currentParameters);
 
     requestState.response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
+    requestState.response.writeHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     requestState.response.writeHeader("Content-Type", "application/json");
     requestState.response.writeBodyAndContentLength(result.output.data(), result.output.size());
 }
