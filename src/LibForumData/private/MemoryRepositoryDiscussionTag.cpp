@@ -72,6 +72,11 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
                                    restriction);
                 status.disable();
                 break;
+            case RetrieveDiscussionTagsBy::ThreadCount:
+                writeArraySafeName(output, "tags", collection.tags().byThreadCount().rbegin(),
+                    collection.tags().byThreadCount().rend(), restriction);
+                status.disable();
+                break;
             case RetrieveDiscussionTagsBy::MessageCount:
                 writeArraySafeName(output, "tags", collection.tags().byMessageCount().rbegin(),
                                    collection.tags().byMessageCount().rend(), restriction);
