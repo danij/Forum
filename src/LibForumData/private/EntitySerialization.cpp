@@ -109,7 +109,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     auto content = message.content();
     writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
 
-    if (allowViewUserOverride && ( ! serializationSettings.hideDiscussionThreadCreatedBy))
+    if (allowViewUserOverride && ( ! serializationSettings.hideDiscussionThreadMessageCreatedBy))
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
