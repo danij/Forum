@@ -106,6 +106,7 @@ namespace Forum
             virtual StatusCode changeUserName(Entities::IdTypeRef id, StringView newName, OutStream& output) = 0;
             virtual StatusCode changeUserInfo(Entities::IdTypeRef id, StringView newInfo, OutStream& output) = 0;
             virtual StatusCode changeUserTitle(Entities::IdTypeRef id, StringView newTitle, OutStream& output) = 0;
+            virtual StatusCode changeUserSignature(Entities::IdTypeRef id, StringView newSignature, OutStream& output) = 0;
             virtual StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) = 0;
         };
         typedef std::shared_ptr<IUserRepository> UserRepositoryRef;
@@ -124,6 +125,8 @@ namespace Forum
                                               StringView newInfo) = 0;
             virtual StatusCode changeUserTitle(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                                StringView newTitle) = 0;
+            virtual StatusCode changeUserSignature(Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                                                   StringView newSignature) = 0;
             virtual StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
         };
         typedef std::shared_ptr<IUserDirectWriteRepository> UserDirectWriteRepositoryRef;

@@ -80,6 +80,17 @@ AuthorizationStatus DefaultAuthorization::changeUserTitle(const User& currentUse
     return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_TITLE, with);
 }
 
+AuthorizationStatus DefaultAuthorization::changeUserSignature(const User& currentUser, const User& user,
+                                                              StringView newSignature) const
+{
+    PrivilegeValueType with;
+    if (currentUser.id() == user.id())
+    {
+        return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_OWN_USER_SIGNATURE, with);
+    }
+    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_SIGNATURE, with);
+}
+
 AuthorizationStatus DefaultAuthorization::deleteUser(const User& currentUser, const User& user) const
 {
     PrivilegeValueType with;

@@ -45,6 +45,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
             << propertySafeName("name", user.name())
             << propertySafeName("info", user.info())
             << propertySafeName("title", user.title())
+            << propertySafeName("signature", user.signature())
             << propertySafeName("created", user.created())
             << propertySafeName("lastSeen", user.lastSeen())
             << propertySafeName("threadCount", user.threads().byId().size())

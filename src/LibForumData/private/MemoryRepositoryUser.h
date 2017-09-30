@@ -28,6 +28,9 @@ namespace Forum
             StatusCode changeUserInfo(Entities::EntityCollection& collection, Entities::IdTypeRef id, StringView newInfo) override;
             StatusCode changeUserTitle(Entities::IdTypeRef id, StringView newTitle, OutStream& output) override;
             StatusCode changeUserTitle(Entities::EntityCollection& collection, Entities::IdTypeRef id, StringView newTitle) override;
+            StatusCode changeUserSignature(Entities::IdTypeRef id, StringView newSignature, OutStream& output) override;
+            StatusCode changeUserSignature(Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                                           StringView newSignature) override;
             StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 

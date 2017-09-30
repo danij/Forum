@@ -6,6 +6,8 @@
         "maxInfoLength": 1024,
         "minTitleLength": 0,
         "maxTitleLength": 64,
+        "minSignatureLength": 0,
+        "maxSignatureLength": 256,
         "lastSeenUpdatePrecision": 300,
         "maxUsersPerPage": 20
     },

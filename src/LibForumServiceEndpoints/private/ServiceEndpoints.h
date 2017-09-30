@@ -57,6 +57,7 @@ namespace Forum
             void changeName(Http::RequestState& requestState);
             void changeInfo(Http::RequestState& requestState);
             void changeTitle(Http::RequestState& requestState);
+            void changeSignature(Http::RequestState& requestState);
         };
 
         class DiscussionThreadsEndpoint : private AbstractEndpoint

@@ -17,6 +17,7 @@ namespace Forum
             CHANGE_USER_NAME,
             CHANGE_USER_INFO,
             CHANGE_USER_TITLE,
+            CHANGE_USER_SIGNATURE,
             DELETE_USER,
 
             ADD_DISCUSSION_THREAD,

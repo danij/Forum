@@ -39,6 +39,8 @@ namespace Forum
                                                const Entities::User& user, StringView newInfo) const override;
             AuthorizationStatus changeUserTitle(const Entities::User& currentUser,
                                                 const Entities::User& user, StringView newTitle) const override;
+            AuthorizationStatus changeUserSignature(const Entities::User& currentUser,
+                                                    const Entities::User& user, StringView newSignature) const override;
             AuthorizationStatus deleteUser(const Entities::User& currentUser,
                                            const Entities::User& user) const override;
 

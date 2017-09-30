@@ -521,6 +521,61 @@ StatusCode MemoryRepositoryUser::changeUserTitle(EntityCollection& collection, I
     return StatusCode::OK;
 }
 
+StatusCode MemoryRepositoryUser::changeUserSignature(IdTypeRef id, StringView newSignature, OutStream& output)
+{
+    StatusWriter status(output);
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(newSignature, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->user.minSignatureLength, config->user.maxSignatureLength);
+
+    if (validationCode != StatusCode::OK)
+    {
+        return status = validationCode;
+    }
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+                           auto& indexById = collection.users().byId();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           auto& user = **it;
+
+                           if ( ! (status = authorization_->changeUserSignature(*currentUser, user, newSignature)))
+                           {
+                               return;
+                           }
+
+                           if ( ! (status = changeUserSignature(collection, id, newSignature))) return;
+
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Signature);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::changeUserSignature(EntityCollection& collection, IdTypeRef id, StringView newSignature)
+{
+    auto& indexById = collection.users().byId();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    UserPtr user = *it;
+    user->signature() = User::SignatureType(newSignature);
+
+    return StatusCode::OK;
+}
+
 StatusCode MemoryRepositoryUser::deleteUser(IdTypeRef id, OutStream& output)
 {
     StatusWriter status(output);

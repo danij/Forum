@@ -95,7 +95,8 @@ namespace Forum
             ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE_FORUM_WIDE,
             ASSIGN_FORUM_WIDE_PRIVILEGE,
 
-            CHANGE_USER_TITLE
+            CHANGE_USER_TITLE,
+            CHANGE_USER_SIGNATURE
         };
 
         static constexpr MagicPrefixType MagicPrefix = 0xFFFFFFFFFFFFFFFF;
