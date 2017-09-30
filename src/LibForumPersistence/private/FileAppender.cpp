@@ -37,6 +37,7 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
     if ( ! file)
     {
         FORUM_LOG_ERROR << "Could not open file for writing: " << currentFileName_;
+        std::abort();
         return;
     }
 
@@ -68,6 +69,7 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
         if (ferror(file))
         {
             FORUM_LOG_ERROR << "Could not persist blob to file";
+            std::abort();
         }
     }
     fclose(file);
