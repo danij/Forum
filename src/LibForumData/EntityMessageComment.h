@@ -41,9 +41,9 @@ namespace Forum
                   createdBy_(createdBy), message_(message)
             {}
 
-            bool&                     solved()    { return solved_; }
-            Helpers::ImmutableString& content()   { return content_; }
-            User&                     createdBy() { return createdBy_; }
+            auto& solved()    { return solved_; }
+            auto& content()   { return content_; }
+            auto& createdBy() { return createdBy_; }
 
         private:
             IdType id_;
@@ -53,7 +53,7 @@ namespace Forum
             User& createdBy_;
             DiscussionThreadMessage& message_;
 
-            Helpers::ImmutableString content_;
+            Helpers::WholeChangeableString content_;
 
             bool solved_ = false;
         };

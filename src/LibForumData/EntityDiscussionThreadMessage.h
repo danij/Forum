@@ -193,7 +193,7 @@ namespace Forum
             User& createdBy_;
             EntityPointer<DiscussionThread> parentThread_;
 
-            Helpers::ImmutableString content_;
+            Helpers::WholeChangeableString content_;
 
             std::unique_ptr<LastUpdatedInfo> lastUpdated_;
 

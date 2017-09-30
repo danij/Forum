@@ -93,27 +93,27 @@ namespace Forum
         }
 
         /**
-         * Stores an immutable string in a custom location in memory
+         * Stores a string in a custom location in memory
+         * The string only supports changing the whole content, not individual bytes
          * Providing a string_view to it is easier than defining an std::basic_string with a custom allocator
          */
-        struct ImmutableString final
+        struct WholeChangeableString final
         {
-            ImmutableString() = default;
-            ~ImmutableString() = default;
+            WholeChangeableString() = default;
+            ~WholeChangeableString() = default;
 
-            ImmutableString(const ImmutableString&) = delete;
-            ImmutableString& operator=(const ImmutableString&) = delete;
+            WholeChangeableString(const WholeChangeableString&) = delete;
+            WholeChangeableString& operator=(const WholeChangeableString&) = delete;
 
-            ImmutableString(ImmutableString&&) = default;
-            ImmutableString& operator=(ImmutableString&&) = default;
+            WholeChangeableString(WholeChangeableString&&) = default;
+            WholeChangeableString& operator=(WholeChangeableString&&) = default;
 
-
-            ImmutableString(StringView view)
+            WholeChangeableString(StringView view)
             {
                 copyFrom(view);
             }
 
-            ImmutableString& operator=(StringView view)
+            WholeChangeableString& operator=(StringView view)
             {
                 copyFrom(view);
                 return *this;
