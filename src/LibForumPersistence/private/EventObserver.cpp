@@ -361,7 +361,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onChangeUserLogo(ObserverContext context, const User& user)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
-        auto& userLogo = user.logo();
+        StringView userLogo = user.logo();
 
         BlobPart parts[] =
         {
