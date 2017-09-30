@@ -232,6 +232,8 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
+                          readEvents().onGetUserByName(createObserverContext(currentUser), name);
+
                           User::NameType nameString(name);
 
                           const auto& index = collection.users().byName();
@@ -255,8 +257,6 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                                                                Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "user", user, restriction);
-
-                          readEvents().onGetUserByName(createObserverContext(currentUser), name);
                       });
     return status;
 }
