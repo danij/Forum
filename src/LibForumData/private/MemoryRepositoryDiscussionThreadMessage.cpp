@@ -206,7 +206,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
     auto message = collection.createDiscussionThreadMessage(messageId, *currentUser, Context::getCurrentTime(),
                                                             { Context::getCurrentUserIpAddress() });
     message->parentThread() = threadPtr;
-    message->content() = content;
+    message->content() = WholeChangeableString::copyFrom(content);
 
     collection.insertDiscussionThreadMessage(message);
 
@@ -389,7 +389,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     DiscussionThreadMessagePtr messagePtr = *it;
     DiscussionThreadMessage& message = *messagePtr;
 
-    message.content() = newContent;
+    message.content() = WholeChangeableString::copyFrom(newContent);
     message.updateLastUpdated(Context::getCurrentTime());
     message.updateLastUpdatedDetails({ Context::getCurrentUserIpAddress() });
     message.updateLastUpdatedReason(toString(changeReason));
@@ -913,7 +913,7 @@ StatusWithResource<MessageCommentPtr>
     //IdType id, DiscussionThreadMessage& message, User& createdBy, Timestamp created, VisitDetails creationDetails
     auto comment = collection.createMessageComment(commentId, message, *currentUser, Context::getCurrentTime(),
                                                    { Context::getCurrentUserIpAddress() });
-    comment->content() = content;
+    comment->content() = WholeChangeableString::copyFrom(content);
 
     collection.insertMessageComment(comment);
 

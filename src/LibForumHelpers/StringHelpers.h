@@ -99,45 +99,101 @@ namespace Forum
          */
         struct WholeChangeableString final
         {
-            WholeChangeableString() = default;
-            ~WholeChangeableString() = default;
-
-            WholeChangeableString(const WholeChangeableString&) = delete;
-            WholeChangeableString& operator=(const WholeChangeableString&) = delete;
-
-            WholeChangeableString(WholeChangeableString&&) = default;
-            WholeChangeableString& operator=(WholeChangeableString&&) = default;
-
-            WholeChangeableString(StringView view)
+            WholeChangeableString() : ptr_(nullptr), info_{0, 0}
             {
-                copyFrom(view);
             }
 
-            WholeChangeableString& operator=(StringView view)
+            ~WholeChangeableString()
             {
-                copyFrom(view);
+                if ((info_.ownsMemory != 0) && (ptr_ != nullptr))
+                {
+                    delete[] ptr_;
+                }
+            }
+
+            WholeChangeableString(const WholeChangeableString& other)
+            {
+                info_.ownsMemory = other.info_.ownsMemory;
+                info_.size = other.info_.size;
+                ptr_ = nullptr;
+
+                if ((other.info_.ownsMemory != 0) && (ptr_ != nullptr))
+                {
+                    auto ptr = new char[other.info_.size];
+                    ptr_ = ptr;
+                    std::copy(other.ptr_, other.ptr_ + other.info_.size, ptr);
+                }
+                else
+                {
+                    ptr_ = other.ptr_;
+                }
+            }
+
+            WholeChangeableString& operator=(WholeChangeableString& other)
+            {
+                WholeChangeableString copy(other);
+                swap(*this, copy);
                 return *this;
+            }
+
+            WholeChangeableString(WholeChangeableString&& other) noexcept
+            {
+                swap(*this, other);
+            }
+
+            WholeChangeableString& operator=(WholeChangeableString&& other) noexcept
+            {
+                swap(*this, other);
+                return *this;
+            }
+
+            static WholeChangeableString copyFrom(StringView view)
+            {
+                return WholeChangeableString(view, true);
+            }
+
+            static WholeChangeableString onlyTakePointer(StringView view)
+            {
+                return WholeChangeableString(view, false);
+            }
+
+            friend void swap(WholeChangeableString& first, WholeChangeableString& second) noexcept
+            {
+                using std::swap;
+                swap(first.ptr_, second.ptr_);
+                swap(first.info_, second.info_);
             }
 
             operator StringView() const
             {
-                return boost::string_view(ptr_.get(), size_);
+                return boost::string_view(ptr_, info_.size);
             }
 
         private:
-
-            void copyFrom(StringView view)
+            WholeChangeableString(StringView view, bool copy)
             {
-                if (view.size())
+                info_.ownsMemory = copy ? 1 : 0;
+                info_.size = view.size();
+                ptr_ = nullptr;
+
+                if (info_.size > 0)
                 {
-                    ptr_ = std::make_unique<char[]>(view.size());
-                    std::copy(view.begin(), view.end(), ptr_.get());
-                    size_ = view.size();
+                    auto ptr = new char[info_.size];
+                    ptr_ = ptr;
+                    std::copy(view.begin(), view.end(), ptr);
+                }
+                else
+                {
+                    ptr_ = nullptr;
                 }
             }
 
-            std::unique_ptr<char[]> ptr_;
-            size_t size_ = 0;
+            const char* ptr_;
+            struct
+            {
+                uint32_t ownsMemory :  1;
+                uint32_t size       : 31;
+            } info_;
         };
 
         namespace Detail
