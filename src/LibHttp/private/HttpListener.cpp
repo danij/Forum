@@ -295,7 +295,6 @@ HttpListener::~HttpListener()
 
 void HttpListener::startListening()
 {
-    //TODO: error checking
     boost::asio::ip::tcp::endpoint endpoint
     {
         boost::asio::ip::address::from_string(impl_->config.listenIPAddress),

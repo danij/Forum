@@ -138,7 +138,16 @@ int Application::run(int argc, const char* argv[])
 
     FORUM_LOG_INFO << "Starting to listen under "
                    << config->service.listenIPAddress << ":" << config->service.listenPort;
-    httpListener_->startListening();
+    try
+    {
+        httpListener_->startListening();
+    }
+    catch(std::exception& ex)
+    {
+        FORUM_LOG_ERROR << "Could not start listening: " << ex.what();
+        std::cerr << "Could not start listening: " << ex.what() << '\n';
+        return 1;
+    }
 
     getIOServiceProvider().start();
     getIOServiceProvider().waitForStop();
