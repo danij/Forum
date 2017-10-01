@@ -179,7 +179,7 @@ void Parser::parseNewLine(char*& buffer, size_t& size)
     if ((headerSize_ > 4) && (headerBuffer_[headerSize_ - 3] == '\n') && (headerBuffer_[headerSize_ - 4] == '\r'))
     {
         onFinishedParsingHeaders();
-        if (request_.verb == HttpVerb::GET || request_.verb == HttpVerb::DELETE)
+        if (request_.verb == HttpVerb::GET || request_.verb == HttpVerb::DELETE || (expectedContentLength_ < 1))
         {
             finished_ = true;
             return;
