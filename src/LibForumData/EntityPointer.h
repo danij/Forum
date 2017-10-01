@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <type_traits>
 
+#include "TypeHelpers.h"
+
 namespace Forum
 {
     namespace Entities
@@ -148,6 +150,11 @@ namespace Forum
                 return ptr();
             }
 
+            auto index() const
+            {
+                return index_;
+            }
+
             bool operator==(EntityPointer other) const
             {
                 return index_ == other.index_;
@@ -191,6 +198,8 @@ namespace Forum
         class StoresEntityPointer
         {
         public:
+            DECLARE_ABSTRACT_MANDATORY(StoresEntityPointer)
+
             auto pointer() const { return pointer_; }
 
             friend class EntityCollection;

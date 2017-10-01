@@ -51,23 +51,23 @@ namespace Forum
 
             auto lastUpdated() const
             {
-                return lastUpdated_ ? lastUpdated_->at_ : Timestamp{ 0 };
+                return lastUpdated_ ? lastUpdated_->at : Timestamp{ 0 };
             }
 
             const auto& lastUpdatedDetails() const
             {
                 static const VisitDetails lastUpdatedDetailsDefault{};
-                return lastUpdated_ ? lastUpdated_->details_ : lastUpdatedDetailsDefault;
+                return lastUpdated_ ? lastUpdated_->details : lastUpdatedDetailsDefault;
             }
 
             StringView lastUpdatedReason() const
             {
-                return lastUpdated_ ? lastUpdated_->reason_ : StringView{};
+                return lastUpdated_ ? lastUpdated_->reason : StringView{};
             }
 
             auto lastUpdatedBy() const
             {
-                return lastUpdated_ ? lastUpdated_->by_.toConst() : EntityPointer<const User>{};
+                return lastUpdated_ ? lastUpdated_->by.toConst() : EntityPointer<const User>{};
             }
 
 
@@ -138,27 +138,31 @@ namespace Forum
 
             void updateLastUpdated(Timestamp at)
             {
-                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedLazy());
-                lastUpdated_->at_ = at;
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedInfo());
+                lastUpdated_->at = at;
             }
 
             void updateLastUpdatedDetails(VisitDetails&& details)
             {
-                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedLazy());
-                lastUpdated_->details_ = std::move(details);
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedInfo());
+                lastUpdated_->details = std::move(details);
             }
 
             void updateLastUpdatedReason(std::string&& reason)
             {
-                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedLazy());
-                lastUpdated_->reason_ = std::move(reason);
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedInfo());
+                lastUpdated_->reason = std::move(reason);
             }
 
             void updateLastUpdatedBy(EntityPointer<User> by)
             {
-                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedLazy());
-                lastUpdated_->by_ = by;
+                if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedInfo());
+                lastUpdated_->by = by;
             }
+
+            auto& upVotes() { return upVotes_; }
+
+            auto& downVotes() { return downVotes_; }
 
             void addUpVote(EntityPointer<User> user, const Timestamp& at)
             {
@@ -189,16 +193,9 @@ namespace Forum
             User& createdBy_;
             EntityPointer<DiscussionThread> parentThread_;
 
-            Helpers::ImmutableString content_;
+            Helpers::WholeChangeableString content_;
 
-            struct LastUpdatedLazy
-            {
-                Timestamp at_{0};
-                VisitDetails details_;
-                std::string reason_;
-                EntityPointer<User> by_;
-            };
-            std::unique_ptr<LastUpdatedLazy> lastUpdated_;
+            std::unique_ptr<LastUpdatedInfo> lastUpdated_;
 
             std::unique_ptr<MessageCommentCollection> comments_;
             int32_t solvedCommentsCount_{0};

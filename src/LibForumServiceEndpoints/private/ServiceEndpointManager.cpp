@@ -1,15 +1,18 @@
 #include "ServiceEndpointManager.h"
 #include "ServiceEndpoints.h"
 
+#include <tuple>
+
 using namespace Forum;
 using namespace Forum::Commands;
+using namespace Http;
 
 struct ServiceEndpointManager::ServiceEndpointManagerImpl
 {
     explicit ServiceEndpointManagerImpl(CommandHandler& handler)
         : commandHandler(handler), metricsEndpoint(handler), statisticsEndpoint(handler),
           usersEndpoint(handler), threadsEndpoint(handler), threadMessagesEndpoint(handler),
-          tagsEndpoint(handler), categoriesEndpoint(handler)
+          tagsEndpoint(handler), categoriesEndpoint(handler), authorizationEndpoint(handler)
     {
     }
 
@@ -21,6 +24,7 @@ struct ServiceEndpointManager::ServiceEndpointManagerImpl
     DiscussionThreadMessagesEndpoint threadMessagesEndpoint;
     DiscussionTagsEndpoint tagsEndpoint;
     DiscussionCategoriesEndpoint categoriesEndpoint;
+    AuthorizationEndpoint authorizationEndpoint;
 };
 
 ServiceEndpointManager::ServiceEndpointManager(CommandHandler& handler)
@@ -36,123 +40,128 @@ ServiceEndpointManager::~ServiceEndpointManager()
     }
 }
 
-void ServiceEndpointManager::registerRoutes(Http::HttpRouter& router)
+#define ENDPOINT_DELEGATE(method) [this](auto& state) { this->impl_->method(state); }
+
+void ServiceEndpointManager::registerRoutes(HttpRouter& router)
 {
-    router.addRoute("metrics/version/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->metricsEndpoint.getVersion(state);});
-    router.addRoute("statistics/entitycount/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->statisticsEndpoint.getEntitiesCount(state);});
+    std::tuple<StringView, HttpVerb, HttpRouter::HandlerFn> routes[] =
+    {
+        { "metrics/version",        HttpVerb::GET, ENDPOINT_DELEGATE(metricsEndpoint.getVersion) },
+        { "statistics/entitycount", HttpVerb::GET, ENDPOINT_DELEGATE(statisticsEndpoint.getEntitiesCount) },
 
-    router.addRoute("privileges/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->usersEndpoint.getCurrentUserPrivileges(state);});
+        { "users",             HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getAll) },
+        { "users/online",      HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getOnline) },
+        { "users/id",          HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserById) },
+        { "users/name",        HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserByName) },
+        { "users",             HttpVerb::POST,   ENDPOINT_DELEGATE(usersEndpoint.add) },
+        { "users",             HttpVerb::DELETE, ENDPOINT_DELEGATE(usersEndpoint.remove) },
+        { "users/name",        HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeName) },
+        { "users/info",        HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeInfo) },
+        { "users/title",       HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeTitle) },
+        { "users/signature",   HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeSignature) },
+        { "users/logo",        HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserLogo) },
+        { "users/logo",        HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeLogo) },
+        { "users/logo",        HttpVerb::DELETE, ENDPOINT_DELEGATE(usersEndpoint.deleteLogo) },
+        { "users/votehistory", HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserVoteHistory) },
 
-    router.addRoute("users/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->usersEndpoint.getAll(state);});
-    router.addRoute("users/id", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->usersEndpoint.getUserById(state);});
-    router.addRoute("users/name/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->usersEndpoint.getUserByName(state);});
-    router.addRoute("users/", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->usersEndpoint.add(state);});
-    router.addRoute("users/", Http::HttpVerb::DELETE,
-                    [this](auto& state) { this->impl_->usersEndpoint.remove(state);});
-    router.addRoute("users/name/", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->usersEndpoint.changeName(state);});
-    router.addRoute("users/info/", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->usersEndpoint.changeInfo(state);});
+        { "threads",                 HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getAll) },
+        { "threads/id",              HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getThreadById) },
+        { "threads/user",            HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getThreadsOfUser) },
+        { "threads/subscribed/user", HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getSubscribedThreadsOfUser) },
+        { "threads/tag",             HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getThreadsWithTag) },
+        { "threads/category",        HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getThreadsOfCategory) },
+        { "threads",                 HttpVerb::POST,   ENDPOINT_DELEGATE(threadsEndpoint.add) },
+        { "threads",                 HttpVerb::DELETE, ENDPOINT_DELEGATE(threadsEndpoint.remove) },
+        { "threads/name",            HttpVerb::PUT,    ENDPOINT_DELEGATE(threadsEndpoint.changeName) },
+        { "threads/pindisplayorder", HttpVerb::PUT,    ENDPOINT_DELEGATE(threadsEndpoint.changePinDisplayOrder) },
+        { "threads/merge",           HttpVerb::POST,   ENDPOINT_DELEGATE(threadsEndpoint.merge) },
+        { "threads/subscribe",       HttpVerb::POST,   ENDPOINT_DELEGATE(threadsEndpoint.subscribe) },
+        { "threads/unsubscribe",     HttpVerb::POST,   ENDPOINT_DELEGATE(threadsEndpoint.unsubscribe) },
+        { "threads/tag",             HttpVerb::POST,   ENDPOINT_DELEGATE(threadsEndpoint.addTag) },
+        { "threads/tag",             HttpVerb::DELETE, ENDPOINT_DELEGATE(threadsEndpoint.removeTag) },
 
-    router.addRoute("threads/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->threadsEndpoint.getAll(state);});
-    router.addRoute("threads/id", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->threadsEndpoint.getThreadById(state);});
-    router.addRoute("threads/user/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->threadsEndpoint.getThreadsOfUser(state);});
-    router.addRoute("threads/subscribed/user/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->threadsEndpoint.getSubscribedThreadsOfUser(state);});
-    router.addRoute("threads/tag/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->threadsEndpoint.getThreadsWithTag(state);});
-    router.addRoute("threads/category/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->threadsEndpoint.getThreadsOfCategory(state);});
-    router.addRoute("threads/", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->threadsEndpoint.add(state);});
-    router.addRoute("threads/", Http::HttpVerb::DELETE,
-                    [this](auto& state) { this->impl_->threadsEndpoint.remove(state);});
-    router.addRoute("threads/name", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->threadsEndpoint.changeName(state);});
-    router.addRoute("threads/pindisplayorder", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->threadsEndpoint.changePinDisplayOrder(state);});
-    router.addRoute("threads/merge", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->threadsEndpoint.merge(state);});
-    router.addRoute("threads/subscribe", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->threadsEndpoint.subscribe(state);});
-    router.addRoute("threads/unsubscribe", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->threadsEndpoint.unsubscribe(state);});
-    router.addRoute("threads/tag", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->threadsEndpoint.addTag(state);});
-    router.addRoute("threads/tag", Http::HttpVerb::DELETE,
-                    [this](auto& state) { this->impl_->threadsEndpoint.removeTag(state);});
+        { "thread_messages/user",           HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getThreadMessagesOfUser) },
+        { "thread_messages/allcomments",    HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getAllComments) },
+        { "thread_messages/comments",       HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getCommentsOfMessage) },
+        { "thread_messages/comments/user",  HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getCommentsOfUser) },
+        { "thread_messages/rank",           HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getRankOfMessage) },
+        { "thread_messages",                HttpVerb::POST,   ENDPOINT_DELEGATE(threadMessagesEndpoint.add) },
+        { "thread_messages",                HttpVerb::DELETE, ENDPOINT_DELEGATE(threadMessagesEndpoint.remove) },
+        { "thread_messages/content",        HttpVerb::PUT,    ENDPOINT_DELEGATE(threadMessagesEndpoint.changeContent) },
+        { "thread_messages/move",           HttpVerb::POST,   ENDPOINT_DELEGATE(threadMessagesEndpoint.move) },
+        { "thread_messages/upvote",         HttpVerb::POST,   ENDPOINT_DELEGATE(threadMessagesEndpoint.upVote) },
+        { "thread_messages/downvote",       HttpVerb::POST,   ENDPOINT_DELEGATE(threadMessagesEndpoint.downVote) },
+        { "thread_messages/resetvote",      HttpVerb::POST,   ENDPOINT_DELEGATE(threadMessagesEndpoint.resetVote) },
+        { "thread_messages/comment",        HttpVerb::POST,   ENDPOINT_DELEGATE(threadMessagesEndpoint.addComment) },
+        { "thread_messages/comment/solved", HttpVerb::PUT,    ENDPOINT_DELEGATE(threadMessagesEndpoint.setCommentSolved) },
 
-    router.addRoute("messages/user/", Http::HttpVerb::GET,
-                     [this](auto& state) { this->impl_->threadMessagesEndpoint.getThreadMessagesOfUser(state);});
-    router.addRoute("messages/allcomments/", Http::HttpVerb::GET,
-                     [this](auto& state) { this->impl_->threadMessagesEndpoint.getAllComments(state);});
-    router.addRoute("messages/comments/", Http::HttpVerb::GET,
-                     [this](auto& state) { this->impl_->threadMessagesEndpoint.getCommentsOfMessage(state);});
-    router.addRoute("messages/commentsofuser/", Http::HttpVerb::GET,
-                     [this](auto& state) { this->impl_->threadMessagesEndpoint.getCommentsOfUser(state);});
-    router.addRoute("messages/", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->threadMessagesEndpoint.add(state);});
-    router.addRoute("messages/", Http::HttpVerb::DELETE,
-                    [this](auto& state) { this->impl_->threadMessagesEndpoint.remove(state);});
-    router.addRoute("messages/content", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->threadMessagesEndpoint.changeContent(state);});
-    router.addRoute("messages/move", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->threadMessagesEndpoint.move(state);});
-    router.addRoute("messages/upvote", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->threadMessagesEndpoint.upVote(state);});
-    router.addRoute("messages/downvote", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->threadMessagesEndpoint.downVote(state);});
-    router.addRoute("messages/resetvote", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->threadMessagesEndpoint.resetVote(state);});
-    router.addRoute("messages/comment", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->threadMessagesEndpoint.addComment(state);});
-    router.addRoute("messages/comment/solved", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->threadMessagesEndpoint.setCommentSolved(state);});
+        { "tags",        HttpVerb::GET,    ENDPOINT_DELEGATE(tagsEndpoint.getAll) },
+        { "tags",        HttpVerb::POST,   ENDPOINT_DELEGATE(tagsEndpoint.add) },
+        { "tags",        HttpVerb::DELETE, ENDPOINT_DELEGATE(tagsEndpoint.remove) },
+        { "tags/name",   HttpVerb::PUT,    ENDPOINT_DELEGATE(tagsEndpoint.changeName) },
+        { "tags/uiblob", HttpVerb::PUT,    ENDPOINT_DELEGATE(tagsEndpoint.changeUiBlob) },
+        { "tags/merge",  HttpVerb::POST,   ENDPOINT_DELEGATE(tagsEndpoint.merge) },
 
-    router.addRoute("tags/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->tagsEndpoint.getAll(state);});
-    router.addRoute("tags/", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->tagsEndpoint.add(state);});
-    router.addRoute("tags/", Http::HttpVerb::DELETE,
-                    [this](auto& state) { this->impl_->tagsEndpoint.remove(state);});
-    router.addRoute("tags/name", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->tagsEndpoint.changeName(state);});
-    router.addRoute("tags/uiblob", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->tagsEndpoint.changeUiBlob(state);});
-    router.addRoute("tags/merge", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->tagsEndpoint.merge(state);});
+        { "categories",              HttpVerb::GET,    ENDPOINT_DELEGATE(categoriesEndpoint.getAll) },
+        { "categories/root",         HttpVerb::GET,    ENDPOINT_DELEGATE(categoriesEndpoint.getRootCategories) },
+        { "category",                HttpVerb::GET,    ENDPOINT_DELEGATE(categoriesEndpoint.getCategoryById) },
+        { "categories",              HttpVerb::POST,   ENDPOINT_DELEGATE(categoriesEndpoint.add) },
+        { "categories",              HttpVerb::DELETE, ENDPOINT_DELEGATE(categoriesEndpoint.remove) },
+        { "categories/name",         HttpVerb::PUT,    ENDPOINT_DELEGATE(categoriesEndpoint.changeName) },
+        { "categories/description",  HttpVerb::PUT,    ENDPOINT_DELEGATE(categoriesEndpoint.changeDescription) },
+        { "categories/parent",       HttpVerb::PUT,    ENDPOINT_DELEGATE(categoriesEndpoint.changeParent) },
+        { "categories/displayorder", HttpVerb::PUT,    ENDPOINT_DELEGATE(categoriesEndpoint.changeDisplayOrder) },
+        { "categories/tag",          HttpVerb::POST,   ENDPOINT_DELEGATE(categoriesEndpoint.addTag) },
+        { "categories/tag",          HttpVerb::DELETE, ENDPOINT_DELEGATE(categoriesEndpoint.removeTag) },
 
-    router.addRoute("categories/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->categoriesEndpoint.getAll(state);});
-    router.addRoute("categories/root/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->categoriesEndpoint.getRootCategories(state);});
-    router.addRoute("category/", Http::HttpVerb::GET,
-                    [this](auto& state) { this->impl_->categoriesEndpoint.getCategoryById(state);});
-    router.addRoute("categories/", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->categoriesEndpoint.add(state);});
-    router.addRoute("categories/", Http::HttpVerb::DELETE,
-                    [this](auto& state) { this->impl_->categoriesEndpoint.remove(state);});
-    router.addRoute("categories/name", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->categoriesEndpoint.changeName(state);});
-    router.addRoute("categories/description", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->categoriesEndpoint.changeDescription(state);});
-    router.addRoute("categories/parent", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->categoriesEndpoint.changeParent(state);});
-    router.addRoute("categories/displayOrder", Http::HttpVerb::PUT,
-                    [this](auto& state) { this->impl_->categoriesEndpoint.changeDisplayOrder(state);});
-    router.addRoute("categories/tag", Http::HttpVerb::POST,
-                    [this](auto& state) { this->impl_->categoriesEndpoint.addTag(state);});
-    router.addRoute("categories/tag", Http::HttpVerb::DELETE,
-                    [this](auto& state) { this->impl_->categoriesEndpoint.removeTag(state);});
+        { "privileges/required/thread_message",  HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getRequiredPrivilegesForThreadMessage) },
+        { "privileges/assigned/thread_message",  HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getAssignedPrivilegesForThreadMessage) },
+        { "privileges/required/thread",          HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getRequiredPrivilegesForThread) },
+        { "privileges/durations/thread",         HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getDefaultPrivilegeDurationsForThread) },
+        { "privileges/assigned/thread_message",  HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getAssignedPrivilegesForThread) },
+        { "privileges/required/tag",             HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getRequiredPrivilegesForTag) },
+        { "privileges/durations/tag",            HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getDefaultPrivilegeDurationsForTag) },
+        { "privileges/assigned/tag",             HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getAssignedPrivilegesForTag) },
+        { "privileges/required/category",        HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getRequiredPrivilegesForCategory) },
+        { "privileges/assigned/thread_message",  HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getAssignedPrivilegesForCategory) },
+        { "privileges/forum_wide/current_user",  HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideCurrentUserPrivileges) },
+        { "privileges/required/forum_wide",      HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideRequiredPrivileges) },
+        { "privileges/durations/forum_wide",     HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideDefaultPrivilegeDurations) },
+        { "privileges/assinged/forum_wide",      HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideAssignedPrivileges) },
+        { "privileges/assinged/forum_wide/user", HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideAssignedPrivilegesForUser) },
 
+        { "privileges/thread_message/required/thread_message", HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage) },
+        { "privileges/thread_message/assign/thread_message",   HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadMessagePrivilegeForThreadMessage) },
+        { "privileges/thread_message/required/thread",         HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilegeForThread) },
+        { "privileges/thread/required/thread",                 HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadRequiredPrivilegeForThread) },
+        { "privileges/thread_message/duration/thread",         HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageDefaultPrivilegeDurationForThread) },
+        { "privileges/thread_message/assign/thread",           HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadMessagePrivilegeForThread) },
+        { "privileges/thread/assign/thread",                   HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadPrivilegeForThread) },
+        { "privileges/thread_message/required/tag",            HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilegeForTag) },
+        { "privileges/thread/required/tag",                    HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadRequiredPrivilegeForTag) },
+        { "privileges/tag/required/tag",                       HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionTagRequiredPrivilegeForTag) },
+        { "privileges/thread_message/duration/tag",            HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageDefaultPrivilegeDurationForTag) },
+        { "privileges/thread_message/assign/tag",              HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadMessagePrivilegeForTag) },
+        { "privileges/thread/assign/tag",                      HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadPrivilegeForTag) },
+        { "privileges/tag/required/tag",                       HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionTagPrivilegeForTag) },
+        { "privileges/category/required/category",             HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionCategoryRequiredPrivilegeForCategory) },
+        { "privileges/category/assign/category",               HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionCategoryPrivilegeForCategory) },
+        { "privileges/thread_message/required/forum_wide",     HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilege) },
+        { "privileges/thread/required/forum_wide",             HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadRequiredPrivilege) },
+        { "privileges/tag/required/forum_wide",                HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionTagRequiredPrivilege) },
+        { "privileges/category/required/forum_wide",           HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionCategoryRequiredPrivilege) },
+        { "privileges/forum_wide/required/forum_wide",         HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeForumWideRequiredPrivilege) },
+        { "privileges/thread_message/duration/forum_wide",     HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageDefaultPrivilegeDuration) },
+        { "privileges/forum_wide/duration/forum_wide",         HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeForumWideDefaultPrivilegeDuration) },
+        { "privileges/thread_message/assign/forum_wide",       HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadMessagePrivilege) },
+        { "privileges/thread/assign/forum_wide",               HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadPrivilege) },
+        { "privileges/tag/assign/forum_wide",                  HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionTagPrivilege) },
+        { "privileges/category/assign/forum_wide",             HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionCategoryPrivilege) },
+        { "privileges/forum_wide/assign/forum_wide",           HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignForumWidePrivilege) }
+    };
+
+    for (auto& tuple : routes)
+    {
+        router.addRoute(std::get<0>(tuple), std::get<1>(tuple), std::move(std::get<2>(tuple)));
+    }
 }

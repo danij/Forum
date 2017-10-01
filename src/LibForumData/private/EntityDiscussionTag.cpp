@@ -48,7 +48,7 @@ bool DiscussionTag::insertDiscussionThread(DiscussionThreadPtr thread)
     {
         return false;
     }
-    messageCount_ += thread->messageCount();
+    messageCount_ += static_cast<decltype(messageCount_)>(thread->messageCount());
 
     for (auto category : categories_)
     {
@@ -68,7 +68,7 @@ bool DiscussionTag::deleteDiscussionThread(DiscussionThreadPtr thread)
     {
         return false;
     }
-    messageCount_ -= thread->messageCount();
+    messageCount_ -= static_cast<decltype(messageCount_)>(thread->messageCount());
 
     for (auto category : categories_)
     {

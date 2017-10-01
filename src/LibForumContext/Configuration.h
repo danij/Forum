@@ -15,11 +15,22 @@ namespace Forum
             int_fast16_t maxNameLength = 20;
             int_fast16_t minInfoLength = 0;
             int_fast16_t maxInfoLength = 1024;
+            int_fast16_t minTitleLength = 0;
+            int_fast16_t maxTitleLength = 64;
+            int_fast16_t minSignatureLength = 0;
+            int_fast16_t maxSignatureLength = 256;
             /**
              * Do not update last seen more frequently than this amount (in seconds)
              */
             int_fast32_t lastSeenUpdatePrecision = 300;
             int_fast32_t maxUsersPerPage = 20;
+            /**
+             * When returning the currently online users, look for users last seen within the specified seconds
+             */
+            uint_fast32_t onlineUsersIntervalSeconds = 15 * 60;
+            uint_fast32_t maxLogoBinarySize = 32768;
+            uint_fast32_t maxLogoWidth = 128;
+            uint_fast32_t maxLogoHeight = 128;
         };
 
         struct DiscussionThreadConfig
@@ -69,6 +80,8 @@ namespace Forum
             uint16_t listenPort = 8081;
             int_fast16_t connectionTimeoutSeconds = 20;
             bool trustIpFromXForwardedFor = false;
+            bool disableCommands = false;
+            bool disableCommandsForAnonymousUsers = false;
         };
 
         struct LoggingConfig

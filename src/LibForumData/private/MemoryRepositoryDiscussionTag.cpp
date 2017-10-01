@@ -6,6 +6,7 @@
 #include "OutputHelpers.h"
 #include "RandomGenerator.h"
 #include "StringHelpers.h"
+#include "Logging.h"
 
 using namespace Forum;
 using namespace Forum::Configuration;
@@ -50,6 +51,11 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
                                    restriction);
                 status.disable();
                 break;
+            case RetrieveDiscussionTagsBy::ThreadCount:
+                writeArraySafeName(output, "tags", collection.tags().byThreadCount().begin(),
+                                   collection.tags().byThreadCount().end(), restriction);
+                status.disable();
+                break;
             case RetrieveDiscussionTagsBy::MessageCount:
                 writeArraySafeName(output, "tags", collection.tags().byMessageCount().begin(),
                                    collection.tags().byMessageCount().end(), restriction);
@@ -64,6 +70,11 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
             case RetrieveDiscussionTagsBy::Name:
                 writeArraySafeName(output, "tags", collection.tags().byName().rbegin(), collection.tags().byName().rend(),
                                    restriction);
+                status.disable();
+                break;
+            case RetrieveDiscussionTagsBy::ThreadCount:
+                writeArraySafeName(output, "tags", collection.tags().byThreadCount().rbegin(),
+                    collection.tags().byThreadCount().rend(), restriction);
                 status.disable();
                 break;
             case RetrieveDiscussionTagsBy::MessageCount:
@@ -105,7 +116,17 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionTag(collection, generateUniqueId(), name);
+                           DiscussionTag::NameType nameString(name);
+
+                           auto& indexByName = collection.tags().byName();
+                           if (indexByName.find(nameString) != indexByName.end())
+                           {
+                               status = StatusCode::ALREADY_EXISTS;
+                               return;
+                           }
+
+                           auto statusWithResource = addNewDiscussionTag(collection, generateUniqueId(),
+                                                                         std::move(nameString));
                            auto& tag = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
@@ -123,16 +144,22 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
 StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscussionTag(EntityCollection& collection,
                                                                                         IdTypeRef id, StringView name)
 {
-    DiscussionTag::NameType nameString(name);
+    return addNewDiscussionTag(collection, id, DiscussionTag::NameType(name));
+}
 
+StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscussionTag(EntityCollection& collection,
+                                                                                        IdTypeRef id,
+                                                                                        DiscussionTag::NameType&& name)
+{
     auto& indexByName = collection.tags().byName();
-    if (indexByName.find(nameString) != indexByName.end())
+    if (indexByName.find(name) != indexByName.end())
     {
+        FORUM_LOG_ERROR << "A discussion tag with this name already exists: " << name.string();
         return StatusCode::ALREADY_EXISTS;
     }
 
     //IdType id, Timestamp created, VisitDetails creationDetails
-    auto tag = collection.createDiscussionTag(id, std::move(nameString), Context::getCurrentTime(),
+    auto tag = collection.createDiscussionTag(id, std::move(name), Context::getCurrentTime(),
                                               { Context::getCurrentUserIpAddress() });
     collection.insertDiscussionTag(tag);
 
@@ -202,6 +229,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(EntityCollecti
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -261,6 +289,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(EntityCollec
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -311,6 +340,7 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(EntityCollection& 
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -371,6 +401,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -378,6 +409,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     auto threadIt = threadIndexById.find(threadId);
     if (threadIt == threadIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -392,8 +424,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     //the number of threads associated to a tag, so search the tag in the thread
     if ( ! thread.addTag(tagPtr))
     {
-        //actually already added, but return ok
-        return StatusCode::OK;
+        return StatusCode::NO_EFFECT;
     }
 
     tag.insertDiscussionThread(threadPtr);
@@ -456,6 +487,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
     auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -463,6 +495,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
     auto threadIt = threadIndexById.find(threadId);
     if (threadIt == threadIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -537,15 +570,23 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(IdTypeRef fromId, 
 StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& collection, IdTypeRef fromId,
                                                               IdTypeRef intoId)
 {
+    if (fromId == intoId)
+    {
+        FORUM_LOG_ERROR << "Cannot merge discussion tag into itself: " << static_cast<std::string>(fromId);
+        return StatusCode::NO_EFFECT;
+    }
+
     auto& indexById = collection.tags().byId();
     auto itFrom = indexById.find(fromId);
     if (itFrom == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(fromId);
         return StatusCode::NOT_FOUND;
     }
     auto itInto = indexById.find(intoId);
     if (itInto == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(intoId);
         return StatusCode::NOT_FOUND;
     }
 

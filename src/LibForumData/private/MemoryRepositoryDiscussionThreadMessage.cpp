@@ -7,6 +7,7 @@
 #include "RandomGenerator.h"
 #include "StateHelpers.h"
 #include "StringHelpers.h"
+#include "Logging.h"
 
 using namespace Forum;
 using namespace Forum::Configuration;
@@ -75,6 +76,58 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
     return status;
 }
 
+StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessageRank(IdTypeRef id, OutStream& output) const
+{
+    StatusWriter status(output);
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    if ( ! id)
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          const auto& indexById = collection.threadMessages().byId();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          const DiscussionThreadMessage& message = **it;
+
+                          if ( ! (status = authorization_->getDiscussionThreadMessageRank(currentUser, message)))
+                          {
+                              return;
+                          }
+
+                          assert(message.parentThread());
+                          const DiscussionThread& parentThread = *message.parentThread();
+
+                          auto rank = parentThread.messages().findRankByCreated(message.id());
+                          if ( ! rank)
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
+
+                          status.writeNow([&](auto& writer)
+                                          {
+                                              writer << Json::propertySafeName("id", message.id());
+                                              writer << Json::propertySafeName("parentId", parentThread.id());
+                                              writer << Json::propertySafeName("rank", *rank);
+                                              writer << Json::propertySafeName("pageSize", pageSize);
+                                          });
+
+                          readEvents().onGetDiscussionThreadMessageRank(createObserverContext(currentUser), message);
+                      });
+    return status;
+}
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(IdTypeRef threadId,
                                                                                     StringView content,
@@ -143,6 +196,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
     auto threadIt = threadIndex.find(threadId);
     if (threadIt == threadIndex.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -152,7 +206,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
     auto message = collection.createDiscussionThreadMessage(messageId, *currentUser, Context::getCurrentTime(),
                                                             { Context::getCurrentUserIpAddress() });
     message->parentThread() = threadPtr;
-    message->content() = content;
+    message->content() = WholeChangeableString::copyFrom(content);
 
     collection.insertDiscussionThreadMessage(message);
 
@@ -188,7 +242,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
 
         if (valueNeeded > 0)
         {
-            auto expiresAt = message->created() + changePrivilegeDuration;
+            auto expiresAt = calculatePrivilegeExpires(message->created(), changePrivilegeDuration);
 
             collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
                     currentUser->id(), message->id(), privilege, valueNeeded, expiresAt);
@@ -205,7 +259,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
 
         if (valueNeeded)
         {
-            auto expiresAt = message->created() + changePrivilegeDuration;
+            auto expiresAt = calculatePrivilegeExpires(message->created(), changePrivilegeDuration);
 
             collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
                     currentUser->id(), message->id(), privilege, valueNeeded, expiresAt);
@@ -255,6 +309,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(Enti
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
     collection.deleteDiscussionThreadMessage(*it);
@@ -326,6 +381,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -333,7 +389,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     DiscussionThreadMessagePtr messagePtr = *it;
     DiscussionThreadMessage& message = *messagePtr;
 
-    message.content() = newContent;
+    message.content() = WholeChangeableString::copyFrom(newContent);
     message.updateLastUpdated(Context::getCurrentTime());
     message.updateLastUpdatedDetails({ Context::getCurrentUserIpAddress() });
     message.updateLastUpdatedReason(toString(changeReason));
@@ -433,6 +489,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
     auto messageIt = messagesIndexById.find(messageId);
     if (messageIt == messagesIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -440,6 +497,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
     auto itInto = threadsIndexById.find(intoThreadId);
     if (itInto == threadsIndexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(intoThreadId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -452,6 +510,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
 
     if (threadFromPtr == threadIntoPtr)
     {
+        FORUM_LOG_WARNING << "Threa thread into which to move the discussion thread message is the same as the current one: "
+                          << static_cast<std::string>(intoThreadId);
+
         return StatusCode::NO_EFFECT;
     }
 
@@ -546,6 +607,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
     DiscussionThreadMessagePtr messagePtr = *it;
@@ -555,6 +617,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
 
     if (message.hasVoted(currentUser))
     {
+        FORUM_LOG_WARNING << "User "
+                          << static_cast<std::string>(currentUser->id()) << " has already voted discussion thread message "
+                          << static_cast<std::string>(message.id());
         return StatusCode::NO_EFFECT;
     }
 
@@ -573,6 +638,14 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     DiscussionThreadPtr parentThread = message.parentThread();
     assert(parentThread);
 
+    message.createdBy().voteHistory().push_back(
+    {
+        message.id(),
+        currentUser->id(),
+        timestamp,
+        up ? User::ReceivedVoteHistoryEntryType::UpVote : User::ReceivedVoteHistoryEntryType::DownVote
+    });
+
     auto resetVotePrivilegeDuration = optionalOrZero(parentThread->getDiscussionThreadMessageDefaultPrivilegeDuration(
             DiscussionThreadMessageDefaultPrivilegeDuration::RESET_VOTE));
     if (resetVotePrivilegeDuration > 0)
@@ -581,7 +654,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
         auto valueNeeded = optionalOrZero(parentThread->getDiscussionThreadMessagePrivilege(privilege));
         if (valueNeeded > 0)
         {
-            auto expiresAt = timestamp + resetVotePrivilegeDuration;
+            auto expiresAt = calculatePrivilegeExpires(timestamp, resetVotePrivilegeDuration);
 
             collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
                     currentUser->id(), message.id(), privilege, valueNeeded, expiresAt);
@@ -643,6 +716,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
     DiscussionThreadMessagePtr messagePtr = *it;
@@ -652,8 +726,20 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
 
     if ( ! message.removeVote(currentUser))
     {
+        FORUM_LOG_WARNING << "Could not find discussion vote of user "
+                          << static_cast<std::string>(currentUser->id()) << " for discussion thread message "
+                          << static_cast<std::string>(message.id());
         return StatusCode::NO_EFFECT;
     }
+
+    message.createdBy().voteHistory().push_back(
+    {
+        message.id(),
+        currentUser->id(),
+        Context::getCurrentTime(),
+        User::ReceivedVoteHistoryEntryType::ResetVote
+    });
+
     return StatusCode::OK;
 }
 
@@ -833,6 +919,7 @@ StatusWithResource<MessageCommentPtr>
     auto messageIt = messageIndex.find(messageId);
     if (messageIt == messageIndex.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
         return StatusCode::NOT_FOUND;
     }
 
@@ -843,7 +930,7 @@ StatusWithResource<MessageCommentPtr>
     //IdType id, DiscussionThreadMessage& message, User& createdBy, Timestamp created, VisitDetails creationDetails
     auto comment = collection.createMessageComment(commentId, message, *currentUser, Context::getCurrentTime(),
                                                    { Context::getCurrentUserIpAddress() });
-    comment->content() = content;
+    comment->content() = WholeChangeableString::copyFrom(content);
 
     collection.insertMessageComment(comment);
 
@@ -898,6 +985,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(En
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
@@ -906,6 +994,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(En
 
     if (comment.solved())
     {
+        FORUM_LOG_WARNING << "Comment " << static_cast<std::string>(comment.id()) << " is already solved";
         return StatusCode::NO_EFFECT;
     }
 

@@ -71,7 +71,7 @@ namespace Forum
             {
                 return view;
             }
-            for (int i = view.size() - 1; i >= 0; --i)
+            for (int i = static_cast<int>(view.size()) - 1; i >= 0; --i)
             {
                 if (isFirstByteInUTF8Sequence(view[i]))
                 {
@@ -93,63 +93,121 @@ namespace Forum
         }
 
         /**
-         * Stores an immutable string in a custom location in memory
+         * Stores a string in a custom location in memory
+         * The string only supports changing the whole content, not individual bytes
          * Providing a string_view to it is easier than defining an std::basic_string with a custom allocator
          */
-        struct ImmutableString final
+        struct WholeChangeableString final
         {
-            ImmutableString() = default;
-            ~ImmutableString() = default;
-
-            ImmutableString(const ImmutableString&) = delete;
-            ImmutableString& operator=(const ImmutableString&) = delete;
-
-            ImmutableString(ImmutableString&&) = default;
-            ImmutableString& operator=(ImmutableString&&) = default;
-
-
-            ImmutableString(StringView view)
+            WholeChangeableString() : ptr_(nullptr), info_{0, 0}
             {
-                copyFrom(view);
             }
 
-            ImmutableString& operator=(StringView view)
+            ~WholeChangeableString()
             {
-                copyFrom(view);
+                if ((info_.ownsMemory != 0) && (ptr_ != nullptr))
+                {
+                    delete[] ptr_;
+                }
+            }
+
+            WholeChangeableString(const WholeChangeableString& other)
+            {
+                info_.ownsMemory = other.info_.ownsMemory;
+                info_.size = other.info_.size;
+                ptr_ = nullptr;
+
+                if ((other.info_.ownsMemory != 0) && (ptr_ != nullptr))
+                {
+                    auto ptr = new char[other.info_.size];
+                    ptr_ = ptr;
+                    std::copy(other.ptr_, other.ptr_ + other.info_.size, ptr);
+                }
+                else
+                {
+                    ptr_ = other.ptr_;
+                }
+            }
+
+            WholeChangeableString& operator=(WholeChangeableString& other)
+            {
+                WholeChangeableString copy(other);
+                swap(*this, copy);
                 return *this;
+            }
+
+            WholeChangeableString(WholeChangeableString&& other) noexcept
+            {
+                swap(*this, other);
+            }
+
+            WholeChangeableString& operator=(WholeChangeableString&& other) noexcept
+            {
+                swap(*this, other);
+                return *this;
+            }
+
+            static WholeChangeableString copyFrom(StringView view)
+            {
+                return WholeChangeableString(view, true);
+            }
+
+            static WholeChangeableString onlyTakePointer(StringView view)
+            {
+                return WholeChangeableString(view, false);
+            }
+
+            friend void swap(WholeChangeableString& first, WholeChangeableString& second) noexcept
+            {
+                using std::swap;
+                swap(first.ptr_, second.ptr_);
+                swap(first.info_, second.info_);
             }
 
             operator StringView() const
             {
-                return boost::string_view(ptr_.get(), size_);
+                return boost::string_view(ptr_, info_.size);
             }
 
         private:
-
-            void copyFrom(StringView view)
+            WholeChangeableString(StringView view, bool copy)
             {
-                if (view.size())
+                info_.ownsMemory = copy ? 1 : 0;
+                info_.size = view.size();
+                ptr_ = nullptr;
+
+                if (info_.size > 0)
                 {
-                    ptr_ = std::make_unique<char[]>(view.size());
-                    std::copy(view.begin(), view.end(), ptr_.get());
-                    size_ = view.size();
+                    auto ptr = new char[info_.size];
+                    ptr_ = ptr;
+                    std::copy(view.begin(), view.end(), ptr);
+                }
+                else
+                {
+                    ptr_ = nullptr;
                 }
             }
 
-            std::unique_ptr<char[]> ptr_;
-            size_t size_ = 0;
+            const char* ptr_;
+            struct
+            {
+                uint32_t ownsMemory :  1;
+                uint32_t size       : 31;
+            } info_;
         };
 
         namespace Detail
         {
-            struct SizeWithBoolAndSortKeySize
+            struct SizeWithBoolAndSortKeySize final
             {
                 uint32_t boolean : 1;
                 uint32_t size : 31;
                 uint32_t sortKeySize;
 
                 SizeWithBoolAndSortKeySize() : boolean(0), size(0), sortKeySize(0) {}
-                SizeWithBoolAndSortKeySize(size_t size) : boolean(0), size(static_cast<decltype(size)>(size)), sortKeySize(0) {}
+                SizeWithBoolAndSortKeySize(size_t size)
+                    : boolean(0), size(static_cast<decltype(SizeWithBoolAndSortKeySize::size)>(size)), sortKeySize(0)
+                {}
 
                 SizeWithBoolAndSortKeySize(const SizeWithBoolAndSortKeySize&) = default;
                 SizeWithBoolAndSortKeySize& operator=(const SizeWithBoolAndSortKeySize&) = default;
@@ -218,7 +276,7 @@ namespace Forum
         {
             auto sortKeyStart = getCurrentSortKey();
             auto& sizeInfo = this->container_.size();
-            sizeInfo.sortKeySize = getCurrentSortKeyLength();
+            sizeInfo.sortKeySize = static_cast<decltype(sizeInfo.sortKeySize)>(getCurrentSortKeyLength());
 
             std::copy(sortKeyStart, sortKeyStart + sizeInfo.sortKeySize,
                       *(this->container_) + sizeInfo.size - sizeInfo.sortKeySize);

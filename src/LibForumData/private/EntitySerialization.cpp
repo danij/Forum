@@ -44,6 +44,9 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
             << propertySafeName("id", user.id())
             << propertySafeName("name", user.name())
             << propertySafeName("info", user.info())
+            << propertySafeName("title", user.title())
+            << propertySafeName("signature", user.signature())
+            << propertySafeName("hasLogo", user.hasLogo())
             << propertySafeName("created", user.created())
             << propertySafeName("lastSeen", user.lastSeen())
             << propertySafeName("threadCount", user.threads().byId().size())
@@ -107,7 +110,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     auto content = message.content();
     writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
 
-    if (allowViewUserOverride && ( ! serializationSettings.hideDiscussionThreadCreatedBy))
+    if (allowViewUserOverride && ( ! serializationSettings.hideDiscussionThreadMessageCreatedBy))
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
@@ -160,7 +163,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
 
     if ( ! serializationSettings.hidePrivileges)
     {
-        writePrivileges(writer, message, DiscussionThreadMessagePrivilegesToSerialize, restriction);
+        writePrivileges(writer, message, DiscussionThreadMessagePrivilegesToSerialize,
+                        DiscussionThreadMessagePrivilegeStrings, restriction);
     }
 
     writer << objEnd;
@@ -385,7 +389,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
 
     if ( ! serializationSettings.hidePrivileges)
     {
-        writePrivileges(writer, thread, DiscussionThreadPrivilegesToSerialize, restriction);
+        writePrivileges(writer, thread, DiscussionThreadPrivilegesToSerialize,
+                        DiscussionThreadPrivilegeStrings,restriction);
     }
 
     writer << objEnd;
@@ -427,7 +432,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag,
 
     if ( ! serializationSettings.hidePrivileges)
     {
-        writePrivileges(writer, tag, DiscussionTagPrivilegesToSerialize, restriction);
+        writePrivileges(writer, tag, DiscussionTagPrivilegesToSerialize,
+                        DiscussionTagPrivilegeStrings, restriction);
     }
 
     writer << objEnd;
@@ -500,7 +506,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
 
     if ( ! serializationSettings.hidePrivileges)
     {
-        writePrivileges(writer, category, DiscussionCategoryPrivilegesToSerialize, restriction);
+        writePrivileges(writer, category, DiscussionCategoryPrivilegesToSerialize,
+                        DiscussionCategoryPrivilegeStrings, restriction);
     }
 
     writer

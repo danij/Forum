@@ -10,13 +10,13 @@
 
 namespace Json
 {
-    struct SizeWithBool
+    struct SizeWithBool final
     {
         uint32_t boolean : 1;
         uint32_t size    :31;
 
         SizeWithBool() : boolean(0), size(0) {}
-        SizeWithBool(size_t size) : boolean(0), size(static_cast<decltype(size)>(size)) {}
+        SizeWithBool(size_t size) : boolean(0), size(static_cast<decltype(SizeWithBool::size)>(size)) {}
 
         SizeWithBool(const SizeWithBool&) = default;
         SizeWithBool& operator=(const SizeWithBool&) = default;
@@ -49,6 +49,8 @@ namespace Json
     {
     public:
         explicit JsonReadyStringBase(boost::string_view source);
+        virtual ~JsonReadyStringBase() = default;
+
         JsonReadyStringBase(const JsonReadyStringBase&) = default;
         JsonReadyStringBase(JsonReadyStringBase&&) noexcept = default;
 

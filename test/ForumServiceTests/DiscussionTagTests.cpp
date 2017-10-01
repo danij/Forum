@@ -319,11 +319,10 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_attached_to_threads_even_if_they_ar
     auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
 
-    for (size_t i = 0; i < 2; i++)
-    {
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
-                                                           { tagId, threadId }));
-    }
+    assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
+                                                       { tagId, threadId }));
+    assertStatusCodeEqual(StatusCode::NO_EFFECT, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_THREAD,
+                                                              { tagId, threadId }));
 
     auto threads = deserializeThreads(handlerToObj(handler,
                                                    Forum::Commands::GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,

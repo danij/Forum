@@ -23,7 +23,7 @@ namespace Http
     size_t buildSimpleResponseFromStatusCode(HttpStatusCode code, int_fast8_t majorVersion, int_fast8_t minorVersion,
                                              char* buffer);
 
-    struct CookieExtra
+    struct CookieExtra final
     {
         CookieExtra& expiresAt(time_t value)
         {

@@ -42,16 +42,10 @@ void DiscussionCategoryCollection::stopBatchInsert()
     if ( ! Context::isBatchInsertInProgress()) return;
 
     byMessageCount_.clear();
-    for (DiscussionCategoryPtr category : byId_)
-    {
-        byMessageCount_.insert(category);
-    }
+    byMessageCount_.insert(byId_.begin(), byId_.end());
 
     byDisplayOrderRootPriority_.clear();
-    for (DiscussionCategoryPtr category : byId_)
-    {
-        byDisplayOrderRootPriority_.insert(category);
-    }
+    byDisplayOrderRootPriority_.insert(byId_.begin(), byId_.end());
 }
 
 void DiscussionCategoryCollection::prepareUpdateName(DiscussionCategoryPtr category)

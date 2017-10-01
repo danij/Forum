@@ -1,6 +1,7 @@
 #include "Configuration.h"
 
 #include <boost/property_tree/json_parser.hpp>
+#include "ContextProviders.h"
 
 static std::shared_ptr<const Forum::Configuration::Config> currentConfig =
         std::make_shared<const Forum::Configuration::Config>();
@@ -30,8 +31,16 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(user.maxNameLength);
     LOAD_CONFIG_VALUE(user.minInfoLength);
     LOAD_CONFIG_VALUE(user.maxInfoLength);
+    LOAD_CONFIG_VALUE(user.minTitleLength);
+    LOAD_CONFIG_VALUE(user.maxTitleLength);
+    LOAD_CONFIG_VALUE(user.minSignatureLength);
+    LOAD_CONFIG_VALUE(user.maxSignatureLength);
     LOAD_CONFIG_VALUE(user.lastSeenUpdatePrecision);
     LOAD_CONFIG_VALUE(user.maxUsersPerPage);
+    LOAD_CONFIG_VALUE(user.onlineUsersIntervalSeconds);
+    LOAD_CONFIG_VALUE(user.maxLogoBinarySize);
+    LOAD_CONFIG_VALUE(user.maxLogoWidth);
+    LOAD_CONFIG_VALUE(user.maxLogoHeight);
 
     LOAD_CONFIG_VALUE(discussionThread.minNameLength);
     LOAD_CONFIG_VALUE(discussionThread.maxNameLength);
@@ -62,6 +71,8 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(service.listenPort);
     LOAD_CONFIG_VALUE(service.connectionTimeoutSeconds);
     LOAD_CONFIG_VALUE(service.trustIpFromXForwardedFor);
+    LOAD_CONFIG_VALUE(service.disableCommands);
+    LOAD_CONFIG_VALUE(service.disableCommandsForAnonymousUsers);
 
     LOAD_CONFIG_VALUE(logging.settingsFile);
 

@@ -2,6 +2,7 @@
 
 #include "Authorization.h"
 #include "AuthorizationGrantedPrivilegeStore.h"
+#include "DefaultThrottling.h"
 
 #include <boost/noncopyable.hpp>
 
@@ -22,6 +23,8 @@ namespace Forum
         public:
             explicit DefaultAuthorization(GrantedPrivilegeStore& grantedPrivilegeStore,
                                           ForumWidePrivilegeStore& forumWidePrivilegeStore);
+            explicit DefaultAuthorization(GrantedPrivilegeStore& grantedPrivilegeStore,
+                                          ForumWidePrivilegeStore& forumWidePrivilegeStore, bool disableThrottling);
 
             AuthorizationStatus login(Entities::IdType userId) const override;
 
@@ -31,12 +34,22 @@ namespace Forum
                                             const Entities::User& user) const override;
             AuthorizationStatus getUserByName(const Entities::User& currentUser,
                                               const Entities::User& user) const override;
+            AuthorizationStatus getUserVoteHistory(const Entities::User& currentUser,
+                                                   const Entities::User& user) const override;
 
             AuthorizationStatus addNewUser(const Entities::User& currentUser, StringView name) const override;
             AuthorizationStatus changeUserName(const Entities::User& currentUser,
                                                const Entities::User& user, StringView newName) const override;
             AuthorizationStatus changeUserInfo(const Entities::User& currentUser,
                                                const Entities::User& user, StringView newInfo) const override;
+            AuthorizationStatus changeUserTitle(const Entities::User& currentUser,
+                                                const Entities::User& user, StringView newTitle) const override;
+            AuthorizationStatus changeUserSignature(const Entities::User& currentUser,
+                                                    const Entities::User& user, StringView newSignature) const override;
+            AuthorizationStatus changeUserLogo(const Entities::User& currentUser,
+                                               const Entities::User& user, StringView newSignature) const override;
+            AuthorizationStatus deleteUserLogo(const Entities::User& currentUser,
+                                               const Entities::User& user) const override;
             AuthorizationStatus deleteUser(const Entities::User& currentUser,
                                            const Entities::User& user) const override;
 
@@ -75,6 +88,8 @@ namespace Forum
 
             AuthorizationStatus getDiscussionThreadMessagesOfUserByCreated(const Entities::User& currentUser,
                                                                            const Entities::User& user) const override;
+            AuthorizationStatus getDiscussionThreadMessageRank(const Entities::User& currentUser,
+                                                               const Entities::DiscussionThreadMessage& message) const override;
 
             AuthorizationStatus getMessageComments(const Entities::User& currentUser) const override;
             AuthorizationStatus getMessageCommentsOfDiscussionThreadMessage(const Entities::User& currentUser,
@@ -168,56 +183,125 @@ namespace Forum
             AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        const Entities::DiscussionThreadMessage& message,
                                                                        DiscussionThreadMessagePrivilege privilege,
-                                                                       PrivilegeValueIntType oldValue,
+                                                                       PrivilegeValueType oldValue,
                                                                        PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        const Entities::DiscussionThread& thread,
                                                                        DiscussionThreadMessagePrivilege privilege,
-                                                                       PrivilegeValueIntType oldValue,
+                                                                       PrivilegeValueType oldValue,
                                                                        PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadPrivilege(const Entities::User& currentUser,
                                                                 const Entities::DiscussionThread& thread,
                                                                 DiscussionThreadPrivilege privilege,
-                                                                PrivilegeValueIntType oldValue,
+                                                                PrivilegeValueType oldValue,
+                                                                PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, const Entities::DiscussionThread& thread,
+                    DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override;
+            AuthorizationStatus assignDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                       const Entities::DiscussionThread& thread,
+                                                                       const Entities::User& targetUser,
+                                                                       DiscussionThreadMessagePrivilege privilege,
+                                                                       PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus assignDiscussionThreadPrivilege(const Entities::User& currentUser,
+                                                                const Entities::DiscussionThread& thread,
+                                                                const Entities::User& targetUser,
+                                                                DiscussionThreadPrivilege privilege,
                                                                 PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        const Entities::DiscussionTag& tag,
                                                                        DiscussionThreadMessagePrivilege privilege,
-                                                                       PrivilegeValueIntType oldValue,
+                                                                       PrivilegeValueType oldValue,
                                                                        PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadPrivilege(const Entities::User& currentUser,
                                                                 const Entities::DiscussionTag& tag,
                                                                 DiscussionThreadPrivilege privilege,
-                                                                PrivilegeValueIntType oldValue,
+                                                                PrivilegeValueType oldValue,
                                                                 PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionTagPrivilege(const Entities::User& currentUser,
                                                              const Entities::DiscussionTag& tag,
                                                              DiscussionTagPrivilege privilege,
-                                                             PrivilegeValueIntType oldValue,
+                                                             PrivilegeValueType oldValue,
+                                                             PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, const Entities::DiscussionTag& tag,
+                    DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override;
+            AuthorizationStatus assignDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                       const Entities::DiscussionTag& tag,
+                                                                       const Entities::User& targetUser,
+                                                                       DiscussionThreadMessagePrivilege privilege,
+                                                                       PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus assignDiscussionThreadPrivilege(const Entities::User& currentUser,
+                                                                const Entities::DiscussionTag& tag,
+                                                                const Entities::User& targetUser,
+                                                                DiscussionThreadPrivilege privilege,
+                                                                PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus assignDiscussionTagPrivilege(const Entities::User& currentUser,
+                                                             const Entities::DiscussionTag& tag,
+                                                             const Entities::User& targetUser,
+                                                             DiscussionTagPrivilege privilege,
                                                              PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
                                                                   const Entities::DiscussionCategory& category,
                                                                   DiscussionCategoryPrivilege privilege,
-                                                                  PrivilegeValueIntType oldValue,
+                                                                  PrivilegeValueType oldValue,
+                                                                  PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus assignDiscussionCategoryPrivilege(const Entities::User& currentUser,
+                                                                  const Entities::DiscussionCategory& category,
+                                                                  const Entities::User& targetUser,
+                                                                  DiscussionCategoryPrivilege privilege,
                                                                   PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
                                                                        DiscussionThreadMessagePrivilege privilege,
-                                                                       PrivilegeValueIntType oldValue,
+                                                                       PrivilegeValueType oldValue,
+                                                                       PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus assignDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                       const Entities::DiscussionThreadMessage& message,
+                                                                       const Entities::User& targetUser,
+                                                                       DiscussionThreadMessagePrivilege privilege,
                                                                        PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionThreadPrivilege(const Entities::User& currentUser,
                                                                 DiscussionThreadPrivilege privilege,
-                                                                PrivilegeValueIntType oldValue,
+                                                                PrivilegeValueType oldValue,
                                                                 PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionTagPrivilege(const Entities::User& currentUser,
                                                              DiscussionTagPrivilege privilege,
-                                                             PrivilegeValueIntType oldValue,
+                                                             PrivilegeValueType oldValue,
                                                              PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateDiscussionCategoryPrivilege(const Entities::User& currentUser,
                                                                   DiscussionCategoryPrivilege privilege,
-                                                                  PrivilegeValueIntType oldValue,
+                                                                  PrivilegeValueType oldValue,
                                                                   PrivilegeValueIntType newValue) const override;
             AuthorizationStatus updateForumWidePrivilege(const Entities::User& currentUser,
-                                                         ForumWidePrivilege privilege, PrivilegeValueIntType oldValue,
+                                                         ForumWidePrivilege privilege, PrivilegeValueType oldValue,
+                                                         PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override;
+            AuthorizationStatus updateForumWideDefaultPrivilegeDuration(
+                    const Entities::User& currentUser, ForumWideDefaultPrivilegeDuration privilege,
+                    PrivilegeDefaultDurationIntType newValue) const override;
+            AuthorizationStatus assignDiscussionThreadMessagePrivilege(const Entities::User& currentUser,
+                                                                       const Entities::User& targetUser,
+                                                                       DiscussionThreadMessagePrivilege privilege,
+                                                                       PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus assignDiscussionThreadPrivilege(const Entities::User& currentUser,
+                                                                const Entities::User& targetUser,
+                                                                DiscussionThreadPrivilege privilege,
+                                                                PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus assignDiscussionTagPrivilege(const Entities::User& currentUser,
+                                                             const Entities::User& targetUser,
+                                                             DiscussionTagPrivilege privilege,
+                                                             PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus assignDiscussionCategoryPrivilege(const Entities::User& currentUser,
+                                                                  const Entities::User& targetUser,
+                                                                  DiscussionCategoryPrivilege privilege,
+                                                                  PrivilegeValueIntType newValue) const override;
+            AuthorizationStatus assignForumWidePrivilege(const Entities::User& currentUser,
+                                                         const Entities::User& targetUser,
+                                                         ForumWidePrivilege privilege,
                                                          PrivilegeValueIntType newValue) const override;
         private:
             AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThreadMessage& message,
@@ -255,8 +339,12 @@ namespace Forum
             AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege,
                                           PrivilegeValueType& with) const;
 
+            bool isThrottled(UserActionThrottling action, const Entities::User& currentUser) const;
+
             GrantedPrivilegeStore& grantedPrivilegeStore_;
             ForumWidePrivilegeStore& forumWidePrivilegeStore_;
+            mutable DefaultThrottling throttling_;
+            const bool disableThrottling_;
         };
     }
 }

@@ -77,7 +77,7 @@ int Application::run(int argc, const char* argv[])
     options.add_options()
             ("help", "Display available options")
             ("version", "Display the current version")
-            ("config", boost::program_options::value<std::string>(), "Specify the location of the configuration file");
+            ("config,c", boost::program_options::value<std::string>(), "Specify the location of the configuration file");
 
     boost::program_options::variables_map arguments;
 
@@ -134,14 +134,27 @@ int Application::run(int argc, const char* argv[])
 
     events.onApplicationStart();
 
-    httpListener_->startListening();
+    auto config = Configuration::getGlobalConfig();
+
+    FORUM_LOG_INFO << "Starting to listen under "
+                   << config->service.listenIPAddress << ":" << config->service.listenPort;
+    try
+    {
+        httpListener_->startListening();
+    }
+    catch(std::exception& ex)
+    {
+        FORUM_LOG_ERROR << "Could not start listening: " << ex.what();
+        std::cerr << "Could not start listening: " << ex.what() << '\n';
+        return 1;
+    }
 
     getIOServiceProvider().start();
     getIOServiceProvider().waitForStop();
 
     httpListener_->stopListening();
 
-    BOOST_LOG_TRIVIAL(info) << "Stopped listening for HTTP connections";
+    FORUM_LOG_INFO << "Stopped listening for HTTP connections";
 
     events.beforeApplicationStop();
 
@@ -198,7 +211,7 @@ void Application::createCommandHandler()
     directWriteRepositories_.discussionThreadMessage = discussionThreadMessageRepository;
     directWriteRepositories_.discussionTag = discussionTagRepository;
     directWriteRepositories_.discussionCategory = discussionCategoryRepository;
-    directWriteRepositories_.authorizationRepository = authorizationRepository;
+    directWriteRepositories_.authorization = authorizationRepository;
 
     auto forumConfig = Configuration::getGlobalConfig();
     auto& persistenceConfig = forumConfig->persistence;
@@ -223,8 +236,13 @@ void Application::importEvents()
     auto forumConfig = Configuration::getGlobalConfig();
     auto& persistenceConfig = forumConfig->persistence;
 
+    entityCollection_->startBatchInsert();
+
     EventImporter importer(persistenceConfig.validateChecksum, *entityCollection_, directWriteRepositories_);
     auto result = importer.import(persistenceConfig.inputFolder);
+
+    entityCollection_->stopBatchInsert();
+
     if (result.success)
     {
         FORUM_LOG_INFO << "Finished importing " << result.statistic.importedBlobs << " events out of "
@@ -264,7 +282,7 @@ void Application::initializeLogging()
 
     if (settingsFile.size() < 1) return;
 
-    std::ifstream file(settingsFile);
+    std::ifstream file(settingsFile, std::ios::in);
     if ( ! file)
     {
         std::cerr << "Unable to find log settings file: " << settingsFile << '\n';

@@ -29,19 +29,25 @@ namespace Json
             used_ = 0;
         }
 
-        template<typename T>
-        void write(T smallValue)
+        void write(char value)
         {
-            static_assert(std::is_trivial<T>::value, "T must be primitive");
-            static_assert(std::is_integral<T>::value, "T must be integral");
-            static_assert( ! std::is_pointer<T>::value, "T must not be a pointer");
-
-            if (capacity_ < (used_ + sizeof(T)))
+            if (capacity_ < (used_ + sizeof(char)))
             {
                 resize();
             }
-            *(reinterpret_cast<T*>(buffer_.get() + used_)) = smallValue;
-            used_ += sizeof(T);
+            *(buffer_.get() + used_) = value;
+            used_ += sizeof(char);
+        }
+
+        template<size_t Size>
+        void writeFixed(const char* value)
+        {
+            while (capacity_ < (used_ + Size))
+            {
+                resize();
+            }
+            memcpy(buffer_.get() + used_, value, Size);
+            used_ += Size;
         }
 
         void write(const char* value, size_t size)

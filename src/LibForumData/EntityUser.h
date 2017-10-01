@@ -9,6 +9,7 @@
 #include <set>
 
 #include <boost/noncopyable.hpp>
+#include <boost/circular_buffer.hpp>
 
 namespace Forum
 {
@@ -31,6 +32,10 @@ namespace Forum
             const auto& name()              const { return name_; }
 
             const auto& info()              const { return info_; }
+            const auto& title()             const { return title_; }
+            const auto& signature()         const { return signature_; }
+             StringView logo()              const { return logo_; }
+                   bool hasLogo()           const { return logo_.size() > 0; }
 
                    auto lastSeen()          const { return lastSeen_; }
 
@@ -51,18 +56,39 @@ namespace Forum
                 if ( ! messageComments_) return emptyMessageComments_;
                 return *messageComments_;
             }
+            const auto& voteHistory() const { return voteHistory_; }
 
             enum ChangeType : uint32_t
             {
                 None = 0,
                 Name,
-                Info
+                Info,
+                Title,
+                Signature,
+                Logo,
             };
 
             typedef Helpers::JsonReadyStringWithSortKey<64> NameType;
-            typedef Json::JsonReadyString< 4> InfoType;
+            typedef Json::JsonReadyString<4> InfoType;
+            typedef Json::JsonReadyString<4> TitleType;
+            typedef Json::JsonReadyString<4> SignatureType;
 
-            struct ChangeNotification
+            enum class ReceivedVoteHistoryEntryType : uint8_t
+            {
+                UpVote,
+                DownVote,
+                ResetVote
+            };
+
+            struct ReceivedVoteHistory final
+            {
+                IdType discussionThreadMessageId;
+                IdType voterId;
+                Timestamp at;
+                ReceivedVoteHistoryEntryType type;
+            };
+
+            struct ChangeNotification final
             {
                 std::function<void(const User&)> onPrepareUpdateAuth;
                 std::function<void(const User&)> onUpdateAuth;
@@ -84,7 +110,7 @@ namespace Forum
 
             User(IdType id, NameType&& name, Timestamp created, VisitDetails creationDetails)
                 : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
-                  name_(std::move(name)), info_({})
+                  name_(std::move(name)), info_({}), title_({}), signature_({})
             {
                 threads_.onPrepareCountChange()        = [this]() { changeNotifications_.onPrepareUpdateThreadCount(*this); };
                 threads_.onCountChange()               = [this]() { changeNotifications_.onUpdateThreadCount(*this); };
@@ -93,10 +119,14 @@ namespace Forum
                 threadMessages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
             }
 
-            explicit User(StringView name) : id_(IdType::empty), name_(name), info_({})
+            explicit User(StringView name) : id_(IdType::empty), name_(name), info_({}), title_({}), signature_({})
             {}
 
             auto& info()              { return info_; }
+            auto& title()             { return title_; }
+            auto& signature()         { return signature_; }
+            auto& logo()              { return logo_; }
+
             auto& threads()           { return threads_; }
             auto& subscribedThreads() { return subscribedThreads_; }
             auto& threadMessages()    { return threadMessages_; }
@@ -110,6 +140,7 @@ namespace Forum
                 if ( ! messageComments_) messageComments_.reset(new MessageCommentCollection);
                 return *messageComments_;
             }
+            auto& voteHistory() { return voteHistory_; }
 
             void updateAuth(std::string&& value)
             {
@@ -139,6 +170,16 @@ namespace Forum
                 votedMessages().insert(message);
             }
 
+            void removeVote(DiscussionThreadMessagePtr message)
+            {
+                auto set = votedMessages();
+                auto it = set.find(message);
+                if (it != set.end())
+                {
+                    set.erase(it);
+                }
+            }
+
         private:
             static ChangeNotification changeNotifications_;
             static const std::set<DiscussionThreadMessagePtr> emptyVotedMessages_;
@@ -151,16 +192,22 @@ namespace Forum
             std::string auth_;
             NameType name_;
             InfoType info_;
+            TitleType title_;
+            SignatureType signature_;
+            std::string logo_;
 
             Timestamp lastSeen_{0};
 
-            DiscussionThreadCollectionWithHashedId threads_;
+            DiscussionThreadCollectionWithOrderedId threads_;
             DiscussionThreadCollectionWithHashedId subscribedThreads_;
 
             DiscussionThreadMessageCollection threadMessages_;
             std::unique_ptr<std::set<DiscussionThreadMessagePtr>> votedMessages_;
 
             std::unique_ptr<MessageCommentCollection> messageComments_;
+
+            static constexpr size_t MaxVotesInHistory = 64;
+            boost::circular_buffer_space_optimized<ReceivedVoteHistory> voteHistory_{ MaxVotesInHistory };
         };
 
         typedef EntityPointer<User> UserPtr;

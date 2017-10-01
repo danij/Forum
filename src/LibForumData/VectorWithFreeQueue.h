@@ -9,7 +9,7 @@ namespace Forum
     namespace Entities
     {
         template<typename T>
-        class VectorWithFreeQueue
+        class VectorWithFreeQueue final
         {
         public:
             typedef typename std::vector<T>::size_type IndexType;
@@ -43,7 +43,13 @@ namespace Forum
             }
 
         private:
+
+#if defined(DEBUG) || defined(_DEBUG)
             std::vector<std::unique_ptr<T>> vector_;
+#else
+            static constexpr size_t InitialNumberOfItems = 131072;
+            std::vector<std::unique_ptr<T>> vector_{ InitialNumberOfItems };
+#endif
             std::queue<IndexType> freeIndexes_;
         };
     }

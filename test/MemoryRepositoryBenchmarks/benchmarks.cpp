@@ -107,7 +107,8 @@ BenchmarkContext createContext()
     auto entityCollection = std::make_shared<Entities::EntityCollection>();
     auto store = std::make_shared<MemoryStore>(entityCollection);
 
-    auto authorization = std::make_shared<DefaultAuthorization>(entityCollection->grantedPrivileges(), *entityCollection);
+    auto authorization = std::make_shared<DefaultAuthorization>(entityCollection->grantedPrivileges(),
+                                                                *entityCollection, true);
 
     auto authorizationRepository = std::make_shared<MemoryRepositoryAuthorization>(
         store, authorization, authorization, authorization, authorization, authorization);
@@ -134,7 +135,7 @@ BenchmarkContext createContext()
     context.writeRepositories.discussionThreadMessage = discussionThreadMessageRepository;
     context.writeRepositories.discussionTag = discussionTagRepository;
     context.writeRepositories.discussionCategory = discussionCategoryRepository;
-    context.writeRepositories.authorizationRepository = authorizationRepository;
+    context.writeRepositories.authorization = authorizationRepository;
 
     return context;
 }
@@ -348,6 +349,14 @@ void showEntitySizes()
     std::cout << "DiscussionCategory                     " << std::setw(5) << sizeof(Entities::DiscussionCategory) << '\n';
     std::cout << "MessageComment                         " << std::setw(5) << sizeof(Entities::MessageComment) << '\n';
     std::cout << "-\n";
+    std::cout << "IdType                                 " << std::setw(5) << sizeof(Entities::IdType) << '\n';
+    std::cout << "Timestamp                              " << std::setw(5) << sizeof(Entities::Timestamp) << '\n';
+    std::cout << "VisitDetails                           " << std::setw(5) << sizeof(Entities::VisitDetails) << '\n';
+    std::cout << "LastUpdatedInfo                        " << std::setw(5) << sizeof(Entities::LastUpdatedInfo) << '\n';
+    std::cout << "EntityPointer<DiscussionThread>        " << std::setw(5) << sizeof(Entities::DiscussionThreadPtr) << '\n';
+    std::cout << "WholeChangeableString                  " << std::setw(5) << sizeof(Helpers::WholeChangeableString) << '\n';
+    std::cout << "std::string                            " << std::setw(5) << sizeof(std::string) << '\n';
+    std::cout << "-\n";
     std::cout << "UserCollection                         " << std::setw(5) << sizeof(Entities::UserCollection) << '\n';
     std::cout << "DiscussionThreadCollectionHash         " << std::setw(5) << sizeof(Entities::DiscussionThreadCollectionWithHashedId) << '\n';
     std::cout << "DiscussionThreadCollectionOrdered      " << std::setw(5) << sizeof(Entities::DiscussionThreadCollectionWithOrderedId) << '\n';
@@ -356,6 +365,7 @@ void showEntitySizes()
     std::cout << "DiscussionCategoryCollection           " << std::setw(5) << sizeof(Entities::DiscussionCategoryCollection) << '\n';
     std::cout << "MessageCommentCollection               " << std::setw(5) << sizeof(Entities::MessageCommentCollection) << '\n';
     std::cout << "-\n";
+    std::cout << "PrivilegeValueType                     " << std::setw(5) << sizeof(Authorization::PrivilegeValueType) << '\n';
     std::cout << "DiscussionThreadMessagePrivilegeStore  " << std::setw(5) << sizeof(Authorization::DiscussionThreadMessagePrivilegeStore) << '\n';
     std::cout << "DiscussionThreadPrivilegeStore         " << std::setw(5) << sizeof(Authorization::DiscussionThreadPrivilegeStore) << '\n';
     std::cout << "DiscussionTagPrivilegeStore            " << std::setw(5) << sizeof(Authorization::DiscussionTagPrivilegeStore) << '\n';
@@ -586,6 +596,8 @@ void importPersistedData(BenchmarkContext& context)
     {
         context.categoryIds.push_back(category->id());
     }
+
+    currentAuthNumber = context.userIds.size() + 1000;
 
     std::cout << "---\n";
     std::cout << "Imported:\n";

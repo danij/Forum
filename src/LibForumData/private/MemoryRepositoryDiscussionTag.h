@@ -19,7 +19,7 @@ namespace Forum
 
             StatusCode addNewDiscussionTag(StringView name, OutStream& output) override;
             StatusWithResource<Entities::DiscussionTagPtr>
-                addNewDiscussionTag(Entities::EntityCollection& collection, Entities::IdTypeRef id, StringView name) override;
+                    addNewDiscussionTag(Entities::EntityCollection& collection, Entities::IdTypeRef id, StringView name) override;
             StatusCode changeDiscussionTagName(Entities::IdTypeRef id, StringView newName, OutStream& output) override;
             StatusCode changeDiscussionTagName(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                                StringView newName) override;
@@ -42,6 +42,10 @@ namespace Forum
             StatusCode mergeDiscussionTags(Entities::EntityCollection& collection, Entities::IdTypeRef fromId,
                                            Entities::IdTypeRef intoId) override;
         private:
+            StatusWithResource<Entities::DiscussionTagPtr>
+                    addNewDiscussionTag(Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                                        Entities::DiscussionTag::NameType&& name);
+
             Authorization::DiscussionTagAuthorizationRef authorization_;
         };
     }

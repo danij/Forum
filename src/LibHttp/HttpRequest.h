@@ -18,7 +18,7 @@
 
 namespace Http
 {
-    struct HttpRequest
+    struct HttpRequest final
     {
         //StringViews point to addresses inside the header buffer
         HttpVerb verb = HttpVerb::UNKNOWN;

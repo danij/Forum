@@ -16,7 +16,7 @@ namespace Forum
 {
     namespace Entities
     {
-        struct SerializationSettings
+        struct SerializationSettings final
         {
             bool hideDiscussionThreadCreatedBy = false;
             bool hideDiscussionThreadMessages = false;
@@ -67,18 +67,19 @@ namespace Forum
         Json::JsonWriter& serialize(Json::JsonWriter& writer, const User& user,
                                     const Authorization::SerializationRestriction& restriction);
 
-        template<typename Entity, typename PrivilegeArray>
+        template<typename Entity, typename PrivilegeArray, typename PrivilegeStringArray>
         static void writePrivileges(Json::JsonWriter& writer, const Entity& entity,
                                     const PrivilegeArray& privilegeArray,
+                                    const PrivilegeStringArray& privilegeStrings,
                                     const Authorization::SerializationRestriction& restriction)
         {
             writer.newPropertyWithSafeName("privileges");
             writer.startArray();
-            for (auto& tuple : privilegeArray)
+            for (auto& value : privilegeArray)
             {
-                if (restriction.isAllowed(entity, std::get<0>(tuple)))
+                if (restriction.isAllowed(entity, value))
                 {
-                    writer.writeSafeString(std::get<1>(tuple));
+                    writer.writeSafeString(privilegeStrings[static_cast<int>(value)]);
                 }
             }
             writer.endArray();

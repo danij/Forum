@@ -38,5 +38,17 @@ namespace Forum
         {
             return ! first.owner_before(second) && ! second.owner_before(first);
         }
+
+        template<typename T>
+        void writeValue(char* destination, T value)
+        {
+            memcpy(destination, &value, sizeof(T));
+        }
+
+        template<typename T>
+        void readValue(const char* source, T& value)
+        {
+            memcpy(&value, source, sizeof(T));
+        }
     }
 }

@@ -4,8 +4,16 @@
         "maxNameLength": 20,
         "minInfoLength": 0,
         "maxInfoLength": 1024,
+        "minTitleLength": 0,
+        "maxTitleLength": 64,
+        "minSignatureLength": 0,
+        "maxSignatureLength": 256,
         "lastSeenUpdatePrecision": 300,
-        "maxUsersPerPage": 20
+        "maxUsersPerPage": 20,
+        "onlineUsersIntervalSeconds": 900,
+        "maxLogoBinarySize": 32768,
+        "maxLogoWidth": 128,
+        "maxLogoHeight": 128
     },
 
     "discussionThread": {
@@ -45,7 +53,9 @@
         "listenIPAddress": "127.0.0.1",
         "listenPort": 8081,
         "connectionTimeoutSeconds": 20,
-        "trustIpFromXForwardedFor": false
+        "trustIpFromXForwardedFor": false,
+        "disableCommands": false,
+        "disableCommandsForAnonymousUsers": false
     },
 
     "logging": {

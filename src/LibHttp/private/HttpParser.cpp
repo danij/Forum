@@ -179,7 +179,7 @@ void Parser::parseNewLine(char*& buffer, size_t& size)
     if ((headerSize_ > 4) && (headerBuffer_[headerSize_ - 3] == '\n') && (headerBuffer_[headerSize_ - 4] == '\r'))
     {
         onFinishedParsingHeaders();
-        if (request_.verb == HttpVerb::GET || request_.verb == HttpVerb::DELETE)
+        if (request_.verb == HttpVerb::GET || request_.verb == HttpVerb::DELETE || (expectedContentLength_ < 1))
         {
             finished_ = true;
             return;
@@ -313,7 +313,7 @@ void Parser::interpretImportantHeaders()
     }
 
     auto cookieValue = request_.headers[Request::HttpHeader::Cookie];
-    interpretCookies(const_cast<char*>(cookieValue.data()), cookieValue.size());
+    interpretCookies(const_cast<char*>(cookieValue.data()), static_cast<int>(cookieValue.size()));
 }
 
 void Parser::interpretPathString()
@@ -322,7 +322,7 @@ void Parser::interpretPathString()
     auto pathStart = parsePathStartsAt_;
     char c;
     int keyStart = 0, keyEnd = 0, valueStart = 0, valueEnd = 0;
-    for (int i = 0, n = request_.path.size(); i < n; ++i)
+    for (int i = 0, n = static_cast<int>(request_.path.size()); i < n; ++i)
     {
         c = request_.path[i];
         switch (state)
@@ -362,13 +362,13 @@ void Parser::interpretPathString()
     }
 }
 
-void Parser::interpretCookies(char* value, size_t size)
+void Parser::interpretCookies(char* value, int size)
 {
     int state = 0;
     auto cookieStart = value;
     int nameStart = 0, nameEnd = 0, valueStart = 0, valueEnd = 0;
 
-    for (size_t i = 0; i < size; ++i)
+    for (int i = 0; i < size; ++i)
     {
         auto c = value[i];
 

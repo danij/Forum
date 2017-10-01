@@ -4,7 +4,7 @@ project(LibForumData CXX)
 set(Boost_USE_STATIC_LIBS    OFF)
 set(Boost_USE_MULTITHREADED  ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost REQUIRED COMPONENTS locale regex system)
+find_package(Boost REQUIRED COMPONENTS locale log regex system)
 find_package(ICU)
 
 set(SOURCE_FILES
@@ -32,7 +32,8 @@ set(SOURCE_FILES
         private/MetricsRepository.cpp
         private/EntitySerialization.cpp
         private/DefaultAuthorization.cpp
-        private/AuthorizationGrantedPrivilegeStore.cpp)
+        private/AuthorizationGrantedPrivilegeStore.cpp
+        private/DefaultThrottling.cpp)
 
 set(HEADER_FILES
         ../Version.h
@@ -58,8 +59,10 @@ set(HEADER_FILES
         EntityMessageComment.h
         EntityMessageCommentCollection.h
         DefaultAuthorization.h
+        DefaultThrottling.h
         AuthorizationPrivileges.h
         AuthorizationGrantedPrivilegeStore.h
+        ThrottlingCheck.h
 
         private/ResourceGuard.h
         private/EntitySerialization.h
@@ -71,8 +74,7 @@ set(HEADER_FILES
         private/MemoryRepositoryDiscussionTag.h
         private/MemoryRepositoryDiscussionCategory.h
         private/MemoryRepositoryAuthorization.h
-        private/MetricsRepository.h
-        private/ThrottlingCheck.h)
+        private/MetricsRepository.h)
 
 include_directories(
         .
@@ -80,6 +82,7 @@ include_directories(
         ../LibFastJsonWriter
         ../LibForumContext
         ../LibForumHelpers
+        ../Logging
         ${Boost_INCLUDE_DIRS})
 
 add_library(ForumData SHARED

@@ -10,6 +10,7 @@ bool DiscussionTagCollection::add(DiscussionTagPtr tag)
 
     if ( ! Context::isBatchInsertInProgress())
     {
+        byThreadCount_.insert(tag);
         byMessageCount_.insert(tag);
     }
 
@@ -30,6 +31,7 @@ bool DiscussionTagCollection::remove(DiscussionTagPtr tag)
     }
     if ( ! Context::isBatchInsertInProgress())
     {
+        eraseFromNonUniqueCollection(byThreadCount_, tag, tag->messageCount());
         eraseFromNonUniqueCollection(byMessageCount_, tag, tag->messageCount());
     }
 
@@ -40,11 +42,12 @@ void DiscussionTagCollection::stopBatchInsert()
 {
     if ( ! Context::isBatchInsertInProgress()) return;
 
+    byThreadCount_.clear();
     byMessageCount_.clear();
-    for (DiscussionTagPtr tag : byId_)
-    {
-        byMessageCount_.insert(tag);
-    }
+
+    auto byIdIndex = byId_;
+    byThreadCount_.insert(byId_.begin(), byId_.end());
+    byMessageCount_.insert(byId_.begin(), byId_.end());
 }
 
 void DiscussionTagCollection::prepareUpdateName(DiscussionTagPtr tag)
@@ -57,6 +60,23 @@ void DiscussionTagCollection::updateName(DiscussionTagPtr tag)
     if (byNameUpdateIt_ != byName_.end())
     {
         byName_.replace(byNameUpdateIt_, tag);
+    }
+}
+
+void DiscussionTagCollection::prepareUpdateThreadCount(DiscussionTagPtr tag)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    byThreadCountUpdateIt_ = findInNonUniqueCollection(byThreadCount_, tag, tag->threadCount());
+}
+
+void DiscussionTagCollection::updateThreadCount(DiscussionTagPtr tag)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    if (byThreadCountUpdateIt_ != byThreadCount_.end())
+    {
+        byThreadCount_.replace(byThreadCountUpdateIt_, tag);
     }
 }
 

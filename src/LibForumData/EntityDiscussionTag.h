@@ -65,7 +65,7 @@ namespace Forum
 
             typedef Helpers::JsonReadyStringWithSortKey<64> NameType;
 
-            struct ChangeNotification
+            struct ChangeNotification final
             {
                 std::function<void(const DiscussionTag&)> onPrepareUpdateName;
                 std::function<void(const DiscussionTag&)> onUpdateName;

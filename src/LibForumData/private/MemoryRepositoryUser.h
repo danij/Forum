@@ -15,9 +15,12 @@ namespace Forum
                                           AuthorizationRepositoryRef authorizationRepository);
 
             StatusCode getUsers(OutStream& output, RetrieveUsersBy by) const override;
+            StatusCode getUsersOnline(OutStream& output) const override;
 
             StatusCode getUserById(Entities::IdTypeRef id, OutStream& output) const override;
             StatusCode getUserByName(StringView name, OutStream& output) const override;
+            StatusCode getUserLogo(Entities::IdTypeRef id, OutStream& output) const override;
+            StatusCode getUserVoteHistory(Entities::IdTypeRef id, OutStream& output) const override;
 
             StatusCode addNewUser(StringView name, StringView auth, OutStream& output) override;
             StatusWithResource<Entities::UserPtr> addNewUser(Entities::EntityCollection& collection,
@@ -26,10 +29,26 @@ namespace Forum
             StatusCode changeUserName(Entities::EntityCollection& collection, Entities::IdTypeRef id, StringView newName) override;
             StatusCode changeUserInfo(Entities::IdTypeRef id, StringView newInfo, OutStream& output) override;
             StatusCode changeUserInfo(Entities::EntityCollection& collection, Entities::IdTypeRef id, StringView newInfo) override;
+            StatusCode changeUserTitle(Entities::IdTypeRef id, StringView newTitle, OutStream& output) override;
+            StatusCode changeUserTitle(Entities::EntityCollection& collection, Entities::IdTypeRef id, StringView newTitle) override;
+            StatusCode changeUserSignature(Entities::IdTypeRef id, StringView newSignature, OutStream& output) override;
+            StatusCode changeUserSignature(Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                                           StringView newSignature) override;
+            StatusCode changeUserLogo(Entities::IdTypeRef id, StringView newLogo, OutStream& output) override;
+            StatusCode changeUserLogo(Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                                      StringView newLogo) override;
+            StatusCode deleteUserLogo(Entities::IdTypeRef id, OutStream& output) override;
+            StatusCode deleteUserLogo(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
             StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
         private:
+            StatusWithResource<Entities::UserPtr> addNewUser(Entities::EntityCollection& collection,
+                                                             Entities::IdTypeRef id, Entities::User::NameType&& name,
+                                                             StringView auth);
+            StatusCode changeUserName(Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                                      Entities::User::NameType&& newName);
+
             Authorization::UserAuthorizationRef authorization_;
             AuthorizationRepositoryRef authorizationRepository_;
         };

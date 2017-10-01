@@ -13,7 +13,7 @@ namespace Forum
 {
     namespace Repository
     {
-        struct MemoryStore : private boost::noncopyable
+        struct MemoryStore final : private boost::noncopyable
         {
             explicit MemoryStore(Entities::EntityCollectionRef collection) : collection(std::move(collection))
             {}
@@ -95,6 +95,9 @@ namespace Forum
 
             static bool doesNotContainLeadingOrTrailingWhitespace(StringView& input);
 
+            static StatusCode validateImage(StringView content, uint_fast32_t maxBinarySize, uint_fast32_t maxWidth,
+                                            uint_fast32_t maxHeight);
+
             MemoryStoreRef store_;
         };
 
@@ -115,8 +118,8 @@ namespace Forum
         inline void updateThreadLastUpdated(Entities::DiscussionThread& thread, Entities::UserPtr currentUser)
         {
             thread.updateLastUpdated(thread.latestVisibleChange() = Context::getCurrentTime());
-            thread.lastUpdatedDetails().ip = Context::getCurrentUserIpAddress();
-            thread.lastUpdatedBy() = currentUser;
+            thread.updateLastUpdatedDetails({ Context::getCurrentUserIpAddress() });
+            thread.updateLastUpdatedBy(currentUser);
         }
     }
 }

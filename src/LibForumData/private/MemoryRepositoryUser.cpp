@@ -7,6 +7,7 @@
 #include "RandomGenerator.h"
 #include "StateHelpers.h"
 #include "StringHelpers.h"
+#include "Logging.h"
 
 #include <unicode/ustring.h>
 #include <unicode/uchar.h>
@@ -125,6 +126,61 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
     return status;
 }
 
+StatusCode MemoryRepositoryUser::getUsersOnline(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          if ( ! (status = authorization_->getUsers(currentUser)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
+                                                               Context::getCurrentTime());
+
+                          auto onlineUsersIntervalSeconds = getGlobalConfig()->user.onlineUsersIntervalSeconds;
+                          auto onlineUsersTimeLimit =
+                                  static_cast<Timestamp>(Context::getCurrentTime() - onlineUsersIntervalSeconds);
+
+                          Json::JsonWriter writer(output);
+
+                          writer.startObject();
+                          writer.newPropertyWithSafeName("online_users");
+
+                          writer.startArray();
+
+                          auto index = collection.users().byLastSeen();
+                          for (auto it = index.rbegin(), itEnd = index.rend(); it != itEnd; ++it)
+                          {
+                              const User* userPtr = *it;
+                              assert(userPtr);
+
+                              if (userPtr->lastSeen() < onlineUsersTimeLimit)
+                              {
+                                  break;
+                              }
+                              else
+                              {
+                                  serialize(writer, *userPtr, restriction);
+                              }
+                          }
+
+                          writer.endArray();
+                          writer.endObject();
+
+                          readEvents().onGetUsersOnline(createObserverContext(currentUser));
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryUser::getUserById(IdTypeRef id, OutStream& output) const
 {
     StatusWriter status(output);
@@ -177,6 +233,8 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
+                          readEvents().onGetUserByName(createObserverContext(currentUser), name);
+
                           User::NameType nameString(name);
 
                           const auto& index = collection.users().byName();
@@ -200,8 +258,140 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                                                                Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "user", user, restriction);
+                      });
+    return status;
+}
 
-                          readEvents().onGetUserByName(createObserverContext(currentUser), name);
+StatusCode MemoryRepositoryUser::getUserLogo(IdTypeRef id, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          const auto& index = collection.users().byId();
+                          auto it = index.find(id);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& user = **it;
+
+                          if ( ! (status = authorization_->getUserById(currentUser, user)))
+                          {
+                              return;
+                          }
+
+                          if ( ! user.hasLogo())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          status.disable();
+
+                          const auto& logo = user.logo();
+                          output.write(logo.data(), logo.size());
+
+                          readEvents().onGetUserLogo(createObserverContext(currentUser), user);
+                      });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          const auto& index = collection.users().byId();
+                          auto it = index.find(id);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& user = **it;
+
+                          if ( ! (status = authorization_->getUserVoteHistory(currentUser, user)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+                          writer.newPropertyWithSafeName("receivedVotes");
+                          writer.startArray();
+
+                          const auto& messageIndex = collection.threadMessages().byId();
+
+                          for (const User::ReceivedVoteHistory& entry : user.voteHistory())
+                          {
+                              writer.startObject();
+
+                              auto messageIt = messageIndex.find(entry.discussionThreadMessageId);
+                              if (messageIt != messageIndex.end())
+                              {
+                                  auto& message = **messageIt;
+                                  writer.newPropertyWithSafeName("messageId") << message.id();
+
+                                  auto& parentThread = message.parentThread();
+                                  assert(parentThread);
+
+                                  auto messageRank = parentThread->messages().findRankByCreated(message.id());
+                                  if (messageRank)
+                                  {
+                                      writer.newPropertyWithSafeName("messageRank") << *messageRank;
+                                  }
+
+                                  writer.newPropertyWithSafeName("threadId") << parentThread->id();
+                                  writer.newPropertyWithSafeName("threadName") << parentThread->name();
+                              }
+
+                              auto userIt = index.find(entry.voterId);
+                              if (userIt != index.end())
+                              {
+                                  auto& voter = **userIt;
+                                  writer.newPropertyWithSafeName("voterId") << voter.id();
+                                  writer.newPropertyWithSafeName("voterName") << voter.name();
+                              }
+
+                              writer.newPropertyWithSafeName("at") << entry.at;
+
+                              writer.newPropertyWithSafeName("type");
+
+                              switch (entry.type)
+                              {
+                              case User::ReceivedVoteHistoryEntryType::UpVote:
+                                  writer.writeSafeString("up");
+                                  break;
+                              case User::ReceivedVoteHistoryEntryType::DownVote:
+                                  writer.writeSafeString("down");
+                                  break;
+                              case User::ReceivedVoteHistoryEntryType::ResetVote:
+                                  writer.writeSafeString("reset");
+                                  break;
+                              }
+
+                              writer.endObject();
+                          }
+
+                          writer.endArray();
+                          writer.endObject();
+
+                          readEvents().onGetUserVoteHistory(createObserverContext(currentUser), user);
                       });
     return status;
 }
@@ -225,6 +415,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
+    boost::optional<IdType> grantAllPrivilegesTo;
 
     collection().write([&](EntityCollection& collection)
                        {
@@ -234,7 +425,16 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                return;
                            }
 
-                           auto statusWithResource = addNewUser(collection, generateUniqueId(), name, auth);
+                           User::NameType nameString(name);
+                           auto& indexByName = collection.users().byName();
+                           if (indexByName.find(nameString) != indexByName.end())
+                           {
+                               status = StatusCode::ALREADY_EXISTS;
+                               return;
+                           }
+
+                           auto statusWithResource = addNewUser(collection, generateUniqueId(), std::move(nameString),
+                                                                auth);
                            auto& user = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
@@ -243,38 +443,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                            if (1 == collection.users().count())
                            {
                                //this is the first user, so grant all privileges
-                               Json::StringBuffer nullOutput;
-
-                               for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionThreadMessagePrivilege::COUNT); p < n; ++p)
-                               {
-                                   auto privilege = static_cast<DiscussionThreadMessagePrivilege>(p);
-                                   authorizationRepository_->assignDiscussionThreadMessagePrivilege(
-                                           user->id(), privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
-                               }
-                               for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionThreadPrivilege::COUNT); p < n; ++p)
-                               {
-                                   auto privilege = static_cast<DiscussionThreadPrivilege>(p);
-                                   authorizationRepository_->assignDiscussionThreadPrivilege(
-                                           user->id(), privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
-                               }
-                               for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionTagPrivilege::COUNT); p < n; ++p)
-                               {
-                                   auto privilege = static_cast<DiscussionTagPrivilege>(p);
-                                   authorizationRepository_->assignDiscussionTagPrivilege(
-                                           user->id(), privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
-                               }
-                               for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionCategoryPrivilege::COUNT); p < n; ++p)
-                               {
-                                   auto privilege = static_cast<DiscussionCategoryPrivilege>(p);
-                                   authorizationRepository_->assignDiscussionCategoryPrivilege(
-                                           user->id(), privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
-                               }
-                               for (EnumIntType p = 0, n = static_cast<EnumIntType>(ForumWidePrivilege::COUNT); p < n; ++p)
-                               {
-                                   auto privilege = static_cast<ForumWidePrivilege>(p);
-                                   authorizationRepository_->assignForumWidePrivilege(
-                                           user->id(), privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
-                               }
+                               grantAllPrivilegesTo = user->id();
                            }
 
                            status.writeNow([&](auto& writer)
@@ -284,29 +453,70 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                                writer << Json::propertySafeName("created", user->created());
                                            });
                        });
+    if (grantAllPrivilegesTo)
+    {
+        Json::StringBuffer nullOutput;
+
+        for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionThreadMessagePrivilege::COUNT); p < n; ++p)
+        {
+            auto privilege = static_cast<DiscussionThreadMessagePrivilege>(p);
+            authorizationRepository_->assignDiscussionThreadMessagePrivilege(
+                    *grantAllPrivilegesTo, privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
+        }
+        for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionThreadPrivilege::COUNT); p < n; ++p)
+        {
+            auto privilege = static_cast<DiscussionThreadPrivilege>(p);
+            authorizationRepository_->assignDiscussionThreadPrivilege(
+                    *grantAllPrivilegesTo, privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
+        }
+        for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionTagPrivilege::COUNT); p < n; ++p)
+        {
+            auto privilege = static_cast<DiscussionTagPrivilege>(p);
+            authorizationRepository_->assignDiscussionTagPrivilege(
+                    *grantAllPrivilegesTo, privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
+        }
+        for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionCategoryPrivilege::COUNT); p < n; ++p)
+        {
+            auto privilege = static_cast<DiscussionCategoryPrivilege>(p);
+            authorizationRepository_->assignDiscussionCategoryPrivilege(
+                    *grantAllPrivilegesTo, privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
+        }
+        for (EnumIntType p = 0, n = static_cast<EnumIntType>(ForumWidePrivilege::COUNT); p < n; ++p)
+        {
+            auto privilege = static_cast<ForumWidePrivilege>(p);
+            authorizationRepository_->assignForumWidePrivilege(
+                    *grantAllPrivilegesTo, privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
+        }
+    }
     return status;
 }
 
 StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& collection, IdTypeRef id,
                                                              StringView name, StringView auth)
 {
+    return addNewUser(collection, id, User::NameType(name), auth);
+}
+
+StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& collection, IdTypeRef id,
+                                                             User::NameType&& name, StringView auth)
+{
     auto authString = toString(auth);
 
     auto& indexByAuth = collection.users().byAuth();
     if (indexByAuth.find(authString) != indexByAuth.end())
     {
+        FORUM_LOG_ERROR << "A user with this auth already exists: " << auth;
         return StatusCode::USER_WITH_SAME_AUTH_ALREADY_EXISTS;
     }
 
-    User::NameType nameString(name);
-
     auto& indexByName = collection.users().byName();
-    if (indexByName.find(nameString) != indexByName.end())
+    if (indexByName.find(name) != indexByName.end())
     {
+        FORUM_LOG_ERROR << "A user with this name already exists: " << name.string();
         return StatusCode::ALREADY_EXISTS;
     }
 
-    auto user = collection.createUser(id, std::move(nameString), Context::getCurrentTime(),
+    auto user = collection.createUser(id, std::move(name), Context::getCurrentTime(),
                                       { Context::getCurrentUserIpAddress() });
     user->updateAuth(std::move(authString));
 
@@ -341,12 +551,21 @@ StatusCode MemoryRepositoryUser::changeUserName(IdTypeRef id, StringView newName
                            }
                            auto& user = **it;
 
+                           User::NameType newNameString(newName);
+
+                           auto& indexByName = collection.users().byName();
+                           if (indexByName.find(newNameString) != indexByName.end())
+                           {
+                               status = StatusCode::ALREADY_EXISTS;
+                               return;
+                           }
+
                            if ( ! (status = authorization_->changeUserName(*currentUser, user, newName)))
                            {
                                return;
                            }
 
-                           if ( ! (status = changeUserName(collection, id, newName))) return;
+                           if ( ! (status = changeUserName(collection, id, std::move(newNameString)))) return;
 
                            writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Name);
                        });
@@ -355,23 +574,28 @@ StatusCode MemoryRepositoryUser::changeUserName(IdTypeRef id, StringView newName
 
 StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, IdTypeRef id, StringView newName)
 {
+    return changeUserName(collection, id, User::NameType(newName));
+}
+
+StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, IdTypeRef id, User::NameType&& newName)
+{
     auto& indexById = collection.users().byId();
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
-    User::NameType newNameString(newName);
-
     auto& indexByName = collection.users().byName();
-    if (indexByName.find(newNameString) != indexByName.end())
+    if (indexByName.find(newName) != indexByName.end())
     {
+        FORUM_LOG_ERROR << "A user with this name already exists: " << newName.string();
         return StatusCode::ALREADY_EXISTS;
     }
 
     UserPtr user = *it;
-    user->updateName(std::move(newNameString));
+    user->updateName(std::move(newName));
 
     return StatusCode::OK;
 }
@@ -421,11 +645,223 @@ StatusCode MemoryRepositoryUser::changeUserInfo(EntityCollection& collection, Id
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
     UserPtr user = *it;
     user->info() = User::InfoType(newInfo);
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepositoryUser::changeUserTitle(IdTypeRef id, StringView newTitle, OutStream& output)
+{
+    StatusWriter status(output);
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(newTitle, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->user.minTitleLength, config->user.maxTitleLength);
+
+    if (validationCode != StatusCode::OK)
+    {
+        return status = validationCode;
+    }
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+                           auto& indexById = collection.users().byId();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           auto& user = **it;
+
+                           if ( ! (status = authorization_->changeUserTitle(*currentUser, user, newTitle)))
+                           {
+                               return;
+                           }
+
+                           if ( ! (status = changeUserInfo(collection, id, newTitle))) return;
+
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Title);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::changeUserTitle(EntityCollection& collection, IdTypeRef id, StringView newTitle)
+{
+    auto& indexById = collection.users().byId();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    UserPtr user = *it;
+    user->title() = User::TitleType(newTitle);
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepositoryUser::changeUserSignature(IdTypeRef id, StringView newSignature, OutStream& output)
+{
+    StatusWriter status(output);
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateString(newSignature, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                         config->user.minSignatureLength, config->user.maxSignatureLength);
+
+    if (validationCode != StatusCode::OK)
+    {
+        return status = validationCode;
+    }
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+                           auto& indexById = collection.users().byId();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           auto& user = **it;
+
+                           if ( ! (status = authorization_->changeUserSignature(*currentUser, user, newSignature)))
+                           {
+                               return;
+                           }
+
+                           if ( ! (status = changeUserSignature(collection, id, newSignature))) return;
+
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Signature);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::changeUserSignature(EntityCollection& collection, IdTypeRef id, StringView newSignature)
+{
+    auto& indexById = collection.users().byId();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    UserPtr user = *it;
+    user->signature() = User::SignatureType(newSignature);
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepositoryUser::changeUserLogo(IdTypeRef id, StringView newLogo, OutStream& output)
+{
+    StatusWriter status(output);
+
+    auto config = getGlobalConfig();
+    auto validationCode = validateImage(newLogo, config->user.maxLogoBinarySize, config->user.maxLogoWidth,
+                                        config->user.maxLogoHeight);
+
+    if (validationCode != StatusCode::OK)
+    {
+        return status = validationCode;
+    }
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+                           auto& indexById = collection.users().byId();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           auto& user = **it;
+
+                           if ( ! (status = authorization_->changeUserLogo(*currentUser, user, newLogo)))
+                           {
+                               return;
+                           }
+
+                           if ( ! (status = changeUserLogo(collection, id, newLogo))) return;
+
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Logo);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::changeUserLogo(EntityCollection& collection, IdTypeRef id, StringView newLogo)
+{
+    auto& indexById = collection.users().byId();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    UserPtr user = *it;
+    user->logo() = toString(newLogo);
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepositoryUser::deleteUserLogo(IdTypeRef id, OutStream& output)
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+                           auto& indexById = collection.users().byId();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           auto& user = **it;
+
+                           if ( ! (status = authorization_->deleteUserLogo(*currentUser, user)))
+                           {
+                               return;
+                           }
+
+                           if ( ! (status = deleteUserLogo(collection, id))) return;
+
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Logo);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::deleteUserLogo(EntityCollection& collection, IdTypeRef id)
+{
+    auto& indexById = collection.users().byId();
+    auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    UserPtr user = *it;
+    user->logo() = {};
 
     return StatusCode::OK;
 }
@@ -468,6 +904,7 @@ StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdType
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 

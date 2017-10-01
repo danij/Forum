@@ -227,7 +227,7 @@ namespace Http
                 const_iterator() : bufferArray_(nullptr), currentIndex_(0)
                 {}
 
-                explicit const_iterator(const ReadWriteBufferArray* bufferArray, size_t startIndex)
+                explicit const_iterator(const ReadWriteBufferArray* bufferArray, int startIndex)
                     : bufferArray_(bufferArray), currentIndex_(startIndex)
                 {}
 

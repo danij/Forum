@@ -7,7 +7,7 @@ namespace Forum
 {
     namespace Persistence
     {
-        struct Blob
+        struct Blob final
         {
             Blob();
             explicit Blob(size_t size);
