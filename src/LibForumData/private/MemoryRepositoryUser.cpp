@@ -347,7 +347,7 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& out
                                   auto& message = **messageIt;
                                   writer.newPropertyWithSafeName("messageId") << message.id();
 
-                                  auto& parentThread = message.parentThread();
+                                  auto parentThread = message.parentThread();
                                   assert(parentThread);
 
                                   auto messageRank = parentThread->messages().findRankByCreated(message.id());
