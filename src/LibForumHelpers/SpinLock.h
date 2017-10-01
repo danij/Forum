@@ -13,7 +13,7 @@ namespace Forum
         public:
             void lock()
             {
-                while (lockFlag_.test_and_set(std::memory_order_acquire)) {}
+                while (lockFlag_.test_and_set(std::memory_order_acq_rel)) {}
             }
 
             void unlock()
