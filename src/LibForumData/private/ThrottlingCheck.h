@@ -3,7 +3,7 @@
 #include "SpinLock.h"
 
 #include <algorithm>
-#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 
@@ -17,10 +17,12 @@ namespace Forum
         class ThrottlingCheck final : boost::noncopyable
         {
         public:
-            ThrottlingCheck(size_t maxAllowed, TPeriod period)
+            typedef uint16_t IndexType;
+
+            ThrottlingCheck(IndexType maxAllowed, TPeriod period)
                 : maxAllowed_(maxAllowed), period_(period), currentIndex_(0)
             {
-                maxAllowed = std::max(maxAllowed, static_cast<decltype(maxAllowed)>(1));
+                maxAllowed = std::max(maxAllowed, static_cast<IndexType>(1u));
                 entries_.reset(new TPeriod[maxAllowed]());
             }
 
@@ -47,10 +49,10 @@ namespace Forum
             }
 
         private:
-            size_t maxAllowed_;
+            IndexType maxAllowed_;
             TPeriod period_;
             std::unique_ptr<TPeriod[]> entries_;
-            size_t currentIndex_;
+            IndexType currentIndex_;
             //use a spin lock instead of a mutex for better performance,
             //as the function has little work to do
             Helpers::SpinLock spinLock_;
