@@ -6,9 +6,16 @@ using namespace Forum;
 using namespace Forum::Authorization;
 using namespace Forum::Entities;
 
-DefaultAuthorization::DefaultAuthorization(GrantedPrivilegeStore& privilegeStore,
+DefaultAuthorization::DefaultAuthorization(GrantedPrivilegeStore& grantedPrivilegeStore,
                                            ForumWidePrivilegeStore& forumWidePrivilegeStore)
-    : grantedPrivilegeStore_(privilegeStore), forumWidePrivilegeStore_(forumWidePrivilegeStore)
+    : DefaultAuthorization(grantedPrivilegeStore, forumWidePrivilegeStore, false)
+{
+}
+
+DefaultAuthorization::DefaultAuthorization(GrantedPrivilegeStore& grantedPrivilegeStore,
+                                           ForumWidePrivilegeStore& forumWidePrivilegeStore, bool disableThrottling)
+    : grantedPrivilegeStore_(grantedPrivilegeStore), forumWidePrivilegeStore_(forumWidePrivilegeStore),
+      disableThrottling_(disableThrottling)
 {
 }
 
@@ -656,7 +663,8 @@ AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, ForumWideP
 
 bool DefaultAuthorization::isThrottled(UserActionThrottling action, const User& currentUser) const
 {
-    return throttling_.check(action, Context::getCurrentTime(), currentUser.id(), Context::getCurrentUserIpAddress());
+    return ! disableThrottling_
+          && throttling_.check(action, Context::getCurrentTime(), currentUser.id(), Context::getCurrentUserIpAddress());
 }
 
 static bool allowPrivilegeUpdate(PrivilegeValueType oldValue, PrivilegeValueIntType newValue,

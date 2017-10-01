@@ -23,6 +23,8 @@ namespace Forum
         public:
             explicit DefaultAuthorization(GrantedPrivilegeStore& grantedPrivilegeStore,
                                           ForumWidePrivilegeStore& forumWidePrivilegeStore);
+            explicit DefaultAuthorization(GrantedPrivilegeStore& grantedPrivilegeStore,
+                                          ForumWidePrivilegeStore& forumWidePrivilegeStore, bool disableThrottling);
 
             AuthorizationStatus login(Entities::IdType userId) const override;
 
@@ -340,6 +342,7 @@ namespace Forum
             GrantedPrivilegeStore& grantedPrivilegeStore_;
             ForumWidePrivilegeStore& forumWidePrivilegeStore_;
             mutable DefaultThrottling throttling_;
+            const bool disableThrottling_;
         };
     }
 }

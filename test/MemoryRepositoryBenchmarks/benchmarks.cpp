@@ -107,7 +107,8 @@ BenchmarkContext createContext()
     auto entityCollection = std::make_shared<Entities::EntityCollection>();
     auto store = std::make_shared<MemoryStore>(entityCollection);
 
-    auto authorization = std::make_shared<DefaultAuthorization>(entityCollection->grantedPrivileges(), *entityCollection);
+    auto authorization = std::make_shared<DefaultAuthorization>(entityCollection->grantedPrivileges(),
+                                                                *entityCollection, true);
 
     auto authorizationRepository = std::make_shared<MemoryRepositoryAuthorization>(
         store, authorization, authorization, authorization, authorization, authorization);
