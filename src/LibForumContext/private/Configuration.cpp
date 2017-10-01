@@ -72,6 +72,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(service.connectionTimeoutSeconds);
     LOAD_CONFIG_VALUE(service.trustIpFromXForwardedFor);
     LOAD_CONFIG_VALUE(service.disableCommands);
+    LOAD_CONFIG_VALUE(service.disableCommandsForAnonymousUsers);
 
     LOAD_CONFIG_VALUE(logging.settingsFile);
 
@@ -81,6 +82,4 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(persistence.createNewOutputFileEverySeconds);
 
     setGlobalConfig(config);
-
-    Context::setDisableCommands(config.service.disableCommands);
 }

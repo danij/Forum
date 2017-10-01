@@ -1376,9 +1376,16 @@ WriteEvents& CommandHandler::writeEvents()
 
 CommandHandler::Result CommandHandler::handle(Command command, const std::vector<StringView>& parameters)
 {
-    if (Context::disableCommands())
+    auto config = getGlobalConfig();
+
+    if (config->service.disableCommands)
     {
-        return { StatusCode::NOT_ALLOWED, {} };
+        return{ StatusCode::NOT_ALLOWED, {} };
+    }
+
+    if (config->service.disableCommandsForAnonymousUsers && ( ! Context::getCurrentUserId()))
+    {
+        return{ StatusCode::NOT_ALLOWED, {} };
     }
 
     StatusCode statusCode;

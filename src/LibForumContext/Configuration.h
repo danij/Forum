@@ -81,6 +81,7 @@ namespace Forum
             int_fast16_t connectionTimeoutSeconds = 20;
             bool trustIpFromXForwardedFor = false;
             bool disableCommands = false;
+            bool disableCommandsForAnonymousUsers = false;
         };
 
         struct LoggingConfig

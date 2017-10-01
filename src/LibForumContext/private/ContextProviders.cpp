@@ -109,15 +109,3 @@ void Forum::Context::setApplicationEventCollection(std::unique_ptr<ApplicationEv
     }
     applicationEvents = std::move(collection);
 }
-
-static std::atomic_bool disableCommandsAllThreads;
-
-bool Forum::Context::disableCommands()
-{
-    return disableCommandsAllThreads;
-}
-
-void Forum::Context::setDisableCommands(bool value)
-{
-    disableCommandsAllThreads = value;
-}
