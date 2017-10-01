@@ -18,8 +18,7 @@ bool Forum::Authorization::DefaultThrottling::check(UserActionThrottling action,
         it = entries_.find(current);
         if (it == entries_.end())
         {
-            entries_.insert({ current, UserThrottlingChecks{} });
-            it = entries_.find(current);
+            it = entries_.emplace(current, UserThrottlingChecks{}).first;
         }
     }
     return it->second.values[static_cast<EnumIntType>(action)].isAllowed(at);
