@@ -106,10 +106,10 @@ static StringView getPointerToEntireRequestBody(const Http::HttpRequest& request
 
 void AbstractEndpoint::handle(Http::RequestState& requestState, ExecuteFn executeCommand)
 {
-    handleBinary(requestState, "application/json", executeCommand);
+    handleCustomType(requestState, "application/json", executeCommand);
 }
 
-void AbstractEndpoint::handleBinary(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand)
+void AbstractEndpoint::handleCustomType(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand)
 {
     assert(nullptr != executeCommand);
 
@@ -120,7 +120,14 @@ void AbstractEndpoint::handleBinary(Http::RequestState& requestState, StringView
 
     requestState.response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
     requestState.response.writeHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    requestState.response.writeHeader("Content-Type", contentType);
+    if (result.statusCode == Repository::StatusCode::OK)
+    {
+        requestState.response.writeHeader("Content-Type", contentType);
+    }
+    else
+    {
+        requestState.response.writeHeader("Content-Type", "application/json");
+    }
     requestState.response.writeBodyAndContentLength(result.output.data(), result.output.size());
 }
 
@@ -229,8 +236,8 @@ void UsersEndpoint::getUserByName(Http::RequestState& requestState)
 
 void UsersEndpoint::getUserLogo(Http::RequestState& requestState)
 {
-    handleBinary(requestState, "image/png",
-                 [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    handleCustomType(requestState, "image/png",
+                     [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_USER_LOGO, parameters);
