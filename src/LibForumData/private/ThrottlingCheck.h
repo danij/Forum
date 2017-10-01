@@ -27,12 +27,16 @@ namespace Forum
             bool isAllowed(TPeriod at)
             {
                 std::lock_guard<decltype(spinLock_)> lock(spinLock_);
-
                 bool result = false;
-                if ((entries_.get()[currentIndex_] + period_) < at)
+
+                auto& oldestEntry = entries_.get()[currentIndex_];
+                if ((oldestEntry + period_) < at)
                 {
                     result = true;
                 }
+                //the oldest entry now becomes the newest one
+                oldestEntry = at;
+
                 currentIndex_ += 1;
                 while (currentIndex_ >= maxAllowed_)
                 {
