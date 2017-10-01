@@ -47,7 +47,7 @@ namespace Forum
                 bool result = false;
 
                 auto& oldestEntry = entries_.get()[currentIndex_];
-                if ((oldestEntry + period_) < at)
+                if ((oldestEntry + period_) > at)
                 {
                     result = true;
                 }
