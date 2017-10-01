@@ -59,6 +59,7 @@ set(HEADER_FILES
         EntityMessageComment.h
         EntityMessageCommentCollection.h
         DefaultAuthorization.h
+        DefaultThrottling.h
         AuthorizationPrivileges.h
         AuthorizationGrantedPrivilegeStore.h
         ThrottlingCheck.h
