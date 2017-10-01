@@ -13,8 +13,13 @@ const size_t HttpRouter::FirstIndexMaxValue;
 
 void RequestState::extractExtraPathParts(size_t nrOfPathCharactersUsedInRoute)
 {
-    auto currentPartStartIndex = nrOfPathCharactersUsedInRoute;
     auto path = request.path.data();
+    if (nrOfPathCharactersUsedInRoute > 0 && path[nrOfPathCharactersUsedInRoute - 1] != '/'
+        && request.path.size() > nrOfPathCharactersUsedInRoute)
+    {
+        nrOfPathCharactersUsedInRoute += 1;
+    }
+    auto currentPartStartIndex = nrOfPathCharactersUsedInRoute;
 
     for (auto i = nrOfPathCharactersUsedInRoute, n = request.path.size(); i < n; ++i)
     {
