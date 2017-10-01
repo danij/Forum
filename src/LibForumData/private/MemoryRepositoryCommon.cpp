@@ -13,6 +13,7 @@
 #include <unicode/ustring.h>
 
 #include <boost/optional.hpp>
+#include <boost/endian/conversion.hpp>
 
 using namespace Forum;
 using namespace Forum::Authorization;
@@ -155,7 +156,44 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
 
 static boost::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView content)
 {
-    return{};//TODO: update
+    static const unsigned char PNGStart[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+    static const unsigned char PNGIHDR[] = { 0x49, 0x48, 0x44, 0x52 };
+
+    auto requiredSize = std::extent<decltype(PNGStart)>::value
+                        + 4  //size
+                        + std::extent<decltype(PNGIHDR)>::value
+                        + 4  //width
+                        + 4; //height
+
+    if (content.size() < requiredSize)
+    {
+        return{};
+    }
+
+    auto data = reinterpret_cast<const unsigned char*>(content.data());
+
+    if ( ! std::equal(std::begin(PNGStart), std::end(PNGStart), data))
+    {
+        return{};
+    }
+    data += std::extent<decltype(PNGStart)>::value;
+    data += 4;
+    if ( ! std::equal(std::begin(PNGIHDR), std::end(PNGIHDR), data))
+    {
+        return{};
+    }
+    data += std::extent<decltype(PNGIHDR)>::value;
+
+    uint32_t width, height;
+    memcpy(&width, data, sizeof(width));
+
+    data += 4;
+    memcpy(&height, data, sizeof(height));
+
+    boost::endian::big_to_native_inplace(width);
+    boost::endian::big_to_native_inplace(height);
+
+    return std::make_tuple(width, height);
 }
 
 StatusCode MemoryRepositoryBase::validateImage(StringView content, uint_fast32_t maxBinarySize, uint_fast32_t maxWidth,
