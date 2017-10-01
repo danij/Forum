@@ -1,9 +1,11 @@
 #pragma once
 
+#include "SpinLock.h"
+
 #include <algorithm>
-#include <atomic>
 #include <cstddef>
 #include <memory>
+#include <mutex>
 
 #include <boost/noncopyable.hpp>
 
@@ -20,14 +22,11 @@ namespace Forum
             {
                 maxAllowed = std::max(maxAllowed, static_cast<decltype(maxAllowed)>(1));
                 entries_.reset(new TPeriod[maxAllowed]());
-                lockFlag_ = ATOMIC_FLAG_INIT;
             }
 
             bool isAllowed(TPeriod at)
             {
-                //use a spin lock instead of a mutex for better performance,
-                //as the function has little work to do
-                while (lockFlag_.test_and_set(std::memory_order_acquire)){}
+                std::lock_guard<decltype(spinLock_)> lock(spinLock_);
 
                 bool result = false;
                 if ((entries_.get()[currentIndex_] + period_) < at)
@@ -40,7 +39,6 @@ namespace Forum
                     currentIndex_ -= maxAllowed_;
                 }
 
-                lockFlag_.clear(std::memory_order_release);
                 return result;
             }
 
@@ -49,7 +47,9 @@ namespace Forum
             TPeriod period_;
             std::unique_ptr<TPeriod[]> entries_;
             size_t currentIndex_;
-            std::atomic_flag lockFlag_;
+            //use a spin lock instead of a mutex for better performance,
+            //as the function has little work to do
+            Helpers::SpinLock spinLock_;
         };
     }
 }

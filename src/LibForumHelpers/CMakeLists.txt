@@ -20,7 +20,8 @@ set(HEADER_FILES
         StringHelpers.h
         TypeHelpers.h
         UuidString.h
-        IpAddress.h)
+        IpAddress.h
+        SpinLock.h)
 
 include_directories(
         .
