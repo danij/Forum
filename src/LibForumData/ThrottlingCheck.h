@@ -7,23 +7,38 @@
 #include <memory>
 #include <mutex>
 
-#include <boost/noncopyable.hpp>
-
 namespace Forum
 {
     namespace Authorization
     {
         template<typename TPeriod>
-        class ThrottlingCheck final : boost::noncopyable
+        class ThrottlingCheck final
         {
         public:
             typedef uint16_t IndexType;
+
+            ThrottlingCheck() : maxAllowed_(0), period_{}, currentIndex_(0)
+            {
+            }
 
             ThrottlingCheck(IndexType maxAllowed, TPeriod period)
                 : maxAllowed_(maxAllowed), period_(period), currentIndex_(0)
             {
                 maxAllowed = std::max(maxAllowed, static_cast<IndexType>(1u));
                 entries_.reset(new TPeriod[maxAllowed]());
+            }
+
+            ThrottlingCheck(const ThrottlingCheck&) = delete;
+            ThrottlingCheck(ThrottlingCheck&& other) noexcept
+            {
+                swap(*this, other);
+            }
+
+            ThrottlingCheck& operator=(const ThrottlingCheck&) = delete;
+            ThrottlingCheck& operator=(ThrottlingCheck&& other) noexcept
+            {
+                swap(*this, other);
+                return *this;
             }
 
             bool isAllowed(TPeriod at)
@@ -46,6 +61,17 @@ namespace Forum
                 }
 
                 return result;
+            }
+
+            friend void swap(ThrottlingCheck& first, ThrottlingCheck& second) noexcept
+            {
+                std::lock_guard<decltype(spinLock_)> lock1(first.spinLock_);
+                std::lock_guard<decltype(spinLock_)> lock2(second.spinLock_);
+
+                std::swap(first.maxAllowed_, second.maxAllowed_);
+                std::swap(first.period_, second.period_);
+                std::swap(first.entries_, second.entries_);
+                std::swap(first.currentIndex_, second.currentIndex_);
             }
 
         private:

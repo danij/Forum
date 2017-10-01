@@ -308,6 +308,26 @@ namespace Forum
             "delete_discussion_thread"
         };
 
+        enum class UserActionThrottling : EnumIntType
+        {
+            NEW_CONTENT,
+            EDIT_CONTENT,
+            EDIT_PRIVILEGES,
+            VOTE,
+            SUBSCRIBE,
+
+            COUNT
+        };
+
+        const std::pair<uint16_t, time_t> ThrottlingDefaultValues[] =
+        {
+            {10,  600}, //max 10 new content actions every 10 minuts
+            {10,  300}, //max 10 edits of content every 5 minutes
+            { 1,    5}, //max 1 edit of privileges every 5 seconds
+            {10, 3600}, //max 10 votes every hour
+            {10,  600}  //max 10 subscriptions every 10 minutes
+        };
+
         typedef int16_t PrivilegeValueIntType;
         typedef boost::optional<PrivilegeValueIntType> PrivilegeValueType;
         typedef time_t PrivilegeDefaultDurationIntType;

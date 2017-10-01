@@ -15,6 +15,7 @@ namespace Forum
             {
                 while (lockFlag_.test_and_set(std::memory_order_acquire)) {}
             }
+
             void unlock()
             {
                 lockFlag_.clear(std::memory_order_release);

@@ -2,6 +2,7 @@
 
 #include "Authorization.h"
 #include "AuthorizationGrantedPrivilegeStore.h"
+#include "DefaultThrottling.h"
 
 #include <boost/noncopyable.hpp>
 
@@ -334,8 +335,11 @@ namespace Forum
             AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege,
                                           PrivilegeValueType& with) const;
 
+            bool isThrottled(UserActionThrottling action, const Entities::User& currentUser) const;
+
             GrantedPrivilegeStore& grantedPrivilegeStore_;
             ForumWidePrivilegeStore& forumWidePrivilegeStore_;
+            mutable DefaultThrottling throttling_;
         };
     }
 }
