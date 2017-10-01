@@ -34,6 +34,8 @@ namespace Forum
                                             const Entities::User& user) const override;
             AuthorizationStatus getUserByName(const Entities::User& currentUser,
                                               const Entities::User& user) const override;
+            AuthorizationStatus getUserVoteHistory(const Entities::User& currentUser,
+                                                   const Entities::User& user) const override;
 
             AuthorizationStatus addNewUser(const Entities::User& currentUser, StringView name) const override;
             AuthorizationStatus changeUserName(const Entities::User& currentUser,

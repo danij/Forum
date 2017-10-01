@@ -236,6 +236,7 @@ namespace Forum
             CHANGE_ANY_USER_LOGO,
             DELETE_OWN_USER_LOGO,
             DELETE_ANY_USER_LOGO,
+            GET_USER_VOTE_HISTORY,
 
             COUNT
         };

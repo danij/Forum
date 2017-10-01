@@ -51,6 +51,16 @@ AuthorizationStatus DefaultAuthorization::getUserByName(const User& currentUser,
     return isAllowed(currentUser.id(), ForumWidePrivilege::GET_USER_INFO, with);
 }
 
+AuthorizationStatus DefaultAuthorization::getUserVoteHistory(const User& currentUser, const User& user) const
+{
+    if (currentUser.id() == user.id())
+    {
+        return AuthorizationStatus::OK;
+    }
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_USER_VOTE_HISTORY, with);
+}
+
 AuthorizationStatus DefaultAuthorization::addNewUser(const User& currentUser, StringView name) const
 {
     if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;

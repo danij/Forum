@@ -54,6 +54,7 @@ namespace Forum
             void getUserById(Http::RequestState& requestState);
             void getUserByName(Http::RequestState& requestState);
             void getUserLogo(Http::RequestState& requestState);
+            void getUserVoteHistory(Http::RequestState& requestState);
 
             void add(Http::RequestState& requestState);
             void remove(Http::RequestState& requestState);

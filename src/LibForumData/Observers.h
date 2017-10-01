@@ -38,6 +38,7 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetUserById;
             boost::signals2::signal<void(ObserverContext, StringView)> onGetUserByName;
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetUserLogo;
+            boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetUserVoteHistory;
 
             boost::signals2::signal<void(ObserverContext)> onGetDiscussionThreads;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onGetDiscussionThreadById;

@@ -9,6 +9,7 @@
 #include <set>
 
 #include <boost/noncopyable.hpp>
+#include <boost/circular_buffer.hpp>
 
 namespace Forum
 {
@@ -55,6 +56,7 @@ namespace Forum
                 if ( ! messageComments_) return emptyMessageComments_;
                 return *messageComments_;
             }
+            const auto& voteHistory() const { return voteHistory_; }
 
             enum ChangeType : uint32_t
             {
@@ -70,6 +72,21 @@ namespace Forum
             typedef Json::JsonReadyString<4> InfoType;
             typedef Json::JsonReadyString<4> TitleType;
             typedef Json::JsonReadyString<4> SignatureType;
+
+            enum class ReceivedVoteHistoryEntryType : uint8_t
+            {
+                UpVote,
+                DownVote,
+                ResetVote
+            };
+
+            struct ReceivedVoteHistory final
+            {
+                IdType discussionThreadMessageId;
+                IdType voterId;
+                Timestamp at;
+                ReceivedVoteHistoryEntryType type;
+            };
 
             struct ChangeNotification final
             {
@@ -123,6 +140,7 @@ namespace Forum
                 if ( ! messageComments_) messageComments_.reset(new MessageCommentCollection);
                 return *messageComments_;
             }
+            auto& voteHistory() { return voteHistory_; }
 
             void updateAuth(std::string&& value)
             {
@@ -187,6 +205,9 @@ namespace Forum
             std::unique_ptr<std::set<DiscussionThreadMessagePtr>> votedMessages_;
 
             std::unique_ptr<MessageCommentCollection> messageComments_;
+
+            static constexpr size_t MaxVotesInHistory = 64;
+            boost::circular_buffer_space_optimized<ReceivedVoteHistory> voteHistory_{ MaxVotesInHistory };
         };
 
         typedef EntityPointer<User> UserPtr;

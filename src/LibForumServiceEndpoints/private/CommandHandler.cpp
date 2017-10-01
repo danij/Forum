@@ -205,6 +205,12 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->getUserLogo(parameters[0], output);
     }
 
+    COMMAND_HANDLER_METHOD( GET_USER_VOTE_HISTORY )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return userRepository->getUserVoteHistory(parameters[0], output);
+    }
+
     COMMAND_HANDLER_METHOD( CHANGE_USER_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
@@ -1296,6 +1302,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_USER_BY_ID);
     setViewHandler(GET_USER_BY_NAME);
     setViewHandler(GET_USER_LOGO);
+    setViewHandler(GET_USER_VOTE_HISTORY);
 
     setViewHandler(GET_DISCUSSION_THREADS_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_BY_CREATED);

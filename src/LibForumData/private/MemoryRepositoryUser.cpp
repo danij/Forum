@@ -303,6 +303,99 @@ StatusCode MemoryRepositoryUser::getUserLogo(IdTypeRef id, OutStream& output) co
     return status;
 }
 
+StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          const auto& index = collection.users().byId();
+                          auto it = index.find(id);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          auto& user = **it;
+
+                          if ( ! (status = authorization_->getUserVoteHistory(currentUser, user)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+                          writer.newPropertyWithSafeName("receivedVotes");
+                          writer.startArray();
+
+                          const auto& messageIndex = collection.threadMessages().byId();
+
+                          for (const User::ReceivedVoteHistory& entry : user.voteHistory())
+                          {
+                              writer.startObject();
+
+                              auto messageIt = messageIndex.find(entry.discussionThreadMessageId);
+                              if (messageIt != messageIndex.end())
+                              {
+                                  auto& message = **messageIt;
+                                  writer.newPropertyWithSafeName("messageId") << message.id();
+
+                                  auto& parentThread = message.parentThread();
+                                  assert(parentThread);
+
+                                  auto messageRank = parentThread->messages().findRankByCreated(message.id());
+                                  if (messageRank)
+                                  {
+                                      writer.newPropertyWithSafeName("messageRank") << *messageRank;
+                                  }
+
+                                  writer.newPropertyWithSafeName("threadId") << parentThread->id();
+                                  writer.newPropertyWithSafeName("threadName") << parentThread->name();
+                              }
+
+                              auto userIt = index.find(entry.voterId);
+                              if (userIt != index.end())
+                              {
+                                  auto& voter = **userIt;
+                                  writer.newPropertyWithSafeName("voterId") << voter.id();
+                                  writer.newPropertyWithSafeName("voterName") << voter.name();
+                              }
+
+                              writer.newPropertyWithSafeName("at") << entry.at;
+
+                              writer.newPropertyWithSafeName("type");
+
+                              switch (entry.type)
+                              {
+                              case User::ReceivedVoteHistoryEntryType::UpVote:
+                                  writer.writeSafeString("up");
+                                  break;
+                              case User::ReceivedVoteHistoryEntryType::DownVote:
+                                  writer.writeSafeString("down");
+                                  break;
+                              case User::ReceivedVoteHistoryEntryType::ResetVote:
+                                  writer.writeSafeString("reset");
+                                  break;
+                              }
+
+                              writer.endObject();
+                          }
+
+                          writer.endArray();
+                          writer.endObject();
+
+                          readEvents().onGetUserVoteHistory(createObserverContext(currentUser), user);
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, OutStream& output)
 {
     StatusWriter status(output);

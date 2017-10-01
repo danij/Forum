@@ -110,6 +110,7 @@ namespace Forum
             GET_USER_BY_ID,
             GET_USER_BY_NAME,
             GET_USER_LOGO,
+            GET_USER_VOTE_HISTORY,
 
             GET_DISCUSSION_THREADS_BY_NAME,
             GET_DISCUSSION_THREADS_BY_CREATED,

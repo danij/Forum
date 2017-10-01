@@ -638,6 +638,14 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     DiscussionThreadPtr parentThread = message.parentThread();
     assert(parentThread);
 
+    message.createdBy().voteHistory().push_back(
+    {
+        message.id(),
+        currentUser->id(),
+        timestamp,
+        up ? User::ReceivedVoteHistoryEntryType::UpVote : User::ReceivedVoteHistoryEntryType::DownVote
+    });
+
     auto resetVotePrivilegeDuration = optionalOrZero(parentThread->getDiscussionThreadMessageDefaultPrivilegeDuration(
             DiscussionThreadMessageDefaultPrivilegeDuration::RESET_VOTE));
     if (resetVotePrivilegeDuration > 0)
@@ -723,6 +731,15 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
                           << static_cast<std::string>(message.id());
         return StatusCode::NO_EFFECT;
     }
+
+    message.createdBy().voteHistory().push_back(
+    {
+        message.id(),
+        currentUser->id(),
+        Context::getCurrentTime(),
+        User::ReceivedVoteHistoryEntryType::ResetVote
+    });
+
     return StatusCode::OK;
 }
 

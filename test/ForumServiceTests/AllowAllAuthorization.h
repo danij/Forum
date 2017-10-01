@@ -23,6 +23,8 @@ namespace Forum
                                             const Entities::User& user) const override { return {}; }
             AuthorizationStatus getUserByName(const Entities::User& currentUser,
                                               const Entities::User& user) const override { return {}; }
+            AuthorizationStatus getUserVoteHistory(const Entities::User& currentUser,
+                                                   const Entities::User& user) const override { return {}; }
 
             AuthorizationStatus addNewUser(const Entities::User& currentUser, StringView name) const override { return {}; }
             AuthorizationStatus changeUserName(const Entities::User& currentUser,
