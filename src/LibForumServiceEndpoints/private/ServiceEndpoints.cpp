@@ -1,4 +1,5 @@
 #include "ServiceEndpoints.h"
+#include "Configuration.h"
 #include "ContextProviders.h"
 #include "HttpStringHelpers.h"
 
@@ -106,10 +107,16 @@ static StringView getPointerToEntireRequestBody(const Http::HttpRequest& request
 
 void AbstractEndpoint::handle(Http::RequestState& requestState, ExecuteFn executeCommand)
 {
-    handleCustomType(requestState, "application/json", executeCommand);
+    handleInternal(requestState, "application/json", executeCommand, true);
 }
 
-void AbstractEndpoint::handleCustomType(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand)
+void AbstractEndpoint::handleBinary(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand)
+{
+    handleInternal(requestState, contentType, executeCommand, false);
+}
+
+void AbstractEndpoint::handleInternal(Http::RequestState& requestState, StringView contentType,
+                                      ExecuteFn executeCommand, bool writePrefix)
 {
     assert(nullptr != executeCommand);
 
@@ -128,7 +135,16 @@ void AbstractEndpoint::handleCustomType(Http::RequestState& requestState, String
     {
         requestState.response.writeHeader("Content-Type", "application/json");
     }
-    requestState.response.writeBodyAndContentLength(result.output.data(), result.output.size());
+    if (writePrefix)
+    {
+        auto config = Configuration::getGlobalConfig();
+        auto prefix = config->service.responsePrefix;
+        requestState.response.writeBodyAndContentLength(result.output, prefix);
+    }
+    else
+    {
+        requestState.response.writeBodyAndContentLength(result.output);
+    }
 }
 
 MetricsEndpoint::MetricsEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
@@ -236,8 +252,8 @@ void UsersEndpoint::getUserByName(Http::RequestState& requestState)
 
 void UsersEndpoint::getUserLogo(Http::RequestState& requestState)
 {
-    handleCustomType(requestState, "image/png",
-                     [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    handleBinary(requestState, "image/png",
+                 [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_USER_LOGO, parameters);

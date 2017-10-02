@@ -55,7 +55,8 @@
         "connectionTimeoutSeconds": 20,
         "trustIpFromXForwardedFor": false,
         "disableCommands": false,
-        "disableCommandsForAnonymousUsers": false
+        "disableCommandsForAnonymousUsers": false,
+        "responsePrefix": "while(1);"
     },
 
     "logging": {

@@ -82,6 +82,7 @@ namespace Forum
             bool trustIpFromXForwardedFor = false;
             bool disableCommands = false;
             bool disableCommandsForAnonymousUsers = false;
+            std::string responsePrefix = "";
         };
 
         struct LoggingConfig

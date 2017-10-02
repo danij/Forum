@@ -112,8 +112,10 @@ namespace Http
             writeCookie(HttpStringView(name, NameSize - 1), value, std::move(extra));
         }
 
-        void writeBody(const char* value, size_t length);
-        void writeBodyAndContentLength(const char* value, size_t length);
+        void writeBody(HttpStringView value);
+        void writeBody(HttpStringView value, HttpStringView prefix);
+        void writeBodyAndContentLength(HttpStringView value);
+        void writeBodyAndContentLength(HttpStringView value, HttpStringView prefix);
 
     private:
         void write(const char* data, size_t size)

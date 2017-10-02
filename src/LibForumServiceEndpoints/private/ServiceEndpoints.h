@@ -23,7 +23,9 @@ namespace Forum
                                                         std::vector<StringView>&);
 
             void handle(Http::RequestState& requestState, ExecuteFn executeCommand);
-            void handleCustomType(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand);
+            void handleInternal(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand,
+                                bool writePrefix);
+            void handleBinary(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand);
 
             CommandHandler& commandHandler_;
         };
