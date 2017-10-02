@@ -11,6 +11,8 @@ using namespace Forum::Helpers;
 
 AbstractEndpoint::AbstractEndpoint(CommandHandler& handler) : commandHandler_(handler)
 {
+    auto config = Configuration::getGlobalConfig();
+    prefix_ = config->service.responsePrefix;
 }
 
 Http::HttpStatusCode commandStatusToHttpStatus(Repository::StatusCode code)
@@ -137,9 +139,7 @@ void AbstractEndpoint::handleInternal(Http::RequestState& requestState, StringVi
     }
     if (writePrefix)
     {
-        auto config = Configuration::getGlobalConfig();
-        auto prefix = config->service.responsePrefix;
-        requestState.response.writeBodyAndContentLength(result.output, prefix);
+        requestState.response.writeBodyAndContentLength(result.output, prefix_);
     }
     else
     {

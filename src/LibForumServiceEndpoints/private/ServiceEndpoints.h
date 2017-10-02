@@ -4,6 +4,7 @@
 #include "HttpRouter.h"
 
 #include <vector>
+#include <string>
 
 namespace Forum
 {
@@ -28,6 +29,7 @@ namespace Forum
             void handleBinary(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand);
 
             CommandHandler& commandHandler_;
+            std::string prefix_;
         };
 
         class MetricsEndpoint : private AbstractEndpoint
