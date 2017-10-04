@@ -1,10 +1,17 @@
 #include "AuthorizationGrantedPrivilegeStore.h"
+#include "Configuration.h"
+#include "EntityCollection.h"
 
 #include <boost/range/iterator_range.hpp>
 
 using namespace Forum;
 using namespace Forum::Entities;
 using namespace Forum::Authorization;
+
+GrantedPrivilegeStore::GrantedPrivilegeStore()
+{
+    defaultPrivilegeValueForLoggedInUser_ = Configuration::getGlobalConfig()->user.defaultPrivilegeValueForLoggedInUser;
+}
 
 void GrantedPrivilegeStore::grantDiscussionThreadMessagePrivilege(IdTypeRef userId, IdTypeRef entityId,
                                                                   PrivilegeValueIntType value, Timestamp expiresAt)
@@ -346,6 +353,10 @@ void GrantedPrivilegeStore::calculatePrivilege(const PrivilegeEntryCollection& c
     IdTuple toSearch{ userId, entityId };
     auto range = collection.get<PrivilegeEntryCollectionByUserIdEntityId>().equal_range(toSearch);
 
+    positiveValue = (userId == anonymousUserId())
+                    ? static_cast<PrivilegeValueIntType>(0)
+                    : defaultPrivilegeValueForLoggedInUser_;
+
     for (auto& entry : boost::make_iterator_range(range))
     {
         auto expiresAt = entry.expiresAt();
@@ -353,7 +364,7 @@ void GrantedPrivilegeStore::calculatePrivilege(const PrivilegeEntryCollection& c
 
         auto value = entry.privilegeValue();
 
-        if (value >= 0)
+        if (value > 0)
         {
             positiveValue = maximumPrivilegeValue(positiveValue, value);
         }

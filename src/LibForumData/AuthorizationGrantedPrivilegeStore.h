@@ -44,6 +44,8 @@ namespace Forum
         class GrantedPrivilegeStore final : private boost::noncopyable
         {
         public:
+            GrantedPrivilegeStore();
+
             void grantDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
                                                        PrivilegeValueIntType value, Entities::Timestamp expiresAt);
 
@@ -210,6 +212,7 @@ namespace Forum
             PrivilegeEntryCollection discussionTagSpecificPrivileges_;
             PrivilegeEntryCollection discussionCategorySpecificPrivileges_;
             PrivilegeEntryCollection forumWideSpecificPrivileges_;
+            PrivilegeValueIntType defaultPrivilegeValueForLoggedInUser_;
         };
 
         struct SerializationRestriction final : private boost::noncopyable

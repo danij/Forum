@@ -31,6 +31,7 @@ namespace Forum
             uint_fast32_t maxLogoBinarySize = 32768;
             uint_fast32_t maxLogoWidth = 128;
             uint_fast32_t maxLogoHeight = 128;
+            int16_t defaultPrivilegeValueForLoggedInUser = 1;
         };
 
         struct DiscussionThreadConfig
