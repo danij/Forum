@@ -231,41 +231,6 @@ StatusWithResource<DiscussionThreadMessagePtr>
     currentUser->threadMessages().add(message);
     currentUser->subscribedThreads().add(threadPtr);
 
-    //add privileges for the user that created the message
-    auto changePrivilegeDuration = optionalOrZero(
-            thread.getDiscussionThreadMessageDefaultPrivilegeDuration(
-                    DiscussionThreadMessageDefaultPrivilegeDuration::CHANGE_CONTENT));
-    if (changePrivilegeDuration > 0)
-    {
-        auto privilege = DiscussionThreadMessagePrivilege::CHANGE_CONTENT;
-        auto valueNeeded = optionalOrZero(thread.getDiscussionThreadMessagePrivilege(privilege));
-
-        if (valueNeeded > 0)
-        {
-            auto expiresAt = calculatePrivilegeExpires(message->created(), changePrivilegeDuration);
-
-            collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
-                    currentUser->id(), message->id(), privilege, valueNeeded, expiresAt);
-        }
-    }
-
-    auto deletePrivilegeDuration = optionalOrZero(
-            thread.getDiscussionThreadMessageDefaultPrivilegeDuration(
-                    DiscussionThreadMessageDefaultPrivilegeDuration::DELETE));
-    if (deletePrivilegeDuration > 0)
-    {
-        auto privilege = DiscussionThreadMessagePrivilege::DELETE;
-        auto valueNeeded = optionalOrZero(thread.getDiscussionThreadMessagePrivilege(privilege));
-
-        if (valueNeeded)
-        {
-            auto expiresAt = calculatePrivilegeExpires(message->created(), changePrivilegeDuration);
-
-            collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
-                    currentUser->id(), message->id(), privilege, valueNeeded, expiresAt);
-        }
-    }
-
     return message;
 }
 
@@ -646,20 +611,6 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
         up ? User::ReceivedVoteHistoryEntryType::UpVote : User::ReceivedVoteHistoryEntryType::DownVote
     });
 
-    auto resetVotePrivilegeDuration = optionalOrZero(parentThread->getDiscussionThreadMessageDefaultPrivilegeDuration(
-            DiscussionThreadMessageDefaultPrivilegeDuration::RESET_VOTE));
-    if (resetVotePrivilegeDuration > 0)
-    {
-        auto privilege = DiscussionThreadMessagePrivilege::RESET_VOTE;
-        auto valueNeeded = optionalOrZero(parentThread->getDiscussionThreadMessagePrivilege(privilege));
-        if (valueNeeded > 0)
-        {
-            auto expiresAt = calculatePrivilegeExpires(timestamp, resetVotePrivilegeDuration);
-
-            collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
-                    currentUser->id(), message.id(), privilege, valueNeeded, expiresAt);
-        }
-    }
     return StatusCode::OK;
 }
 

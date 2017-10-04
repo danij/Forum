@@ -131,21 +131,14 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "privileges/assinged/forum_wide/user", HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideAssignedPrivilegesForUser) },
 
         { "privileges/thread_message/required/thread_message", HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage) },
-        { "privileges/thread_message/assign/thread_message",   HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadMessagePrivilegeForThreadMessage) },
         { "privileges/thread_message/required/thread",         HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilegeForThread) },
         { "privileges/thread/required/thread",                 HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadRequiredPrivilegeForThread) },
         { "privileges/thread_message/duration/thread",         HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageDefaultPrivilegeDurationForThread) },
-        { "privileges/thread_message/assign/thread",           HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadMessagePrivilegeForThread) },
-        { "privileges/thread/assign/thread",                   HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadPrivilegeForThread) },
         { "privileges/thread_message/required/tag",            HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilegeForTag) },
         { "privileges/thread/required/tag",                    HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadRequiredPrivilegeForTag) },
         { "privileges/tag/required/tag",                       HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionTagRequiredPrivilegeForTag) },
         { "privileges/thread_message/duration/tag",            HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageDefaultPrivilegeDurationForTag) },
-        { "privileges/thread_message/assign/tag",              HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadMessagePrivilegeForTag) },
-        { "privileges/thread/assign/tag",                      HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadPrivilegeForTag) },
-        { "privileges/tag/required/tag",                       HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionTagPrivilegeForTag) },
         { "privileges/category/required/category",             HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionCategoryRequiredPrivilegeForCategory) },
-        { "privileges/category/assign/category",               HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionCategoryPrivilegeForCategory) },
         { "privileges/thread_message/required/forum_wide",     HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilege) },
         { "privileges/thread/required/forum_wide",             HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadRequiredPrivilege) },
         { "privileges/tag/required/forum_wide",                HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionTagRequiredPrivilege) },
@@ -153,11 +146,12 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "privileges/forum_wide/required/forum_wide",         HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeForumWideRequiredPrivilege) },
         { "privileges/thread_message/duration/forum_wide",     HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageDefaultPrivilegeDuration) },
         { "privileges/forum_wide/duration/forum_wide",         HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeForumWideDefaultPrivilegeDuration) },
-        { "privileges/thread_message/assign/forum_wide",       HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadMessagePrivilege) },
-        { "privileges/thread/assign/forum_wide",               HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadPrivilege) },
-        { "privileges/tag/assign/forum_wide",                  HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionTagPrivilege) },
-        { "privileges/category/assign/forum_wide",             HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionCategoryPrivilege) },
-        { "privileges/forum_wide/assign/forum_wide",           HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignForumWidePrivilege) }
+
+        { "privileges/thread_message/assign",                  HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadMessagePrivilege) },
+        { "privileges/thread/assign",                          HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionThreadPrivilege) },
+        { "privileges/tag/assign",                             HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionTagPrivilege) },
+        { "privileges/category/assign",                        HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignDiscussionCategoryPrivilege) },
+        { "privileges/forum_wide/assign",                      HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignForumWidePrivilege) }
     };
 
     for (auto& tuple : routes)

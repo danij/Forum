@@ -698,23 +698,6 @@ struct CommandHandler::CommandHandlerImpl
                 parameters[0], privilege, value, output);
     }
 
-    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD_MESSAGE )
-    {
-        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
-
-        DiscussionThreadMessagePrivilege privilege;
-        if ( ! parsePrivilege(parameters[2], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
-
-        PrivilegeValueIntType value{ 0 };
-        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
-
-        PrivilegeDefaultDurationIntType duration{ 0 };
-        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
-
-        return authorizationRepository->assignDiscussionThreadMessagePrivilegeForThreadMessage(
-                parameters[0], parameters[1], privilege, value, duration, output);
-    }
-
     COMMAND_HANDLER_METHOD( GET_REQUIRED_PRIVILEGES_FOR_THREAD )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -773,40 +756,6 @@ struct CommandHandler::CommandHandlerImpl
 
         return authorizationRepository->changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
                 parameters[0], privilege, value, output);
-    }
-
-    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD )
-    {
-        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
-
-        DiscussionThreadMessagePrivilege privilege;
-        if ( ! parsePrivilege(parameters[2], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
-
-        PrivilegeValueIntType value{ 0 };
-        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
-
-        PrivilegeDefaultDurationIntType duration{ 0 };
-        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
-
-        return authorizationRepository->assignDiscussionThreadMessagePrivilegeForThread(
-                parameters[0], parameters[1], privilege, value, duration, output);
-    }
-
-    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_THREAD )
-    {
-        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
-
-        DiscussionThreadPrivilege privilege;
-        if ( ! parsePrivilege(parameters[2], privilege, DiscussionThreadPrivilegeStrings)) return INVALID_PARAMETERS;
-
-        PrivilegeValueIntType value{ 0 };
-        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
-
-        PrivilegeDefaultDurationIntType duration{ 0 };
-        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
-
-        return authorizationRepository->assignDiscussionThreadPrivilegeForThread(
-                parameters[0], parameters[1], privilege, value, duration, output);
     }
 
     COMMAND_HANDLER_METHOD( GET_REQUIRED_PRIVILEGES_FOR_TAG )
@@ -883,57 +832,6 @@ struct CommandHandler::CommandHandlerImpl
                 parameters[0], privilege, value, output);
     }
 
-    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_TAG )
-    {
-        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
-
-        DiscussionThreadMessagePrivilege privilege;
-        if ( ! parsePrivilege(parameters[2], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
-
-        PrivilegeValueIntType value{ 0 };
-        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
-
-        PrivilegeDefaultDurationIntType duration{ 0 };
-        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
-
-        return authorizationRepository->assignDiscussionThreadMessagePrivilegeForTag(
-                parameters[0], parameters[1], privilege, value, duration, output);
-    }
-
-    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_TAG )
-    {
-        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
-
-        DiscussionThreadPrivilege privilege;
-        if ( ! parsePrivilege(parameters[2], privilege, DiscussionThreadPrivilegeStrings)) return INVALID_PARAMETERS;
-
-        PrivilegeValueIntType value{ 0 };
-        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
-
-        PrivilegeDefaultDurationIntType duration{ 0 };
-        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
-
-        return authorizationRepository->assignDiscussionThreadPrivilegeForTag(
-                parameters[0], parameters[1], privilege, value, duration, output);
-    }
-
-    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_TAG_PRIVILEGE_FOR_TAG )
-    {
-        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
-
-        DiscussionTagPrivilege privilege;
-        if ( ! parsePrivilege(parameters[2], privilege, DiscussionTagPrivilegeStrings)) return INVALID_PARAMETERS;
-
-        PrivilegeValueIntType value{ 0 };
-        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
-
-        PrivilegeDefaultDurationIntType duration{ 0 };
-        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
-
-        return authorizationRepository->assignDiscussionTagPrivilegeForTag(
-                parameters[0], parameters[1], privilege, value, duration, output);
-    }
-
     COMMAND_HANDLER_METHOD( GET_REQUIRED_PRIVILEGES_FOR_CATEGORY )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -958,23 +856,6 @@ struct CommandHandler::CommandHandlerImpl
 
         return authorizationRepository->changeDiscussionCategoryRequiredPrivilegeForCategory(
                 parameters[0], privilege, value, output);
-    }
-
-    COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE_FOR_CATEGORY )
-    {
-        if ( ! checkNumberOfParameters(parameters, 5)) return INVALID_PARAMETERS;
-
-        DiscussionCategoryPrivilege privilege;
-        if ( ! parsePrivilege(parameters[2], privilege, DiscussionCategoryPrivilegeStrings)) return INVALID_PARAMETERS;
-
-        PrivilegeValueIntType value{ 0 };
-        if ( ! convertTo(parameters[3], value)) return INVALID_PARAMETERS;
-
-        PrivilegeDefaultDurationIntType duration{ 0 };
-        if ( ! convertTo(parameters[4], duration)) return INVALID_PARAMETERS;
-
-        return authorizationRepository->assignDiscussionCategoryPrivilegeForCategory(
-                parameters[0], parameters[1], privilege, value, duration, output);
     }
 
     COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES )
@@ -1098,9 +979,6 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 4)) return INVALID_PARAMETERS;
 
-        DiscussionThreadMessagePrivilege privilege;
-        if ( ! parsePrivilege(parameters[1], privilege, DiscussionThreadMessagePrivilegeStrings)) return INVALID_PARAMETERS;
-
         PrivilegeValueIntType value{ 0 };
         if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
 
@@ -1108,15 +986,12 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! convertTo(parameters[3], duration)) return INVALID_PARAMETERS;
 
         return authorizationRepository->assignDiscussionThreadMessagePrivilege(
-                parameters[0], privilege, value, duration, output);
+                parameters[0], parameters[1], value, duration, output);
     }
 
     COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_THREAD_PRIVILEGE )
     {
         if ( ! checkNumberOfParameters(parameters, 4)) return INVALID_PARAMETERS;
-
-        DiscussionThreadPrivilege privilege;
-        if ( ! parsePrivilege(parameters[1], privilege, DiscussionThreadPrivilegeStrings)) return INVALID_PARAMETERS;
 
         PrivilegeValueIntType value{ 0 };
         if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
@@ -1125,15 +1000,12 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! convertTo(parameters[3], duration)) return INVALID_PARAMETERS;
 
         return authorizationRepository->assignDiscussionThreadPrivilege(
-                parameters[0], privilege, value, duration, output);
+                parameters[0], parameters[1], value, duration, output);
     }
 
     COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_TAG_PRIVILEGE )
     {
         if ( ! checkNumberOfParameters(parameters, 4)) return INVALID_PARAMETERS;
-
-        DiscussionTagPrivilege privilege;
-        if ( ! parsePrivilege(parameters[1], privilege, DiscussionTagPrivilegeStrings)) return INVALID_PARAMETERS;
 
         PrivilegeValueIntType value{ 0 };
         if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
@@ -1142,15 +1014,12 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! convertTo(parameters[3], duration)) return INVALID_PARAMETERS;
 
         return authorizationRepository->assignDiscussionTagPrivilege(
-                parameters[0], privilege, value, duration, output);
+                parameters[0], parameters[1], value, duration, output);
     }
 
     COMMAND_HANDLER_METHOD( ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE )
     {
         if ( ! checkNumberOfParameters(parameters, 4)) return INVALID_PARAMETERS;
-
-        DiscussionCategoryPrivilege privilege;
-        if ( ! parsePrivilege(parameters[1], privilege, DiscussionCategoryPrivilegeStrings)) return INVALID_PARAMETERS;
 
         PrivilegeValueIntType value{ 0 };
         if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
@@ -1159,24 +1028,20 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! convertTo(parameters[3], duration)) return INVALID_PARAMETERS;
 
         return authorizationRepository->assignDiscussionCategoryPrivilege(
-                parameters[0], privilege, value, duration, output);
+                parameters[0], parameters[1], value, duration, output);
     }
 
     COMMAND_HANDLER_METHOD( ASSIGN_FORUM_WIDE_PRIVILEGE )
     {
-        if ( ! checkNumberOfParameters(parameters, 4)) return INVALID_PARAMETERS;
-
-        ForumWidePrivilege privilege;
-        if ( ! parsePrivilege(parameters[1], privilege, ForumWidePrivilegeStrings)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 3)) return INVALID_PARAMETERS;
 
         PrivilegeValueIntType value{ 0 };
-        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+        if ( ! convertTo(parameters[1], value)) return INVALID_PARAMETERS;
 
         PrivilegeDefaultDurationIntType duration{ 0 };
-        if ( ! convertTo(parameters[3], duration)) return INVALID_PARAMETERS;
+        if ( ! convertTo(parameters[2], duration)) return INVALID_PARAMETERS;
 
-        return authorizationRepository->assignForumWidePrivilege(
-                parameters[0], privilege, value, duration, output);
+        return authorizationRepository->assignForumWidePrivilege(parameters[0], value, duration, output);
     }
 };
 
@@ -1255,24 +1120,17 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setCommandHandler(REMOVE_DISCUSSION_TAG_FROM_CATEGORY);
 
     setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD_MESSAGE);
-    setCommandHandler(ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD_MESSAGE);
 
     setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD);
     setCommandHandler(CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_THREAD);
     setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_THREAD);
-    setCommandHandler(ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD);
-    setCommandHandler(ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_THREAD);
 
     setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_TAG);
     setCommandHandler(CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_TAG);
     setCommandHandler(CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FOR_TAG);
     setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_TAG);
-    setCommandHandler(ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_TAG);
-    setCommandHandler(ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_TAG);
-    setCommandHandler(ASSIGN_DISCUSSION_TAG_PRIVILEGE_FOR_TAG);
 
     setCommandHandler(CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FOR_CATEGORY);
-    setCommandHandler(ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE_FOR_CATEGORY);
 
     setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE);
     setCommandHandler(CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE);
@@ -1281,6 +1139,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setCommandHandler(CHANGE_FORUM_WIDE_REQUIRED_PRIVILEGE);
     setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION);
     setCommandHandler(CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATION);
+
     setCommandHandler(ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE);
     setCommandHandler(ASSIGN_DISCUSSION_THREAD_PRIVILEGE);
     setCommandHandler(ASSIGN_DISCUSSION_TAG_PRIVILEGE);

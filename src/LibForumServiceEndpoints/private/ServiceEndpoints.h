@@ -170,21 +170,14 @@ namespace Forum
             void getForumWideAssignedPrivilegesForUser(Http::RequestState& requestState);
 
             void changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(Http::RequestState& requestState);
-            void assignDiscussionThreadMessagePrivilegeForThreadMessage(Http::RequestState& requestState);
             void changeDiscussionThreadMessageRequiredPrivilegeForThread(Http::RequestState& requestState);
             void changeDiscussionThreadRequiredPrivilegeForThread(Http::RequestState& requestState);
             void changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(Http::RequestState& requestState);
-            void assignDiscussionThreadMessagePrivilegeForThread(Http::RequestState& requestState);
-            void assignDiscussionThreadPrivilegeForThread(Http::RequestState& requestState);
             void changeDiscussionThreadMessageRequiredPrivilegeForTag(Http::RequestState& requestState);
             void changeDiscussionThreadRequiredPrivilegeForTag(Http::RequestState& requestState);
             void changeDiscussionTagRequiredPrivilegeForTag(Http::RequestState& requestState);
             void changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(Http::RequestState& requestState);
-            void assignDiscussionThreadMessagePrivilegeForTag(Http::RequestState& requestState);
-            void assignDiscussionThreadPrivilegeForTag(Http::RequestState& requestState);
-            void assignDiscussionTagPrivilegeForTag(Http::RequestState& requestState);
             void changeDiscussionCategoryRequiredPrivilegeForCategory(Http::RequestState& requestState);
-            void assignDiscussionCategoryPrivilegeForCategory(Http::RequestState& requestState);
             void changeDiscussionThreadMessageRequiredPrivilege(Http::RequestState& requestState);
             void changeDiscussionThreadRequiredPrivilege(Http::RequestState& requestState);
             void changeDiscussionTagRequiredPrivilege(Http::RequestState& requestState);
@@ -192,6 +185,7 @@ namespace Forum
             void changeForumWideRequiredPrivilege(Http::RequestState& requestState);
             void changeDiscussionThreadMessageDefaultPrivilegeDuration(Http::RequestState& requestState);
             void changeForumWideDefaultPrivilegeDuration(Http::RequestState& requestState);
+
             void assignDiscussionThreadMessagePrivilege(Http::RequestState& requestState);
             void assignDiscussionThreadPrivilege(Http::RequestState& requestState);
             void assignDiscussionTagPrivilege(Http::RequestState& requestState);

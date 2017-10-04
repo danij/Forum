@@ -405,41 +405,6 @@ StatusWithResource<DiscussionThreadPtr> MemoryRepositoryDiscussionThread::addNew
     collection.insertDiscussionThread(thread);
     currentUser->threads().add(thread);
 
-    //add privileges for the user that created the message
-    auto changePrivilegeDuration = optionalOrZero(collection.getForumWideDefaultPrivilegeDuration(
-            ForumWideDefaultPrivilegeDuration::CHANGE_DISCUSSION_THREAD_NAME));
-
-    if (changePrivilegeDuration > 0)
-    {
-        auto privilege = DiscussionThreadPrivilege::CHANGE_NAME;
-        auto valueNeeded = optionalOrZero(collection.getDiscussionThreadPrivilege(privilege));
-
-        if (valueNeeded > 0)
-        {
-            auto expiresAt = calculatePrivilegeExpires(thread->created(), changePrivilegeDuration);
-
-            collection.grantedPrivileges().grantDiscussionThreadPrivilege(
-                currentUser->id(), thread->id(), privilege, valueNeeded, expiresAt);
-        }
-    }
-
-    auto deletePrivilegeDuration = optionalOrZero(
-            collection.getForumWideDefaultPrivilegeDuration(
-                    ForumWideDefaultPrivilegeDuration::DELETE_DISCUSSION_THREAD));
-    if (deletePrivilegeDuration > 0)
-    {
-        auto privilege = DiscussionThreadPrivilege::DELETE;
-        auto valueNeeded = optionalOrZero(collection.getDiscussionThreadPrivilege(privilege));
-
-        if (valueNeeded)
-        {
-            auto expiresAt = calculatePrivilegeExpires(thread->created(), changePrivilegeDuration);
-
-            collection.grantedPrivileges().grantDiscussionThreadPrivilege(
-                currentUser->id(), thread->id(), privilege, valueNeeded, expiresAt);
-        }
-    }
-
     return thread;
 }
 

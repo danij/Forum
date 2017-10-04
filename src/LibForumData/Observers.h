@@ -213,56 +213,18 @@ namespace Forum
                                          Authorization::PrivilegeDefaultDurationIntType)> changeForumWideDefaultPrivilegeDuration;
 
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&,
-                                         const Entities::User&, Authorization::DiscussionThreadMessagePrivilege,
-                                         Authorization::PrivilegeValueIntType,
-                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionThreadMessagePrivilegeForThreadMessage;
+                                         const Entities::User&, Authorization::PrivilegeValueIntType,
+                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionThreadMessagePrivilege;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&,
-                                         const Entities::User&, Authorization::DiscussionThreadMessagePrivilege,
-                                         Authorization::PrivilegeValueIntType,
-                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionThreadMessagePrivilegeForThread;
+                                         const Entities::User&, Authorization::PrivilegeValueIntType,
+                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionThreadPrivilege;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&,
-                                         const Entities::User&, Authorization::DiscussionThreadMessagePrivilege,
-                                         Authorization::PrivilegeValueIntType,
-                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionThreadMessagePrivilegeForTag;
-            boost::signals2::signal<void(ObserverContext,
-                                         const Entities::User&, Authorization::DiscussionThreadMessagePrivilege,
-                                         Authorization::PrivilegeValueIntType,
-                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionThreadMessagePrivilegeForumWide;
-
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&,
-                                         const Entities::User&, Authorization::DiscussionThreadPrivilege,
-                                         Authorization::PrivilegeValueIntType,
-                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionThreadPrivilegeForThread;
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&,
-                                         const Entities::User&, Authorization::DiscussionThreadPrivilege,
-                                         Authorization::PrivilegeValueIntType,
-                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionThreadPrivilegeForTag;
-            boost::signals2::signal<void(ObserverContext,
-                                         const Entities::User&, Authorization::DiscussionThreadPrivilege,
-                                         Authorization::PrivilegeValueIntType,
-                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionThreadPrivilegeForumWide;
-
-            boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&,
-                                         const Entities::User&, Authorization::DiscussionTagPrivilege,
-                                         Authorization::PrivilegeValueIntType,
-                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionTagPrivilegeForTag;
-            boost::signals2::signal<void(ObserverContext,
-                                         const Entities::User&, Authorization::DiscussionTagPrivilege,
-                                         Authorization::PrivilegeValueIntType,
-                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionTagPrivilegeForumWide;
-
+                                         const Entities::User&, Authorization::PrivilegeValueIntType,
+                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionTagPrivilege;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionCategory&,
-                                         const Entities::User&, Authorization::DiscussionCategoryPrivilege,
-                                         Authorization::PrivilegeValueIntType,
-                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionCategoryPrivilegeForCategory;
-            boost::signals2::signal<void(ObserverContext,
-                                         const Entities::User&, Authorization::DiscussionCategoryPrivilege,
-                                         Authorization::PrivilegeValueIntType,
-                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionCategoryPrivilegeForumWide;
-
-            boost::signals2::signal<void(ObserverContext,
-                                         const Entities::User&, Authorization::ForumWidePrivilege,
-                                         Authorization::PrivilegeValueIntType,
+                                         const Entities::User&, Authorization::PrivilegeValueIntType,
+                                         Authorization::PrivilegeDefaultDurationIntType)> assignDiscussionCategoryPrivilege;
+            boost::signals2::signal<void(ObserverContext, const Entities::User&, Authorization::PrivilegeValueIntType,
                                          Authorization::PrivilegeDefaultDurationIntType)> assignForumWidePrivilege;
         };
     }
