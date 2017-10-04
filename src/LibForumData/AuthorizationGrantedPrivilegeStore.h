@@ -132,19 +132,21 @@ namespace Forum
                     std::function<void(Entities::IdTypeRef,
                                        PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
 
-            void calculateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
+            void calculateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId,
+                                                           const Entities::DiscussionThreadMessage& message,
                                                            Entities::Timestamp now, PrivilegeValueType& positiveValue,
                                                            PrivilegeValueType& negativeValue) const;
 
-            void calculateDiscussionThreadPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
+            void calculateDiscussionThreadPrivilege(Entities::IdTypeRef userId, const Entities::DiscussionThread& thread,
                                                     Entities::Timestamp now, PrivilegeValueType& positiveValue,
                                                     PrivilegeValueType& negativeValue) const;
 
-            void calculateDiscussionTagPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
+            void calculateDiscussionTagPrivilege(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
                                                  Entities::Timestamp now, PrivilegeValueType& positiveValue,
                                                  PrivilegeValueType& negativeValue) const ;
 
-            void calculateDiscussionCategoryPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
+            void calculateDiscussionCategoryPrivilege(Entities::IdTypeRef userId,
+                                                      const Entities::DiscussionCategory& category,
                                                       Entities::Timestamp now, PrivilegeValueType& positiveValue,
                                                       PrivilegeValueType& negativeValue) const;
 

@@ -741,7 +741,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadMessagePrivilege
     }
 
     PrivilegeValueType oldValuePositive, oldValueNegative;
-    grantedPrivilegeStore_.calculateDiscussionThreadMessagePrivilege(targetUser.id(), message.id(),
+    grantedPrivilegeStore_.calculateDiscussionThreadMessagePrivilege(targetUser.id(), message,
                                                                      Context::getCurrentTime(),
                                                                      oldValuePositive, oldValueNegative);
     auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
@@ -810,7 +810,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const 
     }
 
     PrivilegeValueType oldValuePositive, oldValueNegative;
-    grantedPrivilegeStore_.calculateDiscussionThreadPrivilege(targetUser.id(), thread.id(), Context::getCurrentTime(),
+    grantedPrivilegeStore_.calculateDiscussionThreadPrivilege(targetUser.id(), thread, Context::getCurrentTime(),
                                                               oldValuePositive, oldValueNegative);
     auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
 
@@ -895,7 +895,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionTagPrivilege(const Use
     }
 
     PrivilegeValueType oldValuePositive, oldValueNegative;
-    grantedPrivilegeStore_.calculateDiscussionTagPrivilege(targetUser.id(), tag.id(), Context::getCurrentTime(),
+    grantedPrivilegeStore_.calculateDiscussionTagPrivilege(targetUser.id(), tag, Context::getCurrentTime(),
                                                            oldValuePositive, oldValueNegative);
     auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
 
@@ -998,7 +998,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionCategoryPrivilege(cons
     }
 
     PrivilegeValueType oldValuePositive, oldValueNegative;
-    grantedPrivilegeStore_.calculateDiscussionCategoryPrivilege(targetUser.id(), category.id(),
+    grantedPrivilegeStore_.calculateDiscussionCategoryPrivilege(targetUser.id(), category,
                                                                 Context::getCurrentTime(),
                                                                 oldValuePositive, oldValueNegative);
     auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
