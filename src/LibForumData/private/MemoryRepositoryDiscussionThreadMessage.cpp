@@ -600,9 +600,6 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
         message.addDownVote(currentUser, timestamp);
     }
 
-    DiscussionThreadPtr parentThread = message.parentThread();
-    assert(parentThread);
-
     message.createdBy().voteHistory().push_back(
     {
         message.id(),
