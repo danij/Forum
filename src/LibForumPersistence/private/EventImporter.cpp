@@ -177,6 +177,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
                                DirectWriteRepositoryCollection&& repositories)
         : verifyChecksum_(verifyChecksum), entityCollection_(entityCollection), repositories_(std::move(repositories))
     {
+        //Warning: must be in the same order as the elements of EventType
         importFunctions_ =
         {
             {}, //UNKNOWN
@@ -187,14 +188,18 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_USER_SIGNATURE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_USER_LOGO ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_USER ) },
+
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_NAME ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_DISCUSSION_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, MERGE_DISCUSSION_THREADS ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, SUBSCRIBE_TO_DISCUSSION_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, UNSUBSCRIBE_FROM_DISCUSSION_THREAD ) },
+
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, MOVE_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DISCUSSION_THREAD_MESSAGE_UP_VOTE ) },
@@ -202,6 +207,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, DISCUSSION_THREAD_MESSAGE_RESET_VOTE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT ) },
+
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_TAG ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_TAG_NAME ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_TAG_UI_BLOB ) },
@@ -209,6 +215,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_DISCUSSION_TAG_TO_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, REMOVE_DISCUSSION_TAG_FROM_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, MERGE_DISCUSSION_TAGS ) },
+
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_CATEGORY ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_CATEGORY_NAME ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_CATEGORY_DESCRIPTION ) },
@@ -217,8 +224,6 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_DISCUSSION_CATEGORY ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_DISCUSSION_TAG_TO_CATEGORY ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, REMOVE_DISCUSSION_TAG_FROM_CATEGORY ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER ) },
 
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD ) },
@@ -236,6 +241,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_TAG ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FORUM_WIDE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATION ) },
+
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_PRIVILEGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_TAG_PRIVILEGE ) },
