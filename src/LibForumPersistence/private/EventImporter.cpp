@@ -920,6 +920,11 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             {
                 result.statistic.importedBlobs += 1;
             }
+            else
+            {
+                result.success = false;
+                return result;
+            }
 
             data += blobSizeWithPadding;
             size -= blobSizeWithPadding;
