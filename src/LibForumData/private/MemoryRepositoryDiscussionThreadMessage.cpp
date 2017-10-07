@@ -643,6 +643,20 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
                                return;
                            }
 
+                           //check if the reset is still allowed at the current time
+                           auto votedAt = message.votedAt(currentUser);
+                           if ( ! votedAt)
+                           {
+                               status = StatusCode::NO_EFFECT;
+                               return;
+                           }
+
+                           if ((*votedAt + getGlobalConfig()->user.resetVoteExpiresInSeconds) < Context::getCurrentTime())
+                           {
+                               status = StatusCode::NOT_ALLOWED;
+                               return;
+                           }
+
                            if ( ! (status = authorization_->resetVoteDiscussionThreadMessage(*currentUser, **it)))
                            {
                                return;

@@ -14,7 +14,8 @@
         "maxLogoBinarySize": 32768,
         "maxLogoWidth": 128,
         "maxLogoHeight": 128,
-        "defaultPrivilegeValueForLoggedInUser": 1
+        "defaultPrivilegeValueForLoggedInUser": 1,
+        "resetVoteExpiresInSeconds": 3600
     },
 
     "discussionThread": {
