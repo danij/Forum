@@ -126,7 +126,7 @@ struct AssignedPrivilegeWriter final
     AssignedPrivilegeWriter& operator=(const AssignedPrivilegeWriter&) = default;
     AssignedPrivilegeWriter& operator=(AssignedPrivilegeWriter&&) = default;
 
-    void operator()(IdTypeRef userId, PrivilegeValueIntType privilegeValue, Timestamp expiresAt)
+    void operator()(IdTypeRef userId, PrivilegeValueIntType privilegeValue, Timestamp grantedAt, Timestamp expiresAt)
     {
         writer_.startObject();
         writer_.newPropertyWithSafeName("id") << userId;
@@ -146,6 +146,7 @@ struct AssignedPrivilegeWriter final
         }
 
         writer_.newPropertyWithSafeName("value") << privilegeValue;
+        writer_.newPropertyWithSafeName("granted") << grantedAt;
         writer_.newPropertyWithSafeName("expires") << expiresAt;
         writer_.endObject();
     }
@@ -169,7 +170,7 @@ struct UserAssignedPrivilegeWriter final
     UserAssignedPrivilegeWriter& operator=(const UserAssignedPrivilegeWriter&) = default;
     UserAssignedPrivilegeWriter& operator=(UserAssignedPrivilegeWriter&&) = default;
 
-    void operator()(IdTypeRef entityId, PrivilegeValueIntType privilegeValue, Timestamp expiresAt)
+    void operator()(IdTypeRef entityId, PrivilegeValueIntType privilegeValue, Timestamp grantedAt, Timestamp expiresAt)
     {
         writer_.startObject();
         writer_.newPropertyWithSafeName("id") << entityId;
@@ -177,6 +178,7 @@ struct UserAssignedPrivilegeWriter final
         writeName_(collection_, entityId, writer_);
 
         writer_.newPropertyWithSafeName("value") << privilegeValue;
+        writer_.newPropertyWithSafeName("granted") << grantedAt;
         writer_.newPropertyWithSafeName("expires") << expiresAt;
         writer_.endObject();
     }
@@ -569,8 +571,9 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         }
     }
 
-    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
-    collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(userId, messageId, value, expiresAt);
+    auto now = Context::getCurrentTime();
+    auto expiresAt = calculatePrivilegeExpires(now, duration);
+    collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(userId, messageId, value, now, expiresAt);
 
     return StatusCode::OK;
 }
@@ -966,8 +969,9 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         }
     }
 
-    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
-    collection.grantedPrivileges().grantDiscussionThreadPrivilege(userId, threadId, value, expiresAt);
+    auto now = Context::getCurrentTime();
+    auto expiresAt = calculatePrivilegeExpires(now, duration);
+    collection.grantedPrivileges().grantDiscussionThreadPrivilege(userId, threadId, value, now, expiresAt);
 
     return StatusCode::OK;
 }
@@ -1426,8 +1430,9 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
         }
     }
 
-    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
-    collection.grantedPrivileges().grantDiscussionTagPrivilege(userId, tagId, value, expiresAt);
+    auto now = Context::getCurrentTime();
+    auto expiresAt = calculatePrivilegeExpires(now, duration);
+    collection.grantedPrivileges().grantDiscussionTagPrivilege(userId, tagId, value, now, expiresAt);
 
     return StatusCode::OK;
 }
@@ -1656,8 +1661,9 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
         }
     }
 
-    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
-    collection.grantedPrivileges().grantDiscussionCategoryPrivilege(userId, categoryId, value, expiresAt);
+    auto now = Context::getCurrentTime();
+    auto expiresAt = calculatePrivilegeExpires(now, duration);
+    collection.grantedPrivileges().grantDiscussionCategoryPrivilege(userId, categoryId, value, now, expiresAt);
 
     return StatusCode::OK;
 }
@@ -2184,8 +2190,9 @@ StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
         }
     }
 
-    auto expiresAt = calculatePrivilegeExpires(Context::getCurrentTime(), duration);
-    collection.grantedPrivileges().grantForumWidePrivilege(userId, {}, value, expiresAt);
+    auto now = Context::getCurrentTime();
+    auto expiresAt = calculatePrivilegeExpires(now, duration);
+    collection.grantedPrivileges().grantForumWidePrivilege(userId, {}, value, now, expiresAt);
 
     return StatusCode::OK;
 }

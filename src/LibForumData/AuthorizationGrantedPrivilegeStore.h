@@ -47,19 +47,24 @@ namespace Forum
             GrantedPrivilegeStore();
 
             void grantDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
-                                                       PrivilegeValueIntType value, Entities::Timestamp expiresAt);
+                                                       PrivilegeValueIntType value, Entities::Timestamp now,
+                                                       Entities::Timestamp expiresAt);
 
             void grantDiscussionThreadPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
-                                                PrivilegeValueIntType value, Entities::Timestamp expiresAt);
+                                                PrivilegeValueIntType value, Entities::Timestamp now,
+                                                Entities::Timestamp expiresAt);
 
             void grantDiscussionTagPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
-                                             PrivilegeValueIntType value, Entities::Timestamp expiresAt);
+                                             PrivilegeValueIntType value, Entities::Timestamp now,
+                                             Entities::Timestamp expiresAt);
 
             void grantDiscussionCategoryPrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
-                                                  PrivilegeValueIntType value, Entities::Timestamp expiresAt);
+                                                  PrivilegeValueIntType value, Entities::Timestamp now,
+                                                  Entities::Timestamp expiresAt);
 
             void grantForumWidePrivilege(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
-                                         PrivilegeValueIntType value, Entities::Timestamp expiresAt);
+                                         PrivilegeValueIntType value, Entities::Timestamp now,
+                                         Entities::Timestamp expiresAt);
 
             //isAllowed returns the privilege level with which access was granted or empty if not allowed
 
@@ -100,37 +105,25 @@ namespace Forum
             void computeDiscussionThreadMessageVisibilityAllowed(DiscussionThreadMessagePrivilegeCheck* items,
                                                                  size_t nrOfItems, Entities::Timestamp now) const;
 
-            void enumerateDiscussionThreadMessagePrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
-            void enumerateDiscussionThreadPrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
-            void enumerateDiscussionTagPrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
-            void enumerateDiscussionCategoryPrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
-            void enumerateForumWidePrivileges(Entities::IdTypeRef id,
-                    std::function<void(Entities::IdTypeRef,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+            typedef std::function<void(Entities::IdTypeRef, PrivilegeValueIntType,
+                                       Entities::Timestamp, Entities::Timestamp)> EnumerationCallback;
+
+            void enumerateDiscussionThreadMessagePrivileges(Entities::IdTypeRef id, EnumerationCallback&& callback) const;
+            void enumerateDiscussionThreadPrivileges(Entities::IdTypeRef id, EnumerationCallback&& callback) const;
+            void enumerateDiscussionTagPrivileges(Entities::IdTypeRef id, EnumerationCallback&& callback) const;
+            void enumerateDiscussionCategoryPrivileges(Entities::IdTypeRef id, EnumerationCallback&& callback) const;
+            void enumerateForumWidePrivileges(Entities::IdTypeRef id, EnumerationCallback&& callback) const;
 
             void enumerateDiscussionThreadMessagePrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+                                                                          EnumerationCallback&& callback) const;
             void enumerateDiscussionThreadPrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+                                                                   EnumerationCallback&& callback) const;
             void enumerateDiscussionTagPrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+                                                                EnumerationCallback&& callback) const;
             void enumerateDiscussionCategoryPrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+                                                                     EnumerationCallback&& callback) const;
             void enumerateForumWidePrivilegesAssignedToUser(Entities::IdTypeRef userId,
-                    std::function<void(Entities::IdTypeRef,
-                                       PrivilegeValueIntType, Entities::Timestamp)>&& callback) const;
+                                                            EnumerationCallback&& callback) const;
 
             void calculateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId,
                                                            const Entities::DiscussionThreadMessage& message,
@@ -165,10 +158,10 @@ namespace Forum
 
             struct PrivilegeEntry
             {
-                PrivilegeEntry(Entities::IdTypeRef userId, Entities::IdTypeRef entityId,
-                               PrivilegeValueIntType value, Entities::Timestamp expiresAt)
+                PrivilegeEntry(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, PrivilegeValueIntType value,
+                               Entities::Timestamp grantedAt, Entities::Timestamp expiresAt)
                     : userAndEntity_({ userId, entityId }),
-                      privilegeValue_(value), expiresAt_(expiresAt)
+                      privilegeValue_(value), grantedAt_(grantedAt), expiresAt_(expiresAt)
                 {
                 }
 
@@ -177,11 +170,13 @@ namespace Forum
                 Entities::IdTypeRef   userId() const { return std::get<0>(userAndEntity_); }
                 Entities::IdTypeRef entityId() const { return std::get<1>(userAndEntity_); }
                 auto          privilegeValue() const { return privilegeValue_; }
+                auto               grantedAt() const { return grantedAt_; }
                 auto               expiresAt() const { return expiresAt_; }
 
             private:
                 IdTuple userAndEntity_;
                 PrivilegeValueIntType privilegeValue_;
+                Entities::Timestamp grantedAt_;
                 Entities::Timestamp expiresAt_;
             };
 
