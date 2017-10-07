@@ -816,19 +816,19 @@ void doBenchmarks(BenchmarkContext& context)
     }
     std::cout << '\n';
 
-    std::cout << "Get first page of discussion threads of category by name: ";
-    for (int i = 0; i < retries; ++i)
-    {
-        Context::getMutableDisplayContext().pageNumber = 0;
-        Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
+    //std::cout << "Get first page of discussion threads of category by name: ";
+    //for (int i = 0; i < retries; ++i)
+    //{
+    //    Context::getMutableDisplayContext().pageNumber = 0;
+    //    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
 
-        std::cout << countDuration([&]()
-        {
-            execute(handler, View::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
-                    { categoryIds[categoryIdDistribution(randomGenerator)] });
-        }) << " ";
-    }
-    std::cout << '\n';
+    //    std::cout << countDuration([&]()
+    //    {
+    //        execute(handler, View::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
+    //                { categoryIds[categoryIdDistribution(randomGenerator)] });
+    //    }) << " ";
+    //}
+    //std::cout << '\n';
 
     std::cout << "Get first page of discussion thread messages of user by created: ";
     for (int i = 0; i < retries; ++i)
