@@ -147,6 +147,12 @@ BenchmarkContext createContext(int argc, const char* argv[])
     context.writeRepositories.discussionCategory = discussionCategoryRepository;
     context.writeRepositories.authorization = authorizationRepository;
 
+    if (context.exportToFolder.size() > 0)
+    {
+        context.persistenceObserver = std::make_shared<EventObserver>(context.observableRepository->readEvents(),
+                                                                      context.observableRepository->writeEvents(),
+                                                                      context.exportToFolder, 3600);
+    }
     return context;
 }
 
@@ -264,12 +270,6 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
     if (arguments.count("export-folder"))
     {
         context.exportToFolder = arguments["export-folder"].as<std::string>();
-        if (context.exportToFolder.size() > 0)
-        {
-            context.persistenceObserver = std::make_shared<EventObserver>(context.observableRepository->readEvents(),
-                                                                          context.observableRepository->writeEvents(),
-                                                                          context.exportToFolder, 3600);
-        }
     }
 
     if (arguments.count("messages-file"))
