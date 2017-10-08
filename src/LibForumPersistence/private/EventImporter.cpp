@@ -873,7 +873,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
         catch(boost::interprocess::interprocess_exception& ex)
         {
-            FORUM_LOG_ERROR << "Error mapping file: " << fileName << '(' << ex.what() << ')';
+            FORUM_LOG_ERROR << "Error mapping file: " << fileName << " (" << ex.what() << ')';
             return {};
         }
     }
