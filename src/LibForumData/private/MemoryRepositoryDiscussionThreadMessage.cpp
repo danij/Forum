@@ -680,7 +680,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
                                return;
                            }
 
-                           if ((*votedAt + getGlobalConfig()->user.resetVoteExpiresInSeconds) < Context::getCurrentTime())
+                           auto expiresInSeconds = static_cast<Timestamp>(getGlobalConfig()->user.resetVoteExpiresInSeconds);
+                           if ((*votedAt + expiresInSeconds) < Context::getCurrentTime())
                            {
                                status = StatusCode::NOT_ALLOWED;
                                return;
