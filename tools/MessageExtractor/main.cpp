@@ -193,10 +193,11 @@ int MessageExtractor::perform()
         auto processedPercent = static_cast<int>((processed * 100) / inputSize_);
         if (processedPercent > oldProcessedPercent)
         {
-            std::cout << processedPercent << "% ";
+            std::cout << processedPercent << "% " << std::flush;
             oldProcessedPercent = processedPercent;
         }
     }
+    std::cout << std::endl;
     return 0;
 }
 
