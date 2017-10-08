@@ -145,6 +145,7 @@ struct CurrentTimeChanger final : private boost::noncopyable
 #define CHECK_STATUS_CODE(value) \
     if ((StatusCode::OK) != value && (StatusCode::NO_EFFECT != value)) { \
         FORUM_LOG_ERROR << "Unable to import event of type " << currentEventType_ << ": unexpected status code: " << value; \
+        return false; \
     }
 
 #define CHECK_READ_ALL_DATA(value) \
@@ -1021,6 +1022,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             auto currentResult = importFile(pair.second);
             if ( ! currentResult.success)
             {
+                result.success = false;
                 break;
             }
             result.statistic = result.statistic + currentResult.statistic;

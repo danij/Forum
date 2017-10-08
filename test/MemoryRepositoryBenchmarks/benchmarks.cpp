@@ -110,7 +110,7 @@ BenchmarkContext createContext(int argc, const char* argv[])
 {
     BenchmarkContext context;
     context.parseCommandLineResult = parseCommandLineArgs(context, argc, argv);
-    if ( ! context.parseCommandLineResult)
+    if (context.parseCommandLineResult)
     {
         return context;
     }
@@ -592,7 +592,10 @@ void generateRandomData(BenchmarkContext& context)
 void importPersistedData(BenchmarkContext& context)
 {
     EventImporter importer(false, *context.entityCollection, context.writeRepositories);
-    importer.import(context.importFromFolder);
+    if ( ! importer.import(context.importFromFolder).success)
+    {
+        std::abort();
+    }
 
     //fill context ids as they are needed by doBenchmarks()
     for (auto& user : context.entityCollection->users().byId())
