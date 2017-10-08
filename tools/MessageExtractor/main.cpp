@@ -145,6 +145,7 @@ int MessageExtractor::perform()
 {
     auto data = inputData_;
     auto size = inputSize_;
+    int oldProcessedPercent = -1;
 
     while (size > 0)
     {
@@ -187,6 +188,14 @@ int MessageExtractor::perform()
 
         data += blobSizeWithPadding;
         size -= blobSizeWithPadding;
+
+        auto processed = inputSize_ - size;
+        auto processedPercent = static_cast<int>((processed * 100) / inputSize_);
+        if (processedPercent > oldProcessedPercent)
+        {
+            std::cout << processedPercent << "% ";
+            oldProcessedPercent = processedPercent;
+        }
     }
     return 0;
 }
