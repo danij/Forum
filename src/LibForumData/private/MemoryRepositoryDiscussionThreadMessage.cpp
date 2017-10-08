@@ -192,6 +192,23 @@ StatusWithResource<DiscussionThreadMessagePtr>
                                                                              IdTypeRef messageId, IdTypeRef threadId,
                                                                              StringView content)
 {
+    return addNewDiscussionMessageInThread(collection, messageId, threadId, content, 0, 0);
+}
+
+StatusWithResource<DiscussionThreadMessagePtr>
+    MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection,
+                                                                             IdTypeRef messageId, IdTypeRef threadId,
+                                                                             size_t contentSize, size_t contentOffset)
+{
+    return addNewDiscussionMessageInThread(collection, messageId, threadId, {}, contentSize, contentOffset);
+}
+
+StatusWithResource<DiscussionThreadMessagePtr>
+    MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection,
+                                                                             IdTypeRef messageId, IdTypeRef threadId,
+                                                                             StringView content, size_t contentSize,
+                                                                             size_t contentOffset)
+{
     auto& threadIndex = collection.threads().byId();
     auto threadIt = threadIndex.find(threadId);
     if (threadIt == threadIndex.end())
@@ -206,8 +223,20 @@ StatusWithResource<DiscussionThreadMessagePtr>
     auto message = collection.createDiscussionThreadMessage(messageId, *currentUser, Context::getCurrentTime(),
                                                             { Context::getCurrentUserIpAddress() });
     message->parentThread() = threadPtr;
-    message->content() = WholeChangeableString::copyFrom(content);
-
+    if ((contentSize > 0) && (contentOffset > 0))
+    {
+        auto messageContent = collection.getMessageContentPointer(contentOffset, contentSize);
+        if ( ! messageContent.size())
+        {
+            FORUM_LOG_ERROR << "Could not find message at offset " << contentOffset << " with length " << contentSize;
+            return StatusCode::INVALID_PARAMETERS;
+        }
+        message->content() = WholeChangeableString::onlyTakePointer(messageContent);
+    }
+    else
+    {
+        message->content() = WholeChangeableString::copyFrom(content);
+    }
     collection.insertDiscussionThreadMessage(message);
 
     DiscussionThread& thread = *threadPtr;

@@ -81,6 +81,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
 
     LOAD_CONFIG_VALUE(persistence.inputFolder);
     LOAD_CONFIG_VALUE(persistence.outputFolder);
+    LOAD_CONFIG_VALUE(persistence.messagesFile);
     LOAD_CONFIG_VALUE(persistence.validateChecksum);
     LOAD_CONFIG_VALUE(persistence.createNewOutputFileEverySeconds);
 

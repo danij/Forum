@@ -68,6 +68,7 @@
     "persistence": {
         "inputFolder": "/mnt/forum/input",
         "outputFolder": "/mnt/forum/output",
+        "messagesFile": "",
         "validateChecksum": true,
         "createNewOutputFileEverySeconds": 86400
     }

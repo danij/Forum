@@ -96,6 +96,7 @@ namespace Forum
         {
             std::string inputFolder = "";
             std::string outputFolder = "";
+            std::string messagesFile = "";
             bool validateChecksum = true;
             int_fast32_t createNewOutputFileEverySeconds = 3600 * 24;
         };

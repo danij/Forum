@@ -197,7 +197,8 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, SUBSCRIBE_TO_DISCUSSION_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, UNSUBSCRIBE_FROM_DISCUSSION_THREAD ) },
 
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD_MESSAGE ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD_MESSAGE ),
+                        DECLARE_FORWARDER( 2, ADD_NEW_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, MOVE_DISCUSSION_THREAD_MESSAGE ) },
@@ -361,6 +362,19 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addNewDiscussionMessageInThread(entityCollection_,
                                                                                                  messageId, parentId,
                                                                                                  message).status);
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( ADD_NEW_DISCUSSION_THREAD_MESSAGE, 2 )
+        READ_UUID(messageId, data, size);
+        READ_UUID(parentId, data, size);
+        READ_TYPE(uint32_t, messageSize, data, size);
+        READ_TYPE(uint64_t, messageOffset, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addNewDiscussionMessageInThread(entityCollection_,
+                                                                                                 messageId, parentId,
+                                                                                                 static_cast<size_t>(messageSize),
+                                                                                                 static_cast<size_t>(messageOffset)).status);
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1 )

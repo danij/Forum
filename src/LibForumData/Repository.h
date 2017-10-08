@@ -235,6 +235,9 @@ namespace Forum
             virtual StatusWithResource<Entities::DiscussionThreadMessagePtr>
                 addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
                                                 Entities::IdTypeRef threadId, StringView content) = 0;
+            virtual StatusWithResource<Entities::DiscussionThreadMessagePtr>
+                addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
+                                                Entities::IdTypeRef threadId, size_t contentSize, size_t contentOffset) = 0;
             virtual StatusCode deleteDiscussionMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
             virtual StatusCode changeDiscussionThreadMessageContent(Entities::EntityCollection& collection,
                                                                     Entities::IdTypeRef id, StringView newContent,

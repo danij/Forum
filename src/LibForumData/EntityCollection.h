@@ -39,6 +39,8 @@ namespace Forum
             std::unique_ptr<DiscussionCategory>*      getDiscussionCategoryPoolRoot();
             std::unique_ptr<MessageComment>*          getMessageCommentPoolRoot();
 
+            StringView getMessageContentPointer(size_t offset, size_t size);
+
             UserPtr                    createUser(IdType id, User::NameType&& name, Timestamp created,
                                                   VisitDetails creationDetails);
             DiscussionThreadPtr        createDiscussionThread(IdType id, User& createdBy, DiscussionThread::NameType&& name,
