@@ -162,25 +162,32 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
+                           auto threadPtr = *threadIt;
+                           auto& thread = *threadPtr;
 
-                           if ( ! (status = authorization_->addNewDiscussionMessageInThread(*currentUser, **threadIt, content)))
+                           if ( ! (status = authorization_->addNewDiscussionMessageInThread(*currentUser, thread, content)))
                            {
                                return;
                            }
+
+                           auto& user = *currentUser;
+                           auto alreadySubscribed = user.subscribedThreads().contains(threadPtr);
 
                            auto statusWithResource = addNewDiscussionMessageInThread(collection, generateUniqueId(),
                                                                                      threadId, content);
                            auto& message = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
-                           auto& user = *currentUser;
-                           writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), **threadIt);
                            writeEvents().onAddNewDiscussionThreadMessage(createObserverContext(user), *message);
+                           if ( ! alreadySubscribed)
+                           {
+                               writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), thread);
+                           }
 
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", message->id());
-                                               writer << Json::propertySafeName("parentId", (*threadIt)->id());
+                                               writer << Json::propertySafeName("parentId", thread.id());
                                                writer << Json::propertySafeName("created", message->created());
                                            });
                        });
