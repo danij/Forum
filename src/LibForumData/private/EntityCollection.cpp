@@ -53,17 +53,14 @@ struct EntityCollection::Impl
     const char* messagesFileStart_{ nullptr };
     size_t messagesFileSize_{};
 
-    Impl()
+    Impl(StringView messagesFile)
     {
-        auto config = Configuration::getGlobalConfig();
-        auto& messagesFile = config->persistence.messagesFile;
-
         if (messagesFile.size())
         {
             try
             {
                 auto mappingMode = boost::interprocess::read_only;
-                boost::interprocess::file_mapping mapping(messagesFile.c_str(), mappingMode);
+                boost::interprocess::file_mapping mapping(messagesFile.data(), mappingMode);
                 boost::interprocess::mapped_region region(mapping, mappingMode);
                 region.advise(boost::interprocess::mapped_region::advice_sequential);
 
@@ -581,9 +578,9 @@ IdType Forum::Entities::anonymousUserId()
     return anonymousUserId_;
 }
 
-EntityCollection::EntityCollection()
+EntityCollection::EntityCollection(StringView messagesFile)
 {
-    impl_ = new Impl();
+    impl_ = new Impl(messagesFile);
 
     Private::setGlobalEntityCollection(this);
     impl_->setEventListeners();

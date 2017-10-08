@@ -178,7 +178,8 @@ void Application::validateConfiguration()
 
 void Application::createCommandHandler()
 {
-    entityCollection_ = std::make_shared<Entities::EntityCollection>();
+    auto config = Configuration::getGlobalConfig();
+    entityCollection_ = std::make_shared<Entities::EntityCollection>(config->persistence.messagesFile);
 
     auto store = std::make_shared<MemoryStore>(entityCollection_);
     auto authorization = std::make_shared<DefaultAuthorization>(entityCollection_->grantedPrivileges(), *entityCollection_);

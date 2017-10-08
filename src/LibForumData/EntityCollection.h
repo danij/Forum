@@ -26,7 +26,7 @@ namespace Forum
                                        private boost::noncopyable
         {
         public:
-            EntityCollection();
+            EntityCollection(StringView messagesFile);
             ~EntityCollection();
 
             const Authorization::GrantedPrivilegeStore& grantedPrivileges() const;

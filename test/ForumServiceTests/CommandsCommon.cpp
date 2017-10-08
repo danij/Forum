@@ -27,7 +27,7 @@ std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
 {
     auto authorization = std::make_shared<AllowAllAuthorization>();
 
-    auto store = std::make_shared<MemoryStore>(std::make_shared<Entities::EntityCollection>());
+    auto store = std::make_shared<MemoryStore>(std::make_shared<Entities::EntityCollection>({}));
 
     auto authorizationRepository = std::make_shared<MemoryRepositoryAuthorization>(
             store, authorization, authorization, authorization, authorization, authorization);
