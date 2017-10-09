@@ -26,8 +26,10 @@
 #include <iostream>
 
 #include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/filter_parser.hpp>
 #include <boost/log/utility/setup/formatter_parser.hpp>
 #include <boost/log/utility/setup/from_stream.hpp>
+
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -294,6 +296,7 @@ void Application::initializeLogging()
     {
         boost::log::add_common_attributes();
         boost::log::register_simple_formatter_factory<boost::log::trivial::severity_level, char>("Severity");
+        boost::log::register_simple_filter_factory<boost::log::trivial::severity_level>("Severity");
         boost::log::init_from_stream(file);
     }
     catch(std::exception& ex)
