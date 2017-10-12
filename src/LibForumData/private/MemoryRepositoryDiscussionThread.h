@@ -13,7 +13,8 @@ namespace Forum
         {
         public:
             explicit MemoryRepositoryDiscussionThread(MemoryStoreRef store,
-                                                      Authorization::DiscussionThreadAuthorizationRef authorization);
+                                                      Authorization::DiscussionThreadAuthorizationRef authorization,
+                                                      AuthorizationDirectWriteRepositoryRef authorizationDirectWriteRepository);
 
             StatusCode getDiscussionThreads(OutStream& output, RetrieveDiscussionThreadsBy by) const override;
 
@@ -61,6 +62,7 @@ namespace Forum
 
         private:
             Authorization::DiscussionThreadAuthorizationRef authorization_;
+            AuthorizationDirectWriteRepositoryRef authorizationDirectWriteRepository_;
         };
     }
 }

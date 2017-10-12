@@ -47,19 +47,6 @@ PrivilegeValueType DiscussionThread::getDiscussionThreadPrivilege(DiscussionThre
     return result;
 }
 
-PrivilegeDefaultDurationType DiscussionThread::getDiscussionThreadMessageDefaultPrivilegeDuration(DiscussionThreadMessageDefaultPrivilegeDuration privilege) const
-{
-    auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadMessageDefaultPrivilegeDuration(privilege);
-    if (result) return result;
-
-    for (auto tag : tags_)
-    {
-        assert(tag);
-        result = minimumPrivilegeDefaultDuration(result, tag->getDiscussionThreadMessageDefaultPrivilegeDuration(privilege));
-    }
-    return result;
-}
-
 void DiscussionThread::insertMessage(DiscussionThreadMessagePtr message)
 {
     if ( ! message) return;

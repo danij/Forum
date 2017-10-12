@@ -239,10 +239,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FOR_CATEGORY ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FORUM_WIDE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_FORUM_WIDE_REQUIRED_PRIVILEGE ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_THREAD ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_TAG ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FORUM_WIDE ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATION ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVEL ) },
 
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_PRIVILEGE ) },
@@ -738,46 +735,15 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
                 currentPrivilegeValue));
     END_DEFAULT_IMPORTER()
 
-    BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_THREAD, 1 )
-        READ_UUID(threadId, data, size);
+    BEGIN_DEFAULT_IMPORTER( CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVEL, 1 )
         READ_TYPE(PersistentPrivilegeEnumType, currentPrivilegeDuration, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
+        READ_TYPE(PersistentPrivilegeValueType, currentValue, data, size);
+        READ_TYPE(PersistentPrivilegeDurationType, currentDuration, data, size);
         CHECK_READ_ALL_DATA(size);
 
-        CHECK_STATUS_CODE(repositories_.authorization->changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
-            entityCollection_, threadId, static_cast<DiscussionThreadMessageDefaultPrivilegeDuration>(currentPrivilegeDuration),
-            currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_TAG, 1 )
-        READ_UUID(tagId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilegeDuration, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
-                entityCollection_, tagId, static_cast<DiscussionThreadMessageDefaultPrivilegeDuration>(currentPrivilegeDuration),
-                currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FORUM_WIDE, 1 )
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilegeDuration, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->changeDiscussionThreadMessageDefaultPrivilegeDuration(
-                entityCollection_, static_cast<DiscussionThreadMessageDefaultPrivilegeDuration>(currentPrivilegeDuration),
-                currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATION, 1 )
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilegeDuration, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->changeForumWideDefaultPrivilegeDuration(
+        CHECK_STATUS_CODE(repositories_.authorization->changeForumWideDefaultPrivilegeLevel(
                 entityCollection_, static_cast<ForumWideDefaultPrivilegeDuration>(currentPrivilegeDuration),
-                currentDurationValue));
+                currentValue, currentDuration));
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE, 1 )

@@ -95,22 +95,26 @@ void MemoryRepositoryAuthorization::writeForumWideRequiredPrivileges(const Forum
                          &ForumWidePrivilegeStore::getForumWidePrivilege);
 }
 
-void MemoryRepositoryAuthorization::writeDiscussionThreadMessageDefaultPrivilegeDurations(const DiscussionThreadPrivilegeStore& store,
-                                                                                          JsonWriter& writer)
+void MemoryRepositoryAuthorization::writeForumWideDefaultPrivilegeLevels(const ForumWidePrivilegeStore& store,
+                                                                         JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_thread_message_default_durations");
-    writePrivilegeValues(store, DiscussionThreadMessageDefaultPrivilegeDuration::COUNT, writer,
-                         DiscussionThreadMessageDefaultPrivilegeDurationStrings,
-                         &DiscussionThreadPrivilegeStore::getDiscussionThreadMessageDefaultPrivilegeDuration);
-}
+    writer.newPropertyWithSafeName("forum_wide_default_levels");
+    writer.startArray();
 
-void MemoryRepositoryAuthorization::writeForumWideDefaultPrivilegeDurations(const ForumWidePrivilegeStore& store,
-                                                                            JsonWriter& writer)
-{
-    writer.newPropertyWithSafeName("forum_wide_default_durations");
-    writePrivilegeValues(store, ForumWideDefaultPrivilegeDuration::COUNT, writer,
-                         ForumWideDefaultPrivilegeDurationStrings,
-                         &ForumWidePrivilegeStore::getForumWideDefaultPrivilegeDuration);
+    for (EnumIntType i = 0; i < static_cast<EnumIntType>(ForumWideDefaultPrivilegeDuration::COUNT); ++i)
+    {
+        auto privilege = static_cast<ForumWideDefaultPrivilegeDuration>(i);
+        auto value = store.getForumWideDefaultPrivilegeLevel(privilege);
+        if (value)
+        {
+            writer.startObject();
+            writer.newPropertyWithSafeName("name") << ForumWideDefaultPrivilegeDurationStrings[i];
+            writer.newPropertyWithSafeName("value") << value->value;
+            writer.newPropertyWithSafeName("duration") << value->duration;
+            writer.endObject();
+        }
+    }
+    writer.endArray();
 }
 
 struct AssignedPrivilegeWriter final
@@ -423,7 +427,7 @@ static bool isValidPrivilegeValue(PrivilegeValueIntType value)
     return value >= MinPrivilegeValue && value <= MaxPrivilegeValue;
 }
 
-static bool isValidPrivilegeDuration(PrivilegeDefaultDurationIntType value)
+static bool isValidPrivilegeDuration(PrivilegeDurationIntType value)
 {
     return value >= 0;
 }
@@ -492,7 +496,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
 }
 
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege(
-        IdTypeRef messageId, IdTypeRef userId, PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration,
+        IdTypeRef messageId, IdTypeRef userId, PrivilegeValueIntType value, PrivilegeDurationIntType duration,
         OutStream& output)
 {
     StatusWriter status(output);
@@ -545,7 +549,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
 
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege(
         EntityCollection& collection, IdTypeRef messageId, IdTypeRef userId, PrivilegeValueIntType value,
-        PrivilegeDefaultDurationIntType duration)
+        PrivilegeDurationIntType duration)
 {
     if ( ! messageId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
@@ -618,45 +622,6 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForThread(IdTypeR
                           writer.endObject();
 
                           readEvents().onGetRequiredPrivilegesFromThread(createObserverContext(currentUser), thread);
-                      });
-    return status;
-}
-
-StatusCode MemoryRepositoryAuthorization::getDefaultPrivilegeDurationsForThread(IdTypeRef threadId, OutStream& output) const
-{
-    StatusWriter status(output);
-
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          auto& currentUser = performedBy.get(collection, *store_);
-
-                          const auto& index = collection.threads().byId();
-                          auto it = index.find(threadId);
-                          if (it == index.end())
-                          {
-                              status = StatusCode::NOT_FOUND;
-                              return;
-                          }
-
-                          auto& thread = **it;
-
-                          if ( ! (status = threadAuthorization_->getDiscussionThreadById(currentUser, thread)))
-                          {
-                              return;
-                          }
-
-                          status.disable();
-
-                          JsonWriter writer(output);
-                          writer.startObject();
-
-                          writeDiscussionThreadMessageDefaultPrivilegeDurations(thread, writer);
-
-                          writer.endObject();
-
-                          readEvents().onGetDefaultPrivilegeDurationsFromThread(createObserverContext(currentUser), thread);
                       });
     return status;
 }
@@ -827,71 +792,8 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadRequiredPrivileg
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
-        IdTypeRef threadId, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType value, OutStream& output)
-{
-    StatusWriter status(output);
-    if ( ! threadId || ! isValidPrivilege(privilege) || ! isValidPrivilegeDuration(value))
-    {
-        return status = StatusCode::INVALID_PARAMETERS;
-    }
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().write([&](EntityCollection& collection)
-                       {
-                           auto currentUser = performedBy.getAndUpdate(collection);
-
-                           auto& indexById = collection.threads().byId();
-                           auto it = indexById.find(threadId);
-                           if (it == indexById.end())
-                           {
-                               status = StatusCode::NOT_FOUND;
-                               return;
-                           }
-
-                           const DiscussionThread& thread = **it;
-
-                           if ( ! (status = threadAuthorization_->updateDiscussionThreadMessageDefaultPrivilegeDuration(
-                                   *currentUser, thread, privilege, value)))
-                           {
-                               return;
-                           }
-
-                           writeEvents().changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
-                                   createObserverContext(*currentUser), thread, privilege, value);
-
-                           status = changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
-                                   collection, threadId, privilege, value);
-                       });
-    return status;
-}
-
-StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
-        EntityCollection& collection, IdTypeRef threadId, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType value)
-{
-    if ( ! threadId || ! isValidPrivilege(privilege) || ! isValidPrivilegeDuration(value))
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    auto& indexById = collection.threads().byId();
-    auto it = indexById.find(threadId);
-    if (it == indexById.end())
-    {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
-        return StatusCode::NOT_FOUND;
-    }
-
-    DiscussionThreadPtr thread = *it;
-    thread->setDiscussionThreadMessageDefaultPrivilegeDuration(privilege, value);
-
-    return StatusCode::OK;
-}
-
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
-        IdTypeRef threadId, IdTypeRef userId, PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration,
+        IdTypeRef threadId, IdTypeRef userId, PrivilegeValueIntType value, PrivilegeDurationIntType duration,
         OutStream& output)
 {
     StatusWriter status(output);
@@ -943,7 +845,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
 
 StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         EntityCollection& collection, IdTypeRef threadId, IdTypeRef userId, PrivilegeValueIntType value,
-        PrivilegeDefaultDurationIntType duration)
+        PrivilegeDurationIntType duration)
 {
     if ( ! threadId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
@@ -1017,45 +919,6 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForTag(IdTypeRef 
                           writer.endObject();
 
                           readEvents().onGetRequiredPrivilegesFromTag(createObserverContext(currentUser), tag);
-                      });
-    return status;
-}
-
-StatusCode MemoryRepositoryAuthorization::getDefaultPrivilegeDurationsForTag(IdTypeRef tagId, OutStream& output) const
-{
-    StatusWriter status(output);
-
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().read([&](const EntityCollection& collection)
-                      {
-                          auto& currentUser = performedBy.get(collection, *store_);
-
-                          const auto& index = collection.tags().byId();
-                          auto it = index.find(tagId);
-                          if (it == index.end())
-                          {
-                              status = StatusCode::NOT_FOUND;
-                              return;
-                          }
-
-                          auto& tag = **it;
-
-                          if ( ! (status = tagAuthorization_->getDiscussionTagById(currentUser, tag)))
-                          {
-                              return;
-                          }
-
-                          status.disable();
-
-                          JsonWriter writer(output);
-                          writer.startObject();
-
-                          writeDiscussionThreadMessageDefaultPrivilegeDurations(tag, writer);
-
-                          writer.endObject();
-
-                          readEvents().onGetDefaultPrivilegeDurationsFromTag(createObserverContext(currentUser), tag);
                       });
     return status;
 }
@@ -1288,71 +1151,8 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionTagRequiredPrivilegeFo
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
-        IdTypeRef tagId, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType value, OutStream& output)
-{
-    StatusWriter status(output);
-    if ( ! tagId || ! isValidPrivilege(privilege) || ! isValidPrivilegeDuration(value))
-    {
-        return status = StatusCode::INVALID_PARAMETERS;
-    }
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().write([&](EntityCollection& collection)
-                       {
-                           auto currentUser = performedBy.getAndUpdate(collection);
-
-                           auto& indexById = collection.tags().byId();
-                           auto it = indexById.find(tagId);
-                           if (it == indexById.end())
-                           {
-                               status = StatusCode::NOT_FOUND;
-                               return;
-                           }
-
-                           const DiscussionTag& tag = **it;
-
-                           if ( ! (status = tagAuthorization_->updateDiscussionThreadMessageDefaultPrivilegeDuration(
-                                   *currentUser, tag, privilege, value)))
-                           {
-                               return;
-                           }
-
-                           writeEvents().changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
-                                   createObserverContext(*currentUser), tag, privilege, value);
-
-                           status = changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
-                                   collection, tagId, privilege, value);
-                       });
-    return status;
-}
-
-StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
-        EntityCollection& collection, IdTypeRef tagId, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType value)
-{
-    if ( ! tagId || ! isValidPrivilege(privilege) || ! isValidPrivilegeDuration(value))
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    auto& indexById = collection.tags().byId();
-    auto it = indexById.find(tagId);
-    if (it == indexById.end())
-    {
-        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
-        return StatusCode::NOT_FOUND;
-    }
-
-    DiscussionTagPtr tag = *it;
-    tag->setDiscussionThreadMessageDefaultPrivilegeDuration(privilege, value);
-
-    return StatusCode::OK;
-}
-
 StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
-        IdTypeRef tagId, IdTypeRef userId, PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration,
+        IdTypeRef tagId, IdTypeRef userId, PrivilegeValueIntType value, PrivilegeDurationIntType duration,
         OutStream& output)
 {
     StatusWriter status(output);
@@ -1404,7 +1204,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
 
 StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
         EntityCollection& collection, IdTypeRef tagId, IdTypeRef userId, PrivilegeValueIntType value,
-        PrivilegeDefaultDurationIntType duration)
+        PrivilegeDurationIntType duration)
 {
     if ( ! tagId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
@@ -1583,7 +1383,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionCategoryRequiredPrivil
 }
 
 StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
-        IdTypeRef categoryId, IdTypeRef userId, PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration,
+        IdTypeRef categoryId, IdTypeRef userId, PrivilegeValueIntType value, PrivilegeDurationIntType duration,
         OutStream& output)
 {
     StatusWriter status(output);
@@ -1635,7 +1435,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
 
 StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
         EntityCollection& collection, IdTypeRef categoryId, IdTypeRef userId, PrivilegeValueIntType value,
-        PrivilegeDefaultDurationIntType duration)
+        PrivilegeDurationIntType duration)
 {
     if ( ! categoryId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
@@ -1731,7 +1531,7 @@ StatusCode MemoryRepositoryAuthorization::getForumWideRequiredPrivileges(OutStre
     return status;
 }
 
-StatusCode MemoryRepositoryAuthorization::getForumWideDefaultPrivilegeDurations(OutStream& output) const
+StatusCode MemoryRepositoryAuthorization::getForumWideDefaultPrivilegeLevels(OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -1747,12 +1547,11 @@ StatusCode MemoryRepositoryAuthorization::getForumWideDefaultPrivilegeDurations(
                           JsonWriter writer(output);
                           writer.startObject();
 
-                          writeForumWideDefaultPrivilegeDurations(collection, writer);
-                          writeDiscussionThreadMessageDefaultPrivilegeDurations(collection, writer);
+                          writeForumWideDefaultPrivilegeLevels(collection, writer);
 
                           writer.endObject();
 
-                          readEvents().onGetForumWideDefaultPrivilegeDurations(createObserverContext(currentUser));
+                          readEvents().onGetForumWideDefaultPrivilegeLevels(createObserverContext(currentUser));
                       });
     return status;
 }
@@ -2043,9 +1842,9 @@ StatusCode MemoryRepositoryAuthorization::changeForumWideRequiredPrivilege(
     return StatusCode::OK;
 }
 
-StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageDefaultPrivilegeDuration(
-        DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType value, OutStream& output)
+StatusCode MemoryRepositoryAuthorization::changeForumWideDefaultPrivilegeLevel(
+        ForumWideDefaultPrivilegeDuration privilege, PrivilegeValueIntType value, PrivilegeDurationIntType duration,
+        OutStream& output)
 {
     StatusWriter status(output);
     if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeDuration(value))
@@ -2058,79 +1857,40 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageDefaultPr
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           if ( ! (status = forumWideAuthorization_->updateDiscussionThreadMessageDefaultPrivilegeDuration(
-                                   *currentUser, privilege, value)))
+                           if ( ! (status = forumWideAuthorization_->updateForumWideDefaultPrivilegeLevel(
+                                   *currentUser, privilege, value, duration)))
                            {
                                return;
                            }
 
-                           writeEvents().changeDiscussionThreadMessageDefaultPrivilegeDurationForumWide(
-                                   createObserverContext(*currentUser), privilege, value);
+                           writeEvents().changeForumWideDefaultPrivilegeLevel(
+                                   createObserverContext(*currentUser), privilege, value, duration);
 
-                           status = changeDiscussionThreadMessageDefaultPrivilegeDuration(
-                                   collection, privilege, value);
+                           status = changeForumWideDefaultPrivilegeLevel(collection, privilege, value, duration);
                        });
     return status;
 }
 
-StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageDefaultPrivilegeDuration(
-        EntityCollection& collection, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType value)
-{
-    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeDuration(value))
-    {
-        return StatusCode::INVALID_PARAMETERS;
-    }
-
-    collection.setDiscussionThreadMessageDefaultPrivilegeDuration(privilege, value);
-
-    return StatusCode::OK;
-}
-
-StatusCode MemoryRepositoryAuthorization::changeForumWideDefaultPrivilegeDuration(
-        ForumWideDefaultPrivilegeDuration privilege, PrivilegeDefaultDurationIntType value, OutStream& output)
-{
-    StatusWriter status(output);
-    if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeDuration(value))
-    {
-        return status = StatusCode::INVALID_PARAMETERS;
-    }
-    PerformedByWithLastSeenUpdateGuard performedBy;
-
-    collection().write([&](EntityCollection& collection)
-                       {
-                           auto currentUser = performedBy.getAndUpdate(collection);
-
-                           if ( ! (status = forumWideAuthorization_->updateForumWideDefaultPrivilegeDuration(
-                                   *currentUser, privilege, value)))
-                           {
-                               return;
-                           }
-
-                           writeEvents().changeForumWideDefaultPrivilegeDuration(
-                                   createObserverContext(*currentUser), privilege, value);
-
-                           status = changeForumWideDefaultPrivilegeDuration(collection, privilege, value);
-                       });
-    return status;
-}
-
-StatusCode MemoryRepositoryAuthorization::changeForumWideDefaultPrivilegeDuration(
+StatusCode MemoryRepositoryAuthorization::changeForumWideDefaultPrivilegeLevel(
         EntityCollection& collection, ForumWideDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType value)
+        PrivilegeValueIntType value, PrivilegeDurationIntType duration)
 {
     if ( ! isValidPrivilege(privilege) || ! isValidPrivilegeDuration(value))
     {
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    collection.setForumWideDefaultPrivilegeDuration(privilege, value);
+    PrivilegeDefaultLevel level;
+    level.value = value;
+    level.duration = duration;
+
+    collection.setForumWideDefaultPrivilegeLevel(privilege, level);
 
     return StatusCode::OK;
 }
 
 StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
-        IdTypeRef userId, PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration, OutStream& output)
+        IdTypeRef userId, PrivilegeValueIntType value, PrivilegeDurationIntType duration, OutStream& output)
 {
     StatusWriter status(output);
     if ( ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
@@ -2172,7 +1932,7 @@ StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
 
 StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
         EntityCollection& collection, IdTypeRef userId, PrivilegeValueIntType value,
-        PrivilegeDefaultDurationIntType duration)
+        PrivilegeDurationIntType duration)
 {
     if ( ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {

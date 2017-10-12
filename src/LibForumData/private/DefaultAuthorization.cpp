@@ -783,18 +783,6 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
     return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
-
-AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessageDefaultPrivilegeDuration(
-        const User& currentUser, const DiscussionThread& thread, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType newValue) const
-{
-    if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
-
-    PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
-    return status;
-}
-
 AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const User& currentUser,
                                                                           const DiscussionThread& thread,
                                                                           const User& targetUser,
@@ -867,17 +855,6 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const Use
         return status;
     }
     return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
-}
-
-AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessageDefaultPrivilegeDuration(
-        const User& currentUser, const DiscussionTag& tag, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType newValue) const
-{
-    if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
-
-    PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
-    return status;
 }
 
 AuthorizationStatus DefaultAuthorization::assignDiscussionTagPrivilege(const User& currentUser,
@@ -1022,20 +999,9 @@ AuthorizationStatus DefaultAuthorization::updateForumWidePrivilege(const User& c
     return allowPrivilegeUpdate(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessageDefaultPrivilegeDuration(
-        const User& currentUser, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType newValue) const
-{
-    if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
-
-    PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
-    return status;
-}
-
-AuthorizationStatus DefaultAuthorization::updateForumWideDefaultPrivilegeDuration(
+AuthorizationStatus DefaultAuthorization::updateForumWideDefaultPrivilegeLevel(
         const User& currentUser, ForumWideDefaultPrivilegeDuration privilege,
-        PrivilegeDefaultDurationIntType newValue) const
+        PrivilegeValueIntType newValue, PrivilegeDurationIntType newDuration) const
 {
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 

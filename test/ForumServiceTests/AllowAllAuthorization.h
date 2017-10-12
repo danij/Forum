@@ -181,10 +181,6 @@ namespace Forum
                                                                 DiscussionThreadPrivilege privilege,
                                                                 PrivilegeValueType oldValue,
                                                                 PrivilegeValueIntType newValue) const override { return {}; }
-            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
-                    const Entities::User& currentUser, const Entities::DiscussionThread& thread,
-                    DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    PrivilegeDefaultDurationIntType newValue) const override { return {}; }
             AuthorizationStatus assignDiscussionThreadPrivilege(const Entities::User& currentUser,
                                                                 const Entities::DiscussionThread& thread,
                                                                 const Entities::User& targetUser,
@@ -209,10 +205,6 @@ namespace Forum
                                                              DiscussionTagPrivilege privilege,
                                                              PrivilegeValueType oldValue,
                                                              PrivilegeValueIntType newValue) const override { return {}; }
-            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
-                    const Entities::User& currentUser, const Entities::DiscussionTag& tag,
-                    DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    PrivilegeDefaultDurationIntType newValue) const override { return {}; }
             AuthorizationStatus assignDiscussionTagPrivilege(const Entities::User& currentUser,
                                                              const Entities::DiscussionTag& tag,
                                                              const Entities::User& targetUser,
@@ -249,12 +241,9 @@ namespace Forum
             AuthorizationStatus updateForumWidePrivilege(const Entities::User& currentUser,
                                                          ForumWidePrivilege privilege, PrivilegeValueType oldValue,
                                                          PrivilegeValueIntType newValue) const override { return {}; }
-            AuthorizationStatus updateDiscussionThreadMessageDefaultPrivilegeDuration(
-                    const Entities::User& currentUser, DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    PrivilegeDefaultDurationIntType newValue) const override { return {}; }
-            AuthorizationStatus updateForumWideDefaultPrivilegeDuration(
+            AuthorizationStatus updateForumWideDefaultPrivilegeLevel(
                     const Entities::User& currentUser, ForumWideDefaultPrivilegeDuration privilege,
-                    PrivilegeDefaultDurationIntType newValue) const override { return {}; }
+                    PrivilegeValueIntType newValue, PrivilegeDurationIntType newDuration) const override { return {}; }
             AuthorizationStatus assignForumWidePrivilege(const Entities::User& currentUser,
                                                          const Entities::User& targetUser,
                                                          PrivilegeValueIntType newValue) const override { return{}; }

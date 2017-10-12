@@ -23,14 +23,6 @@ PrivilegeValueType DiscussionTag::getDiscussionThreadPrivilege(DiscussionThreadP
     return forumWidePrivileges_.getDiscussionThreadPrivilege(privilege);
 }
 
-PrivilegeDefaultDurationType DiscussionTag::getDiscussionThreadMessageDefaultPrivilegeDuration(DiscussionThreadMessageDefaultPrivilegeDuration privilege) const
-{
-    auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadMessageDefaultPrivilegeDuration(privilege);
-    if (result) return result;
-
-    return forumWidePrivileges_.getDiscussionThreadMessageDefaultPrivilegeDuration(privilege);
-}
-
 PrivilegeValueType DiscussionTag::getDiscussionTagPrivilege(DiscussionTagPrivilege privilege) const
 {
     auto result = DiscussionTagPrivilegeStore::getDiscussionTagPrivilege(privilege);

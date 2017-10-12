@@ -1037,16 +1037,6 @@ void AuthorizationEndpoint::getRequiredPrivilegesForThread(Http::RequestState& r
     });
 }
 
-void AuthorizationEndpoint::getDefaultPrivilegeDurationsForThread(Http::RequestState& requestState)
-{
-    handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
-    {
-        parameters.push_back(requestState.extraPathParts[0]);
-        return commandHandler.handle(View::GET_DEFAULT_PRIVILEGE_DURATIONS_FOR_THREAD, parameters);
-    });
-}
-
 void AuthorizationEndpoint::getAssignedPrivilegesForThread(Http::RequestState& requestState)
 {
     handle(requestState,
@@ -1064,16 +1054,6 @@ void AuthorizationEndpoint::getRequiredPrivilegesForTag(Http::RequestState& requ
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_REQUIRED_PRIVILEGES_FOR_TAG, parameters);
-    });
-}
-
-void AuthorizationEndpoint::getDefaultPrivilegeDurationsForTag(Http::RequestState& requestState)
-{
-    handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
-    {
-        parameters.push_back(requestState.extraPathParts[0]);
-        return commandHandler.handle(View::GET_DEFAULT_PRIVILEGE_DURATIONS_FOR_TAG, parameters);
     });
 }
 
@@ -1125,12 +1105,12 @@ void AuthorizationEndpoint::getForumWideRequiredPrivileges(Http::RequestState& r
     });
 }
 
-void AuthorizationEndpoint::getForumWideDefaultPrivilegeDurations(Http::RequestState& requestState)
+void AuthorizationEndpoint::getForumWideDefaultPrivilegeLevels(Http::RequestState& requestState)
 {
     handle(requestState,
            [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
-        return commandHandler.handle(View::GET_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATIONS, parameters);
+        return commandHandler.handle(View::GET_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVELS, parameters);
     });
 }
 
@@ -1189,18 +1169,6 @@ void AuthorizationEndpoint::changeDiscussionThreadRequiredPrivilegeForThread(Htt
     });
 }
 
-void AuthorizationEndpoint::changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(Http::RequestState& requestState)
-{
-    handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
-    {
-        parameters.push_back(requestState.extraPathParts[0]);
-        parameters.push_back(requestState.extraPathParts[1]);
-        parameters.push_back(requestState.extraPathParts[2]);
-        return commandHandler.handle(Command::CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_THREAD, parameters);
-    });
-}
-
 void AuthorizationEndpoint::changeDiscussionThreadMessageRequiredPrivilegeForTag(Http::RequestState& requestState)
 {
     handle(requestState,
@@ -1234,18 +1202,6 @@ void AuthorizationEndpoint::changeDiscussionTagRequiredPrivilegeForTag(Http::Req
         parameters.push_back(requestState.extraPathParts[1]);
         parameters.push_back(requestState.extraPathParts[2]);
         return commandHandler.handle(Command::CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FOR_TAG, parameters);
-    });
-}
-
-void AuthorizationEndpoint::changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(Http::RequestState& requestState)
-{
-    handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
-    {
-        parameters.push_back(requestState.extraPathParts[0]);
-        parameters.push_back(requestState.extraPathParts[1]);
-        parameters.push_back(requestState.extraPathParts[2]);
-        return commandHandler.handle(Command::CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_TAG, parameters);
     });
 }
 
@@ -1316,25 +1272,15 @@ void AuthorizationEndpoint::changeForumWideRequiredPrivilege(Http::RequestState&
     });
 }
 
-void AuthorizationEndpoint::changeDiscussionThreadMessageDefaultPrivilegeDuration(Http::RequestState& requestState)
+void AuthorizationEndpoint::changeForumWideDefaultPrivilegeLevel(Http::RequestState& requestState)
 {
     handle(requestState,
            [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(requestState.extraPathParts[1]);
-        return commandHandler.handle(Command::CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION, parameters);
-    });
-}
-
-void AuthorizationEndpoint::changeForumWideDefaultPrivilegeDuration(Http::RequestState& requestState)
-{
-    handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
-    {
-        parameters.push_back(requestState.extraPathParts[0]);
-        parameters.push_back(requestState.extraPathParts[1]);
-        return commandHandler.handle(Command::CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATION, parameters);
+        parameters.push_back(requestState.extraPathParts[2]);
+        return commandHandler.handle(Command::CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVEL, parameters);
     });
 }
 

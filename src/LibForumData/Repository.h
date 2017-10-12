@@ -378,13 +378,12 @@ namespace Forum
 
             virtual StatusCode assignDiscussionThreadMessagePrivilege(
                     Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
                     OutStream& output) = 0;
             //
             //discussion thread
             //
             virtual StatusCode getRequiredPrivilegesForThread(Entities::IdTypeRef threadId, OutStream& output) const = 0;
-            virtual StatusCode getDefaultPrivilegeDurationsForThread(Entities::IdTypeRef threadId, OutStream& output) const = 0;
             virtual StatusCode getAssignedPrivilegesForThread(Entities::IdTypeRef threadId, OutStream& output) const = 0;
 
             virtual StatusCode changeDiscussionThreadMessageRequiredPrivilegeForThread(
@@ -394,19 +393,14 @@ namespace Forum
                     Entities::IdTypeRef threadId, Authorization::DiscussionThreadPrivilege privilege,
                     Authorization::PrivilegeValueIntType value, OutStream& output) = 0;
 
-            virtual StatusCode changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
-                    Entities::IdTypeRef threadId, Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) = 0;
-
             virtual StatusCode assignDiscussionThreadPrivilege(
                     Entities::IdTypeRef threadId, Entities::IdTypeRef userId,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
                     OutStream& output) = 0;
             //
             //discussion tag
             //
             virtual StatusCode getRequiredPrivilegesForTag(Entities::IdTypeRef tagId, OutStream& output) const = 0;
-            virtual StatusCode getDefaultPrivilegeDurationsForTag(Entities::IdTypeRef tagId, OutStream& output) const = 0;
             virtual StatusCode getAssignedPrivilegesForTag(Entities::IdTypeRef tagId, OutStream& output) const = 0;
 
             virtual StatusCode changeDiscussionThreadMessageRequiredPrivilegeForTag(
@@ -419,13 +413,9 @@ namespace Forum
                     Entities::IdTypeRef tagId, Authorization::DiscussionTagPrivilege privilege,
                     Authorization::PrivilegeValueIntType value, OutStream& output) = 0;
 
-            virtual StatusCode changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
-                    Entities::IdTypeRef tagId, Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) = 0;
-
             virtual StatusCode assignDiscussionTagPrivilege(
                     Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
                     OutStream& output) = 0;
             //
             //discussion category
@@ -439,14 +429,14 @@ namespace Forum
 
             virtual StatusCode assignDiscussionCategoryPrivilege(
                     Entities::IdTypeRef categoryId, Entities::IdTypeRef userId,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
                     OutStream& output) = 0;
             //
             //forum wide
             //
             virtual StatusCode getForumWideCurrentUserPrivileges(OutStream& output) const = 0;
             virtual StatusCode getForumWideRequiredPrivileges(OutStream& output) const = 0;
-            virtual StatusCode getForumWideDefaultPrivilegeDurations(OutStream& output) const = 0;
+            virtual StatusCode getForumWideDefaultPrivilegeLevels(OutStream& output) const = 0;
             virtual StatusCode getForumWideAssignedPrivileges(OutStream& output) const = 0;
             virtual StatusCode getForumWideAssignedPrivilegesForUser(Entities::IdTypeRef userId, OutStream& output) const = 0;
 
@@ -466,16 +456,14 @@ namespace Forum
                     Authorization::ForumWidePrivilege privilege,
                     Authorization::PrivilegeValueIntType value, OutStream& output) = 0;
 
-            virtual StatusCode changeDiscussionThreadMessageDefaultPrivilegeDuration(
-                    Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) = 0;
-            virtual StatusCode changeForumWideDefaultPrivilegeDuration(
+            virtual StatusCode changeForumWideDefaultPrivilegeLevel(
                     Authorization::ForumWideDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) = 0;
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
+                    OutStream& output) = 0;
 
             virtual StatusCode assignForumWidePrivilege(
                     Entities::IdTypeRef userId,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
                     OutStream& output) = 0;
         };
         typedef std::shared_ptr<IAuthorizationRepository> AuthorizationRepositoryRef;
@@ -496,7 +484,7 @@ namespace Forum
             virtual StatusCode assignDiscussionThreadMessagePrivilege(
                     Entities::EntityCollection& collection, Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
                     Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) = 0;
+                    Authorization::PrivilegeDurationIntType duration) = 0;
             //
             //discussion thread
             //
@@ -509,15 +497,10 @@ namespace Forum
                     Entities::IdTypeRef threadId, Authorization::DiscussionThreadPrivilege privilege,
                     Authorization::PrivilegeValueIntType value) = 0;
 
-            virtual StatusCode changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
-                    Entities::EntityCollection& collection,
-                    Entities::IdTypeRef threadId, Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value) = 0;
-
             virtual StatusCode assignDiscussionThreadPrivilege(
                     Entities::EntityCollection& collection, Entities::IdTypeRef threadId, Entities::IdTypeRef userId,
                     Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) = 0;
+                    Authorization::PrivilegeDurationIntType duration) = 0;
             //
             //discussion tag
             //
@@ -534,15 +517,10 @@ namespace Forum
                     Entities::IdTypeRef tagId, Authorization::DiscussionTagPrivilege privilege,
                     Authorization::PrivilegeValueIntType value) = 0;
 
-            virtual StatusCode changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
-                    Entities::EntityCollection& collection,
-                    Entities::IdTypeRef tagId, Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value) = 0;
-
             virtual StatusCode assignDiscussionTagPrivilege(
                     Entities::EntityCollection& collection, Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
                     Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) = 0;
+                    Authorization::PrivilegeDurationIntType duration) = 0;
             //
             //discussion category
             //
@@ -554,7 +532,7 @@ namespace Forum
             virtual StatusCode assignDiscussionCategoryPrivilege(
                     Entities::EntityCollection& collection, Entities::IdTypeRef categoryId, Entities::IdTypeRef userId,
                     Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) = 0;
+                    Authorization::PrivilegeDurationIntType duration) = 0;
             //
             //forum wide
             //
@@ -574,19 +552,15 @@ namespace Forum
                     Entities::EntityCollection& collection, Authorization::ForumWidePrivilege privilege,
                     Authorization::PrivilegeValueIntType value) = 0;
 
-            virtual StatusCode changeDiscussionThreadMessageDefaultPrivilegeDuration(
-                    Entities::EntityCollection& collection,
-                    Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value) = 0;
-            virtual StatusCode changeForumWideDefaultPrivilegeDuration(
+            virtual StatusCode changeForumWideDefaultPrivilegeLevel(
                     Entities::EntityCollection& collection,
                     Authorization::ForumWideDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value) = 0;
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration) = 0;
 
             virtual StatusCode assignForumWidePrivilege(
                     Entities::EntityCollection& collection, Entities::IdTypeRef userId,
                     Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) = 0;
+                    Authorization::PrivilegeDurationIntType duration) = 0;
         };
         typedef std::shared_ptr<IAuthorizationDirectWriteRepository> AuthorizationDirectWriteRepositoryRef;
 
