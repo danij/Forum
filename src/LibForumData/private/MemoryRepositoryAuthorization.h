@@ -135,7 +135,7 @@ namespace Forum
             StatusCode getForumWideRequiredPrivileges(OutStream& output) const override;
             StatusCode getForumWideDefaultPrivilegeLevels(OutStream& output) const override;
             StatusCode getForumWideAssignedPrivileges(OutStream& output) const override;
-            StatusCode getForumWideAssignedPrivilegesForUser(Entities::IdTypeRef id, OutStream& output) const override;
+            StatusCode getAssignedPrivilegesForUser(Entities::IdTypeRef id, OutStream& output) const override;
 
             StatusCode changeDiscussionThreadMessageRequiredPrivilege(
                     Authorization::DiscussionThreadMessagePrivilege privilege,

@@ -1123,13 +1123,13 @@ void AuthorizationEndpoint::getForumWideAssignedPrivileges(Http::RequestState& r
     });
 }
 
-void AuthorizationEndpoint::getForumWideAssignedPrivilegesForUser(Http::RequestState& requestState)
+void AuthorizationEndpoint::getAssignedPrivilegesForUser(Http::RequestState& requestState)
 {
     handle(requestState,
            [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
-        return commandHandler.handle(View::GET_FORUM_WIDE_ASSIGNED_PRIVILEGES_FOR_USER, parameters);
+        return commandHandler.handle(View::GET_ASSIGNED_PRIVILEGES_FOR_USER, parameters);
     });
 }
 

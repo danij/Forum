@@ -838,10 +838,10 @@ struct CommandHandler::CommandHandlerImpl
         return authorizationRepository->getForumWideAssignedPrivileges(output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_ASSIGNED_PRIVILEGES_FOR_USER )
+    COMMAND_HANDLER_METHOD( GET_ASSIGNED_PRIVILEGES_FOR_USER )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return authorizationRepository->getForumWideAssignedPrivilegesForUser(parameters[0], output);
+        return authorizationRepository->getAssignedPrivilegesForUser(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE )
@@ -1164,7 +1164,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_FORUM_WIDE_REQUIRED_PRIVILEGES);
     setViewHandler(GET_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVELS);
     setViewHandler(GET_FORUM_WIDE_ASSIGNED_PRIVILEGES);
-    setViewHandler(GET_FORUM_WIDE_ASSIGNED_PRIVILEGES_FOR_USER);
+    setViewHandler(GET_ASSIGNED_PRIVILEGES_FOR_USER);
 }
 
 CommandHandler::~CommandHandler()

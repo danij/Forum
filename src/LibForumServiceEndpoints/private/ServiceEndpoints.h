@@ -165,7 +165,8 @@ namespace Forum
             void getForumWideRequiredPrivileges(Http::RequestState& requestState);
             void getForumWideDefaultPrivilegeLevels(Http::RequestState& requestState);
             void getForumWideAssignedPrivileges(Http::RequestState& requestState);
-            void getForumWideAssignedPrivilegesForUser(Http::RequestState& requestState);
+
+            void getAssignedPrivilegesForUser(Http::RequestState& requestState);
 
             void changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(Http::RequestState& requestState);
             void changeDiscussionThreadMessageRequiredPrivilegeForThread(Http::RequestState& requestState);

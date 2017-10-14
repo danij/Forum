@@ -438,7 +438,7 @@ namespace Forum
             virtual StatusCode getForumWideRequiredPrivileges(OutStream& output) const = 0;
             virtual StatusCode getForumWideDefaultPrivilegeLevels(OutStream& output) const = 0;
             virtual StatusCode getForumWideAssignedPrivileges(OutStream& output) const = 0;
-            virtual StatusCode getForumWideAssignedPrivilegesForUser(Entities::IdTypeRef userId, OutStream& output) const = 0;
+            virtual StatusCode getAssignedPrivilegesForUser(Entities::IdTypeRef userId, OutStream& output) const = 0;
 
             virtual StatusCode changeDiscussionThreadMessageRequiredPrivilege(
                     Authorization::DiscussionThreadMessagePrivilege privilege,

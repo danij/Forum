@@ -1585,7 +1585,7 @@ StatusCode MemoryRepositoryAuthorization::getForumWideAssignedPrivileges(OutStre
     return status;
 }
 
-StatusCode MemoryRepositoryAuthorization::getForumWideAssignedPrivilegesForUser(IdTypeRef userId, OutStream& output) const
+StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForUser(IdTypeRef userId, OutStream& output) const
 {
     StatusWriter status(output);
 
