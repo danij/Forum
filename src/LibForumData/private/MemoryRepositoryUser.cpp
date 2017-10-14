@@ -332,6 +332,9 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& out
 
                           Json::JsonWriter writer(output);
                           writer.startObject();
+                          writer.newPropertyWithSafeName("lastRetrievedAt")
+                                  << user.voteHistoryLastRetrieved().exchange(static_cast<int64_t>(Context::getCurrentTime()));
+
                           writer.newPropertyWithSafeName("receivedVotes");
                           writer.startArray();
 
