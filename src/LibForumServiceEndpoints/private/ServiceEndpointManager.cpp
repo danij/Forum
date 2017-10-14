@@ -125,8 +125,8 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "privileges/forum_wide/current_user",  HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideCurrentUserPrivileges) },
         { "privileges/required/forum_wide",      HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideRequiredPrivileges) },
         { "privileges/defaults/forum_wide",      HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideDefaultPrivilegeLevels) },
-        { "privileges/assinged/forum_wide",      HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideAssignedPrivileges) },
-        { "privileges/assinged/forum_wide/user", HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideAssignedPrivilegesForUser) },
+        { "privileges/assigned/forum_wide",      HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideAssignedPrivileges) },
+        { "privileges/assigned/forum_wide/user", HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getForumWideAssignedPrivilegesForUser) },
 
         { "privileges/thread_message/required/thread_message", HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage) },
         { "privileges/thread_message/required/thread",         HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.changeDiscussionThreadMessageRequiredPrivilegeForThread) },
