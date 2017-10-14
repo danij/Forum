@@ -250,7 +250,18 @@ namespace Forum
             "change_any_user_name",
             "change_any_user_info",
             "delete_any_user",
-            "adjust_forum_wide_privilege"
+
+            "adjust_forum_wide_privilege",
+
+            "change_own_user_title",
+            "change_any_user_title",
+            "change_own_user_signature",
+            "change_any_user_signature",
+            "change_own_user_logo",
+            "change_any_user_logo",
+            "delete_own_user_logo",
+            "delete_any_user_logo",
+            "get_user_vote_history"
         };
 
         const ForumWidePrivilege ForumWidePrivilegesToSerialize[] =
