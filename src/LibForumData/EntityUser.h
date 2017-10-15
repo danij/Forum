@@ -6,6 +6,7 @@
 #include "EntityMessageCommentCollection.h"
 
 #include <atomic>
+#include <cstdint>
 #include <string>
 #include <set>
 
@@ -210,7 +211,7 @@ namespace Forum
 
             static constexpr size_t MaxVotesInHistory = 64;
             boost::circular_buffer_space_optimized<ReceivedVoteHistory> voteHistory_{ MaxVotesInHistory };
-            mutable std::atomic_int64_t voteHistoryLastRetrieved_{ 0 };
+            mutable std::atomic<int64_t> voteHistoryLastRetrieved_{ 0 };
         };
 
         typedef EntityPointer<User> UserPtr;
