@@ -919,6 +919,7 @@ void DiscussionCategoriesEndpoint::add(Http::RequestState& requestState)
            [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(Command::ADD_DISCUSSION_CATEGORY, parameters);
     });
 }
