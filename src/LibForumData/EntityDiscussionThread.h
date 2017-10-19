@@ -82,8 +82,6 @@ namespace Forum
                     Authorization::DiscussionThreadMessagePrivilege privilege) const override;
             Authorization::PrivilegeValueType getDiscussionThreadPrivilege(
                     Authorization::DiscussionThreadPrivilege privilege) const override;
-            Authorization::PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(
-                    Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege) const override;
 
             enum ChangeType : uint32_t
             {

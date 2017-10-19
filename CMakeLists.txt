@@ -38,3 +38,5 @@ add_subdirectory(src/ForumApp)
 
 add_subdirectory(test/ForumServiceTests)
 add_subdirectory(test/MemoryRepositoryBenchmarks)
+
+add_subdirectory(tools/MessageExtractor)

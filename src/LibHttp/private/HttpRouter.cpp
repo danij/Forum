@@ -46,7 +46,7 @@ static void writeNotFound(const HttpRequest& request, HttpResponseBuilder& respo
 
     static const char reply[] = "No resource was found for the provided path.";
 
-    response.writeBodyAndContentLength(reply, std::extent<decltype(reply)>::value - 1);
+    response.writeBodyAndContentLength(HttpStringView(reply, std::extent<decltype(reply)>::value - 1));
 }
 
 static uint8_t getFirstIndexForRoutes(const char* path, size_t length)

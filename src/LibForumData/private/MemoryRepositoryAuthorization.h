@@ -33,21 +33,18 @@ namespace Forum
                     Entities::IdTypeRef messageId, Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value) override;
 
-            StatusCode assignDiscussionThreadMessagePrivilegeForThreadMessage(
+            StatusCode assignDiscussionThreadMessagePrivilege(
                     Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadMessagePrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
                     OutStream& output) override;
-            StatusCode assignDiscussionThreadMessagePrivilegeForThreadMessage(
+            StatusCode assignDiscussionThreadMessagePrivilege(
                     Entities::EntityCollection& collection,Entities::IdTypeRef messageId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
+                    Authorization::PrivilegeDurationIntType duration) override;
             //
             //discussion thread
             //
             StatusCode getRequiredPrivilegesForThread(Entities::IdTypeRef threadId, OutStream& output) const override;
-            StatusCode getDefaultPrivilegeDurationsForThread(Entities::IdTypeRef threadId, OutStream& output) const override;
             StatusCode getAssignedPrivilegesForThread(Entities::IdTypeRef threadId, OutStream& output) const override;
 
             StatusCode changeDiscussionThreadMessageRequiredPrivilegeForThread(
@@ -65,39 +62,18 @@ namespace Forum
                     Entities::IdTypeRef threadId, Authorization::DiscussionThreadPrivilege privilege,
                     Authorization::PrivilegeValueIntType value) override;
 
-            StatusCode changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
-                    Entities::IdTypeRef threadId, Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) override;
-            StatusCode changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
-                    Entities::EntityCollection& collection,
-                    Entities::IdTypeRef threadId, Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value) override;
-
-            StatusCode assignDiscussionThreadMessagePrivilegeForThread(
+            StatusCode assignDiscussionThreadPrivilege(
                     Entities::IdTypeRef threadId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadMessagePrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
                     OutStream& output) override;
-            StatusCode assignDiscussionThreadMessagePrivilegeForThread(
+            StatusCode assignDiscussionThreadPrivilege(
                     Entities::EntityCollection& collection, Entities::IdTypeRef threadId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
-            StatusCode assignDiscussionThreadPrivilegeForThread(
-                    Entities::IdTypeRef threadId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
-                    OutStream& output) override;
-            StatusCode assignDiscussionThreadPrivilegeForThread(
-                    Entities::EntityCollection& collection, Entities::IdTypeRef threadId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
+                    Authorization::PrivilegeDurationIntType duration) override;
             //
             //discussion tag
             //
             StatusCode getRequiredPrivilegesForTag(Entities::IdTypeRef tagId, OutStream& output) const override;
-            StatusCode getDefaultPrivilegeDurationsForTag(Entities::IdTypeRef tagId, OutStream& output) const override;
             StatusCode getAssignedPrivilegesForTag(Entities::IdTypeRef tagId, OutStream& output) const override;
 
             StatusCode changeDiscussionThreadMessageRequiredPrivilegeForTag(
@@ -122,44 +98,14 @@ namespace Forum
                     Entities::IdTypeRef tagId, Authorization::DiscussionTagPrivilege privilege,
                     Authorization::PrivilegeValueIntType value) override;
 
-            StatusCode changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
-                    Entities::IdTypeRef tagId, Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) override;
-            StatusCode changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
-                    Entities::EntityCollection& collection,
-                    Entities::IdTypeRef tagId, Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value) override;
-
-            StatusCode assignDiscussionThreadMessagePrivilegeForTag(
+            StatusCode assignDiscussionTagPrivilege(
                     Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadMessagePrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
                     OutStream& output) override;
-            StatusCode assignDiscussionThreadMessagePrivilegeForTag(
+            StatusCode assignDiscussionTagPrivilege(
                     Entities::EntityCollection& collection, Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadMessagePrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
-            StatusCode assignDiscussionThreadPrivilegeForTag(
-                    Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
-                    OutStream& output) override;
-            StatusCode assignDiscussionThreadPrivilegeForTag(
-                    Entities::EntityCollection& collection, Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
-            StatusCode assignDiscussionTagPrivilegeForTag(
-                    Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionTagPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
-                    OutStream& output) override;
-            StatusCode assignDiscussionTagPrivilegeForTag(
-                    Entities::EntityCollection& collection, Entities::IdTypeRef tagId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionTagPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
+                    Authorization::PrivilegeDurationIntType duration) override;
             //
             //discussion category
             //
@@ -174,24 +120,22 @@ namespace Forum
                     Entities::IdTypeRef categoryId, Authorization::DiscussionCategoryPrivilege privilege,
                     Authorization::PrivilegeValueIntType value) override;
 
-            StatusCode assignDiscussionCategoryPrivilegeForCategory(
+            StatusCode assignDiscussionCategoryPrivilege(
                     Entities::IdTypeRef categoryId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionCategoryPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
                     OutStream& output) override;
-            StatusCode assignDiscussionCategoryPrivilegeForCategory(
+            StatusCode assignDiscussionCategoryPrivilege(
                     Entities::EntityCollection& collection, Entities::IdTypeRef categoryId, Entities::IdTypeRef userId,
-                    Authorization::DiscussionCategoryPrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
+                    Authorization::PrivilegeDurationIntType duration) override;
             //
             //forum wide
             //
             StatusCode getForumWideCurrentUserPrivileges(OutStream& output) const override;
             StatusCode getForumWideRequiredPrivileges(OutStream& output) const override;
-            StatusCode getForumWideDefaultPrivilegeDurations(OutStream& output) const override;
+            StatusCode getForumWideDefaultPrivilegeLevels(OutStream& output) const override;
             StatusCode getForumWideAssignedPrivileges(OutStream& output) const override;
-            StatusCode getForumWideAssignedPrivilegesForUser(Entities::IdTypeRef id, OutStream& output) const override;
+            StatusCode getAssignedPrivilegesForUser(Entities::IdTypeRef id, OutStream& output) const override;
 
             StatusCode changeDiscussionThreadMessageRequiredPrivilege(
                     Authorization::DiscussionThreadMessagePrivilege privilege,
@@ -224,66 +168,22 @@ namespace Forum
                     Entities::EntityCollection& collection, Authorization::ForumWidePrivilege privilege,
                     Authorization::PrivilegeValueIntType value) override;
 
-            StatusCode changeDiscussionThreadMessageDefaultPrivilegeDuration(
-                    Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) override;
-            StatusCode changeDiscussionThreadMessageDefaultPrivilegeDuration(
-                    Entities::EntityCollection& collection,
-                    Authorization::DiscussionThreadMessageDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value) override;
-            StatusCode changeForumWideDefaultPrivilegeDuration(
+            StatusCode changeForumWideDefaultPrivilegeLevel(
                     Authorization::ForumWideDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value, OutStream& output) override;
-            StatusCode changeForumWideDefaultPrivilegeDuration(
+                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
+                    OutStream& output) override;
+            StatusCode changeForumWideDefaultPrivilegeLevel(
                     Entities::EntityCollection& collection,
                     Authorization::ForumWideDefaultPrivilegeDuration privilege,
-                    Authorization::PrivilegeDefaultDurationIntType value) override;
+                Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration) override;
 
-            StatusCode assignDiscussionThreadMessagePrivilege(
-                    Entities::IdTypeRef userId, Authorization::DiscussionThreadMessagePrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
-                    OutStream& output) override;
-            StatusCode assignDiscussionThreadMessagePrivilege(
-                    Entities::EntityCollection& collection, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadMessagePrivilege privilege,
-                    Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
-            StatusCode assignDiscussionThreadPrivilege(
-                    Entities::IdTypeRef userId, Authorization::DiscussionThreadPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
-                    OutStream& output) override;
-            StatusCode assignDiscussionThreadPrivilege(
-                    Entities::EntityCollection& collection, Entities::IdTypeRef userId,
-                    Authorization::DiscussionThreadPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
-            StatusCode assignDiscussionTagPrivilege(
-                    Entities::IdTypeRef userId, Authorization::DiscussionTagPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
-                    OutStream& output) override;
-            StatusCode assignDiscussionTagPrivilege(
-                    Entities::EntityCollection& collection, Entities::IdTypeRef userId,
-                    Authorization::DiscussionTagPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
-            StatusCode assignDiscussionCategoryPrivilege(
-                    Entities::IdTypeRef userId, Authorization::DiscussionCategoryPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
-                    OutStream& output) override;
-            StatusCode assignDiscussionCategoryPrivilege(
-                    Entities::EntityCollection& collection, Entities::IdTypeRef userId,
-                    Authorization::DiscussionCategoryPrivilege privilege,
-                    Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
             StatusCode assignForumWidePrivilege(
-                    Entities::IdTypeRef userId, Authorization::ForumWidePrivilege privilege,
-                    Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDefaultDurationIntType duration,
-                    OutStream& output) override;
+                    Entities::IdTypeRef userId, Authorization::PrivilegeValueIntType value,
+                    Authorization::PrivilegeDurationIntType duration, OutStream& output) override;
             StatusCode assignForumWidePrivilege(
                     Entities::EntityCollection& collection, Entities::IdTypeRef userId,
-                    Authorization::ForumWidePrivilege privilege,
                     Authorization::PrivilegeValueIntType value,
-                    Authorization::PrivilegeDefaultDurationIntType duration) override;
+                    Authorization::PrivilegeDurationIntType duration) override;
         private:
             static void writeDiscussionThreadMessageRequiredPrivileges(
                     const Authorization::DiscussionThreadMessagePrivilegeStore& store, Json::JsonWriter& writer);
@@ -296,9 +196,7 @@ namespace Forum
             static void writeForumWideRequiredPrivileges(
                     const Authorization::ForumWidePrivilegeStore& store, Json::JsonWriter& writer);
 
-            static void writeDiscussionThreadMessageDefaultPrivilegeDurations(
-                    const Authorization::DiscussionThreadPrivilegeStore& store, Json::JsonWriter& writer);
-            static void writeForumWideDefaultPrivilegeDurations(
+            static void writeForumWideDefaultPrivilegeLevels(
                     const Authorization::ForumWidePrivilegeStore& store, Json::JsonWriter& writer);
 
             static void writeDiscussionThreadMessageAssignedPrivileges(const Entities::EntityCollection& collection,

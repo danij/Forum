@@ -96,15 +96,26 @@ struct BenchmarkContext
     DirectWriteRepositoryCollection writeRepositories;
     std::string importFromFolder;
     std::string exportToFolder;
+    std::string messagesFile;
     bool onlyPopulateData{ false };
     bool promptBeforeStart{ false };
     bool promptBeforeBenchmark{ false };
     bool abortOnExit{ false };
+    int parseCommandLineResult{};
 };
 
-BenchmarkContext createContext()
+int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]);
+
+BenchmarkContext createContext(int argc, const char* argv[])
 {
-    auto entityCollection = std::make_shared<Entities::EntityCollection>();
+    BenchmarkContext context;
+    context.parseCommandLineResult = parseCommandLineArgs(context, argc, argv);
+    if (context.parseCommandLineResult)
+    {
+        return context;
+    }
+
+    auto entityCollection = std::make_shared<Entities::EntityCollection>(context.messagesFile);
     auto store = std::make_shared<MemoryStore>(entityCollection);
 
     auto authorization = std::make_shared<DefaultAuthorization>(entityCollection->grantedPrivileges(),
@@ -114,14 +125,14 @@ BenchmarkContext createContext()
         store, authorization, authorization, authorization, authorization, authorization);
 
     auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization, authorizationRepository);
-    auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization);
+    auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization,
+                                                                                         authorizationRepository);
     auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, authorization);
     auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
     auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store, authorization);
     auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store, authorization);
     auto metricsRepository = std::make_shared<MetricsRepository>(store, authorization);
 
-    BenchmarkContext context;
 
     context.entityCollection = entityCollection;
     context.observableRepository = userRepository;
@@ -137,6 +148,12 @@ BenchmarkContext createContext()
     context.writeRepositories.discussionCategory = discussionCategoryRepository;
     context.writeRepositories.authorization = authorizationRepository;
 
+    if (context.exportToFolder.size() > 0)
+    {
+        context.persistenceObserver = std::make_shared<EventObserver>(context.observableRepository->readEvents(),
+                                                                      context.observableRepository->writeEvents(),
+                                                                      context.exportToFolder, 3600);
+    }
     return context;
 }
 
@@ -219,7 +236,8 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
         ("promptBeforeBenchmark,p", "Prompt the user to continue before starting the benchmark")
         ("abort,a", "Abort on exit to prevent calling destructors")
         ("import-folder,i", boost::program_options::value<std::string>(), "Import events from folder")
-        ("export-folder,e", boost::program_options::value<std::string>(), "Export events to folder");
+        ("export-folder,e", boost::program_options::value<std::string>(), "Export events to folder")
+        ("messages-file,m", boost::program_options::value<std::string>(), "Map messages from file");
 
     boost::program_options::variables_map arguments;
 
@@ -253,12 +271,11 @@ int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]
     if (arguments.count("export-folder"))
     {
         context.exportToFolder = arguments["export-folder"].as<std::string>();
-        if (context.exportToFolder.size() > 0)
-        {
-            context.persistenceObserver = std::make_shared<EventObserver>(context.observableRepository->readEvents(),
-                                                                          context.observableRepository->writeEvents(),
-                                                                          context.exportToFolder, 3600);
-        }
+    }
+
+    if (arguments.count("messages-file"))
+    {
+        context.messagesFile = arguments["messages-file"].as<std::string>();
     }
 
     return 0;
@@ -268,11 +285,10 @@ int main(int argc, const char* argv[])
 {
     CleanupFixture _;
 
-    auto context = createContext();
-    int parseCommandLineResult = parseCommandLineArgs(context, argc, argv);
-    if (parseCommandLineResult)
+    auto context = createContext(argc, argv);
+    if (context.parseCommandLineResult)
     {
-        return parseCommandLineResult;
+        return context.parseCommandLineResult;
     }
     showEntitySizes();
 
@@ -577,7 +593,10 @@ void generateRandomData(BenchmarkContext& context)
 void importPersistedData(BenchmarkContext& context)
 {
     EventImporter importer(false, *context.entityCollection, context.writeRepositories);
-    importer.import(context.importFromFolder);
+    if ( ! importer.import(context.importFromFolder).success)
+    {
+        std::abort();
+    }
 
     //fill context ids as they are needed by doBenchmarks()
     for (auto& user : context.entityCollection->users().byId())
@@ -816,19 +835,19 @@ void doBenchmarks(BenchmarkContext& context)
     }
     std::cout << '\n';
 
-    std::cout << "Get first page of discussion threads of category by name: ";
-    for (int i = 0; i < retries; ++i)
-    {
-        Context::getMutableDisplayContext().pageNumber = 0;
-        Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
+    //std::cout << "Get first page of discussion threads of category by name: ";
+    //for (int i = 0; i < retries; ++i)
+    //{
+    //    Context::getMutableDisplayContext().pageNumber = 0;
+    //    Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
 
-        std::cout << countDuration([&]()
-        {
-            execute(handler, View::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
-                    { categoryIds[categoryIdDistribution(randomGenerator)] });
-        }) << " ";
-    }
-    std::cout << '\n';
+    //    std::cout << countDuration([&]()
+    //    {
+    //        execute(handler, View::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
+    //                { categoryIds[categoryIdDistribution(randomGenerator)] });
+    //    }) << " ";
+    //}
+    //std::cout << '\n';
 
     std::cout << "Get first page of discussion thread messages of user by created: ";
     for (int i = 0; i < retries; ++i)

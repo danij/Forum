@@ -31,6 +31,8 @@ namespace Forum
             uint_fast32_t maxLogoBinarySize = 32768;
             uint_fast32_t maxLogoWidth = 128;
             uint_fast32_t maxLogoHeight = 128;
+            int16_t defaultPrivilegeValueForLoggedInUser = 1;
+            uint_fast32_t resetVoteExpiresInSeconds = 3600;
         };
 
         struct DiscussionThreadConfig
@@ -82,6 +84,7 @@ namespace Forum
             bool trustIpFromXForwardedFor = false;
             bool disableCommands = false;
             bool disableCommandsForAnonymousUsers = false;
+            std::string responsePrefix = "";
         };
 
         struct LoggingConfig
@@ -93,6 +96,7 @@ namespace Forum
         {
             std::string inputFolder = "";
             std::string outputFolder = "";
+            std::string messagesFile = "";
             bool validateChecksum = true;
             int_fast32_t createNewOutputFileEverySeconds = 3600 * 24;
         };

@@ -9,6 +9,7 @@
 #include <map>
 
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 
 namespace Forum
 {
@@ -87,6 +88,27 @@ namespace Forum
             {
                 static const VoteCollection emptyVoteCollection;
                 return Helpers::toConst(downVotes_ ? *downVotes_ : emptyVoteCollection);
+            }
+
+            boost::optional<Timestamp> votedAt(EntityPointer<User> user) const
+            {
+                if (upVotes_)
+                {
+                    auto it = upVotes_->find(user);
+                    if (it != upVotes_->end())
+                    {
+                        return it->second;
+                    }
+                }
+                if (downVotes_)
+                {
+                    auto it = downVotes_->find(user);
+                    if (it != downVotes_->end())
+                    {
+                        return it->second;
+                    }
+                }
+                return{};
             }
 
             auto voteScore() const

@@ -26,7 +26,7 @@ namespace Forum
                                        private boost::noncopyable
         {
         public:
-            EntityCollection();
+            EntityCollection(StringView messagesFile);
             ~EntityCollection();
 
             const Authorization::GrantedPrivilegeStore& grantedPrivileges() const;
@@ -38,6 +38,8 @@ namespace Forum
             std::unique_ptr<DiscussionTag>*           getDiscussionTagPoolRoot();
             std::unique_ptr<DiscussionCategory>*      getDiscussionCategoryPoolRoot();
             std::unique_ptr<MessageComment>*          getMessageCommentPoolRoot();
+
+            StringView getMessageContentPointer(size_t offset, size_t size);
 
             UserPtr                    createUser(IdType id, User::NameType&& name, Timestamp created,
                                                   VisitDetails creationDetails);

@@ -25,7 +25,11 @@
 #include <fstream>
 #include <iostream>
 
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/filter_parser.hpp>
+#include <boost/log/utility/setup/formatter_parser.hpp>
 #include <boost/log/utility/setup/from_stream.hpp>
+
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -178,7 +182,8 @@ void Application::validateConfiguration()
 
 void Application::createCommandHandler()
 {
-    entityCollection_ = std::make_shared<Entities::EntityCollection>();
+    auto config = Configuration::getGlobalConfig();
+    entityCollection_ = std::make_shared<Entities::EntityCollection>(config->persistence.messagesFile);
 
     auto store = std::make_shared<MemoryStore>(entityCollection_);
     auto authorization = std::make_shared<DefaultAuthorization>(entityCollection_->grantedPrivileges(), *entityCollection_);
@@ -187,7 +192,8 @@ void Application::createCommandHandler()
             store, authorization, authorization, authorization, authorization, authorization);
 
     auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization, authorizationRepository);
-    auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization);
+    auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization,
+                                                                                         authorizationRepository);
     auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, authorization);
     auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
     auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store, authorization);
@@ -289,6 +295,9 @@ void Application::initializeLogging()
     }
     try
     {
+        boost::log::add_common_attributes();
+        boost::log::register_simple_formatter_factory<boost::log::trivial::severity_level, char>("Severity");
+        boost::log::register_simple_filter_factory<boost::log::trivial::severity_level>("Severity");
         boost::log::init_from_stream(file);
     }
     catch(std::exception& ex)

@@ -229,19 +229,30 @@ void HttpResponseBuilder::writeCookie(HttpStringView name, HttpStringView value,
     write(extraBuffer, buffer - extraBuffer);
 }
 
-void HttpResponseBuilder::writeBody(const char* value, size_t length)
+void HttpResponseBuilder::writeBody(HttpStringView value)
+{
+    writeBody(value, {});
+}
+
+void HttpResponseBuilder::writeBody(HttpStringView value, HttpStringView prefix)
 {
     assert(ProtocolState::ResponseCodeWritten == protocolState_);
 
     write("\r\n");
-    write(value, length);
+    write(prefix.data(), prefix.size());
+    write(value.data(), value.size());
 
     protocolState_ = ProtocolState::BodyWritten;
 }
 
-void HttpResponseBuilder::writeBodyAndContentLength(const char* value, size_t length)
+void HttpResponseBuilder::writeBodyAndContentLength(HttpStringView value)
+{
+    writeBodyAndContentLength(value, {});
+}
+
+void HttpResponseBuilder::writeBodyAndContentLength(HttpStringView value, HttpStringView prefix)
 {
     assert(ProtocolState::ResponseCodeWritten == protocolState_);
-    writeHeader("Content-Length", static_cast<int>(length));
-    writeBody(value, length);
+    writeHeader("Content-Length", static_cast<int>(value.size() + prefix.size()));
+    writeBody(value, prefix);
 }

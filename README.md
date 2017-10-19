@@ -3,7 +3,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/danij/Forum/badge.svg?branch=master)](https://coveralls.io/github/danij/Forum?branch=master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/13668/badge.svg)](https://scan.coverity.com/projects/danij-forum) 
 
-
 Cross-platform backend software for providing a discussion forum. 
 
 ## Feature Overview
@@ -37,6 +36,8 @@ Supporting HATEOAS is not among the goals of the application.
   
 Serving static files will not be among the responsibilities of the backend service, but of dedicated HTTPDs. 
 These can then also be set up to forward API requests to the service via reverse proxy.
+
+[API Documentation](doc/API.md)
 
 ### Persistence
 

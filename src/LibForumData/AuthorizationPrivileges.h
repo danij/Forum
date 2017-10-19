@@ -66,22 +66,6 @@ namespace Forum
             DiscussionThreadMessagePrivilege::DELETE
         };
 
-        enum class DiscussionThreadMessageDefaultPrivilegeDuration : EnumIntType
-        {
-            RESET_VOTE,
-            CHANGE_CONTENT,
-            DELETE,
-
-            COUNT
-        };
-
-        const StringView DiscussionThreadMessageDefaultPrivilegeDurationStrings[] =
-        {
-            "reset_vote",
-            "change_content",
-            "delete"
-        };
-
         enum class DiscussionThreadPrivilege : EnumIntType
         {
             VIEW,
@@ -266,7 +250,18 @@ namespace Forum
             "change_any_user_name",
             "change_any_user_info",
             "delete_any_user",
-            "adjust_forum_wide_privilege"
+
+            "adjust_forum_wide_privilege",
+
+            "change_own_user_title",
+            "change_any_user_title",
+            "change_own_user_signature",
+            "change_any_user_signature",
+            "change_own_user_logo",
+            "change_any_user_logo",
+            "delete_own_user_logo",
+            "delete_any_user_logo",
+            "get_user_vote_history"
         };
 
         const ForumWidePrivilege ForumWidePrivilegesToSerialize[] =
@@ -297,16 +292,14 @@ namespace Forum
 
         enum class ForumWideDefaultPrivilegeDuration : EnumIntType
         {
-            CHANGE_DISCUSSION_THREAD_NAME,
-            DELETE_DISCUSSION_THREAD,
+            CREATE_DISCUSSION_THREAD,
 
             COUNT
         };
 
         const StringView ForumWideDefaultPrivilegeDurationStrings[] =
         {
-            "change_discussion_thread_name",
-            "delete_discussion_thread"
+            "create_discussion_thread"
         };
 
         enum class UserActionThrottling : EnumIntType
@@ -331,12 +324,19 @@ namespace Forum
 
         typedef int16_t PrivilegeValueIntType;
         typedef boost::optional<PrivilegeValueIntType> PrivilegeValueType;
-        typedef time_t PrivilegeDefaultDurationIntType;
-        typedef boost::optional<PrivilegeDefaultDurationIntType> PrivilegeDefaultDurationType;
+        typedef time_t PrivilegeDurationIntType;
+
+        struct PrivilegeDefaultLevel
+        {
+            PrivilegeValueIntType value;
+            PrivilegeDurationIntType duration;
+        };
+
+        typedef boost::optional<PrivilegeDefaultLevel> PrivilegeDefaultLevelType;
 
         static constexpr PrivilegeValueIntType MinPrivilegeValue = -32000;
         static constexpr PrivilegeValueIntType MaxPrivilegeValue = 32000;
-        static constexpr PrivilegeDefaultDurationIntType UnlimitedDuration = 0;
+        static constexpr PrivilegeDurationIntType UnlimitedDuration = 0;
 
         template<typename T>
         T optionalOrZero(boost::optional<T> value)
@@ -398,36 +398,17 @@ namespace Forum
             return maximumPrivilegeValue(*first, second);
         }
 
-
-        inline PrivilegeDefaultDurationType minimumPrivilegeDefaultDuration(PrivilegeDefaultDurationType first,
-                                                                            PrivilegeDefaultDurationType second)
+        inline PrivilegeDurationIntType calculatePrivilegeExpires(PrivilegeDurationIntType start,
+                                                                         PrivilegeDurationIntType duration)
         {
-            if ( ! first) return second;
-            if ( ! second) return first;
-
-            return std::min(*first, *second);
-        }
-
-        inline PrivilegeDefaultDurationType maximumPrivilegeDefaultDuration(PrivilegeDefaultDurationType first,
-                                                                            PrivilegeDefaultDurationType second)
-        {
-            if ( ! first) return second;
-            if ( ! second) return first;
-
-            return std::max(*first, *second);
-        }
-
-        inline PrivilegeDefaultDurationIntType calculatePrivilegeExpires(PrivilegeDefaultDurationIntType start,
-                                                                         PrivilegeDefaultDurationIntType duration)
-        {
-            static_assert(sizeof(PrivilegeDefaultDurationIntType) >= 8, "PrivilegeDefaultDurationIntType should be at least 64-bit wide");
+            static_assert(sizeof(PrivilegeDurationIntType) >= 8, "PrivilegeDurationIntType should be at least 64-bit wide");
 
             if (duration == UnlimitedDuration)
             {
                 return 0;
             }
 
-            constexpr auto maxHalf = std::numeric_limits<PrivilegeDefaultDurationIntType>::max() / 2;
+            constexpr auto maxHalf = std::numeric_limits<PrivilegeDurationIntType>::max() / 2;
             assert(start >= 0);
             assert(start < maxHalf);
 
@@ -492,32 +473,9 @@ namespace Forum
                 return{};
             }
 
-            void setDiscussionThreadMessageDefaultPrivilegeDuration(
-                    DiscussionThreadMessageDefaultPrivilegeDuration privilege, PrivilegeDefaultDurationIntType value)
-            {
-                if (privilege < DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)
-                {
-                    discussionThreadMessageDefaultPrivilegeDuration_[static_cast<EnumIntType>(privilege)] = value;
-                }
-            }
-
-            virtual PrivilegeDefaultDurationType getDiscussionThreadMessageDefaultPrivilegeDuration(
-                    DiscussionThreadMessageDefaultPrivilegeDuration privilege) const
-            {
-                if (privilege < DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)
-                {
-                    return discussionThreadMessageDefaultPrivilegeDuration_[static_cast<EnumIntType>(privilege)];
-                }
-                return{};
-            }
-
         private:
             PrivilegeValueType discussionThreadPrivileges_
                 [static_cast<EnumIntType>(DiscussionThreadPrivilege::COUNT)];
-            //default privilege durations for messages are stored on the parent thread
-            //as the messages don't have settings the moment they are created
-            PrivilegeDefaultDurationType discussionThreadMessageDefaultPrivilegeDuration_
-                [static_cast<EnumIntType>(DiscussionThreadMessageDefaultPrivilegeDuration::COUNT)];
         };
 
         struct DiscussionTagPrivilegeStore : public DiscussionThreadPrivilegeStore
@@ -593,8 +551,8 @@ namespace Forum
                 return{};
             }
 
-            void setForumWideDefaultPrivilegeDuration(ForumWideDefaultPrivilegeDuration privilege,
-                                                      PrivilegeDefaultDurationIntType value)
+            void setForumWideDefaultPrivilegeLevel(ForumWideDefaultPrivilegeDuration privilege,
+                                                   PrivilegeDefaultLevel value)
             {
                 if (privilege < ForumWideDefaultPrivilegeDuration::COUNT)
                 {
@@ -602,7 +560,7 @@ namespace Forum
                 }
             }
 
-            virtual PrivilegeDefaultDurationType getForumWideDefaultPrivilegeDuration(
+            virtual PrivilegeDefaultLevelType getForumWideDefaultPrivilegeLevel(
                     ForumWideDefaultPrivilegeDuration privilege) const
             {
                 if (privilege < ForumWideDefaultPrivilegeDuration::COUNT)
@@ -614,7 +572,7 @@ namespace Forum
 
         private:
             PrivilegeValueType forumWidePrivileges_[static_cast<EnumIntType>(ForumWidePrivilege::COUNT)];
-            PrivilegeDefaultDurationType forumWideDefaultPrivilegeDuration_
+            PrivilegeDefaultLevelType forumWideDefaultPrivilegeDuration_
                 [static_cast<EnumIntType>(ForumWideDefaultPrivilegeDuration::COUNT)];
         };
     }

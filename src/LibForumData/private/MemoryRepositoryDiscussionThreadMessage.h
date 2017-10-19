@@ -20,6 +20,10 @@ namespace Forum
             StatusWithResource<Entities::DiscussionThreadMessagePtr>
                 addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
                                                 Entities::IdTypeRef threadId, StringView content) override;
+            StatusWithResource<Entities::DiscussionThreadMessagePtr>
+                addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
+                                                Entities::IdTypeRef threadId, size_t contentSize,
+                                                size_t contentOffset) override;
             StatusCode deleteDiscussionMessage(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode deleteDiscussionMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
             StatusCode changeDiscussionThreadMessageContent(Entities::IdTypeRef id, StringView newContent,
@@ -58,6 +62,11 @@ namespace Forum
             StatusCode setMessageCommentToSolved(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
         private:
+            StatusWithResource<Entities::DiscussionThreadMessagePtr>
+                addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
+                                                Entities::IdTypeRef threadId, StringView content,
+                                                size_t contentSize, size_t contentOffset);
+
             StatusCode voteDiscussionThreadMessage(Entities::IdTypeRef id, OutStream& output, bool up);
             StatusCode voteDiscussionThreadMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id, bool up);
 

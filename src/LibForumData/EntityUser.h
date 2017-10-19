@@ -5,6 +5,8 @@
 #include "EntityDiscussionThreadMessageCollection.h"
 #include "EntityMessageCommentCollection.h"
 
+#include <atomic>
+#include <cstdint>
 #include <string>
 #include <set>
 
@@ -140,7 +142,8 @@ namespace Forum
                 if ( ! messageComments_) messageComments_.reset(new MessageCommentCollection);
                 return *messageComments_;
             }
-            auto& voteHistory() { return voteHistory_; }
+            auto& voteHistory()                    { return voteHistory_; }
+            auto& voteHistoryLastRetrieved() const { return voteHistoryLastRetrieved_; }
 
             void updateAuth(std::string&& value)
             {
@@ -208,6 +211,7 @@ namespace Forum
 
             static constexpr size_t MaxVotesInHistory = 64;
             boost::circular_buffer_space_optimized<ReceivedVoteHistory> voteHistory_{ MaxVotesInHistory };
+            mutable std::atomic<int64_t> voteHistoryLastRetrieved_{ 0 };
         };
 
         typedef EntityPointer<User> UserPtr;

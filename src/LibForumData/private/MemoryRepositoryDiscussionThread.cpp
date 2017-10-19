@@ -19,12 +19,18 @@ using namespace Forum::Repository;
 using namespace Forum::Authorization;
 
 MemoryRepositoryDiscussionThread::MemoryRepositoryDiscussionThread(MemoryStoreRef store,
-                                                                   DiscussionThreadAuthorizationRef authorization)
-    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization))
+                                                                   DiscussionThreadAuthorizationRef authorization,
+                                                                   AuthorizationDirectWriteRepositoryRef authorizationDirectWriteRepository)
+    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization)),
+      authorizationDirectWriteRepository_(std::move(authorizationDirectWriteRepository))
 {
     if ( ! authorization_)
     {
         throw std::runtime_error("Authorization implementation not provided");
+    }
+    if ( ! authorizationDirectWriteRepository_)
+    {
+        throw std::runtime_error("Authorization direct write repository implementation not provided");
     }
 }
 
@@ -377,16 +383,29 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
                            }
 
                            auto statusWithResource = addNewDiscussionThread(collection, generateUniqueId(), name);
-                           auto& thread = statusWithResource.resource;
+                           auto& thread = *statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
-                           writeEvents().onAddNewDiscussionThread(createObserverContext(*currentUser), *thread);
+                           writeEvents().onAddNewDiscussionThread(createObserverContext(*currentUser), thread);
+
+                           auto levelToGrant = collection.getForumWideDefaultPrivilegeLevel(
+                                   ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD);
+                           if (levelToGrant)
+                           {
+                               auto value = levelToGrant->value;
+                               auto duration = levelToGrant->duration;
+
+                               authorizationDirectWriteRepository_->assignDiscussionThreadPrivilege(
+                                       collection, thread.id(), currentUser->id(), value, duration);
+                               writeEvents().assignDiscussionThreadPrivilege(
+                                       createObserverContext(*currentUser), thread, *currentUser, value, duration);
+                           }
 
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer << Json::propertySafeName("id", thread->id());
-                                               writer << Json::propertySafeName("name", thread->name().string());
-                                               writer << Json::propertySafeName("created", thread->created());
+                                               writer << Json::propertySafeName("id", thread.id());
+                                               writer << Json::propertySafeName("name", thread.name().string());
+                                               writer << Json::propertySafeName("created", thread.created());
                                            });
                        });
     return status;
@@ -404,41 +423,6 @@ StatusWithResource<DiscussionThreadPtr> MemoryRepositoryDiscussionThread::addNew
 
     collection.insertDiscussionThread(thread);
     currentUser->threads().add(thread);
-
-    //add privileges for the user that created the message
-    auto changePrivilegeDuration = optionalOrZero(collection.getForumWideDefaultPrivilegeDuration(
-            ForumWideDefaultPrivilegeDuration::CHANGE_DISCUSSION_THREAD_NAME));
-
-    if (changePrivilegeDuration > 0)
-    {
-        auto privilege = DiscussionThreadPrivilege::CHANGE_NAME;
-        auto valueNeeded = optionalOrZero(collection.getDiscussionThreadPrivilege(privilege));
-
-        if (valueNeeded > 0)
-        {
-            auto expiresAt = calculatePrivilegeExpires(thread->created(), changePrivilegeDuration);
-
-            collection.grantedPrivileges().grantDiscussionThreadPrivilege(
-                currentUser->id(), thread->id(), privilege, valueNeeded, expiresAt);
-        }
-    }
-
-    auto deletePrivilegeDuration = optionalOrZero(
-            collection.getForumWideDefaultPrivilegeDuration(
-                    ForumWideDefaultPrivilegeDuration::DELETE_DISCUSSION_THREAD));
-    if (deletePrivilegeDuration > 0)
-    {
-        auto privilege = DiscussionThreadPrivilege::DELETE;
-        auto valueNeeded = optionalOrZero(collection.getDiscussionThreadPrivilege(privilege));
-
-        if (valueNeeded)
-        {
-            auto expiresAt = calculatePrivilegeExpires(thread->created(), changePrivilegeDuration);
-
-            collection.grantedPrivileges().grantDiscussionThreadPrivilege(
-                currentUser->id(), thread->id(), privilege, valueNeeded, expiresAt);
-        }
-    }
 
     return thread;
 }

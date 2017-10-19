@@ -1,10 +1,15 @@
 #include "EntityCollection.h"
 #include "VectorWithFreeQueue.h"
 
+#include "Configuration.h"
 #include "StateHelpers.h"
 #include "ContextProviders.h"
+#include "Logging.h"
 
 #include <future>
+
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 
 using namespace Forum::Authorization;
 using namespace Forum::Entities;
@@ -42,6 +47,36 @@ struct EntityCollection::Impl
     GrantedPrivilegeStore grantedPrivileges_;
 
     bool batchInsertInProgress_{ false };
+
+    boost::interprocess::file_mapping messagesFileMapping_;
+    boost::interprocess::mapped_region messagesFileRegion_;
+    const char* messagesFileStart_{ nullptr };
+    size_t messagesFileSize_{};
+
+    Impl(StringView messagesFile)
+    {
+        if (messagesFile.size())
+        {
+            try
+            {
+                auto mappingMode = boost::interprocess::read_only;
+                boost::interprocess::file_mapping mapping(messagesFile.data(), mappingMode);
+                boost::interprocess::mapped_region region(mapping, mappingMode);
+                region.advise(boost::interprocess::mapped_region::advice_sequential);
+
+                messagesFileStart_ = reinterpret_cast<const char*>(region.get_address());
+                messagesFileSize_ = region.get_size();
+
+                messagesFileMapping_ = std::move(mapping);
+                messagesFileRegion_ = std::move(region);
+            }
+            catch (boost::interprocess::interprocess_exception& ex)
+            {
+                FORUM_LOG_ERROR << "Error mapping messages file: " << messagesFile << " (" << ex.what() << ')';
+                std::abort();
+            }
+        }
+    }
 
     void insertUser(UserPtr user)
     {
@@ -512,6 +547,22 @@ struct EntityCollection::Impl
 
         Context::setBatchInsertInProgres(batchInsertInProgress_ = activate);
     }
+
+    StringView getMessageContentPointer(size_t offset, size_t size)
+    {
+        if (nullptr == messagesFileStart_)
+        {
+            return{};
+        }
+
+        auto requiredSize = offset + size;
+        if (requiredSize > messagesFileSize_)
+        {
+            return{};
+        }
+
+        return{ messagesFileStart_ + offset, size };
+    }
 };
 
 static UserPtr anonymousUser_;
@@ -527,9 +578,9 @@ IdType Forum::Entities::anonymousUserId()
     return anonymousUserId_;
 }
 
-EntityCollection::EntityCollection()
+EntityCollection::EntityCollection(StringView messagesFile)
 {
-    impl_ = new Impl();
+    impl_ = new Impl(messagesFile);
 
     Private::setGlobalEntityCollection(this);
     impl_->setEventListeners();
@@ -583,6 +634,11 @@ std::unique_ptr<DiscussionCategory>* EntityCollection::getDiscussionCategoryPool
 std::unique_ptr<MessageComment>* EntityCollection::getMessageCommentPoolRoot()
 {
     return impl_->managedEntities.messageComments.data();
+}
+
+StringView EntityCollection::getMessageContentPointer(size_t offset, size_t size)
+{
+    return impl_->getMessageContentPointer(offset, size);
 }
 
 UserPtr EntityCollection::createUser(IdType id, User::NameType&& name, Timestamp created, VisitDetails creationDetails)

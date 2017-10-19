@@ -9,8 +9,8 @@
 
 ## Logging
 
-- [ ] Add logging to more scenarios
-- [ ] Add samples for configuring logging
+- [X] Add logging to more scenarios
+- [X] Add samples for configuring logging
 
 ## Configuration
 
@@ -20,9 +20,9 @@
 ## Authorization
 
 - [X] Implement simple authorization scheme for all actions
-- [ ] Implement commands for adjusting authorization rights
-- [ ] Implement views for returning authorization information
-- [ ] Implement flood protection/throttling for actions
+- [X] Implement commands for adjusting authorization rights
+- [X] Implement views for returning authorization information
+- [X] Implement flood protection/throttling for actions
 
 ## HTTP
 

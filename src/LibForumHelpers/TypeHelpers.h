@@ -50,5 +50,11 @@ namespace Forum
         {
             memcpy(&value, source, sizeof(T));
         }
+
+        template<typename T>
+        T absValue(T value)
+        {
+            return value < static_cast<T>(0) ? -value : value;
+        }
     }
 }

@@ -332,6 +332,9 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& out
 
                           Json::JsonWriter writer(output);
                           writer.startObject();
+                          writer.newPropertyWithSafeName("lastRetrievedAt")
+                                  << user.voteHistoryLastRetrieved().exchange(static_cast<int64_t>(Context::getCurrentTime()));
+
                           writer.newPropertyWithSafeName("receivedVotes");
                           writer.startArray();
 
@@ -457,36 +460,8 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
     {
         Json::StringBuffer nullOutput;
 
-        for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionThreadMessagePrivilege::COUNT); p < n; ++p)
-        {
-            auto privilege = static_cast<DiscussionThreadMessagePrivilege>(p);
-            authorizationRepository_->assignDiscussionThreadMessagePrivilege(
-                    *grantAllPrivilegesTo, privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
-        }
-        for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionThreadPrivilege::COUNT); p < n; ++p)
-        {
-            auto privilege = static_cast<DiscussionThreadPrivilege>(p);
-            authorizationRepository_->assignDiscussionThreadPrivilege(
-                    *grantAllPrivilegesTo, privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
-        }
-        for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionTagPrivilege::COUNT); p < n; ++p)
-        {
-            auto privilege = static_cast<DiscussionTagPrivilege>(p);
-            authorizationRepository_->assignDiscussionTagPrivilege(
-                    *grantAllPrivilegesTo, privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
-        }
-        for (EnumIntType p = 0, n = static_cast<EnumIntType>(DiscussionCategoryPrivilege::COUNT); p < n; ++p)
-        {
-            auto privilege = static_cast<DiscussionCategoryPrivilege>(p);
-            authorizationRepository_->assignDiscussionCategoryPrivilege(
-                    *grantAllPrivilegesTo, privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
-        }
-        for (EnumIntType p = 0, n = static_cast<EnumIntType>(ForumWidePrivilege::COUNT); p < n; ++p)
-        {
-            auto privilege = static_cast<ForumWidePrivilege>(p);
-            authorizationRepository_->assignForumWidePrivilege(
-                    *grantAllPrivilegesTo, privilege, MaxPrivilegeValue, UnlimitedDuration, nullOutput);
-        }
+        authorizationRepository_->assignForumWidePrivilege(*grantAllPrivilegesTo, MaxPrivilegeValue, UnlimitedDuration,
+                                                           nullOutput);
     }
     return status;
 }

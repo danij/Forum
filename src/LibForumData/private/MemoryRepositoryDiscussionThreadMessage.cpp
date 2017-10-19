@@ -162,25 +162,32 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
+                           auto threadPtr = *threadIt;
+                           auto& thread = *threadPtr;
 
-                           if ( ! (status = authorization_->addNewDiscussionMessageInThread(*currentUser, **threadIt, content)))
+                           if ( ! (status = authorization_->addNewDiscussionMessageInThread(*currentUser, thread, content)))
                            {
                                return;
                            }
+
+                           auto& user = *currentUser;
+                           auto alreadySubscribed = user.subscribedThreads().contains(threadPtr);
 
                            auto statusWithResource = addNewDiscussionMessageInThread(collection, generateUniqueId(),
                                                                                      threadId, content);
                            auto& message = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
-                           auto& user = *currentUser;
-                           writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), **threadIt);
                            writeEvents().onAddNewDiscussionThreadMessage(createObserverContext(user), *message);
+                           if ( ! alreadySubscribed)
+                           {
+                               writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), thread);
+                           }
 
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", message->id());
-                                               writer << Json::propertySafeName("parentId", (*threadIt)->id());
+                                               writer << Json::propertySafeName("parentId", thread.id());
                                                writer << Json::propertySafeName("created", message->created());
                                            });
                        });
@@ -191,6 +198,23 @@ StatusWithResource<DiscussionThreadMessagePtr>
     MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection,
                                                                              IdTypeRef messageId, IdTypeRef threadId,
                                                                              StringView content)
+{
+    return addNewDiscussionMessageInThread(collection, messageId, threadId, content, 0, 0);
+}
+
+StatusWithResource<DiscussionThreadMessagePtr>
+    MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection,
+                                                                             IdTypeRef messageId, IdTypeRef threadId,
+                                                                             size_t contentSize, size_t contentOffset)
+{
+    return addNewDiscussionMessageInThread(collection, messageId, threadId, {}, contentSize, contentOffset);
+}
+
+StatusWithResource<DiscussionThreadMessagePtr>
+    MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection,
+                                                                             IdTypeRef messageId, IdTypeRef threadId,
+                                                                             StringView content, size_t contentSize,
+                                                                             size_t contentOffset)
 {
     auto& threadIndex = collection.threads().byId();
     auto threadIt = threadIndex.find(threadId);
@@ -206,8 +230,20 @@ StatusWithResource<DiscussionThreadMessagePtr>
     auto message = collection.createDiscussionThreadMessage(messageId, *currentUser, Context::getCurrentTime(),
                                                             { Context::getCurrentUserIpAddress() });
     message->parentThread() = threadPtr;
-    message->content() = WholeChangeableString::copyFrom(content);
-
+    if ((contentSize > 0) && (contentOffset > 0))
+    {
+        auto messageContent = collection.getMessageContentPointer(contentOffset, contentSize);
+        if ( ! messageContent.size())
+        {
+            FORUM_LOG_ERROR << "Could not find message at offset " << contentOffset << " with length " << contentSize;
+            return StatusCode::INVALID_PARAMETERS;
+        }
+        message->content() = WholeChangeableString::onlyTakePointer(messageContent);
+    }
+    else
+    {
+        message->content() = WholeChangeableString::copyFrom(content);
+    }
     collection.insertDiscussionThreadMessage(message);
 
     DiscussionThread& thread = *threadPtr;
@@ -230,41 +266,6 @@ StatusWithResource<DiscussionThreadMessagePtr>
 
     currentUser->threadMessages().add(message);
     currentUser->subscribedThreads().add(threadPtr);
-
-    //add privileges for the user that created the message
-    auto changePrivilegeDuration = optionalOrZero(
-            thread.getDiscussionThreadMessageDefaultPrivilegeDuration(
-                    DiscussionThreadMessageDefaultPrivilegeDuration::CHANGE_CONTENT));
-    if (changePrivilegeDuration > 0)
-    {
-        auto privilege = DiscussionThreadMessagePrivilege::CHANGE_CONTENT;
-        auto valueNeeded = optionalOrZero(thread.getDiscussionThreadMessagePrivilege(privilege));
-
-        if (valueNeeded > 0)
-        {
-            auto expiresAt = calculatePrivilegeExpires(message->created(), changePrivilegeDuration);
-
-            collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
-                    currentUser->id(), message->id(), privilege, valueNeeded, expiresAt);
-        }
-    }
-
-    auto deletePrivilegeDuration = optionalOrZero(
-            thread.getDiscussionThreadMessageDefaultPrivilegeDuration(
-                    DiscussionThreadMessageDefaultPrivilegeDuration::DELETE));
-    if (deletePrivilegeDuration > 0)
-    {
-        auto privilege = DiscussionThreadMessagePrivilege::DELETE;
-        auto valueNeeded = optionalOrZero(thread.getDiscussionThreadMessagePrivilege(privilege));
-
-        if (valueNeeded)
-        {
-            auto expiresAt = calculatePrivilegeExpires(message->created(), changePrivilegeDuration);
-
-            collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
-                    currentUser->id(), message->id(), privilege, valueNeeded, expiresAt);
-        }
-    }
 
     return message;
 }
@@ -635,9 +636,6 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
         message.addDownVote(currentUser, timestamp);
     }
 
-    DiscussionThreadPtr parentThread = message.parentThread();
-    assert(parentThread);
-
     message.createdBy().voteHistory().push_back(
     {
         message.id(),
@@ -646,20 +644,6 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
         up ? User::ReceivedVoteHistoryEntryType::UpVote : User::ReceivedVoteHistoryEntryType::DownVote
     });
 
-    auto resetVotePrivilegeDuration = optionalOrZero(parentThread->getDiscussionThreadMessageDefaultPrivilegeDuration(
-            DiscussionThreadMessageDefaultPrivilegeDuration::RESET_VOTE));
-    if (resetVotePrivilegeDuration > 0)
-    {
-        auto privilege = DiscussionThreadMessagePrivilege::RESET_VOTE;
-        auto valueNeeded = optionalOrZero(parentThread->getDiscussionThreadMessagePrivilege(privilege));
-        if (valueNeeded > 0)
-        {
-            auto expiresAt = calculatePrivilegeExpires(timestamp, resetVotePrivilegeDuration);
-
-            collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(
-                    currentUser->id(), message.id(), privilege, valueNeeded, expiresAt);
-        }
-    }
     return StatusCode::OK;
 }
 
@@ -690,6 +674,21 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
                            auto& message = **it;
 
                            if (&message.createdBy() == currentUser.ptr())
+                           {
+                               status = StatusCode::NOT_ALLOWED;
+                               return;
+                           }
+
+                           //check if the reset is still allowed at the current time
+                           auto votedAt = message.votedAt(currentUser);
+                           if ( ! votedAt)
+                           {
+                               status = StatusCode::NO_EFFECT;
+                               return;
+                           }
+
+                           auto expiresInSeconds = static_cast<Timestamp>(getGlobalConfig()->user.resetVoteExpiresInSeconds);
+                           if ((*votedAt + expiresInSeconds) < Context::getCurrentTime())
                            {
                                status = StatusCode::NOT_ALLOWED;
                                return;

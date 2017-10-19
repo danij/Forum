@@ -224,22 +224,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         connections.push_back(writeEvents.          changeDiscussionCategoryRequiredPrivilegeForCategory.connect([this](auto context, auto& category, auto privilege, auto value)                            { this->changeDiscussionCategoryRequiredPrivilegeForCategory          (context, category, privilege, value); }));
         connections.push_back(writeEvents.            changeDiscussionCategoryRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                                            { this->changeDiscussionCategoryRequiredPrivilegeForumWide            (context, privilege, value); }));
         connections.push_back(writeEvents.                              changeForumWideRequiredPrivilege.connect([this](auto context, auto privilege, auto value)                                            { this->changeForumWideRequiredPrivilege                              (context, privilege, value); }));
-        connections.push_back(writeEvents.changeDiscussionThreadMessageDefaultPrivilegeDurationForThread.connect([this](auto context, auto& thread, auto privilegeDuration, auto duration)                   { this->changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(context, thread, privilegeDuration, duration); }));
-        connections.push_back(writeEvents.   changeDiscussionThreadMessageDefaultPrivilegeDurationForTag.connect([this](auto context, auto& tag, auto privilegeDuration, auto duration)                      { this->changeDiscussionThreadMessageDefaultPrivilegeDurationForTag   (context, tag, privilegeDuration, duration); }));
-        connections.push_back(writeEvents.changeDiscussionThreadMessageDefaultPrivilegeDurationForumWide.connect([this](auto context, auto privilegeDuration, auto duration)                                 { this->changeDiscussionThreadMessageDefaultPrivilegeDurationForumWide(context, privilegeDuration, duration); }));
-        connections.push_back(writeEvents.                       changeForumWideDefaultPrivilegeDuration.connect([this](auto context, auto privilegeDuration, auto duration)                                 { this->changeForumWideDefaultPrivilegeDuration                       (context, privilegeDuration, duration); }));
-        connections.push_back(writeEvents.        assignDiscussionThreadMessagePrivilegeForThreadMessage.connect([this](auto context, auto& message, auto& user, auto privilege, auto value, auto duration)  { this->assignDiscussionThreadMessagePrivilegeForThreadMessage        (context, message, user, privilege, value, duration); }));
-        connections.push_back(writeEvents.               assignDiscussionThreadMessagePrivilegeForThread.connect([this](auto context, auto& thread, auto& user, auto privilege, auto value, auto duration)   { this->assignDiscussionThreadMessagePrivilegeForThread               (context, thread, user, privilege, value, duration); }));
-        connections.push_back(writeEvents.                  assignDiscussionThreadMessagePrivilegeForTag.connect([this](auto context, auto& tag, auto& user, auto privilege, auto value, auto duration)      { this->assignDiscussionThreadMessagePrivilegeForTag                  (context, tag, user, privilege, value, duration); }));
-        connections.push_back(writeEvents.               assignDiscussionThreadMessagePrivilegeForumWide.connect([this](auto context, auto& user, auto privilege, auto value, auto duration)                 { this->assignDiscussionThreadMessagePrivilegeForumWide               (context, user, privilege, value, duration); }));
-        connections.push_back(writeEvents.                      assignDiscussionThreadPrivilegeForThread.connect([this](auto context, auto& thread, auto& user, auto privilege, auto value, auto duration)   { this->assignDiscussionThreadPrivilegeForThread                      (context, thread, user, privilege, value, duration); }));
-        connections.push_back(writeEvents.                         assignDiscussionThreadPrivilegeForTag.connect([this](auto context, auto& tag, auto& user, auto privilege, auto value, auto duration)      { this->assignDiscussionThreadPrivilegeForTag                         (context, tag, user, privilege, value, duration); }));
-        connections.push_back(writeEvents.                      assignDiscussionThreadPrivilegeForumWide.connect([this](auto context, auto& user, auto privilege, auto value, auto duration)                 { this->assignDiscussionThreadPrivilegeForumWide                      (context, user, privilege, value, duration); }));
-        connections.push_back(writeEvents.                            assignDiscussionTagPrivilegeForTag.connect([this](auto context, auto& tag, auto& user, auto privilege, auto value, auto duration)      { this->assignDiscussionTagPrivilegeForTag                            (context, tag, user, privilege, value, duration); }));
-        connections.push_back(writeEvents.                         assignDiscussionTagPrivilegeForumWide.connect([this](auto context, auto& user, auto privilege, auto value, auto duration)                 { this->assignDiscussionTagPrivilegeForumWide                         (context, user, privilege, value, duration); }));
-        connections.push_back(writeEvents.                  assignDiscussionCategoryPrivilegeForCategory.connect([this](auto context, auto& category, auto& user, auto privilege, auto value, auto duration) { this->assignDiscussionCategoryPrivilegeForCategory                  (context, category, user, privilege, value, duration); }));
-        connections.push_back(writeEvents.                    assignDiscussionCategoryPrivilegeForumWide.connect([this](auto context, auto& user, auto privilege, auto value, auto duration)                 { this->assignDiscussionCategoryPrivilegeForumWide                    (context, user, privilege, value, duration); }));
-        connections.push_back(writeEvents.                                      assignForumWidePrivilege.connect([this](auto context, auto& user, auto privilege, auto value, auto duration)                 { this->assignForumWidePrivilege                                      (context, user, privilege, value, duration); }));
+        connections.push_back(writeEvents.                          changeForumWideDefaultPrivilegeLevel.connect([this](auto context, auto privilegeDuration, auto value, auto duration)                     { this->changeForumWideDefaultPrivilegeLevel                          (context, privilegeDuration, value, duration); }));
+        connections.push_back(writeEvents.                        assignDiscussionThreadMessagePrivilege.connect([this](auto context, auto& message, auto& user, auto value, auto duration)                  { this->assignDiscussionThreadMessagePrivilege                        (context, message, user, value, duration); }));
+        connections.push_back(writeEvents.                               assignDiscussionThreadPrivilege.connect([this](auto context, auto& thread, auto& user, auto value, auto duration)                   { this->assignDiscussionThreadPrivilege                               (context, thread, user, value, duration); }));
+        connections.push_back(writeEvents.                                  assignDiscussionTagPrivilege.connect([this](auto context, auto& tag, auto& user, auto value, auto duration)                      { this->assignDiscussionTagPrivilege                                  (context, tag, user, value, duration); }));
+        connections.push_back(writeEvents.                             assignDiscussionCategoryPrivilege.connect([this](auto context, auto& category, auto& user, auto value, auto duration)                 { this->assignDiscussionCategoryPrivilege                             (context, category, user, value, duration); }));
+        connections.push_back(writeEvents.                                      assignForumWidePrivilege.connect([this](auto context, auto& user, auto value, auto duration)                                 { this->assignForumWidePrivilege                                      (context, user, value, duration); }));
     }
 
     static constexpr size_t UuidSize = boost::uuids::uuid::static_size();
@@ -1125,91 +1115,33 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         recordBlob(EventType::CHANGE_FORUM_WIDE_REQUIRED_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(ObserverContext context,
-                                                                        const DiscussionThread& thread,
-                                                                        DiscussionThreadMessageDefaultPrivilegeDuration privilegeDuration,
-                                                                        PrivilegeDefaultDurationIntType duration)
+    void changeForumWideDefaultPrivilegeLevel(ObserverContext context,
+                                              ForumWideDefaultPrivilegeDuration privilegeDuration,
+                                              PrivilegeValueIntType value, PrivilegeDurationIntType duration)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilegeDuration = static_cast<PersistentPrivilegeEnumType>(privilegeDuration);
-        PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
+        PersistentPrivilegeEnumType currentPrivilegeLevel = static_cast<PersistentPrivilegeEnumType>(privilegeDuration);
+        PersistentPrivilegeValueType currentValue = static_cast<PersistentPrivilegeDurationType>(value);
+        PersistentPrivilegeDurationType currentDuration = static_cast<PersistentPrivilegeDurationType>(duration);
 
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilegeDuration), sizeof(currentPrivilegeDuration), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
+            { reinterpret_cast<const char*>(&currentPrivilegeLevel), sizeof(currentPrivilegeLevel), false },
+            { reinterpret_cast<const char*>(&currentValue), sizeof(currentValue), false },
+            { reinterpret_cast<const char*>(&currentDuration), sizeof(currentDuration), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVEL, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(ObserverContext context,
-                                                                     const DiscussionTag& tag,
-                                                                     DiscussionThreadMessageDefaultPrivilegeDuration privilegeDuration,
-                                                                     PrivilegeDefaultDurationIntType duration)
+    void assignDiscussionThreadMessagePrivilege(ObserverContext context,
+                                                const DiscussionThreadMessage& message,
+                                                const User& user,
+                                                PrivilegeValueIntType value,
+                                                PrivilegeDurationIntType duration)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilegeDuration = static_cast<PersistentPrivilegeEnumType>(privilegeDuration);
-        PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
-
-        BlobPart parts[] =
-        {
-            ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilegeDuration), sizeof(currentPrivilegeDuration), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
-        };
-
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_TAG, 1, parts, std::extent<decltype(parts)>::value);
-    }
-
-    void changeDiscussionThreadMessageDefaultPrivilegeDurationForumWide(ObserverContext context,
-                                                                        DiscussionThreadMessageDefaultPrivilegeDuration privilegeDuration,
-                                                                        PrivilegeDefaultDurationIntType duration)
-    {
-        PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilegeDuration = static_cast<PersistentPrivilegeEnumType>(privilegeDuration);
-        PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
-
-        BlobPart parts[] =
-        {
-            ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&currentPrivilegeDuration), sizeof(currentPrivilegeDuration), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
-        };
-
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
-    }
-
-    void changeForumWideDefaultPrivilegeDuration(ObserverContext context,
-                                                 ForumWideDefaultPrivilegeDuration privilegeDuration,
-                                                 PrivilegeDefaultDurationIntType duration)
-    {
-        PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilegeDuration = static_cast<PersistentPrivilegeEnumType>(privilegeDuration);
-        PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
-
-        BlobPart parts[] =
-        {
-            ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&currentPrivilegeDuration), sizeof(currentPrivilegeDuration), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
-        };
-
-        recordBlob(EventType::CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATION, 1, parts, std::extent<decltype(parts)>::value);
-    }
-
-    void assignDiscussionThreadMessagePrivilegeForThreadMessage(ObserverContext context,
-                                                                const DiscussionThreadMessage& message,
-                                                                const User& user,
-                                                                DiscussionThreadMessagePrivilege privilege,
-                                                                PrivilegeValueIntType value,
-                                                                PrivilegeDefaultDurationIntType duration)
-    {
-        PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
         PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
         PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
 
@@ -1218,23 +1150,17 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false },
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
             { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
             { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void assignDiscussionThreadMessagePrivilegeForThread(ObserverContext context,
-                                                         const DiscussionThread& thread,
-                                                         const User& user,
-                                                         DiscussionThreadMessagePrivilege privilege,
-                                                         PrivilegeValueIntType value,
-                                                         PrivilegeDefaultDurationIntType duration)
+    void assignDiscussionThreadPrivilege(ObserverContext context, const DiscussionThread& thread, const User& user,
+                                         PrivilegeValueIntType value, PrivilegeDurationIntType duration)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
         PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
         PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
 
@@ -1243,21 +1169,17 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
             { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
             { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void assignDiscussionThreadMessagePrivilegeForTag(ObserverContext context, const DiscussionTag& tag,
-                                                      const User& user, DiscussionThreadMessagePrivilege privilege,
-                                                      PrivilegeValueIntType value,
-                                                      PrivilegeDefaultDurationIntType duration)
+    void assignDiscussionTagPrivilege(ObserverContext context, const DiscussionTag& tag, const User& user,
+                                      PrivilegeValueIntType value, PrivilegeDurationIntType duration)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
         PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
         PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
 
@@ -1266,151 +1188,18 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
             { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
             { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_TAG, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_TAG_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void assignDiscussionThreadMessagePrivilegeForumWide(ObserverContext context, const User& user,
-                                                         DiscussionThreadMessagePrivilege privilege,
-                                                         PrivilegeValueIntType value,
-                                                         PrivilegeDefaultDurationIntType duration)
+    void assignDiscussionCategoryPrivilege(ObserverContext context, const DiscussionCategory& category,
+                                           const User& user, PrivilegeValueIntType value,
+                                           PrivilegeDurationIntType duration)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
-        PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
-        PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
-
-        BlobPart parts[] =
-        {
-            ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
-        };
-
-        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
-    }
-
-    void assignDiscussionThreadPrivilegeForThread(ObserverContext context, const DiscussionThread& thread,
-                                                  const User& user, DiscussionThreadPrivilege privilege,
-                                                  PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
-    {
-        PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
-        PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
-        PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
-
-        BlobPart parts[] =
-        {
-            ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
-        };
-
-        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_THREAD, 1, parts, std::extent<decltype(parts)>::value);
-    }
-
-    void assignDiscussionThreadPrivilegeForTag(ObserverContext context, const DiscussionTag& tag, const User& user,
-                                               DiscussionThreadPrivilege privilege, PrivilegeValueIntType value,
-                                               PrivilegeDefaultDurationIntType duration)
-    {
-        PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
-        PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
-        PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
-
-        BlobPart parts[] =
-        {
-            ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
-        };
-
-        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_TAG, 1, parts, std::extent<decltype(parts)>::value);
-    }
-
-    void assignDiscussionThreadPrivilegeForumWide(ObserverContext context, const User& user,
-                                                  DiscussionThreadPrivilege privilege, PrivilegeValueIntType value,
-                                                  PrivilegeDefaultDurationIntType duration)
-    {
-        PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
-        PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
-        PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
-
-        BlobPart parts[] =
-        {
-            ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
-        };
-
-        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
-    }
-
-    void assignDiscussionTagPrivilegeForTag(ObserverContext context, const DiscussionTag& tag, const User& user,
-                                            DiscussionTagPrivilege privilege, PrivilegeValueIntType value,
-                                            PrivilegeDefaultDurationIntType duration)
-    {
-        PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
-        PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
-        PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
-
-        BlobPart parts[] =
-        {
-            ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
-        };
-
-        recordBlob(EventType::ASSIGN_DISCUSSION_TAG_PRIVILEGE_FOR_TAG, 1, parts, std::extent<decltype(parts)>::value);
-    }
-
-    void assignDiscussionTagPrivilegeForumWide(ObserverContext context, const User& user,
-                                               DiscussionTagPrivilege privilege, PrivilegeValueIntType value,
-                                               PrivilegeDefaultDurationIntType duration)
-    {
-        PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
-        PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
-        PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
-
-        BlobPart parts[] =
-        {
-            ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
-        };
-
-        recordBlob(EventType::ASSIGN_DISCUSSION_TAG_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
-    }
-
-    void assignDiscussionCategoryPrivilegeForCategory(ObserverContext context, const DiscussionCategory& category,
-                                                      const User& user, DiscussionCategoryPrivilege privilege,
-                                                      PrivilegeValueIntType value,
-                                                      PrivilegeDefaultDurationIntType duration)
-    {
-        PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
         PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
         PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
 
@@ -1419,20 +1208,17 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
             { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
             { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE_FOR_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
     }
 
-    void assignDiscussionCategoryPrivilegeForumWide(ObserverContext context, const User& user,
-                                                    DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value,
-                                                    PrivilegeDefaultDurationIntType duration)
+    void assignForumWidePrivilege(ObserverContext context, const User& user, PrivilegeValueIntType value,
+                                  PrivilegeDurationIntType duration)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
         PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
         PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
 
@@ -1440,27 +1226,6 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
-        };
-
-        recordBlob(EventType::ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
-    }
-
-    void assignForumWidePrivilege(ObserverContext context, const User& user, ForumWidePrivilege privilege,
-                                  PrivilegeValueIntType value, PrivilegeDefaultDurationIntType duration)
-    {
-        PersistentTimestampType contextTimestamp = context.timestamp;
-        PersistentPrivilegeEnumType currentPrivilege = static_cast<PersistentPrivilegeEnumType>(privilege);
-        PersistentPrivilegeValueType currentPrivilegeValue = static_cast<PersistentPrivilegeValueType>(value);
-        PersistentPrivilegeDurationType currentDurationValue = static_cast<PersistentPrivilegeDurationType>(duration);
-
-        BlobPart parts[] =
-        {
-            ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
             { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
             { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
         };

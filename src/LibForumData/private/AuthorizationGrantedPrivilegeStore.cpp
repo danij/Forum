@@ -1,4 +1,6 @@
 #include "AuthorizationGrantedPrivilegeStore.h"
+#include "Configuration.h"
+#include "EntityCollection.h"
 
 #include <boost/range/iterator_range.hpp>
 
@@ -6,95 +8,79 @@ using namespace Forum;
 using namespace Forum::Entities;
 using namespace Forum::Authorization;
 
+GrantedPrivilegeStore::GrantedPrivilegeStore()
+{
+    defaultPrivilegeValueForLoggedInUser_ = Configuration::getGlobalConfig()->user.defaultPrivilegeValueForLoggedInUser;
+}
+
 void GrantedPrivilegeStore::grantDiscussionThreadMessagePrivilege(IdTypeRef userId, IdTypeRef entityId,
-                                                                  DiscussionThreadMessagePrivilege privilege,
-                                                                  PrivilegeValueIntType value, Timestamp expiresAt)
+                                                                  PrivilegeValueIntType value, Timestamp now,
+                                                                  Timestamp expiresAt)
 {
     if (0 == value)
     {
-        IdPrivilegeTuple toSearch{ userId, entityId, static_cast<EnumIntType>(privilege) };
-        discussionThreadMessageSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityIdPrivilege>().erase(toSearch);
+        IdTuple toSearch{ userId, entityId };
+        discussionThreadMessageSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityId>().erase(toSearch);
         return;
     }
-    discussionThreadMessageSpecificPrivileges_.insert(
-            PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
+    discussionThreadMessageSpecificPrivileges_.insert(PrivilegeEntry(userId, entityId, value, now, expiresAt));
 }
 
 void GrantedPrivilegeStore::grantDiscussionThreadPrivilege(IdTypeRef userId, IdTypeRef entityId,
-                                                           DiscussionThreadPrivilege privilege,
-                                                           PrivilegeValueIntType value, Timestamp expiresAt)
+                                                           PrivilegeValueIntType value, Timestamp now,
+                                                           Timestamp expiresAt)
 {
     if (0 == value)
     {
-        IdPrivilegeTuple toSearch{ userId, entityId, static_cast<EnumIntType>(privilege) };
-        discussionThreadSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityIdPrivilege>().erase(toSearch);
+        IdTuple toSearch{ userId, entityId };
+        discussionThreadSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityId>().erase(toSearch);
         return;
     }
-    discussionThreadSpecificPrivileges_.insert(
-            PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
+    discussionThreadSpecificPrivileges_.insert(PrivilegeEntry(userId, entityId, value, now, expiresAt));
 }
 
 void GrantedPrivilegeStore::grantDiscussionTagPrivilege(IdTypeRef userId, IdTypeRef entityId,
-                                                        DiscussionTagPrivilege privilege,
-                                                        PrivilegeValueIntType value, Timestamp expiresAt)
+                                                        PrivilegeValueIntType value, Timestamp now,
+                                                        Timestamp expiresAt)
 {
     if (0 == value)
     {
-        IdPrivilegeTuple toSearch{ userId, entityId, static_cast<EnumIntType>(privilege) };
-        discussionTagSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityIdPrivilege>().erase(toSearch);
+        IdTuple toSearch{ userId, entityId };
+        discussionTagSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityId>().erase(toSearch);
         return;
     }
-    discussionTagSpecificPrivileges_.insert(
-            PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
+    discussionTagSpecificPrivileges_.insert(PrivilegeEntry(userId, entityId, value, now, expiresAt));
 }
 
 void GrantedPrivilegeStore::grantDiscussionCategoryPrivilege(IdTypeRef userId, IdTypeRef entityId,
-                                                             DiscussionCategoryPrivilege privilege,
-                                                             PrivilegeValueIntType value, Timestamp expiresAt)
+                                                             PrivilegeValueIntType value, Timestamp now,
+                                                             Timestamp expiresAt)
 {
     if (0 == value)
     {
-        IdPrivilegeTuple toSearch{ userId, entityId, static_cast<EnumIntType>(privilege) };
-        discussionCategorySpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityIdPrivilege>().erase(toSearch);
+        IdTuple toSearch{ userId, entityId };
+        discussionCategorySpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityId>().erase(toSearch);
         return;
     }
-    discussionCategorySpecificPrivileges_.insert(
-            PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
+    discussionCategorySpecificPrivileges_.insert(PrivilegeEntry(userId, entityId, value, now, expiresAt));
 }
 
 void GrantedPrivilegeStore::grantForumWidePrivilege(IdTypeRef userId, IdTypeRef entityId,
-                                                    ForumWidePrivilege privilege,
-                                                    PrivilegeValueIntType value, Timestamp expiresAt)
+                                                    PrivilegeValueIntType value, Timestamp now,
+                                                    Timestamp expiresAt)
 {
     if (0 == value)
     {
-        IdPrivilegeTuple toSearch{ userId, entityId, static_cast<EnumIntType>(privilege) };
-        forumWideSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityIdPrivilege>().erase(toSearch);
+        IdTuple toSearch{ userId, entityId };
+        forumWideSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityId>().erase(toSearch);
         return;
     }
-    forumWideSpecificPrivileges_.insert(
-            PrivilegeEntry(userId, entityId, static_cast<EnumIntType>(privilege), value, expiresAt));
+    forumWideSpecificPrivileges_.insert(PrivilegeEntry(userId, entityId, value, now, expiresAt));
 }
 
 static PrivilegeValueIntType getEffectivePrivilegeValue(PrivilegeValueType positive, PrivilegeValueType negative)
 {
     return optionalOrZero(positive) - optionalOrZero(negative);
-}
-
-void GrantedPrivilegeStore::updateDiscussionThreadMessagePrivilege(IdTypeRef userId,
-                                                                   const DiscussionThread& thread, Timestamp now,
-                                                                   DiscussionThreadMessagePrivilege privilege,
-                                                                   PrivilegeValueType& positiveValue,
-                                                                   PrivilegeValueType& negativeValue) const
-{
-    updateDiscussionThreadMessagePrivilege(userId, thread.id(), now, privilege, positiveValue, negativeValue);
-    for (auto tag : thread.tags())
-    {
-        assert(tag);
-        updateDiscussionThreadMessagePrivilege(userId, tag->id(), now, privilege, positiveValue, negativeValue);
-    }
-
-    updateDiscussionThreadMessagePrivilege(userId, {}, now, privilege, positiveValue, negativeValue);
 }
 
 static PrivilegeValueType isAllowed(PrivilegeValueType positive, PrivilegeValueType negative, PrivilegeValueType required)
@@ -109,11 +95,11 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
                                                     DiscussionThreadMessagePrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    updateDiscussionThreadMessagePrivilege(userId, message.id(), now, privilege, positive, negative);
+    calculateDiscussionThreadMessagePrivilege(userId, message, now, positive, negative);
 
     DiscussionThreadConstPtr thread = message.parentThread();
     assert(thread);
-    updateDiscussionThreadMessagePrivilege(userId, *thread, now, privilege, positive, negative);
+    calculateDiscussionThreadMessagePrivilege(userId, *thread, now, positive, negative);
 
     return ::isAllowed(positive, negative, message.getDiscussionThreadMessagePrivilege(privilege));
 }
@@ -122,7 +108,7 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
                                                     DiscussionThreadMessagePrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    updateDiscussionThreadMessagePrivilege(userId, thread, now, privilege, positive, negative);
+    calculateDiscussionThreadMessagePrivilege(userId, thread, now, positive, negative);
 
     return ::isAllowed(positive, negative, thread.getDiscussionThreadMessagePrivilege(privilege));
 }
@@ -132,8 +118,8 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
 {
     PrivilegeValueType positive, negative;
 
-    updateDiscussionThreadMessagePrivilege(userId, tag.id(), now, privilege, positive, negative);
-    updateDiscussionThreadMessagePrivilege(userId, {}, now, privilege, positive, negative);
+    calculateDiscussionTagPrivilege(userId, tag, now, positive, negative);
+    calculateForumWidePrivilege(userId, now, positive, negative);
 
     return ::isAllowed(positive, negative, tag.getDiscussionThreadMessagePrivilege(privilege));
 }
@@ -142,15 +128,15 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
                                                     DiscussionThreadPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    updateDiscussionThreadPrivilege(userId, thread.id(), now, privilege, positive, negative);
+    calculateDiscussionThreadPrivilege(userId, thread, now, positive, negative);
 
     for (auto tag : thread.tags())
     {
         assert(tag);
-        updateDiscussionThreadPrivilege(userId, tag->id(), now, privilege, positive, negative);
+        calculateDiscussionTagPrivilege(userId, *tag, now, positive, negative);
     }
 
-    updateDiscussionThreadPrivilege(userId, {}, now, privilege, positive, negative);
+    calculateForumWidePrivilege(userId, now, positive, negative);
 
     return ::isAllowed(positive, negative, thread.getDiscussionThreadPrivilege(privilege));
 }
@@ -160,8 +146,8 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
 {
     PrivilegeValueType positive, negative;
 
-    updateDiscussionThreadPrivilege(userId, tag.id(), now, privilege, positive, negative);
-    updateDiscussionThreadPrivilege(userId, {}, now, privilege, positive, negative);
+    calculateDiscussionTagPrivilege(userId, tag, now, positive, negative);
+    calculateForumWidePrivilege(userId, now, positive, negative);
 
     return ::isAllowed(positive, negative, tag.getDiscussionThreadPrivilege(privilege));
 }
@@ -170,9 +156,9 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
                                                     DiscussionTagPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    updateDiscussionTagPrivilege(userId, tag.id(), now, privilege, positive, negative);
+    calculateDiscussionTagPrivilege(userId, tag, now, positive, negative);
 
-    updateDiscussionTagPrivilege(userId, {}, now, privilege, positive, negative);
+    calculateForumWidePrivilege(userId, now, positive, negative);
 
     return ::isAllowed(positive, negative, tag.getDiscussionTagPrivilege(privilege));
 }
@@ -181,16 +167,16 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Disc
                                                     DiscussionCategoryPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    updateDiscussionCategoryPrivilege(userId, category.id(), now, privilege, positive, negative);
+    calculateDiscussionCategoryPrivilege(userId, category, now, positive, negative);
 
     auto parent = category.parent();
     while (parent)
     {
-        updateDiscussionCategoryPrivilege(userId, parent->id(), now, privilege, positive, negative);
+        calculateDiscussionCategoryPrivilege(userId, *parent, now, positive, negative);
         parent = parent->parent();
     }
 
-    updateDiscussionCategoryPrivilege(userId, {}, now, privilege, positive, negative);
+    calculateForumWidePrivilege(userId, now, positive, negative);
 
     return ::isAllowed(positive, negative, category.getDiscussionCategoryPrivilege(privilege));
 }
@@ -200,7 +186,7 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Foru
 {
     PrivilegeValueType positive, negative;
 
-    updateDiscussionThreadMessagePrivilege(userId, {}, now, privilege, positive, negative);
+    calculateForumWidePrivilege(userId, now, positive, negative);
 
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionThreadMessagePrivilege(privilege));
 }
@@ -210,7 +196,7 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Foru
 {
     PrivilegeValueType positive, negative;
 
-    updateDiscussionThreadPrivilege(userId, {}, now, privilege, positive, negative);
+    calculateForumWidePrivilege(userId, now, positive, negative);
 
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionThreadPrivilege(privilege));
 }
@@ -220,7 +206,7 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Foru
 {
     PrivilegeValueType positive, negative;
 
-    updateDiscussionTagPrivilege(userId, {}, now, privilege, positive, negative);
+    calculateForumWidePrivilege(userId, now, positive, negative);
 
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionTagPrivilege(privilege));
 }
@@ -230,7 +216,7 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Foru
 {
     PrivilegeValueType positive, negative;
 
-    updateDiscussionCategoryPrivilege(userId, {}, now, privilege, positive, negative);
+    calculateForumWidePrivilege(userId, now, positive, negative);
 
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionCategoryPrivilege(privilege));
 }
@@ -240,7 +226,7 @@ PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const Foru
 {
     PrivilegeValueType positive, negative;
 
-    updateForumWidePrivilege(userId, {}, now, privilege, positive, negative);
+    calculateForumWidePrivilege(userId, now, positive, negative);
 
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getForumWidePrivilege(privilege));
 }
@@ -256,8 +242,6 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
     struct PrivilegeInfo
     {
         DiscussionThreadMessagePrivilege privilege;
-        PrivilegeValueType positive{};
-        PrivilegeValueType negative{};
         PrivilegeValueType required{};
         bool* boolToUpdate{};
 
@@ -275,13 +259,17 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
     auto& userId = items[0].userId;
     auto& firstMessage = *items[0].message;
 
+    PrivilegeValueType threadLevelPositive{};
+    PrivilegeValueType threadLevelNegative{};
+
     DiscussionThreadConstPtr thread = firstMessage.parentThread();
     assert(thread);
+
     //predetermine the privilege values granted and required at thread level as they are the same for all messages
+    calculateDiscussionThreadMessagePrivilege(userId, *thread, now, threadLevelPositive, threadLevelNegative);
+
     for (auto& info : threadValues)
     {
-        updateDiscussionThreadMessagePrivilege(userId, *thread, now, info.privilege, info.positive, info.negative);
-
         info.required = thread->getDiscussionThreadMessagePrivilege(info.privilege);
     }
 
@@ -293,20 +281,18 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
         threadValues[2].boolToUpdate = &item.allowedToShowVotes;
         threadValues[3].boolToUpdate = &item.allowedToShowIpAddress;
 
+        PrivilegeValueType messageLevelPositive, messageLevelNegative;
+        calculateDiscussionThreadMessagePrivilege(item.userId, *item.message, now,
+                                                  messageLevelPositive, messageLevelNegative);
+        auto positive = maximumPrivilegeValue(messageLevelPositive, threadLevelPositive);
+        auto negative = minimumPrivilegeValue(messageLevelNegative, threadLevelNegative);
+
         for (auto& info : threadValues)
         {
-            PrivilegeValueType messageLevelPositive, messageLevelNegative;
-
             if ( ! item.message)
             {
                 continue;
             }
-
-            updateDiscussionThreadMessagePrivilege(item.userId, item.message->id(), now, info.privilege,
-                                                   messageLevelPositive, messageLevelNegative);
-
-            auto positive = maximumPrivilegeValue(messageLevelPositive, info.positive);
-            auto negative = minimumPrivilegeValue(messageLevelNegative, info.negative);
 
             *(info.boolToUpdate) = static_cast<bool>(::isAllowed(positive, negative,
                     item.message->getDiscussionThreadMessagePrivilege(info.privilege, info.required)));
@@ -314,57 +300,71 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
     }
 }
 
-void GrantedPrivilegeStore::updateDiscussionThreadMessagePrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now,
-                                                                   DiscussionThreadMessagePrivilege privilege,
-                                                                   PrivilegeValueType& positiveValue,
-                                                                   PrivilegeValueType& negativeValue) const
+void GrantedPrivilegeStore::calculateDiscussionThreadMessagePrivilege(IdTypeRef userId,
+                                                                      const DiscussionThread& thread, Timestamp now,
+                                                                      PrivilegeValueType& positiveValue,
+                                                                      PrivilegeValueType& negativeValue) const
 {
-    updatePrivilege(discussionThreadMessageSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege),
-                    positiveValue, negativeValue);
+    calculateDiscussionThreadPrivilege(userId, thread, now, positiveValue, negativeValue);
+    for (auto tag : thread.tags())
+    {
+        assert(tag);
+        calculateDiscussionTagPrivilege(userId, *tag, now, positiveValue, negativeValue);
+    }
+
+    calculateForumWidePrivilege(userId, now, positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::updateDiscussionThreadPrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now,
-                                                            DiscussionThreadPrivilege privilege,
+void GrantedPrivilegeStore::calculateDiscussionThreadMessagePrivilege(IdTypeRef userId,
+                                                                      const DiscussionThreadMessage& message,
+                                                                      Timestamp now,
+                                                                      PrivilegeValueType& positiveValue,
+                                                                      PrivilegeValueType& negativeValue) const
+{
+    calculatePrivilege(discussionThreadMessageSpecificPrivileges_, userId, message.id(), now,
+                       positiveValue, negativeValue);
+}
+
+void GrantedPrivilegeStore::calculateDiscussionThreadPrivilege(IdTypeRef userId, const DiscussionThread& thread,
+                                                               Timestamp now,
+                                                               PrivilegeValueType& positiveValue,
+                                                               PrivilegeValueType& negativeValue) const
+{
+    calculatePrivilege(discussionThreadSpecificPrivileges_, userId, thread.id(), now, positiveValue, negativeValue);
+}
+
+void GrantedPrivilegeStore::calculateDiscussionTagPrivilege(IdTypeRef userId, const DiscussionTag& tag, Timestamp now,
                                                             PrivilegeValueType& positiveValue,
                                                             PrivilegeValueType& negativeValue) const
 {
-    updatePrivilege(discussionThreadSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege),
-                    positiveValue, negativeValue);
+    calculatePrivilege(discussionTagSpecificPrivileges_, userId, tag.id(), now, positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::updateDiscussionTagPrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now,
-                                                         DiscussionTagPrivilege privilege,
-                                                         PrivilegeValueType& positiveValue,
-                                                         PrivilegeValueType& negativeValue) const
+void GrantedPrivilegeStore::calculateDiscussionCategoryPrivilege(IdTypeRef userId, const DiscussionCategory& category,
+                                                                 Timestamp now,
+                                                                 PrivilegeValueType& positiveValue,
+                                                                 PrivilegeValueType& negativeValue) const
 {
-    updatePrivilege(discussionTagSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege),
-                    positiveValue, negativeValue);
+    calculatePrivilege(discussionCategorySpecificPrivileges_, userId, category.id(), now, positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::updateDiscussionCategoryPrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now,
-                                                              DiscussionCategoryPrivilege privilege,
-                                                              PrivilegeValueType& positiveValue,
-                                                              PrivilegeValueType& negativeValue) const
+void GrantedPrivilegeStore::calculateForumWidePrivilege(IdTypeRef userId, Timestamp now,
+                                                        PrivilegeValueType& positiveValue,
+                                                        PrivilegeValueType& negativeValue) const
 {
-    updatePrivilege(discussionCategorySpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege),
-                    positiveValue, negativeValue);
+    calculatePrivilege(forumWideSpecificPrivileges_, userId, {}, now, positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::updateForumWidePrivilege(IdTypeRef userId, IdTypeRef entityId, Timestamp now,
-                                                     ForumWidePrivilege privilege,
-                                                     PrivilegeValueType& positiveValue,
-                                                     PrivilegeValueType& negativeValue) const
+void GrantedPrivilegeStore::calculatePrivilege(const PrivilegeEntryCollection& collection, IdTypeRef userId,
+                                               IdTypeRef entityId, Timestamp now, PrivilegeValueType& positiveValue,
+                                               PrivilegeValueType& negativeValue) const
 {
-    updatePrivilege(forumWideSpecificPrivileges_, userId, entityId, now, static_cast<EnumIntType>(privilege),
-                    positiveValue, negativeValue);
-}
+    IdTuple toSearch{ userId, entityId };
+    auto range = collection.get<PrivilegeEntryCollectionByUserIdEntityId>().equal_range(toSearch);
 
-void GrantedPrivilegeStore::updatePrivilege(const PrivilegeEntryCollection& collection, IdTypeRef userId, IdTypeRef entityId,
-                                            Timestamp now, EnumIntType privilege, PrivilegeValueType& positiveValue,
-                                            PrivilegeValueType& negativeValue) const
-{
-    IdPrivilegeTuple toSearch{ userId, entityId, privilege };
-    auto range = collection.get<PrivilegeEntryCollectionByUserIdEntityIdPrivilege>().equal_range(toSearch);
+    positiveValue = (userId == anonymousUserId())
+                    ? static_cast<PrivilegeValueIntType>(0)
+                    : defaultPrivilegeValueForLoggedInUser_;
 
     for (auto& entry : boost::make_iterator_range(range))
     {
@@ -373,7 +373,7 @@ void GrantedPrivilegeStore::updatePrivilege(const PrivilegeEntryCollection& coll
 
         auto value = entry.privilegeValue();
 
-        if (value >= 0)
+        if (value > 0)
         {
             positiveValue = maximumPrivilegeValue(positiveValue, value);
         }
@@ -385,113 +385,111 @@ void GrantedPrivilegeStore::updatePrivilege(const PrivilegeEntryCollection& coll
 }
 
 void GrantedPrivilegeStore::enumerateDiscussionThreadMessagePrivileges(IdTypeRef id,
-        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+                                                                       EnumerationCallback&& callback) const
 {
     auto range = discussionThreadMessageSpecificPrivileges_
             .get<PrivilegeEntryCollectionByEntityId>().equal_range(id);
 
     for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
     {
-        callback(entry.userId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+        callback(entry.userId(), entry.privilegeValue(), entry.grantedAt(), entry.expiresAt());
     }
 }
 
-void GrantedPrivilegeStore::enumerateDiscussionThreadPrivileges(IdTypeRef id,
-        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+void GrantedPrivilegeStore::enumerateDiscussionThreadPrivileges(IdTypeRef id, EnumerationCallback&& callback) const
 {
     auto range = discussionThreadSpecificPrivileges_.get<PrivilegeEntryCollectionByEntityId>().equal_range(id);
 
     for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
     {
-        callback(entry.userId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+        callback(entry.userId(), entry.privilegeValue(), entry.grantedAt(), entry.expiresAt());
     }
 }
 
-void GrantedPrivilegeStore::enumerateDiscussionTagPrivileges(IdTypeRef id,
-        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+void GrantedPrivilegeStore::enumerateDiscussionTagPrivileges(IdTypeRef id, EnumerationCallback&& callback) const
+
 {
     auto range = discussionTagSpecificPrivileges_.get<PrivilegeEntryCollectionByEntityId>().equal_range(id);
 
     for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
     {
-        callback(entry.userId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+        callback(entry.userId(), entry.privilegeValue(), entry.grantedAt(), entry.expiresAt());
     }
 }
 
-void GrantedPrivilegeStore::enumerateDiscussionCategoryPrivileges(IdTypeRef id,
-        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+void GrantedPrivilegeStore::enumerateDiscussionCategoryPrivileges(IdTypeRef id, EnumerationCallback&& callback) const
+
 {
     auto range = discussionCategorySpecificPrivileges_.get<PrivilegeEntryCollectionByEntityId>().equal_range(id);
 
     for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
     {
-        callback(entry.userId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+        callback(entry.userId(), entry.privilegeValue(), entry.grantedAt(), entry.expiresAt());
     }
 }
 
-void GrantedPrivilegeStore::enumerateForumWidePrivileges(IdTypeRef _,
-        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+void GrantedPrivilegeStore::enumerateForumWidePrivileges(IdTypeRef _, EnumerationCallback&& callback) const
 {
     auto range = forumWideSpecificPrivileges_.get<PrivilegeEntryCollectionByEntityId>().equal_range(IdType{});
 
     for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
     {
-        callback(entry.userId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+        callback(entry.userId(), entry.privilegeValue(), entry.grantedAt(), entry.expiresAt());
     }
 }
 
 void GrantedPrivilegeStore::enumerateDiscussionThreadMessagePrivilegesAssignedToUser(IdTypeRef userId,
-        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+                                                                                     EnumerationCallback&& callback) const
 {
     auto range = discussionThreadMessageSpecificPrivileges_
             .get<PrivilegeEntryCollectionByUserId>().equal_range(userId);
 
     for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
     {
-        callback(entry.entityId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+        callback(entry.entityId(), entry.privilegeValue(), entry.grantedAt(), entry.expiresAt());
     }
 }
 
 void GrantedPrivilegeStore::enumerateDiscussionThreadPrivilegesAssignedToUser(IdTypeRef userId,
-        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+                                                                              EnumerationCallback&& callback) const
 {
     auto range = discussionThreadSpecificPrivileges_.get<PrivilegeEntryCollectionByUserId>().equal_range(userId);
 
     for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
     {
-        callback(entry.entityId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+        callback(entry.entityId(), entry.privilegeValue(), entry.grantedAt(), entry.expiresAt());
     }
 }
 
 void GrantedPrivilegeStore::enumerateDiscussionTagPrivilegesAssignedToUser(IdTypeRef userId,
-        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+                                                                           EnumerationCallback&& callback) const
 {
     auto range = discussionTagSpecificPrivileges_.get<PrivilegeEntryCollectionByUserId>().equal_range(userId);
 
     for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
     {
-        callback(entry.entityId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+        callback(entry.entityId(), entry.privilegeValue(), entry.grantedAt(), entry.expiresAt());
     }
 }
 
 void GrantedPrivilegeStore::enumerateDiscussionCategoryPrivilegesAssignedToUser(IdTypeRef userId,
-        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+                                                                                EnumerationCallback&& callback) const
 {
     auto range = discussionCategorySpecificPrivileges_.get<PrivilegeEntryCollectionByUserId>().equal_range(userId);
 
     for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
     {
-        callback(entry.entityId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+        callback(entry.entityId(), entry.privilegeValue(), entry.grantedAt(), entry.expiresAt());
     }
 }
 
 void GrantedPrivilegeStore::enumerateForumWidePrivilegesAssignedToUser(IdTypeRef userId,
-        std::function<void(IdTypeRef, EnumIntType, PrivilegeValueIntType, Timestamp)>&& callback) const
+                                                                       EnumerationCallback&& callback) const
 {
     auto range = forumWideSpecificPrivileges_.get<PrivilegeEntryCollectionByUserId>().equal_range(userId);
 
     for (const PrivilegeEntry& entry : boost::make_iterator_range(range))
     {
-        callback(entry.entityId(), entry.privilege(), entry.privilegeValue(), entry.expiresAt());
+        callback(entry.entityId(), entry.privilegeValue(), entry.grantedAt(), entry.expiresAt());
     }
 }

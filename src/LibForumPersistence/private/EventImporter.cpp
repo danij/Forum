@@ -145,6 +145,7 @@ struct CurrentTimeChanger final : private boost::noncopyable
 #define CHECK_STATUS_CODE(value) \
     if ((StatusCode::OK) != value && (StatusCode::NO_EFFECT != value)) { \
         FORUM_LOG_ERROR << "Unable to import event of type " << currentEventType_ << ": unexpected status code: " << value; \
+        return false; \
     }
 
 #define CHECK_READ_ALL_DATA(value) \
@@ -177,6 +178,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
                                DirectWriteRepositoryCollection&& repositories)
         : verifyChecksum_(verifyChecksum), entityCollection_(entityCollection), repositories_(std::move(repositories))
     {
+        //Warning: must be in the same order as the elements of EventType
         importFunctions_ =
         {
             {}, //UNKNOWN
@@ -187,14 +189,19 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_USER_SIGNATURE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_USER_LOGO ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_USER ) },
+
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_NAME ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_DISCUSSION_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, MERGE_DISCUSSION_THREADS ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, SUBSCRIBE_TO_DISCUSSION_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, UNSUBSCRIBE_FROM_DISCUSSION_THREAD ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD_MESSAGE ) },
+
+            { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD_MESSAGE ),
+                        DECLARE_FORWARDER( 2, ADD_NEW_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, MOVE_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DISCUSSION_THREAD_MESSAGE_UP_VOTE ) },
@@ -202,6 +209,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, DISCUSSION_THREAD_MESSAGE_RESET_VOTE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT ) },
+
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_TAG ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_TAG_NAME ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_TAG_UI_BLOB ) },
@@ -209,6 +217,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_DISCUSSION_TAG_TO_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, REMOVE_DISCUSSION_TAG_FROM_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, MERGE_DISCUSSION_TAGS ) },
+
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_CATEGORY ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_CATEGORY_NAME ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_CATEGORY_DESCRIPTION ) },
@@ -217,8 +226,6 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_DISCUSSION_CATEGORY ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_DISCUSSION_TAG_TO_CATEGORY ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, REMOVE_DISCUSSION_TAG_FROM_CATEGORY ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER ) },
 
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD ) },
@@ -232,21 +239,12 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FOR_CATEGORY ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FORUM_WIDE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_FORUM_WIDE_REQUIRED_PRIVILEGE ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_THREAD ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_TAG ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FORUM_WIDE ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATION ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD_MESSAGE ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_TAG ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FORUM_WIDE ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_THREAD ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_TAG ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FORUM_WIDE ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_TAG_PRIVILEGE_FOR_TAG ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_TAG_PRIVILEGE_FORUM_WIDE ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE_FOR_CATEGORY ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE_FORUM_WIDE ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVEL ) },
+
+            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_PRIVILEGE ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_TAG_PRIVILEGE ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_FORUM_WIDE_PRIVILEGE ) }
         };
     }
@@ -362,6 +360,19 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addNewDiscussionMessageInThread(entityCollection_,
                                                                                                  messageId, parentId,
                                                                                                  message).status);
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( ADD_NEW_DISCUSSION_THREAD_MESSAGE, 2 )
+        READ_UUID(messageId, data, size);
+        READ_UUID(parentId, data, size);
+        READ_TYPE(uint32_t, messageSize, data, size);
+        READ_TYPE(uint64_t, messageOffset, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addNewDiscussionMessageInThread(entityCollection_,
+                                                                                                 messageId, parentId,
+                                                                                                 static_cast<size_t>(messageSize),
+                                                                                                 static_cast<size_t>(messageOffset)).status);
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1 )
@@ -724,197 +735,69 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
                 currentPrivilegeValue));
     END_DEFAULT_IMPORTER()
 
-    BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_THREAD, 1 )
-        READ_UUID(threadId, data, size);
+    BEGIN_DEFAULT_IMPORTER( CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVEL, 1 )
         READ_TYPE(PersistentPrivilegeEnumType, currentPrivilegeDuration, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
+        READ_TYPE(PersistentPrivilegeValueType, currentValue, data, size);
+        READ_TYPE(PersistentPrivilegeDurationType, currentDuration, data, size);
         CHECK_READ_ALL_DATA(size);
 
-        CHECK_STATUS_CODE(repositories_.authorization->changeDiscussionThreadMessageDefaultPrivilegeDurationForThread(
-            entityCollection_, threadId, static_cast<DiscussionThreadMessageDefaultPrivilegeDuration>(currentPrivilegeDuration),
-            currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FOR_TAG, 1 )
-        READ_UUID(tagId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilegeDuration, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->changeDiscussionThreadMessageDefaultPrivilegeDurationForTag(
-                entityCollection_, tagId, static_cast<DiscussionThreadMessageDefaultPrivilegeDuration>(currentPrivilegeDuration),
-                currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_DEFAULT_PRIVILEGE_DURATION_FORUM_WIDE, 1 )
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilegeDuration, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->changeDiscussionThreadMessageDefaultPrivilegeDuration(
-                entityCollection_, static_cast<DiscussionThreadMessageDefaultPrivilegeDuration>(currentPrivilegeDuration),
-                currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_DURATION, 1 )
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilegeDuration, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->changeForumWideDefaultPrivilegeDuration(
+        CHECK_STATUS_CODE(repositories_.authorization->changeForumWideDefaultPrivilegeLevel(
                 entityCollection_, static_cast<ForumWideDefaultPrivilegeDuration>(currentPrivilegeDuration),
-                currentDurationValue));
+                currentValue, currentDuration));
     END_DEFAULT_IMPORTER()
 
-    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD_MESSAGE, 1 )
+    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE, 1 )
         READ_UUID(messageId, data, size);
         READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
-        READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->assignDiscussionThreadMessagePrivilegeForThreadMessage(
-                entityCollection_, messageId, userId, static_cast<DiscussionThreadMessagePrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_THREAD, 1 )
-        READ_UUID(threadId, data, size);
-        READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
-        READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->assignDiscussionThreadMessagePrivilegeForThread(
-                entityCollection_, threadId, userId, static_cast<DiscussionThreadMessagePrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FOR_TAG, 1 )
-        READ_UUID(tagId, data, size);
-        READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
-        READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->assignDiscussionThreadMessagePrivilegeForTag(
-                entityCollection_, tagId, userId, static_cast<DiscussionThreadMessagePrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE_FORUM_WIDE, 1 )
-        READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
         READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
         READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.authorization->assignDiscussionThreadMessagePrivilege(
-                entityCollection_, userId, static_cast<DiscussionThreadMessagePrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
+                entityCollection_, messageId, userId, currentPrivilegeValue, currentDurationValue));
     END_DEFAULT_IMPORTER()
 
-    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_THREAD, 1 )
+    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_THREAD_PRIVILEGE, 1 )
         READ_UUID(threadId, data, size);
         READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
-        READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->assignDiscussionThreadPrivilegeForThread(
-                entityCollection_, threadId, userId, static_cast<DiscussionThreadPrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FOR_TAG, 1 )
-        READ_UUID(tagId, data, size);
-        READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
-        READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->assignDiscussionThreadPrivilegeForTag(
-                entityCollection_, tagId, userId, static_cast<DiscussionThreadPrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_THREAD_PRIVILEGE_FORUM_WIDE, 1 )
-        READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
         READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
         READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.authorization->assignDiscussionThreadPrivilege(
-                entityCollection_, userId, static_cast<DiscussionThreadPrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
+                entityCollection_, threadId, userId, currentPrivilegeValue, currentDurationValue));
     END_DEFAULT_IMPORTER()
 
-    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_TAG_PRIVILEGE_FOR_TAG, 1 )
+    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_TAG_PRIVILEGE, 1 )
         READ_UUID(tagId, data, size);
         READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
-        READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->assignDiscussionTagPrivilegeForTag(
-                entityCollection_, tagId, userId, static_cast<DiscussionTagPrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_TAG_PRIVILEGE_FORUM_WIDE, 1 )
-        READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
         READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
         READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.authorization->assignDiscussionTagPrivilege(
-                entityCollection_, userId, static_cast<DiscussionTagPrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
+                entityCollection_, tagId, userId, currentPrivilegeValue, currentDurationValue));
     END_DEFAULT_IMPORTER()
 
-    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE_FOR_CATEGORY, 1 )
+    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE, 1 )
         READ_UUID(categoryId, data, size);
         READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
-        READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
-        READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
-        CHECK_READ_ALL_DATA(size);
-
-        CHECK_STATUS_CODE(repositories_.authorization->assignDiscussionCategoryPrivilegeForCategory(
-                entityCollection_, categoryId, userId, static_cast<DiscussionCategoryPrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
-    END_DEFAULT_IMPORTER()
-
-    BEGIN_DEFAULT_IMPORTER( ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE_FORUM_WIDE, 1 )
-        READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
         READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
         READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.authorization->assignDiscussionCategoryPrivilege(
-                entityCollection_, userId, static_cast<DiscussionCategoryPrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
+                entityCollection_, categoryId, userId, currentPrivilegeValue, currentDurationValue));
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( ASSIGN_FORUM_WIDE_PRIVILEGE, 1 )
         READ_UUID(userId, data, size);
-        READ_TYPE(PersistentPrivilegeEnumType, currentPrivilege, data, size);
         READ_TYPE(PersistentPrivilegeValueType, currentPrivilegeValue, data, size);
         READ_TYPE(PersistentPrivilegeDurationType, currentDurationValue, data, size);
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.authorization->assignForumWidePrivilege(
-                entityCollection_, userId, static_cast<ForumWidePrivilege>(currentPrivilege),
-                currentPrivilegeValue, currentDurationValue));
+                entityCollection_, userId, currentPrivilegeValue, currentDurationValue));
     END_DEFAULT_IMPORTER()
 
     bool processContext_v1(const uint8_t*& data, size_t& size)
@@ -971,7 +854,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
         catch(boost::interprocess::interprocess_exception& ex)
         {
-            FORUM_LOG_ERROR << "Error mapping file: " << fileName << '(' << ex.what() << ')';
+            FORUM_LOG_ERROR << "Error mapping file: " << fileName << " (" << ex.what() << ')';
             return {};
         }
     }
@@ -1023,6 +906,11 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             if (processEvent(data, blobSize))
             {
                 result.statistic.importedBlobs += 1;
+            }
+            else
+            {
+                result.success = false;
+                return result;
             }
 
             data += blobSizeWithPadding;
@@ -1100,6 +988,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             auto currentResult = importFile(pair.second);
             if ( ! currentResult.success)
             {
+                result.success = false;
                 break;
             }
             result.statistic = result.statistic + currentResult.statistic;

@@ -176,15 +176,22 @@ namespace Forum
                 info_.size = view.size();
                 ptr_ = nullptr;
 
-                if (info_.size > 0)
+                if (copy)
                 {
-                    auto ptr = new char[info_.size];
-                    ptr_ = ptr;
-                    std::copy(view.begin(), view.end(), ptr);
+                    if (info_.size > 0)
+                    {
+                        auto ptr = new char[info_.size];
+                        ptr_ = ptr;
+                        std::copy(view.begin(), view.end(), ptr);
+                    }
+                    else
+                    {
+                        ptr_ = nullptr;
+                    }
                 }
                 else
                 {
-                    ptr_ = nullptr;
+                    ptr_ = view.data();
                 }
             }
 
