@@ -734,7 +734,6 @@ void DiscussionThreadMessagesEndpoint::upVote(Http::RequestState& requestState)
            [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
-        parameters.push_back(requestState.extraPathParts[1]);
         return commandHandler.handle(Command::UP_VOTE_DISCUSSION_THREAD_MESSAGE, parameters);
     });
 }
@@ -745,7 +744,6 @@ void DiscussionThreadMessagesEndpoint::downVote(Http::RequestState& requestState
            [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
-        parameters.push_back(requestState.extraPathParts[1]);
         return commandHandler.handle(Command::DOWN_VOTE_DISCUSSION_THREAD_MESSAGE, parameters);
     });
 }
@@ -756,7 +754,6 @@ void DiscussionThreadMessagesEndpoint::resetVote(Http::RequestState& requestStat
            [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
-        parameters.push_back(requestState.extraPathParts[1]);
         return commandHandler.handle(Command::RESET_VOTE_DISCUSSION_THREAD_MESSAGE, parameters);
     });
 }
