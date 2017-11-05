@@ -174,16 +174,24 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
 static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage& latestMessage,
                                const SerializationRestriction& restriction)
 {
+    auto parentThread = latestMessage.parentThread();
+    assert(parentThread);
+
     writer.newPropertyWithSafeName("latestMessage");
     writer << objStart
         << propertySafeName("id", latestMessage.id())
-        << propertySafeName("created", latestMessage.created());
-    writer.newPropertyWithSafeName("createdBy");
+        << propertySafeName("created", latestMessage.created())
+        << propertySafeName("threadId", parentThread->id())
+        << propertySafeName("threadName", parentThread->name());
 
-    BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
+    auto content = latestMessage.content();
+    writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
 
-    serialize(writer, latestMessage.createdBy(), restriction);
-
+    {
+        writer.newPropertyWithSafeName("createdBy");
+        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
+        serialize(writer, latestMessage.createdBy(), restriction);
+    }
     writer << objEnd;
 }
 
