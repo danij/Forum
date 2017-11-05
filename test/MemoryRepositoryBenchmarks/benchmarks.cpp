@@ -90,7 +90,7 @@ struct BenchmarkContext
     std::vector<IdType> threadIds;
     std::vector<IdType> tagIds;
     std::vector<IdType> categoryIds;
-    Entities::Timestamp currentTimestamp = 1000;
+    Entities::Timestamp currentTimestamp = 946684800; //2000-01-01
     std::shared_ptr<EventObserver> persistenceObserver;
     ObservableRepositoryRef observableRepository;
     DirectWriteRepositoryCollection writeRepositories;
@@ -195,12 +195,12 @@ void execute(CommandHandler& handler, CommandType command, const std::initialize
     handler.handle(command, parametersVector);
 }
 
-const int nrOfUsers = 1000;
+const int nrOfUsers = 5000;
 const int nrOfThreads = nrOfUsers * 1;
 const int nrOfMessages = nrOfThreads * 50;
 const int nrOfTags = 100;
 const int nrOfCategories = 100;
-const int nrOfCategoryParentChildRelationships = 20;
+const int nrOfCategoryParentChildRelationships = 70;
 const int nrOfTagsPerCategoryMin = 1;
 const int nrOfTagsPerCategoryMax = 4;
 const int nrOfTagsPerThreadMin = 1;
@@ -569,6 +569,7 @@ void generateRandomData(BenchmarkContext& context)
     {
         auto id = executeAndGetId(handler, Command::ADD_DISCUSSION_CATEGORY, { "Category" + std::to_string(i + 1) });
         categoryIds.emplace_back(id);
+        execute(handler, Command::CHANGE_DISCUSSION_CATEGORY_DESCRIPTION, { id, "Description for Category" + std::to_string(i + 1) });
         for (int j = 0, n = nrOfTagsPerCategoryDistribution(randomGenerator); j < n; ++j)
         {
             execute(handler, Command::ADD_DISCUSSION_TAG_TO_CATEGORY, { tagIds[tagIdDistribution(randomGenerator)], id });
