@@ -470,6 +470,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
     {
         BoolTemporaryChanger _(serializationSettings.hideDiscussionCategoriesOfTags, true);
         BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
+        BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
 
         writeArraySafeName(writer, "tags", category.tags().begin(), category.tags().end(), restriction);
     }
