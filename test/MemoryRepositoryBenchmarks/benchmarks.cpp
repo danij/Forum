@@ -90,7 +90,7 @@ struct BenchmarkContext
     std::vector<IdType> threadIds;
     std::vector<IdType> tagIds;
     std::vector<IdType> categoryIds;
-    Entities::Timestamp currentTimestamp = 946684800; //2000-01-01
+    const int timestampIncrementMultiplier = 100;
     std::shared_ptr<EventObserver> persistenceObserver;
     ObservableRepositoryRef observableRepository;
     DirectWriteRepositoryCollection writeRepositories;
@@ -102,6 +102,19 @@ struct BenchmarkContext
     bool promptBeforeBenchmark{ false };
     bool abortOnExit{ false };
     int parseCommandLineResult{};
+
+    auto incrementTimestamp(int value)
+    {
+        return _currentTimestamp += value * timestampIncrementMultiplier;
+    }
+
+    auto currentTimestamp() const
+    {
+        return _currentTimestamp;
+    }
+
+private:
+    Entities::Timestamp _currentTimestamp = 946684800; //2000-01-01
 };
 
 int parseCommandLineArgs(BenchmarkContext& context, int argc, const char* argv[]);
@@ -469,7 +482,7 @@ void generateRandomData(BenchmarkContext& context)
     auto& tagIds = context.tagIds;
     auto& categoryIds = context.categoryIds;
 
-    auto getCurrentTimestamp = [&context]() { return context.currentTimestamp; };
+    auto getCurrentTimestamp = [&context]() { return context.currentTimestamp(); };
     Context::setCurrentTimeMockForCurrentThread(getCurrentTimestamp);
 
     char buffer[8192];
@@ -479,7 +492,7 @@ void generateRandomData(BenchmarkContext& context)
         getRandomText(buffer, 5);
         auto intSize = appendUInt(buffer + 5, i + 1);
         userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { StringView(buffer, 5 + intSize), getNewAuth() }));
-        context.currentTimestamp += 100;
+        context.incrementTimestamp(100);
     }
 
     std::uniform_int_distribution<> userIdDistribution(0, userIds.size() - 1);
@@ -501,7 +514,7 @@ void generateRandomData(BenchmarkContext& context)
     for (size_t i = 0; i < nrOfTags; i++)
     {
         tagIds.emplace_back(executeAndGetId(handler, Command::ADD_DISCUSSION_TAG, { "Tag" + std::to_string(i + 1) }));
-        context.currentTimestamp += 100;
+        context.incrementTimestamp(100);
     }
 
     std::uniform_int_distribution<> tagIdDistribution(0, tagIds.size() - 1);
@@ -546,7 +559,7 @@ void generateRandomData(BenchmarkContext& context)
         threadIds.emplace_back(id);
         addMessage(id);
 
-        context.currentTimestamp += 10;
+        context.incrementTimestamp(10);
         updateMessagesProcessedPercent();
     }
     std::uniform_int_distribution<> threadIdDistribution(0, threadIds.size() - 1);
@@ -556,7 +569,7 @@ void generateRandomData(BenchmarkContext& context)
         Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
         addMessage(threadIds[threadIdDistribution(randomGenerator)]);
 
-        context.currentTimestamp += 1;
+        context.incrementTimestamp(10);
         updateMessagesProcessedPercent();
     }
 
@@ -574,7 +587,7 @@ void generateRandomData(BenchmarkContext& context)
         {
             execute(handler, Command::ADD_DISCUSSION_TAG_TO_CATEGORY, { tagIds[tagIdDistribution(randomGenerator)], id });
         }
-        context.currentTimestamp += 100;
+        context.incrementTimestamp(100);
     }
     std::uniform_int_distribution<> categoryIdDistribution(0, categoryIds.size() - 1);
 
@@ -648,7 +661,7 @@ void doBenchmarks(BenchmarkContext& context)
         {
             execute(handler, Command::ADD_USER, { "User" + std::to_string(i + 1), getNewAuth() });
         }) << " ";
-        context.currentTimestamp += 100;
+        context.incrementTimestamp(100);
     }
     std::cout << '\n';
 
@@ -666,7 +679,7 @@ void doBenchmarks(BenchmarkContext& context)
         {
             execute(handler, Command::ADD_DISCUSSION_THREAD, { getRandomText(buffer, 50) });
         }) << " ";
-        context.currentTimestamp += 10;
+        context.incrementTimestamp(10);
     }
     std::cout << '\n';
 
@@ -682,7 +695,7 @@ void doBenchmarks(BenchmarkContext& context)
         {
             execute(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, sampleMessage });
         }) << " ";
-        context.currentTimestamp += 10;
+        context.incrementTimestamp(10);
     }
     std::cout << "\n\n";
 
