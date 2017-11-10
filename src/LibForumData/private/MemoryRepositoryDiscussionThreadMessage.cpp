@@ -636,7 +636,18 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
         message.addDownVote(currentUser, timestamp);
     }
 
-    message.createdBy().voteHistory().push_back(
+    User& targetUser = message.createdBy();
+
+    if (up)
+    {
+        targetUser.receivedUpVotes() += 1;
+    }
+    else
+    {
+        targetUser.receivedDownVotes() += 1;
+    }
+
+    targetUser.voteHistory().push_back(
     {
         message.id(),
         currentUser->id(),
@@ -723,7 +734,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
 
     auto currentUser = getCurrentUser(collection);
 
-    if ( ! message.removeVote(currentUser))
+    auto removeVoteStatus = message.removeVote(currentUser);
+    if (DiscussionThreadMessage::RemoveVoteStatus::Missing == removeVoteStatus)
     {
         FORUM_LOG_WARNING << "Could not find discussion vote of user "
                           << static_cast<std::string>(currentUser->id()) << " for discussion thread message "
@@ -731,7 +743,19 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
         return StatusCode::NO_EFFECT;
     }
 
-    message.createdBy().voteHistory().push_back(
+    User& targetUser = message.createdBy();
+
+    if (DiscussionThreadMessage::RemoveVoteStatus::WasUpVote == removeVoteStatus)
+    {
+        targetUser.receivedUpVotes() -= 1;
+    }
+
+    if (DiscussionThreadMessage::RemoveVoteStatus::WasDownVote == removeVoteStatus)
+    {
+        targetUser.receivedDownVotes() -= 1;
+    }
+
+    targetUser.voteHistory().push_back(
     {
         message.id(),
         currentUser->id(),

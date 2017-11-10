@@ -41,6 +41,9 @@ namespace Forum
 
                    auto lastSeen()          const { return lastSeen_; }
 
+                   auto receivedUpVotes()   const { return receivedUpVotes_; }
+                   auto receivedDownVotes() const { return receivedDownVotes_; }
+
             const auto& threads()           const { return threads_; }
             const auto& subscribedThreads() const { return subscribedThreads_; }
             const auto& threadMessages()    const { return threadMessages_; }
@@ -128,6 +131,8 @@ namespace Forum
             auto& title()             { return title_; }
             auto& signature()         { return signature_; }
             auto& logo()              { return logo_; }
+            auto& receivedUpVotes()   { return receivedUpVotes_; }
+            auto& receivedDownVotes() { return receivedDownVotes_; }
 
             auto& threads()           { return threads_; }
             auto& subscribedThreads() { return subscribedThreads_; }
@@ -212,6 +217,9 @@ namespace Forum
             static constexpr size_t MaxVotesInHistory = 64;
             boost::circular_buffer_space_optimized<ReceivedVoteHistory> voteHistory_{ MaxVotesInHistory };
             mutable std::atomic<int64_t> voteHistoryLastRetrieved_{ 0 };
+
+            int_fast32_t receivedUpVotes_{ 0 };
+            int_fast32_t receivedDownVotes_{ 0 };
         };
 
         typedef EntityPointer<User> UserPtr;

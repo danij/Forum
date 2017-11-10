@@ -198,13 +198,28 @@ namespace Forum
                 downVotes_->insert(std::make_pair(user, at));
             }
 
+            enum class RemoveVoteStatus
+            {
+                Missing,
+                WasUpVote,
+                WasDownVote
+            };
+
             /**
              * Removes the vote of a user
              * @return TRUE if there was an up or down vote from the user
              */
-            bool removeVote(EntityPointer<User> user)
+            RemoveVoteStatus removeVote(EntityPointer<User> user)
             {
-                return (upVotes_ && (upVotes_->erase(user) > 0)) || (downVotes_ && (downVotes_->erase(user) > 0));
+                if (upVotes_ && (upVotes_->erase(user) > 0))
+                {
+                    return RemoveVoteStatus::WasUpVote;
+                }
+                if (downVotes_ && (downVotes_->erase(user) > 0))
+                {
+                    return RemoveVoteStatus::WasDownVote;
+                }
+                return RemoveVoteStatus::Missing;
             }
 
         private:
