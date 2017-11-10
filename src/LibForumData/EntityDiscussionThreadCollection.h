@@ -47,7 +47,7 @@ namespace Forum
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
 
-            auto count()                  const { return byName_.size(); }
+            auto count()                  const { return countInternal(); }
 
             auto byName()                 const { return Helpers::toConst(byName_); }
             auto byCreated()              const { return Helpers::toConst(byCreated_); }
@@ -63,6 +63,7 @@ namespace Forum
 
         protected:
             virtual void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) = 0;
+            virtual size_t countInternal() const = 0;
 
         private:
 
@@ -98,6 +99,7 @@ namespace Forum
 
         protected:
             void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) override;
+            size_t countInternal() const override { return byId_.size(); }
 
         private:
             HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
@@ -136,6 +138,7 @@ namespace Forum
 
         protected:
             void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) override;
+            size_t countInternal() const override { return byId_.size(); }
 
         private:
             ORDERED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
