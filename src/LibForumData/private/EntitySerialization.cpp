@@ -487,6 +487,9 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
         //only show 1 level of category children
         BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryParent, true);
+        BoolTemporaryChanger ___(serializationSettings.hideDiscussionCategoryTags, true);
+        BoolTemporaryChanger ____(serializationSettings.hideLatestMessage, true);
+        BoolTemporaryChanger _____(serializationSettings.hidePrivileges, true);
 
         writeArraySafeName(writer, "children", category.children().begin(), category.children().end(), restriction);
     }
