@@ -1621,7 +1621,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_include_info_about_latest_message )
     BOOST_REQUIRE_EQUAL(1, thread.latestMessage.createdBy.messageCount);
 }
 
-BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_message_content )
+BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_includes_message_content )
 {
     auto handler = createCommandHandler();
 
@@ -1641,7 +1641,7 @@ BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_messa
         {
             if (threadProperty.first == "latestMessage")
             {
-                BOOST_REQUIRE( ! treeContains(threadProperty.second, "content"));
+                BOOST_REQUIRE(treeContains(threadProperty.second, "content"));
             }
         }
     }
