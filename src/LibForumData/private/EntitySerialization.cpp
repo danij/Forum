@@ -330,6 +330,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
             << propertySafeName("name", thread.name())
             << propertySafeName("created", thread.created())
             << propertySafeName("latestVisibleChangeAt", thread.latestVisibleChange())
+            << propertySafeName("pinned", thread.pinDisplayOrder() > 0)
             << propertySafeName("visitorsSinceLastChange", thread.nrOfVisitorsSinceLastEdit())
             << propertySafeName("subscribedUsersCount", thread.subscribedUsersCount());
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
