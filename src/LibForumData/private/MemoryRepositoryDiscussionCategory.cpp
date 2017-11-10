@@ -477,11 +477,13 @@ static void updateCategoryParent(DiscussionCategory& category, DiscussionCategor
     if (oldParent)
     {
         oldParent->removeTotalsFromChild(category);
+        oldParent->children().erase(category.pointer());
     }
 
     if (newParentPtr)
     {
         newParentPtr->addTotalsFromChild(category);
+        newParentPtr->children().insert(category.pointer());
     }
 }
 
