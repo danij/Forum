@@ -211,6 +211,8 @@ void execute(CommandHandler& handler, CommandType command, const std::initialize
 
 const int nrOfUsers = 1000;
 const int nrOfThreads = nrOfUsers * 1;
+const int maxThreadPinDisplayOrder = 10;
+const float threadPinProbability = 0.1;
 const int nrOfMessages = nrOfThreads * 50;
 const int nrOfVotes = nrOfMessages;
 const float upVoteProbability = 0.75;
@@ -551,6 +553,9 @@ void generateRandomData(BenchmarkContext& context)
         }
     };
 
+    std::uniform_int_distribution<> threadPinDisplayOrderDistribution(1, maxThreadPinDisplayOrder);
+    std::uniform_real_distribution<> threadPinDistribution(0.0, 1.0);
+
     for (size_t i = 0; i < nrOfThreads; i++)
     {
         Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
@@ -563,6 +568,12 @@ void generateRandomData(BenchmarkContext& context)
 
         threadIds.emplace_back(id);
         addMessage(id);
+
+        if (threadPinDistribution(randomGenerator) < threadPinProbability)
+        {
+            execute(handler, Command::CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER,
+                    { id, std::to_string(threadPinDisplayOrderDistribution(randomGenerator)) });
+        }
 
         context.incrementTimestamp(100);
         updateMessagesProcessedPercent();
