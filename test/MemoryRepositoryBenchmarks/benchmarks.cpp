@@ -88,6 +88,7 @@ struct BenchmarkContext
     std::shared_ptr<CommandHandler> handler;
     std::vector<IdType> userIds;
     std::vector<IdType> threadIds;
+    std::vector<IdType> threadMessageIds;
     std::vector<IdType> tagIds;
     std::vector<IdType> categoryIds;
     const int timestampIncrementMultiplier = 100;
@@ -211,6 +212,8 @@ void execute(CommandHandler& handler, CommandType command, const std::initialize
 const int nrOfUsers = 1000;
 const int nrOfThreads = nrOfUsers * 1;
 const int nrOfMessages = nrOfThreads * 50;
+const int nrOfVotes = nrOfMessages;
+const float upVoteProbability = 0.75;
 const int nrOfTags = 100;
 const int nrOfCategories = 100;
 const int nrOfCategoryParentChildRelationships = 70;
@@ -479,6 +482,7 @@ void generateRandomData(BenchmarkContext& context)
     auto& handler = *context.handler;
     auto& userIds = context.userIds;
     auto& threadIds = context.threadIds;
+    auto& threadMessageIds = context.threadMessageIds;
     auto& tagIds = context.tagIds;
     auto& categoryIds = context.categoryIds;
 
@@ -508,7 +512,8 @@ void generateRandomData(BenchmarkContext& context)
         messageLength = std::min(config->discussionThreadMessage.maxContentLength, messageLength);
         messageLength = std::min(static_cast<decltype(messageLength)>(4095), messageLength);
 
-        execute(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE, { threadId, getMessageText(buffer, messageLength) });
+        threadMessageIds.emplace_back(executeAndGetId(handler, Command::ADD_DISCUSSION_THREAD_MESSAGE,
+                                                      { threadId, getMessageText(buffer, messageLength) }));
     };
 
     for (size_t i = 0; i < nrOfTags; i++)
@@ -559,7 +564,7 @@ void generateRandomData(BenchmarkContext& context)
         threadIds.emplace_back(id);
         addMessage(id);
 
-        context.incrementTimestamp(10);
+        context.incrementTimestamp(100);
         updateMessagesProcessedPercent();
     }
     std::uniform_int_distribution<> threadIdDistribution(0, threadIds.size() - 1);
@@ -571,6 +576,27 @@ void generateRandomData(BenchmarkContext& context)
 
         context.incrementTimestamp(10);
         updateMessagesProcessedPercent();
+    }
+
+    std::uniform_int_distribution<> threadMessageIdDistribution(0, threadMessageIds.size() - 1);
+    std::uniform_real_distribution<> upOrDownVoteDistribution(0.0, 1.0);
+
+    for (size_t i = 0; i < nrOfVotes; i++)
+    {
+        Context::setCurrentUserId(userIds[userIdDistribution(randomGenerator)]);
+
+        if (upOrDownVoteDistribution(randomGenerator) < upVoteProbability)
+        {
+            execute(handler, Command::UP_VOTE_DISCUSSION_THREAD_MESSAGE,
+                    { threadMessageIds[threadMessageIdDistribution(randomGenerator)] });
+        }
+        else
+        {
+            execute(handler, Command::DOWN_VOTE_DISCUSSION_THREAD_MESSAGE,
+                    { threadMessageIds[threadMessageIdDistribution(randomGenerator)] });
+        }
+
+        context.incrementTimestamp(10);
     }
 
     for (auto& tuple : threadTagsToAdd)
