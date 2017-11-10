@@ -424,11 +424,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     void onChangeDiscussionThreadPinDisplayOrder(ObserverContext context, const DiscussionThread& thread)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
+        uint16_t pinDisplayOrder = thread.pinDisplayOrder();
+
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(thread.pinDisplayOrder()), static_cast<SizeType>(sizeof(uint16_t)), true }
+            { reinterpret_cast<const char*>(&pinDisplayOrder), static_cast<SizeType>(sizeof(pinDisplayOrder)), false }
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER, 1, parts, std::extent<decltype(parts)>::value);
