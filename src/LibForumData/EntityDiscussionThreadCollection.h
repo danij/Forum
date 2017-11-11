@@ -64,6 +64,8 @@ namespace Forum
         protected:
             virtual void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) = 0;
             virtual size_t countInternal() const = 0;
+            void prepareCountChange();
+            void finishCountChange();
 
         private:
 
