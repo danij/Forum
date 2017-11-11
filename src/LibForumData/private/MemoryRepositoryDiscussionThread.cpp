@@ -107,6 +107,10 @@ static void writeDiscussionThreads(const ThreadsCollection& collection, Retrieve
         writeEntitiesWithPagination(collection.byLastUpdated(), displayContext.pageNumber, pageSize, ascending, "threads",
             writer, writeFilter, restriction);
         break;
+    case RetrieveDiscussionThreadsBy::LatestMessageCreated:
+        writeEntitiesWithPagination(collection.byLatestMessageCreated(), displayContext.pageNumber, pageSize, ascending, "threads",
+            writer, writeFilter, restriction);
+        break;
     case RetrieveDiscussionThreadsBy::MessageCount:
         writeEntitiesWithPagination(collection.byMessageCount(), displayContext.pageNumber, pageSize, ascending, "threads",
             writer, writeFilter, restriction);

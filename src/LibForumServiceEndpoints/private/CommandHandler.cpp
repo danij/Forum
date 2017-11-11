@@ -276,6 +276,11 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED )
+    {
+        return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::LatestMessageCreated);
+    }
+
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::MessageCount);
@@ -344,6 +349,13 @@ struct CommandHandler::CommandHandlerImpl
                                                                       RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output,
+                                                                      RetrieveDiscussionThreadsBy::LatestMessageCreated);
+    }
+
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -382,6 +394,13 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
                                                                                 RetrieveDiscussionThreadsBy::LastUpdated);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
+                                                                                RetrieveDiscussionThreadsBy::LatestMessageCreated);
     }
 
     COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT )
@@ -543,6 +562,12 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_LATEST_MESSAGE_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::LatestMessageCreated);
+    }
+
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -662,6 +687,13 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output,
                                                                           RetrieveDiscussionThreadsBy::LastUpdated);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LATEST_MESSAGE_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output,
+                                                                          RetrieveDiscussionThreadsBy::LatestMessageCreated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT )
@@ -1113,17 +1145,20 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_BY_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
     setViewHandler(GET_DISCUSSION_THREAD_BY_ID);
 
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
 
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_NAME);
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_CREATED);
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
+    setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
 
     setViewHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED);
@@ -1140,6 +1175,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT);
 
     setViewHandler(GET_DISCUSSION_CATEGORY_BY_ID);
@@ -1150,6 +1186,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT);
 
     setViewHandler(GET_REQUIRED_PRIVILEGES_FOR_THREAD_MESSAGE);

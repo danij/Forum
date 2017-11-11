@@ -52,7 +52,7 @@ void DiscussionThread::insertMessage(DiscussionThreadMessagePtr message)
     if ( ! message) return;
 
     messages_.add(message);
-    latestMessageCreated_ = std::max(latestMessageCreated_, message->created());
+    updateLatestMessageCreated(std::max(latestMessageCreated_, message->created()));
 }
 
 void DiscussionThread::deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message)
@@ -69,10 +69,10 @@ void DiscussionThread::refreshLatestMessageCreated()
     auto it = index.rbegin();
     if (it == index.rend() || (! *it))
     {
-        latestMessageCreated_ = 0;
+        updateLatestMessageCreated(0);
         return;
     }
-    latestMessageCreated_ = (*it)->created();
+    updateLatestMessageCreated((*it)->created());
 }
 
 void DiscussionThread::addVisitorSinceLastEdit(IdTypeRef userId)

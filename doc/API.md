@@ -120,7 +120,7 @@ Returns a page of discussion threads.
 |Parameter|Type|Description|Default|
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
-|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `messagecount`|`name`|
+|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `latestmessagecreated`, `messagecount`|`name`|
 |Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### GET /threads/id/`threadid`
@@ -138,7 +138,7 @@ Returns a page of discussion threads of created by a user.
 |Parameter|Type|Description|Default|
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
-|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `messagecount`|`name`|
+|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `latestmessagecreated`, `messagecount`|`name`|
 |Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### GET /threads/subscribed/user/`userid`
@@ -150,7 +150,7 @@ Returns a page of discussion threads to which a user is subscribed.
 |Parameter|Type|Description|Default|
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
-|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `messagecount`|`name`|
+|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `latestmessagecreated`, `messagecount`|`name`|
 |Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### GET /threads/tag/`tagid`
@@ -162,7 +162,7 @@ Returns a page of discussion threads which have a specific tag assigned.
 |Parameter|Type|Description|Default|
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
-|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `messagecount`|`name`|
+|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `latestmessagecreated`, `messagecount`|`name`|
 |Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### GET /threads/category/`categoryid`
@@ -174,7 +174,7 @@ Returns a page of discussion threads which belong to a category.
 |Parameter|Type|Description|Default|
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
-|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `messagecount`|`name`|
+|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `latestmessagecreated`, `messagecount`|`name`|
 |Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### POST /threads

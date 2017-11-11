@@ -44,6 +44,7 @@ namespace Forum
             Name,
             Created,
             LastUpdated,
+            LatestMessageCreated,
             MessageCount
         };
 

@@ -179,6 +179,13 @@ namespace Forum
                 changeNotifications_.onUpdatePinDisplayOrder(*this);
             }
 
+            void updateLatestMessageCreated(Timestamp value)
+            {
+                changeNotifications_.onPrepareUpdateLatestMessageCreated(*this);
+                latestMessageCreated_ = value;
+                changeNotifications_.onUpdateLatestMessageCreated(*this);
+            }
+
             void insertMessage(DiscussionThreadMessagePtr message);
             void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message);
 
