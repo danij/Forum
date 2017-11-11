@@ -42,6 +42,7 @@ namespace Forum
 
             bool hideLatestMessage = false;
             bool hidePrivileges = false;
+            bool onlySendCategoryParentId = false;
         };
 
         extern thread_local SerializationSettings serializationSettings;

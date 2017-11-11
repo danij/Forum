@@ -42,6 +42,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
         }
 
         BoolTemporaryChanger _(serializationSettings.hideLatestMessage, true);
+        BoolTemporaryChanger __(serializationSettings.onlySendCategoryParentId, true);
 
         SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
 

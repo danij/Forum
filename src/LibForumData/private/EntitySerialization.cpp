@@ -510,13 +510,20 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
     {
         if (DiscussionCategoryConstPtr parent = category.parent())
         {
-            BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
-            BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
+            if (serializationSettings.onlySendCategoryParentId)
+            {
+                writer.newPropertyWithSafeName("parentId") << parent->id();
+            }
+            else
+            {
+                BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
+                BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
 
-            depth += 1;
-            writer.newPropertyWithSafeName("parent");
-            serialize(writer, *parent, restriction);
-        };
+                depth += 1;
+                writer.newPropertyWithSafeName("parent");
+                serialize(writer, *parent, restriction);
+            }
+        }
     }
 
     if ( ! serializationSettings.hidePrivileges)
