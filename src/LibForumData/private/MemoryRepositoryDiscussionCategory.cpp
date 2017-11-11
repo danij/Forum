@@ -649,7 +649,11 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(EntityCo
     DiscussionCategoryPtr category = *it;
     auto currentUser = getCurrentUser(collection);
 
-    for (DiscussionCategoryPtr childCategory : category->children())
+    std::vector<DiscussionCategoryPtr> childCategories;
+    auto& children = category->children();
+    std::copy(children.begin(), children.end(), std::back_inserter(childCategories));
+
+    for (DiscussionCategoryPtr childCategory : childCategories)
     {
         updateCategoryParent(*childCategory, {}, currentUser);
     }
