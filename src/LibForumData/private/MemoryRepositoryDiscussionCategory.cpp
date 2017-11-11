@@ -41,6 +41,8 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
             return;
         }
 
+        BoolTemporaryChanger _(serializationSettings.hideLatestMessage, true);
+
         SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
 
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
