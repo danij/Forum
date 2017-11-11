@@ -472,19 +472,23 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_parent_works )
     auto category2 = getCategory(handler, parentCategory2Id);
     BOOST_REQUIRE_EQUAL(parentCategory2Id, category2.id);
     BOOST_REQUIRE_EQUAL("Parent2", category2.name);
-    BOOST_REQUIRE_EQUAL(3u, category2.children.size());
+    BOOST_REQUIRE_EQUAL(4u, category2.children.size());
 
     BOOST_REQUIRE_EQUAL(childCategory2Id, category2.children[0].id);
     BOOST_REQUIRE_EQUAL("Child2-100", category2.children[0].name);
     BOOST_REQUIRE_EQUAL(100, category2.children[0].displayOrder);
 
-    BOOST_REQUIRE_EQUAL(childCategory3Id, category2.children[1].id);
-    BOOST_REQUIRE_EQUAL("Child3-300", category2.children[1].name);
-    BOOST_REQUIRE_EQUAL(300, category2.children[1].displayOrder);
+    BOOST_REQUIRE_EQUAL(childCategory1Id, category2.children[1].id);
+    BOOST_REQUIRE_EQUAL("Child1-200", category2.children[1].name);
+    BOOST_REQUIRE_EQUAL(200, category2.children[1].displayOrder);
 
-    BOOST_REQUIRE_EQUAL(childCategory4Id, category2.children[2].id);
-    BOOST_REQUIRE_EQUAL("Child4", category2.children[2].name);
-    BOOST_REQUIRE_EQUAL(400, category2.children[2].displayOrder);
+    BOOST_REQUIRE_EQUAL(childCategory3Id, category2.children[2].id);
+    BOOST_REQUIRE_EQUAL("Child3-300", category2.children[2].name);
+    BOOST_REQUIRE_EQUAL(300, category2.children[2].displayOrder);
+
+    BOOST_REQUIRE_EQUAL(childCategory4Id, category2.children[3].id);
+    BOOST_REQUIRE_EQUAL("Child4", category2.children[3].name);
+    BOOST_REQUIRE_EQUAL(400, category2.children[3].displayOrder);
 
     assertStatusCodeEqual(StatusCode::OK,
                           handlerToObj(handler, Forum::Commands::CHANGE_DISCUSSION_CATEGORY_PARENT,
@@ -579,7 +583,7 @@ BOOST_AUTO_TEST_CASE( Discussion_tags_can_be_attached_to_categories_even_if_they
 
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY,
                                                        { tagId, categoryId }));
-                                                       
+
     assertStatusCodeEqual(StatusCode::NO_EFFECT, handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_TAG_TO_CATEGORY,
                                                               { tagId, categoryId }));
 
