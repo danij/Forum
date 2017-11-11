@@ -91,7 +91,7 @@ struct BenchmarkContext
     std::vector<IdType> threadMessageIds;
     std::vector<IdType> tagIds;
     std::vector<IdType> categoryIds;
-    const int timestampIncrementMultiplier = 10;
+    const int timestampIncrementMultiplier = 20;
     std::shared_ptr<EventObserver> persistenceObserver;
     ObservableRepositoryRef observableRepository;
     DirectWriteRepositoryCollection writeRepositories;
@@ -607,7 +607,7 @@ void generateRandomData(BenchmarkContext& context)
                     { threadMessageIds[threadMessageIdDistribution(randomGenerator)] });
         }
 
-        context.incrementTimestamp(10);
+        context.incrementTimestamp(1);
     }
 
     for (auto& tuple : threadTagsToAdd)
