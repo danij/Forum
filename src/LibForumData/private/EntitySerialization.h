@@ -33,6 +33,7 @@ namespace Forum
             bool hideDiscussionCategoryParent = false;
             bool showDiscussionCategoryChildren = false;
             bool hideDiscussionCategoriesOfTags = false;
+            bool keepDiscussionCategoryDetails = false;
             boost::optional<int> displayDiscussionCategoryParentRecursionDepth = boost::none;
 
             boost::optional<bool> allowDisplayDiscussionThreadMessage = boost::none;

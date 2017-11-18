@@ -151,6 +151,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(IdTypeR
 
                           status.disable();
                           BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
+                          BoolTemporaryChanger __(serializationSettings.keepDiscussionCategoryDetails, true);
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
                                                                Context::getCurrentTime());

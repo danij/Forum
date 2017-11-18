@@ -488,11 +488,13 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
     if (serializationSettings.showDiscussionCategoryChildren)
     {
         //only show 1 level of category children
+        auto hideDetails = ! serializationSettings.keepDiscussionCategoryDetails;
+
         BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryParent, true);
-        BoolTemporaryChanger ___(serializationSettings.hideDiscussionCategoryTags, true);
-        BoolTemporaryChanger ____(serializationSettings.hideLatestMessage, true);
-        BoolTemporaryChanger _____(serializationSettings.hidePrivileges, true);
+        BoolTemporaryChanger ___(serializationSettings.hideDiscussionCategoryTags, hideDetails);
+        BoolTemporaryChanger ____(serializationSettings.hideLatestMessage, hideDetails);
+        BoolTemporaryChanger _____(serializationSettings.hidePrivileges, hideDetails);
 
         writeArraySafeName(writer, "children", category.children().begin(), category.children().end(), restriction);
     }
