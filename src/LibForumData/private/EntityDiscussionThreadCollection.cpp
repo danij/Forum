@@ -200,6 +200,7 @@ bool DiscussionThreadCollectionWithHashedIdAndPinOrder::remove(DiscussionThreadP
 void DiscussionThreadCollectionWithHashedIdAndPinOrder::stopBatchInsert()
 {
     if ( ! Context::isBatchInsertInProgress()) return;
+    DiscussionThreadCollectionWithHashedId::stopBatchInsert();
 
     byPinDisplayOrder_.clear();
 
