@@ -45,6 +45,7 @@ namespace Forum
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetDiscussionThreadsOfUser;
 
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetDiscussionThreadMessagesOfUser;
+            boost::signals2::signal<void(ObserverContext)> onGetLatestDiscussionThreadMessages;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&)>
                                                           onGetDiscussionThreadMessageRank;
 

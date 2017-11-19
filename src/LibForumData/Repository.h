@@ -210,6 +210,7 @@ namespace Forum
             virtual StatusCode getMessageCommentsOfDiscussionThreadMessage(Entities::IdTypeRef id,
                                                                            OutStream& output) const = 0;
             virtual StatusCode getMessageCommentsOfUser(Entities::IdTypeRef id,  OutStream& output) const = 0;
+            virtual StatusCode getLatestDiscussionThreadMessages(OutStream& output) const = 0;
 
             virtual StatusCode addNewDiscussionMessageInThread(Entities::IdTypeRef threadId,
                                                                StringView content, OutStream& output) = 0;

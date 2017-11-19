@@ -668,6 +668,15 @@ void DiscussionThreadMessagesEndpoint::getThreadMessagesOfUser(Http::RequestStat
     });
 }
 
+void DiscussionThreadMessagesEndpoint::getLatestThreadMessages(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::GET_LATEST_DISCUSSION_THREAD_MESSAGES, parameters);
+    });
+}
+
 void DiscussionThreadMessagesEndpoint::getRankOfMessage(Http::RequestState& requestState)
 {
     handle(requestState,

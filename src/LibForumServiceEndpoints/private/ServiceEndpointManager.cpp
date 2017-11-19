@@ -81,6 +81,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "threads/tag",             HttpVerb::DELETE, ENDPOINT_DELEGATE(threadsEndpoint.removeTag) },
 
         { "thread_messages/user",           HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getThreadMessagesOfUser) },
+        { "thread_messages/latest",         HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getLatestThreadMessages) },
         { "thread_messages/allcomments",    HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getAllComments) },
         { "thread_messages/comments",       HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getCommentsOfMessage) },
         { "thread_messages/comments/user",  HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getCommentsOfUser) },

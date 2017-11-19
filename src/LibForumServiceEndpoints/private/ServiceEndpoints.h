@@ -99,6 +99,7 @@ namespace Forum
             explicit DiscussionThreadMessagesEndpoint(CommandHandler& handler);
 
             void getThreadMessagesOfUser(Http::RequestState& requestState);
+            void getLatestThreadMessages(Http::RequestState& requestState);
             void getRankOfMessage(Http::RequestState& requestState);
             void getAllComments(Http::RequestState& requestState);
             void getCommentsOfMessage(Http::RequestState& requestState);

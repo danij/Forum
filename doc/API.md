@@ -251,6 +251,10 @@ Returns a page of discussion thread messages created by a specific user.
 
 `userid` – a unique identifier of the user to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
+### GET /thread_messages/latest
+
+Returns a page of the most recently created discussion thread messages.
+
 ### GET /thread_messages/allcomments
 
 Returns a page of discussion thread message comments, ordered by the creation date/time.

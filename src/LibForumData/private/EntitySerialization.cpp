@@ -348,7 +348,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
 
     writer << propertySafeName("messageCount", messageCount);
 
-    if (messageCount)
+    if (messageCount && ! serializationSettings.hideLatestMessage)
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 

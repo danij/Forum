@@ -76,6 +76,34 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
     return status;
 }
 
+StatusCode MemoryRepositoryDiscussionThreadMessage::getLatestDiscussionThreadMessages(OutStream& output) const
+{
+    StatusWriter status(output);
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+    {
+        auto& currentUser = performedBy.get(collection, *store_);
+
+        const auto& messages = collection.threadMessages().byCreated();
+
+        BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
+        BoolTemporaryChanger __(serializationSettings.hideLatestMessage, true);
+
+        auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
+
+        status = StatusCode::OK;
+        status.disable();
+
+        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
+
+        writeEntitiesWithPagination(messages, "messages", output, 0, pageSize, false, restriction);
+
+        readEvents().onGetLatestDiscussionThreadMessages(createObserverContext(currentUser));
+    });
+    return status;
+}
+
 StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessageRank(IdTypeRef id, OutStream& output) const
 {
     StatusWriter status(output);
