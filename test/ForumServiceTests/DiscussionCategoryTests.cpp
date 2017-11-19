@@ -751,7 +751,7 @@ BOOST_AUTO_TEST_CASE( Discussion_categories_include_all_parent_levels_in_results
     BOOST_REQUIRE( ! childChildCategory.parent->parent->parent);
 }
 
-BOOST_AUTO_TEST_CASE( Discussion_categories_include_tags_of_current_but_not_of_children_in_results )
+BOOST_AUTO_TEST_CASE( Discussion_categories_include_tags_of_current_and_one_level_of_children_in_results )
 {
     auto handler = createCommandHandler();
     auto parentCategoryId = createDiscussionCategoryAndGetId(handler, "Parent");
@@ -771,7 +771,9 @@ BOOST_AUTO_TEST_CASE( Discussion_categories_include_tags_of_current_but_not_of_c
 
     BOOST_REQUIRE_EQUAL(1u, parentCategory.children.size());
     BOOST_REQUIRE_EQUAL(childCategoryId, parentCategory.children[0].id);
-    BOOST_REQUIRE_EQUAL(0u, parentCategory.children[0].tags.size());
+    BOOST_REQUIRE_EQUAL(1u, parentCategory.children[0].tags.size());
+    BOOST_REQUIRE_EQUAL(tag2Id, parentCategory.children[0].tags[0].id);
+    BOOST_REQUIRE_EQUAL("Tag2", parentCategory.children[0].tags[0].name);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_categories_recursively_include_total_thread_and_message_count )
