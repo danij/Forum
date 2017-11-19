@@ -92,14 +92,25 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
 JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessage& message,
                                 const SerializationRestriction& restriction)
 {
-    auto allowViewOverride = serializationSettings.allowDisplayDiscussionThreadMessage == true;
-    auto allowViewUserOverride = serializationSettings.allowDisplayDiscussionThreadMessageUser == true;
-    auto allowViewVotesOverride = serializationSettings.allowDisplayDiscussionThreadMessageVotes == true;
-    auto allowViewIpAddressOverride = serializationSettings.allowDisplayDiscussionThreadMessageIpAddress == true;
+    auto allowView = serializationSettings.allowDisplayDiscussionThreadMessage
+        ? *serializationSettings.allowDisplayDiscussionThreadMessage
+        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW);
 
-    if ( ! allowViewOverride)
+    auto allowViewUser = serializationSettings.allowDisplayDiscussionThreadMessageUser
+        ? *serializationSettings.allowDisplayDiscussionThreadMessageUser
+        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER);
+
+    auto allowViewVotes = serializationSettings.allowDisplayDiscussionThreadMessageVotes
+        ? *serializationSettings.allowDisplayDiscussionThreadMessageVotes
+        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_VOTES);
+
+    auto allowViewIpAddress = serializationSettings.allowDisplayDiscussionThreadMessageIpAddress
+        ? *serializationSettings.allowDisplayDiscussionThreadMessageIpAddress
+        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS);
+
+    if ( ! allowView)
     {
-        if ( ! restriction.isAllowed(message)) return writer.null();
+        return writer.null();
     }
 
     writer
@@ -112,7 +123,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     auto content = message.content();
     writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
 
-    if (allowViewUserOverride && ( ! serializationSettings.hideDiscussionThreadMessageCreatedBy))
+    if (allowViewUser && ( ! serializationSettings.hideDiscussionThreadMessageCreatedBy))
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
@@ -137,14 +148,14 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         writer.startObject();
 
         UserConstPtr by = message.lastUpdatedBy();
-        if (by && allowViewUserOverride)
+        if (by && allowViewUser)
         {
             writer << propertySafeName("userId", by->id())
                     << propertySafeName("userName", by->name());
         }
         writer << propertySafeName("at", message.lastUpdated())
                << propertySafeName("reason", message.lastUpdatedReason());
-        if (allowViewIpAddressOverride)
+        if (allowViewIpAddress)
         {
             writeVisitDetails(writer, message.lastUpdatedDetails());
         }
@@ -152,12 +163,12 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         writer.endObject();
     }
 
-    if (allowViewIpAddressOverride)
+    if (allowViewIpAddress)
     {
         writeVisitDetails(writer, message.creationDetails());
     }
 
-    if (allowViewVotesOverride)
+    if (allowViewVotes)
     {
         writeVotes(writer, "upVotes", message.upVotes());
         writeVotes(writer, "downVotes", message.downVotes());
