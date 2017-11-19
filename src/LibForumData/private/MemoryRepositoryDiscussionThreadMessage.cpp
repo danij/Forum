@@ -60,6 +60,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
         BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadMessages, true);
+        BoolTemporaryChanger ____(serializationSettings.hideLatestMessage, true);
 
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
         auto& displayContext = Context::getDisplayContext();
