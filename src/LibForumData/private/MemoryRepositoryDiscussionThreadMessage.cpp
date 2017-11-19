@@ -57,10 +57,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
         const User* user = *it;
 
         const auto& messages = user->threadMessages().byCreated();
-        BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
-        BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
-        BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadMessages, true);
-        BoolTemporaryChanger ____(serializationSettings.hideLatestMessage, true);
+        BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
+        BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
+        BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
 
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
         auto& displayContext = Context::getDisplayContext();
