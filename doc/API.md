@@ -120,7 +120,7 @@ Returns a page of discussion threads.
 |Parameter|Type|Description|Default|
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
-|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `messagecount`|`name`|
+|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `latestmessagecreated`, `messagecount`|`name`|
 |Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### GET /threads/id/`threadid`
@@ -128,6 +128,10 @@ Returns a page of discussion threads.
 Returns a discussion thread with a page of it's messages, searched by id. 
 
 `threadid` – a unique identifier of the discussion thread to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+|Parameter|Type|Description|Default|
+|----|:----:|----|:----:|
+|Page|Query String|Zero-based page number|0|
 
 ### GET /threads/user/`userid`
 
@@ -138,7 +142,7 @@ Returns a page of discussion threads of created by a user.
 |Parameter|Type|Description|Default|
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
-|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `messagecount`|`name`|
+|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `latestmessagecreated`, `messagecount`|`name`|
 |Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### GET /threads/subscribed/user/`userid`
@@ -150,7 +154,7 @@ Returns a page of discussion threads to which a user is subscribed.
 |Parameter|Type|Description|Default|
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
-|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `messagecount`|`name`|
+|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `latestmessagecreated`, `messagecount`|`name`|
 |Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### GET /threads/tag/`tagid`
@@ -162,7 +166,7 @@ Returns a page of discussion threads which have a specific tag assigned.
 |Parameter|Type|Description|Default|
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
-|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `messagecount`|`name`|
+|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `latestmessagecreated`, `messagecount`|`name`|
 |Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### GET /threads/category/`categoryid`
@@ -174,7 +178,7 @@ Returns a page of discussion threads which belong to a category.
 |Parameter|Type|Description|Default|
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
-|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `messagecount`|`name`|
+|OrderBy|Query String|One of: `name`, `created`, `lastupdated`, `latestmessagecreated`, `messagecount`|`name`|
 |Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### POST /threads
@@ -250,6 +254,15 @@ Removes a tag from a discussion thread.
 Returns a page of discussion thread messages created by a specific user.
 
 `userid` – a unique identifier of the user to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+|Parameter|Type|Description|Default|
+|----|:----:|----|:----:|
+|Page|Query String|Zero-based page number|0|
+|Sort|Query String|One of: `ascending`, `descending`|`ascending`|
+
+### GET /thread_messages/latest
+
+Returns a page of the most recently created discussion thread messages.
 
 ### GET /thread_messages/allcomments
 

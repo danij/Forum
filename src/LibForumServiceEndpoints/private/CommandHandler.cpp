@@ -1,3 +1,21 @@
+/*
+Fast Forum Backend
+Copyright (C) 2016-2017 Daniel Jurcau
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "CommandHandler.h"
 #include "Configuration.h"
 #include "OutputHelpers.h"
@@ -276,6 +294,11 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED )
+    {
+        return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::LatestMessageCreated);
+    }
+
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::MessageCount);
@@ -344,6 +367,13 @@ struct CommandHandler::CommandHandlerImpl
                                                                       RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getDiscussionThreadsOfUser(parameters[0], output,
+                                                                      RetrieveDiscussionThreadsBy::LatestMessageCreated);
+    }
+
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -382,6 +412,13 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
                                                                                 RetrieveDiscussionThreadsBy::LastUpdated);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
+                                                                                RetrieveDiscussionThreadsBy::LatestMessageCreated);
     }
 
     COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT )
@@ -443,6 +480,11 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_LATEST_DISCUSSION_THREAD_MESSAGES )
+    {
+        return discussionThreadMessageRepository->getLatestDiscussionThreadMessages(output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREAD_MESSAGE_RANK )
@@ -541,6 +583,12 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::LastUpdated);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_LATEST_MESSAGE_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getDiscussionThreadsWithTag(parameters[0], output, RetrieveDiscussionThreadsBy::LatestMessageCreated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT )
@@ -662,6 +710,13 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output,
                                                                           RetrieveDiscussionThreadsBy::LastUpdated);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LATEST_MESSAGE_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output,
+                                                                          RetrieveDiscussionThreadsBy::LatestMessageCreated);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT )
@@ -1113,20 +1168,24 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_BY_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
     setViewHandler(GET_DISCUSSION_THREAD_BY_ID);
 
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
 
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_NAME);
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_CREATED);
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
+    setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
 
     setViewHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED);
+    setViewHandler(GET_LATEST_DISCUSSION_THREAD_MESSAGES);
     setViewHandler(GET_DISCUSSION_THREAD_MESSAGE_RANK);
 
     setViewHandler(GET_MESSAGE_COMMENTS);
@@ -1140,6 +1199,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT);
 
     setViewHandler(GET_DISCUSSION_CATEGORY_BY_ID);
@@ -1150,6 +1210,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED);
+    setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT);
 
     setViewHandler(GET_REQUIRED_PRIVILEGES_FOR_THREAD_MESSAGE);

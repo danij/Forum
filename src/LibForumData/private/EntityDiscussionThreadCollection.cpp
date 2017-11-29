@@ -1,3 +1,21 @@
+/*
+Fast Forum Backend
+Copyright (C) 2016-2017 Daniel Jurcau
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "EntityDiscussionThreadCollection.h"
 #include "ContextProviders.h"
 
@@ -5,8 +23,6 @@ using namespace Forum::Entities;
 
 bool DiscussionThreadCollectionBase::add(DiscussionThreadPtr thread)
 {
-    if (onPrepareCountChange_) onPrepareCountChange_();
-
     if ( ! Context::isBatchInsertInProgress())
     {
         byName_.insert(thread);
@@ -16,14 +32,21 @@ bool DiscussionThreadCollectionBase::add(DiscussionThreadPtr thread)
         byMessageCount_.insert(thread);
     }
 
-    if (onCountChange_) onCountChange_();
     return true;
+}
+
+void DiscussionThreadCollectionBase::prepareCountChange()
+{
+    if (onPrepareCountChange_) onPrepareCountChange_();
+}
+
+void DiscussionThreadCollectionBase::finishCountChange()
+{
+    if (onCountChange_) onCountChange_();
 }
 
 bool DiscussionThreadCollectionBase::remove(DiscussionThreadPtr thread)
 {
-    if (onPrepareCountChange_) onPrepareCountChange_();
-
     if ( ! Context::isBatchInsertInProgress())
     {
         eraseFromNonUniqueCollection(byName_, thread, thread->name());
@@ -33,7 +56,6 @@ bool DiscussionThreadCollectionBase::remove(DiscussionThreadPtr thread)
         eraseFromNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
     }
 
-    if (onCountChange_) onCountChange_();
     return true;
 }
 
@@ -127,20 +149,34 @@ void DiscussionThreadCollectionBase::updateMessageCount(DiscussionThreadPtr thre
 
 bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
 {
-    if ( ! std::get<1>(byId_.insert(thread))) return false;
+    prepareCountChange();
+    if ( ! std::get<1>(byId_.insert(thread)))
+    {
+        finishCountChange();
+        return false;
+    }
 
-    return DiscussionThreadCollectionBase::add(thread);
+    auto result = DiscussionThreadCollectionBase::add(thread);
+    finishCountChange();
+    return result;
 }
 
 bool DiscussionThreadCollectionWithHashedId::remove(DiscussionThreadPtr thread)
 {
+    prepareCountChange();
     {
         auto itById = byId_.find(thread->id());
-        if (itById == byId_.end()) return false;
+        if (itById == byId_.end())
+        {
+            finishCountChange();
+            return false;
+        }
 
         byId_.erase(itById);
     }
-    return DiscussionThreadCollectionBase::remove(thread);
+    auto result = DiscussionThreadCollectionBase::remove(thread);
+    finishCountChange();
+    return result;
 }
 
 bool DiscussionThreadCollectionWithHashedId::contains(DiscussionThreadPtr thread) const
@@ -182,6 +218,7 @@ bool DiscussionThreadCollectionWithHashedIdAndPinOrder::remove(DiscussionThreadP
 void DiscussionThreadCollectionWithHashedIdAndPinOrder::stopBatchInsert()
 {
     if ( ! Context::isBatchInsertInProgress()) return;
+    DiscussionThreadCollectionWithHashedId::stopBatchInsert();
 
     byPinDisplayOrder_.clear();
 
@@ -208,20 +245,34 @@ void DiscussionThreadCollectionWithHashedIdAndPinOrder::updatePinDisplayOrder(Di
 
 bool DiscussionThreadCollectionWithOrderedId::add(DiscussionThreadPtr thread)
 {
-    if ( ! std::get<1>(byId_.insert(thread))) return false;
+    prepareCountChange();
+    if ( ! std::get<1>(byId_.insert(thread)))
+    {
+        finishCountChange();
+        return false;
+    }
 
-    return DiscussionThreadCollectionBase::add(thread);
+    auto result = DiscussionThreadCollectionBase::add(thread);
+    finishCountChange();
+    return result;
 }
 
 bool DiscussionThreadCollectionWithOrderedId::remove(DiscussionThreadPtr thread)
 {
+    prepareCountChange();
     {
         auto itById = byId_.find(thread->id());
-        if (itById == byId_.end()) return false;
+        if (itById == byId_.end())
+        {
+            finishCountChange();
+            return false;
+        }
 
         byId_.erase(itById);
     }
-    return DiscussionThreadCollectionBase::remove(thread);
+    auto result = DiscussionThreadCollectionBase::remove(thread);
+    finishCountChange();
+    return result;
 }
 
 bool DiscussionThreadCollectionWithOrderedId::contains(DiscussionThreadPtr thread) const

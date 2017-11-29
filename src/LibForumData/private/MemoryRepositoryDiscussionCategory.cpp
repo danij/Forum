@@ -1,3 +1,21 @@
+/*
+Fast Forum Backend
+Copyright (C) 2016-2017 Daniel Jurcau
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "MemoryRepositoryDiscussionCategory.h"
 
 #include "Configuration.h"
@@ -40,6 +58,9 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
         {
             return;
         }
+
+        BoolTemporaryChanger _(serializationSettings.hideLatestMessage, true);
+        BoolTemporaryChanger __(serializationSettings.onlySendCategoryParentId, true);
 
         SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
 
@@ -148,6 +169,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(IdTypeR
 
                           status.disable();
                           BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
+                          BoolTemporaryChanger __(serializationSettings.keepDiscussionCategoryDetails, true);
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
                                                                Context::getCurrentTime());
@@ -477,11 +499,13 @@ static void updateCategoryParent(DiscussionCategory& category, DiscussionCategor
     if (oldParent)
     {
         oldParent->removeTotalsFromChild(category);
+        oldParent->children().erase(category.pointer());
     }
 
     if (newParentPtr)
     {
         newParentPtr->addTotalsFromChild(category);
+        newParentPtr->children().insert(category.pointer());
     }
 }
 
@@ -644,7 +668,11 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(EntityCo
     DiscussionCategoryPtr category = *it;
     auto currentUser = getCurrentUser(collection);
 
-    for (DiscussionCategoryPtr childCategory : category->children())
+    std::vector<DiscussionCategoryPtr> childCategories;
+    auto& children = category->children();
+    std::copy(children.begin(), children.end(), std::back_inserter(childCategories));
+
+    for (DiscussionCategoryPtr childCategory : childCategories)
     {
         updateCategoryParent(*childCategory, {}, currentUser);
     }

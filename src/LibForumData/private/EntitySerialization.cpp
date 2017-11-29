@@ -1,3 +1,21 @@
+/*
+Fast Forum Backend
+Copyright (C) 2016-2017 Daniel Jurcau
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "Configuration.h"
 #include "EntitySerialization.h"
 #include "StateHelpers.h"
@@ -51,6 +69,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
             << propertySafeName("lastSeen", user.lastSeen())
             << propertySafeName("threadCount", user.threads().byId().size())
             << propertySafeName("messageCount", user.threadMessages().byId().size())
+            << propertySafeName("receivedUpVotes", user.receivedUpVotes())
+            << propertySafeName("receivedDownVotes", user.receivedDownVotes())
         << objEnd;
     return writer;
 }
@@ -90,14 +110,25 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
 JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessage& message,
                                 const SerializationRestriction& restriction)
 {
-    auto allowViewOverride = serializationSettings.allowDisplayDiscussionThreadMessage == true;
-    auto allowViewUserOverride = serializationSettings.allowDisplayDiscussionThreadMessageUser == true;
-    auto allowViewVotesOverride = serializationSettings.allowDisplayDiscussionThreadMessageVotes == true;
-    auto allowViewIpAddressOverride = serializationSettings.allowDisplayDiscussionThreadMessageIpAddress == true;
+    auto allowView = serializationSettings.allowDisplayDiscussionThreadMessage
+        ? *serializationSettings.allowDisplayDiscussionThreadMessage
+        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW);
 
-    if ( ! allowViewOverride)
+    auto allowViewUser = serializationSettings.allowDisplayDiscussionThreadMessageUser
+        ? *serializationSettings.allowDisplayDiscussionThreadMessageUser
+        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER);
+
+    auto allowViewVotes = serializationSettings.allowDisplayDiscussionThreadMessageVotes
+        ? *serializationSettings.allowDisplayDiscussionThreadMessageVotes
+        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_VOTES);
+
+    auto allowViewIpAddress = serializationSettings.allowDisplayDiscussionThreadMessageIpAddress
+        ? *serializationSettings.allowDisplayDiscussionThreadMessageIpAddress
+        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS);
+
+    if ( ! allowView)
     {
-        if ( ! restriction.isAllowed(message)) return writer.null();
+        return writer.null();
     }
 
     writer
@@ -110,7 +141,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     auto content = message.content();
     writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
 
-    if (allowViewUserOverride && ( ! serializationSettings.hideDiscussionThreadMessageCreatedBy))
+    if (allowViewUser && ( ! serializationSettings.hideDiscussionThreadMessageCreatedBy))
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
@@ -135,14 +166,14 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         writer.startObject();
 
         UserConstPtr by = message.lastUpdatedBy();
-        if (by && allowViewUserOverride)
+        if (by && allowViewUser)
         {
             writer << propertySafeName("userId", by->id())
                     << propertySafeName("userName", by->name());
         }
         writer << propertySafeName("at", message.lastUpdated())
                << propertySafeName("reason", message.lastUpdatedReason());
-        if (allowViewIpAddressOverride)
+        if (allowViewIpAddress)
         {
             writeVisitDetails(writer, message.lastUpdatedDetails());
         }
@@ -150,12 +181,12 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         writer.endObject();
     }
 
-    if (allowViewIpAddressOverride)
+    if (allowViewIpAddress)
     {
         writeVisitDetails(writer, message.creationDetails());
     }
 
-    if (allowViewVotesOverride)
+    if (allowViewVotes)
     {
         writeVotes(writer, "upVotes", message.upVotes());
         writeVotes(writer, "downVotes", message.downVotes());
@@ -174,16 +205,24 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
 static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage& latestMessage,
                                const SerializationRestriction& restriction)
 {
+    auto parentThread = latestMessage.parentThread();
+    assert(parentThread);
+
     writer.newPropertyWithSafeName("latestMessage");
     writer << objStart
         << propertySafeName("id", latestMessage.id())
-        << propertySafeName("created", latestMessage.created());
-    writer.newPropertyWithSafeName("createdBy");
+        << propertySafeName("created", latestMessage.created())
+        << propertySafeName("threadId", parentThread->id())
+        << propertySafeName("threadName", parentThread->name());
 
-    BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
+    auto content = latestMessage.content();
+    writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
 
-    serialize(writer, latestMessage.createdBy(), restriction);
-
+    {
+        writer.newPropertyWithSafeName("createdBy");
+        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
+        serialize(writer, latestMessage.createdBy(), restriction);
+    }
     writer << objEnd;
 }
 
@@ -322,8 +361,10 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
             << propertySafeName("name", thread.name())
             << propertySafeName("created", thread.created())
             << propertySafeName("latestVisibleChangeAt", thread.latestVisibleChange())
+            << propertySafeName("pinned", thread.pinDisplayOrder() > 0)
             << propertySafeName("visitorsSinceLastChange", thread.nrOfVisitorsSinceLastEdit())
             << propertySafeName("subscribedUsersCount", thread.subscribedUsersCount());
+
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
@@ -337,7 +378,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
 
     writer << propertySafeName("messageCount", messageCount);
 
-    if (messageCount)
+    if (messageCount && ! serializationSettings.hideLatestMessage)
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
@@ -470,14 +511,20 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
     {
         BoolTemporaryChanger _(serializationSettings.hideDiscussionCategoriesOfTags, true);
         BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
+        BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
 
         writeArraySafeName(writer, "tags", category.tags().begin(), category.tags().end(), restriction);
     }
     if (serializationSettings.showDiscussionCategoryChildren)
     {
         //only show 1 level of category children
+        auto hideDetails = ! serializationSettings.keepDiscussionCategoryDetails;
+
         BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryParent, true);
+        BoolTemporaryChanger ___(serializationSettings.hideDiscussionCategoryTags, hideDetails);
+        BoolTemporaryChanger ____(serializationSettings.hideLatestMessage, hideDetails);
+        BoolTemporaryChanger _____(serializationSettings.hidePrivileges, hideDetails);
 
         writeArraySafeName(writer, "children", category.children().begin(), category.children().end(), restriction);
     }
@@ -495,13 +542,20 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
     {
         if (DiscussionCategoryConstPtr parent = category.parent())
         {
-            BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
-            BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
+            if (serializationSettings.onlySendCategoryParentId)
+            {
+                writer.newPropertyWithSafeName("parentId") << parent->id();
+            }
+            else
+            {
+                BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
+                BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
 
-            depth += 1;
-            writer.newPropertyWithSafeName("parent");
-            serialize(writer, *parent, restriction);
-        };
+                depth += 1;
+                writer.newPropertyWithSafeName("parent");
+                serialize(writer, *parent, restriction);
+            }
+        }
     }
 
     if ( ! serializationSettings.hidePrivileges)

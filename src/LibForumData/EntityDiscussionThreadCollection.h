@@ -1,3 +1,21 @@
+/*
+Fast Forum Backend
+Copyright (C) 2016-2017 Daniel Jurcau
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
 #include "ConstCollectionAdapter.h"
@@ -47,7 +65,7 @@ namespace Forum
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
 
-            auto count()                  const { return byName_.size(); }
+            auto count()                  const { return countInternal(); }
 
             auto byName()                 const { return Helpers::toConst(byName_); }
             auto byCreated()              const { return Helpers::toConst(byCreated_); }
@@ -63,6 +81,9 @@ namespace Forum
 
         protected:
             virtual void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) = 0;
+            virtual size_t countInternal() const = 0;
+            void prepareCountChange();
+            void finishCountChange();
 
         private:
 
@@ -98,6 +119,7 @@ namespace Forum
 
         protected:
             void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) override;
+            size_t countInternal() const override { return byId_.size(); }
 
         private:
             HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
@@ -136,6 +158,7 @@ namespace Forum
 
         protected:
             void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) override;
+            size_t countInternal() const override { return byId_.size(); }
 
         private:
             ORDERED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;

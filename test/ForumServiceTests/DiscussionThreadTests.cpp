@@ -1,3 +1,21 @@
+/*
+Fast Forum Backend
+Copyright (C) 2016-2017 Daniel Jurcau
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "CommandsCommon.h"
 #include "EntityCollection.h"
 #include "TestHelpers.h"
@@ -1621,7 +1639,7 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_include_info_about_latest_message )
     BOOST_REQUIRE_EQUAL(1, thread.latestMessage.createdBy.messageCount);
 }
 
-BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_message_content )
+BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_includes_message_content )
 {
     auto handler = createCommandHandler();
 
@@ -1641,7 +1659,7 @@ BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_messa
         {
             if (threadProperty.first == "latestMessage")
             {
-                BOOST_REQUIRE( ! treeContains(threadProperty.second, "content"));
+                BOOST_REQUIRE(treeContains(threadProperty.second, "content"));
             }
         }
     }

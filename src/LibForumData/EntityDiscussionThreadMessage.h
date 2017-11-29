@@ -1,3 +1,21 @@
+/*
+Fast Forum Backend
+Copyright (C) 2016-2017 Daniel Jurcau
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
 #include "AuthorizationPrivileges.h"
@@ -198,13 +216,28 @@ namespace Forum
                 downVotes_->insert(std::make_pair(user, at));
             }
 
+            enum class RemoveVoteStatus
+            {
+                Missing,
+                WasUpVote,
+                WasDownVote
+            };
+
             /**
              * Removes the vote of a user
              * @return TRUE if there was an up or down vote from the user
              */
-            bool removeVote(EntityPointer<User> user)
+            RemoveVoteStatus removeVote(EntityPointer<User> user)
             {
-                return (upVotes_ && (upVotes_->erase(user) > 0)) || (downVotes_ && (downVotes_->erase(user) > 0));
+                if (upVotes_ && (upVotes_->erase(user) > 0))
+                {
+                    return RemoveVoteStatus::WasUpVote;
+                }
+                if (downVotes_ && (downVotes_->erase(user) > 0))
+                {
+                    return RemoveVoteStatus::WasDownVote;
+                }
+                return RemoveVoteStatus::Missing;
             }
 
         private:

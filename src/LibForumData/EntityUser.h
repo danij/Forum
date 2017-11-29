@@ -1,3 +1,21 @@
+/*
+Fast Forum Backend
+Copyright (C) 2016-2017 Daniel Jurcau
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
 #include "EntityCommonTypes.h"
@@ -40,6 +58,9 @@ namespace Forum
                    bool hasLogo()           const { return logo_.size() > 0; }
 
                    auto lastSeen()          const { return lastSeen_; }
+
+                   auto receivedUpVotes()   const { return receivedUpVotes_; }
+                   auto receivedDownVotes() const { return receivedDownVotes_; }
 
             const auto& threads()           const { return threads_; }
             const auto& subscribedThreads() const { return subscribedThreads_; }
@@ -128,6 +149,8 @@ namespace Forum
             auto& title()             { return title_; }
             auto& signature()         { return signature_; }
             auto& logo()              { return logo_; }
+            auto& receivedUpVotes()   { return receivedUpVotes_; }
+            auto& receivedDownVotes() { return receivedDownVotes_; }
 
             auto& threads()           { return threads_; }
             auto& subscribedThreads() { return subscribedThreads_; }
@@ -212,6 +235,9 @@ namespace Forum
             static constexpr size_t MaxVotesInHistory = 64;
             boost::circular_buffer_space_optimized<ReceivedVoteHistory> voteHistory_{ MaxVotesInHistory };
             mutable std::atomic<int64_t> voteHistoryLastRetrieved_{ 0 };
+
+            int_fast32_t receivedUpVotes_{ 0 };
+            int_fast32_t receivedDownVotes_{ 0 };
         };
 
         typedef EntityPointer<User> UserPtr;

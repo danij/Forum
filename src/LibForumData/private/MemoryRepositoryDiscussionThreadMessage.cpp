@@ -1,3 +1,21 @@
+/*
+Fast Forum Backend
+Copyright (C) 2016-2017 Daniel Jurcau
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "MemoryRepositoryDiscussionThreadMessage.h"
 
 #include "Configuration.h"
@@ -57,9 +75,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
         const User* user = *it;
 
         const auto& messages = user->threadMessages().byCreated();
-        BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
-        BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
-        BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadMessages, true);
+        BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
+        BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
+        BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
 
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
         auto& displayContext = Context::getDisplayContext();
@@ -72,6 +90,34 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
             displayContext.sortOrder == Context::SortOrder::Ascending, restriction);
 
         readEvents().onGetDiscussionThreadMessagesOfUser(createObserverContext(currentUser), **it);
+    });
+    return status;
+}
+
+StatusCode MemoryRepositoryDiscussionThreadMessage::getLatestDiscussionThreadMessages(OutStream& output) const
+{
+    StatusWriter status(output);
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+    {
+        auto& currentUser = performedBy.get(collection, *store_);
+
+        const auto& messages = collection.threadMessages().byCreated();
+
+        BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
+        BoolTemporaryChanger __(serializationSettings.hideLatestMessage, true);
+
+        auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
+
+        status = StatusCode::OK;
+        status.disable();
+
+        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
+
+        writeEntitiesWithPagination(messages, "messages", output, 0, pageSize, false, restriction);
+
+        readEvents().onGetLatestDiscussionThreadMessages(createObserverContext(currentUser));
     });
     return status;
 }
@@ -636,7 +682,18 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
         message.addDownVote(currentUser, timestamp);
     }
 
-    message.createdBy().voteHistory().push_back(
+    User& targetUser = message.createdBy();
+
+    if (up)
+    {
+        targetUser.receivedUpVotes() += 1;
+    }
+    else
+    {
+        targetUser.receivedDownVotes() += 1;
+    }
+
+    targetUser.voteHistory().push_back(
     {
         message.id(),
         currentUser->id(),
@@ -723,7 +780,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
 
     auto currentUser = getCurrentUser(collection);
 
-    if ( ! message.removeVote(currentUser))
+    auto removeVoteStatus = message.removeVote(currentUser);
+    if (DiscussionThreadMessage::RemoveVoteStatus::Missing == removeVoteStatus)
     {
         FORUM_LOG_WARNING << "Could not find discussion vote of user "
                           << static_cast<std::string>(currentUser->id()) << " for discussion thread message "
@@ -731,7 +789,19 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
         return StatusCode::NO_EFFECT;
     }
 
-    message.createdBy().voteHistory().push_back(
+    User& targetUser = message.createdBy();
+
+    if (DiscussionThreadMessage::RemoveVoteStatus::WasUpVote == removeVoteStatus)
+    {
+        targetUser.receivedUpVotes() -= 1;
+    }
+
+    if (DiscussionThreadMessage::RemoveVoteStatus::WasDownVote == removeVoteStatus)
+    {
+        targetUser.receivedDownVotes() -= 1;
+    }
+
+    targetUser.voteHistory().push_back(
     {
         message.id(),
         currentUser->id(),

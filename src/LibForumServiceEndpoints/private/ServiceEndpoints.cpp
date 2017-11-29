@@ -1,3 +1,21 @@
+/*
+Fast Forum Backend
+Copyright (C) 2016-2017 Daniel Jurcau
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "ServiceEndpoints.h"
 #include "Configuration.h"
 #include "ContextProviders.h"
@@ -68,17 +86,6 @@ static void updateContextForRequest(const Http::HttpRequest& request)
                  Http::matchStringUpperOrLower(value, "dDeEsScCeEnNdDiInNgG"))
         {
             displayContext.sortOrder = Context::SortOrder::Descending;
-        }
-    }
-
-    for (size_t i = 0; i < request.nrOfCookies; ++i)
-    {
-        auto& name = request.cookies[i].first;
-        auto& value = request.cookies[i].second;
-
-        if (Http::matchStringUpperOrLower(name, "tTeEmMpPuUsSeErRiIdD"))
-        {
-            Context::setCurrentUserId(value);
         }
     }
 }
@@ -181,6 +188,7 @@ static const char OrderBy[] = "oOrRdDeErRbByY";
 static const char OrderByCreated[] = "cCrReEaAtTeEdD";
 static const char OrderByLastSeen[] = "lLaAsStTsSeEeEnN";
 static const char OrderByLastUpdated[] = "lLaAsStTuUpPdDaAtTeEdD";
+static const char OrderByLatestMessageCreated[] = "lLaAtTeEsStTmMeEsSsSaAgGeEcCrReEaAtTeEdD";
 static const char OrderByThreadCount[] = "tThHrReEaAdDcCoOuUnNtT";
 static const char OrderByMessageCount[] = "mMeEsSsSaAgGeEcCoOuUnNtT";
 
@@ -382,6 +390,10 @@ void DiscussionThreadsEndpoint::getAll(Http::RequestState& requestState)
                 {
                     view = View::GET_DISCUSSION_THREADS_BY_LAST_UPDATED;
                 }
+                else if (Http::matchStringUpperOrLower(value, OrderByLatestMessageCreated))
+                {
+                    view = View::GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED;
+                }
                 else if (Http::matchStringUpperOrLower(value, OrderByMessageCount))
                 {
                     view = View::GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT;
@@ -426,6 +438,10 @@ void DiscussionThreadsEndpoint::getThreadsOfUser(Http::RequestState& requestStat
                 {
                     view = View::GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED;
                 }
+                else if (Http::matchStringUpperOrLower(value, OrderByLatestMessageCreated))
+                {
+                    view = View::GET_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED;
+                }
                 else if (Http::matchStringUpperOrLower(value, OrderByMessageCount))
                 {
                     view = View::GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT;
@@ -459,6 +475,10 @@ void DiscussionThreadsEndpoint::getThreadsWithTag(Http::RequestState& requestSta
                 else if (Http::matchStringUpperOrLower(value, OrderByLastUpdated))
                 {
                     view = View::GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED;
+                }
+                else if (Http::matchStringUpperOrLower(value, OrderByLatestMessageCreated))
+                {
+                    view = View::GET_DISCUSSION_THREADS_WITH_TAG_BY_LATEST_MESSAGE_CREATED;
                 }
                 else if (Http::matchStringUpperOrLower(value, OrderByMessageCount))
                 {
@@ -494,6 +514,10 @@ void DiscussionThreadsEndpoint::getThreadsOfCategory(Http::RequestState& request
                 {
                     view = View::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED;
                 }
+                else if (Http::matchStringUpperOrLower(value, OrderByLatestMessageCreated))
+                {
+                    view = View::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LATEST_MESSAGE_CREATED;
+                }
                 else if (Http::matchStringUpperOrLower(value, OrderByMessageCount))
                 {
                     view = View::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT;
@@ -527,6 +551,10 @@ void DiscussionThreadsEndpoint::getSubscribedThreadsOfUser(Http::RequestState& r
                 else if (Http::matchStringUpperOrLower(value, OrderByLastUpdated))
                 {
                     view = View::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED;
+                }
+                else if (Http::matchStringUpperOrLower(value, OrderByLatestMessageCreated))
+                {
+                    view = View::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED;
                 }
                 else if (Http::matchStringUpperOrLower(value, OrderByMessageCount))
                 {
@@ -644,6 +672,15 @@ void DiscussionThreadMessagesEndpoint::getThreadMessagesOfUser(Http::RequestStat
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED, parameters);
+    });
+}
+
+void DiscussionThreadMessagesEndpoint::getLatestThreadMessages(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::GET_LATEST_DISCUSSION_THREAD_MESSAGES, parameters);
     });
 }
 

@@ -1,3 +1,21 @@
+/*
+Fast Forum Backend
+Copyright (C) 2016-2017 Daniel Jurcau
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
 #include "Repository.h"
@@ -106,20 +124,24 @@ namespace Forum
             GET_DISCUSSION_THREADS_BY_NAME,
             GET_DISCUSSION_THREADS_BY_CREATED,
             GET_DISCUSSION_THREADS_BY_LAST_UPDATED,
+            GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED,
             GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT,
             GET_DISCUSSION_THREAD_BY_ID,
 
             GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
             GET_DISCUSSION_THREADS_OF_USER_BY_CREATED,
             GET_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
+            GET_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED,
             GET_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT,
 
             GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_NAME,
             GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_CREATED,
             GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED,
+            GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED,
             GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT,
 
             GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED,
+            GET_LATEST_DISCUSSION_THREAD_MESSAGES,
             GET_DISCUSSION_THREAD_MESSAGE_RANK,
 
             GET_MESSAGE_COMMENTS,
@@ -133,6 +155,7 @@ namespace Forum
             GET_DISCUSSION_THREADS_WITH_TAG_BY_NAME,
             GET_DISCUSSION_THREADS_WITH_TAG_BY_CREATED,
             GET_DISCUSSION_THREADS_WITH_TAG_BY_LAST_UPDATED,
+            GET_DISCUSSION_THREADS_WITH_TAG_BY_LATEST_MESSAGE_CREATED,
             GET_DISCUSSION_THREADS_WITH_TAG_BY_MESSAGE_COUNT,
 
             GET_DISCUSSION_CATEGORY_BY_ID,
@@ -143,6 +166,7 @@ namespace Forum
             GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
             GET_DISCUSSION_THREADS_OF_CATEGORY_BY_CREATED,
             GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED,
+            GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LATEST_MESSAGE_CREATED,
             GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT,
 
             GET_REQUIRED_PRIVILEGES_FOR_THREAD_MESSAGE,
