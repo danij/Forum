@@ -362,6 +362,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
             << propertySafeName("created", thread.created())
             << propertySafeName("latestVisibleChangeAt", thread.latestVisibleChange())
             << propertySafeName("pinned", thread.pinDisplayOrder() > 0)
+            << propertySafeName("pinDisplayOrder", thread.pinDisplayOrder())
             << propertySafeName("visitorsSinceLastChange", thread.nrOfVisitorsSinceLastEdit())
             << propertySafeName("subscribedUsersCount", thread.subscribedUsersCount());
 
