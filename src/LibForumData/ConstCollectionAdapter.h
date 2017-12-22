@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <memory>
 #include <map>
+#include <unordered_map>
 #include <set>
 
 namespace Forum
@@ -147,6 +148,12 @@ namespace Forum
         auto toConst(const std::map<MapKey, MapT, MapCompare, MapAllocator>& collection)
         {
             return ConstMapAdapter<MapKey, MapT, std::map<MapKey, MapT, MapCompare, MapAllocator>>(collection);
+        }
+
+        template<typename MapKey, typename MapT, typename MapHash, typename MapKeyEqual, typename MapAllocator>
+        auto toConst(const std::unordered_map<MapKey, MapT, MapHash, MapKeyEqual, MapAllocator>& collection)
+        {
+            return ConstMapAdapter<MapKey, MapT, std::unordered_map<MapKey, MapT, MapHash, MapKeyEqual, MapAllocator>>(collection);
         }
     }
 }

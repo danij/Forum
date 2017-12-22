@@ -723,11 +723,12 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
     threadFrom.messages().clear();
 
     //update subscriptions
-    for (UserPtr user : threadFrom.subscribedUsers())
+    for (auto& pair : threadFrom.subscribedUsers())
     {
+        UserPtr& user = pair.second;
         assert(user);
         user->subscribedThreads().add(threadIntoPtr);
-        threadInto.subscribedUsers().insert(user);
+        threadInto.subscribedUsers().insert(std::make_pair(user->id(), user));
     }
 
     //this will also decrease the message count on the tags the thread was part of
@@ -785,7 +786,7 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityC
     auto thread = *it;
     auto currentUser = getCurrentUser(collection);
 
-    if ( ! std::get<1>(thread->subscribedUsers().insert(currentUser)))
+    if ( ! std::get<1>(thread->subscribedUsers().insert(std::make_pair(currentUser->id(), currentUser))))
     {
         //FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
         //                  << " is already subscribed to the discussion thread " << static_cast<std::string>(id);
@@ -847,7 +848,7 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(Ent
     auto thread = *it;
     auto currentUser = getCurrentUser(collection);
 
-    if (0 == thread->subscribedUsers().erase(currentUser))
+    if (0 == thread->subscribedUsers().erase(currentUser->id()))
     {
         //FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
         //                  << " was not subscribed to the discussion thread " << static_cast<std::string>(id);

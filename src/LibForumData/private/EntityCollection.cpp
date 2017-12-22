@@ -130,7 +130,7 @@ struct EntityCollection::Impl
         for (DiscussionThreadPtr thread : user.subscribedThreads().byId())
         {
             assert(thread);
-            thread->subscribedUsers().erase(userPtr);
+            thread->subscribedUsers().erase(user.id());
         }
 
         {
@@ -202,8 +202,9 @@ struct EntityCollection::Impl
             tag->deleteDiscussionThread(threadPtr);
         }
 
-        for (UserPtr user : thread.subscribedUsers())
+        for (auto& pair : thread.subscribedUsers())
         {
+            UserPtr& user = pair.second;
             assert(user);
             user->subscribedThreads().remove(threadPtr);
         }
@@ -440,8 +441,9 @@ struct EntityCollection::Impl
         (threads_.*fn)(threadPtr);
         (thread.createdBy().threads().*fn)(threadPtr);
 
-        for (UserPtr user : thread.subscribedUsers())
+        for (auto& pair : thread.subscribedUsers())
         {
+            UserPtr& user = pair.second;
             assert(user);
             (user->subscribedThreads().*fn)(threadPtr);
         }

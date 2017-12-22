@@ -297,7 +297,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
     thread.insertMessage(message);
     thread.resetVisitorsSinceLastEdit();
     thread.latestVisibleChange() = message->created();
-    thread.subscribedUsers().insert(currentUser);
+    thread.subscribedUsers().insert(std::make_pair(currentUser->id(), currentUser));
 
     for (DiscussionTagPtr tag : thread.tags())
     {
