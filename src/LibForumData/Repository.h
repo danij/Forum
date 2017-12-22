@@ -168,6 +168,7 @@ namespace Forum
 
             virtual StatusCode getDiscussionThreads(OutStream& output, RetrieveDiscussionThreadsBy by) const = 0;
             virtual StatusCode getDiscussionThreadById(Entities::IdTypeRef id, OutStream& output) = 0;
+            virtual StatusCode searchDiscussionThreadsByName(StringView name, OutStream& output) const = 0;
 
             virtual StatusCode getDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,
                                                           RetrieveDiscussionThreadsBy by) const = 0;

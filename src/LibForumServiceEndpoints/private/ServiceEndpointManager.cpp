@@ -89,6 +89,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "threads/subscribed/user", HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getSubscribedThreadsOfUser) },
         { "threads/tag",             HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getThreadsWithTag) },
         { "threads/category",        HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getThreadsOfCategory) },
+        { "threads/search",          HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.searchThreadsByName) },
         { "threads",                 HttpVerb::POST,   ENDPOINT_DELEGATE(threadsEndpoint.add) },
         { "threads",                 HttpVerb::DELETE, ENDPOINT_DELEGATE(threadsEndpoint.remove) },
         { "threads/name",            HttpVerb::PUT,    ENDPOINT_DELEGATE(threadsEndpoint.changeName) },

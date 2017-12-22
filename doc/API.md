@@ -139,6 +139,12 @@ Returns a discussion thread with a page of it's messages, searched by id.
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
 
+### GET /threads/search/`query`
+
+Returns the index of the first discussion thread whose name is greater or equal to the search string, when ordering by name in ascending order.
+
+`query` – the name of the discussion thread to search for.
+
 ### GET /threads/user/`userid`
 
 Returns a page of discussion threads of created by a user.

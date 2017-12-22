@@ -326,6 +326,14 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadRepository->getDiscussionThreadById(parameters[0], output);
     }
 
+    COMMAND_HANDLER_METHOD( SEARCH_DISCUSSION_THREADS_BY_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        return discussionThreadRepository->searchDiscussionThreadsByName(normalizedParam, output);
+    }
+
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
@@ -1180,6 +1188,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
     setViewHandler(GET_DISCUSSION_THREAD_BY_ID);
+    setViewHandler(SEARCH_DISCUSSION_THREADS_BY_NAME);
 
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED);

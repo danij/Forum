@@ -99,6 +99,7 @@ namespace Forum
             void getThreadsOfUser(Http::RequestState& requestState);
             void getThreadsWithTag(Http::RequestState& requestState);
             void getThreadsOfCategory(Http::RequestState& requestState);
+            void searchThreadsByName(Http::RequestState& requestState);
             void getSubscribedThreadsOfUser(Http::RequestState& requestState);
 
             void add(Http::RequestState& requestState);

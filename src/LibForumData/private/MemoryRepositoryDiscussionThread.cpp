@@ -227,6 +227,46 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
     return status;
 }
 
+StatusCode MemoryRepositoryDiscussionThread::searchDiscussionThreadsByName(StringView name, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    if (countUTF8Characters(name) > getGlobalConfig()->discussionThread.maxNameLength)
+    {
+        return status = INVALID_PARAMETERS;
+    }
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          readEvents().onSearchDiscussionThreadsByName(createObserverContext(currentUser), name);
+
+                          DiscussionThread::NameType nameString(name);
+
+                          const auto& index = collection.threads().byName();
+                          auto boundIndex = index.lower_bound_rank(nameString);
+                          if (boundIndex >= index.size())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          status = StatusCode::OK;
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
+                                                               Context::getCurrentTime());
+
+                          status.writeNow([&](auto& writer)
+                                          {
+                                              writer << Json::propertySafeName("index", boundIndex);
+                                              writer << Json::propertySafeName("pageSize", getGlobalConfig()->user.maxUsersPerPage);
+                                          });
+                      });
+    return status;
+}
 
 StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(IdTypeRef id, OutStream& output,
                                                                         RetrieveDiscussionThreadsBy by) const
