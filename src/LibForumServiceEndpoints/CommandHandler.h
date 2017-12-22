@@ -118,6 +118,7 @@ namespace Forum
             GET_USERS_ONLINE,
             GET_USER_BY_ID,
             GET_USER_BY_NAME,
+            SEARCH_USERS_BY_NAME,
             GET_USER_LOGO,
             GET_USER_VOTE_HISTORY,
 

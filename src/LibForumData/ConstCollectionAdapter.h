@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityPointer.h"
 
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/optional.hpp>
 
 #include <cassert>
 #include <memory>
@@ -74,6 +75,18 @@ namespace Forum
             auto find(const TSearchType& value) const
             {
                 return boost::make_transform_iterator(collection_.find(value), getPointer);
+            }
+
+            template <typename TSearchType>
+            auto lower_bound(const TSearchType& value) const
+            {
+                return boost::make_transform_iterator(collection_.lower_bound(value), getPointer);
+            }
+
+            template <typename TSearchType>
+            auto lower_bound_rank(const TSearchType& value) const
+            {
+                return collection_.lower_bound_rank(value);
             }
 
         private:

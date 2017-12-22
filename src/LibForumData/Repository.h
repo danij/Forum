@@ -121,6 +121,7 @@ namespace Forum
 
             virtual StatusCode getUserById(Entities::IdTypeRef id, OutStream& output) const = 0;
             virtual StatusCode getUserByName(StringView name, OutStream& output) const = 0;
+            virtual StatusCode searchUsersByName(StringView name, OutStream& output) const = 0;
             virtual StatusCode getUserLogo(Entities::IdTypeRef id, OutStream& output) const = 0;
             virtual StatusCode getUserVoteHistory(Entities::IdTypeRef id, OutStream& output) const = 0;
 

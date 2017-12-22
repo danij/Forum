@@ -258,6 +258,16 @@ void UsersEndpoint::getUserByName(Http::RequestState& requestState)
     });
 }
 
+void UsersEndpoint::searchUsersByName(Http::RequestState& requestState)
+{
+    handle(requestState,
+        [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::SEARCH_USERS_BY_NAME, parameters);
+    });
+}
+
 void UsersEndpoint::getUserLogo(Http::RequestState& requestState)
 {
     handleBinary(requestState, "image/png",

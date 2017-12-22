@@ -75,6 +75,7 @@ namespace Forum
             void getOnline(Http::RequestState& requestState);
             void getUserById(Http::RequestState& requestState);
             void getUserByName(Http::RequestState& requestState);
+            void searchUsersByName(Http::RequestState& requestState);
             void getUserLogo(Http::RequestState& requestState);
             void getUserVoteHistory(Http::RequestState& requestState);
 

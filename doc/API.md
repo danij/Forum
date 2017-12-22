@@ -41,6 +41,12 @@ Returns a user, searching by name.
 
 `name` – the name of the user to find.
 
+### GET /users/search/`query`
+
+Returns the index of the first user whose name is greater or equal to the search string, when ordering by name in ascending order.
+
+`query` – the name of the user to search for.
+
 ### POST /users
 
 Creates a new user.

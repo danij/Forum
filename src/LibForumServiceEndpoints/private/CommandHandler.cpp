@@ -217,6 +217,14 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->getUserByName(normalizedParam, output);
     }
 
+    COMMAND_HANDLER_METHOD( SEARCH_USERS_BY_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        return userRepository->searchUsersByName(normalizedParam, output);
+    }
+
     COMMAND_HANDLER_METHOD( GET_USER_LOGO )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -1162,6 +1170,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_USERS_ONLINE);
     setViewHandler(GET_USER_BY_ID);
     setViewHandler(GET_USER_BY_NAME);
+    setViewHandler(SEARCH_USERS_BY_NAME);
     setViewHandler(GET_USER_LOGO);
     setViewHandler(GET_USER_VOTE_HISTORY);
 
