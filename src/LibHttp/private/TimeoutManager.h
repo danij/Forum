@@ -39,7 +39,7 @@ namespace Http
     {
     public:
 
-        typedef std::function<void(T*)> ReleaseFn;
+        typedef std::function<void(T)> ReleaseFn;
         typedef int64_t Timestamp;
 
         explicit TimeoutManager(ReleaseFn&& release, Timestamp defaultTimeout)
@@ -53,19 +53,19 @@ namespace Http
             return defaultTimeout_;
         }
 
-        void addExpireIn(T* element, Timestamp expiresIn)
+        void addExpireIn(T element, Timestamp expiresIn)
         {
             addExpireAt(element, getTimeSinceEpoch() + expiresIn);
         }
 
-        void addExpireAt(T* element, Timestamp expiresAt)
+        void addExpireAt(T element, Timestamp expiresAt)
         {
             std::lock_guard<decltype(mutex_)> lock(mutex_);
 
             collection_.insert(std::make_pair(element, expiresAt));
         }
 
-        void remove(T* element)
+        void remove(T element)
         {
             std::lock_guard<decltype(mutex_)> lock(mutex_);
 
@@ -103,7 +103,7 @@ namespace Http
 
     private:
 
-        typedef std::pair<T*, time_t> EntryPair;
+        typedef std::pair<T, time_t> EntryPair;
 
         struct TimeoutManagerCollectionByElement {};
         struct TimeoutManagerCollectionByExpirationTime {};
@@ -126,7 +126,7 @@ namespace Http
         }
 
         TimeoutManagerCollection collection_;
-        std::function<void(T*)> release_;
+        std::function<void(T)> release_;
         Timestamp defaultTimeout_;
         std::mutex mutex_;
     };
