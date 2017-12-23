@@ -334,8 +334,6 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
                               return;
                           }
 
-                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
-
                           status.disable();
                           writeDiscussionThreads(user.subscribedThreads(), by, output, collection.grantedPrivileges(),
                                                  currentUser);
