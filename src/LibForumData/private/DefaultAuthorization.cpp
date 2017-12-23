@@ -184,12 +184,20 @@ AuthorizationStatus DefaultAuthorization::getDiscussionThreadById(const User& cu
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadsOfUser(const User& currentUser, const User& user) const
 {
+    if (currentUser.id() == user.id())
+    {
+        return AuthorizationStatus::OK;
+    }
     PrivilegeValueType with;
     return isAllowed(currentUser.id(), ForumWidePrivilege::GET_DISCUSSION_THREADS_OF_USER, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getSubscribedDiscussionThreadsOfUser(const User& currentUser, const User& user) const
 {
+    if (currentUser.id() == user.id())
+    {
+        return AuthorizationStatus::OK;
+    }
     PrivilegeValueType with;
     return isAllowed(currentUser.id(), ForumWidePrivilege::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER, with);
 }
