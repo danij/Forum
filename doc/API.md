@@ -117,6 +117,12 @@ Returns a user's vote history.
 
 `userid` – a unique identifier of the user to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
+### GET /users/subscribed/thread/`threadid`
+
+Returns all users subscribed to a discussion thread. The sort order is unspecified.
+
+`threadid` – a unique identifier of the discussion thread to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
 ## Discussion Threads
 
 ### GET /threads

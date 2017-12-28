@@ -288,6 +288,16 @@ void UsersEndpoint::getUserVoteHistory(Http::RequestState& requestState)
     });
 }
 
+void UsersEndpoint::getUsersSubscribedToThread(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::GET_USERS_SUBSCRIBED_TO_DISCUSSION_THREAD, parameters);
+    });
+}
+
 void UsersEndpoint::add(Http::RequestState& requestState)
 {
     handle(requestState,
@@ -372,6 +382,7 @@ void UsersEndpoint::deleteLogo(Http::RequestState& requestState)
         return commandHandler.handle(Command::DELETE_USER_LOGO, parameters);
     });
 }
+
 
 DiscussionThreadsEndpoint::DiscussionThreadsEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
 {

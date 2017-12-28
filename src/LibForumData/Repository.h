@@ -174,6 +174,7 @@ namespace Forum
                                                           RetrieveDiscussionThreadsBy by) const = 0;
             virtual StatusCode getSubscribedDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,
                                                                     RetrieveDiscussionThreadsBy by) const = 0;
+            virtual StatusCode getUsersSubscribedToDiscussionThread(Entities::IdTypeRef id, OutStream& output) const = 0;
 
             virtual StatusCode getDiscussionThreadsWithTag(Entities::IdTypeRef id, OutStream& output,
                                                            RetrieveDiscussionThreadsBy by) const = 0;

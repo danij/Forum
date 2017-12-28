@@ -416,6 +416,12 @@ struct CommandHandler::CommandHandlerImpl
                                                                                 RetrieveDiscussionThreadsBy::Name);
     }
 
+    COMMAND_HANDLER_METHOD( GET_USERS_SUBSCRIBED_TO_DISCUSSION_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getUsersSubscribedToDiscussionThread(parameters[0], output);
+    }
+
     COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_CREATED )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -1201,6 +1207,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
+    setViewHandler(GET_USERS_SUBSCRIBED_TO_DISCUSSION_THREAD);
 
     setViewHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED);
     setViewHandler(GET_LATEST_DISCUSSION_THREAD_MESSAGES);

@@ -48,6 +48,7 @@ namespace Forum
                                                   RetrieveDiscussionThreadsBy by) const override;
             StatusCode getSubscribedDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,
                                                             RetrieveDiscussionThreadsBy by) const override;
+            StatusCode getUsersSubscribedToDiscussionThread(Entities::IdTypeRef id, OutStream& output) const override;
 
             StatusCode getDiscussionThreadsWithTag(Entities::IdTypeRef id, OutStream& output,
                                                    RetrieveDiscussionThreadsBy by) const override;

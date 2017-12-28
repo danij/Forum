@@ -343,6 +343,57 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
     return status;
 }
 
+StatusCode MemoryRepositoryDiscussionThread::getUsersSubscribedToDiscussionThread(IdTypeRef id, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          const auto& index = collection.threads().byId();
+                          auto it = index.find(id);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          const DiscussionThread& thread = **it;
+
+                          if ( ! (status = authorization_->getDiscussionThreadById(currentUser, thread)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
+                                                               Context::getCurrentTime());
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+                          writer.newPropertyWithSafeName("users");
+
+                          writer.startArray();
+                          for (auto pair : thread.subscribedUsers())
+                          {
+                              if (pair.second)
+                              {
+                                  serialize(writer, *pair.second, restriction);
+                              }
+                          }
+                          writer.endArray();
+
+                          writer.endObject();
+
+                          readEvents().onGetUsersSubscribedToDiscussionThread(createObserverContext(currentUser), thread);
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(IdTypeRef id, OutStream& output,
                                                                          RetrieveDiscussionThreadsBy by) const
 {
