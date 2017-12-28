@@ -272,6 +272,7 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
         { DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER },
         { DiscussionThreadMessagePrivilege::VIEW_VOTES },
         { DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS },
+        { DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS },
     };
 
     auto& userId = items[0].userId;
@@ -298,6 +299,7 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
         threadValues[1].boolToUpdate = &item.allowedToShowUser;
         threadValues[2].boolToUpdate = &item.allowedToShowVotes;
         threadValues[3].boolToUpdate = &item.allowedToShowIpAddress;
+        threadValues[4].boolToUpdate = &item.allowedToViewComments;
 
         PrivilegeValueType messageLevelPositive, messageLevelNegative;
         calculateDiscussionThreadMessagePrivilege(item.userId, *item.message, now,

@@ -58,6 +58,7 @@ namespace Forum
             boost::optional<bool> allowDisplayDiscussionThreadMessageUser = boost::none;
             boost::optional<bool> allowDisplayDiscussionThreadMessageVotes = boost::none;
             boost::optional<bool> allowDisplayDiscussionThreadMessageIpAddress = boost::none;
+            boost::optional<bool> allowDisplayDiscussionThreadMessageComments = boost::none;
 
             bool hideLatestMessage = false;
             bool hidePrivileges = false;

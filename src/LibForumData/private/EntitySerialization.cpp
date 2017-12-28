@@ -127,6 +127,10 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         ? *serializationSettings.allowDisplayDiscussionThreadMessageIpAddress
         : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS);
 
+    auto allowViewCommentCount = serializationSettings.allowDisplayDiscussionThreadMessageComments
+        ? *serializationSettings.allowDisplayDiscussionThreadMessageComments
+        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS);
+
     if ( ! allowView)
     {
         return writer.null();
@@ -135,9 +139,13 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     writer
         << objStart
             << propertySafeName("id", message.id())
-            << propertySafeName("created", message.created())
-            << propertySafeName("commentsCount", message.comments().count())
-            << propertySafeName("solvedCommentsCount", message.solvedCommentsCount());
+            << propertySafeName("created", message.created());
+
+    if (allowViewCommentCount)
+    {
+        writer << propertySafeName("commentsCount", message.comments().count())
+               << propertySafeName("solvedCommentsCount", message.solvedCommentsCount());
+    }
 
     auto content = message.content();
     writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
@@ -344,6 +352,8 @@ void writeDiscussionThreadMessages(const Collection& collection, int_fast32_t pa
                                               item.allowedToShowVotes);
         OptionalRevertToNoneChanger<bool> ____(serializationSettings.allowDisplayDiscussionThreadMessageIpAddress,
                                                item.allowedToShowIpAddress);
+        OptionalRevertToNoneChanger<bool> _____(serializationSettings.allowDisplayDiscussionThreadMessageComments,
+                                                item.allowedToViewComments);
 
         serialize(writer, *item.message, restriction);
     }

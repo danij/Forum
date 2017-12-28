@@ -57,6 +57,7 @@ namespace Forum
             bool allowedToShowUser = false;
             bool allowedToShowVotes = false;
             bool allowedToShowIpAddress = false;
+            bool allowedToViewComments = false;
         };
 
         class GrantedPrivilegeStore final : private boost::noncopyable
