@@ -259,10 +259,12 @@ StatusCode MemoryRepositoryDiscussionThread::searchDiscussionThreadsByName(Strin
                           SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
                                                                Context::getCurrentTime());
 
+                          const auto pageSize = getGlobalConfig()->discussionThread.maxThreadsPerPage;
+
                           status.writeNow([&](auto& writer)
                                           {
                                               writer << Json::propertySafeName("index", boundIndex);
-                                              writer << Json::propertySafeName("pageSize", getGlobalConfig()->user.maxUsersPerPage);
+                                              writer << Json::propertySafeName("pageSize", pageSize);
                                           });
                       });
     return status;
