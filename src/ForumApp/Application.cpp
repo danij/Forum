@@ -204,7 +204,8 @@ void Application::createCommandHandler()
     entityCollection_ = std::make_shared<Entities::EntityCollection>(config->persistence.messagesFile);
 
     auto store = std::make_shared<MemoryStore>(entityCollection_);
-    auto authorization = std::make_shared<DefaultAuthorization>(entityCollection_->grantedPrivileges(), *entityCollection_);
+    auto authorization = std::make_shared<DefaultAuthorization>(entityCollection_->grantedPrivileges(),
+                                                                *entityCollection_, config->service.disableThrottling);
 
     auto authorizationRepository = std::make_shared<MemoryRepositoryAuthorization>(
             store, authorization, authorization, authorization, authorization, authorization);

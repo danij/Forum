@@ -102,6 +102,7 @@ namespace Forum
             bool trustIpFromXForwardedFor = false;
             bool disableCommands = false;
             bool disableCommandsForAnonymousUsers = false;
+            bool disableThrottling = false;
             std::string responsePrefix = "";
         };
 
