@@ -760,7 +760,7 @@ void DiscussionThreadMessagesEndpoint::add(Http::RequestState& requestState)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
-        return commandHandler.handle(Command::ADD_USER, parameters);
+        return commandHandler.handle(Command::ADD_DISCUSSION_THREAD_MESSAGE, parameters);
     });
 }
 
