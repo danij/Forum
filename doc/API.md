@@ -479,7 +479,7 @@ Updates a discussion category's description.
 
 Request body – the new description.
 
-### PUT /categories/parent/`categoryid`/`newparentcategoryid`
+### PUT /categories/parent/`categoryid`
 
 Updates a discussion category's parent.
 
