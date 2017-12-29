@@ -842,6 +842,12 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(IdTypeR
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
+                           if (currentUser == anonymousUser())
+                           {
+                               status = StatusCode::NOT_ALLOWED;
+                               return;
+                           }
+
                            auto& indexById = collection.threads().byId();
                            auto it = indexById.find(id);
                            if (it == indexById.end())
@@ -903,6 +909,12 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(IdT
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
+
+                           if (currentUser == anonymousUser())
+                           {
+                               status = StatusCode::NOT_ALLOWED;
+                               return;
+                           }
 
                            auto& indexById = collection.threads().byId();
                            auto it = indexById.find(id);
