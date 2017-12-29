@@ -235,8 +235,6 @@ Merges together two discussion threads.
 
 `threadintoid` – a unique identifier of the discussion thread that will remain after the merge, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
-Request body – the new name.
-
 ### POST /threads/subscribe/`threadid`
 
 Subscribes the current user to a discussion thread.
