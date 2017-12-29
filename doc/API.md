@@ -249,21 +249,21 @@ Unsubscribes the current user from a discussion thread.
 
 `threadid` – a unique identifier of the discussion thread to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
-### POST /threads/tag/`tagid`/`threadid`
+### POST /threads/tag/`threadid`/`tagid`
 
 Assigns a tag to a discussion thread.
 
-`tagid` – a unique identifier of the discussion tag to add, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
-
 `threadid` – a unique identifier of the discussion thread to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
-### DELETE /threads/tag/`tagid`/`threadid`
+`tagid` – a unique identifier of the discussion tag to add, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+### DELETE /threads/tag/`threadid`/`tagid`
 
 Removes a tag from a discussion thread.
 
-`tagid` – a unique identifier of the discussion tag to remove, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
-
 `threadid` – a unique identifier of the discussion thread to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+`tagid` – a unique identifier of the discussion tag to remove, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
 ## Discussion Thread Messages
 
@@ -495,21 +495,21 @@ Updates a discussion category's display order.
 
 Request body – the new display order (integer).
 
-### POST /categories/tag/`tagid`/`categoryid`
+### POST /categories/tag/`categoryid`/`tagid`
 
 Assigns a tag to a discussion category.
 
-`tagid` – a unique identifier of the discussion tag to add, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
-
 `categoryid` – a unique identifier of the discussion category to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
-### DELETE /categories/tag/`tagid`/`categoryid`
+`tagid` – a unique identifier of the discussion tag to add, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+### DELETE /categories/tag/`categoryid`/`tagid`
 
 Removes a tag from a discussion category.
 
-`tagid` – a unique identifier of the discussion tag to remove, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
-
 `categoryid` – a unique identifier of the discussion category to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+`tagid` – a unique identifier of the discussion tag to remove, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
 ## Authorization Privileges
 
