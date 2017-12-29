@@ -839,6 +839,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream
                               return;
                           }
 
+                          status.disable();
                           writeMessageComments(collection.messageComments().byCreated(), output,
                                                collection.grantedPrivileges(), currentUser);
                           readEvents().onGetMessageComments(createObserverContext(currentUser));
@@ -877,6 +878,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
 
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentMessage, true);
 
+                          status.disable();
                           writeMessageComments(message.comments().byCreated(), output,
                                                collection.grantedPrivileges(), currentUser);
 
@@ -915,6 +917,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(IdT
 
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentUser, true);
 
+                          status.disable();
                           writeMessageComments(user.messageComments().byCreated(), output,
                                                collection.grantedPrivileges(), currentUser);
 
