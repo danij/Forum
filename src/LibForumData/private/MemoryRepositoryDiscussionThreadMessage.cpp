@@ -384,7 +384,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
 
     auto reasonEmptyValidation = 0 == config->discussionThreadMessage.minChangeReasonLength
                                  ? ALLOW_EMPTY_STRING : INVALID_PARAMETERS_FOR_EMPTY_STRING;
-    auto reasonValidationCode = validateString(newContent, reasonEmptyValidation,
+    auto reasonValidationCode = validateString(changeReason, reasonEmptyValidation,
                                                config->discussionThreadMessage.minChangeReasonLength,
                                                config->discussionThreadMessage.maxChangeReasonLength,
                                                &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
