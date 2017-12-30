@@ -701,6 +701,8 @@ AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, ForumWideP
 bool DefaultAuthorization::isThrottled(UserActionThrottling action, const User& currentUser) const
 {
     return ! disableThrottling_
+          && ! grantedPrivilegeStore_.isAllowed(currentUser.id(), forumWidePrivilegeStore_,
+                                                ForumWidePrivilege::NO_THROTTLING, Context::getCurrentTime())
           && throttling_.check(action, Context::getCurrentTime(), currentUser.id(), Context::getCurrentUserIpAddress());
 }
 

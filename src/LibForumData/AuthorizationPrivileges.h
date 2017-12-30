@@ -240,6 +240,8 @@ namespace Forum
             DELETE_ANY_USER_LOGO,
             GET_USER_VOTE_HISTORY,
 
+            NO_THROTTLING,
+
             COUNT
         };
 
@@ -279,7 +281,9 @@ namespace Forum
             "change_any_user_logo",
             "delete_own_user_logo",
             "delete_any_user_logo",
-            "get_user_vote_history"
+            "get_user_vote_history",
+
+            "no_throttling",
         };
 
         const ForumWidePrivilege ForumWidePrivilegesToSerialize[] =
