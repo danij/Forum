@@ -39,6 +39,27 @@ bool DiscussionThreadMessageCollection::add(DiscussionThreadMessagePtr message)
     return true;
 }
 
+bool DiscussionThreadMessageCollection::add(DiscussionThreadMessageCollection& collection)
+{
+    if (onPrepareCountChange_) onPrepareCountChange_();
+
+    auto result = false;
+
+    for (DiscussionThreadMessagePtr message : collection.byId())
+    {
+        if ( ! std::get<1>(byId_.insert(message))) continue;
+
+        if ( ! Context::isBatchInsertInProgress())
+        {
+            byCreated_.insert(message);
+        }
+        result = true;
+    }
+
+    if (onCountChange_) onCountChange_();
+    return result;
+}
+
 bool DiscussionThreadMessageCollection::remove(DiscussionThreadMessagePtr message)
 {
     if (onPrepareCountChange_) onPrepareCountChange_();

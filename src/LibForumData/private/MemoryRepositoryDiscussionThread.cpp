@@ -804,8 +804,9 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
     for (DiscussionThreadMessagePtr message : threadFrom.messages().byId())
     {
         message->parentThread() = threadIntoPtr;
-        threadInto.insertMessage(message);
     }
+
+    threadInto.insertMessages(threadFrom.messages());
 
     updateMessageCounts(threadFromPtr, - static_cast<int_fast32_t>(threadFrom.messageCount()));
     updateMessageCounts(threadIntoPtr,   static_cast<int_fast32_t>(threadFrom.messageCount()));

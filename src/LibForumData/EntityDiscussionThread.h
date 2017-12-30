@@ -205,6 +205,7 @@ namespace Forum
             }
 
             void insertMessage(DiscussionThreadMessagePtr message);
+            void insertMessages(DiscussionThreadMessageCollection& collection);
             void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message);
 
             void addVisitorSinceLastEdit(IdTypeRef userId);

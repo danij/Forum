@@ -40,6 +40,7 @@ namespace Forum
         {
         public:
             bool add(DiscussionThreadMessagePtr message);
+            bool add(DiscussionThreadMessageCollection& collection);
             bool remove(DiscussionThreadMessagePtr message);
             void clear();
 
