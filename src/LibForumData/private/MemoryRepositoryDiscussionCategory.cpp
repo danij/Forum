@@ -493,7 +493,7 @@ static void updateCategoryParent(DiscussionCategory& category, DiscussionCategor
 {
     auto oldParent = category.parent();
 
-    category.parent() = newParentPtr;
+    category.updateParent(newParentPtr);
     updateLastUpdated(category, currentUser);
 
     if (oldParent)

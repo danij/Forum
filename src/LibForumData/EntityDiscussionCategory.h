@@ -137,6 +137,14 @@ namespace Forum
                 changeNotifications_.onUpdateDisplayOrder(*this);
             }
 
+            void updateParent(EntityPointer<DiscussionCategory> newParent)
+            {
+                //displayOrderWithRootPriority depends on the parent
+                changeNotifications_.onPrepareUpdateDisplayOrder(*this);
+                parent_ = newParent;
+                changeNotifications_.onUpdateDisplayOrder(*this);
+            }
+
             void stopBatchInsert()
             {
                 threads_.stopBatchInsert();
