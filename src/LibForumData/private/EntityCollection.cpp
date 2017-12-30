@@ -152,7 +152,7 @@ struct EntityCollection::Impl
                 assert(thread);
                 //Each discussion thread holds a reference to the user that created it
                 //As such, delete the discussion thread before deleting the user
-                deleteDiscussionThread(thread);
+                deleteDiscussionThread(thread, true);
             }
         }
 
@@ -165,7 +165,7 @@ struct EntityCollection::Impl
         threads_.add(thread);
     }
 
-    void deleteDiscussionThread(DiscussionThreadPtr threadPtr)
+    void deleteDiscussionThread(DiscussionThreadPtr threadPtr, bool deleteMessages)
     {
         assert(threadPtr);
 
@@ -176,14 +176,6 @@ struct EntityCollection::Impl
         DiscussionThread& thread = *threadPtr;
 
         thread.aboutToBeDeleted() = true;
-
-        for (auto& message : thread.messages().byId())
-        {
-            assert(message);
-            //Each discussion message holds a reference to the user that created it and the parent thread
-            //As such, delete the discussion message before deleting the thread
-            deleteDiscussionThreadMessage(message);
-        }
 
         if (alsoDeleteThreadsFromUser)
         {
@@ -209,6 +201,17 @@ struct EntityCollection::Impl
             user->subscribedThreads().remove(threadPtr);
         }
 
+        if (deleteMessages)
+        {
+            //delete the messages at the end so as to not change the message count used in indexes
+            for (auto& message : thread.messages().byId())
+            {
+                assert(message);
+                //Each discussion message holds a reference to the user that created it and the parent thread
+                //As such, delete the discussion message before deleting the thread
+                deleteDiscussionThreadMessage(message);
+            }
+        }
         managedEntities.threads.remove(threadPtr.index());
     }
 
@@ -786,9 +789,9 @@ void EntityCollection::insertDiscussionThread(DiscussionThreadPtr thread)
     impl_->insertDiscussionThread(thread);
 }
 
-void EntityCollection::deleteDiscussionThread(DiscussionThreadPtr thread)
+void EntityCollection::deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages)
 {
-    impl_->deleteDiscussionThread(thread);
+    impl_->deleteDiscussionThread(thread, deleteMessages);
 }
 
 void EntityCollection::insertDiscussionThreadMessage(DiscussionThreadMessagePtr message)

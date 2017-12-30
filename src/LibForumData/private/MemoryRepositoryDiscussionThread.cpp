@@ -700,7 +700,7 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(EntityCollec
         return StatusCode::NOT_FOUND;
     }
 
-    collection.deleteDiscussionThread(*it);
+    collection.deleteDiscussionThread(*it, true);
 
     return StatusCode::OK;
 }
@@ -810,9 +810,6 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
     updateMessageCounts(threadFromPtr, - static_cast<int_fast32_t>(threadFrom.messageCount()));
     updateMessageCounts(threadIntoPtr,   static_cast<int_fast32_t>(threadFrom.messageCount()));
 
-    //remove all message references from the thread so they don't get deleted
-    threadFrom.messages().clear();
-
     //update subscriptions
     for (auto& pair : threadFrom.subscribedUsers())
     {
@@ -823,7 +820,7 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
     }
 
     //this will also decrease the message count on the tags the thread was part of
-    collection.deleteDiscussionThread(threadFromPtr);
+    collection.deleteDiscussionThread(threadFromPtr, false);
 
     return StatusCode::OK;
 }
