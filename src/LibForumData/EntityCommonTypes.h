@@ -84,9 +84,6 @@ namespace Forum
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
 #define RANKED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
-#define RETURN_TYPE(Type, Getter) \
-        typename std::result_of<decltype(&Type::Getter)(Type*)>::type
-
 #define FLAT_MULTISET_COLLECTION(Type, Getter) \
         boost::container::flat_multiset<EntityPointer<Type>, BOOST_PP_CAT(LessPtr_, Getter)<Type>>
 

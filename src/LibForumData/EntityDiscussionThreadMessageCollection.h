@@ -49,8 +49,7 @@ namespace Forum
             auto& onPrepareCountChange() { return onPrepareCountChange_; }
             auto& onCountChange()        { return onCountChange_; }
 
-            typedef RETURN_TYPE(HASHED_UNIQUE_COLLECTION(DiscussionThreadMessage, id), size) CountType;
-            CountType count()     const { return byId_.size(); }
+            auto count()          const { return byId_.size(); }
 
             auto byId()           const { return Helpers::toConst(byId_); }
             auto byCreated()      const { return Helpers::toConst(byCreated_); }
