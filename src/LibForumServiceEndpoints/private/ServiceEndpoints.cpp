@@ -781,6 +781,7 @@ void DiscussionThreadMessagesEndpoint::changeContent(Http::RequestState& request
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        parameters.push_back(requestState.extraPathParts[1]);
         return commandHandler.handle(Command::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, parameters);
     });
 }
