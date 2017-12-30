@@ -470,10 +470,8 @@ struct CommandHandler::CommandHandlerImpl
         auto& changeReason = parameters.size() > 2 ? parameters[2] : emptyString;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
-        StringView normalizedChangeReason;
-        if ((normalizedChangeReason = normalize(changeReason)).size() < 1) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->changeDiscussionThreadMessageContent(parameters[0], normalizedParam,
-                                                                                       normalizedChangeReason, output);
+                                                                                       changeReason, output);
     }
 
     COMMAND_HANDLER_METHOD( MOVE_DISCUSSION_THREAD_MESSAGE )
