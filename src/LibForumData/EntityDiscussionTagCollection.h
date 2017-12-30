@@ -65,13 +65,13 @@ namespace Forum
             HASHED_UNIQUE_COLLECTION(DiscussionTag, id) byId_;
 
             RANKED_UNIQUE_COLLECTION(DiscussionTag, name) byName_;
-            decltype(byName_)::nth_index<0>::type::iterator byNameUpdateIt_;
+            RANKED_UNIQUE_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
 
             RANKED_COLLECTION(DiscussionTag, threadCount) byThreadCount_;
-            decltype(byThreadCount_)::nth_index<0>::type::iterator byThreadCountUpdateIt_;
+            RANKED_COLLECTION_ITERATOR(byThreadCount_) byThreadCountUpdateIt_;
 
             RANKED_COLLECTION(DiscussionTag, messageCount) byMessageCount_;
-            decltype(byMessageCount_)::nth_index<0>::type::iterator byMessageCountUpdateIt_;
+            RANKED_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
         };
     }
 }

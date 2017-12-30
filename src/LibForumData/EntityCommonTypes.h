@@ -57,26 +57,32 @@ namespace Forum
 #define HASHED_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::hashed_non_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define HASHED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define HASHED_UNIQUE_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::hashed_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define HASHED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define ORDERED_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ordered_non_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define ORDERED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define ORDERED_UNIQUE_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ordered_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define ORDERED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define RANKED_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ranked_non_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define RANKED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define RANKED_UNIQUE_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ranked_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define RANKED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define RETURN_TYPE(Type, Getter) \
         typename std::result_of<decltype(&Type::Getter)(Type*)>::type

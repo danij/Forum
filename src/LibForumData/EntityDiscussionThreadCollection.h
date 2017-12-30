@@ -88,18 +88,18 @@ namespace Forum
         private:
 
             RANKED_COLLECTION(DiscussionThread, name) byName_;
-            decltype(byName_)::nth_index<0>::type::iterator byNameUpdateIt_;
+            RANKED_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
 
             RANKED_COLLECTION(DiscussionThread, created) byCreated_;
 
             RANKED_COLLECTION(DiscussionThread, lastUpdated) byLastUpdated_;
-            decltype(byLastUpdated_)::nth_index<0>::type::iterator byLastUpdatedUpdateIt_;
+            RANKED_COLLECTION_ITERATOR(byLastUpdated_) byLastUpdatedUpdateIt_;
 
             RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
-            decltype(byLatestMessageCreated_)::nth_index<0>::type::iterator byLatestMessageCreatedUpdateIt_;
+            RANKED_COLLECTION_ITERATOR(byLatestMessageCreated_) byLatestMessageCreatedUpdateIt_;
 
             RANKED_COLLECTION(DiscussionThread, messageCount) byMessageCount_;
-            decltype(byMessageCount_)::nth_index<0>::type::iterator byMessageCountUpdateIt_;
+            RANKED_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
 
             std::function<void()> onPrepareCountChange_;
             std::function<void()> onCountChange_;
@@ -141,7 +141,7 @@ namespace Forum
 
         private:
             ORDERED_COLLECTION(DiscussionThread, pinDisplayOrder) byPinDisplayOrder_;
-            decltype(byPinDisplayOrder_)::nth_index<0>::type::iterator byPinDisplayOrderUpdateIt_;
+            ORDERED_COLLECTION_ITERATOR(byPinDisplayOrder_) byPinDisplayOrderUpdateIt_;
         };
 
         class DiscussionThreadCollectionWithOrderedId final : public DiscussionThreadCollectionBase,
@@ -206,7 +206,7 @@ namespace Forum
             HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
 
             RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
-            decltype(byLatestMessageCreated_)::nth_index<0>::type::iterator byLatestMessageCreatedUpdateIt_;
+            RANKED_COLLECTION_ITERATOR(byLatestMessageCreated_) byLatestMessageCreatedUpdateIt_;
 
             int_fast32_t messageCount_ = 0;
             std::unordered_map<DiscussionThreadPtr, int_fast32_t> referenceCount_;
