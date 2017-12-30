@@ -62,6 +62,11 @@ static thread_local std::unique_ptr<char[]> normalizeBuffer8(new char[NormalizeB
  */
 static StringView normalize(StringView input)
 {
+    if (0 == input.size())
+    {
+        return input;
+    }
+
     int32_t chars16Written = 0, chars8Written = 0;
     UErrorCode errorCode{};
     auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before.get(), NormalizeBuffer16MaxChars, &chars16Written,
@@ -114,6 +119,15 @@ struct CommandHandler::CommandHandlerImpl
     static bool checkNumberOfParameters(const std::vector<StringView>& parameters, size_t number)
     {
         if (countNonEmpty(parameters) != number)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    static bool checkNumberOfParametersAtLeast(const std::vector<StringView>& parameters, size_t number)
+    {
+        if (countNonEmpty(parameters) < number)
         {
             return false;
         }
@@ -247,25 +261,22 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_INFO )
     {
-        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
-        StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParametersAtLeast(parameters, 1)) return INVALID_PARAMETERS;
+        StringView normalizedParam = normalize(parameters[1]);
         return userRepository->changeUserInfo(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_TITLE )
     {
-        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
-        StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParametersAtLeast(parameters, 1)) return INVALID_PARAMETERS;
+        StringView normalizedParam = normalize(parameters[1]);
         return userRepository->changeUserTitle(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_SIGNATURE )
     {
-        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
-        StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParametersAtLeast(parameters, 1)) return INVALID_PARAMETERS;
+        StringView normalizedParam = normalize(parameters[1]);
         return userRepository->changeUserSignature(parameters[0], normalizedParam, output);
     }
 

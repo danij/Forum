@@ -639,7 +639,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(IdTypeRef id, StringView newInfo
     StatusWriter status(output);
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(newInfo, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto validationCode = validateString(newInfo, ALLOW_EMPTY_STRING,
                                          config->user.minInfoLength, config->user.maxInfoLength);
 
     if (validationCode != StatusCode::OK)
@@ -694,7 +694,7 @@ StatusCode MemoryRepositoryUser::changeUserTitle(IdTypeRef id, StringView newTit
     StatusWriter status(output);
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(newTitle, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto validationCode = validateString(newTitle, ALLOW_EMPTY_STRING,
                                          config->user.minTitleLength, config->user.maxTitleLength);
 
     if (validationCode != StatusCode::OK)
@@ -749,7 +749,7 @@ StatusCode MemoryRepositoryUser::changeUserSignature(IdTypeRef id, StringView ne
     StatusWriter status(output);
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(newSignature, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto validationCode = validateString(newSignature, ALLOW_EMPTY_STRING,
                                          config->user.minSignatureLength, config->user.maxSignatureLength);
 
     if (validationCode != StatusCode::OK)
