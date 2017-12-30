@@ -98,7 +98,7 @@ void UserCollection::updateAuth(UserPtr user)
 {
     if (byAuthUpdateIt_ != byAuth_.end())
     {
-        byAuth_.replace(byAuthUpdateIt_, user);
+        replaceItemInContainer(byAuth_, byAuthUpdateIt_, user);
     }
 }
 
@@ -111,7 +111,7 @@ void UserCollection::updateName(UserPtr user)
 {
     if (byNameUpdateIt_ != byName_.end())
     {
-        byName_.replace(byNameUpdateIt_, user);
+        replaceItemInContainer(byName_, byNameUpdateIt_, user);
     }
 }
 
@@ -128,7 +128,7 @@ void UserCollection::updateLastSeen(UserPtr user)
 
     if (byLastSeenUpdateIt_ != byLastSeen_.end())
     {
-        byLastSeen_.replace(byLastSeenUpdateIt_, user);
+        replaceItemInContainer(byLastSeen_, byLastSeenUpdateIt_, user);
     }
 }
 
@@ -145,7 +145,7 @@ void UserCollection::updateThreadCount(UserPtr user)
 
     if (byThreadCountUpdateIt_ != byThreadCount_.end())
     {
-        byThreadCount_.replace(byThreadCountUpdateIt_, user);
+        replaceItemInContainer(byThreadCount_, byThreadCountUpdateIt_, user);
     }
 }
 
@@ -162,6 +162,6 @@ void UserCollection::updateMessageCount(UserPtr user)
 
     if (byMessageCountUpdateIt_ != byMessageCount_.end())
     {
-        byMessageCount_.replace(byMessageCountUpdateIt_, user);
+        replaceItemInContainer(byMessageCount_, byMessageCountUpdateIt_, user);
     }
 }

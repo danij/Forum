@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "IpAddress.h"
 
 #include <cstdint>
+#include <utility>
 
 #include <boost/preprocessor/cat.hpp>
 
@@ -83,6 +84,12 @@ namespace Forum
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ranked_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
 #define RANKED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
+
+        template<typename TContainer, typename It, typename Value>
+        void replaceItemInContainer(TContainer& container, It&& iterator, Value&& value)
+        {
+            container.replace(std::forward<It>(iterator), std::forward<Value>(value));
+        }
 
 #define FLAT_MULTISET_COLLECTION(Type, Getter) \
         boost::container::flat_multiset<EntityPointer<Type>, BOOST_PP_CAT(LessPtr_, Getter)<Type>>
