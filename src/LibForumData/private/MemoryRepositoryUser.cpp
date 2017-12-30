@@ -721,7 +721,7 @@ StatusCode MemoryRepositoryUser::changeUserTitle(IdTypeRef id, StringView newTit
                                return;
                            }
 
-                           if ( ! (status = changeUserInfo(collection, id, newTitle))) return;
+                           if ( ! (status = changeUserTitle(collection, id, newTitle))) return;
 
                            writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Title);
                        });
