@@ -185,13 +185,13 @@ struct EntityCollection::Impl
         for (DiscussionCategoryPtr category : thread.categories())
         {
             assert(category);
-            category->deleteDiscussionThread(threadPtr);
+            category->deleteDiscussionThread(threadPtr, deleteMessages);
         }
 
         for (DiscussionTagPtr tag : thread.tags())
         {
             assert(tag);
-            tag->deleteDiscussionThread(threadPtr);
+            tag->deleteDiscussionThread(threadPtr, deleteMessages);
         }
 
         for (auto& pair : thread.subscribedUsers())

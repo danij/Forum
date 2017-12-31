@@ -127,7 +127,7 @@ namespace Forum
             }
 
             bool insertDiscussionThread(DiscussionThreadPtr thread);
-            bool deleteDiscussionThread(DiscussionThreadPtr thread);
+            bool deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages);
 
             bool addCategory(EntityPointer<DiscussionCategory> category);
             bool removeCategory(EntityPointer<DiscussionCategory> category);

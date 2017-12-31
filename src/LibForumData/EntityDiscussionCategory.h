@@ -168,8 +168,8 @@ namespace Forum
             bool hasAncestor(EntityPointer<DiscussionCategory> ancestor);
 
             bool insertDiscussionThread(DiscussionThreadPtr thread);
-            bool deleteDiscussionThread(DiscussionThreadPtr thread);
-            void deleteDiscussionThreadIfNoOtherTagsReferenceIt(DiscussionThreadPtr thread);
+            bool deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages);
+            void deleteDiscussionThreadIfNoOtherTagsReferenceIt(DiscussionThreadPtr thread, bool deleteMessages);
 
             bool addTag(DiscussionTagPtr tag);
             bool removeTag(DiscussionTagPtr tag);

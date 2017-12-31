@@ -93,24 +93,27 @@ bool DiscussionCategory::insertDiscussionThread(DiscussionThreadPtr thread)
     return true;
 }
 
-bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread)
+bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages)
 {
     assert(thread);
-    changeNotifications_.onPrepareUpdateMessageCount(*this);
-
+    if (deleteMessages) {
+        changeNotifications_.onPrepareUpdateMessageCount(*this);
+    }
     if ( ! threads_.remove(thread))
     {
         return false;
     }
-    //don't use updateMessageCount() as deleteDiscussionThreadById will take care of that for totals
-    messageCount_ -= static_cast<int_fast32_t>(thread->messageCount());
+    if (deleteMessages) {
+        //don't use updateMessageCount() as deleteDiscussionThreadById will take care of that for totals
+        messageCount_ -= static_cast<int_fast32_t>(thread->messageCount());
+    }
     if ( ! thread->aboutToBeDeleted())
     {
         thread->removeCategory(pointer());
     }
-
-    changeNotifications_.onUpdateMessageCount(*this);
-
+    if (deleteMessages) {
+        changeNotifications_.onUpdateMessageCount(*this);
+    }
     executeOnCategoryAndAllParents(*this, [&](auto& category)
     {
         category.totalThreads_.remove(thread);
@@ -119,7 +122,7 @@ bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread)
     return true;
 }
 
-void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(DiscussionThreadPtr thread)
+void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(DiscussionThreadPtr thread, bool deleteMessages)
 {
     assert(thread);
     //don't remove the thread just yet, perhaps it's also referenced by other tags
@@ -135,7 +138,7 @@ void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(Discussi
     }
     if ( ! referencedByOtherTags)
     {
-        deleteDiscussionThread(thread);
+        deleteDiscussionThread(thread, deleteMessages);
 
         //release separate references held by this category and parents, if reference count drops to 0
         executeOnCategoryAndAllParents(*this, [&](auto& category)
@@ -172,7 +175,7 @@ bool DiscussionCategory::removeTag(DiscussionTagPtr tag)
     for (auto& thread : tag->threads().byId())
     {
         assert(thread);
-        deleteDiscussionThreadIfNoOtherTagsReferenceIt(thread);
+        deleteDiscussionThreadIfNoOtherTagsReferenceIt(thread, true);
     }
     return true;
 }
