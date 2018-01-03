@@ -41,6 +41,12 @@ Returns a user, searching by name.
 
 `name` – the name of the user to find.
 
+### GET /users/search/`query`
+
+Returns the index of the first user whose name is greater or equal to the search string, when ordering by name in ascending order.
+
+`query` – the name of the user to search for.
+
 ### POST /users
 
 Creates a new user.
@@ -111,6 +117,12 @@ Returns a user's vote history.
 
 `userid` – a unique identifier of the user to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
+### GET /users/subscribed/thread/`threadid`
+
+Returns all users subscribed to a discussion thread. The sort order is unspecified.
+
+`threadid` – a unique identifier of the discussion thread to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
 ## Discussion Threads
 
 ### GET /threads
@@ -132,6 +144,12 @@ Returns a discussion thread with a page of it's messages, searched by id.
 |Parameter|Type|Description|Default|
 |----|:----:|----|:----:|
 |Page|Query String|Zero-based page number|0|
+
+### GET /threads/search/`query`
+
+Returns the index of the first discussion thread whose name is greater or equal to the search string, when ordering by name in ascending order.
+
+`query` – the name of the discussion thread to search for.
 
 ### GET /threads/user/`userid`
 
@@ -217,8 +235,6 @@ Merges together two discussion threads.
 
 `threadintoid` – a unique identifier of the discussion thread that will remain after the merge, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
-Request body – the new name.
-
 ### POST /threads/subscribe/`threadid`
 
 Subscribes the current user to a discussion thread.
@@ -231,21 +247,21 @@ Unsubscribes the current user from a discussion thread.
 
 `threadid` – a unique identifier of the discussion thread to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
-### POST /threads/tag/`tagid`/`threadid`
+### POST /threads/tag/`threadid`/`tagid`
 
 Assigns a tag to a discussion thread.
 
-`tagid` – a unique identifier of the discussion tag to add, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
-
 `threadid` – a unique identifier of the discussion thread to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
-### DELETE /threads/tag/`tagid`/`threadid`
+`tagid` – a unique identifier of the discussion tag to add, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+### DELETE /threads/tag/`threadid`/`tagid`
 
 Removes a tag from a discussion thread.
 
-`tagid` – a unique identifier of the discussion tag to remove, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
-
 `threadid` – a unique identifier of the discussion thread to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+`tagid` – a unique identifier of the discussion tag to remove, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
 ## Discussion Thread Messages
 
@@ -461,7 +477,7 @@ Updates a discussion category's description.
 
 Request body – the new description.
 
-### PUT /categories/parent/`categoryid`/`newparentcategoryid`
+### PUT /categories/parent/`categoryid`
 
 Updates a discussion category's parent.
 
@@ -477,21 +493,21 @@ Updates a discussion category's display order.
 
 Request body – the new display order (integer).
 
-### POST /categories/tag/`tagid`/`categoryid`
+### POST /categories/tag/`categoryid`/`tagid`
 
 Assigns a tag to a discussion category.
 
-`tagid` – a unique identifier of the discussion tag to add, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
-
 `categoryid` – a unique identifier of the discussion category to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
-### DELETE /categories/tag/`tagid`/`categoryid`
+`tagid` – a unique identifier of the discussion tag to add, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+### DELETE /categories/tag/`categoryid`/`tagid`
 
 Removes a tag from a discussion category.
 
-`tagid` – a unique identifier of the discussion tag to remove, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
-
 `categoryid` – a unique identifier of the discussion category to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+`tagid` – a unique identifier of the discussion tag to remove, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
 ## Authorization Privileges
 

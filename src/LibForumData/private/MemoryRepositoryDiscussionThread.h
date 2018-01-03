@@ -42,11 +42,13 @@ namespace Forum
              * - Stores that the current user has visited the discussion thread
              */
             StatusCode getDiscussionThreadById(Entities::IdTypeRef id, OutStream& output) override;
+            StatusCode searchDiscussionThreadsByName(StringView name, OutStream& output) const override;
 
             StatusCode getDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,
                                                   RetrieveDiscussionThreadsBy by) const override;
             StatusCode getSubscribedDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,
                                                             RetrieveDiscussionThreadsBy by) const override;
+            StatusCode getUsersSubscribedToDiscussionThread(Entities::IdTypeRef id, OutStream& output) const override;
 
             StatusCode getDiscussionThreadsWithTag(Entities::IdTypeRef id, OutStream& output,
                                                    RetrieveDiscussionThreadsBy by) const override;

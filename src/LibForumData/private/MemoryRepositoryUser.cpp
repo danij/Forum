@@ -280,6 +280,47 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
     return status;
 }
 
+StatusCode MemoryRepositoryUser::searchUsersByName(StringView name, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    if (countUTF8Characters(name) > getGlobalConfig()->user.maxNameLength)
+    {
+        return status = INVALID_PARAMETERS;
+    }
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          readEvents().onSearchUsersByName(createObserverContext(currentUser), name);
+
+                          User::NameType nameString(name);
+
+                          const auto& index = collection.users().byName();
+                          auto boundIndex = index.lower_bound_rank(nameString);
+                          if (boundIndex >= index.size())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          status = StatusCode::OK;
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
+                                                               Context::getCurrentTime());
+
+                          status.writeNow([&](auto& writer)
+                                          {
+                                              writer << Json::propertySafeName("index", boundIndex);
+                                              writer << Json::propertySafeName("pageSize", getGlobalConfig()->user.maxUsersPerPage);
+                                          });
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryUser::getUserLogo(IdTypeRef id, OutStream& output) const
 {
     StatusWriter status(output);
@@ -598,7 +639,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(IdTypeRef id, StringView newInfo
     StatusWriter status(output);
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(newInfo, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto validationCode = validateString(newInfo, ALLOW_EMPTY_STRING,
                                          config->user.minInfoLength, config->user.maxInfoLength);
 
     if (validationCode != StatusCode::OK)
@@ -653,7 +694,7 @@ StatusCode MemoryRepositoryUser::changeUserTitle(IdTypeRef id, StringView newTit
     StatusWriter status(output);
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(newTitle, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto validationCode = validateString(newTitle, ALLOW_EMPTY_STRING,
                                          config->user.minTitleLength, config->user.maxTitleLength);
 
     if (validationCode != StatusCode::OK)
@@ -680,7 +721,7 @@ StatusCode MemoryRepositoryUser::changeUserTitle(IdTypeRef id, StringView newTit
                                return;
                            }
 
-                           if ( ! (status = changeUserInfo(collection, id, newTitle))) return;
+                           if ( ! (status = changeUserTitle(collection, id, newTitle))) return;
 
                            writeEvents().onChangeUser(createObserverContext(*currentUser), user, User::ChangeType::Title);
                        });
@@ -708,7 +749,7 @@ StatusCode MemoryRepositoryUser::changeUserSignature(IdTypeRef id, StringView ne
     StatusWriter status(output);
 
     auto config = getGlobalConfig();
-    auto validationCode = validateString(newSignature, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+    auto validationCode = validateString(newSignature, ALLOW_EMPTY_STRING,
                                          config->user.minSignatureLength, config->user.maxSignatureLength);
 
     if (validationCode != StatusCode::OK)

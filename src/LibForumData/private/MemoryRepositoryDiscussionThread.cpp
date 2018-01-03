@@ -227,6 +227,48 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
     return status;
 }
 
+StatusCode MemoryRepositoryDiscussionThread::searchDiscussionThreadsByName(StringView name, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    if (countUTF8Characters(name) > getGlobalConfig()->discussionThread.maxNameLength)
+    {
+        return status = INVALID_PARAMETERS;
+    }
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          readEvents().onSearchDiscussionThreadsByName(createObserverContext(currentUser), name);
+
+                          DiscussionThread::NameType nameString(name);
+
+                          const auto& index = collection.threads().byName();
+                          auto boundIndex = index.lower_bound_rank(nameString);
+                          if (boundIndex >= index.size())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          status = StatusCode::OK;
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
+                                                               Context::getCurrentTime());
+
+                          const auto pageSize = getGlobalConfig()->discussionThread.maxThreadsPerPage;
+
+                          status.writeNow([&](auto& writer)
+                                          {
+                                              writer << Json::propertySafeName("index", boundIndex);
+                                              writer << Json::propertySafeName("pageSize", pageSize);
+                                          });
+                      });
+    return status;
+}
 
 StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(IdTypeRef id, OutStream& output,
                                                                         RetrieveDiscussionThreadsBy by) const
@@ -294,13 +336,62 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
                               return;
                           }
 
-                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
-
                           status.disable();
                           writeDiscussionThreads(user.subscribedThreads(), by, output, collection.grantedPrivileges(),
                                                  currentUser);
 
                           readEvents().onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
+                      });
+    return status;
+}
+
+StatusCode MemoryRepositoryDiscussionThread::getUsersSubscribedToDiscussionThread(IdTypeRef id, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          const auto& index = collection.threads().byId();
+                          auto it = index.find(id);
+                          if (it == index.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          const DiscussionThread& thread = **it;
+
+                          if ( ! (status = authorization_->getDiscussionThreadById(currentUser, thread)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
+                                                               Context::getCurrentTime());
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+                          writer.newPropertyWithSafeName("users");
+
+                          writer.startArray();
+                          for (auto pair : thread.subscribedUsers())
+                          {
+                              if (pair.second)
+                              {
+                                  serialize(writer, *pair.second, restriction);
+                              }
+                          }
+                          writer.endArray();
+
+                          writer.endObject();
+
+                          readEvents().onGetUsersSubscribedToDiscussionThread(createObserverContext(currentUser), thread);
                       });
     return status;
 }
@@ -609,7 +700,7 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(EntityCollec
         return StatusCode::NOT_FOUND;
     }
 
-    collection.deleteDiscussionThread(*it);
+    collection.deleteDiscussionThread(*it, true);
 
     return StatusCode::OK;
 }
@@ -713,25 +804,24 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
     for (DiscussionThreadMessagePtr message : threadFrom.messages().byId())
     {
         message->parentThread() = threadIntoPtr;
-        threadInto.insertMessage(message);
     }
+
+    threadInto.insertMessages(threadFrom.messages());
 
     updateMessageCounts(threadFromPtr, - static_cast<int_fast32_t>(threadFrom.messageCount()));
     updateMessageCounts(threadIntoPtr,   static_cast<int_fast32_t>(threadFrom.messageCount()));
 
-    //remove all message references from the thread so they don't get deleted
-    threadFrom.messages().clear();
-
     //update subscriptions
-    for (UserPtr user : threadFrom.subscribedUsers())
+    for (auto& pair : threadFrom.subscribedUsers())
     {
+        UserPtr& user = pair.second;
         assert(user);
         user->subscribedThreads().add(threadIntoPtr);
-        threadInto.subscribedUsers().insert(user);
+        threadInto.subscribedUsers().insert(std::make_pair(user->id(), user));
     }
 
     //this will also decrease the message count on the tags the thread was part of
-    collection.deleteDiscussionThread(threadFromPtr);
+    collection.deleteDiscussionThread(threadFromPtr, false);
 
     return StatusCode::OK;
 }
@@ -749,6 +839,12 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(IdTypeR
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
+
+                           if (currentUser == anonymousUser())
+                           {
+                               status = StatusCode::NOT_ALLOWED;
+                               return;
+                           }
 
                            auto& indexById = collection.threads().byId();
                            auto it = indexById.find(id);
@@ -785,7 +881,7 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityC
     auto thread = *it;
     auto currentUser = getCurrentUser(collection);
 
-    if ( ! std::get<1>(thread->subscribedUsers().insert(currentUser)))
+    if ( ! std::get<1>(thread->subscribedUsers().insert(std::make_pair(currentUser->id(), currentUser))))
     {
         //FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
         //                  << " is already subscribed to the discussion thread " << static_cast<std::string>(id);
@@ -811,6 +907,12 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(IdT
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
+
+                           if (currentUser == anonymousUser())
+                           {
+                               status = StatusCode::NOT_ALLOWED;
+                               return;
+                           }
 
                            auto& indexById = collection.threads().byId();
                            auto it = indexById.find(id);
@@ -847,7 +949,7 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(Ent
     auto thread = *it;
     auto currentUser = getCurrentUser(collection);
 
-    if (0 == thread->subscribedUsers().erase(currentUser))
+    if (0 == thread->subscribedUsers().erase(currentUser->id()))
     {
         //FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
         //                  << " was not subscribed to the discussion thread " << static_cast<std::string>(id);

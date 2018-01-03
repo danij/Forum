@@ -121,6 +121,7 @@ namespace Forum
 
             virtual StatusCode getUserById(Entities::IdTypeRef id, OutStream& output) const = 0;
             virtual StatusCode getUserByName(StringView name, OutStream& output) const = 0;
+            virtual StatusCode searchUsersByName(StringView name, OutStream& output) const = 0;
             virtual StatusCode getUserLogo(Entities::IdTypeRef id, OutStream& output) const = 0;
             virtual StatusCode getUserVoteHistory(Entities::IdTypeRef id, OutStream& output) const = 0;
 
@@ -167,11 +168,13 @@ namespace Forum
 
             virtual StatusCode getDiscussionThreads(OutStream& output, RetrieveDiscussionThreadsBy by) const = 0;
             virtual StatusCode getDiscussionThreadById(Entities::IdTypeRef id, OutStream& output) = 0;
+            virtual StatusCode searchDiscussionThreadsByName(StringView name, OutStream& output) const = 0;
 
             virtual StatusCode getDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,
                                                           RetrieveDiscussionThreadsBy by) const = 0;
             virtual StatusCode getSubscribedDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,
                                                                     RetrieveDiscussionThreadsBy by) const = 0;
+            virtual StatusCode getUsersSubscribedToDiscussionThread(Entities::IdTypeRef id, OutStream& output) const = 0;
 
             virtual StatusCode getDiscussionThreadsWithTag(Entities::IdTypeRef id, OutStream& output,
                                                            RetrieveDiscussionThreadsBy by) const = 0;

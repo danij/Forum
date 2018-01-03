@@ -66,13 +66,13 @@ namespace Forum
             HASHED_UNIQUE_COLLECTION(DiscussionCategory, id) byId_;
 
             RANKED_UNIQUE_COLLECTION(DiscussionCategory, name) byName_;
-            decltype(byName_)::nth_index<0>::type::iterator byNameUpdateIt_;
+            RANKED_UNIQUE_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
 
             RANKED_COLLECTION(DiscussionCategory, messageCount) byMessageCount_;
-            decltype(byMessageCount_)::nth_index<0>::type::iterator byMessageCountUpdateIt_;
+            RANKED_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
 
             ORDERED_COLLECTION(DiscussionCategory, displayOrderWithRootPriority) byDisplayOrderRootPriority_;
-            decltype(byDisplayOrderRootPriority_)::nth_index<0>::type::iterator byDisplayOrderRootPriorityUpdateIt_;
+            ORDERED_COLLECTION_ITERATOR(byDisplayOrderRootPriority_) byDisplayOrderRootPriorityUpdateIt_;
         };
     }
 }

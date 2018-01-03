@@ -75,7 +75,7 @@ void DiscussionCategoryCollection::updateName(DiscussionCategoryPtr category)
 {
     if (byNameUpdateIt_ != byName_.end())
     {
-        byName_.replace(byNameUpdateIt_, category);
+        replaceItemInContainer(byName_, byNameUpdateIt_, category);
     }
 }
 
@@ -92,7 +92,7 @@ void DiscussionCategoryCollection::updateMessageCount(DiscussionCategoryPtr cate
 
     if (byMessageCountUpdateIt_ != byMessageCount_.end())
     {
-        byMessageCount_.replace(byMessageCountUpdateIt_, category);
+        replaceItemInContainer(byMessageCount_, byMessageCountUpdateIt_, category);
     }
 }
 
@@ -110,6 +110,6 @@ void DiscussionCategoryCollection::updateDisplayOrderRootPriority(DiscussionCate
 
     if (byDisplayOrderRootPriorityUpdateIt_ != byDisplayOrderRootPriority_.end())
     {
-        byDisplayOrderRootPriority_.replace(byDisplayOrderRootPriorityUpdateIt_, category);
+        replaceItemInContainer(byDisplayOrderRootPriority_, byDisplayOrderRootPriorityUpdateIt_, category);
     }
 }

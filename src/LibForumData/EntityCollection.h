@@ -89,7 +89,7 @@ namespace Forum
             void deleteUser(UserPtr user);
 
             void insertDiscussionThread(DiscussionThreadPtr thread);
-            void deleteDiscussionThread(DiscussionThreadPtr thread);
+            void deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages);
 
             void insertDiscussionThreadMessage(DiscussionThreadMessagePtr message);
             void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message);

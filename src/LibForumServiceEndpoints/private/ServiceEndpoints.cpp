@@ -258,6 +258,16 @@ void UsersEndpoint::getUserByName(Http::RequestState& requestState)
     });
 }
 
+void UsersEndpoint::searchUsersByName(Http::RequestState& requestState)
+{
+    handle(requestState,
+        [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::SEARCH_USERS_BY_NAME, parameters);
+    });
+}
+
 void UsersEndpoint::getUserLogo(Http::RequestState& requestState)
 {
     handleBinary(requestState, "image/png",
@@ -275,6 +285,16 @@ void UsersEndpoint::getUserVoteHistory(Http::RequestState& requestState)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_USER_VOTE_HISTORY, parameters);
+    });
+}
+
+void UsersEndpoint::getUsersSubscribedToThread(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::GET_USERS_SUBSCRIBED_TO_DISCUSSION_THREAD, parameters);
     });
 }
 
@@ -362,6 +382,7 @@ void UsersEndpoint::deleteLogo(Http::RequestState& requestState)
         return commandHandler.handle(Command::DELETE_USER_LOGO, parameters);
     });
 }
+
 
 DiscussionThreadsEndpoint::DiscussionThreadsEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
 {
@@ -525,6 +546,16 @@ void DiscussionThreadsEndpoint::getThreadsOfCategory(Http::RequestState& request
             }
         }
         return commandHandler.handle(view, parameters);
+    });
+}
+
+void DiscussionThreadsEndpoint::searchThreadsByName(Http::RequestState& requestState)
+{
+    handle(requestState,
+        [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::SEARCH_DISCUSSION_THREADS_BY_NAME, parameters);
     });
 }
 
@@ -729,7 +760,7 @@ void DiscussionThreadMessagesEndpoint::add(Http::RequestState& requestState)
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
-        return commandHandler.handle(Command::ADD_USER, parameters);
+        return commandHandler.handle(Command::ADD_DISCUSSION_THREAD_MESSAGE, parameters);
     });
 }
 
@@ -750,6 +781,7 @@ void DiscussionThreadMessagesEndpoint::changeContent(Http::RequestState& request
     {
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        parameters.push_back(requestState.extraPathParts[1]);
         return commandHandler.handle(Command::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, parameters);
     });
 }

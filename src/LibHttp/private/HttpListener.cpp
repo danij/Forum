@@ -51,13 +51,31 @@ static void closeSocket(boost::asio::ip::tcp::socket& socket)
     }
 }
 
+struct ConnectionInfo
+{
+    boost::asio::ip::tcp::socket* socket;
+    boost::asio::strand* strand;
+
+    bool operator==(ConnectionInfo other) const
+    {
+        return (socket == other.socket) && (strand == other.strand);
+    }
+};
+
+inline size_t hash_value(const ConnectionInfo& value)
+{
+    return std::hash<boost::asio::ip::tcp::socket*>{}(value.socket)
+        ^ std::hash<boost::asio::strand*>{}(value.strand);
+}
+
 struct HttpListener::HttpConnection final : private boost::noncopyable
 {
-    explicit HttpConnection(HttpListener& listener, boost::asio::ip::tcp::socket&& socket, ReadBufferType&& headerBuffer,
+    explicit HttpConnection(HttpListener& listener, boost::asio::ip::tcp::socket&& socket,
+                            boost::asio::strand&& strand, ReadBufferType&& headerBuffer,
                             ReadBufferPoolType& readBufferPool, WriteBufferPoolType& writeBufferPool,
-                            TimeoutManager<boost::asio::ip::tcp::socket>& timeoutManager, bool trustIpFromXForwardedFor)
-        : listener_(listener), socket_(std::move(socket)), headerBuffer_(std::move(headerBuffer)),
-          requestBodyBuffer_(readBufferPool), responseBuffer_(writeBufferPool),
+                            TimeoutManager<ConnectionInfo>& timeoutManager, bool trustIpFromXForwardedFor)
+        : listener_(listener), socket_(std::move(socket)), strand_(std::move(strand)),
+          headerBuffer_(std::move(headerBuffer)), requestBodyBuffer_(readBufferPool), responseBuffer_(writeBufferPool),
           responseBuilder_(writeToBuffer, &responseBuffer_), timeoutManager_(timeoutManager),
           trustIpFromXForwardedFor_(trustIpFromXForwardedFor),
           parser_(headerBuffer_->data, headerBuffer_->size, Buffer::MaxRequestBodyLength,
@@ -66,7 +84,7 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
                   return reinterpret_cast<HttpConnection*>(state)->onReadBody(buffer, size);
               }, this)
     {
-        timeoutManager_.addExpireIn(&socket_, timeoutManager.defaultTimeout());
+        timeoutManager_.addExpireIn({ &socket_, &strand_ }, timeoutManager.defaultTimeout());
     }
 
     auto& socket()
@@ -74,10 +92,18 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
         return socket_;
     }
 
+    auto& strand()
+    {
+        return strand_;
+    }
+
     void startReading()
     {
-        boost::asio::async_read(socket_, boost::asio::buffer(readBuffer_), boost::asio::transfer_at_least(1),
-            HttpConnectionReadCallback{ this });
+        strand_.post([this]()
+        {
+            boost::asio::async_read(socket_, boost::asio::buffer(readBuffer_), boost::asio::transfer_at_least(1),
+                strand_.wrap(HttpConnectionReadCallback{ this }));
+        });
     }
 
     void onRead(const boost::system::error_code& ec, size_t bytesTransfered)
@@ -159,8 +185,11 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
             }
             else
             {
-                boost::asio::async_write(socket_, responseBuffer_.constBufferWrapper(), boost::asio::transfer_all(),
-                    HttpConnectionResponseWrittenCallback{ this });
+                strand_.post([this]()
+                {
+                    boost::asio::async_write(socket_, responseBuffer_.constBufferWrapper(), boost::asio::transfer_all(),
+                                             strand_.wrap(HttpConnectionResponseWrittenCallback{ this }));
+                });
             }
         }
         else
@@ -180,8 +209,11 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
         auto responseSize = buildSimpleResponseFromStatusCode(code,
             parser_.request().versionMajor, parser_.request().versionMinor, readBuffer_.data());
 
-        boost::asio::async_write(socket_, boost::asio::buffer(readBuffer_.data(), responseSize),
-                                 boost::asio::transfer_all(), HttpConnectionResponseWrittenCallback{ this });
+        strand_.post([this, responseSize]()
+        {
+            boost::asio::async_write(socket_, boost::asio::buffer(readBuffer_.data(), responseSize),
+                                     boost::asio::transfer_all(), strand_.wrap(HttpConnectionResponseWrittenCallback{ this }));
+        });
     }
 
     void onResponseWritten(const boost::system::error_code& ec, size_t bytesTransfered)
@@ -203,7 +235,10 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
         }
         else
         {
-            closeSocket(socket_);
+            strand_.wrap([this]()
+            {
+                closeSocket(socket_);
+            });
             listener_.release(this);
         }
     }
@@ -230,12 +265,13 @@ private:
 
     HttpListener& listener_;
     boost::asio::ip::tcp::socket socket_;
+    boost::asio::strand strand_;
     ReadBufferType headerBuffer_;
     RequestBodyBufferType requestBodyBuffer_;
     std::array<char, 1024> readBuffer_;
     ResponseBufferType responseBuffer_;
     HttpResponseBuilder responseBuilder_;
-    TimeoutManager<boost::asio::ip::tcp::socket>& timeoutManager_;
+    TimeoutManager<ConnectionInfo>& timeoutManager_;
     bool keepConnectionAlive_ = false;
     bool trustIpFromXForwardedFor_ = false;
     Parser parser_;
@@ -260,10 +296,11 @@ struct HttpListener::HttpListenerImpl
     };
 
     HttpListenerImpl(Configuration&& config, HttpRouter& router, boost::asio::io_service& ioService)
-        : config(std::move(config)), router(router), ioService(ioService), acceptor(ioService), socket(ioService),
+        : config(std::move(config)), router(router), ioService(ioService), acceptor(ioService),
+        socket(ioService), strand(ioService),
         timeoutTimer(ioService, boost::posix_time::seconds(CheckTimeoutEverySeconds)),
         connectionPool(config.numberOfReadBuffers),
-        timeoutManager([](auto socket) { HttpListenerImpl::closeConnection(socket); }, this->config.connectionTimeoutSeconds)
+        timeoutManager([](auto info) { HttpListenerImpl::closeConnection(info); }, this->config.connectionTimeoutSeconds)
     {
         readBuffers = std::make_unique<ReadBufferPoolType>(
                 static_cast<size_t>(config.numberOfReadBuffers));
@@ -273,11 +310,15 @@ struct HttpListener::HttpListenerImpl
         timeoutTimer.async_wait(TimeoutCheckCallback{ this });
     }
 
-    static void closeConnection(boost::asio::ip::tcp::socket* socket)
+    static void closeConnection(ConnectionInfo info)
     {
-        if (socket)
+        if (info.socket && info.strand)
         {
-            closeSocket(*socket);
+            auto socket = info.socket;
+            info.strand->post([socket]()
+            {
+                closeSocket(*socket);
+            });
         }
     }
 
@@ -287,6 +328,7 @@ struct HttpListener::HttpListenerImpl
     boost::asio::io_service& ioService;
     boost::asio::ip::tcp::acceptor acceptor;
     boost::asio::ip::tcp::socket socket;
+    boost::asio::strand strand;
     boost::asio::deadline_timer timeoutTimer;
 
     constexpr static int CheckTimeoutEverySeconds = 1;
@@ -295,7 +337,7 @@ struct HttpListener::HttpListenerImpl
     std::unique_ptr<WriteBufferPoolType> writeBuffers;
     FixedSizeObjectPool<HttpConnection> connectionPool;
     std::atomic<std::int64_t> nrOfCurrentlyOpenConnections{0};
-    TimeoutManager<boost::asio::ip::tcp::socket> timeoutManager;
+    TimeoutManager<ConnectionInfo> timeoutManager;
 };
 
 HttpListener::HttpListener(Configuration config, HttpRouter& router, boost::asio::io_service& ioService)
@@ -378,7 +420,8 @@ void HttpListener::onAccept(const boost::system::error_code& ec)
 
     if (headerBuffer)
     {
-        auto connection = impl_->connectionPool.getObject(*this, std::move(impl_->socket), std::move(headerBuffer),
+        auto connection = impl_->connectionPool.getObject(*this, std::move(impl_->socket), std::move(impl_->strand),
+                                                          std::move(headerBuffer),
                                                           *impl_->readBuffers, *impl_->writeBuffers,
                                                           impl_->timeoutManager, impl_->config.trustIpFromXForwardedFor);
         if (nullptr != connection)
@@ -391,7 +434,10 @@ void HttpListener::onAccept(const boost::system::error_code& ec)
 
     if (closeConnection)
     {
-        closeSocket(impl_->socket);
+        impl_->strand.post([this]()
+        {
+            closeSocket(impl_->socket);
+        });
     }
 
     startAccept();
@@ -401,7 +447,7 @@ void HttpListener::release(HttpConnection* connection)
 {
     if (connection)
     {
-        impl_->timeoutManager.remove(&connection->socket());
+        impl_->timeoutManager.remove({ &connection->socket(), &connection->strand() });
     }
     impl_->connectionPool.returnObject(connection);
     impl_->nrOfCurrentlyOpenConnections -= 1;

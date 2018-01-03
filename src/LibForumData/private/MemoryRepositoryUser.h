@@ -37,6 +37,7 @@ namespace Forum
 
             StatusCode getUserById(Entities::IdTypeRef id, OutStream& output) const override;
             StatusCode getUserByName(StringView name, OutStream& output) const override;
+            StatusCode searchUsersByName(StringView name, OutStream& output) const override;
             StatusCode getUserLogo(Entities::IdTypeRef id, OutStream& output) const override;
             StatusCode getUserVoteHistory(Entities::IdTypeRef id, OutStream& output) const override;
 

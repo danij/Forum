@@ -75,8 +75,10 @@ namespace Forum
             void getOnline(Http::RequestState& requestState);
             void getUserById(Http::RequestState& requestState);
             void getUserByName(Http::RequestState& requestState);
+            void searchUsersByName(Http::RequestState& requestState);
             void getUserLogo(Http::RequestState& requestState);
             void getUserVoteHistory(Http::RequestState& requestState);
+            void getUsersSubscribedToThread(Http::RequestState& requestState);
 
             void add(Http::RequestState& requestState);
             void remove(Http::RequestState& requestState);
@@ -98,6 +100,7 @@ namespace Forum
             void getThreadsOfUser(Http::RequestState& requestState);
             void getThreadsWithTag(Http::RequestState& requestState);
             void getThreadsOfCategory(Http::RequestState& requestState);
+            void searchThreadsByName(Http::RequestState& requestState);
             void getSubscribedThreadsOfUser(Http::RequestState& requestState);
 
             void add(Http::RequestState& requestState);

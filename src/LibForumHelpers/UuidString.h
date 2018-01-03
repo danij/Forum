@@ -91,6 +91,14 @@ namespace Forum
              */
             void toString(char* buffer) const;
 
+            /**
+             * Required by ConstMapAdapter
+             */
+            auto toConst() const
+            {
+                return *this;
+            }
+
             operator bool() const
             {
                 return *this != empty;

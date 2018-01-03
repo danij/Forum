@@ -530,7 +530,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
         return StatusCode::NO_EFFECT;
     }
 
-    tag.deleteDiscussionThread(threadPtr);
+    tag.deleteDiscussionThread(threadPtr, true);
     updateThreadLastUpdated(thread, currentUser);
 
     return StatusCode::OK;

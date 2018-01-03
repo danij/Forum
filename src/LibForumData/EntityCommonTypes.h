@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "IpAddress.h"
 
 #include <cstdint>
+#include <utility>
 
 #include <boost/preprocessor/cat.hpp>
 
@@ -57,29 +58,38 @@ namespace Forum
 #define HASHED_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::hashed_non_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define HASHED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define HASHED_UNIQUE_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::hashed_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define HASHED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define ORDERED_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ordered_non_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define ORDERED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define ORDERED_UNIQUE_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ordered_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define ORDERED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define RANKED_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ranked_non_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define RANKED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define RANKED_UNIQUE_COLLECTION(Type, Getter) \
         boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ranked_unique< \
             const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+#define RANKED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
-#define RETURN_TYPE(Type, Getter) \
-        typename std::result_of<decltype(&Type::Getter)(Type*)>::type
+        template<typename TContainer, typename It, typename Value>
+        void replaceItemInContainer(TContainer& container, It&& iterator, Value&& value)
+        {
+            container.replace(std::forward<It>(iterator), std::forward<Value>(value));
+        }
 
 #define FLAT_MULTISET_COLLECTION(Type, Getter) \
         boost::container::flat_multiset<EntityPointer<Type>, BOOST_PP_CAT(LessPtr_, Getter)<Type>>

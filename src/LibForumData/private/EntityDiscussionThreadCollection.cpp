@@ -92,7 +92,7 @@ void DiscussionThreadCollectionBase::updateName(DiscussionThreadPtr thread)
 
     if (byNameUpdateIt_ != byName_.end())
     {
-        byName_.replace(byNameUpdateIt_, thread);
+        replaceItemInContainer(byName_, byNameUpdateIt_, thread);
     }
 }
 
@@ -109,7 +109,7 @@ void DiscussionThreadCollectionBase::updateLastUpdated(DiscussionThreadPtr threa
 
     if (byLastUpdatedUpdateIt_ != byLastUpdated_.end())
     {
-        byLastUpdated_.replace(byLastUpdatedUpdateIt_, thread);
+        replaceItemInContainer(byLastUpdated_, byLastUpdatedUpdateIt_, thread);
     }
 }
 
@@ -126,7 +126,7 @@ void DiscussionThreadCollectionBase::updateLatestMessageCreated(DiscussionThread
 
     if (byLatestMessageCreatedUpdateIt_ != byLatestMessageCreated_.end())
     {
-        byLatestMessageCreated_.replace(byLatestMessageCreatedUpdateIt_, thread);
+        replaceItemInContainer(byLatestMessageCreated_, byLatestMessageCreatedUpdateIt_, thread);
     }
 }
 
@@ -143,7 +143,7 @@ void DiscussionThreadCollectionBase::updateMessageCount(DiscussionThreadPtr thre
 
     if (byMessageCountUpdateIt_ != byMessageCount_.end())
     {
-        byMessageCount_.replace(byMessageCountUpdateIt_, thread);
+        replaceItemInContainer(byMessageCount_, byMessageCountUpdateIt_, thread);
     }
 }
 
@@ -239,7 +239,7 @@ void DiscussionThreadCollectionWithHashedIdAndPinOrder::updatePinDisplayOrder(Di
 
     if (byPinDisplayOrderUpdateIt_ != byPinDisplayOrder_.end())
     {
-        byPinDisplayOrder_.replace(byPinDisplayOrderUpdateIt_, thread);
+        replaceItemInContainer(byPinDisplayOrder_, byPinDisplayOrderUpdateIt_, thread);
     }
 }
 
@@ -411,7 +411,7 @@ void DiscussionThreadCollectionWithReferenceCountAndMessageCount::updateLatestMe
 
     if (byLatestMessageCreatedUpdateIt_ != byLatestMessageCreated_.end())
     {
-        byLatestMessageCreated_.replace(byLatestMessageCreatedUpdateIt_, thread);
+        replaceItemInContainer(byLatestMessageCreated_, byLatestMessageCreatedUpdateIt_, thread);
     }
 }
 

@@ -240,6 +240,8 @@ namespace Forum
             DELETE_ANY_USER_LOGO,
             GET_USER_VOTE_HISTORY,
 
+            NO_THROTTLING,
+
             COUNT
         };
 
@@ -279,7 +281,9 @@ namespace Forum
             "change_any_user_logo",
             "delete_own_user_logo",
             "delete_any_user_logo",
-            "get_user_vote_history"
+            "get_user_vote_history",
+
+            "no_throttling",
         };
 
         const ForumWidePrivilege ForumWidePrivilegesToSerialize[] =
@@ -305,7 +309,17 @@ namespace Forum
             ForumWidePrivilege::CHANGE_ANY_USER_NAME,
             ForumWidePrivilege::CHANGE_ANY_USER_INFO,
             ForumWidePrivilege::DELETE_ANY_USER,
-            ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE
+            ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE,
+            ForumWidePrivilege::CHANGE_OWN_USER_TITLE,
+            ForumWidePrivilege::CHANGE_ANY_USER_TITLE,
+            ForumWidePrivilege::CHANGE_OWN_USER_SIGNATURE,
+            ForumWidePrivilege::CHANGE_ANY_USER_SIGNATURE,
+            ForumWidePrivilege::CHANGE_OWN_USER_LOGO,
+            ForumWidePrivilege::CHANGE_ANY_USER_LOGO,
+            ForumWidePrivilege::DELETE_OWN_USER_LOGO,
+            ForumWidePrivilege::DELETE_ANY_USER_LOGO,
+            ForumWidePrivilege::GET_USER_VOTE_HISTORY,
+            ForumWidePrivilege::NO_THROTTLING
         };
 
         enum class ForumWideDefaultPrivilegeDuration : EnumIntType

@@ -69,6 +69,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
             << propertySafeName("lastSeen", user.lastSeen())
             << propertySafeName("threadCount", user.threads().byId().size())
             << propertySafeName("messageCount", user.threadMessages().byId().size())
+            << propertySafeName("subscribedThreadCount", user.subscribedThreads().byId().size())
             << propertySafeName("receivedUpVotes", user.receivedUpVotes())
             << propertySafeName("receivedDownVotes", user.receivedDownVotes())
         << objEnd;
@@ -126,6 +127,10 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         ? *serializationSettings.allowDisplayDiscussionThreadMessageIpAddress
         : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS);
 
+    auto allowViewCommentCount = serializationSettings.allowDisplayDiscussionThreadMessageComments
+        ? *serializationSettings.allowDisplayDiscussionThreadMessageComments
+        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS);
+
     if ( ! allowView)
     {
         return writer.null();
@@ -134,9 +139,13 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     writer
         << objStart
             << propertySafeName("id", message.id())
-            << propertySafeName("created", message.created())
-            << propertySafeName("commentsCount", message.comments().count())
-            << propertySafeName("solvedCommentsCount", message.solvedCommentsCount());
+            << propertySafeName("created", message.created());
+
+    if (allowViewCommentCount)
+    {
+        writer << propertySafeName("commentsCount", message.comments().count())
+               << propertySafeName("solvedCommentsCount", message.solvedCommentsCount());
+    }
 
     auto content = message.content();
     writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
@@ -343,6 +352,8 @@ void writeDiscussionThreadMessages(const Collection& collection, int_fast32_t pa
                                               item.allowedToShowVotes);
         OptionalRevertToNoneChanger<bool> ____(serializationSettings.allowDisplayDiscussionThreadMessageIpAddress,
                                                item.allowedToShowIpAddress);
+        OptionalRevertToNoneChanger<bool> _____(serializationSettings.allowDisplayDiscussionThreadMessageComments,
+                                                item.allowedToViewComments);
 
         serialize(writer, *item.message, restriction);
     }
@@ -362,8 +373,12 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
             << propertySafeName("created", thread.created())
             << propertySafeName("latestVisibleChangeAt", thread.latestVisibleChange())
             << propertySafeName("pinned", thread.pinDisplayOrder() > 0)
-            << propertySafeName("visitorsSinceLastChange", thread.nrOfVisitorsSinceLastEdit())
+            << propertySafeName("pinDisplayOrder", thread.pinDisplayOrder())
             << propertySafeName("subscribedUsersCount", thread.subscribedUsersCount());
+
+    IdTypeRef currentUserId = Context::getCurrentUserId();
+    writer << propertySafeName("subscribedToThread",
+        currentUserId && (thread.subscribedUsers().find(currentUserId) != thread.subscribedUsers().end()));
 
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
     {

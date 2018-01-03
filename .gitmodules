@@ -1,0 +1,8 @@
+[submodule "subprojects/Forum.WebClient"]
+	path = subprojects/Forum.WebClient
+	url = https://github.com/danij/Forum.WebClient
+	branch = master
+[submodule "subprojects/Forum.Auth"]
+	path = subprojects/Forum.Auth
+	url = https://github.com/danij/Forum.Auth
+	branch = master

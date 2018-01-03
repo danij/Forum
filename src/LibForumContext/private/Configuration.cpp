@@ -93,6 +93,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(service.trustIpFromXForwardedFor);
     LOAD_CONFIG_VALUE(service.disableCommands);
     LOAD_CONFIG_VALUE(service.disableCommandsForAnonymousUsers);
+    LOAD_CONFIG_VALUE(service.disableThrottling);
     LOAD_CONFIG_VALUE(service.responsePrefix);
 
     LOAD_CONFIG_VALUE(logging.settingsFile);

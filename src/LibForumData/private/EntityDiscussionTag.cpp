@@ -69,24 +69,33 @@ bool DiscussionTag::insertDiscussionThread(DiscussionThreadPtr thread)
     return true;
 }
 
-bool DiscussionTag::deleteDiscussionThread(DiscussionThreadPtr thread)
+bool DiscussionTag::deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages)
 {
     assert(thread);
     changeNotifications_.onPrepareUpdateThreadCount(*this);
+    if (deleteMessages)
+    {
+        changeNotifications_.onPrepareUpdateMessageCount(*this);
+    }
 
     if ( ! threads_.remove(thread))
     {
         return false;
     }
-    messageCount_ -= static_cast<decltype(messageCount_)>(thread->messageCount());
-
+    if (deleteMessages) {
+        messageCount_ -= static_cast<decltype(messageCount_)>(thread->messageCount());
+    }
     for (auto category : categories_)
     {
         assert(category);
         //called from detaching a tag from a thread
-        category->deleteDiscussionThreadIfNoOtherTagsReferenceIt(thread);
+        category->deleteDiscussionThreadIfNoOtherTagsReferenceIt(thread, deleteMessages);
     }
     changeNotifications_.onUpdateThreadCount(*this);
+    if (deleteMessages)
+    {
+        changeNotifications_.onUpdateMessageCount(*this);
+    }
     return true;
 }
 

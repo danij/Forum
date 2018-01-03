@@ -120,9 +120,9 @@ While the application is running, observers are notified for each event of inter
  in the form of a BLOB and add the blob to a queue for persistence. Lower-priority events, such as incrementing counters
   storing how many times a discussion thread has been visited, are aggregated and only persisted periodically.
  
-A separate thread monitors the queue and writes all the blobs to the filesystem. Thus, normal operations are not blocked
- by expensive I/O. This approach has the downside of loosing some events, should the application or host crash while 
- some events are still in the queue. 
+A separate thread monitors the queue and writes all the blobs to the filesystem (like in a write-behind cache). 
+Thus, normal operations are not blocked by expensive I/O. This approach has the downside of loosing some events, 
+ should the application or host crash while some events are still in the queue. 
  
 > Note: the event queue is of a fixed size. If no room is available to enqueue a blob, the calling thread will wait.
 

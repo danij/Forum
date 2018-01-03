@@ -62,6 +62,11 @@ static thread_local std::unique_ptr<char[]> normalizeBuffer8(new char[NormalizeB
  */
 static StringView normalize(StringView input)
 {
+    if (0 == input.size())
+    {
+        return input;
+    }
+
     int32_t chars16Written = 0, chars8Written = 0;
     UErrorCode errorCode{};
     auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before.get(), NormalizeBuffer16MaxChars, &chars16Written,
@@ -114,6 +119,15 @@ struct CommandHandler::CommandHandlerImpl
     static bool checkNumberOfParameters(const std::vector<StringView>& parameters, size_t number)
     {
         if (countNonEmpty(parameters) != number)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    static bool checkNumberOfParametersAtLeast(const std::vector<StringView>& parameters, size_t number)
+    {
+        if (countNonEmpty(parameters) < number)
         {
             return false;
         }
@@ -217,6 +231,14 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->getUserByName(normalizedParam, output);
     }
 
+    COMMAND_HANDLER_METHOD( SEARCH_USERS_BY_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        return userRepository->searchUsersByName(normalizedParam, output);
+    }
+
     COMMAND_HANDLER_METHOD( GET_USER_LOGO )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -239,25 +261,22 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_INFO )
     {
-        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
-        StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParametersAtLeast(parameters, 1)) return INVALID_PARAMETERS;
+        StringView normalizedParam = normalize(parameters[1]);
         return userRepository->changeUserInfo(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_TITLE )
     {
-        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
-        StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParametersAtLeast(parameters, 1)) return INVALID_PARAMETERS;
+        StringView normalizedParam = normalize(parameters[1]);
         return userRepository->changeUserTitle(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_SIGNATURE )
     {
-        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
-        StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParametersAtLeast(parameters, 1)) return INVALID_PARAMETERS;
+        StringView normalizedParam = normalize(parameters[1]);
         return userRepository->changeUserSignature(parameters[0], normalizedParam, output);
     }
 
@@ -316,6 +335,14 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getDiscussionThreadById(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( SEARCH_DISCUSSION_THREADS_BY_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        return discussionThreadRepository->searchDiscussionThreadsByName(normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_NAME )
@@ -398,6 +425,12 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadRepository->getSubscribedDiscussionThreadsOfUser(parameters[0], output,
                                                                                 RetrieveDiscussionThreadsBy::Name);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_USERS_SUBSCRIBED_TO_DISCUSSION_THREAD )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getUsersSubscribedToDiscussionThread(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_CREATED )
@@ -1162,6 +1195,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_USERS_ONLINE);
     setViewHandler(GET_USER_BY_ID);
     setViewHandler(GET_USER_BY_NAME);
+    setViewHandler(SEARCH_USERS_BY_NAME);
     setViewHandler(GET_USER_LOGO);
     setViewHandler(GET_USER_VOTE_HISTORY);
 
@@ -1171,6 +1205,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
     setViewHandler(GET_DISCUSSION_THREAD_BY_ID);
+    setViewHandler(SEARCH_DISCUSSION_THREADS_BY_NAME);
 
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_CREATED);
@@ -1183,6 +1218,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LAST_UPDATED);
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
+    setViewHandler(GET_USERS_SUBSCRIBED_TO_DISCUSSION_THREAD);
 
     setViewHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED);
     setViewHandler(GET_LATEST_DISCUSSION_THREAD_MESSAGES);

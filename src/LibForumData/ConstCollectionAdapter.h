@@ -21,10 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityPointer.h"
 
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/optional.hpp>
 
 #include <cassert>
 #include <memory>
 #include <map>
+#include <unordered_map>
 #include <set>
 
 namespace Forum
@@ -73,6 +75,18 @@ namespace Forum
             auto find(const TSearchType& value) const
             {
                 return boost::make_transform_iterator(collection_.find(value), getPointer);
+            }
+
+            template <typename TSearchType>
+            auto lower_bound(const TSearchType& value) const
+            {
+                return boost::make_transform_iterator(collection_.lower_bound(value), getPointer);
+            }
+
+            template <typename TSearchType>
+            auto lower_bound_rank(const TSearchType& value) const
+            {
+                return collection_.lower_bound_rank(value);
             }
 
         private:
@@ -147,6 +161,12 @@ namespace Forum
         auto toConst(const std::map<MapKey, MapT, MapCompare, MapAllocator>& collection)
         {
             return ConstMapAdapter<MapKey, MapT, std::map<MapKey, MapT, MapCompare, MapAllocator>>(collection);
+        }
+
+        template<typename MapKey, typename MapT, typename MapHash, typename MapKeyEqual, typename MapAllocator>
+        auto toConst(const std::unordered_map<MapKey, MapT, MapHash, MapKeyEqual, MapAllocator>& collection)
+        {
+            return ConstMapAdapter<MapKey, MapT, std::unordered_map<MapKey, MapT, MapHash, MapKeyEqual, MapAllocator>>(collection);
         }
     }
 }

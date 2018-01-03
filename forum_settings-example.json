@@ -58,6 +58,7 @@
         "trustIpFromXForwardedFor": false,
         "disableCommands": false,
         "disableCommandsForAnonymousUsers": false,
+        "disableThrottling": false,
         "responsePrefix": "while(1);"
     },
 

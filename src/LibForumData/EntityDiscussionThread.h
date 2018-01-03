@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <atomic>
 #include <string>
 #include <set>
-#include <unordered_set>
+#include <unordered_map>
 
 #include <boost/noncopyable.hpp>
 
@@ -205,6 +205,7 @@ namespace Forum
             }
 
             void insertMessage(DiscussionThreadMessagePtr message);
+            void insertMessages(DiscussionThreadMessageCollection& collection);
             void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message);
 
             void addVisitorSinceLastEdit(IdTypeRef userId);
@@ -250,7 +251,7 @@ namespace Forum
 
             std::set<EntityPointer<DiscussionTag>> tags_;
             std::set<EntityPointer<DiscussionCategory>> categories_;
-            std::unordered_set<EntityPointer<User>> subscribedUsers_;
+            std::unordered_map<IdType, EntityPointer<User>> subscribedUsers_;
         };
 
         typedef EntityPointer<DiscussionThread> DiscussionThreadPtr;

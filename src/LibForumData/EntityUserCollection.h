@@ -77,22 +77,23 @@ namespace Forum
 
         private:
             HASHED_UNIQUE_COLLECTION(User, id) byId_;
+
             HASHED_UNIQUE_COLLECTION(User, auth) byAuth_;
-            decltype(byAuth_)::nth_index<0>::type::iterator byAuthUpdateIt_;
+            HASHED_UNIQUE_COLLECTION_ITERATOR(byAuth_) byAuthUpdateIt_;
 
             RANKED_UNIQUE_COLLECTION(User, name) byName_;
-            decltype(byName_)::nth_index<0>::type::iterator byNameUpdateIt_;
+            RANKED_UNIQUE_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
 
             RANKED_COLLECTION(User, created) byCreated_;
 
             RANKED_COLLECTION(User, lastSeen) byLastSeen_;
-            decltype(byLastSeen_)::nth_index<0>::type::iterator byLastSeenUpdateIt_;
+            RANKED_COLLECTION_ITERATOR(byLastSeen_) byLastSeenUpdateIt_;
 
             RANKED_COLLECTION(User, threadCount) byThreadCount_;
-            decltype(byThreadCount_)::nth_index<0>::type::iterator byThreadCountUpdateIt_;
+            RANKED_COLLECTION_ITERATOR(byThreadCount_) byThreadCountUpdateIt_;
 
             RANKED_COLLECTION(User, messageCount) byMessageCount_;
-            decltype(byMessageCount_)::nth_index<0>::type::iterator byMessageCountUpdateIt_;
+            RANKED_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
         };
     }
 }

@@ -77,7 +77,7 @@ void DiscussionTagCollection::updateName(DiscussionTagPtr tag)
 {
     if (byNameUpdateIt_ != byName_.end())
     {
-        byName_.replace(byNameUpdateIt_, tag);
+        replaceItemInContainer(byName_, byNameUpdateIt_, tag);
     }
 }
 
@@ -94,7 +94,7 @@ void DiscussionTagCollection::updateThreadCount(DiscussionTagPtr tag)
 
     if (byThreadCountUpdateIt_ != byThreadCount_.end())
     {
-        byThreadCount_.replace(byThreadCountUpdateIt_, tag);
+        replaceItemInContainer(byThreadCount_, byThreadCountUpdateIt_, tag);
     }
 }
 
@@ -111,6 +111,6 @@ void DiscussionTagCollection::updateMessageCount(DiscussionTagPtr tag)
 
     if (byMessageCountUpdateIt_ != byMessageCount_.end())
     {
-        byMessageCount_.replace(byMessageCountUpdateIt_, tag);
+        replaceItemInContainer(byMessageCount_, byMessageCountUpdateIt_, tag);
     }
 }

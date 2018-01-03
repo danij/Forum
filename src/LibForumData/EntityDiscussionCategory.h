@@ -137,6 +137,14 @@ namespace Forum
                 changeNotifications_.onUpdateDisplayOrder(*this);
             }
 
+            void updateParent(EntityPointer<DiscussionCategory> newParent)
+            {
+                //displayOrderWithRootPriority depends on the parent
+                changeNotifications_.onPrepareUpdateDisplayOrder(*this);
+                parent_ = newParent;
+                changeNotifications_.onUpdateDisplayOrder(*this);
+            }
+
             void stopBatchInsert()
             {
                 threads_.stopBatchInsert();
@@ -160,8 +168,8 @@ namespace Forum
             bool hasAncestor(EntityPointer<DiscussionCategory> ancestor);
 
             bool insertDiscussionThread(DiscussionThreadPtr thread);
-            bool deleteDiscussionThread(DiscussionThreadPtr thread);
-            void deleteDiscussionThreadIfNoOtherTagsReferenceIt(DiscussionThreadPtr thread);
+            bool deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages);
+            void deleteDiscussionThreadIfNoOtherTagsReferenceIt(DiscussionThreadPtr thread, bool deleteMessages);
 
             bool addTag(DiscussionTagPtr tag);
             bool removeTag(DiscussionTagPtr tag);
