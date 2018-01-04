@@ -209,6 +209,12 @@ namespace Forum
                     output_(output), statusCode_(Repository::StatusCode::UNAUTHORIZED), enabled_(true)
             {}
 
+            StatusWriter(const StatusWriter&) = delete;
+            StatusWriter(StatusWriter&&) = delete;
+
+            StatusWriter& operator=(const StatusWriter&) = delete;
+            StatusWriter& operator=(StatusWriter&&) = delete;
+
             ~StatusWriter()
             {
                 if ( ! enabled_) return;
