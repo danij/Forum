@@ -291,14 +291,9 @@ Returns a page of discussion thread message comments, ordered by the creation da
  
 ### GET /thread_messages/comments/`messageid`
 
-Returns a page of comments associated to a specific discussion thread message, ordered by the creation date/time.
+Returns all comments associated to a specific discussion thread message, ordered by the creation date/time in descending order
 
 `messageid` – a unique identifier of the discussion thread message to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
-
-|Parameter|Type|Description|Default|
-|----|:----:|----|:----:|
-|Page|Query String|Zero-based page number|0|
-|Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### GET /thread_messages/comments/user/`userid`
 

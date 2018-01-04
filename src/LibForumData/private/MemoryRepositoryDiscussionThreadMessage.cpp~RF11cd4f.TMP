@@ -831,7 +831,7 @@ static void writeAllMessageComments(const Collection& collection, OutStream& out
 {
     SerializationRestriction restriction(privilegeStore, currentUser.id(), Context::getCurrentTime());
 
-    writeAllEntities(collection, "message_comments", output, false, restriction);
+    writeAllEntities(collection, "message_comments", output, true, restriction);
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream& output) const
