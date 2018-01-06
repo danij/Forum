@@ -887,6 +887,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             if (size < MinBlobSize)
             {
                 FORUM_LOG_ERROR << "Found bytes that are not enough to contain a persisted event blob";
+                result.success = false;
                 break;
             }
 
@@ -894,6 +895,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             if (magic != MagicPrefix)
             {
                 FORUM_LOG_ERROR << "Invalid prefix in current blob";
+                result.success = false;
                 break;
             }
 
