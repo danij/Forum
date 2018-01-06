@@ -849,6 +849,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream
                           }
 
                           status.disable();
+                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                          BoolTemporaryChanger __(serializationSettings.hideLatestMessage, true);
+
                           writeMessageComments(collection.messageComments().byCreated(), output,
                                                collection.grantedPrivileges(), currentUser);
                           readEvents().onGetMessageComments(createObserverContext(currentUser));
@@ -886,6 +889,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
                           }
 
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentMessage, true);
+                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                          BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
 
                           status.disable();
                           writeAllMessageComments(message.comments().byCreated(), output,
@@ -925,6 +930,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(IdT
                           }
 
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentUser, true);
+                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                          BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
 
                           status.disable();
                           writeMessageComments(user.messageComments().byCreated(), output,
