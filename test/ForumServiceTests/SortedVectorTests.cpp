@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( SortedVectorMultiValue_can_retrieve_items_in_sorted_order 
     vector.insert(Foo(3));
     vector.insert(Foo(2));
 
-    BOOST_REQUIRE_EQUAL(3, vector.size());
+    BOOST_REQUIRE_EQUAL(3u, vector.size());
 
     std::vector<int> values(3);
     std::transform(vector.begin(), vector.end(), values.begin(), [](const Foo& foo)
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE( SortedVectorMultiValue_can_remove_single_items )
         const auto afterErase2 = vector.erase(vector.equal_range(2).first);
         BOOST_REQUIRE_EQUAL(true, vector.equal_range(4).first == afterErase2);
     }
-    BOOST_REQUIRE_EQUAL(3, vector.size());
+    BOOST_REQUIRE_EQUAL(3u, vector.size());
     BOOST_REQUIRE_EQUAL(1, vector.begin()->getValue());
     BOOST_REQUIRE_EQUAL(1, (vector.begin() + 1)->getValue());
     BOOST_REQUIRE_EQUAL(4, (vector.begin() + 2)->getValue());
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE( SortedVectorMultiValue_can_remove_single_items )
         const auto afterErase4 = vector.erase(vector.equal_range(4).first);
         BOOST_REQUIRE_EQUAL(true, vector.end() == afterErase4);
     }
-    BOOST_REQUIRE_EQUAL(2, vector.size());
+    BOOST_REQUIRE_EQUAL(2u, vector.size());
     BOOST_REQUIRE_EQUAL(1, vector.begin()->getValue());
     BOOST_REQUIRE_EQUAL(1, (vector.begin() + 1)->getValue());
 }
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE( SortedVectorMultiValue_can_remove_multiple_items )
         const auto afterErase = vector.erase(range.first, range.second);
         BOOST_REQUIRE_EQUAL(true, vector.equal_range(2).first == afterErase);
     }
-    BOOST_REQUIRE_EQUAL(2, vector.size());
+    BOOST_REQUIRE_EQUAL(2u, vector.size());
     BOOST_REQUIRE_EQUAL(2, vector.begin()->getValue());
     BOOST_REQUIRE_EQUAL(4, (vector.begin() + 1)->getValue());
 }
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE( SortedVectorMultiValue_can_replace_single_items )
     const auto afterReplace = vector.replace(vector.equal_range(2).first, Foo(5));
     BOOST_REQUIRE_EQUAL(true, afterReplace == (vector.begin() + 3));
 
-    BOOST_REQUIRE_EQUAL(5, vector.size());
+    BOOST_REQUIRE_EQUAL(5u, vector.size());
     BOOST_REQUIRE_EQUAL(1, vector.begin()->getValue());
     BOOST_REQUIRE_EQUAL(1, (vector.begin() + 1)->getValue());
     BOOST_REQUIRE_EQUAL(4, (vector.begin() + 2)->getValue());
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE( SortedVectorMultiValue_can_replace_single_items_that_keep_
     const auto afterReplace = vector.replace(vector.equal_range(2).first, Foo(3));
     BOOST_REQUIRE_EQUAL(true, afterReplace == (vector.begin() + 2));
 
-    BOOST_REQUIRE_EQUAL(5, vector.size());
+    BOOST_REQUIRE_EQUAL(5u, vector.size());
     BOOST_REQUIRE_EQUAL(1, vector.begin()->getValue());
     BOOST_REQUIRE_EQUAL(1, (vector.begin() + 1)->getValue());
     BOOST_REQUIRE_EQUAL(3, (vector.begin() + 2)->getValue());
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE( SortedVectorMultiValue_can_replace_single_items_when_there
     const auto afterReplace = vector.replace(vector.equal_range(1).first, Foo(2));
     BOOST_REQUIRE_EQUAL(true, afterReplace == vector.begin());
 
-    BOOST_REQUIRE_EQUAL(1, vector.size());
+    BOOST_REQUIRE_EQUAL(1u, vector.size());
     BOOST_REQUIRE_EQUAL(2, vector.begin()->getValue());
 }
 
@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE( SortedVectorMultiValue_can_replace_single_items_so_that_th
     const auto afterReplace = vector.replace(vector.equal_range(2).first, Foo(0));
     BOOST_REQUIRE_EQUAL(true, vector.begin() == afterReplace);
 
-    BOOST_REQUIRE_EQUAL(4, vector.size());
+    BOOST_REQUIRE_EQUAL(4u, vector.size());
     BOOST_REQUIRE_EQUAL(0, vector.begin()->getValue());
     BOOST_REQUIRE_EQUAL(1, (vector.begin() + 1)->getValue());
     BOOST_REQUIRE_EQUAL(1, (vector.begin() + 2)->getValue());
@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE( SortedVectorMultiValue_can_replace_single_items_so_that_th
     const auto afterReplace = vector.replace(vector.equal_range(1).first, Foo(10));
     BOOST_REQUIRE_EQUAL(true, (vector.begin() + 3) == afterReplace);
 
-    BOOST_REQUIRE_EQUAL(4, vector.size());
+    BOOST_REQUIRE_EQUAL(4u, vector.size());
     BOOST_REQUIRE_EQUAL(1, vector.begin()->getValue());
     BOOST_REQUIRE_EQUAL(2, (vector.begin() + 1)->getValue());
     BOOST_REQUIRE_EQUAL(4, (vector.begin() + 2)->getValue());
@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE( SortedVectorUnique_removes_the_item_on_replacement_if_a_un
     const auto afterReplace = vector.replace(vector.find(2), Foo(1, 100));
     BOOST_REQUIRE_EQUAL(true, afterReplace == (vector.begin() + 1));
 
-    BOOST_REQUIRE_EQUAL(2, vector.size());
+    BOOST_REQUIRE_EQUAL(2u, vector.size());
     BOOST_REQUIRE_EQUAL(1, vector.begin()->getValue());
     BOOST_REQUIRE_EQUAL(1, vector.begin()->getExtra());
     BOOST_REQUIRE_EQUAL(4, (vector.begin() + 1)->getValue());
