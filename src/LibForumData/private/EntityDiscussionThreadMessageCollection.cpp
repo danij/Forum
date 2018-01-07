@@ -19,9 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityDiscussionThreadMessageCollection.h"
 #include "ContextProviders.h"
 
-#include <algorithm>
-#include <vector>
-
 using namespace Forum::Entities;
 
 bool DiscussionThreadMessageCollection::add(DiscussionThreadMessagePtr message)
@@ -45,7 +42,7 @@ bool DiscussionThreadMessageCollection::add(DiscussionThreadMessageCollection& c
 
     auto result = false;
 
-    for (DiscussionThreadMessagePtr message : collection.byId())
+    for (const DiscussionThreadMessagePtr message : collection.byId())
     {
         if ( ! std::get<1>(byId_.insert(message))) continue;
 
@@ -64,12 +61,12 @@ bool DiscussionThreadMessageCollection::remove(DiscussionThreadMessagePtr messag
 {
     if (onPrepareCountChange_) onPrepareCountChange_();
     {
-        auto itById = byId_.find(message->id());
+        const auto itById = byId_.find(message->id());
         if (itById == byId_.end()) return false;
 
         byId_.erase(itById);
     }
-    eraseFromFlatMultisetCollection(byCreated_, message);
+    eraseFromNonUniqueCollection(byCreated_, message, message->created());
 
     if (onCountChange_) onCountChange_();
     return true;
@@ -86,14 +83,73 @@ void DiscussionThreadMessageCollection::stopBatchInsert()
     if ( ! Context::isBatchInsertInProgress()) return;
 
     byCreated_.clear();
+    byCreated_.insert(byId_.begin(), byId_.end());
+}
 
-    //sort the values so that insertion into byCreated_ works faster
-    std::vector<DiscussionThreadMessagePtr> temp(byId_.begin(), byId_.end());
+///
+//Low Memory
+///
+bool DiscussionThreadMessageCollectionLowMemory::add(DiscussionThreadMessagePtr message)
+{
+    if (onPrepareCountChange_) onPrepareCountChange_();
 
-    std::sort(temp.begin(), temp.end(), [](DiscussionThreadMessagePtr first, DiscussionThreadMessagePtr second)
+    if ( ! std::get<1>(byId_.insert(message))) return false;
+
+    if ( ! Context::isBatchInsertInProgress())
     {
-        return first->created() < second->created();
-    });
+        byCreated_.insert(message);
+    }
 
-    byCreated_.insert(boost::container::ordered_range, temp.begin(), temp.end());
+    if (onCountChange_) onCountChange_();
+    return true;
+}
+
+bool DiscussionThreadMessageCollectionLowMemory::add(DiscussionThreadMessageCollectionLowMemory& collection)
+{
+    if (onPrepareCountChange_) onPrepareCountChange_();
+
+    auto result = false;
+
+    for (const DiscussionThreadMessagePtr message : collection.byId())
+    {
+        if ( ! std::get<1>(byId_.insert(message))) continue;
+
+        if ( ! Context::isBatchInsertInProgress())
+        {
+            byCreated_.insert(message);
+        }
+        result = true;
+    }
+
+    if (onCountChange_) onCountChange_();
+    return result;
+}
+
+bool DiscussionThreadMessageCollectionLowMemory::remove(DiscussionThreadMessagePtr message)
+{
+    if (onPrepareCountChange_) onPrepareCountChange_();
+    {
+        const auto itById = byId_.find(message->id());
+        if (itById == byId_.end()) return false;
+
+        byId_.erase(itById);
+    }
+    eraseFromNonUniqueCollection(byCreated_, message, message->created());
+
+    if (onCountChange_) onCountChange_();
+    return true;
+}
+
+void DiscussionThreadMessageCollectionLowMemory::clear()
+{
+    byId_.clear();
+    byCreated_.clear();
+}
+
+void DiscussionThreadMessageCollectionLowMemory::stopBatchInsert()
+{
+    if ( ! Context::isBatchInsertInProgress()) return;
+
+    byCreated_.clear();
+    byCreated_.insert(byId_.begin(), byId_.end());
 }

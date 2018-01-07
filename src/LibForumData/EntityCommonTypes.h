@@ -21,9 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityPointer.h"
 #include "UuidString.h"
 #include "IpAddress.h"
+#include "SortedVector.h"
 
 #include <cstdint>
 #include <utility>
+#include <type_traits>
 
 #include <boost/preprocessor/cat.hpp>
 
@@ -91,36 +93,60 @@ namespace Forum
             container.replace(std::forward<It>(iterator), std::forward<Value>(value));
         }
 
-#define FLAT_MULTISET_COLLECTION(Type, Getter) \
-        boost::container::flat_multiset<EntityPointer<Type>, BOOST_PP_CAT(LessPtr_, Getter)<Type>>
+#define GET_COMPARER(Getter) BOOST_PP_CAT(LessPtr_, Getter)
+#define GET_COMPARER_FOR(T, Getter) BOOST_PP_CAT(LessPtr_, Getter)<T>
 
-        template<typename T>
-        struct LessPtr_created
-        {
-            constexpr bool operator()(EntityPointer<T> lhs, EntityPointer<T> rhs) const
-            {
-                return lhs->created() < rhs->created();
-            }
+#define GET_EXTRACTOR(Getter) BOOST_PP_CAT(PtrExtractor_, Getter)
+#define GET_EXTRACTOR_FOR(T, Getter) BOOST_PP_CAT(PtrExtractor_, Getter)<T>
+
+#define SORTED_VECTOR_UNIQUE_COLLECTION(Type, Getter) \
+        SortedVectorUnique<EntityPointer<Type>, \
+                           typename std::remove_reference<typename std::remove_const< std::result_of<decltype(&Type::Getter)(Type)>::type >::type>::type, \
+                           GET_EXTRACTOR_FOR(Type, Getter), GET_COMPARER_FOR(Type, Getter)>
+
+#define SORTED_VECTOR_COLLECTION(Type, Getter) \
+        SortedVectorMultiValue<EntityPointer<Type>, \
+                               typename std::remove_reference<typename std::remove_const< std::result_of<decltype(&Type::Getter)(Type)>::type >::type>::type, \
+                               GET_EXTRACTOR_FOR(Type, Getter), GET_COMPARER_FOR(Type, Getter)>
+
+#define DEFINE_PTR_COMPARER(Getter) \
+        template<typename T> \
+        struct GET_COMPARER(Getter) \
+        { \
+            using result_type = typename std::remove_reference<typename std::remove_const<typename std::result_of<decltype(&T::Getter)(T)>::type>::type>::type; \
+            constexpr bool operator()(EntityPointer<T> first, EntityPointer<T> second) const \
+            { \
+                return first->Getter() < second->Getter(); \
+            } \
+            constexpr bool operator()(const result_type& first, EntityPointer<T> second) const \
+            { \
+                return first < second->Getter(); \
+            } \
+            constexpr bool operator()(EntityPointer<T> first, const result_type& second) const \
+            { \
+                return first->Getter() < second; \
+            } \
         };
+
+#define DEFINE_PTR_EXTRACTOR(Getter) \
+        template<typename T> \
+        struct GET_EXTRACTOR(Getter) \
+        { \
+            constexpr auto operator()(EntityPointer<T> value) const \
+            { \
+                return value->Getter(); \
+            } \
+        };
+
+        DEFINE_PTR_EXTRACTOR(id)
+        DEFINE_PTR_COMPARER(id)
+        DEFINE_PTR_EXTRACTOR(created)
+        DEFINE_PTR_COMPARER(created)
 
         template<typename Collection, typename Entity, typename Value>
         void eraseFromNonUniqueCollection(Collection& collection, Entity toCompare, const Value& toSearch)
         {
             auto range = collection.equal_range(toSearch);
-            for (auto it = range.first; it != range.second; ++it)
-            {
-                if (*it == toCompare)
-                {
-                    collection.erase(it);
-                    return;
-                }
-            }
-        }
-
-        template<typename Collection, typename Entity>
-        void eraseFromFlatMultisetCollection(Collection& collection, Entity toCompare)
-        {
-            auto range = collection.equal_range(toCompare);
             for (auto it = range.first; it != range.second; ++it)
             {
                 if (*it == toCompare)

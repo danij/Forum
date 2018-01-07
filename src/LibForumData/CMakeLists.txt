@@ -63,6 +63,7 @@ set(HEADER_FILES
         AuthorizationPrivileges.h
         AuthorizationGrantedPrivilegeStore.h
         ThrottlingCheck.h
+        SortedVector.h
 
         private/ResourceGuard.h
         private/EntitySerialization.h

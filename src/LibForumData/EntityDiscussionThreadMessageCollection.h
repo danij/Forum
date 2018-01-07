@@ -30,7 +30,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/ranked_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
-#include <boost/container/flat_set.hpp>
 
 namespace Forum
 {
@@ -78,7 +77,55 @@ namespace Forum
         private:
             HASHED_UNIQUE_COLLECTION(DiscussionThreadMessage, id) byId_;
 
-            FLAT_MULTISET_COLLECTION(DiscussionThreadMessage, created) byCreated_;
+            SORTED_VECTOR_COLLECTION(DiscussionThreadMessage, created) byCreated_;
+
+            std::function<void()> onPrepareCountChange_;
+            std::function<void()> onCountChange_;
+        };
+
+        class DiscussionThreadMessageCollectionLowMemory final : private boost::noncopyable
+        {
+        public:
+            bool add(DiscussionThreadMessagePtr message);
+            bool add(DiscussionThreadMessageCollectionLowMemory& collection);
+            bool remove(DiscussionThreadMessagePtr message);
+            void clear();
+
+            void stopBatchInsert();
+
+            auto& onPrepareCountChange() { return onPrepareCountChange_; }
+            auto& onCountChange()        { return onCountChange_; }
+
+            auto count()          const { return byId_.size(); }
+
+            auto byId()           const { return Helpers::toConst(byId_); }
+            auto byCreated()      const { return Helpers::toConst(byCreated_); }
+
+            auto& byId()      { return byId_; }
+            auto& byCreated() { return byCreated_; }
+
+            boost::optional<size_t> findRankByCreated(IdTypeRef messageId) const
+            {
+                auto idIt = byId_.find(messageId);
+                if (idIt == byId_.end())
+                {
+                    return{};
+                }
+                auto range = byCreated_.equal_range(*idIt);
+                for (auto it = range.first; it != range.second; ++it)
+                {
+                    if (*it == *idIt)
+                    {
+                        return byCreated_.index_of(it);
+                    }
+                }
+                return{};
+            }
+
+        private:
+            SORTED_VECTOR_UNIQUE_COLLECTION(DiscussionThreadMessage, id) byId_;
+
+            SORTED_VECTOR_COLLECTION(DiscussionThreadMessage, created) byCreated_;
 
             std::function<void()> onPrepareCountChange_;
             std::function<void()> onCountChange_;

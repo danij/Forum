@@ -73,7 +73,7 @@ void DiscussionThread::insertMessage(DiscussionThreadMessagePtr message)
     updateLatestMessageCreated(std::max(latestMessageCreated_, message->created()));
 }
 
-void DiscussionThread::insertMessages(DiscussionThreadMessageCollection& collection)
+void DiscussionThread::insertMessages(DiscussionThreadMessageCollectionLowMemory& collection)
 {
     Timestamp maxCreated{};
     for (DiscussionThreadMessagePtr message : collection.byId())

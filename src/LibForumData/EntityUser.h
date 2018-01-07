@@ -227,7 +227,7 @@ namespace Forum
             DiscussionThreadCollectionWithOrderedId threads_;
             DiscussionThreadCollectionWithHashedId subscribedThreads_;
 
-            DiscussionThreadMessageCollection threadMessages_;
+            DiscussionThreadMessageCollectionLowMemory threadMessages_;
             std::unique_ptr<std::set<DiscussionThreadMessagePtr>> votedMessages_;
 
             std::unique_ptr<MessageCommentCollection> messageComments_;

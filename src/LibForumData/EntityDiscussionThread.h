@@ -205,7 +205,7 @@ namespace Forum
             }
 
             void insertMessage(DiscussionThreadMessagePtr message);
-            void insertMessages(DiscussionThreadMessageCollection& collection);
+            void insertMessages(DiscussionThreadMessageCollectionLowMemory& collection);
             void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message);
 
             void addVisitorSinceLastEdit(IdTypeRef userId);
@@ -230,7 +230,7 @@ namespace Forum
             User& createdBy_;
 
             NameType name_;
-            DiscussionThreadMessageCollection messages_;
+            DiscussionThreadMessageCollectionLowMemory messages_;
 
             std::unique_ptr<LastUpdatedInfo> lastUpdated_;
 
