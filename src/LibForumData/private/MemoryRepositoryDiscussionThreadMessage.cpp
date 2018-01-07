@@ -569,6 +569,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
     threadFrom.deleteDiscussionThreadMessage(messagePtr);
     updateThreadOnMoveMessage(threadFromPtr, -1);
 
+    messagePtr->parentThread() = threadIntoPtr;
+
     return StatusCode::OK;
 }
 
