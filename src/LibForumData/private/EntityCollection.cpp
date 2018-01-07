@@ -436,7 +436,7 @@ struct EntityCollection::Impl
     void onUpdateUserMessageCount(const User& user) { if ( ! batchInsertInProgress_) users_.updateMessageCount(user.pointer()); }
 
     void discussionThreadAction(const DiscussionThread& constThread,
-                                void (DiscussionThreadCollectionBase::*fn)(DiscussionThreadPtr))
+                                void (IDiscussionThreadCollection::*fn)(DiscussionThreadPtr))
     {
         auto& thread = const_cast<DiscussionThread&>(constThread);
         DiscussionThreadPtr threadPtr = thread.pointer();
@@ -464,17 +464,17 @@ struct EntityCollection::Impl
         }
     }
 
-    void onPrepareUpdateDiscussionThreadName(const DiscussionThread& thread)                 { discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateName); }
-    void onPrepareUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateLastUpdated); }
-    void onPrepareUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateLatestMessageCreated); }
-    void onPrepareUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)         { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdateMessageCount); }
-    void onPrepareUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::prepareUpdatePinDisplayOrder); }
+    void onPrepareUpdateDiscussionThreadName(const DiscussionThread& thread)                 { discussionThreadAction(thread, &IDiscussionThreadCollection::prepareUpdateName); }
+    void onPrepareUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::prepareUpdateLastUpdated); }
+    void onPrepareUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::prepareUpdateLatestMessageCreated); }
+    void onPrepareUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)         { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::prepareUpdateMessageCount); }
+    void onPrepareUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::prepareUpdatePinDisplayOrder); }
 
-    void onUpdateDiscussionThreadName(const DiscussionThread& thread)                 { discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateName); }
-    void onUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateLastUpdated); }
-    void onUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateLatestMessageCreated); }
-    void onUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)         { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::updateMessageCount); }
-    void onUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &DiscussionThreadCollectionBase::updatePinDisplayOrder); }
+    void onUpdateDiscussionThreadName(const DiscussionThread& thread)                 { discussionThreadAction(thread, &IDiscussionThreadCollection::updateName); }
+    void onUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::updateLastUpdated); }
+    void onUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::updateLatestMessageCreated); }
+    void onUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)         { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::updateMessageCount); }
+    void onUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::updatePinDisplayOrder); }
 
     void onPrepareUpdateDiscussionTagName        (const DiscussionTag& tag) { tags_.prepareUpdateName(tag.pointer()); }
     void onPrepareUpdateDiscussionTagThreadCount (const DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.prepareUpdateThreadCount(tag.pointer());}

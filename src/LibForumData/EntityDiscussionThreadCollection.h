@@ -37,7 +37,28 @@ namespace Forum
 {
     namespace Entities
     {
-        class DiscussionThreadCollectionBase
+        class IDiscussionThreadCollection
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IDiscussionThreadCollection);
+
+            virtual void prepareUpdateName(DiscussionThreadPtr thread) = 0;
+            virtual void updateName(DiscussionThreadPtr thread) = 0;
+
+            virtual void prepareUpdateLastUpdated(DiscussionThreadPtr thread) = 0;
+            virtual void updateLastUpdated(DiscussionThreadPtr thread) = 0;
+
+            virtual void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread) = 0;
+            virtual void updateLatestMessageCreated(DiscussionThreadPtr thread) = 0;
+
+            virtual void prepareUpdateMessageCount(DiscussionThreadPtr thread) = 0;
+            virtual void updateMessageCount(DiscussionThreadPtr thread) = 0;
+
+            virtual void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) = 0;
+            virtual void updatePinDisplayOrder(DiscussionThreadPtr thread) = 0;
+        };
+
+        class DiscussionThreadCollectionBase : public IDiscussionThreadCollection
         {
         public:
             DECLARE_ABSTRACT_MANDATORY(DiscussionThreadCollectionBase)
@@ -45,22 +66,22 @@ namespace Forum
             virtual bool add(DiscussionThreadPtr thread);
             virtual bool remove(DiscussionThreadPtr thread);
 
-            void prepareUpdateName(DiscussionThreadPtr thread);
-            void updateName(DiscussionThreadPtr thread);
-
             virtual void stopBatchInsert();
 
-            void prepareUpdateLastUpdated(DiscussionThreadPtr thread);
-            void updateLastUpdated(DiscussionThreadPtr thread);
+            void prepareUpdateName(DiscussionThreadPtr thread) override;
+            void updateName(DiscussionThreadPtr thread) override;
 
-            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread);
-            void updateLatestMessageCreated(DiscussionThreadPtr thread);
+            void prepareUpdateLastUpdated(DiscussionThreadPtr thread) override;
+            void updateLastUpdated(DiscussionThreadPtr thread) override;
 
-            void prepareUpdateMessageCount(DiscussionThreadPtr thread);
-            void updateMessageCount(DiscussionThreadPtr thread);
+            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread) override;
+            void updateLatestMessageCreated(DiscussionThreadPtr thread) override;
 
-            virtual void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) {} //empty, only used in subclass
-            virtual void updatePinDisplayOrder(DiscussionThreadPtr thread) {} //empty, only used in subclass
+            void prepareUpdateMessageCount(DiscussionThreadPtr thread) override;
+            void updateMessageCount(DiscussionThreadPtr thread) override;
+
+            void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) override {} //empty, only used in subclass
+            void updatePinDisplayOrder(DiscussionThreadPtr thread) override {} //empty, only used in subclass
 
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
@@ -192,7 +213,8 @@ namespace Forum
             std::unordered_map<DiscussionThreadPtr, int_fast32_t> referenceCount_;
         };
 
-        class DiscussionThreadCollectionLowMemory final : private boost::noncopyable
+        class DiscussionThreadCollectionLowMemory final : public IDiscussionThreadCollection,
+                                                          private boost::noncopyable
         {
         public:
             bool add(DiscussionThreadPtr thread);
@@ -202,17 +224,20 @@ namespace Forum
 
             void stopBatchInsert();
 
-            void prepareUpdateName(DiscussionThreadPtr thread);
-            void updateName(DiscussionThreadPtr thread);
+            void prepareUpdateName(DiscussionThreadPtr thread) override;
+            void updateName(DiscussionThreadPtr thread) override;
 
-            void prepareUpdateLastUpdated(DiscussionThreadPtr thread);
-            void updateLastUpdated(DiscussionThreadPtr thread);
+            void prepareUpdateLastUpdated(DiscussionThreadPtr thread) override;
+            void updateLastUpdated(DiscussionThreadPtr thread) override;
 
-            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread);
-            void updateLatestMessageCreated(DiscussionThreadPtr thread);
+            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread) override;
+            void updateLatestMessageCreated(DiscussionThreadPtr thread) override;
 
-            void prepareUpdateMessageCount(DiscussionThreadPtr thread);
-            void updateMessageCount(DiscussionThreadPtr thread);
+            void prepareUpdateMessageCount(DiscussionThreadPtr thread) override;
+            void updateMessageCount(DiscussionThreadPtr thread) override;
+
+            void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) override {} //unused
+            void updatePinDisplayOrder(DiscussionThreadPtr thread) override {} //unused
 
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
