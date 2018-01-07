@@ -411,7 +411,7 @@ void showEntitySizes()
     std::cout << "-\n";
     std::cout << "UserCollection                         " << std::setw(5) << sizeof(Entities::UserCollection) << '\n';
     std::cout << "DiscussionThreadCollectionHash         " << std::setw(5) << sizeof(Entities::DiscussionThreadCollectionWithHashedId) << '\n';
-    std::cout << "DiscussionThreadCollectionOrdered      " << std::setw(5) << sizeof(Entities::DiscussionThreadCollectionWithOrderedId) << '\n';
+    std::cout << "DiscussionThreadCollectionLowMemory    " << std::setw(5) << sizeof(Entities::DiscussionThreadCollectionLowMemory) << '\n';
     std::cout << "DiscussionThreadMessageCollection      " << std::setw(5) << sizeof(Entities::DiscussionThreadMessageCollection) << '\n';
     std::cout << "DiscussionTagCollection                " << std::setw(5) << sizeof(Entities::DiscussionTagCollection) << '\n';
     std::cout << "DiscussionCategoryCollection           " << std::setw(5) << sizeof(Entities::DiscussionCategoryCollection) << '\n';
