@@ -62,7 +62,7 @@ namespace Forum
 
             const auto& comments() const
             {
-                static const MessageCommentCollection emptyMessageCommentCollection;
+                static const MessageCommentCollectionLowMemory emptyMessageCommentCollection;
 
                 return comments_ ? *comments_ : emptyMessageCommentCollection;
             }
@@ -165,7 +165,7 @@ namespace Forum
             auto* comments()            { return comments_.get(); }
             void  addComment(MessageCommentPtr comment)
             {
-                if ( ! comments_) comments_.reset(new MessageCommentCollection);
+                if ( ! comments_) comments_.reset(new MessageCommentCollectionLowMemory);
                 comments_->add(comment);
             }
             void  removeComment(MessageCommentPtr comment)
@@ -252,7 +252,7 @@ namespace Forum
 
             std::unique_ptr<LastUpdatedInfo> lastUpdated_;
 
-            std::unique_ptr<MessageCommentCollection> comments_;
+            std::unique_ptr<MessageCommentCollectionLowMemory> comments_;
             int32_t solvedCommentsCount_{0};
 
             std::unique_ptr<VoteCollection> upVotes_;

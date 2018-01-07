@@ -101,13 +101,15 @@ namespace Forum
 
 #define SORTED_VECTOR_UNIQUE_COLLECTION(Type, Getter) \
         SortedVectorUnique<EntityPointer<Type>, \
-                           typename std::remove_reference<typename std::remove_const< std::result_of<decltype(&Type::Getter)(Type)>::type >::type>::type, \
+                           std::remove_reference<std::remove_const< std::result_of<decltype(&Type::Getter)(Type)>::type >::type>::type, \
                            GET_EXTRACTOR_FOR(Type, Getter), GET_COMPARER_FOR(Type, Getter)>
+#define SORTED_VECTOR_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::iterator
 
 #define SORTED_VECTOR_COLLECTION(Type, Getter) \
         SortedVectorMultiValue<EntityPointer<Type>, \
-                               typename std::remove_reference<typename std::remove_const< std::result_of<decltype(&Type::Getter)(Type)>::type >::type>::type, \
+                               std::remove_reference<std::remove_const< std::result_of<decltype(&Type::Getter)(Type)>::type >::type>::type, \
                                GET_EXTRACTOR_FOR(Type, Getter), GET_COMPARER_FOR(Type, Getter)>
+#define SORTED_VECTOR_COLLECTION_ITERATOR(Member) decltype(Member)::iterator
 
 #define DEFINE_PTR_COMPARER(Getter) \
         template<typename T> \
@@ -140,8 +142,21 @@ namespace Forum
 
         DEFINE_PTR_EXTRACTOR(id)
         DEFINE_PTR_COMPARER(id)
+
+        DEFINE_PTR_EXTRACTOR(name)
+        DEFINE_PTR_COMPARER(name)
+
         DEFINE_PTR_EXTRACTOR(created)
         DEFINE_PTR_COMPARER(created)
+
+        DEFINE_PTR_EXTRACTOR(lastUpdated)
+        DEFINE_PTR_COMPARER(lastUpdated)
+
+        DEFINE_PTR_EXTRACTOR(latestMessageCreated)
+        DEFINE_PTR_COMPARER(latestMessageCreated)
+
+        DEFINE_PTR_EXTRACTOR(messageCount)
+        DEFINE_PTR_COMPARER(messageCount)
 
         template<typename Collection, typename Entity, typename Value>
         void eraseFromNonUniqueCollection(Collection& collection, Entity toCompare, const Value& toSearch)

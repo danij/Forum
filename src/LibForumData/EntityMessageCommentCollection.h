@@ -51,5 +51,25 @@ namespace Forum
 
             RANKED_COLLECTION(MessageComment, created) byCreated_;
         };
+
+        class MessageCommentCollectionLowMemory final : private boost::noncopyable
+        {
+        public:
+            bool add(MessageCommentPtr comment);
+            bool remove(MessageCommentPtr comment);
+
+            auto count()          const { return byId_.size(); }
+
+            auto byId()           const { return Helpers::toConst(byId_); }
+            auto byCreated()      const { return Helpers::toConst(byCreated_); }
+
+            auto& byId()      { return byId_; }
+            auto& byCreated() { return byCreated_; }
+
+        private:
+            SORTED_VECTOR_UNIQUE_COLLECTION(MessageComment, id) byId_;
+
+            SORTED_VECTOR_COLLECTION(MessageComment, created) byCreated_;
+        };
     }
 }

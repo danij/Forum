@@ -243,51 +243,6 @@ void DiscussionThreadCollectionWithHashedIdAndPinOrder::updatePinDisplayOrder(Di
     }
 }
 
-bool DiscussionThreadCollectionWithOrderedId::add(DiscussionThreadPtr thread)
-{
-    prepareCountChange();
-    if ( ! std::get<1>(byId_.insert(thread)))
-    {
-        finishCountChange();
-        return false;
-    }
-
-    auto result = DiscussionThreadCollectionBase::add(thread);
-    finishCountChange();
-    return result;
-}
-
-bool DiscussionThreadCollectionWithOrderedId::remove(DiscussionThreadPtr thread)
-{
-    prepareCountChange();
-    {
-        auto itById = byId_.find(thread->id());
-        if (itById == byId_.end())
-        {
-            finishCountChange();
-            return false;
-        }
-
-        byId_.erase(itById);
-    }
-    auto result = DiscussionThreadCollectionBase::remove(thread);
-    finishCountChange();
-    return result;
-}
-
-bool DiscussionThreadCollectionWithOrderedId::contains(DiscussionThreadPtr thread) const
-{
-    return byId_.find(thread->id()) != byId_.end();
-}
-
-void DiscussionThreadCollectionWithOrderedId::iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback)
-{
-    for (auto ptr : byId())
-    {
-        callback(ptr);
-    }
-}
-
 bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::add(DiscussionThreadPtr thread)
 {
     return add(thread, 1);
@@ -430,4 +385,157 @@ DiscussionThreadMessagePtr DiscussionThreadCollectionWithReferenceCountAndMessag
         return *(messageIndex.rbegin());
     }
     return nullptr;
+}
+
+
+///
+//Low Memory
+///
+bool DiscussionThreadCollectionLowMemory::add(DiscussionThreadPtr thread)
+{
+    prepareCountChange();
+    if ( ! std::get<1>(byId_.insert(thread)))
+    {
+        finishCountChange();
+        return false;
+    }
+
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        byName_.insert(thread);
+        byCreated_.insert(thread);
+        byLastUpdated_.insert(thread);
+        byLatestMessageCreated_.insert(thread);
+        byMessageCount_.insert(thread);
+    }
+
+    finishCountChange();
+    return true;
+}
+
+bool DiscussionThreadCollectionLowMemory::remove(DiscussionThreadPtr thread)
+{
+    prepareCountChange();
+    {
+        auto itById = byId_.find(thread->id());
+        if (itById == byId_.end())
+        {
+            finishCountChange();
+            return false;
+        }
+
+        byId_.erase(itById);
+    }
+
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        eraseFromNonUniqueCollection(byName_, thread, thread->name());
+        eraseFromNonUniqueCollection(byCreated_, thread, thread->created());
+        eraseFromNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
+        eraseFromNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
+        eraseFromNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
+    }
+
+    finishCountChange();
+    return true;
+}
+
+bool DiscussionThreadCollectionLowMemory::contains(DiscussionThreadPtr thread) const
+{
+    return byId_.find(thread->id()) != byId_.end();
+}
+
+void DiscussionThreadCollectionLowMemory::prepareCountChange()
+{
+    if (onPrepareCountChange_) onPrepareCountChange_();
+}
+
+void DiscussionThreadCollectionLowMemory::finishCountChange()
+{
+    if (onCountChange_) onCountChange_();
+}
+
+void DiscussionThreadCollectionLowMemory::stopBatchInsert()
+{
+    if ( ! Context::isBatchInsertInProgress()) return;
+
+    byName_.clear();
+    byCreated_.clear();
+    byLastUpdated_.clear();
+    byLatestMessageCreated_.clear();
+    byMessageCount_.clear();
+
+    byName_.insert(byId_.begin(), byId_.end());
+    byCreated_.insert(byId_.begin(), byId_.end());
+    byLastUpdated_.insert(byId_.begin(), byId_.end());
+    byLatestMessageCreated_.insert(byId_.begin(), byId_.end());
+    byMessageCount_.insert(byId_.begin(), byId_.end());
+}
+
+void DiscussionThreadCollectionLowMemory::prepareUpdateName(DiscussionThreadPtr thread)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    byNameUpdateIt_ = findInNonUniqueCollection(byName_, thread, thread->name());
+}
+
+void DiscussionThreadCollectionLowMemory::updateName(DiscussionThreadPtr thread)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    if (byNameUpdateIt_ != byName_.end())
+    {
+        replaceItemInContainer(byName_, byNameUpdateIt_, thread);
+    }
+}
+
+void DiscussionThreadCollectionLowMemory::prepareUpdateLastUpdated(DiscussionThreadPtr thread)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    byLastUpdatedUpdateIt_ = findInNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
+}
+
+void DiscussionThreadCollectionLowMemory::updateLastUpdated(DiscussionThreadPtr thread)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    if (byLastUpdatedUpdateIt_ != byLastUpdated_.end())
+    {
+        replaceItemInContainer(byLastUpdated_, byLastUpdatedUpdateIt_, thread);
+    }
+}
+
+void DiscussionThreadCollectionLowMemory::prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    byLatestMessageCreatedUpdateIt_ = findInNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
+}
+
+void DiscussionThreadCollectionLowMemory::updateLatestMessageCreated(DiscussionThreadPtr thread)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    if (byLatestMessageCreatedUpdateIt_ != byLatestMessageCreated_.end())
+    {
+        replaceItemInContainer(byLatestMessageCreated_, byLatestMessageCreatedUpdateIt_, thread);
+    }
+}
+
+void DiscussionThreadCollectionLowMemory::prepareUpdateMessageCount(DiscussionThreadPtr thread)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    byMessageCountUpdateIt_ = findInNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
+}
+
+void DiscussionThreadCollectionLowMemory::updateMessageCount(DiscussionThreadPtr thread)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    if (byMessageCountUpdateIt_ != byMessageCount_.end())
+    {
+        replaceItemInContainer(byMessageCount_, byMessageCountUpdateIt_, thread);
+    }
 }
