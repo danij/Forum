@@ -25,10 +25,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <atomic>
 #include <string>
-#include <set>
 #include <unordered_map>
 
 #include <boost/noncopyable.hpp>
+#include <boost/container/flat_set.hpp>
 
 namespace Forum
 {
@@ -247,10 +247,10 @@ namespace Forum
             mutable std::atomic_int_fast64_t visited_{0};
             bool aboutToBeDeleted_ = false;
 
-            std::set<boost::uuids::uuid> visitorsSinceLastEdit_;
+            boost::container::flat_set<boost::uuids::uuid> visitorsSinceLastEdit_;
 
-            std::set<EntityPointer<DiscussionTag>> tags_;
-            std::set<EntityPointer<DiscussionCategory>> categories_;
+            boost::container::flat_set<EntityPointer<DiscussionTag>> tags_;
+            boost::container::flat_set<EntityPointer<DiscussionCategory>> categories_;
             std::unordered_map<IdType, EntityPointer<User>> subscribedUsers_;
         };
 

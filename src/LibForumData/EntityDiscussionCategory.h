@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 
 #include <boost/noncopyable.hpp>
+#include <boost/container/flat_set.hpp>
 
 namespace Forum
 {
@@ -201,9 +202,9 @@ namespace Forum
             DiscussionThreadCollectionWithHashedIdAndPinOrder threads_;
             DiscussionThreadCollectionWithReferenceCountAndMessageCount totalThreads_;
 
-            std::set<DiscussionTagPtr> tags_;
+            boost::container::flat_set<DiscussionTagPtr> tags_;
             //enable fast search of children, client can sort them on display order
-            std::set<EntityPointer<DiscussionCategory>> children_;
+            boost::container::flat_set<EntityPointer<DiscussionCategory>> children_;
 
             Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
         };
