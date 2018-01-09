@@ -61,7 +61,6 @@ namespace Forum
 
                    auto lastUpdated()        const { return lastUpdated_; }
             const auto& lastUpdatedDetails() const { return lastUpdatedDetails_; }
-             StringView lastUpdatedReason()  const { return lastUpdatedReason_; }
                    auto lastUpdatedBy()      const { return lastUpdatedBy_.toConst(); }
 
             const auto& threads()            const { return threads_; }
@@ -157,7 +156,6 @@ namespace Forum
 
             auto& lastUpdated()        { return lastUpdated_; }
             auto& lastUpdatedDetails() { return lastUpdatedDetails_; }
-            auto& lastUpdatedReason()  { return lastUpdatedReason_; }
             auto& lastUpdatedBy()      { return lastUpdatedBy_; }
 
             auto& threads()            { return threads_; }
@@ -196,7 +194,6 @@ namespace Forum
 
             Timestamp lastUpdated_{0};
             VisitDetails lastUpdatedDetails_;
-            std::string lastUpdatedReason_;
             UserPtr lastUpdatedBy_;
 
             DiscussionThreadCollectionWithHashedIdAndPinOrder threads_;
