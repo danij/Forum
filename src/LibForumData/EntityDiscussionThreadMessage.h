@@ -24,8 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "StringHelpers.h"
 
 #include <string>
-#include <map>
 
+#include <boost/container/flat_map.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
@@ -46,9 +46,9 @@ namespace Forum
         {
         public:
             typedef int_fast32_t VoteScoreType;
-            //using maps as they use less memory than unordered_maps
+            //using flat maps as they use less memory than tree/hash based maps
             //number of votes/message will usually be small
-            typedef std::map<EntityPointer<User>, Timestamp> VoteCollection;
+            typedef boost::container::flat_map<EntityPointer<User>, Timestamp> VoteCollection;
 
             const auto& id()                  const { return id_; }
 

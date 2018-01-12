@@ -20,14 +20,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "EntityPointer.h"
 
-#include <boost/iterator/transform_iterator.hpp>
-#include <boost/optional.hpp>
-
 #include <cassert>
 #include <memory>
 #include <map>
 #include <unordered_map>
 #include <set>
+
+#include <boost/iterator/transform_iterator.hpp>
+#include <boost/optional.hpp>
+#include <boost/container/flat_map.hpp>
 
 namespace Forum
 {
@@ -106,8 +107,7 @@ namespace Forum
             return ConstSharedPointerCollectionAdapter<typename std::remove_pointer<typename
                 TCollection::value_type::element_type>::type, TCollection>(collection);
         }
-
-
+        
         template <typename TKey, typename TValue, typename TCollection>
         class ConstMapAdapter final
         {
@@ -167,6 +167,12 @@ namespace Forum
         auto toConst(const std::unordered_map<MapKey, MapT, MapHash, MapKeyEqual, MapAllocator>& collection)
         {
             return ConstMapAdapter<MapKey, MapT, std::unordered_map<MapKey, MapT, MapHash, MapKeyEqual, MapAllocator>>(collection);
+        }
+
+        template<typename MapKey, typename MapT, typename MapCompare, typename MapAllocator>
+        auto toConst(const boost::container::flat_map<MapKey, MapT, MapCompare, MapAllocator>& collection)
+        {
+            return ConstMapAdapter<MapKey, MapT, boost::container::flat_map<MapKey, MapT, MapCompare, MapAllocator>>(collection);
         }
     }
 }

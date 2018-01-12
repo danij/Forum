@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unordered_map>
 
 #include <boost/noncopyable.hpp>
+#include <boost/container/flat_map.hpp>
 #include <boost/container/flat_set.hpp>
 
 namespace Forum
@@ -251,7 +252,7 @@ namespace Forum
 
             boost::container::flat_set<EntityPointer<DiscussionTag>> tags_;
             boost::container::flat_set<EntityPointer<DiscussionCategory>> categories_;
-            std::unordered_map<IdType, EntityPointer<User>> subscribedUsers_;
+            boost::container::flat_map<IdType, EntityPointer<User>> subscribedUsers_;
         };
 
         typedef EntityPointer<DiscussionThread> DiscussionThreadPtr;
