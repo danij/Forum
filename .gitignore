@@ -53,3 +53,5 @@ Release
 #Temporary Files
 *.swp
 Temp
+*.tmp
+*.TMP
