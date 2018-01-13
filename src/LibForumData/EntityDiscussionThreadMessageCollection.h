@@ -97,6 +97,7 @@ namespace Forum
             auto& onCountChange()        { return onCountChange_; }
 
             auto count()          const { return byId_.size(); }
+            auto empty()          const { return byId_.empty(); }
 
             auto byId()           const { return Helpers::toConst(byId_); }
             auto byCreated()      const { return Helpers::toConst(byCreated_); }

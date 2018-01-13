@@ -30,6 +30,11 @@ namespace Forum
                     return vector_.size();
                 }
 
+                auto empty() const noexcept
+                {
+                    return vector_.empty();
+                }
+
                 auto begin() const noexcept
                 {
                     return cbegin();

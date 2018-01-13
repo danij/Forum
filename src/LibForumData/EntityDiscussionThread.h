@@ -60,6 +60,8 @@ namespace Forum
             const auto& messages()                  const { return messages_; }
                    auto messageCount()              const { return messages_.count(); }
 
+                   auto empty()                     const { return messages_.empty(); }
+
             auto lastUpdated() const
             {
                 return lastUpdated_ ? lastUpdated_->at : Timestamp{ 0 };

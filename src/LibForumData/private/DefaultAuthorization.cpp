@@ -320,7 +320,7 @@ AuthorizationStatus DefaultAuthorization::addNewDiscussionMessageInThread(const 
                                                                           const DiscussionThread& thread,
                                                                           StringView content) const
 {
-    if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
+    if ( ! thread.empty() && isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
     return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADD_MESSAGE, with);
@@ -453,7 +453,7 @@ AuthorizationStatus DefaultAuthorization::deleteDiscussionTag(const User& curren
 AuthorizationStatus DefaultAuthorization::addDiscussionTagToThread(const User& currentUser, const DiscussionTag& tag,
                                                                    const DiscussionThread& thread) const
 {
-    if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
+    if ( ! thread.empty() && isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
     return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADD_TAG, with);
