@@ -144,7 +144,7 @@ namespace Forum
             auto inputIt = input.cbegin();
             for (const auto inputEnd = input.cend(); inputIt != inputEnd; ++inputIt)
             {
-                if (0 == OccursInUuids[*inputIt])
+                if (0 == OccursInUuids[static_cast<uint8_t>(*inputIt)])
                 {
                     if ((inputIt - previousStart) == UuidString::StringRepresentationSize)
                     {
