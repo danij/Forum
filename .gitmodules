@@ -6,3 +6,6 @@
 	path = subprojects/Forum.Auth
 	url = https://github.com/danij/Forum.Auth
 	branch = master
+[submodule "subprojects/Forum.Search"]
+	path = subprojects/Forum.Search
+	url = git@github.com:danij/Forum.Search.git
