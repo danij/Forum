@@ -51,7 +51,8 @@ BOOST_AUTO_TEST_CASE( Multiple_UuidStrings_can_be_parsed_from_a_string_view )
     std::vector<UuidString> output{ 3 };
     const auto lastInsertAt = parseMultipleUuidStrings(input, output.begin(), output.end());
 
-    BOOST_REQUIRE_EQUAL(output.size(), std::distance(output.begin(), lastInsertAt));
+    const auto distance = std::distance(output.begin(), lastInsertAt);
+    BOOST_REQUIRE_EQUAL(static_cast<decltype(distance)>(output.size()), distance);
     BOOST_REQUIRE_EQUAL(UuidString(boost::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
     BOOST_REQUIRE_EQUAL(UuidString(boost::string_view("084904c2-22A1-4C79-8284-7c78dd065048")), output[1]);
     BOOST_REQUIRE_EQUAL(output[0], output[1]);
@@ -65,7 +66,8 @@ BOOST_AUTO_TEST_CASE( Multiple_UuidStrings_can_be_parsed_from_a_string_view_igno
     std::vector<UuidString> output{ 3 };
     const auto lastInsertAt = parseMultipleUuidStrings(input, output.begin(), output.end());
 
-    BOOST_REQUIRE_EQUAL(1, std::distance(output.begin(), lastInsertAt));
+    const auto distance = std::distance(output.begin(), lastInsertAt);
+    BOOST_REQUIRE_EQUAL(static_cast<decltype(distance)>(1), distance);
     BOOST_REQUIRE_EQUAL(UuidString(boost::string_view("E99A4894-D285-43D5-AA0C-E4DA00DAC2A0")), output[0]);
 }
 
@@ -76,7 +78,8 @@ BOOST_AUTO_TEST_CASE( Multiple_UuidStrings_can_be_parsed_from_a_string_view_with
     std::vector<UuidString> output{ 2 };
     const auto lastInsertAt = parseMultipleUuidStrings(input, output.begin(), output.end());
 
-    BOOST_REQUIRE_EQUAL(2, std::distance(output.begin(), lastInsertAt));
+    const auto distance = std::distance(output.begin(), lastInsertAt);
+    BOOST_REQUIRE_EQUAL(static_cast<decltype(distance)>(2), distance);
     BOOST_REQUIRE_EQUAL(UuidString(boost::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
     BOOST_REQUIRE_EQUAL(UuidString(boost::string_view("084904c2-22A1-4C79-8284-7c78dd065048")), output[1]);
     BOOST_REQUIRE_EQUAL(output[0], output[1]);
