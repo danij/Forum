@@ -77,7 +77,7 @@ UuidString::UuidString(const std::string& value) : UuidString(boost::string_view
 {
 }
 
-UuidString::UuidString(const boost::string_view& value)
+UuidString::UuidString(boost::string_view value)
 {
     if ( ! parseUuid(value.data(), value.size(), value_))
     {
