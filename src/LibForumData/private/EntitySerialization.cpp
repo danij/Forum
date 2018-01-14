@@ -115,6 +115,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         ? *serializationSettings.allowDisplayDiscussionThreadMessage
         : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW);
 
+    if ( ! allowView) return writer.null();
+
     auto allowViewUser = serializationSettings.allowDisplayDiscussionThreadMessageUser
         ? *serializationSettings.allowDisplayDiscussionThreadMessageUser
         : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER);
@@ -130,11 +132,6 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     auto allowViewCommentCount = serializationSettings.allowDisplayDiscussionThreadMessageComments
         ? *serializationSettings.allowDisplayDiscussionThreadMessageComments
         : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS);
-
-    if ( ! allowView)
-    {
-        return writer.null();
-    }
 
     writer
         << objStart
