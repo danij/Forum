@@ -1324,6 +1324,7 @@ CommandHandler::Result CommandHandler::handle(Command command, const std::vector
     if (outputView.size() < 1)
     {
         writeStatusCode(outputBuffer, statusCode);
+        outputView = outputBuffer.view();
     }
     return { statusCode, outputBuffer.view() };
 }
@@ -1344,6 +1345,7 @@ CommandHandler::Result CommandHandler::handle(View view, const std::vector<Strin
     if (outputView.size() < 1)
     {
         writeStatusCode(outputBuffer, statusCode);
+        outputView = outputBuffer.view();
     }
     return{ statusCode, outputView };
 }
