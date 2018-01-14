@@ -168,6 +168,7 @@ namespace Forum
 
             virtual StatusCode getDiscussionThreads(OutStream& output, RetrieveDiscussionThreadsBy by) const = 0;
             virtual StatusCode getDiscussionThreadById(Entities::IdTypeRef id, OutStream& output) = 0;
+            virtual StatusCode getMultipleDiscussionThreadsById(StringView ids, OutStream& output) const = 0;
             virtual StatusCode searchDiscussionThreadsByName(StringView name, OutStream& output) const = 0;
 
             virtual StatusCode getDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,
@@ -223,6 +224,8 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadMessageRepository)
 
+            virtual StatusCode getMultipleDiscussionThreadMessagesById(StringView ids, 
+                                                                       OutStream& output) const = 0;
             virtual StatusCode getDiscussionThreadMessagesOfUserByCreated(Entities::IdTypeRef id,
                                                                           OutStream& output) const = 0;
             virtual StatusCode getDiscussionThreadMessageRank(Entities::IdTypeRef id, OutStream& output) const = 0;

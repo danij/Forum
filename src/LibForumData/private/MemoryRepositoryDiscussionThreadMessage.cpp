@@ -44,6 +44,46 @@ MemoryRepositoryDiscussionThreadMessage::MemoryRepositoryDiscussionThreadMessage
     }
 }
 
+StatusCode MemoryRepositoryDiscussionThreadMessage::getMultipleDiscussionThreadMessagesById(StringView ids,
+                                                                                            OutStream& output) const
+{
+    StatusWriter status(output);
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    constexpr size_t MaxIdBuffer = 64;
+    static thread_local std::array<UuidString, MaxIdBuffer> parsedIds;
+    static thread_local std::array<const DiscussionThreadMessage*, MaxIdBuffer> threadMessagesFound;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          auto maxThreadsToSearch = std::min(MaxIdBuffer, 
+                                                             static_cast<size_t>(getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage));
+                          auto lastParsedId = parseMultipleUuidStrings(ids, parsedIds.begin(), parsedIds.begin() + maxThreadsToSearch);
+
+                          const auto& indexById = collection.threadMessages().byId();
+                          auto lastThreadMessageFound = std::transform(parsedIds.begin(), lastParsedId, threadMessagesFound.begin(), 
+                              [&indexById](auto id)
+                              {
+                                  auto it = indexById.find(id);
+                                  return (it == indexById.end()) ? nullptr : *it;
+                              });
+                          
+                          status = StatusCode::OK;
+                          status.disable();
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), 
+                                                               currentUser.id(), Context::getCurrentTime());
+
+                          writeAllEntities(threadMessagesFound.begin(), lastThreadMessageFound, 
+                                           "thread_messages", output, restriction);
+                          
+                          readEvents().onGetMultipleDiscussionThreadMessagesById(createObserverContext(currentUser), ids);
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesOfUserByCreated(IdTypeRef id,
                                                                                                OutStream& output) const
 {

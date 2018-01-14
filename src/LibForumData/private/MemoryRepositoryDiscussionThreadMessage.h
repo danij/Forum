@@ -62,6 +62,8 @@ namespace Forum
             StatusCode resetVoteDiscussionThreadMessage(Entities::IdTypeRef id, OutStream& output) override;
             StatusCode resetVoteDiscussionThreadMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
+            StatusCode getMultipleDiscussionThreadMessagesById(StringView ids, 
+                                                               OutStream& output) const override;
             StatusCode getDiscussionThreadMessagesOfUserByCreated(Entities::IdTypeRef id,
                                                                   OutStream& output) const override;
             StatusCode getLatestDiscussionThreadMessages(OutStream& output) const override;

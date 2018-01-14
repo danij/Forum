@@ -435,6 +435,16 @@ void DiscussionThreadsEndpoint::getThreadById(Http::RequestState& requestState)
     });
 }
 
+void DiscussionThreadsEndpoint::getMultipleThreadsById(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::GET_MULTIPLE_DISCUSSION_THREADS_BY_ID, parameters);
+    });
+}
+
 void DiscussionThreadsEndpoint::getThreadsOfUser(Http::RequestState& requestState)
 {
     handle(requestState,
@@ -694,6 +704,16 @@ void DiscussionThreadsEndpoint::removeTag(Http::RequestState& requestState)
 
 DiscussionThreadMessagesEndpoint::DiscussionThreadMessagesEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
 {
+}
+
+void DiscussionThreadMessagesEndpoint::getMultipleThreadMessagesById(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::GET_MULTIPLE_DISCUSSION_THREAD_MESSAGES_BY_ID, parameters);
+    });
 }
 
 void DiscussionThreadMessagesEndpoint::getThreadMessagesOfUser(Http::RequestState& requestState)

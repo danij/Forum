@@ -61,10 +61,12 @@ namespace Forum
 
             boost::signals2::signal<void(ObserverContext)> onGetDiscussionThreads;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onGetDiscussionThreadById;
+            boost::signals2::signal<void(ObserverContext, StringView)> onGetMultipleDiscussionThreadsById;
             boost::signals2::signal<void(ObserverContext, StringView)> onSearchDiscussionThreadsByName;
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetDiscussionThreadsOfUser;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onGetUsersSubscribedToDiscussionThread;
 
+            boost::signals2::signal<void(ObserverContext, StringView)> onGetMultipleDiscussionThreadMessagesById;
             boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetDiscussionThreadMessagesOfUser;
             boost::signals2::signal<void(ObserverContext)> onGetLatestDiscussionThreadMessages;
             boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&)>

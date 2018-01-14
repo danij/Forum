@@ -86,6 +86,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
 
         { "threads",                 HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getAll) },
         { "threads/id",              HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getThreadById) },
+        { "threads/multiple",        HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getMultipleThreadsById) },
         { "threads/user",            HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getThreadsOfUser) },
         { "threads/subscribed/user", HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getSubscribedThreadsOfUser) },
         { "threads/tag",             HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getThreadsWithTag) },
@@ -101,6 +102,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "threads/tag",             HttpVerb::POST,   ENDPOINT_DELEGATE(threadsEndpoint.addTag) },
         { "threads/tag",             HttpVerb::DELETE, ENDPOINT_DELEGATE(threadsEndpoint.removeTag) },
 
+        { "thread_messages/multiple",       HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getMultipleThreadMessagesById) },
         { "thread_messages/user",           HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getThreadMessagesOfUser) },
         { "thread_messages/latest",         HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getLatestThreadMessages) },
         { "thread_messages/allcomments",    HttpVerb::GET,    ENDPOINT_DELEGATE(threadMessagesEndpoint.getAllComments) },

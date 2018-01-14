@@ -197,6 +197,34 @@ namespace Forum
             writeAllEntities(collection, propertyName, output, ascending, [](auto&) { return true; }, restriction);
         }
 
+        template<typename It, size_t PropertyNameSize>
+        void writeAllEntities(It begin, It end, const char(&propertyName)[PropertyNameSize],
+                              Repository::OutStream& output, const Authorization::SerializationRestriction& restriction)
+        {
+            Json::JsonWriter writer(output);
+
+            writer.startObject();
+
+            writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
+            writer.startArray();
+
+            for (auto it = begin, n = end; it != n; ++it)
+            {
+                if (*it)
+                {
+                    serialize(writer, **it, restriction);
+                }
+                else
+                {
+                    writer.null();
+                }
+            }
+
+            writer.endArray();
+
+            writer.endObject();
+        }
+
         /**
          * Helper for writing a status message in the output if no other output is provided
          */

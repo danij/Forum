@@ -227,6 +227,45 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
     return status;
 }
 
+StatusCode MemoryRepositoryDiscussionThread::getMultipleDiscussionThreadsById(StringView ids, OutStream& output) const
+{
+    StatusWriter status(output);
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    constexpr size_t MaxIdBuffer = 64;
+    static thread_local std::array<UuidString, MaxIdBuffer> parsedIds;
+    static thread_local std::array<const DiscussionThread*, MaxIdBuffer> threadsFound;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          auto maxThreadsToSearch = std::min(MaxIdBuffer, 
+                                                             static_cast<size_t>(getGlobalConfig()->discussionThread.maxThreadsPerPage));
+                          auto lastParsedId = parseMultipleUuidStrings(ids, parsedIds.begin(), parsedIds.begin() + maxThreadsToSearch);
+
+                          const auto& indexById = collection.threads().byId();
+                          auto lastThreadFound = std::transform(parsedIds.begin(), lastParsedId, threadsFound.begin(), 
+                              [&indexById](auto id)
+                              {
+                                  auto it = indexById.find(id);
+                                  return (it == indexById.end()) ? nullptr : *it;
+                              });
+                          
+                          status = StatusCode::OK;
+                          status.disable();
+
+                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
+
+                          writeAllEntities(threadsFound.begin(), lastThreadFound, "threads", output, restriction);
+                          
+                          readEvents().onGetMultipleDiscussionThreadsById(createObserverContext(currentUser), ids);
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryDiscussionThread::searchDiscussionThreadsByName(StringView name, OutStream& output) const
 {
     StatusWriter status(output);

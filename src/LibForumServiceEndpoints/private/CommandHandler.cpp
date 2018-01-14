@@ -337,6 +337,12 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadRepository->getDiscussionThreadById(parameters[0], output);
     }
 
+    COMMAND_HANDLER_METHOD( GET_MULTIPLE_DISCUSSION_THREADS_BY_ID )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getMultipleDiscussionThreadsById(parameters[0], output);
+    }
+
     COMMAND_HANDLER_METHOD( SEARCH_DISCUSSION_THREADS_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -507,6 +513,12 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->resetVoteDiscussionThreadMessage(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_MULTIPLE_DISCUSSION_THREAD_MESSAGES_BY_ID )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadMessageRepository->getMultipleDiscussionThreadMessagesById(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED )
@@ -1205,6 +1217,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
     setViewHandler(GET_DISCUSSION_THREAD_BY_ID);
+    setViewHandler(GET_MULTIPLE_DISCUSSION_THREADS_BY_ID);
     setViewHandler(SEARCH_DISCUSSION_THREADS_BY_NAME);
 
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME);
@@ -1220,6 +1233,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
     setViewHandler(GET_USERS_SUBSCRIBED_TO_DISCUSSION_THREAD);
 
+    setViewHandler(GET_MULTIPLE_DISCUSSION_THREAD_MESSAGES_BY_ID);
     setViewHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED);
     setViewHandler(GET_LATEST_DISCUSSION_THREAD_MESSAGES);
     setViewHandler(GET_DISCUSSION_THREAD_MESSAGE_RANK);
