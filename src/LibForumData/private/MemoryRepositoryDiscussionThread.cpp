@@ -236,13 +236,13 @@ StatusCode MemoryRepositoryDiscussionThread::getMultipleDiscussionThreadsById(St
     static thread_local std::array<UuidString, MaxIdBuffer> parsedIds;
     static thread_local std::array<const DiscussionThread*, MaxIdBuffer> threadsFound;
 
+    const auto maxThreadsToSearch = std::min(MaxIdBuffer, 
+                                             static_cast<size_t>(getGlobalConfig()->discussionThread.maxThreadsPerPage));
+    auto lastParsedId = parseMultipleUuidStrings(ids, parsedIds.begin(), parsedIds.begin() + maxThreadsToSearch);
+
     collection().read([&](const EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
-
-                          auto maxThreadsToSearch = std::min(MaxIdBuffer, 
-                                                             static_cast<size_t>(getGlobalConfig()->discussionThread.maxThreadsPerPage));
-                          auto lastParsedId = parseMultipleUuidStrings(ids, parsedIds.begin(), parsedIds.begin() + maxThreadsToSearch);
 
                           const auto& indexById = collection.threads().byId();
                           auto lastThreadFound = std::transform(parsedIds.begin(), lastParsedId, threadsFound.begin(), 

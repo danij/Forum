@@ -54,14 +54,14 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMultipleDiscussionThreadM
     static thread_local std::array<UuidString, MaxIdBuffer> parsedIds;
     static thread_local std::array<const DiscussionThreadMessage*, MaxIdBuffer> threadMessagesFound;
 
+    const auto maxThreadsToSearch = std::min(MaxIdBuffer, 
+                                             static_cast<size_t>(getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage));
+    auto lastParsedId = parseMultipleUuidStrings(ids, parsedIds.begin(), parsedIds.begin() + maxThreadsToSearch);
+
     collection().read([&](const EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
-
-                          auto maxThreadsToSearch = std::min(MaxIdBuffer, 
-                                                             static_cast<size_t>(getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage));
-                          auto lastParsedId = parseMultipleUuidStrings(ids, parsedIds.begin(), parsedIds.begin() + maxThreadsToSearch);
-
+                          
                           const auto& indexById = collection.threadMessages().byId();
                           auto lastThreadMessageFound = std::transform(parsedIds.begin(), lastParsedId, threadMessagesFound.begin(), 
                               [&indexById](auto id)
