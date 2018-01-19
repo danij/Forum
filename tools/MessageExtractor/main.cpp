@@ -21,6 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <cstdint>
 #include <cstring>
+#include <functional>
+#include <map>
 
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/options_description.hpp>
@@ -40,22 +42,26 @@ using namespace Forum::Helpers;
 class MessageExtractor final
 {
 public:
-    MessageExtractor(const char* inputData, size_t inputSize, uint64_t currentOffset,
+    MessageExtractor(const char* inputData, size_t inputSize, uint64_t currentOffset, bool skipLatest,
                      std::ostream& eventOutput, std::ostream& messagesOutput);
     int perform();
 
 private:
+    int iterateBlobs(std::function<int(const char*, size_t)>&& fn);
+    int updateLatestMessages(const char* data, size_t size);
     int processBlob(const char* data, size_t size);
     int writeBlob(const char* data, size_t size);
 
     const char* inputData_;
     size_t inputSize_;
     uint64_t currentOffset_;
+    bool skipLatest_;
     std::ostream& eventOutput_;
     std::ostream& messagesOutput_;
+    std::map<boost::uuids::uuid, boost::uuids::uuid> latestThreadMessages_;
 };
 
-int startExtraction(const std::string& input, const std::string& output, const std::string& messages);
+int startExtraction(const std::string& input, const std::string& output, const std::string& messages, bool skipLatest);
 
 int main(int argc, const char* argv[])
 {
@@ -64,7 +70,8 @@ int main(int argc, const char* argv[])
         ("help,h", "Display available options")
         ("input,i", boost::program_options::value<std::string>(), "Input file")
         ("output,o", boost::program_options::value<std::string>(), "Output file")
-        ("messages,m", boost::program_options::value<std::string>(), "File where to append messages");
+        ("messages,m", boost::program_options::value<std::string>(), "File where to append messages")
+        ("skip-latest,l", "Skip the latest message of each discussion thread");
 
     boost::program_options::variables_map arguments;
 
@@ -88,7 +95,7 @@ int main(int argc, const char* argv[])
     if (arguments.count("input") && arguments.count("output") && arguments.count("messages"))
     {
         return startExtraction(arguments["input"].as<std::string>(), arguments["output"].as<std::string>(),
-                               arguments["messages"].as<std::string>());
+                               arguments["messages"].as<std::string>(), arguments.count("skip-latest") > 0);
     }
     else
     {
@@ -97,7 +104,7 @@ int main(int argc, const char* argv[])
     }
 }
 
-int startExtraction(const std::string& input, const std::string& output, const std::string& messages)
+int startExtraction(const std::string& input, const std::string& output, const std::string& messages, bool skipLatest)
 {
     std::ofstream outputStream(output, std::ios_base::binary);
     if ( ! outputStream)
@@ -130,7 +137,7 @@ int startExtraction(const std::string& input, const std::string& output, const s
         auto ptr = reinterpret_cast<const char*>(region.get_address());
         auto size = region.get_size();
 
-        MessageExtractor extractor(ptr, size, messagesFileSize, outputStream, messageStream);
+        MessageExtractor extractor(ptr, size, messagesFileSize, skipLatest, outputStream, messageStream);
         return extractor.perform();
     }
     catch (boost::interprocess::interprocess_exception& ex)
@@ -152,14 +159,31 @@ T readAndIncrementBuffer(const char*& data, size_t& size)
     return result;
 }
 
-MessageExtractor::MessageExtractor(const char* inputData, size_t inputSize, uint64_t currentOffset,
+MessageExtractor::MessageExtractor(const char* inputData, size_t inputSize, uint64_t currentOffset, bool skipLatest,
                                    std::ostream& eventOutput, std::ostream& messagesOutput)
-    : inputData_(inputData), inputSize_(inputSize), currentOffset_(currentOffset), eventOutput_(eventOutput),
-      messagesOutput_(messagesOutput)
+    : inputData_(inputData), inputSize_(inputSize), currentOffset_(currentOffset), skipLatest_(skipLatest),
+      eventOutput_(eventOutput), messagesOutput_(messagesOutput)
 {
 }
 
 int MessageExtractor::perform()
+{
+    if (skipLatest_)
+    {
+        auto result = iterateBlobs([this](const char* data, size_t blobSize)
+        {
+            return this->updateLatestMessages(data, blobSize);
+        });
+        if (result) return result;
+    }
+
+    return iterateBlobs([this](const char* data, size_t blobSize)
+    {
+        return this->processBlob(data, blobSize);
+    });
+}
+
+int MessageExtractor::iterateBlobs(std::function<int(const char*, size_t)>&& fn)
 {
     auto data = inputData_;
     auto size = inputSize_;
@@ -198,7 +222,7 @@ int MessageExtractor::perform()
             return false;
         }
 
-        auto result = processBlob(data, blobSize);
+        auto result = fn(data, blobSize);
         if (result != 0)
         {
             return result;
@@ -208,7 +232,7 @@ int MessageExtractor::perform()
         size -= blobSizeWithPadding;
 
         auto processed = inputSize_ - size;
-        auto processedPercent = static_cast<int>((processed * 100) / inputSize_);
+        auto processedPercent = static_cast<int>((processed * 100.0) / inputSize_);
         if (processedPercent > oldProcessedPercent)
         {
             std::cout << processedPercent << "% " << std::flush;
@@ -216,6 +240,51 @@ int MessageExtractor::perform()
         }
     }
     std::cout << std::endl;
+    return 0;
+}
+
+boost::uuids::uuid parseUuid(const char* data)
+{
+    boost::uuids::uuid result{};
+    std::copy(data, data + boost::uuids::uuid::static_size(), result.data);
+    return result;
+}
+
+int MessageExtractor::updateLatestMessages(const char* data, size_t size)
+{
+    auto blobStart = data;
+
+    auto eventType = readAndIncrementBuffer<EventType>(data, size);
+    auto version = readAndIncrementBuffer<EventVersionType>(data, size);
+    auto contextVersion = readAndIncrementBuffer<EventContextVersionType>(data, size);
+
+    static constexpr auto uuidSize = boost::uuids::uuid::static_size();
+
+    static constexpr auto eventHeaderSize = sizeof(EventType) + sizeof(EventVersionType) + sizeof(EventContextVersionType);
+    static constexpr auto contextSize = sizeof(PersistentTimestampType) + uuidSize + IpAddress::dataSize();
+
+    if ((ADD_NEW_DISCUSSION_THREAD_MESSAGE == eventType) && (1 == version) && (1 == contextVersion))
+    {
+        if (size < contextSize)
+        {
+            std::cerr << "Unable to import context v1: expected " << contextSize << " bytes, found only " << size;
+            return false;
+        }
+
+        auto messageId = parseUuid(blobStart + eventHeaderSize + contextSize);
+        auto threadId = parseUuid(blobStart + eventHeaderSize + contextSize + uuidSize);
+
+        auto it = latestThreadMessages_.find(threadId);
+        if (it == latestThreadMessages_.end())
+        {
+            latestThreadMessages_.insert(std::make_pair(threadId, messageId));
+        }
+        else
+        {
+            it->second = messageId;
+        }
+    }
+
     return 0;
 }
 
@@ -227,12 +296,12 @@ int MessageExtractor::processBlob(const char* data, size_t size)
     auto eventType = readAndIncrementBuffer<EventType>(data, size);
     auto version = readAndIncrementBuffer<EventVersionType>(data, size);
     auto contextVersion = readAndIncrementBuffer<EventContextVersionType>(data, size);
-    (void)contextVersion;
 
     auto blobToWrite = blobStart;
 
     static constexpr auto uuidSize = boost::uuids::uuid::static_size();
 
+    static constexpr auto eventHeaderSize = sizeof(EventType) + sizeof(EventVersionType) + sizeof(EventContextVersionType);
     static constexpr auto contextSize = sizeof(PersistentTimestampType) + uuidSize + IpAddress::dataSize();
     static constexpr auto sameAsOldVersionSize = contextSize + uuidSize /*messageId*/ + uuidSize /*parentId*/;
     static constexpr auto newBlobSize = sizeof(EventType) + sizeof(EventVersionType) + sizeof(EventContextVersionType) +
@@ -246,39 +315,47 @@ int MessageExtractor::processBlob(const char* data, size_t size)
             std::cerr << "Unable to import context v1: expected " << contextSize << " bytes, found only " << size;
             return false;
         }
-        char* blobData = blobBuffer;
 
-        version = 2;
+        auto messageId = parseUuid(blobStart + eventHeaderSize + contextSize);
+        auto threadId = parseUuid(blobStart + eventHeaderSize + contextSize + uuidSize);
 
-        writeValue(blobData, eventType); blobData += sizeof(eventType);
-        writeValue(blobData, version); blobData += sizeof(version);
-        writeValue(blobData, contextVersion); blobData += sizeof(contextVersion);
-
-        memcpy(blobData, data, sameAsOldVersionSize); blobData += sameAsOldVersionSize;
-        data += sameAsOldVersionSize; size -= sameAsOldVersionSize;
-
-        auto messageSize = readAndIncrementBuffer<uint32_t>(data, size);
-
-        if (size != messageSize)
+        auto it = latestThreadMessages_.find(threadId);
+        if ((it == latestThreadMessages_.end()) || (it->second != messageId))
         {
-            std::cerr << "Remaining size (" << size << ") is different from the expected one (" << messageSize << ")\n";
-            return 2;
+            char* blobData = blobBuffer;
+
+            version = 2;
+
+            writeValue(blobData, eventType); blobData += sizeof(eventType);
+            writeValue(blobData, version); blobData += sizeof(version);
+            writeValue(blobData, contextVersion); blobData += sizeof(contextVersion);
+
+            memcpy(blobData, data, sameAsOldVersionSize); blobData += sameAsOldVersionSize;
+            data += sameAsOldVersionSize; size -= sameAsOldVersionSize;
+
+            auto messageSize = readAndIncrementBuffer<uint32_t>(data, size);
+
+            if (size != messageSize)
+            {
+                std::cerr << "Remaining size (" << size << ") is different from the expected one (" << messageSize << ")\n";
+                return 2;
+            }
+            auto message = data;
+
+            if ( ! messagesOutput_.write(message, messageSize))
+            {
+                std::cerr << "Could not append message";
+                return 2;
+            }
+
+            writeValue(blobData, messageSize); blobData += sizeof(messageSize);
+            writeValue(blobData, currentOffset_); blobData += sizeof(currentOffset_);
+
+            currentOffset_ += messageSize;
+
+            blobToWrite = blobBuffer;
+            blobSize = newBlobSize;
         }
-        auto message = data;
-
-        if ( ! messagesOutput_.write(message, messageSize))
-        {
-            std::cerr << "Could not append message";
-            return 2;
-        }
-
-        writeValue(blobData, messageSize); blobData += sizeof(messageSize);
-        writeValue(blobData, currentOffset_); blobData += sizeof(currentOffset_);
-
-        currentOffset_ += messageSize;
-
-        blobToWrite = blobBuffer;
-        blobSize = newBlobSize;
     }
 
     auto result = writeBlob(blobToWrite, blobSize);
