@@ -187,11 +187,11 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
 {
     StatusWriter status(output);
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->discussionCategory.minNameLength,
-                                         config->discussionCategory.maxNameLength,
-                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                               config->discussionCategory.minNameLength,
+                                               config->discussionCategory.maxNameLength,
+                                               &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -270,7 +270,7 @@ StatusWithResource<DiscussionCategoryPtr>
 
     if (parentId)
     {
-        auto parentIt = indexById.find(parentId);
+        const auto parentIt = indexById.find(parentId);
         if (parentIt != indexById.end())
         {
             DiscussionCategoryPtr parent = *parentIt;
@@ -294,11 +294,11 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(IdTy
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->discussionCategory.minNameLength,
-                                         config->discussionCategory.maxNameLength,
-                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                               config->discussionCategory.minNameLength,
+                                               config->discussionCategory.maxNameLength,
+                                               &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -350,7 +350,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(Enti
                                                                             DiscussionCategory::NameType&& newName)
 {
     auto& indexById = collection.categories().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
@@ -364,7 +364,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(Enti
         return StatusCode::ALREADY_EXISTS;
     }
 
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     DiscussionCategoryPtr categoryPtr = *it;
     DiscussionCategory& category = *categoryPtr;
@@ -384,7 +384,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
-    auto maxLength = static_cast<int_fast32_t>(getGlobalConfig()->discussionCategory.maxDescriptionLength);
+    const auto maxLength = static_cast<int_fast32_t>(getGlobalConfig()->discussionCategory.maxDescriptionLength);
     if (countUTF8Characters(newDescription) > maxLength)
     {
         return status = StatusCode::VALUE_TOO_LONG;
@@ -421,14 +421,14 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
                                                                                    IdTypeRef id, StringView newDescription)
 {
     auto& indexById = collection.categories().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     DiscussionCategoryPtr categoryPtr = *it;
     DiscussionCategory& category = *categoryPtr;
@@ -523,7 +523,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(En
     DiscussionCategoryPtr categoryPtr = *it;
     DiscussionCategory& category = *categoryPtr;
 
-    auto newParentIt = indexById.find(newParentId);
+    const auto newParentIt = indexById.find(newParentId);
     DiscussionCategoryPtr newParentPtr; //might be empty
 
     if (newParentIt != indexById.end())
@@ -550,7 +550,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(En
         currentParent->removeChild(categoryPtr);
     }
 
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     updateCategoryParent(category, newParentPtr, currentUser);
 
@@ -603,7 +603,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
                                                                                     int_fast16_t newDisplayOrder)
 {
     auto& indexById = collection.categories().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
@@ -612,7 +612,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
 
     DiscussionCategoryPtr categoryPtr = *it;
     DiscussionCategory& category = *categoryPtr;
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     category.updateDisplayOrder(newDisplayOrder);
     updateLastUpdated(category, currentUser);
@@ -658,7 +658,7 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(IdTypeRe
 StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(EntityCollection& collection, IdTypeRef id)
 {
     auto& indexById = collection.categories().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
@@ -666,7 +666,7 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(EntityCo
     }
 
     DiscussionCategoryPtr category = *it;
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     std::vector<DiscussionCategoryPtr> childCategories;
     auto& children = category->children();
@@ -733,7 +733,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
                                                                           IdTypeRef tagId, IdTypeRef categoryId)
 {
     auto& tagIndexById = collection.tags().byId();
-    auto tagIt = tagIndexById.find(tagId);
+    const auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(tagId);
@@ -741,7 +741,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
     }
 
     auto& categoryIndexById = collection.categories().byId();
-    auto categoryIt = categoryIndexById.find(categoryId);
+    const auto categoryIt = categoryIndexById.find(categoryId);
     if (categoryIt == categoryIndexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(categoryId);
@@ -760,7 +760,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
         return StatusCode::NO_EFFECT;
     }
 
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     category.addTag(tagPtr);
     updateLastUpdated(category, currentUser);
@@ -822,7 +822,7 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
                                                                                IdTypeRef tagId, IdTypeRef categoryId)
 {
     auto& tagIndexById = collection.tags().byId();
-    auto tagIt = tagIndexById.find(tagId);
+    const auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
@@ -830,7 +830,7 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
     }
 
     auto& categoryIndexById = collection.categories().byId();
-    auto categoryIt = categoryIndexById.find(categoryId);
+    const auto categoryIt = categoryIndexById.find(categoryId);
     if (categoryIt == categoryIndexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(categoryId);
@@ -849,7 +849,7 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
         return StatusCode::NO_EFFECT;
     }
 
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     category.removeTag(tagPtr);
     updateLastUpdated(category, currentUser);

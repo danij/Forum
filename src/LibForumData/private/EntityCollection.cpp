@@ -77,7 +77,7 @@ struct EntityCollection::Impl
         {
             try
             {
-                auto mappingMode = boost::interprocess::read_only;
+                const auto mappingMode = boost::interprocess::read_only;
                 boost::interprocess::file_mapping mapping(messagesFile.data(), mappingMode);
                 boost::interprocess::mapped_region region(mapping, mappingMode);
                 region.advise(boost::interprocess::mapped_region::advice_sequential);
@@ -238,7 +238,7 @@ struct EntityCollection::Impl
         auto messageComments = message.comments();
         if (messageComments)
         {
-            for (MessageCommentPtr comment : messageComments->byId())
+            for (const MessageCommentPtr comment : messageComments->byId())
             {
                 deleteMessageComment(comment);
             }
@@ -247,7 +247,7 @@ struct EntityCollection::Impl
         auto& upVotes = message.upVotes();
         if (upVotes)
         {
-            for (auto pair : *upVotes)
+            for (const auto pair : *upVotes)
             {
                 UserPtr user = pair.first;
                 assert(user);
@@ -257,7 +257,7 @@ struct EntityCollection::Impl
         auto& downVotes = message.downVotes();
         if (downVotes)
         {
-            for (auto pair : *downVotes)
+            for (const auto pair : *downVotes)
             {
                 UserPtr user = pair.first;
                 assert(user);
@@ -439,7 +439,7 @@ struct EntityCollection::Impl
                                 void (IDiscussionThreadCollection::*fn)(DiscussionThreadPtr))
     {
         auto& thread = const_cast<DiscussionThread&>(constThread);
-        DiscussionThreadPtr threadPtr = thread.pointer();
+        const DiscussionThreadPtr threadPtr = thread.pointer();
 
         (threads_.*fn)(threadPtr);
         (thread.createdBy().threads().*fn)(threadPtr);
@@ -578,7 +578,7 @@ struct EntityCollection::Impl
             return{};
         }
 
-        auto requiredSize = offset + size;
+        const auto requiredSize = offset + size;
         if (requiredSize > messagesFileSize_)
         {
             return{};

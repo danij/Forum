@@ -200,7 +200,7 @@ Request::HttpHeader Http::Request::matchHttpHeader(const char* headerName, size_
     auto result = HttpHeader::UnknownHeader;
     if (size > 0)
     {
-        auto hashFn = matchFunctionTable[hashHeaderName(headerName, size)];
+        const auto hashFn = matchFunctionTable[hashHeaderName(headerName, size)];
         if (hashFn)
         {
             result = hashFn(headerName, size);

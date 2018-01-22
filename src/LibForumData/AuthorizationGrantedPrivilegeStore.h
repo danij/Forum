@@ -36,14 +36,13 @@ namespace Forum
     {
         struct DiscussionThreadMessagePrivilegeCheck final
         {
-            DiscussionThreadMessagePrivilegeCheck()
-            {}
+            DiscussionThreadMessagePrivilegeCheck() = default;
 
             DiscussionThreadMessagePrivilegeCheck(Entities::IdTypeRef userId,
                                                   const Entities::DiscussionThreadMessage& message)
-                : userId(userId), message(&message)
-            {
-            }
+                : userId(userId), message(&message) {}
+            ~DiscussionThreadMessagePrivilegeCheck() = default;
+            
 
             DiscussionThreadMessagePrivilegeCheck(const DiscussionThreadMessagePrivilegeCheck&) = default;
             DiscussionThreadMessagePrivilegeCheck(DiscussionThreadMessagePrivilegeCheck&&) = default;

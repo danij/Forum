@@ -709,7 +709,7 @@ bool DefaultAuthorization::isThrottled(UserActionThrottling action, const User& 
 static bool allowPrivilegeUpdate(PrivilegeValueType oldValue, PrivilegeValueIntType newValue,
                                  PrivilegeValueType currentPermissions)
 {
-    PrivilegeValueIntType currentPermissionsValue = currentPermissions ? *currentPermissions : 0;
+    const PrivilegeValueIntType currentPermissionsValue = currentPermissions ? *currentPermissions : 0;
     return ((! oldValue) || (std::abs(*oldValue) <= currentPermissionsValue))
         && (std::abs(newValue) <= currentPermissionsValue);
 }
@@ -717,7 +717,7 @@ static bool allowPrivilegeUpdate(PrivilegeValueType oldValue, PrivilegeValueIntT
 static bool allowPrivilegeAssignment(PrivilegeValueType oldValue, PrivilegeValueIntType newValue,
     PrivilegeValueType currentPermissions)
 {
-    PrivilegeValueIntType currentPermissionsValue = currentPermissions ? *currentPermissions : 0;
+    const PrivilegeValueIntType currentPermissionsValue = currentPermissions ? *currentPermissions : 0;
     return (( ! oldValue) || (std::abs(*oldValue) < currentPermissionsValue))
         && (std::abs(newValue) < currentPermissionsValue);
 }
@@ -731,7 +731,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -762,7 +762,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadMessagePrivilege
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -772,7 +772,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadMessagePrivilege
     grantedPrivilegeStore_.calculateDiscussionThreadMessagePrivilege(targetUser.id(), message,
                                                                      Context::getCurrentTime(),
                                                                      oldValuePositive, oldValueNegative);
-    auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
+    const auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
 
     return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
@@ -786,7 +786,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), thread, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), thread, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -803,7 +803,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -819,7 +819,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const 
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -828,7 +828,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const 
     PrivilegeValueType oldValuePositive, oldValueNegative;
     grantedPrivilegeStore_.calculateDiscussionThreadPrivilege(targetUser.id(), thread, Context::getCurrentTime(),
                                                               oldValuePositive, oldValueNegative);
-    auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
+    const auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
 
     return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
@@ -843,7 +843,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), tag, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), tag, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -860,7 +860,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), tag, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), tag, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -877,7 +877,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const Use
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -893,7 +893,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionTagPrivilege(const Use
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -902,7 +902,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionTagPrivilege(const Use
     PrivilegeValueType oldValuePositive, oldValueNegative;
     grantedPrivilegeStore_.calculateDiscussionTagPrivilege(targetUser.id(), tag, Context::getCurrentTime(),
                                                            oldValuePositive, oldValueNegative);
-    auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
+    const auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
 
     return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
@@ -916,7 +916,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(cons
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -932,7 +932,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -948,7 +948,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -964,7 +964,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const Use
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -980,7 +980,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(cons
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -996,7 +996,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionCategoryPrivilege(cons
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1006,7 +1006,7 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionCategoryPrivilege(cons
     grantedPrivilegeStore_.calculateDiscussionCategoryPrivilege(targetUser.id(), category,
                                                                 Context::getCurrentTime(),
                                                                 oldValuePositive, oldValueNegative);
-    auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
+    const auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
 
     return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }
@@ -1019,7 +1019,7 @@ AuthorizationStatus DefaultAuthorization::updateForumWidePrivilege(const User& c
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1034,7 +1034,7 @@ AuthorizationStatus DefaultAuthorization::updateForumWideDefaultPrivilegeLevel(
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
     return status;
 }
 
@@ -1045,7 +1045,7 @@ AuthorizationStatus DefaultAuthorization::assignForumWidePrivilege(const User& c
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    auto status = isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
+    const auto status = isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1054,7 +1054,7 @@ AuthorizationStatus DefaultAuthorization::assignForumWidePrivilege(const User& c
     PrivilegeValueType oldValuePositive, oldValueNegative;
     grantedPrivilegeStore_.calculateForumWidePrivilege(targetUser.id(), Context::getCurrentTime(),
                                                        oldValuePositive, oldValueNegative);
-    auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
+    const auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
 
     return allowPrivilegeAssignment(oldValue, newValue, with) ? AuthorizationStatus::OK : AuthorizationStatus::NOT_ALLOWED;
 }

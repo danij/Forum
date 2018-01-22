@@ -76,7 +76,7 @@ namespace Forum
 
         inline auto getFirstCharacterInUTF8Array(StringView view)
         {
-            if (view.size() < 1)
+            if (view.empty())
             {
                 return view;
             }
@@ -85,7 +85,7 @@ namespace Forum
 
         inline auto getLastCharacterInUTF8Array(StringView view)
         {
-            if (view.size() < 1)
+            if (view.empty())
             {
                 return view;
             }
@@ -218,7 +218,7 @@ namespace Forum
             {
                 uint32_t ownsMemory :  1;
                 uint32_t size       : 31;
-            } info_;
+            } info_{};
         };
 
         namespace Detail
@@ -231,8 +231,8 @@ namespace Forum
 
                 SizeWithBoolAndSortKeySize() : boolean(0), size(0), sortKeySize(0) {}
                 SizeWithBoolAndSortKeySize(size_t size)
-                    : boolean(0), size(static_cast<decltype(SizeWithBoolAndSortKeySize::size)>(size)), sortKeySize(0)
-                {}
+                    : boolean(0), size(static_cast<decltype(SizeWithBoolAndSortKeySize::size)>(size)), sortKeySize(0) {}
+                ~SizeWithBoolAndSortKeySize() = default;
 
                 SizeWithBoolAndSortKeySize(const SizeWithBoolAndSortKeySize&) = default;
                 SizeWithBoolAndSortKeySize& operator=(const SizeWithBoolAndSortKeySize&) = default;
@@ -276,6 +276,7 @@ namespace Forum
         {
         public:
             explicit JsonReadyStringWithSortKey(StringView source);
+            ~JsonReadyStringWithSortKey() = default;
 
             JsonReadyStringWithSortKey(const JsonReadyStringWithSortKey& other) = default;
             JsonReadyStringWithSortKey(JsonReadyStringWithSortKey&& other) noexcept = default;
@@ -349,7 +350,7 @@ namespace Forum
         template <size_t StackSize>
         size_t JsonReadyStringWithSortKey<StackSize>::extraBytesNeeded(StringView source)
         {
-            auto result = calculateSortKey(source);
+            const auto result = calculateSortKey(source);
             return static_cast<decltype(Detail::SizeWithBoolAndSortKeySize::sortKeySize)>(result);
         }
 

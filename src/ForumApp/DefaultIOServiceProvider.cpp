@@ -50,7 +50,7 @@ void DefaultIOServiceProvider::waitForStop()
     std::unique_lock<decltype(stopMutex_)> lock(stopMutex_);
     stopVariable_.wait(lock, [&]() { return stopping_; });
 
-    if (threads_.size())
+    if ( ! threads_.empty())
     {
         for (auto& thread : threads_)
         {

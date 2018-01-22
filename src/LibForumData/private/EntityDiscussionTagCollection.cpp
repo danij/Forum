@@ -38,13 +38,13 @@ bool DiscussionTagCollection::add(DiscussionTagPtr tag)
 bool DiscussionTagCollection::remove(DiscussionTagPtr tag)
 {
     {
-        auto itById = byId_.find(tag->id());
+        const auto itById = byId_.find(tag->id());
         if (itById == byId_.end()) return false;
 
         byId_.erase(itById);
     }
     {
-        auto itByName = byName_.find(tag->name());
+        const auto itByName = byName_.find(tag->name());
         if (itByName != byName_.end()) byName_.erase(itByName);
     }
     if ( ! Context::isBatchInsertInProgress())

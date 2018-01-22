@@ -51,7 +51,7 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
 
     updateCurrentFileIfNeeded();
 
-    auto file = fopen(currentFileName_.c_str(), "ab");
+    const auto file = fopen(currentFileName_.c_str(), "ab");
     if ( ! file)
     {
         FORUM_LOG_ERROR << "Could not open file for writing: " << currentFileName_;
@@ -65,8 +65,8 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
     for (size_t i = 0; i < nrOfBlobs; ++i)
     {
         auto& blob = blobs[i];
-        auto blobSize = static_cast<BlobSizeType>(blob.size);
-        auto blobCRC32 = crc32(blob.buffer, blob.size);
+        const auto blobSize = static_cast<BlobSizeType>(blob.size);
+        const auto blobCRC32 = crc32(blob.buffer, blob.size);
 
         auto prefix = prefixBuffer;
 
@@ -78,7 +78,7 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
 
         fwrite(blob.buffer, 1, blobSize, file);
 
-        auto paddingNeeded = blobPaddingRequired(blobSize);
+        const auto paddingNeeded = blobPaddingRequired(blobSize);
         if (paddingNeeded)
         {
             fwrite(Padding, 1, paddingNeeded, file);
@@ -95,11 +95,11 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
 
 void FileAppender::updateCurrentFileIfNeeded()
 {
-    auto now = std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count();
+    const auto now = std::chrono::duration_cast<std::chrono::seconds>(
+            std::chrono::system_clock::now().time_since_epoch()).count();
     if ((lastFileNameCreatedAt_ + refreshEverySeconds_) < now)
     {
-        auto newFile = "forum-" + std::to_string(now) + ".events";
+        const auto newFile = "forum-" + std::to_string(now) + ".events";
         currentFileName_ = (destinationFolder_ / newFile).string();
         lastFileNameCreatedAt_ = now;
     }

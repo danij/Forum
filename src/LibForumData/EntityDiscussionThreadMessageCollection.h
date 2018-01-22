@@ -58,12 +58,12 @@ namespace Forum
 
             boost::optional<size_t> findRankByCreated(IdTypeRef messageId) const
             {
-                auto idIt = byId_.find(messageId);
+                const auto idIt = byId_.find(messageId);
                 if (idIt == byId_.end())
                 {
                     return{};
                 }
-                auto range = byCreated_.equal_range(*idIt);
+                const auto range = byCreated_.equal_range(*idIt);
                 for (auto it = range.first; it != range.second; ++it)
                 {
                     if (*it == *idIt)
@@ -107,12 +107,12 @@ namespace Forum
 
             boost::optional<size_t> findRankByCreated(IdTypeRef messageId) const
             {
-                auto idIt = byId_.find(messageId);
+                const auto idIt = byId_.find(messageId);
                 if (idIt == byId_.end())
                 {
                     return{};
                 }
-                auto range = byCreated_.equal_range(*idIt);
+                const auto range = byCreated_.equal_range(*idIt);
                 for (auto it = range.first; it != range.second; ++it)
                 {
                     if (*it == *idIt)

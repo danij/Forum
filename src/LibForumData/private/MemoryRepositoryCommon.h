@@ -103,7 +103,7 @@ namespace Forum
                                              boost::optional<int_fast32_t> maximumLength,
                                              Fn&& extraValidation)
             {
-                auto initialResult = validateString(string, emptyValidation, minimumLength, maximumLength);
+                const auto initialResult = validateString(string, emptyValidation, minimumLength, maximumLength);
                 if (StatusCode::OK != initialResult)
                 {
                     return initialResult;
@@ -121,8 +121,7 @@ namespace Forum
 
         inline ObserverContext_ createObserverContext(PerformedByType performedBy)
         {
-            return ObserverContext_(performedBy, Context::getCurrentTime(), Context::getDisplayContext(),
-                                    Context::getCurrentUserIpAddress());
+            return { performedBy, Context::getCurrentTime(), Context::getDisplayContext(), Context::getCurrentUserIpAddress() };
         }
 
         template<typename Entity, typename ByType>

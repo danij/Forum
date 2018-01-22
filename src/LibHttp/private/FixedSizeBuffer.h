@@ -284,7 +284,7 @@ namespace Http
                 {
                     if ((currentIndex_ < 0) || (bufferArray_->latestBuffer_ < 0) || (currentIndex_ > bufferArray_->latestBuffer_))
                     {
-                        return boost::asio::const_buffer(nullptr, 0);
+                        return {nullptr, 0};
                     }
                     if (currentIndex_ < bufferArray_->latestBuffer_)
                     {

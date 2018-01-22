@@ -126,7 +126,7 @@ namespace Forum
 
         inline size_t blobPaddingRequired(size_t size)
         {
-            auto sizeMultiple = (size / BlobPaddingBytes) * BlobPaddingBytes;
+            const auto sizeMultiple = (size / BlobPaddingBytes) * BlobPaddingBytes;
             if (sizeMultiple < size)
             {
                 return BlobPaddingBytes - (size - sizeMultiple);

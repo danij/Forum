@@ -44,7 +44,7 @@ bool Json::isEscapeNeeded(const char* value, size_t length)
 {
     for (size_t i = 0; i < length; ++i)
     {
-        auto c = static_cast<unsigned char>(value[i]);
+        const auto c = static_cast<unsigned char>(value[i]);
         if (c < toEscapeLength)
         {
             if(toEscape[c])

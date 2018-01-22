@@ -78,7 +78,7 @@ void HttpResponseBuilder::writeResponseCode(int majorVersion, int minorVersion, 
     buffer[5] = majorVersion + '0';
     buffer[7] = minorVersion + '0';
 
-    int intCode = static_cast<int>(code);
+    const int intCode = static_cast<int>(code);
     buffer[9] = (intCode / 100) + '0';
     buffer[10] = ((intCode / 10) % 10) + '0';
     buffer[11] = (intCode % 100) + '0';
@@ -108,7 +108,7 @@ void HttpResponseBuilder::writeHeader(HttpStringView name, HttpStringView value)
 void HttpResponseBuilder::writeHeader(HttpStringView name, int value)
 {
     char buffer[50];
-    auto written = sprintf(buffer, "%d", value);
+    const auto written = sprintf(buffer, "%d", value);
     writeHeader(name, HttpStringView(buffer, written));
 }
 

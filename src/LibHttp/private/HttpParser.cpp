@@ -114,8 +114,9 @@ static HttpVerb parseHttpVerb(char* buffer, size_t size)
     case 6:
         if (matchStringUpperOrLower(buffer, "DdEeLlEeTtEe")) return HttpVerb::DELETE;
         break;
+    default: 
+        return HttpVerb::UNKNOWN;
     }
-    return HttpVerb::UNKNOWN;
 }
 
 void Parser::parseVerb(char*& buffer, size_t& size)
@@ -149,7 +150,7 @@ void Parser::parseVersion(char*& buffer, size_t& size)
 {
     if ( ! copyUntil('\r', buffer, size, valid_, errorCode_, headerBuffer_, headerSize_, headerBufferSize_)) return;
 
-    auto versionSize = headerBuffer_ + headerSize_ - 1 - parseVersionStartsAt_;
+    const auto versionSize = headerBuffer_ + headerSize_ - 1 - parseVersionStartsAt_;
     if (versionSize != 8) //e.g. HTTP/1.1
     {
         valid_ = false;
@@ -203,8 +204,8 @@ void Parser::parseNewLine(char*& buffer, size_t& size)
             return;
         }
 
-        if (request_.headers[Request::HttpHeader::Transfer_Encoding].size()
-            || request_.headers[Request::HttpHeader::Content_Encoding].size())
+        if ( ! request_.headers[Request::HttpHeader::Transfer_Encoding].empty()
+            || ! request_.headers[Request::HttpHeader::Content_Encoding].empty())
         {
             valid_ = false;
             errorCode_ = HttpStatusCode::Not_Implemented;
@@ -272,7 +273,7 @@ void Parser::parseHeaderValue(char*& buffer, size_t& size)
                                               headerBuffer_ + headerSize_ - 1 - parseHeaderValueStartsAt_);
 
     currentParser_ = &Parser::parseNewLine;
-    auto currentHeader = Request::matchHttpHeader(parseCurrentHeaderName_.data(), parseCurrentHeaderName_.size());
+    const auto currentHeader = Request::matchHttpHeader(parseCurrentHeaderName_.data(), parseCurrentHeaderName_.size());
     if (currentHeader)
     {
         request_.headers[currentHeader] = parseCurrentHeaderValue_;
@@ -323,7 +324,7 @@ void Parser::interpretImportantHeaders()
                                                            connectionHeaderString.size(),
                                                            "kKeEeEpP--aAlLiIvVeE");
 
-    if (request_.headers[Request::HttpHeader::Expect].size())
+    if ( ! request_.headers[Request::HttpHeader::Expect].empty())
     {
         //no need to support such requests for the moment
         valid_ = false;
@@ -337,7 +338,7 @@ void Parser::interpretImportantHeaders()
 void Parser::interpretPathString()
 {
     int state = 0;
-    auto pathStart = parsePathStartsAt_;
+    const auto pathStart = parsePathStartsAt_;
     char c;
     int keyStart = 0, keyEnd = 0, valueStart = 0, valueEnd = 0;
     for (int i = 0, n = static_cast<int>(request_.path.size()); i < n; ++i)
@@ -383,7 +384,7 @@ void Parser::interpretPathString()
 void Parser::interpretCookies(char* value, int size)
 {
     int state = 0;
-    auto cookieStart = value;
+    const auto cookieStart = value;
     int nameStart = 0, nameEnd = 0, valueStart = 0, valueEnd = 0;
 
     for (int i = 0; i < size; ++i)

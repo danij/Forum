@@ -29,7 +29,7 @@ using namespace Forum::Helpers;
 
 AbstractEndpoint::AbstractEndpoint(CommandHandler& handler) : commandHandler_(handler)
 {
-    auto config = Configuration::getGlobalConfig();
+    const auto config = Configuration::getGlobalConfig();
     prefix_ = config->service.responsePrefix;
 }
 
@@ -132,7 +132,7 @@ void AbstractEndpoint::handleInternal(Http::RequestState& requestState, StringVi
     currentParameters.clear();
     updateContextForRequest(requestState.request);
 
-    auto result = executeCommand(requestState, commandHandler_, currentParameters);
+    const auto result = executeCommand(requestState, commandHandler_, currentParameters);
 
     requestState.response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
     requestState.response.writeHeader("Cache-Control", "no-cache, no-store, must-revalidate");

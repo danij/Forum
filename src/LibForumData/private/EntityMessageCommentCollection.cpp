@@ -31,7 +31,7 @@ bool MessageCommentCollection::add(MessageCommentPtr comment)
 bool MessageCommentCollection::remove(MessageCommentPtr comment)
 {
     {
-        auto itById = byId_.find(comment->id());
+        const auto itById = byId_.find(comment->id());
         if (itById == byId_.end()) return false;
 
         byId_.erase(itById);
@@ -52,7 +52,7 @@ bool MessageCommentCollectionLowMemory::add(MessageCommentPtr comment)
 bool MessageCommentCollectionLowMemory::remove(MessageCommentPtr comment)
 {
     {
-        auto itById = byId_.find(comment->id());
+        const auto itById = byId_.find(comment->id());
         if (itById == byId_.end()) return false;
 
         byId_.erase(itById);

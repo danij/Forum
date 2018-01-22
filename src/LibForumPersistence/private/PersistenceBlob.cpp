@@ -30,8 +30,5 @@ Blob::Blob(size_t size) : buffer(new char[size]), size(size)
 
 void Blob::free(Blob& blob)
 {
-    if (blob.buffer)
-    {
-        delete[] blob.buffer;
-    }
+    delete[] blob.buffer;
 }

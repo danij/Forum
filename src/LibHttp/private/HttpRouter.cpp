@@ -31,7 +31,7 @@ const size_t HttpRouter::FirstIndexMaxValue;
 
 void RequestState::extractExtraPathParts(size_t nrOfPathCharactersUsedInRoute)
 {
-    auto path = request.path.data();
+    const auto path = request.path.data();
     if (nrOfPathCharactersUsedInRoute > 0 && path[nrOfPathCharactersUsedInRoute - 1] != '/'
         && request.path.size() > nrOfPathCharactersUsedInRoute)
     {
@@ -51,7 +51,7 @@ void RequestState::extractExtraPathParts(size_t nrOfPathCharactersUsedInRoute)
             currentPartStartIndex = i + 1;
         }
     }
-    auto lastPartLength = request.path.size() - currentPartStartIndex;
+    const auto lastPartLength = request.path.size() - currentPartStartIndex;
     if ((lastPartLength > 0) && (lastPartLength <= request.path.size()))
     {
         extraPathParts[nrOfExtraPathParts++] = HttpStringView(path + currentPartStartIndex, lastPartLength);
@@ -69,7 +69,7 @@ static void writeNotFound(const HttpRequest& request, HttpResponseBuilder& respo
 
 static uint8_t getFirstIndexForRoutes(const char* path, size_t length)
 {
-    auto firstChar = length > 0 ? static_cast<uint8_t>(path[0]) : 0;
+    const auto firstChar = length > 0 ? static_cast<uint8_t>(path[0]) : 0;
     return firstChar % HttpRouter::FirstIndexMaxValue;
 }
 

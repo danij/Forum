@@ -112,7 +112,7 @@ namespace Forum
             {
                 if (upVotes_)
                 {
-                    auto it = upVotes_->find(user);
+                    const auto it = upVotes_->find(user);
                     if (it != upVotes_->end())
                     {
                         return it->second;
@@ -120,7 +120,7 @@ namespace Forum
                 }
                 if (downVotes_)
                 {
-                    auto it = downVotes_->find(user);
+                    const auto it = downVotes_->find(user);
                     if (it != downVotes_->end())
                     {
                         return it->second;

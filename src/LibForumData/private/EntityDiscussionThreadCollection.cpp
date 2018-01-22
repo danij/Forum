@@ -156,7 +156,7 @@ bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
         return false;
     }
 
-    auto result = DiscussionThreadCollectionBase::add(thread);
+    const auto result = DiscussionThreadCollectionBase::add(thread);
     finishCountChange();
     return result;
 }
@@ -165,7 +165,7 @@ bool DiscussionThreadCollectionWithHashedId::remove(DiscussionThreadPtr thread)
 {
     prepareCountChange();
     {
-        auto itById = byId_.find(thread->id());
+        const auto itById = byId_.find(thread->id());
         if (itById == byId_.end())
         {
             finishCountChange();
@@ -174,7 +174,7 @@ bool DiscussionThreadCollectionWithHashedId::remove(DiscussionThreadPtr thread)
 
         byId_.erase(itById);
     }
-    auto result = DiscussionThreadCollectionBase::remove(thread);
+    const auto result = DiscussionThreadCollectionBase::remove(thread);
     finishCountChange();
     return result;
 }
@@ -186,7 +186,7 @@ bool DiscussionThreadCollectionWithHashedId::contains(DiscussionThreadPtr thread
 
 void DiscussionThreadCollectionWithHashedId::iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback)
 {
-    for (auto ptr : byId())
+    for (const auto ptr : byId())
     {
         callback(ptr);
     }
@@ -271,7 +271,7 @@ bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::add(Discussion
 void DiscussionThreadCollectionWithReferenceCountAndMessageCount::add(
         const DiscussionThreadCollectionWithReferenceCountAndMessageCount& collection)
 {
-    for (auto pair : collection.referenceCount_)
+    for (const auto pair : collection.referenceCount_)
     {
         add(pair.first, pair.second);
     }
@@ -281,7 +281,7 @@ void DiscussionThreadCollectionWithReferenceCountAndMessageCount::decreaseRefere
 {
     assert(thread);
 
-    auto it = referenceCount_.find(thread);
+    const auto it = referenceCount_.find(thread);
     if (it == referenceCount_.end())
     {
         return;
@@ -299,7 +299,7 @@ void DiscussionThreadCollectionWithReferenceCountAndMessageCount::decreaseRefere
 {
     std::vector<DiscussionThreadPtr> toRemove;
 
-    for (auto pair : collection.referenceCount_)
+    for (const auto pair : collection.referenceCount_)
     {
         auto it = referenceCount_.find(pair.first);
         if (it == referenceCount_.end()) continue;
@@ -310,7 +310,7 @@ void DiscussionThreadCollectionWithReferenceCountAndMessageCount::decreaseRefere
         }
     }
 
-    for (auto thread : toRemove)
+    for (const auto thread : toRemove)
     {
         referenceCount_.erase(thread);
     }
@@ -320,7 +320,7 @@ bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::remove(Discuss
 {
     assert(thread);
     {
-        auto itById = byId_.find(thread->id());
+        const auto itById = byId_.find(thread->id());
         if (itById == byId_.end()) return false;
 
         byId_.erase(itById);
@@ -373,7 +373,7 @@ void DiscussionThreadCollectionWithReferenceCountAndMessageCount::updateLatestMe
 DiscussionThreadMessagePtr DiscussionThreadCollectionWithReferenceCountAndMessageCount::latestMessage() const
 {
     auto& index = byLatestMessageCreated_;
-    if ( ! index.size())
+    if (index.empty())
     {
         return nullptr;
     }
@@ -417,7 +417,7 @@ bool DiscussionThreadCollectionLowMemory::remove(DiscussionThreadPtr thread)
 {
     prepareCountChange();
     {
-        auto itById = byId_.find(thread->id());
+        const auto itById = byId_.find(thread->id());
         if (itById == byId_.end())
         {
             finishCountChange();

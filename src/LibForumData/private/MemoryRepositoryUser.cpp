@@ -45,7 +45,7 @@ static thread_local std::unique_ptr<UChar32[]> validUserNameBuffer32(new UChar32
 static bool isValidUserName(StringView input)
 {
     //"^[[:alnum:]]+[ _-]*[[:alnum:]]+$"
-    if (input.size() < 1)
+    if (input.empty())
     {
         return false;
     }
@@ -53,13 +53,13 @@ static bool isValidUserName(StringView input)
     int32_t written;
     UErrorCode errorCode{};
 
-    auto u16Chars = u_strFromUTF8Lenient(validUserNameBuffer16.get(), MaxNrOfUserNameChars16, &written,
-                                         input.data(), input.size(), &errorCode);
+    const auto u16Chars = u_strFromUTF8Lenient(validUserNameBuffer16.get(), MaxNrOfUserNameChars16, &written,
+                                               input.data(), input.size(), &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     errorCode = {};
-    auto u32Chars = u_strToUTF32(validUserNameBuffer32.get(), MaxNrOfUserNameChars32, &written,
-                                 u16Chars, written, &errorCode);
+    const auto u32Chars = u_strToUTF32(validUserNameBuffer32.get(), MaxNrOfUserNameChars32, &written,
+                                       u16Chars, written, &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     if ((u_isalnum(u32Chars[0]) == FALSE) || (u_isalnum(u32Chars[written - 1]) == FALSE))
@@ -83,7 +83,7 @@ static bool isValidUserName(StringView input)
 MemoryRepositoryUser::MemoryRepositoryUser(MemoryStoreRef store, UserAuthorizationRef authorization,
                                            AuthorizationRepositoryRef authorizationRepository)
     : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization)),
-      authorizationRepository_(authorizationRepository)
+      authorizationRepository_(std::move(authorizationRepository))
 {
     if ( ! authorization_)
     {
@@ -462,15 +462,15 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
 {
     StatusWriter status(output);
 
-    if (auth.size() < 1)
+    if (auth.empty())
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->user.minNameLength, config->user.maxNameLength,
-                                         isValidUserName);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                               config->user.minNameLength, config->user.maxNameLength,
+                                               isValidUserName);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -562,10 +562,10 @@ StatusWithResource<UserPtr> MemoryRepositoryUser::addNewUser(EntityCollection& c
 StatusCode MemoryRepositoryUser::changeUserName(IdTypeRef id, StringView newName, OutStream& output)
 {
     StatusWriter status(output);
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->user.minNameLength, config->user.maxNameLength,
-                                         isValidUserName);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                               config->user.minNameLength, config->user.maxNameLength,
+                                               isValidUserName);
 
     if (validationCode != StatusCode::OK)
     {
@@ -614,7 +614,7 @@ StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, Id
 StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, IdTypeRef id, User::NameType&& newName)
 {
     auto& indexById = collection.users().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
@@ -638,9 +638,9 @@ StatusCode MemoryRepositoryUser::changeUserInfo(IdTypeRef id, StringView newInfo
 {
     StatusWriter status(output);
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(newInfo, ALLOW_EMPTY_STRING,
-                                         config->user.minInfoLength, config->user.maxInfoLength);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(newInfo, ALLOW_EMPTY_STRING,
+                                               config->user.minInfoLength, config->user.maxInfoLength);
 
     if (validationCode != StatusCode::OK)
     {
@@ -676,7 +676,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(IdTypeRef id, StringView newInfo
 StatusCode MemoryRepositoryUser::changeUserInfo(EntityCollection& collection, IdTypeRef id, StringView newInfo)
 {
     auto& indexById = collection.users().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
@@ -693,9 +693,9 @@ StatusCode MemoryRepositoryUser::changeUserTitle(IdTypeRef id, StringView newTit
 {
     StatusWriter status(output);
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(newTitle, ALLOW_EMPTY_STRING,
-                                         config->user.minTitleLength, config->user.maxTitleLength);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(newTitle, ALLOW_EMPTY_STRING,
+                                               config->user.minTitleLength, config->user.maxTitleLength);
 
     if (validationCode != StatusCode::OK)
     {
@@ -731,7 +731,7 @@ StatusCode MemoryRepositoryUser::changeUserTitle(IdTypeRef id, StringView newTit
 StatusCode MemoryRepositoryUser::changeUserTitle(EntityCollection& collection, IdTypeRef id, StringView newTitle)
 {
     auto& indexById = collection.users().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
@@ -748,9 +748,9 @@ StatusCode MemoryRepositoryUser::changeUserSignature(IdTypeRef id, StringView ne
 {
     StatusWriter status(output);
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(newSignature, ALLOW_EMPTY_STRING,
-                                         config->user.minSignatureLength, config->user.maxSignatureLength);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(newSignature, ALLOW_EMPTY_STRING,
+                                               config->user.minSignatureLength, config->user.maxSignatureLength);
 
     if (validationCode != StatusCode::OK)
     {
@@ -786,7 +786,7 @@ StatusCode MemoryRepositoryUser::changeUserSignature(IdTypeRef id, StringView ne
 StatusCode MemoryRepositoryUser::changeUserSignature(EntityCollection& collection, IdTypeRef id, StringView newSignature)
 {
     auto& indexById = collection.users().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
@@ -803,9 +803,9 @@ StatusCode MemoryRepositoryUser::changeUserLogo(IdTypeRef id, StringView newLogo
 {
     StatusWriter status(output);
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateImage(newLogo, config->user.maxLogoBinarySize, config->user.maxLogoWidth,
-                                        config->user.maxLogoHeight);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateImage(newLogo, config->user.maxLogoBinarySize, config->user.maxLogoWidth,
+                                              config->user.maxLogoHeight);
 
     if (validationCode != StatusCode::OK)
     {
@@ -841,7 +841,7 @@ StatusCode MemoryRepositoryUser::changeUserLogo(IdTypeRef id, StringView newLogo
 StatusCode MemoryRepositoryUser::changeUserLogo(EntityCollection& collection, IdTypeRef id, StringView newLogo)
 {
     auto& indexById = collection.users().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
@@ -887,7 +887,7 @@ StatusCode MemoryRepositoryUser::deleteUserLogo(IdTypeRef id, OutStream& output)
 StatusCode MemoryRepositoryUser::deleteUserLogo(EntityCollection& collection, IdTypeRef id)
 {
     auto& indexById = collection.users().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
@@ -935,7 +935,7 @@ StatusCode MemoryRepositoryUser::deleteUser(IdTypeRef id, OutStream& output)
 StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdTypeRef id)
 {
     auto& indexById = collection.users().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);

@@ -42,6 +42,7 @@ namespace Forum
             IpAddress(const boost::asio::ip::address& value);
             IpAddress(const char* string);
             explicit IpAddress(const uint8_t* dataArray);
+            ~IpAddress() = default;
 
             IpAddress(const IpAddress&) = default;
             IpAddress(IpAddress&&) = default;

@@ -85,7 +85,7 @@ static thread_local size_t CurrentSortKeyLength;
 
 size_t Forum::Helpers::calculateSortKey(StringView view)
 {
-    if (view.size() < 1)
+    if (view.empty())
     {
         SortKeyGenerationDestinationBuffer.get()[0] = 0;
         return CurrentSortKeyLength = 1;
@@ -96,7 +96,7 @@ size_t Forum::Helpers::calculateSortKey(StringView view)
         throw new std::runtime_error("String for which a sort key is to be generated is too big");
     }
 
-    auto stringLength = view.size();
+    const auto stringLength = view.size();
 
     int32_t u16Written{};
     UErrorCode errorCode{};

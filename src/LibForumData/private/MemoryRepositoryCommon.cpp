@@ -54,7 +54,7 @@ PerformedByWithLastSeenUpdateGuard::~PerformedByWithLastSeenUpdateGuard()
 PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& collection, const MemoryStore& store)
 {
     const auto& index = collection.users().byId();
-    auto it = index.find(Context::getCurrentUserId());
+    const auto it = index.find(Context::getCurrentUserId());
     if (it == index.end())
     {
         return *anonymousUser();
@@ -95,7 +95,7 @@ UserPtr PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
         return result;
     }
 
-    auto now = Context::getCurrentTime();
+    const auto now = Context::getCurrentTime();
 
     if ((result->lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
     {
@@ -107,7 +107,7 @@ UserPtr PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
 UserPtr Repository::getCurrentUser(EntityCollection& collection)
 {
     const auto& index = collection.users().byId();
-    auto it = index.find(Context::getCurrentUserId());
+    const auto it = index.find(Context::getCurrentUserId());
     if (it == index.end())
     {
         return anonymousUser();
@@ -125,7 +125,7 @@ StatusCode MemoryRepositoryBase::validateString(StringView string,
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    auto nrCharacters = countUTF8Characters(string);
+    const auto nrCharacters = countUTF8Characters(string);
     if (maximumLength && (nrCharacters > *maximumLength))
     {
         return StatusCode::VALUE_TOO_LONG;
@@ -140,7 +140,7 @@ StatusCode MemoryRepositoryBase::validateString(StringView string,
 
 bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView& input)
 {
-    if (input.size() < 1)
+    if (input.empty())
     {
         return true;
     }
@@ -155,18 +155,18 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
     auto firstCharView = getFirstCharacterInUTF8Array(input);
     auto lastCharView = getLastCharacterInUTF8Array(input);
 
-    auto nrOfFirstCharBytes = std::min(static_cast<StringView::size_type>(4), firstCharView.size());
-    auto nrOfLastCharBytes = std::min(static_cast<StringView::size_type>(4), lastCharView.size());
+    const auto nrOfFirstCharBytes = std::min(static_cast<StringView::size_type>(4), firstCharView.size());
+    const auto nrOfLastCharBytes = std::min(static_cast<StringView::size_type>(4), lastCharView.size());
 
     std::copy(firstCharView.data(), firstCharView.data() + nrOfFirstCharBytes, firstLastUtf8);
     std::copy(lastCharView.data(), lastCharView.data() + nrOfLastCharBytes, firstLastUtf8 + nrOfFirstCharBytes);
 
-    auto u16Chars = u_strFromUTF8(temp, std::extent<decltype(temp)>::value, &written,
-                                  firstLastUtf8, nrOfFirstCharBytes + nrOfLastCharBytes, &errorCode);
+    const auto u16Chars = u_strFromUTF8(temp, std::extent<decltype(temp)>::value, &written,
+                                        firstLastUtf8, nrOfFirstCharBytes + nrOfLastCharBytes, &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     errorCode = {};
-    auto u32Chars = u_strToUTF32(u32Buffer, 2, &written, u16Chars, written, &errorCode);
+    const auto u32Chars = u_strToUTF32(u32Buffer, 2, &written, u16Chars, written, &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     return (u_isUWhiteSpace(u32Chars[0]) == FALSE) && (u_isUWhiteSpace(u32Chars[1]) == FALSE);
@@ -177,11 +177,11 @@ static boost::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView con
     static const unsigned char PNGStart[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
     static const unsigned char PNGIHDR[] = { 0x49, 0x48, 0x44, 0x52 };
 
-    auto requiredSize = std::extent<decltype(PNGStart)>::value
-                        + 4  //size
-                        + std::extent<decltype(PNGIHDR)>::value
-                        + 4  //width
-                        + 4; //height
+    const auto requiredSize = std::extent<decltype(PNGStart)>::value
+                              + 4  //size
+                              + std::extent<decltype(PNGIHDR)>::value
+                              + 4  //width
+                              + 4; //height
 
     if (content.size() < requiredSize)
     {
@@ -217,7 +217,7 @@ static boost::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView con
 StatusCode MemoryRepositoryBase::validateImage(StringView content, uint_fast32_t maxBinarySize, uint_fast32_t maxWidth,
                                                uint_fast32_t maxHeight)
 {
-    if (content.size() < 1)
+    if (content.empty())
     {
         return StatusCode::VALUE_TOO_SHORT;
     }

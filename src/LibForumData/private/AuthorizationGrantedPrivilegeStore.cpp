@@ -37,7 +37,7 @@ void GrantedPrivilegeStore::grantDiscussionThreadMessagePrivilege(IdTypeRef user
 {
     if (0 == value)
     {
-        IdTuple toSearch{ userId, entityId };
+        const IdTuple toSearch{ userId, entityId };
         discussionThreadMessageSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityId>().erase(toSearch);
         return;
     }
@@ -50,7 +50,7 @@ void GrantedPrivilegeStore::grantDiscussionThreadPrivilege(IdTypeRef userId, IdT
 {
     if (0 == value)
     {
-        IdTuple toSearch{ userId, entityId };
+        const IdTuple toSearch{ userId, entityId };
         discussionThreadSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityId>().erase(toSearch);
         return;
     }
@@ -63,7 +63,7 @@ void GrantedPrivilegeStore::grantDiscussionTagPrivilege(IdTypeRef userId, IdType
 {
     if (0 == value)
     {
-        IdTuple toSearch{ userId, entityId };
+        const IdTuple toSearch{ userId, entityId };
         discussionTagSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityId>().erase(toSearch);
         return;
     }
@@ -76,7 +76,7 @@ void GrantedPrivilegeStore::grantDiscussionCategoryPrivilege(IdTypeRef userId, I
 {
     if (0 == value)
     {
-        IdTuple toSearch{ userId, entityId };
+        const IdTuple toSearch{ userId, entityId };
         discussionCategorySpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityId>().erase(toSearch);
         return;
     }
@@ -89,7 +89,7 @@ void GrantedPrivilegeStore::grantForumWidePrivilege(IdTypeRef userId, IdTypeRef 
 {
     if (0 == value)
     {
-        IdTuple toSearch{ userId, entityId };
+        const IdTuple toSearch{ userId, entityId };
         forumWideSpecificPrivileges_.get<PrivilegeEntryCollectionByUserIdEntityId>().erase(toSearch);
         return;
     }
@@ -103,8 +103,8 @@ static PrivilegeValueIntType getEffectivePrivilegeValue(PrivilegeValueType posit
 
 static PrivilegeValueType isAllowed(PrivilegeValueType positive, PrivilegeValueType negative, PrivilegeValueType required)
 {
-    auto effectivePrivilegeValue = getEffectivePrivilegeValue(positive, negative);
-    auto requiredPrivilegeValue = optionalOrZero(required);
+    const auto effectivePrivilegeValue = getEffectivePrivilegeValue(positive, negative);
+    const auto requiredPrivilegeValue = optionalOrZero(required);
 
     return (effectivePrivilegeValue >= requiredPrivilegeValue) ? effectivePrivilegeValue : PrivilegeValueType{};
 }
@@ -304,8 +304,8 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
         PrivilegeValueType messageLevelPositive, messageLevelNegative;
         calculateDiscussionThreadMessagePrivilege(item.userId, *item.message, now,
                                                   messageLevelPositive, messageLevelNegative);
-        auto positive = maximumPrivilegeValue(messageLevelPositive, threadLevelPositive);
-        auto negative = minimumPrivilegeValue(messageLevelNegative, threadLevelNegative);
+        const auto positive = maximumPrivilegeValue(messageLevelPositive, threadLevelPositive);
+        const auto negative = minimumPrivilegeValue(messageLevelNegative, threadLevelNegative);
 
         for (auto& info : threadValues)
         {
@@ -379,7 +379,7 @@ void GrantedPrivilegeStore::calculatePrivilege(const PrivilegeEntryCollection& c
                                                IdTypeRef entityId, Timestamp now, PrivilegeValueType& positiveValue,
                                                PrivilegeValueType& negativeValue) const
 {
-    IdTuple toSearch{ userId, entityId };
+    const IdTuple toSearch{ userId, entityId };
     auto range = collection.get<PrivilegeEntryCollectionByUserIdEntityId>().equal_range(toSearch);
 
     positiveValue = (userId == anonymousUserId())
@@ -388,10 +388,10 @@ void GrantedPrivilegeStore::calculatePrivilege(const PrivilegeEntryCollection& c
 
     for (auto& entry : boost::make_iterator_range(range))
     {
-        auto expiresAt = entry.expiresAt();
+        const auto expiresAt = entry.expiresAt();
         if ((expiresAt > 0) && (expiresAt < now)) continue;
 
-        auto value = entry.privilegeValue();
+        const auto value = entry.privilegeValue();
 
         if (value > 0)
         {
@@ -448,7 +448,7 @@ void GrantedPrivilegeStore::enumerateDiscussionCategoryPrivileges(IdTypeRef id, 
     }
 }
 
-void GrantedPrivilegeStore::enumerateForumWidePrivileges(IdTypeRef _, EnumerationCallback&& callback) const
+void GrantedPrivilegeStore::enumerateForumWidePrivileges(IdTypeRef id, EnumerationCallback&& callback) const
 {
     auto range = forumWideSpecificPrivileges_.get<PrivilegeEntryCollectionByEntityId>().equal_range(IdType{});
 

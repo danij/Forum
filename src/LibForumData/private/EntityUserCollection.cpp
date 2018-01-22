@@ -41,17 +41,17 @@ bool UserCollection::add(UserPtr user)
 bool UserCollection::remove(UserPtr user)
 {
     {
-        auto itById = byId_.find(user->id());
+        const auto itById = byId_.find(user->id());
         if (itById == byId_.end()) return false;
 
         byId_.erase(itById);
     }
     {
-        auto itByAuth = byAuth_.find(user->auth());
+        const auto itByAuth = byAuth_.find(user->auth());
         if (itByAuth != byAuth_.end()) byAuth_.erase(itByAuth);
     }
     {
-        auto itByName = byName_.find(user->name());
+        const auto itByName = byName_.find(user->name());
         if (itByName != byName_.end()) byName_.erase(itByName);
     }
     eraseFromNonUniqueCollection(byCreated_, user, user->created());
@@ -71,19 +71,19 @@ void UserCollection::stopBatchInsert()
     if ( ! Context::isBatchInsertInProgress()) return;
 
     byLastSeen_.clear();
-    for (UserPtr user : byId_)
+    for (const UserPtr user : byId_)
     {
         byLastSeen_.insert(user);
     }
 
     byThreadCount_.clear();
-    for (UserPtr user : byId_)
+    for (const UserPtr user : byId_)
     {
         byThreadCount_.insert(user);
     }
 
     byMessageCount_.clear();
-    for (UserPtr user : byId_)
+    for (const UserPtr user : byId_)
     {
         byMessageCount_.insert(user);
     }

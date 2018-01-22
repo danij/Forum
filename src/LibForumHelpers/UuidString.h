@@ -40,6 +40,7 @@ namespace Forum
             UuidString(const std::string& value);
             UuidString(boost::string_view value);
             explicit UuidString(const uint8_t* uuidArray);
+            ~UuidString() = default;
 
             UuidString(const UuidString&) = default;
             UuidString(UuidString&&) = default;
