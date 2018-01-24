@@ -114,9 +114,8 @@ static HttpVerb parseHttpVerb(char* buffer, size_t size)
     case 6:
         if (matchStringUpperOrLower(buffer, "DdEeLlEeTtEe")) return HttpVerb::DELETE;
         break;
-    default: 
-        return HttpVerb::UNKNOWN;
     }
+    return HttpVerb::UNKNOWN;
 }
 
 void Parser::parseVerb(char*& buffer, size_t& size)
