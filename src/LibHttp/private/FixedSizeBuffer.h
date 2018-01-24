@@ -94,7 +94,7 @@ namespace Http
             {
                 return;
             }
-            size_t index = value - &buffers_[0];
+            const size_t index = value - &buffers_[0];
             if (index >= maxBufferCount_)
             {
                 return;

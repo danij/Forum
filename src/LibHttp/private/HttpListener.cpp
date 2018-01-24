@@ -141,7 +141,7 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
             keepConnectionAlive_ = parser_.request().keepConnectionAlive;
 
             //add references to request content buffers
-            for (auto buffer : requestBodyBuffer_.constBufferWrapper())
+            for (const auto buffer : requestBodyBuffer_.constBufferWrapper())
             {
                 if (request.nrOfRequestContentBuffers >= request.requestContentBuffers.size())
                 {
@@ -156,12 +156,12 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
             {
                 static thread_local char nullTerminatedAddressBuffer[128];
                 auto xForwardedFor = request.headers[Http::Request::X_Forwarded_For];
-                auto toCopy = std::min(std::extent<decltype(nullTerminatedAddressBuffer)>::value - 1, xForwardedFor.size());
+                const auto toCopy = std::min(std::extent<decltype(nullTerminatedAddressBuffer)>::value - 1, xForwardedFor.size());
                 std::copy(xForwardedFor.data(), xForwardedFor.data() + toCopy, nullTerminatedAddressBuffer);
                 nullTerminatedAddressBuffer[toCopy] = 0;
 
                 boost::system::error_code parseAddressCode;
-                auto address = boost::asio::ip::address::from_string(nullTerminatedAddressBuffer, parseAddressCode);
+                const auto address = boost::asio::ip::address::from_string(nullTerminatedAddressBuffer, parseAddressCode);
                 if ( ! parseAddressCode)
                 {
                     request.remoteAddress = address;
@@ -268,7 +268,7 @@ private:
     boost::asio::io_service::strand strand_;
     ReadBufferType headerBuffer_;
     RequestBodyBufferType requestBodyBuffer_;
-    std::array<char, 1024> readBuffer_;
+    std::array<char, 1024> readBuffer_{};
     ResponseBufferType responseBuffer_;
     HttpResponseBuilder responseBuilder_;
     TimeoutManager<ConnectionInfo>& timeoutManager_;
@@ -347,10 +347,7 @@ HttpListener::HttpListener(Configuration config, HttpRouter& router, boost::asio
 
 HttpListener::~HttpListener()
 {
-    if (impl_)
-    {
-        delete impl_;
-    }
+    delete impl_;
 }
 
 void HttpListener::startListening()
