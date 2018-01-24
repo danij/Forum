@@ -54,7 +54,7 @@ static void closeSocket(boost::asio::ip::tcp::socket& socket)
 struct ConnectionInfo
 {
     boost::asio::ip::tcp::socket* socket;
-    boost::asio::strand* strand;
+    boost::asio::io_service::strand* strand;
 
     bool operator==(ConnectionInfo other) const
     {
@@ -65,13 +65,13 @@ struct ConnectionInfo
 inline size_t hash_value(const ConnectionInfo& value)
 {
     return std::hash<boost::asio::ip::tcp::socket*>{}(value.socket)
-        ^ std::hash<boost::asio::strand*>{}(value.strand);
+        ^ std::hash<boost::asio::io_service::strand*>{}(value.strand);
 }
 
 struct HttpListener::HttpConnection final : private boost::noncopyable
 {
     explicit HttpConnection(HttpListener& listener, boost::asio::ip::tcp::socket&& socket,
-                            boost::asio::strand&& strand, ReadBufferType&& headerBuffer,
+                            boost::asio::io_service::strand&& strand, ReadBufferType&& headerBuffer,
                             ReadBufferPoolType& readBufferPool, WriteBufferPoolType& writeBufferPool,
                             TimeoutManager<ConnectionInfo>& timeoutManager, bool trustIpFromXForwardedFor)
         : listener_(listener), socket_(std::move(socket)), strand_(std::move(strand)),
@@ -265,7 +265,7 @@ private:
 
     HttpListener& listener_;
     boost::asio::ip::tcp::socket socket_;
-    boost::asio::strand strand_;
+    boost::asio::io_service::strand strand_;
     ReadBufferType headerBuffer_;
     RequestBodyBufferType requestBodyBuffer_;
     std::array<char, 1024> readBuffer_;
@@ -328,7 +328,7 @@ struct HttpListener::HttpListenerImpl
     boost::asio::io_service& ioService;
     boost::asio::ip::tcp::acceptor acceptor;
     boost::asio::ip::tcp::socket socket;
-    boost::asio::strand strand;
+    boost::asio::io_service::strand strand;
     boost::asio::deadline_timer timeoutTimer;
 
     constexpr static int CheckTimeoutEverySeconds = 1;
