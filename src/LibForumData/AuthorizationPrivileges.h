@@ -80,6 +80,7 @@ namespace Forum
         {
             DiscussionThreadMessagePrivilege::UP_VOTE,
             DiscussionThreadMessagePrivilege::DOWN_VOTE,
+            DiscussionThreadMessagePrivilege::RESET_VOTE,
             DiscussionThreadMessagePrivilege::CHANGE_CONTENT,
             DiscussionThreadMessagePrivilege::DELETE
         };
