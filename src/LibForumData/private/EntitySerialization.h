@@ -60,6 +60,8 @@ namespace Forum
             boost::optional<bool> allowDisplayDiscussionThreadMessageIpAddress = boost::none;
             boost::optional<bool> allowDisplayDiscussionThreadMessageComments = boost::none;
 
+            UserPtr userToCheckVotesOf{};
+
             bool hideLatestMessage = false;
             bool hidePrivileges = false;
             bool onlySendCategoryParentId = false;

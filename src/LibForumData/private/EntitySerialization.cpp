@@ -192,11 +192,24 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         writeVisitDetails(writer, message.creationDetails());
     }
 
+    const auto& upVotes = message.upVotes();
+    const auto& downVotes = message.downVotes();
+
     if (allowViewVotes)
     {
-        writeVotes(writer, "upVotes", message.upVotes());
-        writeVotes(writer, "downVotes", message.downVotes());
+        writeVotes(writer, "upVotes", upVotes);
+        writeVotes(writer, "downVotes", downVotes);
     }
+    auto voteStatus = 0;
+    if (downVotes.find(serializationSettings.userToCheckVotesOf) != downVotes.end())
+    {
+        voteStatus = -1;
+    }
+    else if (upVotes.find(serializationSettings.userToCheckVotesOf) != upVotes.end())
+    {
+        voteStatus = 1;
+    }
+    writer << propertySafeName("voteStatus", voteStatus);
 
     if ( ! serializationSettings.hidePrivileges)
     {

@@ -202,6 +202,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
 
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageParentThread, true);
                           BoolTemporaryChanger __(serializationSettings.hideVisitedThreadSinceLastChange, true);
+                          TemporaryChanger<UserPtr> ___(serializationSettings.userToCheckVotesOf, currentUser.pointer());
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),

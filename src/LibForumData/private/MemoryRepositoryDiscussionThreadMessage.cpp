@@ -76,7 +76,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMultipleDiscussionThreadM
                           SerializationRestriction restriction(collection.grantedPrivileges(), 
                                                                currentUser.id(), Context::getCurrentTime());
 
-                          writeAllEntities(threadMessagesFound.begin(), lastThreadMessageFound, 
+                          TemporaryChanger<UserPtr> _(serializationSettings.userToCheckVotesOf, currentUser.pointer());
+
+                          writeAllEntities(threadMessagesFound.begin(), lastThreadMessageFound,
                                            "thread_messages", output, restriction);
                           
                           readEvents().onGetMultipleDiscussionThreadMessagesById(createObserverContext(currentUser), ids);
@@ -118,6 +120,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
         BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
+        TemporaryChanger<UserPtr> ____(serializationSettings.userToCheckVotesOf, currentUser.pointer());
 
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
         auto& displayContext = Context::getDisplayContext();
@@ -147,6 +150,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getLatestDiscussionThreadMes
 
         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
         BoolTemporaryChanger __(serializationSettings.hideLatestMessage, true);
+        TemporaryChanger<UserPtr> ___(serializationSettings.userToCheckVotesOf, currentUser.pointer());
 
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
 
