@@ -432,7 +432,7 @@ namespace Forum
         }
 
         inline PrivilegeDurationIntType calculatePrivilegeExpires(PrivilegeDurationIntType start,
-                                                                         PrivilegeDurationIntType duration)
+                                                                  PrivilegeDurationIntType duration)
         {
             static_assert(sizeof(PrivilegeDurationIntType) >= 8, "PrivilegeDurationIntType should be at least 64-bit wide");
 

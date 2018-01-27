@@ -30,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/interprocess/mapped_region.hpp>
 
 using namespace Forum::Authorization;
+using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 
@@ -601,6 +602,101 @@ IdType Forum::Entities::anonymousUserId()
     return anonymousUserId_;
 }
 
+static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
+{
+    const auto config = getGlobalConfig();
+    const auto& defaultPrivileges = config->defaultPrivileges;
+
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::VIEW,                  defaultPrivileges.threadMessage.view);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER,     defaultPrivileges.threadMessage.viewCreatorUser);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS,       defaultPrivileges.threadMessage.viewIpAddress);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::VIEW_VOTES,            defaultPrivileges.threadMessage.viewVotes);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::UP_VOTE,               defaultPrivileges.threadMessage.upVote);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::DOWN_VOTE,             defaultPrivileges.threadMessage.downVote);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::RESET_VOTE,            defaultPrivileges.threadMessage.resetVote);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::ADD_COMMENT,           defaultPrivileges.threadMessage.addComment);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::SET_COMMENT_TO_SOLVED, defaultPrivileges.threadMessage.setCommentToSolved);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS,  defaultPrivileges.threadMessage.getMessageComments);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::CHANGE_CONTENT,        defaultPrivileges.threadMessage.changeContent);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::DELETE,                defaultPrivileges.threadMessage.deleteThreadMessage);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::MOVE,                  defaultPrivileges.threadMessage.move);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE,      defaultPrivileges.threadMessage.adjustPrivilege);
+
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::VIEW,                     defaultPrivileges.thread.view);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::SUBSCRIBE,                defaultPrivileges.thread.subscribe);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::UNSUBSCRIBE,              defaultPrivileges.thread.unsubscribe);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::ADD_MESSAGE,              defaultPrivileges.thread.addMessage);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::CHANGE_NAME,              defaultPrivileges.thread.changeName);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER, defaultPrivileges.thread.changePinDisplayOrder);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::ADD_TAG,                  defaultPrivileges.thread.addTag);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::REMOVE_TAG,               defaultPrivileges.thread.removeTag);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::DELETE,                   defaultPrivileges.thread.deleteThread);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::MERGE,                    defaultPrivileges.thread.merge);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::ADJUST_PRIVILEGE,         defaultPrivileges.thread.adjustPrivilege);
+
+    store.setDiscussionTagPrivilege(DiscussionTagPrivilege::VIEW,                   defaultPrivileges.tag.view);
+    store.setDiscussionTagPrivilege(DiscussionTagPrivilege::GET_DISCUSSION_THREADS, defaultPrivileges.tag.getDiscussionThreads);
+    store.setDiscussionTagPrivilege(DiscussionTagPrivilege::CHANGE_NAME,            defaultPrivileges.tag.changeName);
+    store.setDiscussionTagPrivilege(DiscussionTagPrivilege::CHANGE_UIBLOB,          defaultPrivileges.tag.changeUiblob);
+    store.setDiscussionTagPrivilege(DiscussionTagPrivilege::DELETE,                 defaultPrivileges.tag.deleteTag);
+    store.setDiscussionTagPrivilege(DiscussionTagPrivilege::MERGE,                  defaultPrivileges.tag.merge);
+    store.setDiscussionTagPrivilege(DiscussionTagPrivilege::ADJUST_PRIVILEGE,       defaultPrivileges.tag.adjustPrivilege);
+
+    store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::VIEW,                   defaultPrivileges.category.view);
+    store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::GET_DISCUSSION_THREADS, defaultPrivileges.category.getDiscussionThreads);
+    store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::CHANGE_NAME,            defaultPrivileges.category.changeName);
+    store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::CHANGE_DESCRIPTION,     defaultPrivileges.category.changeDescription);
+    store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::CHANGE_PARENT,          defaultPrivileges.category.changeParent);
+    store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::CHANGE_DISPLAYORDER,    defaultPrivileges.category.changeDisplayorder);
+    store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::ADD_TAG,                defaultPrivileges.category.addTag);
+    store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::REMOVE_TAG,             defaultPrivileges.category.removeTag);
+    store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::DELETE,                 defaultPrivileges.category.deleteCategory);
+    store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::ADJUST_PRIVILEGE,       defaultPrivileges.category.adjustPrivilege);
+
+    store.setForumWidePrivilege(ForumWidePrivilege::ADD_USER,                                  defaultPrivileges.forumWide.addUser);
+    store.setForumWidePrivilege(ForumWidePrivilege::LOGIN,                                     defaultPrivileges.forumWide.login);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_ENTITIES_COUNT,                        defaultPrivileges.forumWide.getEntitiesCount);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_VERSION,                               defaultPrivileges.forumWide.getVersion);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_ALL_USERS,                             defaultPrivileges.forumWide.getAllUsers);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_USER_INFO,                             defaultPrivileges.forumWide.getUserInfo);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_DISCUSSION_THREADS_OF_USER,            defaultPrivileges.forumWide.getDiscussionThreadsOfUser);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_DISCUSSION_THREAD_MESSAGES_OF_USER,    defaultPrivileges.forumWide.getDiscussionThreadMessagesOfUser);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER, defaultPrivileges.forumWide.getSubscribedDiscussionThreadsOfUser);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_ALL_DISCUSSION_CATEGORIES,             defaultPrivileges.forumWide.getAllDiscussionCategories);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_DISCUSSION_CATEGORIES_FROM_ROOT,       defaultPrivileges.forumWide.getDiscussionCategoriesFromRoot);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_ALL_DISCUSSION_TAGS,                   defaultPrivileges.forumWide.getAllDiscussionTags);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_ALL_DISCUSSION_THREADS,                defaultPrivileges.forumWide.getAllDiscussionThreads);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_ALL_MESSAGE_COMMENTS,                  defaultPrivileges.forumWide.getAllMessageComments);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_MESSAGE_COMMENTS_OF_USER,              defaultPrivileges.forumWide.getMessageCommentsOfUser);
+    store.setForumWidePrivilege(ForumWidePrivilege::ADD_DISCUSSION_CATEGORY,                   defaultPrivileges.forumWide.addDiscussionCategory);
+    store.setForumWidePrivilege(ForumWidePrivilege::ADD_DISCUSSION_TAG,                        defaultPrivileges.forumWide.addDiscussionTag);
+    store.setForumWidePrivilege(ForumWidePrivilege::ADD_DISCUSSION_THREAD,                     defaultPrivileges.forumWide.addDiscussionThread);
+    store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_OWN_USER_NAME,                      defaultPrivileges.forumWide.changeOwnUserName);
+    store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_OWN_USER_INFO,                      defaultPrivileges.forumWide.changeOwnUserInfo);
+    store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_USER_NAME,                      defaultPrivileges.forumWide.changeAnyUserName);
+    store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_USER_INFO,                      defaultPrivileges.forumWide.changeAnyUserInfo);
+    store.setForumWidePrivilege(ForumWidePrivilege::DELETE_ANY_USER,                           defaultPrivileges.forumWide.deleteAnyUser);
+    store.setForumWidePrivilege(ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE,               defaultPrivileges.forumWide.adjustForumWidePrivilege);
+    store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_OWN_USER_TITLE,                     defaultPrivileges.forumWide.changeOwnUserTitle);
+    store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_USER_TITLE,                     defaultPrivileges.forumWide.changeAnyUserTitle);
+    store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_OWN_USER_SIGNATURE,                 defaultPrivileges.forumWide.changeOwnUserSignature);
+    store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_USER_SIGNATURE,                 defaultPrivileges.forumWide.changeAnyUserSignature);
+    store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_OWN_USER_LOGO,                      defaultPrivileges.forumWide.changeOwnUserLogo);
+    store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_USER_LOGO,                      defaultPrivileges.forumWide.changeAnyUserLogo);
+    store.setForumWidePrivilege(ForumWidePrivilege::DELETE_OWN_USER_LOGO,                      defaultPrivileges.forumWide.deleteOwnUserLogo);
+    store.setForumWidePrivilege(ForumWidePrivilege::DELETE_ANY_USER_LOGO,                      defaultPrivileges.forumWide.deleteAnyUserLogo);
+    store.setForumWidePrivilege(ForumWidePrivilege::GET_USER_VOTE_HISTORY,                     defaultPrivileges.forumWide.getUserVoteHistory);
+    store.setForumWidePrivilege(ForumWidePrivilege::NO_THROTTLING,                             defaultPrivileges.forumWide.noThrottling);
+
+    const auto& defaultPrivilegeGrants = config->defaultPrivilegeGrants;
+    {
+        PrivilegeDefaultLevel defaults;
+        defaults.value = defaultPrivilegeGrants.thread.create.value;
+        defaults.duration = defaultPrivilegeGrants.thread.create.duration;
+        store.setForumWideDefaultPrivilegeLevel(ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD, defaults);
+    }
+}
+
 EntityCollection::EntityCollection(StringView messagesFile)
 {
     impl_ = new Impl(messagesFile);
@@ -610,13 +706,15 @@ EntityCollection::EntityCollection(StringView messagesFile)
 
     anonymousUser_ = UserPtr(static_cast<UserPtr::IndexType>(impl_->managedEntities.users.add("<anonymous>")));
     anonymousUserId_ = anonymousUser_->id();
+
+    loadDefaultPrivilegeValues(*this);
 }
 
 EntityCollection::~EntityCollection()
 {
     Private::setGlobalEntityCollection(nullptr);
 
-    if (impl_) delete impl_;
+    delete impl_;
 }
 
 const GrantedPrivilegeStore& EntityCollection::grantedPrivileges() const

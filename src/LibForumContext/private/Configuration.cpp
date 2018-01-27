@@ -104,5 +104,89 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(persistence.validateChecksum);
     LOAD_CONFIG_VALUE(persistence.createNewOutputFileEverySeconds);
 
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.view);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewCreatorUser);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewIpAddress);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewVotes);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.upVote);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.downVote);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.resetVote);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.addComment);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.setCommentToSolved);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.getMessageComments);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.changeContent);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.deleteThreadMessage);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.move);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.adjustPrivilege);
+
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.view);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.subscribe);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.unsubscribe);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.addMessage);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.changeName);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.changePinDisplayOrder);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.addTag);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.removeTag);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.deleteThread);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.merge);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.adjustPrivilege);
+
+    LOAD_CONFIG_VALUE(defaultPrivileges.tag.view);
+    LOAD_CONFIG_VALUE(defaultPrivileges.tag.getDiscussionThreads);
+    LOAD_CONFIG_VALUE(defaultPrivileges.tag.changeName);
+    LOAD_CONFIG_VALUE(defaultPrivileges.tag.changeUiblob);
+    LOAD_CONFIG_VALUE(defaultPrivileges.tag.deleteTag);
+    LOAD_CONFIG_VALUE(defaultPrivileges.tag.merge);
+    LOAD_CONFIG_VALUE(defaultPrivileges.tag.adjustPrivilege);
+
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.view);
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.getDiscussionThreads);
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.changeName);
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.changeDescription);
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.changeParent);
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.changeDisplayorder);
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.addTag);
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.removeTag);
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.deleteCategory);
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.adjustPrivilege);
+
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.addUser);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.login);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getEntitiesCount);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getVersion);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getAllUsers);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getUserInfo);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getDiscussionThreadsOfUser);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getDiscussionThreadMessagesOfUser);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getSubscribedDiscussionThreadsOfUser);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getAllDiscussionCategories);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getDiscussionCategoriesFromRoot);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getAllDiscussionTags);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getAllDiscussionThreads);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getAllMessageComments);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getMessageCommentsOfUser);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.addDiscussionCategory);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.addDiscussionTag);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.addDiscussionThread);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeOwnUserName);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeOwnUserInfo);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserName);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserInfo);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteAnyUser);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.adjustForumWidePrivilege);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeOwnUserTitle);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserTitle);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeOwnUserSignature);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserSignature);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeOwnUserLogo);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserLogo);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteOwnUserLogo);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteAnyUserLogo);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getUserVoteHistory);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.noThrottling);
+    
+    LOAD_CONFIG_VALUE(defaultPrivilegeGrants.thread.create.value);
+    LOAD_CONFIG_VALUE(defaultPrivilegeGrants.thread.create.duration);
+
     setGlobalConfig(config);
 }
