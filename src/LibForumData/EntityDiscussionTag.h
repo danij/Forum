@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 
 #include <boost/noncopyable.hpp>
+#include <boost/container/flat_set.hpp>
 
 namespace Forum
 {
@@ -56,7 +57,6 @@ namespace Forum
 
                    auto lastUpdated()        const { return lastUpdated_; }
             const auto& lastUpdatedDetails() const { return lastUpdatedDetails_; }
-             StringView lastUpdatedReason()  const { return lastUpdatedReason_; }
                    auto lastUpdatedBy()      const { return lastUpdatedBy_.toConst(); }
 
                    auto threadCount()        const { return threads_.count(); }
@@ -111,7 +111,6 @@ namespace Forum
 
             auto& lastUpdated()        { return lastUpdated_; }
             auto& lastUpdatedDetails() { return lastUpdatedDetails_; }
-            auto& lastUpdatedReason()  { return lastUpdatedReason_; }
             auto& lastUpdatedBy()      { return lastUpdatedBy_; }
 
             auto& threads()            { return threads_; }
@@ -146,11 +145,10 @@ namespace Forum
 
             Timestamp lastUpdated_{0};
             VisitDetails lastUpdatedDetails_;
-            std::string lastUpdatedReason_;
             EntityPointer<User> lastUpdatedBy_;
 
             int_fast32_t messageCount_{0};
-            std::set<EntityPointer<DiscussionCategory>> categories_;
+            boost::container::flat_set<EntityPointer<DiscussionCategory>> categories_;
 
             Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
         };

@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -132,7 +132,7 @@ int Application::run(int argc, const char* argv[])
         return 1;
     }
 
-    auto configFileName = arguments["config"].as<std::string>();
+    const auto configFileName = arguments["config"].as<std::string>();
 
     if ( ! boost::filesystem::exists(configFileName))
     {
@@ -156,7 +156,7 @@ int Application::run(int argc, const char* argv[])
 
     events.onApplicationStart();
 
-    auto config = Configuration::getGlobalConfig();
+    const auto config = Configuration::getGlobalConfig();
 
     FORUM_LOG_INFO << "Starting to listen under "
                    << config->service.listenIPAddress << ":" << config->service.listenPort;
@@ -200,7 +200,7 @@ void Application::validateConfiguration()
 
 void Application::createCommandHandler()
 {
-    auto config = Configuration::getGlobalConfig();
+    const auto config = Configuration::getGlobalConfig();
     entityCollection_ = std::make_shared<Entities::EntityCollection>(config->persistence.messagesFile);
 
     auto store = std::make_shared<MemoryStore>(entityCollection_);
@@ -238,7 +238,7 @@ void Application::createCommandHandler()
     directWriteRepositories_.discussionCategory = discussionCategoryRepository;
     directWriteRepositories_.authorization = authorizationRepository;
 
-    auto forumConfig = Configuration::getGlobalConfig();
+    const auto forumConfig = Configuration::getGlobalConfig();
     auto& persistenceConfig = forumConfig->persistence;
 
     try
@@ -258,13 +258,13 @@ void Application::createCommandHandler()
 
 void Application::importEvents()
 {
-    auto forumConfig = Configuration::getGlobalConfig();
+    const auto forumConfig = Configuration::getGlobalConfig();
     auto& persistenceConfig = forumConfig->persistence;
 
     entityCollection_->startBatchInsert();
 
     EventImporter importer(persistenceConfig.validateChecksum, *entityCollection_, directWriteRepositories_);
-    auto result = importer.import(persistenceConfig.inputFolder);
+    const auto result = importer.import(persistenceConfig.inputFolder);
 
     entityCollection_->stopBatchInsert();
 
@@ -282,7 +282,7 @@ void Application::importEvents()
 
 void Application::initializeHttp()
 {
-    auto forumConfig = Configuration::getGlobalConfig();
+    const auto forumConfig = Configuration::getGlobalConfig();
 
     HttpListener::Configuration httpConfig;
     httpConfig.numberOfIOServiceThreads = forumConfig->service.numberOfIOServiceThreads;
@@ -302,7 +302,7 @@ void Application::initializeHttp()
 
 void Application::initializeLogging()
 {
-    auto forumConfig = Configuration::getGlobalConfig();
+    const auto forumConfig = Configuration::getGlobalConfig();
     auto& settingsFile = forumConfig->logging.settingsFile;
 
     if (settingsFile.size() < 1) return;

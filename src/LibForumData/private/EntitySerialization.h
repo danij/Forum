@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -60,6 +60,8 @@ namespace Forum
             boost::optional<bool> allowDisplayDiscussionThreadMessageIpAddress = boost::none;
             boost::optional<bool> allowDisplayDiscussionThreadMessageComments = boost::none;
 
+            UserPtr userToCheckVotesOf{};
+
             bool hideLatestMessage = false;
             bool hidePrivileges = false;
             bool onlySendCategoryParentId = false;
@@ -67,7 +69,7 @@ namespace Forum
 
         extern thread_local SerializationSettings serializationSettings;
 
-        Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThreadMessage& thread,
+        Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThreadMessage& message,
                                     const Authorization::SerializationRestriction& restriction);
 
         Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThread& thread,
@@ -82,7 +84,7 @@ namespace Forum
         /**
          * The restriction parameter is not yet used by these two functions, just keeping a uniform interface
          */
-        Json::JsonWriter& serialize(Json::JsonWriter& writer, const MessageComment& messageComment,
+        Json::JsonWriter& serialize(Json::JsonWriter& writer, const MessageComment& comment,
                                     const Authorization::SerializationRestriction& restriction);
 
         Json::JsonWriter& serialize(Json::JsonWriter& writer, const User& user,

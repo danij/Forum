@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -162,7 +162,7 @@ namespace Forum
             }
             auto& messageComments()
             {
-                if ( ! messageComments_) messageComments_.reset(new MessageCommentCollection);
+                if ( ! messageComments_) messageComments_.reset(new MessageCommentCollectionLowMemory);
                 return *messageComments_;
             }
             auto& voteHistory()                    { return voteHistory_; }
@@ -209,7 +209,7 @@ namespace Forum
         private:
             static ChangeNotification changeNotifications_;
             static const std::set<DiscussionThreadMessagePtr> emptyVotedMessages_;
-            static const MessageCommentCollection emptyMessageComments_;
+            static const MessageCommentCollectionLowMemory emptyMessageComments_;
 
             IdType id_;
             Timestamp created_{0};
@@ -224,13 +224,13 @@ namespace Forum
 
             Timestamp lastSeen_{0};
 
-            DiscussionThreadCollectionWithOrderedId threads_;
-            DiscussionThreadCollectionWithHashedId subscribedThreads_;
+            DiscussionThreadCollectionLowMemory threads_;
+            DiscussionThreadCollectionLowMemory subscribedThreads_;
 
-            DiscussionThreadMessageCollection threadMessages_;
+            DiscussionThreadMessageCollectionLowMemory threadMessages_;
             std::unique_ptr<std::set<DiscussionThreadMessagePtr>> votedMessages_;
 
-            std::unique_ptr<MessageCommentCollection> messageComments_;
+            std::unique_ptr<MessageCommentCollectionLowMemory> messageComments_;
 
             static constexpr size_t MaxVotesInHistory = 64;
             boost::circular_buffer_space_optimized<ReceivedVoteHistory> voteHistory_{ MaxVotesInHistory };

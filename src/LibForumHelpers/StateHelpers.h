@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,21 +25,24 @@ namespace Forum
 {
     namespace Helpers
     {
-        struct BoolTemporaryChanger final : private boost::noncopyable
+        template<typename T>
+        struct TemporaryChanger final : private boost::noncopyable
         {
-            BoolTemporaryChanger(bool& toChange, bool newValue) noexcept : toChange_(toChange)
+            TemporaryChanger(T& toChange, T newValue) noexcept : toChange_(toChange)
             {
                 oldValue_ = toChange;
                 toChange = newValue;
             }
-            ~BoolTemporaryChanger() noexcept
+            ~TemporaryChanger() noexcept
             {
                 toChange_ = oldValue_;
             }
         private:
-            bool& toChange_;
-            bool oldValue_;
+            T& toChange_;
+            T oldValue_;
         };
+
+        typedef TemporaryChanger<bool> BoolTemporaryChanger;
 
         /**
          * Changes a boost::optional and reverts it to boost::none only if it didn't have a value to start with

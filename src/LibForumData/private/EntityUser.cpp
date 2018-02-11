@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,4 +22,4 @@ using namespace Forum::Entities;
 
 User::ChangeNotification User::changeNotifications_;
 const std::set<DiscussionThreadMessagePtr> User::emptyVotedMessages_;
-const MessageCommentCollection User::emptyMessageComments_;
+const MessageCommentCollectionLowMemory User::emptyMessageComments_;

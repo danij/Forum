@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -200,7 +200,7 @@ Request::HttpHeader Http::Request::matchHttpHeader(const char* headerName, size_
     auto result = HttpHeader::UnknownHeader;
     if (size > 0)
     {
-        auto hashFn = matchFunctionTable[hashHeaderName(headerName, size)];
+        const auto hashFn = matchFunctionTable[hashHeaderName(headerName, size)];
         if (hashFn)
         {
             result = hashFn(headerName, size);

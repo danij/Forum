@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -120,6 +120,120 @@ namespace Forum
             int_fast32_t createNewOutputFileEverySeconds = 3600 * 24;
         };
 
+        typedef uint_fast16_t PrivilegeValueType;
+        typedef int64_t PrivilegeDurationType;
+        constexpr auto DenyPrivilegeValue = std::numeric_limits<PrivilegeValueType>::max();
+
+        struct DefaultPrivilegesConfig
+        {
+            struct
+            {
+                PrivilegeValueType view                = DenyPrivilegeValue;
+                PrivilegeValueType viewCreatorUser     = DenyPrivilegeValue;
+                PrivilegeValueType viewIpAddress       = DenyPrivilegeValue;
+                PrivilegeValueType viewVotes           = DenyPrivilegeValue;
+                PrivilegeValueType upVote              = DenyPrivilegeValue;
+                PrivilegeValueType downVote            = DenyPrivilegeValue;
+                PrivilegeValueType resetVote           = DenyPrivilegeValue;
+                PrivilegeValueType addComment          = DenyPrivilegeValue;
+                PrivilegeValueType setCommentToSolved  = DenyPrivilegeValue;
+                PrivilegeValueType getMessageComments  = DenyPrivilegeValue;
+                PrivilegeValueType changeContent       = DenyPrivilegeValue;
+                PrivilegeValueType deleteThreadMessage = DenyPrivilegeValue;
+                PrivilegeValueType move                = DenyPrivilegeValue;
+                PrivilegeValueType adjustPrivilege     = DenyPrivilegeValue;
+            } threadMessage;
+            struct
+            {
+                PrivilegeValueType view                  = DenyPrivilegeValue;
+                PrivilegeValueType subscribe             = DenyPrivilegeValue;
+                PrivilegeValueType unsubscribe           = DenyPrivilegeValue;
+                PrivilegeValueType addMessage            = DenyPrivilegeValue;
+                PrivilegeValueType changeName            = DenyPrivilegeValue;
+                PrivilegeValueType changePinDisplayOrder = DenyPrivilegeValue;
+                PrivilegeValueType addTag                = DenyPrivilegeValue;
+                PrivilegeValueType removeTag             = DenyPrivilegeValue;
+                PrivilegeValueType deleteThread          = DenyPrivilegeValue;
+                PrivilegeValueType merge                 = DenyPrivilegeValue;
+                PrivilegeValueType adjustPrivilege       = DenyPrivilegeValue;
+            } thread;
+
+            struct
+            {
+                PrivilegeValueType view                 = DenyPrivilegeValue;
+                PrivilegeValueType getDiscussionThreads = DenyPrivilegeValue;
+                PrivilegeValueType changeName           = DenyPrivilegeValue;
+                PrivilegeValueType changeUiblob         = DenyPrivilegeValue;
+                PrivilegeValueType deleteTag            = DenyPrivilegeValue;
+                PrivilegeValueType merge                = DenyPrivilegeValue;
+                PrivilegeValueType adjustPrivilege      = DenyPrivilegeValue;
+            } tag;
+
+            struct
+            {
+                PrivilegeValueType view                 = DenyPrivilegeValue;
+                PrivilegeValueType getDiscussionThreads = DenyPrivilegeValue;
+                PrivilegeValueType changeName           = DenyPrivilegeValue;
+                PrivilegeValueType changeDescription    = DenyPrivilegeValue;
+                PrivilegeValueType changeParent         = DenyPrivilegeValue;
+                PrivilegeValueType changeDisplayorder   = DenyPrivilegeValue;
+                PrivilegeValueType addTag               = DenyPrivilegeValue;
+                PrivilegeValueType removeTag            = DenyPrivilegeValue;
+                PrivilegeValueType deleteCategory       = DenyPrivilegeValue;
+                PrivilegeValueType adjustPrivilege      = DenyPrivilegeValue;
+            } category;
+
+            struct
+            {
+                PrivilegeValueType addUser                              = DenyPrivilegeValue;
+                PrivilegeValueType login                                = DenyPrivilegeValue;
+                PrivilegeValueType getEntitiesCount                     = DenyPrivilegeValue;
+                PrivilegeValueType getVersion                           = DenyPrivilegeValue;
+                PrivilegeValueType getAllUsers                          = DenyPrivilegeValue;
+                PrivilegeValueType getUserInfo                          = DenyPrivilegeValue;
+                PrivilegeValueType getDiscussionThreadsOfUser           = DenyPrivilegeValue;
+                PrivilegeValueType getDiscussionThreadMessagesOfUser    = DenyPrivilegeValue;
+                PrivilegeValueType getSubscribedDiscussionThreadsOfUser = DenyPrivilegeValue;
+                PrivilegeValueType getAllDiscussionCategories           = DenyPrivilegeValue;
+                PrivilegeValueType getDiscussionCategoriesFromRoot      = DenyPrivilegeValue;
+                PrivilegeValueType getAllDiscussionTags                 = DenyPrivilegeValue;
+                PrivilegeValueType getAllDiscussionThreads              = DenyPrivilegeValue;
+                PrivilegeValueType getAllMessageComments                = DenyPrivilegeValue;
+                PrivilegeValueType getMessageCommentsOfUser             = DenyPrivilegeValue;
+                PrivilegeValueType addDiscussionCategory                = DenyPrivilegeValue;
+                PrivilegeValueType addDiscussionTag                     = DenyPrivilegeValue;
+                PrivilegeValueType addDiscussionThread                  = DenyPrivilegeValue;
+                PrivilegeValueType changeOwnUserName                    = DenyPrivilegeValue;
+                PrivilegeValueType changeOwnUserInfo                    = DenyPrivilegeValue;
+                PrivilegeValueType changeAnyUserName                    = DenyPrivilegeValue;
+                PrivilegeValueType changeAnyUserInfo                    = DenyPrivilegeValue;
+                PrivilegeValueType deleteAnyUser                        = DenyPrivilegeValue;
+                PrivilegeValueType adjustForumWidePrivilege             = DenyPrivilegeValue;
+                PrivilegeValueType changeOwnUserTitle                   = DenyPrivilegeValue;
+                PrivilegeValueType changeAnyUserTitle                   = DenyPrivilegeValue;
+                PrivilegeValueType changeOwnUserSignature               = DenyPrivilegeValue;
+                PrivilegeValueType changeAnyUserSignature               = DenyPrivilegeValue;
+                PrivilegeValueType changeOwnUserLogo                    = DenyPrivilegeValue;
+                PrivilegeValueType changeAnyUserLogo                    = DenyPrivilegeValue;
+                PrivilegeValueType deleteOwnUserLogo                    = DenyPrivilegeValue;
+                PrivilegeValueType deleteAnyUserLogo                    = DenyPrivilegeValue;
+                PrivilegeValueType getUserVoteHistory                   = DenyPrivilegeValue;
+                PrivilegeValueType noThrottling                         = DenyPrivilegeValue;
+            } forumWide;
+        };
+
+        struct DefaultPrivilegeDurationConfig
+        {
+            struct
+            {
+                struct
+                {
+                    PrivilegeValueType value = 0;
+                    PrivilegeDurationType duration = 0;
+                } create;
+            } thread;
+        };
+
         struct Config
         {
             UserConfig user;
@@ -130,6 +244,8 @@ namespace Forum
             ServiceConfig service;
             LoggingConfig logging;
             PersistenceConfig persistence;
+            DefaultPrivilegesConfig defaultPrivileges;
+            DefaultPrivilegeDurationConfig defaultPrivilegeGrants;
         };
 
         typedef std::shared_ptr<const Config> ConfigConstRef;

@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -102,7 +102,7 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
     char buffer[IpAddress::MaxIPv6CharacterCount + 1];
     writer.newPropertyWithSafeName("ip");
 
-    auto addressLength = visitDetails.ip.toString(buffer, std::extent<decltype(buffer)>::value);
+    const auto addressLength = visitDetails.ip.toString(buffer, std::extent<decltype(buffer)>::value);
 
     writer.writeSafeString(buffer, addressLength);
     return writer;
@@ -111,30 +111,27 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
 JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessage& message,
                                 const SerializationRestriction& restriction)
 {
-    auto allowView = serializationSettings.allowDisplayDiscussionThreadMessage
-        ? *serializationSettings.allowDisplayDiscussionThreadMessage
-        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW);
+    const auto allowView = serializationSettings.allowDisplayDiscussionThreadMessage
+            ? *serializationSettings.allowDisplayDiscussionThreadMessage
+            : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW);
 
-    auto allowViewUser = serializationSettings.allowDisplayDiscussionThreadMessageUser
-        ? *serializationSettings.allowDisplayDiscussionThreadMessageUser
-        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER);
+    if ( ! allowView) return writer.null();
 
-    auto allowViewVotes = serializationSettings.allowDisplayDiscussionThreadMessageVotes
-        ? *serializationSettings.allowDisplayDiscussionThreadMessageVotes
-        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_VOTES);
+    const auto allowViewUser = serializationSettings.allowDisplayDiscussionThreadMessageUser
+            ? *serializationSettings.allowDisplayDiscussionThreadMessageUser
+            : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER);
 
-    auto allowViewIpAddress = serializationSettings.allowDisplayDiscussionThreadMessageIpAddress
-        ? *serializationSettings.allowDisplayDiscussionThreadMessageIpAddress
-        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS);
+    const auto allowViewVotes = serializationSettings.allowDisplayDiscussionThreadMessageVotes
+            ? *serializationSettings.allowDisplayDiscussionThreadMessageVotes
+            : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_VOTES);
 
-    auto allowViewCommentCount = serializationSettings.allowDisplayDiscussionThreadMessageComments
-        ? *serializationSettings.allowDisplayDiscussionThreadMessageComments
-        : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS);
+    const auto allowViewIpAddress = serializationSettings.allowDisplayDiscussionThreadMessageIpAddress
+            ? *serializationSettings.allowDisplayDiscussionThreadMessageIpAddress
+            : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_IP_ADDRESS);
 
-    if ( ! allowView)
-    {
-        return writer.null();
-    }
+    const auto allowViewCommentCount = serializationSettings.allowDisplayDiscussionThreadMessageComments
+            ? *serializationSettings.allowDisplayDiscussionThreadMessageComments
+            : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS);
 
     writer
         << objStart
@@ -195,11 +192,24 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         writeVisitDetails(writer, message.creationDetails());
     }
 
+    const auto& upVotes = message.upVotes();
+    const auto& downVotes = message.downVotes();
+
     if (allowViewVotes)
     {
-        writeVotes(writer, "upVotes", message.upVotes());
-        writeVotes(writer, "downVotes", message.downVotes());
+        writeVotes(writer, "upVotes", upVotes);
+        writeVotes(writer, "downVotes", downVotes);
     }
+    auto voteStatus = 0;
+    if (downVotes.find(serializationSettings.userToCheckVotesOf) != downVotes.end())
+    {
+        voteStatus = -1;
+    }
+    else if (upVotes.find(serializationSettings.userToCheckVotesOf) != upVotes.end())
+    {
+        voteStatus = 1;
+    }
+    writer << propertySafeName("voteStatus", voteStatus);
 
     if ( ! serializationSettings.hidePrivileges)
     {
@@ -389,7 +399,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
     }
 
     const auto& messagesIndex = thread.messages().byCreated();
-    auto messageCount = messagesIndex.size();
+    const auto messageCount = messagesIndex.size();
 
     writer << propertySafeName("messageCount", messageCount);
 
@@ -401,7 +411,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
     }
     if ( ! serializationSettings.hideDiscussionThreadMessages)
     {
-        auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
+        const auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
         auto& displayContext = Context::getDisplayContext();
 
         writeDiscussionThreadMessages(messagesIndex, displayContext.pageNumber, pageSize, true, "messages", writer,
@@ -533,7 +543,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
     if (serializationSettings.showDiscussionCategoryChildren)
     {
         //only show 1 level of category children
-        auto hideDetails = ! serializationSettings.keepDiscussionCategoryDetails;
+        const auto hideDetails = ! serializationSettings.keepDiscussionCategoryDetails;
 
         BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryParent, true);

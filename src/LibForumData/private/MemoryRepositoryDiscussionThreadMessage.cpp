@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -44,6 +44,48 @@ MemoryRepositoryDiscussionThreadMessage::MemoryRepositoryDiscussionThreadMessage
     }
 }
 
+StatusCode MemoryRepositoryDiscussionThreadMessage::getMultipleDiscussionThreadMessagesById(StringView ids,
+                                                                                            OutStream& output) const
+{
+    StatusWriter status(output);
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    constexpr size_t MaxIdBuffer = 64;
+    static thread_local std::array<UuidString, MaxIdBuffer> parsedIds;
+    static thread_local std::array<const DiscussionThreadMessage*, MaxIdBuffer> threadMessagesFound;
+
+    const auto maxThreadsToSearch = std::min(MaxIdBuffer, 
+                                             static_cast<size_t>(getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage));
+    auto lastParsedId = parseMultipleUuidStrings(ids, parsedIds.begin(), parsedIds.begin() + maxThreadsToSearch);
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+                          
+                          const auto& indexById = collection.threadMessages().byId();
+                          auto lastThreadMessageFound = std::transform(parsedIds.begin(), lastParsedId, threadMessagesFound.begin(), 
+                              [&indexById](auto id)
+                              {
+                                  auto it = indexById.find(id);
+                                  return (it == indexById.end()) ? nullptr : *it;
+                              });
+                          
+                          status = StatusCode::OK;
+                          status.disable();
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), 
+                                                               currentUser.id(), Context::getCurrentTime());
+
+                          TemporaryChanger<UserPtr> _(serializationSettings.userToCheckVotesOf, currentUser.pointer());
+
+                          writeAllEntities(threadMessagesFound.begin(), lastThreadMessageFound,
+                                           "thread_messages", output, restriction);
+                          
+                          readEvents().onGetMultipleDiscussionThreadMessagesById(createObserverContext(currentUser), ids);
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesOfUserByCreated(IdTypeRef id,
                                                                                                OutStream& output) const
 {
@@ -78,6 +120,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
         BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
+        TemporaryChanger<UserPtr> ____(serializationSettings.userToCheckVotesOf, currentUser.pointer());
 
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
         auto& displayContext = Context::getDisplayContext();
@@ -107,6 +150,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getLatestDiscussionThreadMes
 
         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
         BoolTemporaryChanger __(serializationSettings.hideLatestMessage, true);
+        TemporaryChanger<UserPtr> ___(serializationSettings.userToCheckVotesOf, currentUser.pointer());
 
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
 
@@ -185,11 +229,11 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(content, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->discussionThreadMessage.minContentLength,
-                                         config->discussionThreadMessage.maxContentLength,
-                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(content, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                               config->discussionThreadMessage.minContentLength,
+                                               config->discussionThreadMessage.maxContentLength,
+                                               &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
 
     if (validationCode != StatusCode::OK)
     {
@@ -263,7 +307,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
                                                                              size_t contentOffset)
 {
     auto& threadIndex = collection.threads().byId();
-    auto threadIt = threadIndex.find(threadId);
+    const auto threadIt = threadIndex.find(threadId);
     if (threadIt == threadIndex.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
@@ -279,7 +323,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
     if ((contentSize > 0) && (contentOffset > 0))
     {
         auto messageContent = collection.getMessageContentPointer(contentOffset, contentSize);
-        if ( ! messageContent.size())
+        if (messageContent.empty())
         {
             FORUM_LOG_ERROR << "Could not find message at offset " << contentOffset << " with length " << contentSize;
             return StatusCode::INVALID_PARAMETERS;
@@ -353,7 +397,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(IdTy
 StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(EntityCollection& collection, IdTypeRef id)
 {
     auto& indexById = collection.threadMessages().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
@@ -371,23 +415,23 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
 {
     StatusWriter status(output);
 
-    auto config = getGlobalConfig();
+    const auto config = getGlobalConfig();
 
-    auto contentValidationCode = validateString(newContent, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                                config->discussionThreadMessage.minContentLength,
-                                                config->discussionThreadMessage.maxContentLength,
-                                                &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
+    const auto contentValidationCode = validateString(newContent, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                                      config->discussionThreadMessage.minContentLength,
+                                                      config->discussionThreadMessage.maxContentLength,
+                                                      &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (contentValidationCode != StatusCode::OK)
     {
         return status = contentValidationCode;
     }
 
-    auto reasonEmptyValidation = 0 == config->discussionThreadMessage.minChangeReasonLength
-                                 ? ALLOW_EMPTY_STRING : INVALID_PARAMETERS_FOR_EMPTY_STRING;
-    auto reasonValidationCode = validateString(changeReason, reasonEmptyValidation,
-                                               config->discussionThreadMessage.minChangeReasonLength,
-                                               config->discussionThreadMessage.maxChangeReasonLength,
-                                               &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
+    const auto reasonEmptyValidation = 0 == config->discussionThreadMessage.minChangeReasonLength
+                                       ? ALLOW_EMPTY_STRING : INVALID_PARAMETERS_FOR_EMPTY_STRING;
+    const auto reasonValidationCode = validateString(changeReason, reasonEmptyValidation,
+                                                     config->discussionThreadMessage.minChangeReasonLength,
+                                                     config->discussionThreadMessage.maxChangeReasonLength,
+                                                     &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (reasonValidationCode != StatusCode::OK)
     {
         return status = reasonValidationCode;
@@ -425,7 +469,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
                                                                                          StringView changeReason)
 {
     auto& indexById = collection.threadMessages().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
@@ -533,7 +577,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
                                                                                 IdTypeRef intoThreadId)
 {
     auto& messagesIndexById = collection.threadMessages().byId();
-    auto messageIt = messagesIndexById.find(messageId);
+    const auto messageIt = messagesIndexById.find(messageId);
     if (messageIt == messagesIndexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
@@ -541,7 +585,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
     }
 
     auto& threadsIndexById = collection.threads().byId();
-    auto itInto = threadsIndexById.find(intoThreadId);
+    const auto itInto = threadsIndexById.find(intoThreadId);
     if (itInto == threadsIndexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(intoThreadId);
@@ -568,6 +612,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
 
     threadFrom.deleteDiscussionThreadMessage(messagePtr);
     updateThreadOnMoveMessage(threadFromPtr, -1);
+
+    messagePtr->parentThread() = threadIntoPtr;
 
     return StatusCode::OK;
 }
@@ -651,7 +697,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
                                                                                 IdTypeRef id, bool up)
 {
     auto& indexById = collection.threadMessages().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
@@ -670,7 +716,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
         return StatusCode::NO_EFFECT;
     }
 
-    auto timestamp = Context::getCurrentTime();
+    const auto timestamp = Context::getCurrentTime();
     currentUser->registerVote(messagePtr);
 
     if (up)
@@ -769,7 +815,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
                                                                                      IdTypeRef id)
 {
     auto& indexById = collection.threadMessages().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
@@ -780,7 +826,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
 
     auto currentUser = getCurrentUser(collection);
 
-    auto removeVoteStatus = message.removeVote(currentUser);
+    const auto removeVoteStatus = message.removeVote(currentUser);
     if (DiscussionThreadMessage::RemoveVoteStatus::Missing == removeVoteStatus)
     {
         FORUM_LOG_WARNING << "Could not find discussion vote of user "
@@ -825,6 +871,15 @@ static void writeMessageComments(const Collection& collection, OutStream& output
         displayContext.pageNumber, pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, restriction);
 }
 
+template<typename Collection>
+static void writeAllMessageComments(const Collection& collection, OutStream& output,
+                                    const GrantedPrivilegeStore& privilegeStore, const User& currentUser)
+{
+    SerializationRestriction restriction(privilegeStore, currentUser.id(), Context::getCurrentTime());
+
+    writeAllEntities(collection, "message_comments", output, false, restriction);
+}
+
 StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream& output) const
 {
     StatusWriter status(output);
@@ -840,6 +895,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream
                           }
 
                           status.disable();
+                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                          BoolTemporaryChanger __(serializationSettings.hideLatestMessage, true);
+
                           writeMessageComments(collection.messageComments().byCreated(), output,
                                                collection.grantedPrivileges(), currentUser);
                           readEvents().onGetMessageComments(createObserverContext(currentUser));
@@ -877,10 +935,12 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
                           }
 
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentMessage, true);
+                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                          BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
 
                           status.disable();
-                          writeMessageComments(message.comments().byCreated(), output,
-                                               collection.grantedPrivileges(), currentUser);
+                          writeAllMessageComments(message.comments().byCreated(), output,
+                                                  collection.grantedPrivileges(), currentUser);
 
                           readEvents().onGetMessageCommentsOfMessage(createObserverContext(currentUser), message);
                       });
@@ -916,6 +976,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(IdT
                           }
 
                           BoolTemporaryChanger _(serializationSettings.hideMessageCommentUser, true);
+                          BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                          BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
 
                           status.disable();
                           writeMessageComments(user.messageComments().byCreated(), output,
@@ -936,11 +998,11 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(content, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->discussionThreadMessage.minCommentLength,
-                                         config->discussionThreadMessage.maxCommentLength,
-                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(content, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                               config->discussionThreadMessage.minCommentLength,
+                                               config->discussionThreadMessage.maxCommentLength,
+                                               &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -988,7 +1050,7 @@ StatusWithResource<MessageCommentPtr>
                                                                                  IdTypeRef messageId, StringView content)
 {
     auto& messageIndex = collection.threadMessages().byId();
-    auto messageIt = messageIndex.find(messageId);
+    const auto messageIt = messageIndex.find(messageId);
     if (messageIt == messageIndex.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
@@ -1054,7 +1116,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(Id
 StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(EntityCollection& collection, IdTypeRef id)
 {
     auto& indexById = collection.messageComments().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);

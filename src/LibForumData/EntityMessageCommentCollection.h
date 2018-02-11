@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -50,6 +50,26 @@ namespace Forum
             HASHED_UNIQUE_COLLECTION(MessageComment, id) byId_;
 
             RANKED_COLLECTION(MessageComment, created) byCreated_;
+        };
+
+        class MessageCommentCollectionLowMemory final : private boost::noncopyable
+        {
+        public:
+            bool add(MessageCommentPtr comment);
+            bool remove(MessageCommentPtr comment);
+
+            auto count()          const { return byId_.size(); }
+
+            auto byId()           const { return Helpers::toConst(byId_); }
+            auto byCreated()      const { return Helpers::toConst(byCreated_); }
+
+            auto& byId()      { return byId_; }
+            auto& byCreated() { return byCreated_; }
+
+        private:
+            SORTED_VECTOR_UNIQUE_COLLECTION(MessageComment, id) byId_;
+
+            SORTED_VECTOR_COLLECTION(MessageComment, created) byCreated_;
         };
     }
 }

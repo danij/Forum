@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -121,7 +121,7 @@ void MemoryRepositoryAuthorization::writeForumWideDefaultPrivilegeLevels(const F
 
     for (EnumIntType i = 0; i < static_cast<EnumIntType>(ForumWideDefaultPrivilegeDuration::COUNT); ++i)
     {
-        auto privilege = static_cast<ForumWideDefaultPrivilegeDuration>(i);
+        const auto privilege = static_cast<ForumWideDefaultPrivilegeDuration>(i);
         auto value = store.getForumWideDefaultPrivilegeLevel(privilege);
         if (value)
         {
@@ -182,9 +182,8 @@ struct UserAssignedPrivilegeWriter final
     typedef void(*WriteNameFunction)(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer);
 
     UserAssignedPrivilegeWriter(JsonWriter& writer, const EntityCollection& collection, WriteNameFunction writeName)
-            : writer_(writer), collection_(collection), writeName_(writeName)
-    {
-    }
+            : writer_(writer), collection_(collection), writeName_(writeName) {}
+    ~UserAssignedPrivilegeWriter() = default;
 
     UserAssignedPrivilegeWriter(const UserAssignedPrivilegeWriter&) = default;
     UserAssignedPrivilegeWriter(UserAssignedPrivilegeWriter&&) = default;
@@ -213,7 +212,7 @@ private:
 static void writeDiscussionThreadName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
 {
     const auto& index = collection.threads().byId();
-    auto it = index.find(entityId);
+    const auto it = index.find(entityId);
     if (it != index.end())
     {
         writer.newPropertyWithSafeName("name") << (**it).name();
@@ -223,7 +222,7 @@ static void writeDiscussionThreadName(const EntityCollection& collection, IdType
 static void writeDiscussionTagName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
 {
     const auto& index = collection.tags().byId();
-    auto it = index.find(entityId);
+    const auto it = index.find(entityId);
     if (it != index.end())
     {
         writer.newPropertyWithSafeName("name") << (**it).name();
@@ -233,7 +232,7 @@ static void writeDiscussionTagName(const EntityCollection& collection, IdTypeRef
 static void writeDiscussionCategoryName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
 {
     const auto& index = collection.categories().byId();
-    auto it = index.find(entityId);
+    const auto it = index.find(entityId);
     if (it != index.end())
     {
         writer.newPropertyWithSafeName("name") << (**it).name();
@@ -436,7 +435,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForThreadMessage(
 template<typename EnumType>
 bool isValidPrivilege(EnumType value)
 {
-    auto intValue = static_cast<EnumIntType>(value);
+    const auto intValue = static_cast<EnumIntType>(value);
     return intValue >= 0 && intValue < static_cast<EnumIntType>(EnumType::COUNT);
 }
 
@@ -500,7 +499,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
     }
 
     auto& indexById = collection.threadMessages().byId();
-    auto it = indexById.find(messageId);
+    const auto it = indexById.find(messageId);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
@@ -575,7 +574,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
     }
 
     auto& indexById = collection.threadMessages().byId();
-    auto it = indexById.find(messageId);
+    const auto it = indexById.find(messageId);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
@@ -585,7 +584,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
     if (userId != anonymousUserId())
     {
         auto& userIndexById = collection.users().byId();
-        auto userIt = userIndexById.find(userId);
+        const auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
             FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
@@ -593,8 +592,8 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         }
     }
 
-    auto now = Context::getCurrentTime();
-    auto expiresAt = calculatePrivilegeExpires(now, duration);
+    const auto now = Context::getCurrentTime();
+    const auto expiresAt = calculatePrivilegeExpires(now, duration);
     collection.grantedPrivileges().grantDiscussionThreadMessagePrivilege(userId, messageId, value, now, expiresAt);
 
     return StatusCode::OK;
@@ -734,7 +733,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
     }
 
     auto& indexById = collection.threads().byId();
-    auto it = indexById.find(threadId);
+    const auto it = indexById.find(threadId);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
@@ -797,7 +796,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadRequiredPrivileg
     }
 
     auto& indexById = collection.threads().byId();
-    auto it = indexById.find(threadId);
+    const auto it = indexById.find(threadId);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
@@ -871,7 +870,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
     }
 
     auto& indexById = collection.threads().byId();
-    auto it = indexById.find(threadId);
+    const auto it = indexById.find(threadId);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
@@ -881,7 +880,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
     if (userId != anonymousUserId())
     {
         auto& userIndexById = collection.users().byId();
-        auto userIt = userIndexById.find(userId);
+        const auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
             FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
@@ -889,8 +888,8 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         }
     }
 
-    auto now = Context::getCurrentTime();
-    auto expiresAt = calculatePrivilegeExpires(now, duration);
+    const auto now = Context::getCurrentTime();
+    const auto expiresAt = calculatePrivilegeExpires(now, duration);
     collection.grantedPrivileges().grantDiscussionThreadPrivilege(userId, threadId, value, now, expiresAt);
 
     return StatusCode::OK;
@@ -1898,7 +1897,7 @@ StatusCode MemoryRepositoryAuthorization::changeForumWideDefaultPrivilegeLevel(
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    PrivilegeDefaultLevel level;
+    PrivilegeDefaultLevel level{};
     level.value = value;
     level.duration = duration;
 
@@ -1968,8 +1967,8 @@ StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
         }
     }
 
-    auto now = Context::getCurrentTime();
-    auto expiresAt = calculatePrivilegeExpires(now, duration);
+    const auto now = Context::getCurrentTime();
+    const auto expiresAt = calculatePrivilegeExpires(now, duration);
     collection.grantedPrivileges().grantForumWidePrivilege(userId, {}, value, now, expiresAt);
 
     return StatusCode::OK;

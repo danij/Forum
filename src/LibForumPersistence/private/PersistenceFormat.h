@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ namespace Forum
 
         inline size_t blobPaddingRequired(size_t size)
         {
-            auto sizeMultiple = (size / BlobPaddingBytes) * BlobPaddingBytes;
+            const auto sizeMultiple = (size / BlobPaddingBytes) * BlobPaddingBytes;
             if (sizeMultiple < size)
             {
                 return BlobPaddingBytes - (size - sizeMultiple);

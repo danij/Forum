@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -97,6 +97,7 @@ namespace Forum
 
             void getAll(Http::RequestState& requestState);
             void getThreadById(Http::RequestState& requestState);
+            void getMultipleThreadsById(Http::RequestState& requestState);
             void getThreadsOfUser(Http::RequestState& requestState);
             void getThreadsWithTag(Http::RequestState& requestState);
             void getThreadsOfCategory(Http::RequestState& requestState);
@@ -119,6 +120,7 @@ namespace Forum
         public:
             explicit DiscussionThreadMessagesEndpoint(CommandHandler& handler);
 
+            void getMultipleThreadMessagesById(Http::RequestState& requestState);
             void getThreadMessagesOfUser(Http::RequestState& requestState);
             void getLatestThreadMessages(Http::RequestState& requestState);
             void getRankOfMessage(Http::RequestState& requestState);

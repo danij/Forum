@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -38,13 +38,13 @@ bool DiscussionCategoryCollection::add(DiscussionCategoryPtr category)
 bool DiscussionCategoryCollection::remove(DiscussionCategoryPtr category)
 {
     {
-        auto itById = byId_.find(category->id());
+        const auto itById = byId_.find(category->id());
         if (itById == byId_.end()) return false;
 
         byId_.erase(itById);
     }
     {
-        auto itByName = byName_.find(category->name());
+        const auto itByName = byName_.find(category->name());
         if (itByName != byName_.end()) byName_.erase(itByName);
     }
     if ( ! Context::isBatchInsertInProgress())

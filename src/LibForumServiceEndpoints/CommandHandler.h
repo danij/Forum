@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -128,6 +128,7 @@ namespace Forum
             GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED,
             GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT,
             GET_DISCUSSION_THREAD_BY_ID,
+            GET_MULTIPLE_DISCUSSION_THREADS_BY_ID,
             SEARCH_DISCUSSION_THREADS_BY_NAME,
 
             GET_DISCUSSION_THREADS_OF_USER_BY_NAME,
@@ -143,6 +144,7 @@ namespace Forum
             GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_LATEST_MESSAGE_CREATED,
             GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT,
 
+            GET_MULTIPLE_DISCUSSION_THREAD_MESSAGES_BY_ID,
             GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED,
             GET_LATEST_DISCUSSION_THREAD_MESSAGES,
             GET_DISCUSSION_THREAD_MESSAGE_RANK,

@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ UuidString::UuidString(const std::string& value) : UuidString(boost::string_view
 {
 }
 
-UuidString::UuidString(const boost::string_view& value)
+UuidString::UuidString(boost::string_view value)
 {
     if ( ! parseUuid(value.data(), value.size(), value_))
     {
@@ -101,11 +101,11 @@ static const char* hexCharsLowercase = "0123456789abcdef";
 
 void UuidString::toString(char* buffer) const
 {
-    auto data = value_.data;
+    const auto data = value_.data;
 
     for (size_t source = 0, destination = 0; source < boost::uuids::uuid::static_size(); ++source)
     {
-        auto value = data[source];
+        const auto value = data[source];
 
         buffer[destination++] = hexCharsLowercase[(value / 16) & 0xF];
         buffer[destination++] = hexCharsLowercase[(value % 16) & 0xF];

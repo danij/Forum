@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -37,7 +37,28 @@ namespace Forum
 {
     namespace Entities
     {
-        class DiscussionThreadCollectionBase
+        class IDiscussionThreadCollection
+        {
+        public:
+            DECLARE_INTERFACE_MANDATORY(IDiscussionThreadCollection);
+
+            virtual void prepareUpdateName(DiscussionThreadPtr thread) = 0;
+            virtual void updateName(DiscussionThreadPtr thread) = 0;
+
+            virtual void prepareUpdateLastUpdated(DiscussionThreadPtr thread) = 0;
+            virtual void updateLastUpdated(DiscussionThreadPtr thread) = 0;
+
+            virtual void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread) = 0;
+            virtual void updateLatestMessageCreated(DiscussionThreadPtr thread) = 0;
+
+            virtual void prepareUpdateMessageCount(DiscussionThreadPtr thread) = 0;
+            virtual void updateMessageCount(DiscussionThreadPtr thread) = 0;
+
+            virtual void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) = 0;
+            virtual void updatePinDisplayOrder(DiscussionThreadPtr thread) = 0;
+        };
+
+        class DiscussionThreadCollectionBase : public IDiscussionThreadCollection
         {
         public:
             DECLARE_ABSTRACT_MANDATORY(DiscussionThreadCollectionBase)
@@ -45,22 +66,22 @@ namespace Forum
             virtual bool add(DiscussionThreadPtr thread);
             virtual bool remove(DiscussionThreadPtr thread);
 
-            void prepareUpdateName(DiscussionThreadPtr thread);
-            void updateName(DiscussionThreadPtr thread);
-
             virtual void stopBatchInsert();
 
-            void prepareUpdateLastUpdated(DiscussionThreadPtr thread);
-            void updateLastUpdated(DiscussionThreadPtr thread);
+            void prepareUpdateName(DiscussionThreadPtr thread) override;
+            void updateName(DiscussionThreadPtr thread) override;
 
-            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread);
-            void updateLatestMessageCreated(DiscussionThreadPtr thread);
+            void prepareUpdateLastUpdated(DiscussionThreadPtr thread) override;
+            void updateLastUpdated(DiscussionThreadPtr thread) override;
 
-            void prepareUpdateMessageCount(DiscussionThreadPtr thread);
-            void updateMessageCount(DiscussionThreadPtr thread);
+            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread) override;
+            void updateLatestMessageCreated(DiscussionThreadPtr thread) override;
 
-            virtual void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) {} //empty, only used in subclass
-            virtual void updatePinDisplayOrder(DiscussionThreadPtr thread) {} //empty, only used in subclass
+            void prepareUpdateMessageCount(DiscussionThreadPtr thread) override;
+            void updateMessageCount(DiscussionThreadPtr thread) override;
+
+            void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) override {} //empty, only used in subclass
+            void updatePinDisplayOrder(DiscussionThreadPtr thread) override {} //empty, only used in subclass
 
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
@@ -144,26 +165,6 @@ namespace Forum
             ORDERED_COLLECTION_ITERATOR(byPinDisplayOrder_) byPinDisplayOrderUpdateIt_;
         };
 
-        class DiscussionThreadCollectionWithOrderedId final : public DiscussionThreadCollectionBase,
-                                                              private boost::noncopyable
-        {
-        public:
-            bool add(DiscussionThreadPtr thread) override;
-            bool remove(DiscussionThreadPtr thread) override;
-
-            bool contains(DiscussionThreadPtr thread) const;
-
-             auto byId() const { return Helpers::toConst(byId_); }
-            auto& byId()       { return byId_; }
-
-        protected:
-            void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) override;
-            size_t countInternal() const override { return byId_.size(); }
-
-        private:
-            ORDERED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
-        };
-
         class DiscussionThreadCollectionWithReferenceCountAndMessageCount final : private boost::noncopyable
         {
         public:
@@ -210,6 +211,76 @@ namespace Forum
 
             int_fast32_t messageCount_ = 0;
             std::unordered_map<DiscussionThreadPtr, int_fast32_t> referenceCount_;
+        };
+
+        class DiscussionThreadCollectionLowMemory final : public IDiscussionThreadCollection,
+                                                          private boost::noncopyable
+        {
+        public:
+            bool add(DiscussionThreadPtr thread);
+            bool remove(DiscussionThreadPtr thread);
+
+            bool contains(DiscussionThreadPtr thread) const;
+
+            void stopBatchInsert();
+
+            void prepareUpdateName(DiscussionThreadPtr thread) override;
+            void updateName(DiscussionThreadPtr thread) override;
+
+            void prepareUpdateLastUpdated(DiscussionThreadPtr thread) override;
+            void updateLastUpdated(DiscussionThreadPtr thread) override;
+
+            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread) override;
+            void updateLatestMessageCreated(DiscussionThreadPtr thread) override;
+
+            void prepareUpdateMessageCount(DiscussionThreadPtr thread) override;
+            void updateMessageCount(DiscussionThreadPtr thread) override;
+
+            void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) override {} //unused
+            void updatePinDisplayOrder(DiscussionThreadPtr thread) override {} //unused
+
+            auto& onPrepareCountChange()        { return onPrepareCountChange_; }
+            auto& onCountChange()               { return onCountChange_; }
+
+            auto count()                  const { return byId_.size(); }
+
+            auto byId()                   const { return Helpers::toConst(byId_); }
+            auto byName()                 const { return Helpers::toConst(byName_); }
+            auto byCreated()              const { return Helpers::toConst(byCreated_); }
+            auto byLastUpdated()          const { return Helpers::toConst(byLastUpdated_); }
+            auto byLatestMessageCreated() const { return Helpers::toConst(byLatestMessageCreated_); }
+            auto byMessageCount()         const { return Helpers::toConst(byMessageCount_); }
+
+            auto& byId()                   { return byId_; }
+            auto& byName()                 { return byName_; }
+            auto& byCreated()              { return byCreated_; }
+            auto& byLastUpdated()          { return byLastUpdated_; }
+            auto& byLatestMessageCreated() { return byLatestMessageCreated_; }
+            auto& byMessageCount()         { return byMessageCount_; }
+
+        protected:
+            void prepareCountChange();
+            void finishCountChange();
+
+        private:
+            SORTED_VECTOR_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
+
+            SORTED_VECTOR_COLLECTION(DiscussionThread, name) byName_;
+            SORTED_VECTOR_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
+
+            SORTED_VECTOR_COLLECTION(DiscussionThread, created) byCreated_;
+
+            SORTED_VECTOR_COLLECTION(DiscussionThread, lastUpdated) byLastUpdated_;
+            SORTED_VECTOR_COLLECTION_ITERATOR(byLastUpdated_) byLastUpdatedUpdateIt_;
+
+            SORTED_VECTOR_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
+            SORTED_VECTOR_COLLECTION_ITERATOR(byLatestMessageCreated_) byLatestMessageCreatedUpdateIt_;
+
+            SORTED_VECTOR_COLLECTION(DiscussionThread, messageCount) byMessageCount_;
+            SORTED_VECTOR_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
+
+            std::function<void()> onPrepareCountChange_;
+            std::function<void()> onCountChange_;
         };
     }
 }

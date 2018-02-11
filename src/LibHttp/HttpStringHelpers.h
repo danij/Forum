@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -142,7 +142,7 @@ namespace Http
         if (nullptr == value) return 0;
 
         const char* source = value;
-        unsigned char* destination = reinterpret_cast<unsigned char*>(value);
+        auto* destination = reinterpret_cast<unsigned char*>(value);
 
         while (size)
         {
@@ -203,7 +203,7 @@ namespace Http
         char* currentOutput = output;
         for (auto c : input)
         {
-            auto unsignedC = static_cast<uint8_t>(c);
+            const auto unsignedC = static_cast<uint8_t>(c);
             if (table[static_cast<uint8_t>(unsignedC)])
             {
                 *currentOutput++ = '%';
@@ -292,7 +292,7 @@ namespace Http
         currentOutput = std::copy(MonthNames[time.tm_mon], MonthNames[time.tm_mon] + 3, currentOutput);
         *currentOutput++ = ' ';
 
-        auto year = 1900 + time.tm_year;
+        const auto year = 1900 + time.tm_year;
         *currentOutput++ = '0' + (year / 1000);
         *currentOutput++ = '0' + ((year % 1000) / 100);
         *currentOutput++ = '0' + ((year % 100) / 10);

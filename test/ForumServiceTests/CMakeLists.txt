@@ -19,7 +19,8 @@ set(SOURCE_FILES
         DiscussionCategoryTests.cpp
         JsonSerializationTests.cpp
         IpAddressTests.cpp
-        IdTests.cpp)
+        IdTests.cpp
+        SortedVectorTests.cpp)
 
 set(HEADER_FILES
         AllowAllAuthorization.h

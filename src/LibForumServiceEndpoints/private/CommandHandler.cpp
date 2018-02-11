@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -69,23 +69,23 @@ static StringView normalize(StringView input)
 
     int32_t chars16Written = 0, chars8Written = 0;
     UErrorCode errorCode{};
-    auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before.get(), NormalizeBuffer16MaxChars, &chars16Written,
-                                      input.data(), input.size(), &errorCode);
+    const auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before.get(), NormalizeBuffer16MaxChars, &chars16Written,
+                                            input.data(), input.size(), &errorCode);
     if (U_FAILURE(errorCode))
     {
         return{};
     }
 
     errorCode = {};
-    auto normalizer = unorm2_getNFCInstance(&errorCode);
+    const auto normalizer = unorm2_getNFCInstance(&errorCode);
     if (U_FAILURE(errorCode))
     {
         return{};
     }
 
     errorCode = {};
-    auto chars16NormalizedWritten = unorm2_normalize(normalizer, u8to16Result, chars16Written,
-                                                     normalizeBuffer16After.get(), NormalizeBuffer16MaxChars, &errorCode);
+    const auto chars16NormalizedWritten = unorm2_normalize(normalizer, u8to16Result, chars16Written,
+                                                           normalizeBuffer16After.get(), NormalizeBuffer16MaxChars, &errorCode);
     if (U_FAILURE(errorCode))
     {
         return{};
@@ -227,7 +227,7 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
         return userRepository->getUserByName(normalizedParam, output);
     }
 
@@ -235,7 +235,7 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
         return userRepository->searchUsersByName(normalizedParam, output);
     }
 
@@ -255,28 +255,28 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
         return userRepository->changeUserName(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_INFO )
     {
         if ( ! checkNumberOfParametersAtLeast(parameters, 1)) return INVALID_PARAMETERS;
-        StringView normalizedParam = normalize(parameters[1]);
+        const StringView normalizedParam = normalize(parameters[1]);
         return userRepository->changeUserInfo(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_TITLE )
     {
         if ( ! checkNumberOfParametersAtLeast(parameters, 1)) return INVALID_PARAMETERS;
-        StringView normalizedParam = normalize(parameters[1]);
+        const StringView normalizedParam = normalize(parameters[1]);
         return userRepository->changeUserTitle(parameters[0], normalizedParam, output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_SIGNATURE )
     {
         if ( ! checkNumberOfParametersAtLeast(parameters, 1)) return INVALID_PARAMETERS;
-        StringView normalizedParam = normalize(parameters[1]);
+        const StringView normalizedParam = normalize(parameters[1]);
         return userRepository->changeUserSignature(parameters[0], normalizedParam, output);
     }
 
@@ -327,7 +327,7 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
         return discussionThreadRepository->addNewDiscussionThread(normalizedParam, output);
     }
 
@@ -337,11 +337,17 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadRepository->getDiscussionThreadById(parameters[0], output);
     }
 
+    COMMAND_HANDLER_METHOD( GET_MULTIPLE_DISCUSSION_THREADS_BY_ID )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->getMultipleDiscussionThreadsById(parameters[0], output);
+    }
+
     COMMAND_HANDLER_METHOD( SEARCH_DISCUSSION_THREADS_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
         return discussionThreadRepository->searchDiscussionThreadsByName(normalizedParam, output);
     }
 
@@ -349,7 +355,7 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
         return discussionThreadRepository->changeDiscussionThreadName(parameters[0], normalizedParam, output);
     }
 
@@ -465,7 +471,7 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->addNewDiscussionMessageInThread(parameters[0], normalizedParam, output);
     }
 
@@ -480,7 +486,7 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! checkMinNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         auto& changeReason = parameters.size() > 2 ? parameters[2] : emptyString;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->changeDiscussionThreadMessageContent(parameters[0], normalizedParam,
                                                                                        changeReason, output);
     }
@@ -509,6 +515,12 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadMessageRepository->resetVoteDiscussionThreadMessage(parameters[0], output);
     }
 
+    COMMAND_HANDLER_METHOD( GET_MULTIPLE_DISCUSSION_THREAD_MESSAGES_BY_ID )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return discussionThreadMessageRepository->getMultipleDiscussionThreadMessagesById(parameters[0], output);
+    }
+
     COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -530,7 +542,7 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->addCommentToDiscussionThreadMessage(parameters[0], normalizedParam, output);
     }
 
@@ -561,7 +573,7 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
         return discussionTagRepository->addNewDiscussionTag(normalizedParam, output);
     }
 
@@ -584,7 +596,7 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
         return discussionTagRepository->changeDiscussionTagName(parameters[0], normalizedParam, output);
     }
 
@@ -653,7 +665,7 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! checkMinNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         auto& parentId = parameters.size() > 1 ? parameters[1] : emptyString;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
         return discussionCategoryRepository->addNewDiscussionCategory(normalizedParam, parentId, output);
     }
 
@@ -682,7 +694,7 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[1])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
         return discussionCategoryRepository->changeDiscussionCategoryName(parameters[0], normalizedParam, output);
     }
 
@@ -1008,7 +1020,7 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! convertTo(parameters[1], value)) return INVALID_PARAMETERS;
 
         PrivilegeDurationIntType duration{ 0 };
-        if ( ! convertTo(parameters[2], value)) return INVALID_PARAMETERS;
+        if ( ! convertTo(parameters[2], duration)) return INVALID_PARAMETERS;
 
         return authorizationRepository->changeForumWideDefaultPrivilegeLevel(privilege, value, duration, output);
     }
@@ -1205,6 +1217,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT);
     setViewHandler(GET_DISCUSSION_THREAD_BY_ID);
+    setViewHandler(GET_MULTIPLE_DISCUSSION_THREADS_BY_ID);
     setViewHandler(SEARCH_DISCUSSION_THREADS_BY_NAME);
 
     setViewHandler(GET_DISCUSSION_THREADS_OF_USER_BY_NAME);
@@ -1220,6 +1233,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER_BY_MESSAGE_COUNT);
     setViewHandler(GET_USERS_SUBSCRIBED_TO_DISCUSSION_THREAD);
 
+    setViewHandler(GET_MULTIPLE_DISCUSSION_THREAD_MESSAGES_BY_ID);
     setViewHandler(GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED);
     setViewHandler(GET_LATEST_DISCUSSION_THREAD_MESSAGES);
     setViewHandler(GET_DISCUSSION_THREAD_MESSAGE_RANK);
@@ -1266,10 +1280,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
 
 CommandHandler::~CommandHandler()
 {
-    if (impl_)
-    {
-        delete impl_;
-    }
+    delete impl_;
 }
 
 ReadEvents& CommandHandler::readEvents()
@@ -1284,7 +1295,7 @@ WriteEvents& CommandHandler::writeEvents()
 
 CommandHandler::Result CommandHandler::handle(Command command, const std::vector<StringView>& parameters)
 {
-    auto config = getGlobalConfig();
+    const auto config = getGlobalConfig();
 
     if (config->service.disableCommands)
     {
@@ -1307,9 +1318,10 @@ CommandHandler::Result CommandHandler::handle(Command command, const std::vector
         statusCode = StatusCode::NOT_FOUND;
     }
     auto outputView = outputBuffer.view();
-    if (outputView.size() < 1)
+    if (outputView.empty())
     {
         writeStatusCode(outputBuffer, statusCode);
+        outputView = outputBuffer.view();
     }
     return { statusCode, outputBuffer.view() };
 }
@@ -1327,9 +1339,10 @@ CommandHandler::Result CommandHandler::handle(View view, const std::vector<Strin
         statusCode = StatusCode::NOT_FOUND;
     }
     auto outputView = outputBuffer.view();
-    if (outputView.size() < 1)
+    if (outputView.empty())
     {
         writeStatusCode(outputBuffer, statusCode);
+        outputView = outputBuffer.view();
     }
     return{ statusCode, outputView };
 }

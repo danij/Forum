@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ namespace Http
             {
                 return;
             }
-            size_t index = value - &buffers_[0];
+            const size_t index = value - &buffers_[0];
             if (index >= maxBufferCount_)
             {
                 return;
@@ -284,7 +284,7 @@ namespace Http
                 {
                     if ((currentIndex_ < 0) || (bufferArray_->latestBuffer_ < 0) || (currentIndex_ > bufferArray_->latestBuffer_))
                     {
-                        return boost::asio::const_buffer(nullptr, 0);
+                        return {nullptr, 0};
                     }
                     if (currentIndex_ < bufferArray_->latestBuffer_)
                     {

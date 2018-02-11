@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "StringHelpers.h"
 
 #include <string>
-#include <map>
 
+#include <boost/container/flat_map.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
@@ -46,9 +46,9 @@ namespace Forum
         {
         public:
             typedef int_fast32_t VoteScoreType;
-            //using maps as they use less memory than unordered_maps
+            //using flat maps as they use less memory than tree/hash based maps
             //number of votes/message will usually be small
-            typedef std::map<EntityPointer<User>, Timestamp> VoteCollection;
+            typedef boost::container::flat_map<EntityPointer<User>, Timestamp> VoteCollection;
 
             const auto& id()                  const { return id_; }
 
@@ -62,7 +62,7 @@ namespace Forum
 
             const auto& comments() const
             {
-                static const MessageCommentCollection emptyMessageCommentCollection;
+                static const MessageCommentCollectionLowMemory emptyMessageCommentCollection;
 
                 return comments_ ? *comments_ : emptyMessageCommentCollection;
             }
@@ -112,7 +112,7 @@ namespace Forum
             {
                 if (upVotes_)
                 {
-                    auto it = upVotes_->find(user);
+                    const auto it = upVotes_->find(user);
                     if (it != upVotes_->end())
                     {
                         return it->second;
@@ -120,7 +120,7 @@ namespace Forum
                 }
                 if (downVotes_)
                 {
-                    auto it = downVotes_->find(user);
+                    const auto it = downVotes_->find(user);
                     if (it != downVotes_->end())
                     {
                         return it->second;
@@ -165,7 +165,7 @@ namespace Forum
             auto* comments()            { return comments_.get(); }
             void  addComment(MessageCommentPtr comment)
             {
-                if ( ! comments_) comments_.reset(new MessageCommentCollection);
+                if ( ! comments_) comments_.reset(new MessageCommentCollectionLowMemory);
                 comments_->add(comment);
             }
             void  removeComment(MessageCommentPtr comment)
@@ -252,7 +252,7 @@ namespace Forum
 
             std::unique_ptr<LastUpdatedInfo> lastUpdated_;
 
-            std::unique_ptr<MessageCommentCollection> comments_;
+            std::unique_ptr<MessageCommentCollectionLowMemory> comments_;
             int32_t solvedCommentsCount_{0};
 
             std::unique_ptr<VoteCollection> upVotes_;

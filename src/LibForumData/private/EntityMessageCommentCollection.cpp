@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -31,7 +31,28 @@ bool MessageCommentCollection::add(MessageCommentPtr comment)
 bool MessageCommentCollection::remove(MessageCommentPtr comment)
 {
     {
-        auto itById = byId_.find(comment->id());
+        const auto itById = byId_.find(comment->id());
+        if (itById == byId_.end()) return false;
+
+        byId_.erase(itById);
+    }
+    eraseFromNonUniqueCollection(byCreated_, comment, comment->created());
+
+    return true;
+}
+
+bool MessageCommentCollectionLowMemory::add(MessageCommentPtr comment)
+{
+    if ( ! std::get<1>(byId_.insert(comment))) return false;
+    byCreated_.insert(comment);
+
+    return true;
+}
+
+bool MessageCommentCollectionLowMemory::remove(MessageCommentPtr comment)
+{
+    {
+        const auto itById = byId_.find(comment->id());
         if (itById == byId_.end()) return false;
 
         byId_.erase(itById);

@@ -141,9 +141,13 @@ Returns a discussion thread with a page of it's messages, searched by id.
 
 `threadid` – a unique identifier of the discussion thread to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
 
-|Parameter|Type|Description|Default|
-|----|:----:|----|:----:|
-|Page|Query String|Zero-based page number|0|
+### GET /threads/multiple/`threadid1`,`threadid2`,...
+
+Returns up to a page of discussion threads, searched by id. 
+
+`threadidX` – unique identifiers of the discussion threads to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+The results are returned in the same order as they were searched. Entries that have not been found or that the user does not have access to are returned as null.
 
 ### GET /threads/search/`query`
 
@@ -265,6 +269,14 @@ Removes a tag from a discussion thread.
 
 ## Discussion Thread Messages
 
+### GET /thread_messages/multiple/`threadid1`,`threadid2`,...
+
+Returns up to a page of discussion thread messages, searched by id. 
+
+`threadidX` – unique identifiers of the discussion threads to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
+
+The results are returned in the same order as they were searched. Entries that have not been found or that the user does not have access to are returned as null.
+
 ### GET /thread_messages/user/`userid`
 
 Returns a page of discussion thread messages created by a specific user.
@@ -291,14 +303,9 @@ Returns a page of discussion thread message comments, ordered by the creation da
  
 ### GET /thread_messages/comments/`messageid`
 
-Returns a page of comments associated to a specific discussion thread message, ordered by the creation date/time.
+Returns all comments associated to a specific discussion thread message, ordered by the creation date/time in descending order
 
 `messageid` – a unique identifier of the discussion thread message to find, e.g. `00112233-4455-6677-8899-aabbccddeeff`.
-
-|Parameter|Type|Description|Default|
-|----|:----:|----|:----:|
-|Page|Query String|Zero-based page number|0|
-|Sort|Query String|One of: `ascending`, `descending`|`ascending`|
 
 ### GET /thread_messages/comments/user/`userid`
 

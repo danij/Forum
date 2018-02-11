@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -165,12 +165,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void recordBlob(EventType eventType, EventVersionType version, BlobPart* parts, size_t nrOfParts)
     {
-        auto totalSize = std::accumulate(parts, parts + nrOfParts, 0, [](uint32_t total, BlobPart& part)
+        const auto totalSize = std::accumulate(parts, parts + nrOfParts, 0, [](uint32_t total, BlobPart& part)
         {
            return total + part.totalSize();
         }) + EventHeaderSize;
 
-        auto blob = Blob(totalSize);
+        const auto blob = Blob(totalSize);
 
         char* buffer = blob.buffer;
 
@@ -1297,8 +1297,5 @@ EventObserver::EventObserver(ReadEvents& readEvents, WriteEvents& writeEvents,
 
 EventObserver::~EventObserver()
 {
-    if (impl_)
-    {
-        delete impl_;
-    }
+    delete impl_;
 }

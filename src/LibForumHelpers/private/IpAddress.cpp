@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -123,7 +123,7 @@ size_t IpAddress::toString(char* buffer, size_t bufferSize) const noexcept
     {
         assert(bufferSize >= MaxIPv4CharacterCount);
 
-        auto originalBufferPtr = buffer;
+        const auto originalBufferPtr = buffer;
         buffer += writeUInt8(buffer, data_.bytes[0]);
         *buffer++ = '.';
         buffer += writeUInt8(buffer, data_.bytes[1]);
@@ -138,7 +138,7 @@ size_t IpAddress::toString(char* buffer, size_t bufferSize) const noexcept
     {
         assert(bufferSize >= MaxIPv6CharacterCount);
 
-        auto originalBufferPtr = buffer;
+        const auto originalBufferPtr = buffer;
         for (size_t i = 0; i < 14; i += 2)
         {
             buffer += writeUInt16Hex(buffer, data_.bytes[i], data_.bytes[i + 1]);

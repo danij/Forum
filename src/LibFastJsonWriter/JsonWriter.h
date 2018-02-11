@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -122,7 +122,7 @@ namespace Json
         static thread_local char sixCharEscapeBuffer[6+1] = { '\\', 'u', '0', '0', 0, 0, 0 };
 
         auto directWriteFrom = value;
-        auto endValue = value + length;
+        const auto endValue = value + length;
 
         while (value < endValue)
         {
@@ -173,6 +173,7 @@ namespace Json
         {
             pushState({ 0, 0, 0 });
         }
+        ~JsonWriterBase() = default;
 
         JsonWriterBase(const JsonWriterBase&) = delete;
         JsonWriterBase(JsonWriterBase&&) = default;

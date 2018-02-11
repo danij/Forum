@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ using namespace Forum::Helpers;
 
 AbstractEndpoint::AbstractEndpoint(CommandHandler& handler) : commandHandler_(handler)
 {
-    auto config = Configuration::getGlobalConfig();
+    const auto config = Configuration::getGlobalConfig();
     prefix_ = config->service.responsePrefix;
 }
 
@@ -132,7 +132,7 @@ void AbstractEndpoint::handleInternal(Http::RequestState& requestState, StringVi
     currentParameters.clear();
     updateContextForRequest(requestState.request);
 
-    auto result = executeCommand(requestState, commandHandler_, currentParameters);
+    const auto result = executeCommand(requestState, commandHandler_, currentParameters);
 
     requestState.response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
     requestState.response.writeHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -435,6 +435,16 @@ void DiscussionThreadsEndpoint::getThreadById(Http::RequestState& requestState)
     });
 }
 
+void DiscussionThreadsEndpoint::getMultipleThreadsById(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::GET_MULTIPLE_DISCUSSION_THREADS_BY_ID, parameters);
+    });
+}
+
 void DiscussionThreadsEndpoint::getThreadsOfUser(Http::RequestState& requestState)
 {
     handle(requestState,
@@ -694,6 +704,16 @@ void DiscussionThreadsEndpoint::removeTag(Http::RequestState& requestState)
 
 DiscussionThreadMessagesEndpoint::DiscussionThreadMessagesEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
 {
+}
+
+void DiscussionThreadMessagesEndpoint::getMultipleThreadMessagesById(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::GET_MULTIPLE_DISCUSSION_THREAD_MESSAGES_BY_ID, parameters);
+    });
 }
 
 void DiscussionThreadMessagesEndpoint::getThreadMessagesOfUser(Http::RequestState& requestState)

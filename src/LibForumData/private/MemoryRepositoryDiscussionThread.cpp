@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -190,7 +190,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
                               userId = currentUser.id();
                           }
 
-                          auto& displayContext = Context::getDisplayContext();
+                          const auto& displayContext = Context::getDisplayContext();
                           if (displayContext.checkNotChangedSince > 0)
                           {
                               if (thread.latestVisibleChange() <= displayContext.checkNotChangedSince)
@@ -202,6 +202,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
 
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageParentThread, true);
                           BoolTemporaryChanger __(serializationSettings.hideVisitedThreadSinceLastChange, true);
+                          TemporaryChanger<UserPtr> ___(serializationSettings.userToCheckVotesOf, currentUser.pointer());
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
@@ -224,6 +225,45 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
                                }
                            });
     }
+    return status;
+}
+
+StatusCode MemoryRepositoryDiscussionThread::getMultipleDiscussionThreadsById(StringView ids, OutStream& output) const
+{
+    StatusWriter status(output);
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    constexpr size_t MaxIdBuffer = 64;
+    static thread_local std::array<UuidString, MaxIdBuffer> parsedIds;
+    static thread_local std::array<const DiscussionThread*, MaxIdBuffer> threadsFound;
+
+    const auto maxThreadsToSearch = std::min(MaxIdBuffer, 
+                                             static_cast<size_t>(getGlobalConfig()->discussionThread.maxThreadsPerPage));
+    auto lastParsedId = parseMultipleUuidStrings(ids, parsedIds.begin(), parsedIds.begin() + maxThreadsToSearch);
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          const auto& indexById = collection.threads().byId();
+                          auto lastThreadFound = std::transform(parsedIds.begin(), lastParsedId, threadsFound.begin(), 
+                              [&indexById](auto id)
+                              {
+                                  auto it = indexById.find(id);
+                                  return (it == indexById.end()) ? nullptr : *it;
+                              });
+                          
+                          status = StatusCode::OK;
+                          status.disable();
+
+                          BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
+
+                          writeAllEntities(threadsFound.begin(), lastThreadFound, "threads", output, restriction);
+                          
+                          readEvents().onGetMultipleDiscussionThreadsById(createObserverContext(currentUser), ids);
+                      });
     return status;
 }
 
@@ -474,11 +514,11 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
 {
     StatusWriter status(output);
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->discussionThread.minNameLength,
-                                         config->discussionThread.maxNameLength,
-                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                               config->discussionThread.minNameLength,
+                                               config->discussionThread.maxNameLength,
+                                               &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -546,11 +586,11 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(IdTypeRe
 {
     StatusWriter status(output);
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->discussionThread.minNameLength,
-                                         config->discussionThread.maxNameLength,
-                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                               config->discussionThread.minNameLength,
+                                               config->discussionThread.maxNameLength,
+                                               &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -593,7 +633,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(EntityCo
         return StatusCode::NOT_FOUND;
     }
 
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     DiscussionThreadPtr thread = *it;
 
@@ -639,14 +679,14 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
                                                                                    IdTypeRef id, uint16_t newValue)
 {
     auto& indexById = collection.threads().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     DiscussionThreadPtr thread = *it;
     thread->updatePinDisplayOrder(newValue);
@@ -693,7 +733,7 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(IdTypeRef id
 StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(EntityCollection& collection, IdTypeRef id)
 {
     auto& indexById = collection.threads().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
@@ -772,7 +812,7 @@ static void updateMessageCounts(DiscussionThreadPtr thread, int_fast32_t differe
 StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollection& collection,
                                                                     IdTypeRef fromId, IdTypeRef intoId)
 {
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     if (fromId == intoId)
     {
@@ -781,13 +821,13 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
     }
 
     auto& indexById = collection.threads().byId();
-    auto itFrom = indexById.find(fromId);
+    const auto itFrom = indexById.find(fromId);
     if (itFrom == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(fromId);
         return StatusCode::NOT_FOUND;
     }
-    auto itInto = indexById.find(intoId);
+    const auto itInto = indexById.find(intoId);
     if (itInto == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(intoId);
@@ -871,7 +911,7 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(IdTypeR
 StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityCollection& collection, IdTypeRef id)
 {
     auto& indexById = collection.threads().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
@@ -939,7 +979,7 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(IdT
 StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(EntityCollection& collection, IdTypeRef id)
 {
     auto& indexById = collection.threads().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);

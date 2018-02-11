@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -168,6 +168,7 @@ namespace Forum
 
             virtual StatusCode getDiscussionThreads(OutStream& output, RetrieveDiscussionThreadsBy by) const = 0;
             virtual StatusCode getDiscussionThreadById(Entities::IdTypeRef id, OutStream& output) = 0;
+            virtual StatusCode getMultipleDiscussionThreadsById(StringView ids, OutStream& output) const = 0;
             virtual StatusCode searchDiscussionThreadsByName(StringView name, OutStream& output) const = 0;
 
             virtual StatusCode getDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,
@@ -223,6 +224,8 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadMessageRepository)
 
+            virtual StatusCode getMultipleDiscussionThreadMessagesById(StringView ids, 
+                                                                       OutStream& output) const = 0;
             virtual StatusCode getDiscussionThreadMessagesOfUserByCreated(Entities::IdTypeRef id,
                                                                           OutStream& output) const = 0;
             virtual StatusCode getDiscussionThreadMessageRank(Entities::IdTypeRef id, OutStream& output) const = 0;

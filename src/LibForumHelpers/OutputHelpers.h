@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -152,6 +152,79 @@ namespace Forum
                                         [](auto&) { return true; }, restriction);
         }
 
+        template<typename Collection, size_t PropertyNameSize, typename FilterFn>
+        void writeAllEntities(const Collection& collection, const char(&propertyName)[PropertyNameSize],
+                              Repository::OutStream& output, bool ascending, FilterFn&& filter,
+                              const Authorization::SerializationRestriction& restriction)
+        {
+            Json::JsonWriter writer(output);
+
+            writer.startObject();
+
+            writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
+            writer.startArray();
+
+            if (ascending)
+            {
+                for (auto it = collection.begin(), n = collection.end(); it != n; ++it)
+                {
+                    if (*it && filter(**it))
+                    {
+                        serialize(writer, **it, restriction);
+                    }
+                }
+            }
+            else
+            {
+                for (auto it = collection.rbegin(), n = collection.rend(); it != n; ++it)
+                {
+                    if (*it && filter(**it))
+                    {
+                        serialize(writer, **it, restriction);
+                    }
+                }
+            }
+            writer.endArray();
+
+            writer.endObject();
+        }
+
+        template<typename Collection, size_t PropertyNameSize>
+        void writeAllEntities(const Collection& collection, const char(&propertyName)[PropertyNameSize],
+                              Repository::OutStream& output, bool ascending,
+                              const Authorization::SerializationRestriction& restriction)
+        {
+            writeAllEntities(collection, propertyName, output, ascending, [](auto&) { return true; }, restriction);
+        }
+
+        template<typename It, size_t PropertyNameSize>
+        void writeAllEntities(It begin, It end, const char(&propertyName)[PropertyNameSize],
+                              Repository::OutStream& output, const Authorization::SerializationRestriction& restriction)
+        {
+            Json::JsonWriter writer(output);
+
+            writer.startObject();
+
+            writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
+            writer.startArray();
+
+            for (auto it = begin, n = end; it != n; ++it)
+            {
+                if (*it)
+                {
+                    serialize(writer, **it, restriction);
+                }
+                else
+                {
+                    writer.null();
+                }
+            }
+
+            writer.endArray();
+
+            writer.endObject();
+        }
+
         /**
          * Helper for writing a status message in the output if no other output is provided
          */
@@ -163,6 +236,12 @@ namespace Forum
             StatusWriter(Repository::OutStream& output) :
                     output_(output), statusCode_(Repository::StatusCode::UNAUTHORIZED), enabled_(true)
             {}
+
+            StatusWriter(const StatusWriter&) = delete;
+            StatusWriter(StatusWriter&&) = delete;
+
+            StatusWriter& operator=(const StatusWriter&) = delete;
+            StatusWriter& operator=(StatusWriter&&) = delete;
 
             ~StatusWriter()
             {

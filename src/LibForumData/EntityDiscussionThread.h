@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,10 +25,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <atomic>
 #include <string>
-#include <set>
 #include <unordered_map>
 
 #include <boost/noncopyable.hpp>
+#include <boost/container/flat_map.hpp>
+#include <boost/container/flat_set.hpp>
 
 namespace Forum
 {
@@ -58,6 +59,8 @@ namespace Forum
 
             const auto& messages()                  const { return messages_; }
                    auto messageCount()              const { return messages_.count(); }
+
+                   auto empty()                     const { return messages_.empty(); }
 
             auto lastUpdated() const
             {
@@ -205,7 +208,7 @@ namespace Forum
             }
 
             void insertMessage(DiscussionThreadMessagePtr message);
-            void insertMessages(DiscussionThreadMessageCollection& collection);
+            void insertMessages(DiscussionThreadMessageCollectionLowMemory& collection);
             void deleteDiscussionThreadMessage(DiscussionThreadMessagePtr message);
 
             void addVisitorSinceLastEdit(IdTypeRef userId);
@@ -230,7 +233,7 @@ namespace Forum
             User& createdBy_;
 
             NameType name_;
-            DiscussionThreadMessageCollection messages_;
+            DiscussionThreadMessageCollectionLowMemory messages_;
 
             std::unique_ptr<LastUpdatedInfo> lastUpdated_;
 
@@ -247,11 +250,11 @@ namespace Forum
             mutable std::atomic_int_fast64_t visited_{0};
             bool aboutToBeDeleted_ = false;
 
-            std::set<boost::uuids::uuid> visitorsSinceLastEdit_;
+            boost::container::flat_set<boost::uuids::uuid> visitorsSinceLastEdit_;
 
-            std::set<EntityPointer<DiscussionTag>> tags_;
-            std::set<EntityPointer<DiscussionCategory>> categories_;
-            std::unordered_map<IdType, EntityPointer<User>> subscribedUsers_;
+            boost::container::flat_set<EntityPointer<DiscussionTag>> tags_;
+            boost::container::flat_set<EntityPointer<DiscussionCategory>> categories_;
+            boost::container::flat_map<IdType, EntityPointer<User>> subscribedUsers_;
         };
 
         typedef EntityPointer<DiscussionThread> DiscussionThreadPtr;

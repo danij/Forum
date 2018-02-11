@@ -26,6 +26,8 @@ endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 
+add_definitions(-DBOOST_ASIO_ENABLE_OLD_SERVICES)
+
 add_subdirectory(src/LibFastJsonWriter)
 add_subdirectory(src/LibHttp)
 add_subdirectory(src/LibForumContext)

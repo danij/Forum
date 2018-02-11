@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ namespace Forum
              * - Stores that the current user has visited the discussion thread
              */
             StatusCode getDiscussionThreadById(Entities::IdTypeRef id, OutStream& output) override;
+            StatusCode getMultipleDiscussionThreadsById(StringView ids, OutStream& output) const override;
             StatusCode searchDiscussionThreadsByName(StringView name, OutStream& output) const override;
 
             StatusCode getDiscussionThreadsOfUser(Entities::IdTypeRef id, OutStream& output,

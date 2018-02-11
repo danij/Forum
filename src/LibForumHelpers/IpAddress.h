@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ namespace Forum
             IpAddress(const boost::asio::ip::address& value);
             IpAddress(const char* string);
             explicit IpAddress(const uint8_t* dataArray);
+            ~IpAddress() = default;
 
             IpAddress(const IpAddress&) = default;
             IpAddress(IpAddress&&) = default;

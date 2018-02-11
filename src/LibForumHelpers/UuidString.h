@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,9 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <functional>
 #include <string>
+#include <cstdint>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/utility/string_view.hpp>
+#include <boost/asio/ip/impl/address.ipp>
 
 namespace Forum
 {
@@ -36,8 +38,9 @@ namespace Forum
             UuidString();
             UuidString(boost::uuids::uuid value);
             UuidString(const std::string& value);
-            UuidString(const boost::string_view& value);
+            UuidString(boost::string_view value);
             explicit UuidString(const uint8_t* uuidArray);
+            ~UuidString() = default;
 
             UuidString(const UuidString&) = default;
             UuidString(UuidString&&) = default;
@@ -117,8 +120,48 @@ namespace Forum
         {
             return value.hashValue();
         }
-    }
+        
+        static const int8_t OccursInUuids[] =
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+            0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        };
 
+        /**
+         * Parses uuid strings separated by any character that is not part of the uuid string representation.
+         */
+        template<typename It>
+        It parseMultipleUuidStrings(boost::string_view input, It outputBegin, It outputEnd)
+        {
+            if (outputBegin == outputEnd) return outputBegin;
+
+            auto previousStart = input.cbegin();
+            auto inputIt = input.cbegin();
+            for (const auto inputEnd = input.cend(); inputIt != inputEnd; ++inputIt)
+            {
+                if (0 == OccursInUuids[static_cast<uint8_t>(*inputIt)])
+                {
+                    if ((inputIt - previousStart) == UuidString::StringRepresentationSize)
+                    {
+                        *outputBegin = UuidString(boost::string_view(previousStart, UuidString::StringRepresentationSize));
+                        if (++outputBegin == outputEnd) return outputBegin;
+                    }
+                    previousStart = inputIt + 1;
+                }
+            }
+            if ((inputIt - previousStart) == UuidString::StringRepresentationSize)
+            {
+                *outputBegin++ = UuidString(boost::string_view(previousStart, UuidString::StringRepresentationSize));
+            }
+            return outputBegin;
+        }
+    }
 }
 
 namespace std

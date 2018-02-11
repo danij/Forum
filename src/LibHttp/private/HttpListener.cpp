@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ static void closeSocket(boost::asio::ip::tcp::socket& socket)
 struct ConnectionInfo
 {
     boost::asio::ip::tcp::socket* socket;
-    boost::asio::strand* strand;
+    boost::asio::io_service::strand* strand;
 
     bool operator==(ConnectionInfo other) const
     {
@@ -65,13 +65,13 @@ struct ConnectionInfo
 inline size_t hash_value(const ConnectionInfo& value)
 {
     return std::hash<boost::asio::ip::tcp::socket*>{}(value.socket)
-        ^ std::hash<boost::asio::strand*>{}(value.strand);
+        ^ std::hash<boost::asio::io_service::strand*>{}(value.strand);
 }
 
 struct HttpListener::HttpConnection final : private boost::noncopyable
 {
     explicit HttpConnection(HttpListener& listener, boost::asio::ip::tcp::socket&& socket,
-                            boost::asio::strand&& strand, ReadBufferType&& headerBuffer,
+                            boost::asio::io_service::strand&& strand, ReadBufferType&& headerBuffer,
                             ReadBufferPoolType& readBufferPool, WriteBufferPoolType& writeBufferPool,
                             TimeoutManager<ConnectionInfo>& timeoutManager, bool trustIpFromXForwardedFor)
         : listener_(listener), socket_(std::move(socket)), strand_(std::move(strand)),
@@ -141,7 +141,7 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
             keepConnectionAlive_ = parser_.request().keepConnectionAlive;
 
             //add references to request content buffers
-            for (auto buffer : requestBodyBuffer_.constBufferWrapper())
+            for (const auto buffer : requestBodyBuffer_.constBufferWrapper())
             {
                 if (request.nrOfRequestContentBuffers >= request.requestContentBuffers.size())
                 {
@@ -156,12 +156,12 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
             {
                 static thread_local char nullTerminatedAddressBuffer[128];
                 auto xForwardedFor = request.headers[Http::Request::X_Forwarded_For];
-                auto toCopy = std::min(std::extent<decltype(nullTerminatedAddressBuffer)>::value - 1, xForwardedFor.size());
+                const auto toCopy = std::min(std::extent<decltype(nullTerminatedAddressBuffer)>::value - 1, xForwardedFor.size());
                 std::copy(xForwardedFor.data(), xForwardedFor.data() + toCopy, nullTerminatedAddressBuffer);
                 nullTerminatedAddressBuffer[toCopy] = 0;
 
                 boost::system::error_code parseAddressCode;
-                auto address = boost::asio::ip::address::from_string(nullTerminatedAddressBuffer, parseAddressCode);
+                const auto address = boost::asio::ip::address::from_string(nullTerminatedAddressBuffer, parseAddressCode);
                 if ( ! parseAddressCode)
                 {
                     request.remoteAddress = address;
@@ -265,10 +265,10 @@ private:
 
     HttpListener& listener_;
     boost::asio::ip::tcp::socket socket_;
-    boost::asio::strand strand_;
+    boost::asio::io_service::strand strand_;
     ReadBufferType headerBuffer_;
     RequestBodyBufferType requestBodyBuffer_;
-    std::array<char, 1024> readBuffer_;
+    std::array<char, 1024> readBuffer_{};
     ResponseBufferType responseBuffer_;
     HttpResponseBuilder responseBuilder_;
     TimeoutManager<ConnectionInfo>& timeoutManager_;
@@ -328,7 +328,7 @@ struct HttpListener::HttpListenerImpl
     boost::asio::io_service& ioService;
     boost::asio::ip::tcp::acceptor acceptor;
     boost::asio::ip::tcp::socket socket;
-    boost::asio::strand strand;
+    boost::asio::io_service::strand strand;
     boost::asio::deadline_timer timeoutTimer;
 
     constexpr static int CheckTimeoutEverySeconds = 1;
@@ -347,10 +347,7 @@ HttpListener::HttpListener(Configuration config, HttpRouter& router, boost::asio
 
 HttpListener::~HttpListener()
 {
-    if (impl_)
-    {
-        delete impl_;
-    }
+    delete impl_;
 }
 
 void HttpListener::startListening()

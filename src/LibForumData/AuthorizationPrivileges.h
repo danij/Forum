@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -80,6 +80,7 @@ namespace Forum
         {
             DiscussionThreadMessagePrivilege::UP_VOTE,
             DiscussionThreadMessagePrivilege::DOWN_VOTE,
+            DiscussionThreadMessagePrivilege::RESET_VOTE,
             DiscussionThreadMessagePrivilege::CHANGE_CONTENT,
             DiscussionThreadMessagePrivilege::DELETE
         };
@@ -431,7 +432,7 @@ namespace Forum
         }
 
         inline PrivilegeDurationIntType calculatePrivilegeExpires(PrivilegeDurationIntType start,
-                                                                         PrivilegeDurationIntType duration)
+                                                                  PrivilegeDurationIntType duration)
         {
             static_assert(sizeof(PrivilegeDurationIntType) >= 8, "PrivilegeDurationIntType should be at least 64-bit wide");
 

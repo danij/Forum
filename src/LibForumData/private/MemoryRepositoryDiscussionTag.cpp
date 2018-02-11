@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-2017 Daniel Jurcau
+Copyright (C) 2016-present Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -113,11 +113,11 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
 {
     StatusWriter status(output);
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->discussionTag.minNameLength,
-                                         config->discussionTag.maxNameLength,
-                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(name, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                               config->discussionTag.minNameLength,
+                                               config->discussionTag.maxNameLength,
+                                               &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -177,8 +177,8 @@ StatusWithResource<DiscussionTagPtr> MemoryRepositoryDiscussionTag::addNewDiscus
     }
 
     //IdType id, Timestamp created, VisitDetails creationDetails
-    auto tag = collection.createDiscussionTag(id, std::move(name), Context::getCurrentTime(),
-                                              { Context::getCurrentUserIpAddress() });
+    const auto tag = collection.createDiscussionTag(id, std::move(name), Context::getCurrentTime(),
+                                                    { Context::getCurrentUserIpAddress() });
     collection.insertDiscussionTag(tag);
 
     return tag;
@@ -193,11 +193,11 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(IdTypeRef id, 
         return status = StatusCode::INVALID_PARAMETERS;
     }
 
-    auto config = getGlobalConfig();
-    auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
-                                         config->discussionTag.minNameLength,
-                                         config->discussionTag.maxNameLength,
-                                         &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(newName, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                               config->discussionTag.minNameLength,
+                                               config->discussionTag.maxNameLength,
+                                               &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
     if (validationCode != StatusCode::OK)
     {
         return status = validationCode;
@@ -241,7 +241,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(IdTypeRef id, 
 StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(EntityCollection& collection, IdTypeRef id,
                                                                   StringView newName)
 {
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     auto& indexById = collection.tags().byId();
     auto it = indexById.find(id);
@@ -304,7 +304,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(IdTypeRef id
 StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(EntityCollection& collection, IdTypeRef id, StringView blob)
 {
     auto& indexById = collection.tags().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(id);
@@ -355,7 +355,7 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(IdTypeRef id, OutS
 StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(EntityCollection& collection, IdTypeRef id)
 {
     auto& indexById = collection.tags().byId();
-    auto it = indexById.find(id);
+    const auto it = indexById.find(id);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(id);
@@ -416,7 +416,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
                                                                    IdTypeRef threadId)
 {
     auto& tagIndexById = collection.tags().byId();
-    auto tagIt = tagIndexById.find(tagId);
+    const auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
@@ -424,7 +424,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     }
 
     auto& threadIndexById = collection.threads().byId();
-    auto threadIt = threadIndexById.find(threadId);
+    const auto threadIt = threadIndexById.find(threadId);
     if (threadIt == threadIndexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
@@ -436,7 +436,7 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     DiscussionThreadPtr threadPtr = *threadIt;
     DiscussionThread& thread = *threadPtr;
 
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     //the number of tags associated to a thread is much smaller than
     //the number of threads associated to a tag, so search the tag in the thread
@@ -502,7 +502,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
 {
 
     auto& tagIndexById = collection.tags().byId();
-    auto tagIt = tagIndexById.find(tagId);
+    const auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
@@ -510,7 +510,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
     }
 
     auto& threadIndexById = collection.threads().byId();
-    auto threadIt = threadIndexById.find(threadId);
+    const auto threadIt = threadIndexById.find(threadId);
     if (threadIt == threadIndexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
@@ -522,7 +522,7 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
     DiscussionThreadPtr threadPtr = *threadIt;
     DiscussionThread& thread = *threadPtr;
 
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     if ( ! thread.removeTag(tagPtr))
     {
@@ -595,13 +595,13 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& 
     }
 
     auto& indexById = collection.tags().byId();
-    auto itFrom = indexById.find(fromId);
+    const auto itFrom = indexById.find(fromId);
     if (itFrom == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(fromId);
         return StatusCode::NOT_FOUND;
     }
-    auto itInto = indexById.find(intoId);
+    const auto itInto = indexById.find(intoId);
     if (itInto == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(intoId);
@@ -613,7 +613,7 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& 
     DiscussionTagPtr tagIntoRef = *itInto;
     DiscussionTag& tagInto = *tagIntoRef;
 
-    auto currentUser = getCurrentUser(collection);
+    const auto currentUser = getCurrentUser(collection);
 
     for (DiscussionThreadPtr thread : tagFrom.threads().byId())
     {
