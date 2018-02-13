@@ -5,6 +5,8 @@
 
 Cross-platform backend software for providing a discussion forum. 
 
+Demo: http://fastforumdemo.westeurope.cloudapp.azure.com/
+
 ## Feature Overview
 
 The backend supports the following:
