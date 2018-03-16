@@ -301,7 +301,7 @@ struct EntityCollection::Impl
     void deleteDiscussionTag(DiscussionTagPtr tagPtr)
     {
         assert(tagPtr);
-        if ( ! tags_.remove (tagPtr))
+        if ( ! tags_.remove(tagPtr))
         {
             return;
         }

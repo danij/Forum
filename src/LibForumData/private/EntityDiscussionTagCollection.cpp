@@ -49,7 +49,7 @@ bool DiscussionTagCollection::remove(DiscussionTagPtr tag)
     }
     if ( ! Context::isBatchInsertInProgress())
     {
-        eraseFromNonUniqueCollection(byThreadCount_, tag, tag->messageCount());
+        eraseFromNonUniqueCollection(byThreadCount_, tag, tag->threadCount());
         eraseFromNonUniqueCollection(byMessageCount_, tag, tag->messageCount());
     }
 
