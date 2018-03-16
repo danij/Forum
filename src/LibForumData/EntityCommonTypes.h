@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SortedVector.h"
 
 #include <cstdint>
+#include <limits>
 #include <utility>
 #include <type_traits>
 
@@ -43,6 +44,9 @@ namespace Forum
          * Representing a timestamp as the number of seconds since the UNIX EPOCH
          */
         typedef int_fast64_t Timestamp;
+
+        constexpr Timestamp TimestampMin = std::numeric_limits<Timestamp>::min();
+        constexpr Timestamp TimestampMax = std::numeric_limits<Timestamp>::max();
 
         struct VisitDetails final
         {

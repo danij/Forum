@@ -828,6 +828,8 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
 
         currentTimestamp_ = readAndIncrementBuffer<PersistentTimestampType>(data, size);
+        firstTimestamp_ = std::min(firstTimestamp_, currentTimestamp_);
+
         auto currentUserId = readAndIncrementBuffer<UuidString>(data, size);
 
         Context::setCurrentUserId(currentUserId);
@@ -867,8 +869,16 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             boost::interprocess::file_mapping mapping(fileName.c_str(), mappingMode);
             boost::interprocess::mapped_region region(mapping, mappingMode);
             region.advise(boost::interprocess::mapped_region::advice_sequential);
+            
+            firstTimestamp_ = TimestampMax;
 
-            return iterateBlobsInFile(reinterpret_cast<const unsigned char*>(region.get_address()), region.get_size());
+            const auto result = iterateBlobsInFile(reinterpret_cast<const unsigned char*>(region.get_address()), region.get_size());
+            
+            FORUM_LOG_INFO << "   " << fileName << ": " 
+                           << result.statistic.importedBlobs << " events out of " << result.statistic.readBlobs 
+                           << " blobs read between " << firstTimestamp_ << " and " << currentTimestamp_;
+
+            return result;
         }
         catch(boost::interprocess::interprocess_exception& ex)
         {
@@ -879,7 +889,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
     ImportResult iterateBlobsInFile(const unsigned char* data, size_t size)
     {
-        ImportResult result{};
+        ImportResult result{};        
         CurrentTimeChanger _([this]() { return this->getCurrentTimestamp(); });
 
         while (size > 0)
@@ -1065,6 +1075,7 @@ private:
     DirectWriteRepositoryCollection repositories_;
     std::vector<std::vector<std::function<bool(uint16_t, const uint8_t*, size_t)>>> importFunctions_;
     Timestamp currentTimestamp_{};
+    Timestamp firstTimestamp_ = TimestampMax;
     EventType currentEventType_{};
     std::unordered_map<UuidString, uint32_t> cachedNrOfThreadVisits_;
     std::unordered_map<UuidString, Timestamp> usersLastSeen_;
