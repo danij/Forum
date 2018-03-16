@@ -73,7 +73,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMultipleDiscussionThreadM
                           status = StatusCode::OK;
                           status.disable();
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), 
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
                                                                currentUser.id(), Context::getCurrentTime());
 
                           TemporaryChanger<UserPtr> _(serializationSettings.userToCheckVotesOf, currentUser.pointer());
@@ -127,7 +127,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
 
         status.disable();
 
-        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
+        SerializationRestriction restriction(collection.grantedPrivileges(), collection, 
+                                             currentUser.id(), Context::getCurrentTime());
 
         writeEntitiesWithPagination(messages, "messages", output, displayContext.pageNumber, pageSize,
             displayContext.sortOrder == Context::SortOrder::Ascending, restriction);
@@ -157,7 +158,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getLatestDiscussionThreadMes
         status = StatusCode::OK;
         status.disable();
 
-        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
+        SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                             currentUser.id(), Context::getCurrentTime());
 
         writeEntitiesWithPagination(messages, "messages", output, 0, pageSize, false, restriction);
 
@@ -860,12 +862,14 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
 
 template<typename Collection>
 static void writeMessageComments(const Collection& collection, OutStream& output,
-                                 const GrantedPrivilegeStore& privilegeStore, const User& currentUser)
+                                 const GrantedPrivilegeStore& privilegeStore, 
+                                 const ForumWidePrivilegeStore& forumWidePrivilegeStore, const User& currentUser)
 {
     auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesCommentsPerPage;
     auto& displayContext = Context::getDisplayContext();
 
-    SerializationRestriction restriction(privilegeStore, currentUser.id(), Context::getCurrentTime());
+    SerializationRestriction restriction(privilegeStore, forumWidePrivilegeStore, 
+                                         currentUser.id(), Context::getCurrentTime());
 
     writeEntitiesWithPagination(collection, "message_comments", output,
         displayContext.pageNumber, pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, restriction);
@@ -873,9 +877,11 @@ static void writeMessageComments(const Collection& collection, OutStream& output
 
 template<typename Collection>
 static void writeAllMessageComments(const Collection& collection, OutStream& output,
-                                    const GrantedPrivilegeStore& privilegeStore, const User& currentUser)
+                                    const GrantedPrivilegeStore& privilegeStore, 
+                                    const ForumWidePrivilegeStore& forumWidePrivilegeStore, const User& currentUser)
 {
-    SerializationRestriction restriction(privilegeStore, currentUser.id(), Context::getCurrentTime());
+    SerializationRestriction restriction(privilegeStore, forumWidePrivilegeStore, 
+                                         currentUser.id(), Context::getCurrentTime());
 
     writeAllEntities(collection, "message_comments", output, false, restriction);
 }
@@ -899,7 +905,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream
                           BoolTemporaryChanger __(serializationSettings.hideLatestMessage, true);
 
                           writeMessageComments(collection.messageComments().byCreated(), output,
-                                               collection.grantedPrivileges(), currentUser);
+                                               collection.grantedPrivileges(), collection, currentUser);
                           readEvents().onGetMessageComments(createObserverContext(currentUser));
                       });
     return status;
@@ -940,7 +946,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfDiscussi
 
                           status.disable();
                           writeAllMessageComments(message.comments().byCreated(), output,
-                                                  collection.grantedPrivileges(), currentUser);
+                                                  collection.grantedPrivileges(), collection, currentUser);
 
                           readEvents().onGetMessageCommentsOfMessage(createObserverContext(currentUser), message);
                       });
@@ -981,7 +987,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageCommentsOfUser(IdT
 
                           status.disable();
                           writeMessageComments(user.messageComments().byCreated(), output,
-                                               collection.grantedPrivileges(), currentUser);
+                                               collection.grantedPrivileges(), collection, currentUser);
 
                           readEvents().onGetMessageCommentsOfUser(createObserverContext(currentUser), user);
                       });

@@ -79,7 +79,8 @@ inline void writePinnedDiscussionThreads<DiscussionThreadCollectionWithHashedIdA
 
 template<typename ThreadsCollection>
 static void writeDiscussionThreads(const ThreadsCollection& collection, RetrieveDiscussionThreadsBy by,
-                                   OutStream& output, const GrantedPrivilegeStore& privilegeStore, const User& currentUser)
+                                   OutStream& output, const GrantedPrivilegeStore& privilegeStore, 
+                                   const ForumWidePrivilegeStore& forumWidePrivilegeStore, const User& currentUser)
 {
     BoolTemporaryChanger _(serializationSettings.visitedThreadSinceLastChange, false);
     BoolTemporaryChanger __(serializationSettings.hideDiscussionThreadMessages, true);
@@ -98,7 +99,8 @@ static void writeDiscussionThreads(const ThreadsCollection& collection, Retrieve
     auto pageSize = getGlobalConfig()->discussionThread.maxThreadsPerPage;
     auto& displayContext = Context::getDisplayContext();
 
-    SerializationRestriction restriction(privilegeStore, currentUser.id(), Context::getCurrentTime());
+    SerializationRestriction restriction(privilegeStore, forumWidePrivilegeStore, 
+                                         currentUser.id(), Context::getCurrentTime());
 
     auto ascending = displayContext.sortOrder == Context::SortOrder::Ascending;
 
@@ -146,7 +148,8 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreads(OutStream& out
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          writeDiscussionThreads(collection.threads(), by, output, collection.grantedPrivileges(), currentUser);
+                          writeDiscussionThreads(collection.threads(), by, output, collection.grantedPrivileges(), 
+                                                 collection, currentUser);
 
                           readEvents().onGetDiscussionThreads(createObserverContext(currentUser));
                       });
@@ -205,8 +208,8 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
                           TemporaryChanger<UserPtr> ___(serializationSettings.userToCheckVotesOf, currentUser.pointer());
                           status.disable();
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
-                                                               Context::getCurrentTime());
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                               currentUser.id(), Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "thread", thread, restriction);
 
@@ -258,7 +261,8 @@ StatusCode MemoryRepositoryDiscussionThread::getMultipleDiscussionThreadsById(St
 
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                               currentUser.id(), Context::getCurrentTime());
 
                           writeAllEntities(threadsFound.begin(), lastThreadFound, "threads", output, restriction);
                           
@@ -296,8 +300,8 @@ StatusCode MemoryRepositoryDiscussionThread::searchDiscussionThreadsByName(Strin
 
                           status = StatusCode::OK;
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
-                                                               Context::getCurrentTime());
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                               currentUser.id(), Context::getCurrentTime());
 
                           const auto pageSize = getGlobalConfig()->discussionThread.maxThreadsPerPage;
 
@@ -341,7 +345,8 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(IdTypeRe
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
 
                           status.disable();
-                          writeDiscussionThreads(user.threads(), by, output, collection.grantedPrivileges(), currentUser);
+                          writeDiscussionThreads(user.threads(), by, output, collection.grantedPrivileges(), 
+                                                 collection, currentUser);
 
                           readEvents().onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
                       });
@@ -378,7 +383,7 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
 
                           status.disable();
                           writeDiscussionThreads(user.subscribedThreads(), by, output, collection.grantedPrivileges(),
-                                                 currentUser);
+                                                 collection, currentUser);
 
                           readEvents().onGetDiscussionThreadsOfUser(createObserverContext(currentUser), user);
                       });
@@ -412,8 +417,8 @@ StatusCode MemoryRepositoryDiscussionThread::getUsersSubscribedToDiscussionThrea
 
                           status.disable();
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
-                                                               Context::getCurrentTime());
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                               currentUser.id(), Context::getCurrentTime());
 
                           Json::JsonWriter writer(output);
                           writer.startObject();
@@ -466,7 +471,8 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(IdTypeR
                           }
 
                           status.disable();
-                          writeDiscussionThreads(tag.threads(), by, output, collection.grantedPrivileges(), currentUser);
+                          writeDiscussionThreads(tag.threads(), by, output, collection.grantedPrivileges(), 
+                                                 collection, currentUser);
 
                           readEvents().onGetDiscussionThreadsWithTag(createObserverContext(currentUser), tag);
                       });
@@ -502,7 +508,8 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(IdTy
                          }
 
                          status.disable();
-                         writeDiscussionThreads(category.threads(), by, output, collection.grantedPrivileges(), currentUser);
+                         writeDiscussionThreads(category.threads(), by, output, collection.grantedPrivileges(),
+                                                collection, currentUser);
 
                          readEvents().onGetDiscussionThreadsOfCategory(createObserverContext(currentUser), category);
                      });

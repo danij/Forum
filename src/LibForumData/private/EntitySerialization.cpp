@@ -56,12 +56,17 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const UuidString& id)
 
 JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const SerializationRestriction& restriction)
 {
-    (void)restriction;
     writer
         << objStart
             << propertySafeName("id", user.id())
-            << propertySafeName("name", user.name())
-            << propertySafeName("info", user.info())
+            << propertySafeName("name", user.name());
+
+    if (restriction.isAllowed(ForumWidePrivilege::GET_USER_INFO))
+    {
+        writer << propertySafeName("info", user.info());
+    }
+
+    writer
             << propertySafeName("title", user.title())
             << propertySafeName("signature", user.signature())
             << propertySafeName("hasLogo", user.hasLogo())

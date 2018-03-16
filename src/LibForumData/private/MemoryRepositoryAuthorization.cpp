@@ -1503,8 +1503,8 @@ StatusCode MemoryRepositoryAuthorization::getForumWideCurrentUserPrivileges(OutS
 
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
-                                                               Context::getCurrentTime());
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                               currentUser.id(), Context::getCurrentTime());
 
                           JsonWriter writer(output);
                           writer.startObject();

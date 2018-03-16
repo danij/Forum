@@ -232,9 +232,11 @@ namespace Forum
 
         struct SerializationRestriction final : private boost::noncopyable
         {
-            SerializationRestriction(const GrantedPrivilegeStore& privilegeStore, Entities::IdTypeRef userId,
-                                     Entities::Timestamp now)
-                : privilegeStore_(privilegeStore), userId_(userId), now_(now)
+            SerializationRestriction(const GrantedPrivilegeStore& privilegeStore, 
+                                     const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+                                     Entities::IdTypeRef userId, Entities::Timestamp now)
+                : privilegeStore_(privilegeStore), forumWidePrivilegeStore_(forumWidePrivilegeStore), 
+                  userId_(userId), now_(now)
             {
             }
 
@@ -266,14 +268,20 @@ namespace Forum
                 return static_cast<bool>(privilegeStore_.isAllowed(userId_, category, privilege, now_));
             }
 
-            bool isAllowed(const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+            bool isAllowed(const ForumWidePrivilegeStore& forumWidePrivilegeStore, 
                            ForumWidePrivilege privilege = ForumWidePrivilege::LOGIN) const
             {
                 return static_cast<bool>(privilegeStore_.isAllowed(userId_, forumWidePrivilegeStore, privilege, now_));
             }
 
+            bool isAllowed(ForumWidePrivilege privilege = ForumWidePrivilege::LOGIN) const
+            {
+                return isAllowed(forumWidePrivilegeStore_, privilege);
+            }
+
         private:
             const GrantedPrivilegeStore& privilegeStore_;
+            const ForumWidePrivilegeStore& forumWidePrivilegeStore_;
             Entities::IdTypeRef userId_;
             Entities::Timestamp now_;
         };

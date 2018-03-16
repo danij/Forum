@@ -58,7 +58,8 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
             return;
         }
 
-        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
+        SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                             currentUser.id(), Context::getCurrentTime());
 
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
         {
