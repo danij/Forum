@@ -118,7 +118,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
 {
     const auto allowView = serializationSettings.allowDisplayDiscussionThreadMessage
             ? *serializationSettings.allowDisplayDiscussionThreadMessage
-            : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW);
+            : (restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW) 
+                && restriction.isAllowed(*message.parentThread(), DiscussionThreadPrivilege::VIEW));
 
     if ( ! allowView) return writer.null();
 
