@@ -181,7 +181,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         if (by && allowViewUser)
         {
             writer << propertySafeName("userId", by->id())
-                    << propertySafeName("userName", by->name());
+                   << propertySafeName("userName", by->name());
         }
         writer << propertySafeName("at", message.lastUpdated())
                << propertySafeName("reason", message.lastUpdatedReason());
@@ -230,10 +230,17 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
 static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage& latestMessage,
                                const SerializationRestriction& restriction)
 {
+    writer.newPropertyWithSafeName("latestMessage");
+
+    if ( ! restriction.isAllowed(latestMessage, DiscussionThreadMessagePrivilege::VIEW))
+    {
+        writer.null();
+        return;
+    }
+
     auto parentThread = latestMessage.parentThread();
     assert(parentThread);
-
-    writer.newPropertyWithSafeName("latestMessage");
+    
     writer << objStart
         << propertySafeName("id", latestMessage.id())
         << propertySafeName("created", latestMessage.created())
@@ -243,6 +250,7 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage
     auto content = latestMessage.content();
     writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
 
+    if (restriction.isAllowed(latestMessage, DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER))
     {
         writer.newPropertyWithSafeName("createdBy");
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
