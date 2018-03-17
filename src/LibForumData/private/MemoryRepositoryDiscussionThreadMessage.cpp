@@ -871,7 +871,7 @@ static void writeMessageComments(const Collection& collection, OutStream& output
     SerializationRestriction restriction(privilegeStore, forumWidePrivilegeStore, 
                                          currentUser.id(), Context::getCurrentTime());
 
-    writeEntitiesWithPagination(collection, "message_comments", output,
+    writeEntitiesWithPagination(collection, "messageComments", output,
         displayContext.pageNumber, pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, restriction);
 }
 
@@ -883,7 +883,7 @@ static void writeAllMessageComments(const Collection& collection, OutStream& out
     SerializationRestriction restriction(privilegeStore, forumWidePrivilegeStore, 
                                          currentUser.id(), Context::getCurrentTime());
 
-    writeAllEntities(collection, "message_comments", output, false, restriction);
+    writeAllEntities(collection, "messageComments", output, false, restriction);
 }
 
 StatusCode MemoryRepositoryDiscussionThreadMessage::getMessageComments(OutStream& output) const
