@@ -82,7 +82,9 @@ namespace Forum
             DiscussionThreadMessagePrivilege::DOWN_VOTE,
             DiscussionThreadMessagePrivilege::RESET_VOTE,
             DiscussionThreadMessagePrivilege::CHANGE_CONTENT,
-            DiscussionThreadMessagePrivilege::DELETE
+            DiscussionThreadMessagePrivilege::DELETE,
+            DiscussionThreadMessagePrivilege::MOVE,
+            DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE
         };
 
         enum class DiscussionThreadPrivilege : EnumIntType
@@ -125,7 +127,9 @@ namespace Forum
             DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER,
             DiscussionThreadPrivilege::ADD_TAG,
             DiscussionThreadPrivilege::REMOVE_TAG,
-            DiscussionThreadPrivilege::DELETE
+            DiscussionThreadPrivilege::DELETE,
+            DiscussionThreadPrivilege::MERGE,
+            DiscussionThreadPrivilege::ADJUST_PRIVILEGE
         };
 
         enum class DiscussionTagPrivilege : EnumIntType
@@ -159,6 +163,8 @@ namespace Forum
             DiscussionTagPrivilege::CHANGE_NAME,
             DiscussionTagPrivilege::CHANGE_UIBLOB,
             DiscussionTagPrivilege::DELETE,
+            DiscussionTagPrivilege::MERGE,
+            DiscussionTagPrivilege::ADJUST_PRIVILEGE
         };
 
         enum class DiscussionCategoryPrivilege : EnumIntType
@@ -200,7 +206,8 @@ namespace Forum
             DiscussionCategoryPrivilege::CHANGE_DISPLAYORDER,
             DiscussionCategoryPrivilege::ADD_TAG,
             DiscussionCategoryPrivilege::REMOVE_TAG,
-            DiscussionCategoryPrivilege::DELETE
+            DiscussionCategoryPrivilege::DELETE,
+            DiscussionCategoryPrivilege::ADJUST_PRIVILEGE,
         };
 
         enum class ForumWidePrivilege : EnumIntType
