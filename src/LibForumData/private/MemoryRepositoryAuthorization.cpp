@@ -674,7 +674,6 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForThread(IdTypeR
                           writer.startObject();
 
                           writeDiscussionThreadAssignedPrivileges(collection, thread.id(), writer);
-                          writeDiscussionThreadMessageAssignedPrivileges(collection, thread.id(), writer);
 
                           writer.endObject();
 
@@ -971,8 +970,6 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForTag(IdTypeRef 
                           writer.startObject();
 
                           writeDiscussionTagAssignedPrivileges(collection, tag.id(), writer);
-                          writeDiscussionThreadAssignedPrivileges(collection, tag.id(), writer);
-                          writeDiscussionThreadMessageAssignedPrivileges(collection, tag.id(), writer);
 
                           writer.endObject();
 
@@ -1590,10 +1587,6 @@ StatusCode MemoryRepositoryAuthorization::getForumWideAssignedPrivileges(OutStre
                           writer.startObject();
 
                           writeForumWideAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionCategoryAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionTagAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionThreadAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionThreadMessageAssignedPrivileges(collection, {}, writer);
 
                           writer.endObject();
 
