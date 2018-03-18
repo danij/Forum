@@ -60,7 +60,7 @@ void writePrivilegeValues(const Store& store, Enum maxValue, JsonWriter& writer,
     for (EnumIntType i = 0; i < static_cast<EnumIntType>(maxValue); ++i)
     {
         auto privilege = static_cast<Enum>(i);
-        auto value = (store.*fn)(privilege);
+        auto value = fn(store, privilege);
         if (value)
         {
             writer.startObject();
@@ -78,7 +78,10 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadMessageRequiredPrivileg
 {
     writer.newPropertyWithSafeName("discussionThreadMessagePrivileges");
     writePrivilegeValues(store, DiscussionThreadMessagePrivilege::COUNT, writer, DiscussionThreadMessagePrivilegeStrings,
-                         &DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege);
+                        [](const DiscussionThreadMessagePrivilegeStore& store, DiscussionThreadMessagePrivilege privilege)
+                        {
+                            return store.DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
+                        });
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionThreadRequiredPrivileges(const DiscussionThreadPrivilegeStore& store,
@@ -86,7 +89,10 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadRequiredPrivileges(cons
 {
     writer.newPropertyWithSafeName("discussionThreadPrivileges");
     writePrivilegeValues(store, DiscussionThreadPrivilege::COUNT, writer, DiscussionThreadPrivilegeStrings,
-                         &DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege);
+                         [](const DiscussionThreadPrivilegeStore& store, DiscussionThreadPrivilege privilege)
+                         {
+                             return store.DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege);
+                         });
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionTagRequiredPrivileges(const DiscussionTagPrivilegeStore& store,
@@ -94,7 +100,10 @@ void MemoryRepositoryAuthorization::writeDiscussionTagRequiredPrivileges(const D
 {
     writer.newPropertyWithSafeName("discussionTagPrivileges");
     writePrivilegeValues(store, DiscussionTagPrivilege::COUNT, writer, DiscussionTagPrivilegeStrings,
-                         &DiscussionTagPrivilegeStore::getDiscussionTagPrivilege);
+                        [](const DiscussionTagPrivilegeStore& store, DiscussionTagPrivilege privilege)
+                        {
+                            return store.DiscussionTagPrivilegeStore::getDiscussionTagPrivilege(privilege);
+                        });
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionCategoryRequiredPrivileges(const DiscussionCategoryPrivilegeStore& store,
@@ -102,7 +111,10 @@ void MemoryRepositoryAuthorization::writeDiscussionCategoryRequiredPrivileges(co
 {
     writer.newPropertyWithSafeName("discussionCategoryPrivileges");
     writePrivilegeValues(store, DiscussionCategoryPrivilege::COUNT, writer, DiscussionCategoryPrivilegeStrings,
-                         &DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege);
+                        [](const DiscussionCategoryPrivilegeStore& store, DiscussionCategoryPrivilege privilege)
+                        {
+                            return store.DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege(privilege);
+                        });
 }
 
 void MemoryRepositoryAuthorization::writeForumWideRequiredPrivileges(const ForumWidePrivilegeStore& store,
@@ -110,7 +122,10 @@ void MemoryRepositoryAuthorization::writeForumWideRequiredPrivileges(const Forum
 {
     writer.newPropertyWithSafeName("forumWidePrivileges");
     writePrivilegeValues(store, ForumWidePrivilege::COUNT, writer, ForumWidePrivilegeStrings,
-                         &ForumWidePrivilegeStore::getForumWidePrivilege);
+                        [](const ForumWidePrivilegeStore& store, ForumWidePrivilege privilege)
+                        {
+                            return store.getForumWidePrivilege(privilege);
+                        });
 }
 
 void MemoryRepositoryAuthorization::writeForumWideDefaultPrivilegeLevels(const ForumWidePrivilegeStore& store,
