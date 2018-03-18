@@ -76,7 +76,7 @@ void writePrivilegeValues(const Store& store, Enum maxValue, JsonWriter& writer,
 void MemoryRepositoryAuthorization::writeDiscussionThreadMessageRequiredPrivileges(
         const DiscussionThreadMessagePrivilegeStore& store, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_thread_message_privileges");
+    writer.newPropertyWithSafeName("discussionThreadMessagePrivileges");
     writePrivilegeValues(store, DiscussionThreadMessagePrivilege::COUNT, writer, DiscussionThreadMessagePrivilegeStrings,
                          &DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege);
 }
@@ -84,7 +84,7 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadMessageRequiredPrivileg
 void MemoryRepositoryAuthorization::writeDiscussionThreadRequiredPrivileges(const DiscussionThreadPrivilegeStore& store,
                                                                             JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_thread_privileges");
+    writer.newPropertyWithSafeName("discussionThreadPrivileges");
     writePrivilegeValues(store, DiscussionThreadPrivilege::COUNT, writer, DiscussionThreadPrivilegeStrings,
                          &DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege);
 }
@@ -92,7 +92,7 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadRequiredPrivileges(cons
 void MemoryRepositoryAuthorization::writeDiscussionTagRequiredPrivileges(const DiscussionTagPrivilegeStore& store,
                                                                          JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_tag_privileges");
+    writer.newPropertyWithSafeName("discussionTagPrivileges");
     writePrivilegeValues(store, DiscussionTagPrivilege::COUNT, writer, DiscussionTagPrivilegeStrings,
                          &DiscussionTagPrivilegeStore::getDiscussionTagPrivilege);
 }
@@ -100,7 +100,7 @@ void MemoryRepositoryAuthorization::writeDiscussionTagRequiredPrivileges(const D
 void MemoryRepositoryAuthorization::writeDiscussionCategoryRequiredPrivileges(const DiscussionCategoryPrivilegeStore& store,
                                                                               JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_category_privileges");
+    writer.newPropertyWithSafeName("discussionCategoryPrivileges");
     writePrivilegeValues(store, DiscussionCategoryPrivilege::COUNT, writer, DiscussionCategoryPrivilegeStrings,
                          &DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege);
 }
@@ -108,7 +108,7 @@ void MemoryRepositoryAuthorization::writeDiscussionCategoryRequiredPrivileges(co
 void MemoryRepositoryAuthorization::writeForumWideRequiredPrivileges(const ForumWidePrivilegeStore& store,
                                                                      JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("forum_wide_privileges");
+    writer.newPropertyWithSafeName("forumWidePrivileges");
     writePrivilegeValues(store, ForumWidePrivilege::COUNT, writer, ForumWidePrivilegeStrings,
                          &ForumWidePrivilegeStore::getForumWidePrivilege);
 }
@@ -116,7 +116,7 @@ void MemoryRepositoryAuthorization::writeForumWideRequiredPrivileges(const Forum
 void MemoryRepositoryAuthorization::writeForumWideDefaultPrivilegeLevels(const ForumWidePrivilegeStore& store,
                                                                          JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("forum_wide_default_levels");
+    writer.newPropertyWithSafeName("forumWideDefaultLevels");
     writer.startArray();
 
     for (EnumIntType i = 0; i < static_cast<EnumIntType>(ForumWideDefaultPrivilegeDuration::COUNT); ++i)
@@ -247,7 +247,7 @@ static void writeForumWideName(const EntityCollection& collection, IdTypeRef ent
 void MemoryRepositoryAuthorization::writeDiscussionThreadMessageAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                                    JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_thread_message_privileges");
+    writer.newPropertyWithSafeName("discussionThreadMessagePrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionThreadMessagePrivileges(id,
@@ -259,7 +259,7 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadMessageAssignedPrivileg
 void MemoryRepositoryAuthorization::writeDiscussionThreadAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                             JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_thread_privileges");
+    writer.newPropertyWithSafeName("discussionThreadPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionThreadPrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -270,7 +270,7 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadAssignedPrivileges(cons
 void MemoryRepositoryAuthorization::writeDiscussionTagAssignedPrivileges(const EntityCollection& collection,
                                                                          IdTypeRef id, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_tag_privileges");
+    writer.newPropertyWithSafeName("discussionTagPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionTagPrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -281,7 +281,7 @@ void MemoryRepositoryAuthorization::writeDiscussionTagAssignedPrivileges(const E
 void MemoryRepositoryAuthorization::writeDiscussionCategoryAssignedPrivileges(const EntityCollection& collection,
                                                                               IdTypeRef id, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_category_privileges");
+    writer.newPropertyWithSafeName("discussionCategoryPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionCategoryPrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -292,7 +292,7 @@ void MemoryRepositoryAuthorization::writeDiscussionCategoryAssignedPrivileges(co
 void MemoryRepositoryAuthorization::writeForumWideAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                      JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("forum_wide_privileges");
+    writer.newPropertyWithSafeName("forumWidePrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateForumWidePrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -303,7 +303,7 @@ void MemoryRepositoryAuthorization::writeForumWideAssignedPrivileges(const Entit
 void MemoryRepositoryAuthorization::writeDiscussionThreadUserAssignedPrivileges(const EntityCollection& collection,
                                                                                 IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_thread_privileges");
+    writer.newPropertyWithSafeName("discussionThreadPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionThreadPrivilegesAssignedToUser(userId,
@@ -315,7 +315,7 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadUserAssignedPrivileges(
 void MemoryRepositoryAuthorization::writeDiscussionTagUserAssignedPrivileges(const EntityCollection& collection,
                                                                              IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_tag_privileges");
+    writer.newPropertyWithSafeName("discussionTagPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionTagPrivilegesAssignedToUser(userId,
@@ -327,7 +327,7 @@ void MemoryRepositoryAuthorization::writeDiscussionTagUserAssignedPrivileges(con
 void MemoryRepositoryAuthorization::writeDiscussionCategoryUserAssignedPrivileges(const EntityCollection& collection,
                                                                                   IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_category_privileges");
+    writer.newPropertyWithSafeName("discussionCategoryPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionCategoryPrivilegesAssignedToUser(userId,
@@ -339,7 +339,7 @@ void MemoryRepositoryAuthorization::writeDiscussionCategoryUserAssignedPrivilege
 void MemoryRepositoryAuthorization::writeForumWideUserAssignedPrivileges(const EntityCollection& collection,
                                                                          IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("forum_wide_privileges");
+    writer.newPropertyWithSafeName("forumWidePrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateForumWidePrivilegesAssignedToUser(userId,
