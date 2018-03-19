@@ -1651,6 +1651,8 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForUser(IdTypeRef
                           JsonWriter writer(output);
                           writer.startObject();
 
+                          writeAssignedPrivilegesExtra(writer);
+
                           writeForumWideUserAssignedPrivileges(collection, userId, writer);
                           writeDiscussionCategoryUserAssignedPrivileges(collection, userId, writer);
                           writeDiscussionTagUserAssignedPrivileges(collection, userId, writer);
