@@ -159,10 +159,7 @@ struct AssignedPrivilegeWriter final
 
     AssignedPrivilegeWriter(const AssignedPrivilegeWriter&) = default;
     AssignedPrivilegeWriter(AssignedPrivilegeWriter&&) = default;
-
-    AssignedPrivilegeWriter& operator=(const AssignedPrivilegeWriter&) = default;
-    AssignedPrivilegeWriter& operator=(AssignedPrivilegeWriter&&) = default;
-
+    
     void operator()(IdTypeRef userId, PrivilegeValueIntType privilegeValue, Timestamp grantedAt, Timestamp expiresAt)
     {
         writer_.startObject();
@@ -175,7 +172,7 @@ struct AssignedPrivilegeWriter final
         else
         {
             const auto& index = collection_.users().byId();
-            auto it = index.find(userId);
+            const auto it = index.find(userId);
             if (it != index.end())
             {
                 writer_.newPropertyWithSafeName("name") << (**it).name();
