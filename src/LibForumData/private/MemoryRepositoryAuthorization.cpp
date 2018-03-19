@@ -256,9 +256,16 @@ static void writeForumWideName(const EntityCollection& collection, IdTypeRef ent
     //do nothing
 }
 
+void writeAssignedPrivilegesExtra(JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("now") << Context::getCurrentTime();
+}
+
 void MemoryRepositoryAuthorization::writeDiscussionThreadMessageAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                                    JsonWriter& writer)
 {
+    writeAssignedPrivilegesExtra(writer);
+
     writer.newPropertyWithSafeName("discussionThreadMessagePrivileges");
     writer.startArray();
 
@@ -271,6 +278,8 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadMessageAssignedPrivileg
 void MemoryRepositoryAuthorization::writeDiscussionThreadAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                             JsonWriter& writer)
 {
+    writeAssignedPrivilegesExtra(writer);
+
     writer.newPropertyWithSafeName("discussionThreadPrivileges");
     writer.startArray();
 
@@ -282,6 +291,8 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadAssignedPrivileges(cons
 void MemoryRepositoryAuthorization::writeDiscussionTagAssignedPrivileges(const EntityCollection& collection,
                                                                          IdTypeRef id, JsonWriter& writer)
 {
+    writeAssignedPrivilegesExtra(writer);
+
     writer.newPropertyWithSafeName("discussionTagPrivileges");
     writer.startArray();
 
@@ -293,6 +304,8 @@ void MemoryRepositoryAuthorization::writeDiscussionTagAssignedPrivileges(const E
 void MemoryRepositoryAuthorization::writeDiscussionCategoryAssignedPrivileges(const EntityCollection& collection,
                                                                               IdTypeRef id, JsonWriter& writer)
 {
+    writeAssignedPrivilegesExtra(writer);
+
     writer.newPropertyWithSafeName("discussionCategoryPrivileges");
     writer.startArray();
 
@@ -304,6 +317,8 @@ void MemoryRepositoryAuthorization::writeDiscussionCategoryAssignedPrivileges(co
 void MemoryRepositoryAuthorization::writeForumWideAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                      JsonWriter& writer)
 {
+    writeAssignedPrivilegesExtra(writer);
+
     writer.newPropertyWithSafeName("forumWidePrivileges");
     writer.startArray();
 
