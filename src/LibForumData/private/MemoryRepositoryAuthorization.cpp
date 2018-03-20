@@ -399,7 +399,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForThreadMessage(
 
                           auto& message = **it;
 
-                          if ( ! (status = threadMessageAuthorization_->getDiscussionThreadMessageById(currentUser, message)))
+                          if ( ! (status = threadMessageAuthorization_->getDiscussionThreadMessageRequiredPrivileges(currentUser, message)))
                           {
                               return;
                           }
@@ -439,7 +439,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForThreadMessage(
 
                           auto& message = **it;
 
-                          if ( ! (status = threadMessageAuthorization_->getDiscussionThreadMessageById(currentUser, message)))
+                          if ( ! (status = threadMessageAuthorization_->getDiscussionThreadMessageAssignedPrivileges(currentUser, message)))
                           {
                               return;
                           }
@@ -650,7 +650,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForThread(IdTypeR
 
                           auto& thread = **it;
 
-                          if ( ! (status = threadAuthorization_->getDiscussionThreadById(currentUser, thread)))
+                          if ( ! (status = threadAuthorization_->getDiscussionThreadRequiredPrivileges(currentUser, thread)))
                           {
                               return;
                           }
@@ -690,7 +690,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForThread(IdTypeR
 
                           auto& thread = **it;
 
-                          if ( ! (status = threadAuthorization_->getDiscussionThreadById(currentUser, thread)))
+                          if ( ! (status = threadAuthorization_->getDiscussionThreadAssignedPrivileges(currentUser, thread)))
                           {
                               return;
                           }
@@ -945,7 +945,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForTag(IdTypeRef 
 
                           auto& tag = **it;
 
-                          if ( ! (status = tagAuthorization_->getDiscussionTagById(currentUser, tag)))
+                          if ( ! (status = tagAuthorization_->getDiscussionTagRequiredPrivileges(currentUser, tag)))
                           {
                               return;
                           }
@@ -986,7 +986,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForTag(IdTypeRef 
 
                           auto& tag = **it;
 
-                          if ( ! (status = tagAuthorization_->getDiscussionTagById(currentUser, tag)))
+                          if ( ! (status = tagAuthorization_->getDiscussionTagAssignedPrivileges(currentUser, tag)))
                           {
                               return;
                           }
@@ -1302,7 +1302,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForCategory(IdTyp
 
                           auto& category = **it;
 
-                          if ( ! (status = categoryAuthorization_->getDiscussionCategoryById(currentUser, category)))
+                          if ( ! (status = categoryAuthorization_->getDiscussionCategoryRequiredPrivileges(currentUser, category)))
                           {
                               return;
                           }
@@ -1341,7 +1341,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForCategory(IdTyp
 
                           auto& category = **it;
 
-                          if ( ! (status = categoryAuthorization_->getDiscussionCategoryById(currentUser, category)))
+                          if ( ! (status = categoryAuthorization_->getDiscussionCategoryAssignedPrivileges(currentUser, category)))
                           {
                               return;
                           }
@@ -1551,10 +1551,13 @@ StatusCode MemoryRepositoryAuthorization::getForumWideRequiredPrivileges(OutStre
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          status = StatusCode::OK;
-                          status.disable();
-
                           auto& currentUser = performedBy.get(collection, *store_);
+
+                          if ( ! (status = forumWideAuthorization_->getForumWideRequiredPrivileges(currentUser)))
+                          {
+                              return;
+                          }
+                          status.disable();
 
                           JsonWriter writer(output);
                           writer.startObject();
@@ -1580,10 +1583,13 @@ StatusCode MemoryRepositoryAuthorization::getForumWideDefaultPrivilegeLevels(Out
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          status = StatusCode::OK;
-                          status.disable();
-
                           auto& currentUser = performedBy.get(collection, *store_);
+
+                          if ( ! (status = forumWideAuthorization_->getForumWideRequiredPrivileges(currentUser)))
+                          {
+                              return;
+                          }
+                          status.disable();
 
                           JsonWriter writer(output);
                           writer.startObject();
@@ -1605,10 +1611,13 @@ StatusCode MemoryRepositoryAuthorization::getForumWideAssignedPrivileges(OutStre
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          status = StatusCode::OK;
-                          status.disable();
-
                           auto& currentUser = performedBy.get(collection, *store_);
+
+                          if ( ! (status = forumWideAuthorization_->getForumWideAssignedPrivileges(currentUser)))
+                          {
+                              return;
+                          }
+                          status.disable();
 
                           JsonWriter writer(output);
                           writer.startObject();
@@ -1630,9 +1639,6 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForUser(IdTypeRef
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          status = StatusCode::OK;
-                          status.disable();
-
                           const User* userPtr = anonymousUser();
                           if (userId != anonymousUserId())
                           {
@@ -1647,6 +1653,12 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForUser(IdTypeRef
                           }
 
                           auto& currentUser = performedBy.get(collection, *store_);
+
+                          if ( ! (status = forumWideAuthorization_->getUserAssignedPrivileges(currentUser, *userPtr)))
+                          {
+                              return;
+                          }
+                          status.disable();
 
                           JsonWriter writer(output);
                           writer.startObject();

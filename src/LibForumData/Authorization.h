@@ -75,6 +75,10 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadAuthorization)
 
+            virtual AuthorizationStatus getDiscussionThreadRequiredPrivileges(const Entities::User& currentUser,
+                                                                              const Entities::DiscussionThread& thread) const = 0;
+            virtual AuthorizationStatus getDiscussionThreadAssignedPrivileges(const Entities::User& currentUser,
+                                                                              const Entities::DiscussionThread& thread) const = 0;
             virtual AuthorizationStatus getDiscussionThreads(const Entities::User& currentUser) const = 0;
             virtual AuthorizationStatus getDiscussionThreadById(const Entities::User& currentUser,
                                                                 const Entities::DiscussionThread& thread) const = 0;
@@ -131,6 +135,10 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionThreadMessageAuthorization)
 
+            virtual AuthorizationStatus getDiscussionThreadMessageRequiredPrivileges(const Entities::User& currentUser,
+                                                                                     const Entities::DiscussionThreadMessage& message) const = 0;
+            virtual AuthorizationStatus getDiscussionThreadMessageAssignedPrivileges(const Entities::User& currentUser,
+                                                                                     const Entities::DiscussionThreadMessage& message) const = 0;
             virtual AuthorizationStatus getDiscussionThreadMessageById(const Entities::User& currentUser,
                                                                        const Entities::DiscussionThreadMessage& message) const = 0;
             virtual AuthorizationStatus getDiscussionThreadMessagesOfUserByCreated(const Entities::User& currentUser,
@@ -187,6 +195,10 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionTagAuthorization)
 
+            virtual AuthorizationStatus getDiscussionTagRequiredPrivileges(const Entities::User& currentUser,
+                                                                           const Entities::DiscussionTag& tag) const = 0;
+            virtual AuthorizationStatus getDiscussionTagAssignedPrivileges(const Entities::User& currentUser,
+                                                                           const Entities::DiscussionTag& tag) const = 0;
             virtual AuthorizationStatus getDiscussionTagById(const Entities::User& currentUser,
                                                              const Entities::DiscussionTag& tag) const = 0;
             virtual AuthorizationStatus getDiscussionTags(const Entities::User& currentUser) const = 0;
@@ -239,6 +251,10 @@ namespace Forum
         public:
             DECLARE_INTERFACE_MANDATORY(IDiscussionCategoryAuthorization)
 
+            virtual AuthorizationStatus getDiscussionCategoryRequiredPrivileges(const Entities::User& currentUser,
+                                                                                const Entities::DiscussionCategory& category) const = 0;
+            virtual AuthorizationStatus getDiscussionCategoryAssignedPrivileges(const Entities::User& currentUser,
+                                                                                const Entities::DiscussionCategory& category) const = 0;
             virtual AuthorizationStatus getDiscussionCategoryById(const Entities::User& currentUser,
                                                                   const Entities::DiscussionCategory& category) const = 0;
             virtual AuthorizationStatus getDiscussionCategories(const Entities::User& currentUser) const = 0;
@@ -308,6 +324,12 @@ namespace Forum
             virtual AuthorizationStatus updateForumWideDefaultPrivilegeLevel(
                     const Entities::User& currentUser, ForumWideDefaultPrivilegeDuration privilege,
                     PrivilegeValueIntType newValue, PrivilegeDurationIntType newDuration) const = 0;
+
+            virtual AuthorizationStatus getForumWideRequiredPrivileges(const Entities::User& currentUser) const = 0;
+            virtual AuthorizationStatus getForumWideAssignedPrivileges(const Entities::User& currentUser) const = 0;
+            virtual AuthorizationStatus getUserAssignedPrivileges(const Entities::User& currentUser,
+                                                                  const Entities::User& targetUser) const = 0;
+
             virtual AuthorizationStatus assignForumWidePrivilege(const Entities::User& currentUser,
                                                                  const Entities::User& targetUser,
                                                                  PrivilegeValueIntType newValue) const = 0;
