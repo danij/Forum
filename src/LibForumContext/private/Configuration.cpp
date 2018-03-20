@@ -105,6 +105,8 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(persistence.createNewOutputFileEverySeconds);
 
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.view);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewRequiredPrivileges);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewAssignedPrivileges);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewCreatorUser);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewIpAddress);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewVotes);
@@ -120,6 +122,8 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.adjustPrivilege);
 
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.view);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.viewRequiredPrivileges);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.viewAssignedPrivileges);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.subscribe);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.unsubscribe);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.addMessage);
@@ -132,6 +136,8 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.adjustPrivilege);
 
     LOAD_CONFIG_VALUE(defaultPrivileges.tag.view);
+    LOAD_CONFIG_VALUE(defaultPrivileges.tag.viewRequiredPrivileges);
+    LOAD_CONFIG_VALUE(defaultPrivileges.tag.viewAssignedPrivileges);
     LOAD_CONFIG_VALUE(defaultPrivileges.tag.getDiscussionThreads);
     LOAD_CONFIG_VALUE(defaultPrivileges.tag.changeName);
     LOAD_CONFIG_VALUE(defaultPrivileges.tag.changeUiblob);
@@ -140,6 +146,8 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.tag.adjustPrivilege);
 
     LOAD_CONFIG_VALUE(defaultPrivileges.category.view);
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.viewRequiredPrivileges);
+    LOAD_CONFIG_VALUE(defaultPrivileges.category.viewAssignedPrivileges);
     LOAD_CONFIG_VALUE(defaultPrivileges.category.getDiscussionThreads);
     LOAD_CONFIG_VALUE(defaultPrivileges.category.changeName);
     LOAD_CONFIG_VALUE(defaultPrivileges.category.changeDescription);
@@ -173,6 +181,9 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserName);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserInfo);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteAnyUser);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.viewForumWideRequiredPrivileges);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.viewForumWideAssignedPrivileges);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.viewUserAssignedPrivileges);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.adjustForumWidePrivilege);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeOwnUserTitle);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserTitle);

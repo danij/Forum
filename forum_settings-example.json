@@ -77,6 +77,8 @@
     "defaultPrivileges": {
         "threadMessage": {
             "view": 0,
+            "viewRequiredPrivileges": 1,
+            "viewAssignedPrivilges": 1,
             "viewCreatorUser": 0,
             "viewIpAddress": 10000,
             "viewVotes": 0,
@@ -93,6 +95,8 @@
         },
         "thread": {
             "view": 0,
+            "viewRequiredPrivileges": 1,
+            "viewAssignedPrivilges": 1,
             "subscribe": 0,
             "unsubscribe": 0,
             "addMessage": 0,
@@ -106,6 +110,8 @@
         },
         "tag": {
             "view": 0,
+            "viewRequiredPrivileges": 1,
+            "viewAssignedPrivilges": 1,
             "getDiscussionThreads": 0,
             "changeName": 10000,
             "changeUiblob": 10000,
@@ -115,6 +121,8 @@
         },
         "category": {
             "view": 0,
+            "viewRequiredPrivileges": 1,
+            "viewAssignedPrivilges": 1,
             "getDiscussionThreads": 0,
             "changeName": 10000,
             "changeDescription": 10000,
@@ -149,6 +157,9 @@
             "changeAnyUserName": 30000,
             "changeAnyUserInfo": 30000,
             "deleteAnyUser": 30000,
+            "viewForumWideRequiredPrivileges": 1000,
+            "viewForumWideAssignedPrivilges": 1000,
+            "viewUserAssignedPrivilges": 1000,
             "adjustForumWidePrivilege": 30000,
             "changeOwnUserTitle": 1,
             "changeAnyUserTitle": 10000,
@@ -160,7 +171,7 @@
             "deleteAnyUserLogo": 1000,
             "getUserVoteHistory": 0,
             "noThrottling": 10000
-        }        
+        }
     },
     
     "defaultPrivilegeGrants" : {

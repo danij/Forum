@@ -40,6 +40,8 @@ namespace Forum
         enum class DiscussionThreadMessagePrivilege : EnumIntType
         {
             VIEW,
+            VIEW_REQUIRED_PRIVILEGES,
+            VIEW_ASSIGNED_PRIVILEGES,
             VIEW_CREATOR_USER,
             VIEW_IP_ADDRESS,
             VIEW_VOTES,
@@ -61,6 +63,8 @@ namespace Forum
         const StringView DiscussionThreadMessagePrivilegeStrings[] =
         {
             "view",
+            "view_required_privileges",
+            "view_assigned_privileges",
             "view_creator_user",
             "view_ip_address",
             "view_votes",
@@ -78,6 +82,8 @@ namespace Forum
 
         const DiscussionThreadMessagePrivilege DiscussionThreadMessagePrivilegesToSerialize[] =
         {
+            DiscussionThreadMessagePrivilege::VIEW_REQUIRED_PRIVILEGES,
+            DiscussionThreadMessagePrivilege::VIEW_ASSIGNED_PRIVILEGES,
             DiscussionThreadMessagePrivilege::UP_VOTE,
             DiscussionThreadMessagePrivilege::DOWN_VOTE,
             DiscussionThreadMessagePrivilege::RESET_VOTE,
@@ -90,6 +96,8 @@ namespace Forum
         enum class DiscussionThreadPrivilege : EnumIntType
         {
             VIEW,
+            VIEW_REQUIRED_PRIVILEGES,
+            VIEW_ASSIGNED_PRIVILEGES,
             SUBSCRIBE,
             UNSUBSCRIBE,
             ADD_MESSAGE,
@@ -108,6 +116,8 @@ namespace Forum
         const StringView DiscussionThreadPrivilegeStrings[] =
         {
             "view",
+            "view_required_privileges",
+            "view_assigned_privileges",
             "subscribe",
             "unsubscribe",
             "add_message",
@@ -122,6 +132,8 @@ namespace Forum
 
         const DiscussionThreadPrivilege DiscussionThreadPrivilegesToSerialize[] =
         {
+            DiscussionThreadPrivilege::VIEW_REQUIRED_PRIVILEGES,
+            DiscussionThreadPrivilege::VIEW_ASSIGNED_PRIVILEGES,
             DiscussionThreadPrivilege::ADD_MESSAGE,
             DiscussionThreadPrivilege::CHANGE_NAME,
             DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER,
@@ -135,6 +147,8 @@ namespace Forum
         enum class DiscussionTagPrivilege : EnumIntType
         {
             VIEW,
+            VIEW_REQUIRED_PRIVILEGES,
+            VIEW_ASSIGNED_PRIVILEGES,
             GET_DISCUSSION_THREADS,
             CHANGE_NAME,
             CHANGE_UIBLOB,
@@ -149,6 +163,8 @@ namespace Forum
         const StringView DiscussionTagPrivilegeStrings[] =
         {
             "view",
+            "view_required_privileges",
+            "view_assigned_privileges",
             "get_discussion_threads",
             "change_name",
             "change_uiblob",
@@ -160,6 +176,8 @@ namespace Forum
 
         const DiscussionTagPrivilege DiscussionTagPrivilegesToSerialize[] =
         {
+            DiscussionTagPrivilege::VIEW_REQUIRED_PRIVILEGES,
+            DiscussionTagPrivilege::VIEW_ASSIGNED_PRIVILEGES,
             DiscussionTagPrivilege::CHANGE_NAME,
             DiscussionTagPrivilege::CHANGE_UIBLOB,
             DiscussionTagPrivilege::DELETE,
@@ -170,6 +188,8 @@ namespace Forum
         enum class DiscussionCategoryPrivilege : EnumIntType
         {
             VIEW,
+            VIEW_REQUIRED_PRIVILEGES,
+            VIEW_ASSIGNED_PRIVILEGES,
             GET_DISCUSSION_THREADS,
             CHANGE_NAME,
             CHANGE_DESCRIPTION,
@@ -187,6 +207,8 @@ namespace Forum
         const StringView DiscussionCategoryPrivilegeStrings[] =
         {
             "view",
+            "view_required_privileges",
+            "view_assigned_privileges",
             "get_discussion_threads",
             "change_name",
             "change_description",
@@ -200,6 +222,8 @@ namespace Forum
 
         const DiscussionCategoryPrivilege DiscussionCategoryPrivilegesToSerialize[] =
         {
+            DiscussionCategoryPrivilege::VIEW_REQUIRED_PRIVILEGES,
+            DiscussionCategoryPrivilege::VIEW_ASSIGNED_PRIVILEGES,
             DiscussionCategoryPrivilege::CHANGE_NAME,
             DiscussionCategoryPrivilege::CHANGE_DESCRIPTION,
             DiscussionCategoryPrivilege::CHANGE_PARENT,
@@ -236,6 +260,9 @@ namespace Forum
             CHANGE_ANY_USER_INFO,
             DELETE_ANY_USER,
 
+            VIEW_FORUM_WIDE_REQUIRED_PRIVILEGES,
+            VIEW_FORUM_WIDE_ASSIGNED_PRIVILEGES,
+            VIEW_USER_ASSIGNED_PRIVILEGES,
             ADJUST_FORUM_WIDE_PRIVILEGE,
 
             CHANGE_OWN_USER_TITLE,
@@ -247,7 +274,7 @@ namespace Forum
             DELETE_OWN_USER_LOGO,
             DELETE_ANY_USER_LOGO,
             GET_USER_VOTE_HISTORY,
-
+            
             NO_THROTTLING,
 
             COUNT
@@ -279,6 +306,9 @@ namespace Forum
             "change_any_user_info",
             "delete_any_user",
 
+            "view_forum_wide_required_privileges",
+            "view_forum_wide_assigned_privileges",
+            "view_user_assigned_privileges",
             "adjust_forum_wide_privilege",
 
             "change_own_user_title",
@@ -317,6 +347,9 @@ namespace Forum
             ForumWidePrivilege::CHANGE_ANY_USER_NAME,
             ForumWidePrivilege::CHANGE_ANY_USER_INFO,
             ForumWidePrivilege::DELETE_ANY_USER,
+            ForumWidePrivilege::VIEW_FORUM_WIDE_REQUIRED_PRIVILEGES,
+            ForumWidePrivilege::VIEW_FORUM_WIDE_ASSIGNED_PRIVILEGES,
+            ForumWidePrivilege::VIEW_USER_ASSIGNED_PRIVILEGES,
             ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE,
             ForumWidePrivilege::CHANGE_OWN_USER_TITLE,
             ForumWidePrivilege::CHANGE_ANY_USER_TITLE,
