@@ -149,6 +149,8 @@ void DiscussionThreadCollectionBase::updateMessageCount(DiscussionThreadPtr thre
 
 bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
 {
+    if (byId_.find(thread->id()) != byId_.end()) return false;
+
     prepareCountChange();
     if ( ! std::get<1>(byId_.insert(thread)))
     {
@@ -163,17 +165,16 @@ bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
 
 bool DiscussionThreadCollectionWithHashedId::remove(DiscussionThreadPtr thread)
 {
-    prepareCountChange();
+    const auto itById = byId_.find(thread->id());
+    if (itById == byId_.end())
     {
-        const auto itById = byId_.find(thread->id());
-        if (itById == byId_.end())
-        {
-            finishCountChange();
-            return false;
-        }
-
-        byId_.erase(itById);
+        return false;
     }
+
+    prepareCountChange();
+
+    byId_.erase(itById);
+
     const auto result = DiscussionThreadCollectionBase::remove(thread);
     finishCountChange();
     return result;
