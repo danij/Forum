@@ -53,6 +53,7 @@ bool DiscussionTag::insertDiscussionThread(DiscussionThreadPtr thread)
 {
     assert(thread);
     changeNotifications_.onPrepareUpdateThreadCount(*this);
+    changeNotifications_.onPrepareUpdateMessageCount(*this);
 
     if ( ! threads_.add(thread))
     {
@@ -65,7 +66,9 @@ bool DiscussionTag::insertDiscussionThread(DiscussionThreadPtr thread)
         assert(category);
         category->insertDiscussionThread(thread);
     }
+
     changeNotifications_.onUpdateThreadCount(*this);
+    changeNotifications_.onUpdateMessageCount(*this);
     return true;
 }
 
