@@ -174,6 +174,7 @@ namespace Forum
                     return;
                 }
             }
+            assert(false); //not found
         }
 
         template<typename Collection, typename Entity, typename Value>
