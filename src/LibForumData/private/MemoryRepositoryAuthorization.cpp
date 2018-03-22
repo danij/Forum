@@ -191,10 +191,12 @@ private:
 
 struct UserAssignedPrivilegeWriter final
 {
-    typedef void(*WriteNameFunction)(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer);
+    typedef bool(*WriteEntityFunction)(const EntityCollection& collection, const SerializationRestriction& restriction,
+                                     IdTypeRef entityId, JsonWriter& writer);
 
-    UserAssignedPrivilegeWriter(JsonWriter& writer, const EntityCollection& collection, WriteNameFunction writeName)
-            : writer_(writer), collection_(collection), writeName_(writeName) {}
+    UserAssignedPrivilegeWriter(JsonWriter& writer, const EntityCollection& collection, 
+        const SerializationRestriction& restriction, WriteEntityFunction writeEntity)
+            : writer_(writer), collection_(collection), restriction_(restriction), writeEntity_(writeEntity) {}
     ~UserAssignedPrivilegeWriter() = default;
 
     UserAssignedPrivilegeWriter(const UserAssignedPrivilegeWriter&) = default;
@@ -206,54 +208,80 @@ struct UserAssignedPrivilegeWriter final
     void operator()(IdTypeRef entityId, PrivilegeValueIntType privilegeValue, Timestamp grantedAt, Timestamp expiresAt)
     {
         writer_.startObject();
-        writer_.newPropertyWithSafeName("id") << entityId;
-
-        writeName_(collection_, entityId, writer_);
-
-        writer_.newPropertyWithSafeName("value") << privilegeValue;
-        writer_.newPropertyWithSafeName("granted") << grantedAt;
-        writer_.newPropertyWithSafeName("expires") << expiresAt;
+        if (writeEntity_(collection_, restriction_, entityId, writer_))
+        {
+            writer_.newPropertyWithSafeName("value") << privilegeValue;
+            writer_.newPropertyWithSafeName("granted") << grantedAt;
+            writer_.newPropertyWithSafeName("expires") << expiresAt;
+        }
         writer_.endObject();
     }
 private:
     JsonWriter& writer_;
     const EntityCollection& collection_;
-    WriteNameFunction writeName_;
+    const SerializationRestriction& restriction_;
+    WriteEntityFunction writeEntity_;
 };
 
-static void writeDiscussionThreadName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+static bool writeDiscussionThreadEntity(const EntityCollection& collection, const SerializationRestriction& restriction, 
+                                        IdTypeRef entityId, JsonWriter& writer)
 {
     const auto& index = collection.threads().byId();
     const auto it = index.find(entityId);
     if (it != index.end())
     {
-        writer.newPropertyWithSafeName("name") << (**it).name();
+        const DiscussionThread& thread = **it;
+        if (restriction.isAllowed(thread, DiscussionThreadPrivilege::VIEW))
+        {
+            writer.newPropertyWithSafeName("id") << thread.id();
+            writer.newPropertyWithSafeName("name") << thread.name();
+            return true;
+        }
     }
+    return false;
 }
 
-static void writeDiscussionTagName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+static bool writeDiscussionTagEntity(const EntityCollection& collection, const SerializationRestriction& restriction, 
+                                     IdTypeRef entityId, JsonWriter& writer)
 {
     const auto& index = collection.tags().byId();
     const auto it = index.find(entityId);
     if (it != index.end())
     {
-        writer.newPropertyWithSafeName("name") << (**it).name();
+        const DiscussionTag& tag = **it;
+        if (restriction.isAllowed(tag, DiscussionTagPrivilege::VIEW))
+        {
+            writer.newPropertyWithSafeName("id") << tag.id();
+            writer.newPropertyWithSafeName("name") << tag.name();
+            return true;
+        }
     }
+    return false;
 }
 
-static void writeDiscussionCategoryName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+static bool writeDiscussionCategoryEntity(const EntityCollection& collection, const SerializationRestriction& restriction,
+                                          IdTypeRef entityId, JsonWriter& writer)
 {
     const auto& index = collection.categories().byId();
     const auto it = index.find(entityId);
     if (it != index.end())
     {
-        writer.newPropertyWithSafeName("name") << (**it).name();
+        const DiscussionCategory& category = **it;
+        if (restriction.isAllowed(category, DiscussionCategoryPrivilege::VIEW))
+        {
+            writer.newPropertyWithSafeName("id") << category.id();
+            writer.newPropertyWithSafeName("name") << category.name();
+            return true;
+        }
     }
+    return false;
 }
 
-static void writeForumWideName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+static bool writeForumWideEntity(const EntityCollection& collection, const SerializationRestriction& restriction, 
+                                 IdTypeRef entityId, JsonWriter& writer)
 {
     //do nothing
+    return true;
 }
 
 void writeAssignedPrivilegesExtra(JsonWriter& writer)
@@ -328,49 +356,53 @@ void MemoryRepositoryAuthorization::writeForumWideAssignedPrivileges(const Entit
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionThreadUserAssignedPrivileges(const EntityCollection& collection,
+                                                                                const SerializationRestriction& restriction,
                                                                                 IdTypeRef userId, JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussionThreadPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionThreadPrivilegesAssignedToUser(userId,
-            UserAssignedPrivilegeWriter(writer, collection, writeDiscussionThreadName));
+            UserAssignedPrivilegeWriter(writer, collection, restriction, writeDiscussionThreadEntity));
 
     writer.endArray();
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionTagUserAssignedPrivileges(const EntityCollection& collection,
+                                                                             const SerializationRestriction& restriction,
                                                                              IdTypeRef userId, JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussionTagPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionTagPrivilegesAssignedToUser(userId,
-            UserAssignedPrivilegeWriter(writer, collection, writeDiscussionTagName));
+            UserAssignedPrivilegeWriter(writer, collection, restriction, writeDiscussionTagEntity));
 
     writer.endArray();
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionCategoryUserAssignedPrivileges(const EntityCollection& collection,
+                                                                                  const SerializationRestriction& restriction,
                                                                                   IdTypeRef userId, JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("discussionCategoryPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionCategoryPrivilegesAssignedToUser(userId,
-            UserAssignedPrivilegeWriter(writer, collection, writeDiscussionCategoryName));
+            UserAssignedPrivilegeWriter(writer, collection, restriction, writeDiscussionCategoryEntity));
 
     writer.endArray();
 }
 
 void MemoryRepositoryAuthorization::writeForumWideUserAssignedPrivileges(const EntityCollection& collection,
+                                                                         const Authorization::SerializationRestriction& restriction,
                                                                          IdTypeRef userId, JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("forumWidePrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateForumWidePrivilegesAssignedToUser(userId,
-            UserAssignedPrivilegeWriter(writer, collection, writeForumWideName));
+            UserAssignedPrivilegeWriter(writer, collection, restriction, writeForumWideEntity));
 
     writer.endArray();
 }
@@ -1665,10 +1697,13 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForUser(IdTypeRef
 
                           writeAssignedPrivilegesExtra(writer);
 
-                          writeForumWideUserAssignedPrivileges(collection, userId, writer);
-                          writeDiscussionCategoryUserAssignedPrivileges(collection, userId, writer);
-                          writeDiscussionTagUserAssignedPrivileges(collection, userId, writer);
-                          writeDiscussionThreadUserAssignedPrivileges(collection, userId, writer);
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                              currentUser.id(), Context::getCurrentTime());
+
+                          writeForumWideUserAssignedPrivileges(collection, restriction, userId, writer);
+                          writeDiscussionCategoryUserAssignedPrivileges(collection, restriction, userId, writer);
+                          writeDiscussionTagUserAssignedPrivileges(collection, restriction, userId, writer);
+                          writeDiscussionThreadUserAssignedPrivileges(collection, restriction, userId, writer);
 
                           writer.endObject();
 
