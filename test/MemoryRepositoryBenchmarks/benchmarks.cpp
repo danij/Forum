@@ -941,5 +941,4 @@ void doBenchmarks(BenchmarkContext& context)
         }) << " ";
     }
     std::cout << '\n';
-
 }
