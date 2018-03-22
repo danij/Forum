@@ -931,4 +931,15 @@ void doBenchmarks(BenchmarkContext& context)
         }) << " ";
     }
     std::cout << '\n';
+
+    std::cout << "Merge all tags: ";
+    for (size_t i = 1; i < tagIds.size(); ++i)
+    {
+        std::cout << countDuration([&]()
+        {
+            execute(handler, Command::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG, { tagIds[i], tagIds[0] });
+        }) << " ";
+    }
+    std::cout << '\n';
+
 }
