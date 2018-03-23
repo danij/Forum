@@ -161,8 +161,9 @@ namespace Forum
             auto& byPinDisplayOrder()       { return byPinDisplayOrder_; }
 
         private:
-            ORDERED_COLLECTION(DiscussionThread, pinDisplayOrder) byPinDisplayOrder_;
-            ORDERED_COLLECTION_ITERATOR(byPinDisplayOrder_) byPinDisplayOrderUpdateIt_;
+
+            SORTED_VECTOR_COLLECTION(DiscussionThread, pinDisplayOrder) byPinDisplayOrder_;
+            SORTED_VECTOR_COLLECTION_ITERATOR(byPinDisplayOrder_) byPinDisplayOrderUpdateIt_;
         };
 
         class DiscussionThreadCollectionWithReferenceCountAndMessageCount final : private boost::noncopyable

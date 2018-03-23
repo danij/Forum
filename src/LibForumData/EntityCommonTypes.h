@@ -162,6 +162,9 @@ namespace Forum
         DEFINE_PTR_EXTRACTOR(messageCount)
         DEFINE_PTR_COMPARER(messageCount)
 
+        DEFINE_PTR_EXTRACTOR(pinDisplayOrder)
+        DEFINE_PTR_COMPARER(pinDisplayOrder)
+
         template<typename Collection, typename Entity, typename Value>
         void eraseFromNonUniqueCollection(Collection& collection, Entity toCompare, const Value& toSearch)
         {
