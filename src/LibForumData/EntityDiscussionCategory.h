@@ -71,10 +71,7 @@ namespace Forum
                    auto threadTotalCount()   const { return totalThreads_.count(); }
                    auto messageTotalCount()  const { return totalThreads_.messageCount(); }
 
-                   /**
-                   * Returns the latest message based on all thread references held
-                   */
-                   auto latestMessage()      const { return totalThreads_.latestMessage(); }
+            const DiscussionThreadMessage* latestMessage() const;
 
                    auto tags()               const { return Helpers::toConst(tags_); }
                    auto children()           const { return Helpers::toConst(children_); }

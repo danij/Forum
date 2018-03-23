@@ -237,3 +237,33 @@ PrivilegeValueType DiscussionCategory::getDiscussionCategoryPrivilege(Discussion
 
     return forumWidePrivileges_.getDiscussionCategoryPrivilege(privilege);
 }
+
+const DiscussionThreadMessage* DiscussionCategory::latestMessage() const
+{
+    const DiscussionThreadMessage* result{};
+
+    const auto& index = threads_.byLatestMessageCreated();
+    if ( ! index.empty())
+    {
+        auto thread = *(index.rbegin());
+
+        auto messageIndex = thread->messages().byCreated();
+        if (messageIndex.size())
+        {
+            result = *(messageIndex.rbegin());
+        }
+    }
+
+    for (DiscussionCategoryPtr child : children_)
+    {
+        auto childLatestMessage = child->latestMessage();
+        if ( ! childLatestMessage) continue;
+
+        if (( ! result) || (result->created() < childLatestMessage->created()))
+        {
+            result = childLatestMessage;
+        }
+    }
+
+    return result;
+}

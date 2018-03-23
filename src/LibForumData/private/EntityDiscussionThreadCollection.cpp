@@ -257,10 +257,6 @@ bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::add(Discussion
     {
         if ( ! std::get<1>(byId_.insert(thread))) return false;
 
-        if ( ! Context::isBatchInsertInProgress())
-        {
-            byLatestMessageCreated_.insert(thread);
-        }
         referenceCount_.insert(std::make_pair(thread, amount));
         messageCount_ += static_cast<decltype(messageCount_)>(thread->messageCount());
         return true;
@@ -326,10 +322,6 @@ bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::remove(Discuss
 
         byId_.erase(itById);
     }
-    if ( ! Context::isBatchInsertInProgress())
-    {
-        eraseFromNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
-    }
     referenceCount_.erase(thread);
     messageCount_ -= static_cast<decltype(messageCount_)>(thread->messageCount());
 
@@ -339,7 +331,6 @@ bool DiscussionThreadCollectionWithReferenceCountAndMessageCount::remove(Discuss
 void DiscussionThreadCollectionWithReferenceCountAndMessageCount::clear()
 {
     byId_.clear();
-    byLatestMessageCreated_.clear();
     referenceCount_.clear();
     messageCount_ = 0;
 }
@@ -347,47 +338,7 @@ void DiscussionThreadCollectionWithReferenceCountAndMessageCount::clear()
 void DiscussionThreadCollectionWithReferenceCountAndMessageCount::stopBatchInsert()
 {
     if ( ! Context::isBatchInsertInProgress()) return;
-
-    byLatestMessageCreated_.clear();
-
-    auto byIdIndex = byId();
-    byLatestMessageCreated_.insert(byIdIndex.begin(), byIdIndex.end());
 }
-
-void DiscussionThreadCollectionWithReferenceCountAndMessageCount::prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    byLatestMessageCreatedUpdateIt_ = findInNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
-}
-
-void DiscussionThreadCollectionWithReferenceCountAndMessageCount::updateLatestMessageCreated(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    if (byLatestMessageCreatedUpdateIt_ != byLatestMessageCreated_.end())
-    {
-        replaceItemInContainer(byLatestMessageCreated_, byLatestMessageCreatedUpdateIt_, thread);
-    }
-}
-
-DiscussionThreadMessagePtr DiscussionThreadCollectionWithReferenceCountAndMessageCount::latestMessage() const
-{
-    auto& index = byLatestMessageCreated_;
-    if (index.empty())
-    {
-        return nullptr;
-    }
-    auto thread = *(index.rbegin());
-
-    auto messageIndex = thread->messages().byCreated();
-    if (messageIndex.size())
-    {
-        return *(messageIndex.rbegin());
-    }
-    return nullptr;
-}
-
 
 ///
 //Low Memory

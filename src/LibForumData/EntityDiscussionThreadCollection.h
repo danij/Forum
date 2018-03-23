@@ -188,26 +188,17 @@ namespace Forum
 
             void stopBatchInsert();
 
-            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread);
-            void updateLatestMessageCreated(DiscussionThreadPtr thread);
-
             auto count()        const { return byId_.size(); }
             auto messageCount() const { return messageCount_; }
             auto& byId()              { return byId_; }
             auto  byId()        const { return Helpers::toConst(byId_); }
 
-            auto& byLatestMessageCreated() { return byLatestMessageCreated_; }
             auto& messageCount()           { return messageCount_; }
-
-            DiscussionThreadMessagePtr latestMessage() const;
 
         private:
             bool add(DiscussionThreadPtr thread, int_fast32_t amount);
 
             HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
-
-            RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
-            RANKED_COLLECTION_ITERATOR(byLatestMessageCreated_) byLatestMessageCreatedUpdateIt_;
 
             int_fast32_t messageCount_ = 0;
             std::unordered_map<DiscussionThreadPtr, int_fast32_t> referenceCount_;
