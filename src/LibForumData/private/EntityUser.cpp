@@ -21,5 +21,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Forum::Entities;
 
 User::ChangeNotification User::changeNotifications_;
-const std::set<DiscussionThreadMessagePtr> User::emptyVotedMessages_;
+const User::VotedMessagesType User::emptyVotedMessages_;
 const MessageCommentCollectionLowMemory User::emptyMessageComments_;

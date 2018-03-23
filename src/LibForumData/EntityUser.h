@@ -26,10 +26,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <atomic>
 #include <cstdint>
 #include <string>
-#include <set>
 
 #include <boost/noncopyable.hpp>
 #include <boost/circular_buffer.hpp>
+#include <boost/container/flat_set.hpp>
 
 namespace Forum
 {
@@ -96,6 +96,8 @@ namespace Forum
             typedef Json::JsonReadyString<4> TitleType;
             typedef Json::JsonReadyString<4> SignatureType;
 
+            typedef boost::container::flat_set<DiscussionThreadMessagePtr> VotedMessagesType;
+
             enum class ReceivedVoteHistoryEntryType : uint8_t
             {
                 UpVote,
@@ -157,7 +159,7 @@ namespace Forum
             auto& threadMessages()    { return threadMessages_; }
             auto& votedMessages()
             {
-                if ( ! votedMessages_) votedMessages_.reset(new std::set<DiscussionThreadMessagePtr>);
+                if ( ! votedMessages_) votedMessages_.reset(new VotedMessagesType);
                 return *votedMessages_;
             }
             auto& messageComments()
@@ -198,7 +200,7 @@ namespace Forum
 
             void removeVote(DiscussionThreadMessagePtr message)
             {
-                auto set = votedMessages();
+                auto& set = votedMessages();
                 auto it = set.find(message);
                 if (it != set.end())
                 {
@@ -208,7 +210,7 @@ namespace Forum
 
         private:
             static ChangeNotification changeNotifications_;
-            static const std::set<DiscussionThreadMessagePtr> emptyVotedMessages_;
+            static const VotedMessagesType emptyVotedMessages_;
             static const MessageCommentCollectionLowMemory emptyMessageComments_;
 
             IdType id_;
@@ -228,7 +230,7 @@ namespace Forum
             DiscussionThreadCollectionLowMemory subscribedThreads_;
 
             DiscussionThreadMessageCollectionLowMemory threadMessages_;
-            std::unique_ptr<std::set<DiscussionThreadMessagePtr>> votedMessages_;
+            std::unique_ptr<VotedMessagesType> votedMessages_;
 
             std::unique_ptr<MessageCommentCollectionLowMemory> messageComments_;
 
