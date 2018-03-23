@@ -247,13 +247,13 @@ namespace Forum
 
             User& createdBy_;
             EntityPointer<DiscussionThread> parentThread_;
+            int32_t solvedCommentsCount_{0};
 
             Helpers::WholeChangeableString content_;
 
             std::unique_ptr<LastUpdatedInfo> lastUpdated_;
 
             std::unique_ptr<MessageCommentCollectionLowMemory> comments_;
-            int32_t solvedCommentsCount_{0};
 
             std::unique_ptr<VoteCollection> upVotes_;
             std::unique_ptr<VoteCollection> downVotes_;
