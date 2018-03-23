@@ -232,7 +232,7 @@ namespace Forum
 
             std::unique_ptr<MessageCommentCollectionLowMemory> messageComments_;
 
-            static constexpr size_t MaxVotesInHistory = 64;
+            static constexpr size_t MaxVotesInHistory = 16;
             boost::circular_buffer_space_optimized<ReceivedVoteHistory> voteHistory_{ MaxVotesInHistory };
             mutable std::atomic<int64_t> voteHistoryLastRetrieved_{ 0 };
 
