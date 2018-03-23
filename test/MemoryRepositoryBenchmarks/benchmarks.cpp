@@ -938,7 +938,7 @@ void doBenchmarks(BenchmarkContext& context)
         std::cout << countDuration([&]()
         {
             execute(handler, Command::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG, { tagIds[i], tagIds[0] });
-        }) << " ";
+        }) << " " << std::flush;
     }
     std::cout << '\n';
 }
