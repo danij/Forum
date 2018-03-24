@@ -325,6 +325,8 @@ void DiscussionThreadCollectionWithReferenceCountAndMessageCount::stopBatchInser
 ///
 bool DiscussionThreadCollectionLowMemory::add(DiscussionThreadPtr thread)
 {
+    if (byId_.find(thread->id()) != byId_.end()) return false;
+
     prepareCountChange();
     if ( ! std::get<1>(byId_.insert(thread)))
     {
