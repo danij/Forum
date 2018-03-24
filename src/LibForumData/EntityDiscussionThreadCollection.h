@@ -58,13 +58,13 @@ namespace Forum
             virtual void updatePinDisplayOrder(DiscussionThreadPtr thread) = 0;
         };
 
-        class DiscussionThreadCollectionBase : public IDiscussionThreadCollection
+        class DiscussionThreadCollectionWithHashedId : public IDiscussionThreadCollection
         {
         public:
-            DECLARE_ABSTRACT_MANDATORY(DiscussionThreadCollectionBase)
-
             virtual bool add(DiscussionThreadPtr thread);
             virtual bool remove(DiscussionThreadPtr thread);
+
+            bool contains(DiscussionThreadPtr thread) const;
 
             virtual void stopBatchInsert();
 
@@ -86,7 +86,10 @@ namespace Forum
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
 
-            auto count()                  const { return countInternal(); }
+            auto count()                  const { return byId_.size(); }
+
+             auto byId()                  const { return Helpers::toConst(byId_); }
+            auto& byId()                        { return byId_; }
 
             auto byName()                 const { return Helpers::toConst(byName_); }
             auto byCreated()              const { return Helpers::toConst(byCreated_); }
@@ -101,12 +104,11 @@ namespace Forum
             auto& byMessageCount()         { return byMessageCount_; }
 
         protected:
-            virtual void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) = 0;
-            virtual size_t countInternal() const = 0;
             void prepareCountChange();
             void finishCountChange();
 
         private:
+            HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
 
             RANKED_COLLECTION(DiscussionThread, name) byName_;
             RANKED_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
@@ -124,26 +126,6 @@ namespace Forum
 
             std::function<void()> onPrepareCountChange_;
             std::function<void()> onCountChange_;
-        };
-
-        class DiscussionThreadCollectionWithHashedId : public DiscussionThreadCollectionBase,
-                                                       private boost::noncopyable
-        {
-        public:
-            bool add(DiscussionThreadPtr thread) override;
-            bool remove(DiscussionThreadPtr thread) override;
-
-            bool contains(DiscussionThreadPtr thread) const;
-
-             auto byId() const { return Helpers::toConst(byId_); }
-            auto& byId()       { return byId_; }
-
-        protected:
-            void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) override;
-            size_t countInternal() const override { return byId_.size(); }
-
-        private:
-            HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
         };
 
         class DiscussionThreadCollectionWithHashedIdAndPinOrder final : public DiscussionThreadCollectionWithHashedId
