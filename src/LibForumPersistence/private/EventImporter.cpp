@@ -1032,17 +1032,15 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
     void updateDiscussionThreadVisitCount()
     {
-        auto& threads = entityCollection_.threads().byId();
         for (auto& pair : cachedNrOfThreadVisits_)
         {
             auto& id = pair.first;
             const auto nrOfVisits = static_cast<int_fast64_t>(pair.second);
 
-            auto it = threads.find(id);
-            if (it != threads.end())
+            auto threadPtr = entityCollection_.threads().findById(id);
+            if (threadPtr)
             {
-                const DiscussionThread& thread = **it;
-                thread.visited() += nrOfVisits;
+                threadPtr->visited() += nrOfVisits;
             }
         }
     }

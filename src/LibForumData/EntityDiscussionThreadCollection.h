@@ -19,12 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include "ConstCollectionAdapter.h"
+#include "ContextProviders.h"
 #include "EntityDiscussionThread.h"
 #include "TypeHelpers.h"
 
 #include <functional>
 #include <unordered_map>
-#include <unordered_set>
 
 #include <boost/noncopyable.hpp>
 
@@ -65,10 +65,50 @@ namespace Forum
             virtual bool add(DiscussionThreadPtr thread);
             virtual bool remove(DiscussionThreadPtr thread);
 
-            bool contains(DiscussionThreadPtr thread) const;
-
             void stopBatchInsert();
 
+            bool contains(DiscussionThreadPtr thread) const;
+
+            const DiscussionThread* findById(IdTypeRef id) const;
+                DiscussionThreadPtr findById(IdTypeRef id);
+
+            template<typename Fn>
+            void iterateThreads(Fn&& callback) const
+            {
+                if (Context::isBatchInsertInProgress())
+                {
+                    for (auto& pair : temporaryThreads_)
+                    {
+                        callback(static_cast<const DiscussionThread*>(pair.second));
+                    }
+                }
+                else
+                {
+                    for (auto threadPtr : threads_.get<DiscussionThreadCollectionById>())
+                    {
+                        callback(static_cast<const DiscussionThread*>(threadPtr));
+                    }
+                }
+            }
+
+            template<typename Fn>
+            void iterateThreads(Fn&& callback)
+            {
+                if (Context::isBatchInsertInProgress())
+                {
+                    for (auto& pair : temporaryThreads_)
+                    {
+                        callback(pair.second);
+                    }
+                }
+                else
+                {
+                    for (auto threadPtr : threads_.get<DiscussionThreadCollectionById>())
+                    {
+                        callback(threadPtr);
+                    }
+                }
+            }
             void prepareUpdateName(DiscussionThreadPtr thread) override {} //empty, not needed
             void updateName(DiscussionThreadPtr thread) override { update(thread); }
 
@@ -89,9 +129,6 @@ namespace Forum
 
             auto count()                  const { return threads_.size() + temporaryThreads_.size(); }
 
-            auto& byId()                        { return threads_.get<DiscussionThreadCollectionById>(); }
-
-            auto byId()                   const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionById>()); }
             auto byName()                 const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByName>()); }
             auto byCreated()              const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByCreated>()); }
             auto byLastUpdated()          const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLastUpdated>()); }
@@ -106,7 +143,7 @@ namespace Forum
 
             void update(DiscussionThreadPtr thread);
             
-            std::unordered_set<DiscussionThreadPtr> temporaryThreads_;
+            std::unordered_map<IdType, DiscussionThreadPtr> temporaryThreads_;
 
         private:
             struct DiscussionThreadCollectionById {};

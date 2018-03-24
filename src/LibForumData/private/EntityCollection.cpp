@@ -312,11 +312,11 @@ struct EntityCollection::Impl
             assert(category);
             category->removeTag(tagPtr);
         }
-        for (DiscussionThreadPtr thread : tag.threads().byId())
+        tag.threads().iterateThreads([tagPtr](DiscussionThreadPtr threadPtr)
         {
-            assert(thread);
-            thread->removeTag(tagPtr);
-        }
+            assert(threadPtr);
+            threadPtr->removeTag(tagPtr);
+        });
 
         managedEntities.tags.remove(tagPtr.index());
     }
@@ -342,11 +342,11 @@ struct EntityCollection::Impl
             tag->removeCategory(categoryPtr);
         }
 
-        for (DiscussionThreadPtr thread : category.threads().byId())
+        category.threads().iterateThreads([categoryPtr](DiscussionThreadPtr threadPtr)
         {
-            assert(thread);
-            thread->removeCategory(categoryPtr);
-        }
+            assert(threadPtr);
+            threadPtr->removeCategory(categoryPtr);
+        });
 
         auto parent = category.parent();
         if (parent)
@@ -517,10 +517,10 @@ struct EntityCollection::Impl
 
             std::async(std::launch::async, [this]()
             {
-                for (DiscussionThreadPtr thread : this->threads_.byId())
+                this->threads_.iterateThreads([](DiscussionThreadPtr threadPtr)
                 {
-                    thread->messages().stopBatchInsert();
-                }
+                    threadPtr->messages().stopBatchInsert();
+                });
             }),
 
             std::async(std::launch::async, [this]()
@@ -553,14 +553,6 @@ struct EntityCollection::Impl
                 {
                     category->stopBatchInsert();
                 }
-            }),
-
-            std::async(std::launch::async, [this]()
-            {
-                this->threads_.stopBatchInsert();
-                this->threadMessages_.stopBatchInsert();
-                this->tags_.stopBatchInsert();
-                this->categories_.stopBatchInsert();
             })
         };
 
@@ -568,6 +560,11 @@ struct EntityCollection::Impl
         {
             future.get();
         }
+
+        this->threads_.stopBatchInsert();
+        this->threadMessages_.stopBatchInsert();
+        this->tags_.stopBatchInsert();
+        this->categories_.stopBatchInsert();
 
         Context::setBatchInsertInProgres(batchInsertInProgress_ = activate);
     }

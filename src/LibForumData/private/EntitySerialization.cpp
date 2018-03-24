@@ -72,9 +72,9 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
             << propertySafeName("hasLogo", user.hasLogo())
             << propertySafeName("created", user.created())
             << propertySafeName("lastSeen", user.lastSeen())
-            << propertySafeName("threadCount", user.threads().byId().size())
+            << propertySafeName("threadCount", user.threads().count())
             << propertySafeName("messageCount", user.threadMessages().byId().size())
-            << propertySafeName("subscribedThreadCount", user.subscribedThreads().byId().size())
+            << propertySafeName("subscribedThreadCount", user.subscribedThreads().count())
             << propertySafeName("receivedUpVotes", user.receivedUpVotes())
             << propertySafeName("receivedDownVotes", user.receivedDownVotes())
         << objEnd;

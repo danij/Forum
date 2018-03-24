@@ -674,10 +674,11 @@ void importPersistedData(BenchmarkContext& context)
     {
         context.userIds.push_back(user->id());
     }
-    for (auto& thread : context.entityCollection->threads().byId())
+
+    context.entityCollection->threads().iterateThreads([&context](Entities::DiscussionThreadPtr threadPtr)
     {
-        context.threadIds.push_back(thread->id());
-    }
+        context.threadIds.push_back(threadPtr->id());        
+    });
     for (auto& tag : context.entityCollection->tags().byId())
     {
         context.tagIds.push_back(tag->id());

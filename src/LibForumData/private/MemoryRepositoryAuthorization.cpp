@@ -226,11 +226,10 @@ private:
 static bool writeDiscussionThreadEntity(const EntityCollection& collection, const SerializationRestriction& restriction, 
                                         IdTypeRef entityId, JsonWriter& writer)
 {
-    const auto& index = collection.threads().byId();
-    const auto it = index.find(entityId);
-    if (it != index.end())
+    const auto threadPtr = collection.threads().findById(entityId);
+    if (threadPtr)
     {
-        const DiscussionThread& thread = **it;
+        const DiscussionThread& thread = *threadPtr;
         if (restriction.isAllowed(thread, DiscussionThreadPrivilege::VIEW))
         {
             writer.newPropertyWithSafeName("id") << thread.id();
@@ -672,15 +671,14 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForThread(IdTypeR
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          const auto& index = collection.threads().byId();
-                          auto it = index.find(threadId);
-                          if (it == index.end())
+                          const auto threadPtr = collection.threads().findById(threadId);
+                          if ( ! threadPtr)
                           {
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
 
-                          auto& thread = **it;
+                          const auto& thread = *threadPtr;
 
                           if ( ! (status = threadAuthorization_->getDiscussionThreadRequiredPrivileges(currentUser, thread)))
                           {
@@ -712,15 +710,14 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForThread(IdTypeR
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          const auto& index = collection.threads().byId();
-                          auto it = index.find(threadId);
-                          if (it == index.end())
+                          const auto threadPtr = collection.threads().findById(threadId);
+                          if ( ! threadPtr)
                           {
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
 
-                          auto& thread = **it;
+                          const auto& thread = *threadPtr;
 
                           if ( ! (status = threadAuthorization_->getDiscussionThreadAssignedPrivileges(currentUser, thread)))
                           {
@@ -755,15 +752,14 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().byId();
-                           auto it = indexById.find(threadId);
-                           if (it == indexById.end())
+                           const auto threadPtr = collection.threads().findById(threadId);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
-                           const DiscussionThread& thread = **it;
+                           const DiscussionThread& thread = *threadPtr;
                            auto oldValue = thread.DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
 
                            if ( ! (status = threadAuthorization_->updateDiscussionThreadMessagePrivilege(
@@ -790,16 +786,14 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    auto& indexById = collection.threads().byId();
-    const auto it = indexById.find(threadId);
-    if (it == indexById.end())
+    auto threadPtr = collection.threads().findById(threadId);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
-    DiscussionThreadPtr thread = *it;
-    thread->setDiscussionThreadMessagePrivilege(privilege, value);
+    threadPtr->setDiscussionThreadMessagePrivilege(privilege, value);
 
     return StatusCode::OK;
 }
@@ -818,15 +812,14 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadRequiredPrivileg
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().byId();
-                           auto it = indexById.find(threadId);
-                           if (it == indexById.end())
+                           const auto threadPtr = collection.threads().findById(threadId);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
-                           const DiscussionThread& thread = **it;
+                           const DiscussionThread& thread = *threadPtr;
                            auto oldValue = thread.DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege);
 
                            if ( ! (status = threadAuthorization_->updateDiscussionThreadPrivilege(
@@ -853,16 +846,14 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadRequiredPrivileg
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    auto& indexById = collection.threads().byId();
-    const auto it = indexById.find(threadId);
-    if (it == indexById.end())
+    auto threadPtr = collection.threads().findById(threadId);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
-    DiscussionThreadPtr thread = *it;
-    thread->setDiscussionThreadPrivilege(privilege, value);
+    threadPtr->setDiscussionThreadPrivilege(privilege, value);
 
     return StatusCode::OK;
 }
@@ -882,14 +873,13 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& threadIndexById = collection.threads().byId();
-                           auto threadIt = threadIndexById.find(threadId);
-                           if (threadIt == threadIndexById.end())
+                           const auto threadPtr = collection.threads().findById(threadId);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                           const DiscussionThread& thread = **threadIt;
+                           const DiscussionThread& thread = *threadPtr;
 
                            auto targetUser = anonymousUser();
                            if (userId != anonymousUserId())
@@ -927,9 +917,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    auto& indexById = collection.threads().byId();
-    const auto it = indexById.find(threadId);
-    if (it == indexById.end())
+    if ( ! collection.threads().findById(threadId))
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;

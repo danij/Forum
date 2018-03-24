@@ -17,7 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "EntityDiscussionThreadCollection.h"
-#include "ContextProviders.h"
+
+#include <boost/iterator/transform_iterator.hpp>
 
 using namespace Forum::Entities;
 
@@ -32,7 +33,7 @@ bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
 
     if (Context::isBatchInsertInProgress())
     {
-        result = std::get<1>(temporaryThreads_.insert(thread));
+        result = std::get<1>(temporaryThreads_.insert(std::make_pair(thread->id(), thread)));
     }
     else
     {
@@ -60,7 +61,7 @@ bool DiscussionThreadCollectionWithHashedId::remove(DiscussionThreadPtr thread)
 
     if (Context::isBatchInsertInProgress())
     {
-        const auto itTemporary = temporaryThreads_.find(thread);
+        const auto itTemporary = temporaryThreads_.find(thread->id());
         if (itTemporary == temporaryThreads_.end())
         {
             return false;
@@ -89,16 +90,35 @@ bool DiscussionThreadCollectionWithHashedId::remove(DiscussionThreadPtr thread)
 bool DiscussionThreadCollectionWithHashedId::contains(DiscussionThreadPtr thread) const
 {
     assert(thread);
+    return findById(thread->id());
+}
 
+const DiscussionThread* DiscussionThreadCollectionWithHashedId::findById(IdTypeRef id) const
+{
+    return (const_cast<DiscussionThreadCollectionWithHashedId*>(this))->findById(id);
+}
+
+
+DiscussionThreadPtr DiscussionThreadCollectionWithHashedId::findById(IdTypeRef id)
+{
     if (Context::isBatchInsertInProgress())
     {
-        return temporaryThreads_.find(thread) != temporaryThreads_.end();
+        const auto it = temporaryThreads_.find(id);
+        if (it != temporaryThreads_.end())
+        {
+            return it->second;
+        }
     }
     else
     {
         const auto& index = threads_.get<DiscussionThreadCollectionById>();
-        return index.find(thread->id()) != index.end();            
+        const auto it = index.find(id);
+        if (it != index.end())
+        {
+            return *it;
+        }
     }
+    return {};
 }
 
 void DiscussionThreadCollectionWithHashedId::stopBatchInsert()
@@ -110,9 +130,17 @@ void DiscussionThreadCollectionWithHashedId::stopBatchInsert()
     temporaryThreads_.clear();
 }
 
+static DiscussionThreadPtr GetPtrFromPair(const std::pair<IdType, DiscussionThreadPtr>& pair)
+{
+    return pair.second;
+}
+
 void DiscussionThreadCollectionWithHashedId::onStopBatchInsert()
 {
-    threads_.insert(temporaryThreads_.begin(), temporaryThreads_.end());
+    const auto valuesBegin = boost::make_transform_iterator(temporaryThreads_.begin(), GetPtrFromPair);
+    const auto valuesEnd = boost::make_transform_iterator(temporaryThreads_.end(), GetPtrFromPair);
+
+    threads_.insert(valuesBegin, valuesEnd);
 }
 
 void DiscussionThreadCollectionWithHashedId::update(DiscussionThreadPtr thread)
@@ -157,7 +185,10 @@ void DiscussionThreadCollectionWithHashedIdAndPinOrder::onStopBatchInsert()
 {
     byPinDisplayOrder_.clear();
 
-    byPinDisplayOrder_.insert(temporaryThreads_.begin(), temporaryThreads_.end());
+    const auto valuesBegin = boost::make_transform_iterator(temporaryThreads_.begin(), GetPtrFromPair);
+    const auto valuesEnd = boost::make_transform_iterator(temporaryThreads_.end(), GetPtrFromPair);
+
+    byPinDisplayOrder_.insert(valuesBegin, valuesEnd);
 }
 
 void DiscussionThreadCollectionWithHashedIdAndPinOrder::prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread)

@@ -156,11 +156,11 @@ bool DiscussionCategory::addTag(DiscussionTagPtr tag)
         return false;
     }
 
-    for (DiscussionThreadPtr thread : tag->threads().byId())
+    tag->threads().iterateThreads([this](DiscussionThreadPtr threadPtr)
     {
-        assert(thread);
-        insertDiscussionThread(thread);
-    }
+        assert(threadPtr);
+        this->insertDiscussionThread(threadPtr);
+    });
     return true;
 }
 
@@ -172,11 +172,11 @@ bool DiscussionCategory::removeTag(DiscussionTagPtr tag)
         return false;
     }
 
-    for (auto& thread : tag->threads().byId())
+    tag->threads().iterateThreads([this](DiscussionThreadPtr threadPtr)
     {
-        assert(thread);
-        deleteDiscussionThreadIfNoOtherTagsReferenceIt(thread, true);
-    }
+        assert(threadPtr);
+        this->deleteDiscussionThreadIfNoOtherTagsReferenceIt(threadPtr, true);
+    });
     return true;
 }
 

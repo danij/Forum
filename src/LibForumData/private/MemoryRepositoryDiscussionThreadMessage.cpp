@@ -247,14 +247,12 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& threadIndex = collection.threads().byId();
-                           auto threadIt = threadIndex.find(threadId);
-                           if (threadIt == threadIndex.end())
+                           auto threadPtr = collection.threads().findById(threadId);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                           auto threadPtr = *threadIt;
                            auto& thread = *threadPtr;
 
                            if ( ! (status = authorization_->addNewDiscussionMessageInThread(*currentUser, thread, content)))
@@ -308,16 +306,14 @@ StatusWithResource<DiscussionThreadMessagePtr>
                                                                              StringView content, size_t contentSize,
                                                                              size_t contentOffset)
 {
-    auto& threadIndex = collection.threads().byId();
-    const auto threadIt = threadIndex.find(threadId);
-    if (threadIt == threadIndex.end())
+    auto threadPtr = collection.threads().findById(threadId);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
     auto currentUser = getCurrentUser(collection);
-    DiscussionThreadPtr threadPtr = *threadIt;
 
     auto message = collection.createDiscussionThreadMessage(messageId, *currentUser, Context::getCurrentTime(),
                                                             { Context::getCurrentUserIpAddress() });
@@ -522,16 +518,14 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                           auto& threadsIndexById = collection.threads().byId();
-                           auto itInto = threadsIndexById.find(intoThreadId);
-                           if (itInto == threadsIndexById.end())
+                           auto threadIntoPtr = collection.threads().findById(intoThreadId);
+                           if ( ! threadIntoPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
                            DiscussionThreadMessagePtr messagePtr = *messageIt;
-                           DiscussionThreadPtr threadIntoPtr = *itInto;
                            DiscussionThreadPtr threadFromPtr = messagePtr->parentThread();
 
                            if (threadFromPtr == threadIntoPtr)
@@ -586,16 +580,14 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
         return StatusCode::NOT_FOUND;
     }
 
-    auto& threadsIndexById = collection.threads().byId();
-    const auto itInto = threadsIndexById.find(intoThreadId);
-    if (itInto == threadsIndexById.end())
+    auto threadIntoPtr = collection.threads().findById(intoThreadId);
+    if ( ! threadIntoPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(intoThreadId);
         return StatusCode::NOT_FOUND;
     }
 
     DiscussionThreadMessagePtr messagePtr = *messageIt;
-    DiscussionThreadPtr threadIntoPtr = *itInto;
     DiscussionThread& threadInto = *threadIntoPtr;
     DiscussionThreadPtr threadFromPtr = messagePtr->parentThread();
     assert(threadFromPtr);

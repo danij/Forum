@@ -169,15 +169,14 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          const auto& index = collection.threads().byId();
-                          auto it = index.find(id);
-                          if (it == index.end())
+                          auto threadPtr = collection.threads().findById(id);
+                          if ( ! threadPtr)
                           {
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
 
-                          auto& thread = **it;
+                          auto& thread = *threadPtr;
 
                           if ( ! (status = authorization_->getDiscussionThreadById(currentUser, thread)))
                           {
@@ -219,11 +218,9 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
     {
         collection().write([&](EntityCollection& collection)
                            {
-                               auto& index = collection.threads().byId();
-                               auto it = index.find(id);
-                               if (it != index.end())
+                               auto threadPtr = collection.threads().findById(id);
+                               if (threadPtr)
                                {
-                                   DiscussionThreadPtr threadPtr = *it;
                                    threadPtr->addVisitorSinceLastEdit(userId);
                                }
                            });
@@ -248,12 +245,11 @@ StatusCode MemoryRepositoryDiscussionThread::getMultipleDiscussionThreadsById(St
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          const auto& indexById = collection.threads().byId();
+                          const auto& threads = collection.threads();
                           auto lastThreadFound = std::transform(parsedIds.begin(), lastParsedId, threadsFound.begin(), 
-                              [&indexById](auto id)
+                              [&threads](auto id)
                               {
-                                  auto it = indexById.find(id);
-                                  return (it == indexById.end()) ? nullptr : *it;
+                                  return threads.findById(id);
                               });
                           
                           status = StatusCode::OK;
@@ -400,15 +396,14 @@ StatusCode MemoryRepositoryDiscussionThread::getUsersSubscribedToDiscussionThrea
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          const auto& index = collection.threads().byId();
-                          auto it = index.find(id);
-                          if (it == index.end())
+                          auto threadPtr = collection.threads().findById(id);
+                          if ( ! threadPtr)
                           {
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
 
-                          const DiscussionThread& thread = **it;
+                          const DiscussionThread& thread = *threadPtr;
 
                           if ( ! (status = authorization_->getDiscussionThreadById(currentUser, thread)))
                           {
@@ -608,22 +603,21 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(IdTypeRe
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().byId();
-                           auto it = indexById.find(id);
-                           if (it == indexById.end())
+                           auto threadPtr = collection.threads().findById(id);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
-                           if ( ! (status = authorization_->changeDiscussionThreadName(*currentUser, **it, newName)))
+                           if ( ! (status = authorization_->changeDiscussionThreadName(*currentUser, *threadPtr, newName)))
                            {
                                return;
                            }
 
                            if ( ! (status = changeDiscussionThreadName(collection, id, newName))) return;
 
-                           writeEvents().onChangeDiscussionThread(createObserverContext(*currentUser), **it,
+                           writeEvents().onChangeDiscussionThread(createObserverContext(*currentUser), *threadPtr,
                                                                   DiscussionThread::ChangeType::Name);
                        });
     return status;
@@ -632,20 +626,17 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(IdTypeRe
 StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(EntityCollection& collection, IdTypeRef id,
                                                                         StringView newName)
 {
-    auto& indexById = collection.threads().byId();
-    auto it = indexById.find(id);
-    if (it == indexById.end())
+    auto threadPtr = collection.threads().findById(id);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
     const auto currentUser = getCurrentUser(collection);
-
-    DiscussionThreadPtr thread = *it;
-
-    thread->updateName(DiscussionThread::NameType(newName));
-    updateThreadLastUpdated(*thread, currentUser);
+    
+    threadPtr->updateName(DiscussionThread::NameType(newName));
+    updateThreadLastUpdated(*threadPtr, currentUser);
 
     return StatusCode::OK;
 }
@@ -661,22 +652,21 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().byId();
-                           auto it = indexById.find(id);
-                           if (it == indexById.end())
+                           auto threadPtr = collection.threads().findById(id);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
-                           if ( ! (status = authorization_->changeDiscussionThreadPinDisplayOrder(*currentUser, **it, newValue)))
+                           if ( ! (status = authorization_->changeDiscussionThreadPinDisplayOrder(*currentUser, *threadPtr, newValue)))
                            {
                                return;
                            }
 
                            if ( ! (status = changeDiscussionThreadPinDisplayOrder(collection, id, newValue))) return;
 
-                           writeEvents().onChangeDiscussionThread(createObserverContext(*currentUser), **it,
+                           writeEvents().onChangeDiscussionThread(createObserverContext(*currentUser), *threadPtr,
                                                                   DiscussionThread::ChangeType::PinDisplayOrder);
                        });
     return status;
@@ -685,9 +675,8 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
 StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrder(EntityCollection& collection,
                                                                                    IdTypeRef id, uint16_t newValue)
 {
-    auto& indexById = collection.threads().byId();
-    const auto it = indexById.find(id);
-    if (it == indexById.end())
+    DiscussionThreadPtr threadPtr = collection.threads().findById(id);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
@@ -695,9 +684,8 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
 
     const auto currentUser = getCurrentUser(collection);
 
-    DiscussionThreadPtr thread = *it;
-    thread->updatePinDisplayOrder(newValue);
-    updateThreadLastUpdated(*thread, currentUser);
+    threadPtr->updatePinDisplayOrder(newValue);
+    updateThreadLastUpdated(*threadPtr, currentUser);
 
     return StatusCode::OK;
 }
@@ -716,21 +704,21 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(IdTypeRef id
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().byId();
-                           auto it = indexById.find(id);
-                           if (it == indexById.end())
+                           auto threadPtr = collection.threads().findById(id);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
-                           if ( ! (status = authorization_->deleteDiscussionThread(*currentUser, **it)))
+                           DiscussionThread& thread = *threadPtr;
+                           if ( ! (status = authorization_->deleteDiscussionThread(*currentUser, thread)))
                            {
                                return;
                            }
 
                            //make sure the thread is not deleted before being passed to the observers
-                           writeEvents().onDeleteDiscussionThread(createObserverContext(*currentUser), **it);
+                           writeEvents().onDeleteDiscussionThread(createObserverContext(*currentUser), thread);
 
                            status = deleteDiscussionThread(collection, id);
                        });
@@ -739,15 +727,14 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(IdTypeRef id
 
 StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(EntityCollection& collection, IdTypeRef id)
 {
-    auto& indexById = collection.threads().byId();
-    const auto it = indexById.find(id);
-    if (it == indexById.end())
+    auto threadPtr = collection.threads().findById(id);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
-    collection.deleteDiscussionThread(*it, true);
+    collection.deleteDiscussionThread(threadPtr, true);
 
     return StatusCode::OK;
 }
@@ -771,22 +758,22 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(IdTypeRef fr
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().byId();
-                           auto itFrom = indexById.find(fromId);
-                           if (itFrom == indexById.end())
-                           {
-                               status = StatusCode::NOT_FOUND;
-                               return;
-                           }
-                           auto itInto = indexById.find(intoId);
-                           if (itInto == indexById.end())
+                           auto threadFromPtr = collection.threads().findById(fromId);
+                           if ( ! threadFromPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
-                           auto& threadFrom = **itFrom;
-                           auto& threadInto = **itInto;
+                           auto threadIntoPtr = collection.threads().findById(intoId);
+                           if ( ! threadIntoPtr)
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+
+                           auto& threadFrom = *threadFromPtr;
+                           auto& threadInto = *threadIntoPtr;
 
                            if ( ! (status = authorization_->mergeDiscussionThreads(*currentUser, threadFrom, threadInto)))
                            {
@@ -827,23 +814,21 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
         return StatusCode::NO_EFFECT;
     }
 
-    auto& indexById = collection.threads().byId();
-    const auto itFrom = indexById.find(fromId);
-    if (itFrom == indexById.end())
+    auto threadFromPtr = collection.threads().findById(fromId);
+    if ( ! threadFromPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(fromId);
         return StatusCode::NOT_FOUND;
     }
-    const auto itInto = indexById.find(intoId);
-    if (itInto == indexById.end())
+
+    auto threadIntoPtr = collection.threads().findById(intoId);
+    if ( ! threadIntoPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(intoId);
         return StatusCode::NOT_FOUND;
     }
 
-    DiscussionThreadPtr threadFromPtr = *itFrom;
     DiscussionThread& threadFrom = *threadFromPtr;
-    DiscussionThreadPtr threadIntoPtr = *itInto;
     DiscussionThread& threadInto = *threadIntoPtr;
 
     updateThreadLastUpdated(threadInto, currentUser);
@@ -893,42 +878,37 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(IdTypeR
                                return;
                            }
 
-                           auto& indexById = collection.threads().byId();
-                           auto it = indexById.find(id);
-                           if (it == indexById.end())
+                           auto threadPtr = collection.threads().findById(id);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
-                           auto threadRef = *it;
-
-                           if ( ! (status = authorization_->subscribeToDiscussionThread(*currentUser, *threadRef)))
+                           if ( ! (status = authorization_->subscribeToDiscussionThread(*currentUser, *threadPtr)))
                            {
                                return;
                            }
 
                            if ( ! (status = subscribeToDiscussionThread(collection, id))) return;
 
-                           writeEvents().onSubscribeToDiscussionThread(createObserverContext(*currentUser), *threadRef);
+                           writeEvents().onSubscribeToDiscussionThread(createObserverContext(*currentUser), *threadPtr);
                        });
     return status;
 }
 
 StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityCollection& collection, IdTypeRef id)
 {
-    auto& indexById = collection.threads().byId();
-    const auto it = indexById.find(id);
-    if (it == indexById.end())
+    DiscussionThreadPtr threadPtr = collection.threads().findById(id);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
-    auto thread = *it;
     auto currentUser = getCurrentUser(collection);
 
-    if ( ! std::get<1>(thread->subscribedUsers().insert(std::make_pair(currentUser->id(), currentUser))))
+    if ( ! std::get<1>(threadPtr->subscribedUsers().insert(std::make_pair(currentUser->id(), currentUser))))
     {
         //FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
         //                  << " is already subscribed to the discussion thread " << static_cast<std::string>(id);
@@ -936,7 +916,7 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityC
         return StatusCode::NO_EFFECT;
     }
 
-    currentUser->subscribedThreads().add(thread);
+    currentUser->subscribedThreads().add(threadPtr);
 
     return StatusCode::OK;
 }
@@ -961,42 +941,37 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(IdT
                                return;
                            }
 
-                           auto& indexById = collection.threads().byId();
-                           auto it = indexById.find(id);
-                           if (it == indexById.end())
+                           auto threadPtr = collection.threads().findById(id);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
-                           auto threadRef = *it;
-
-                           if ( ! (status = authorization_->unsubscribeFromDiscussionThread(*currentUser, *threadRef)))
+                           if ( ! (status = authorization_->unsubscribeFromDiscussionThread(*currentUser, *threadPtr)))
                            {
                                return;
                            }
 
                            if ( ! (status = unsubscribeFromDiscussionThread(collection, id))) return;
 
-                           writeEvents().onUnsubscribeFromDiscussionThread(createObserverContext(*currentUser), *threadRef);
+                           writeEvents().onUnsubscribeFromDiscussionThread(createObserverContext(*currentUser), *threadPtr);
                        });
     return status;
 }
 
 StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(EntityCollection& collection, IdTypeRef id)
 {
-    auto& indexById = collection.threads().byId();
-    const auto it = indexById.find(id);
-    if (it == indexById.end())
+    DiscussionThreadPtr threadPtr = collection.threads().findById(id);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
         return StatusCode::NOT_FOUND;
     }
 
-    auto thread = *it;
     auto currentUser = getCurrentUser(collection);
 
-    if (0 == thread->subscribedUsers().erase(currentUser->id()))
+    if (0 == threadPtr->subscribedUsers().erase(currentUser->id()))
     {
         //FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
         //                  << " was not subscribed to the discussion thread " << static_cast<std::string>(id);
@@ -1004,6 +979,6 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(Ent
         return StatusCode::NO_EFFECT;
     }
 
-    currentUser->subscribedThreads().remove(thread);
+    currentUser->subscribedThreads().remove(threadPtr);
     return StatusCode::OK;
 }
