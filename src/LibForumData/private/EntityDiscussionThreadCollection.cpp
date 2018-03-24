@@ -23,26 +23,25 @@ using namespace Forum::Entities;
 
 bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
 {
-    if (byId_.find(thread->id()) != byId_.end()) return false;
+    assert(thread);
+    if (contains(thread)) return false;
+
+    bool result;
 
     prepareCountChange();
-    if ( ! std::get<1>(byId_.insert(thread)))
+
+    if (Context::isBatchInsertInProgress())
     {
-        finishCountChange();
-        return false;
+        result = std::get<1>(temporaryThreads_.insert(thread));
+    }
+    else
+    {
+        result = std::get<1>(threads_.insert(thread));
     }
 
-    if ( ! Context::isBatchInsertInProgress())
-    {
-        byName_.insert(thread);
-        byCreated_.insert(thread);
-        byLastUpdated_.insert(thread);
-        byLatestMessageCreated_.insert(thread);
-        byMessageCount_.insert(thread);
-    }
     finishCountChange();
 
-    return true;
+    return result;
 }
 
 void DiscussionThreadCollectionWithHashedId::prepareCountChange()
@@ -57,119 +56,77 @@ void DiscussionThreadCollectionWithHashedId::finishCountChange()
 
 bool DiscussionThreadCollectionWithHashedId::remove(DiscussionThreadPtr thread)
 {
-    const auto itById = byId_.find(thread->id());
-    if (itById == byId_.end())
+    assert(thread);
+
+    if (Context::isBatchInsertInProgress())
     {
-        return false;
+        const auto itTemporary = temporaryThreads_.find(thread);
+        if (itTemporary == temporaryThreads_.end())
+        {
+            return false;
+        }
+        prepareCountChange();
+        temporaryThreads_.erase(itTemporary);
+        finishCountChange();
     }
-
-    prepareCountChange();
-
-    byId_.erase(itById);
-
-    if ( ! Context::isBatchInsertInProgress())
+    else
     {
-        eraseFromNonUniqueCollection(byName_, thread, thread->name());
-        eraseFromNonUniqueCollection(byCreated_, thread, thread->created());
-        eraseFromNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
-        eraseFromNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
-        eraseFromNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
+        auto& index = threads_.get<DiscussionThreadCollectionById>();
+        const auto itById = index.find(thread->id());
+
+        if (itById == index.end())
+        {
+            return false;
+        }
+        prepareCountChange();
+        index.erase(itById);
+        finishCountChange();
     }
-    finishCountChange();
 
     return true;
 }
 
 bool DiscussionThreadCollectionWithHashedId::contains(DiscussionThreadPtr thread) const
 {
-    return byId_.find(thread->id()) != byId_.end();
+    assert(thread);
+
+    if (Context::isBatchInsertInProgress())
+    {
+        return temporaryThreads_.find(thread) != temporaryThreads_.end();
+    }
+    else
+    {
+        const auto& index = threads_.get<DiscussionThreadCollectionById>();
+        return index.find(thread->id()) != index.end();            
+    }
 }
 
 void DiscussionThreadCollectionWithHashedId::stopBatchInsert()
 {
     if ( ! Context::isBatchInsertInProgress()) return;
 
-    byName_.clear();
-    byCreated_.clear();
-    byLastUpdated_.clear();
-    byLatestMessageCreated_.clear();
-    byMessageCount_.clear();
+    onStopBatchInsert();
 
-    for (const DiscussionThreadPtr thread : byId())
+    temporaryThreads_.clear();
+}
+
+void DiscussionThreadCollectionWithHashedId::onStopBatchInsert()
+{
+    threads_.insert(temporaryThreads_.begin(), temporaryThreads_.end());
+}
+
+void DiscussionThreadCollectionWithHashedId::update(DiscussionThreadPtr thread)
+{
+    assert(thread);
+
+    if (Context::isBatchInsertInProgress()) return;
+
+    auto& index = threads_.get<DiscussionThreadCollectionById>();
+
+    const auto it = index.find(thread->id());
+    if (it != index.end())
     {
-        byName_.insert(thread);
-        byCreated_.insert(thread);
-        byLastUpdated_.insert(thread);
-        byLatestMessageCreated_.insert(thread);
-        byMessageCount_.insert(thread);
-    }
-}
-
-void DiscussionThreadCollectionWithHashedId::prepareUpdateName(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    byNameUpdateIt_ = findInNonUniqueCollection(byName_, thread, thread->name());
-}
-
-void DiscussionThreadCollectionWithHashedId::updateName(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    if (byNameUpdateIt_ != byName_.end())
-    {
-        replaceItemInContainer(byName_, byNameUpdateIt_, thread);
-    }
-}
-
-void DiscussionThreadCollectionWithHashedId::prepareUpdateLastUpdated(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    byLastUpdatedUpdateIt_ = findInNonUniqueCollection(byLastUpdated_, thread, thread->lastUpdated());
-}
-
-void DiscussionThreadCollectionWithHashedId::updateLastUpdated(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    if (byLastUpdatedUpdateIt_ != byLastUpdated_.end())
-    {
-        replaceItemInContainer(byLastUpdated_, byLastUpdatedUpdateIt_, thread);
-    }
-}
-
-void DiscussionThreadCollectionWithHashedId::prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    byLatestMessageCreatedUpdateIt_ = findInNonUniqueCollection(byLatestMessageCreated_, thread, thread->latestMessageCreated());
-}
-
-void DiscussionThreadCollectionWithHashedId::updateLatestMessageCreated(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    if (byLatestMessageCreatedUpdateIt_ != byLatestMessageCreated_.end())
-    {
-        replaceItemInContainer(byLatestMessageCreated_, byLatestMessageCreatedUpdateIt_, thread);
-    }
-}
-
-void DiscussionThreadCollectionWithHashedId::prepareUpdateMessageCount(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    byMessageCountUpdateIt_ = findInNonUniqueCollection(byMessageCount_, thread, thread->messageCount());
-}
-
-void DiscussionThreadCollectionWithHashedId::updateMessageCount(DiscussionThreadPtr thread)
-{
-    if (Context::isBatchInsertInProgress()) return;
-
-    if (byMessageCountUpdateIt_ != byMessageCount_.end())
-    {
-        replaceItemInContainer(byMessageCount_, byMessageCountUpdateIt_, thread);
+        index.replace(it, thread);
     }
 }
 
@@ -196,15 +153,11 @@ bool DiscussionThreadCollectionWithHashedIdAndPinOrder::remove(DiscussionThreadP
     return true;
 }
 
-void DiscussionThreadCollectionWithHashedIdAndPinOrder::stopBatchInsert()
+void DiscussionThreadCollectionWithHashedIdAndPinOrder::onStopBatchInsert()
 {
-    if ( ! Context::isBatchInsertInProgress()) return;
-    DiscussionThreadCollectionWithHashedId::stopBatchInsert();
-
     byPinDisplayOrder_.clear();
 
-    auto byIdIndex = byId();
-    byPinDisplayOrder_.insert(byIdIndex.begin(), byIdIndex.end());
+    byPinDisplayOrder_.insert(temporaryThreads_.begin(), temporaryThreads_.end());
 }
 
 void DiscussionThreadCollectionWithHashedIdAndPinOrder::prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread)

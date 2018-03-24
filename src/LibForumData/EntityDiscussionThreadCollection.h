@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <functional>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <boost/noncopyable.hpp>
 
@@ -66,19 +67,19 @@ namespace Forum
 
             bool contains(DiscussionThreadPtr thread) const;
 
-            virtual void stopBatchInsert();
+            void stopBatchInsert();
 
-            void prepareUpdateName(DiscussionThreadPtr thread) override;
-            void updateName(DiscussionThreadPtr thread) override;
+            void prepareUpdateName(DiscussionThreadPtr thread) override {} //empty, not needed
+            void updateName(DiscussionThreadPtr thread) override { update(thread); }
 
-            void prepareUpdateLastUpdated(DiscussionThreadPtr thread) override;
-            void updateLastUpdated(DiscussionThreadPtr thread) override;
+            void prepareUpdateLastUpdated(DiscussionThreadPtr thread) override {} //empty, not needed
+            void updateLastUpdated(DiscussionThreadPtr thread) override { update(thread); }
 
-            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread) override;
-            void updateLatestMessageCreated(DiscussionThreadPtr thread) override;
+            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread) override {} //empty, not needed
+            void updateLatestMessageCreated(DiscussionThreadPtr thread) override { update(thread); }
 
-            void prepareUpdateMessageCount(DiscussionThreadPtr thread) override;
-            void updateMessageCount(DiscussionThreadPtr thread) override;
+            void prepareUpdateMessageCount(DiscussionThreadPtr thread) override {} //empty, not needed
+            void updateMessageCount(DiscussionThreadPtr thread) override { update(thread); }
 
             void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) override {} //empty, only used in subclass
             void updatePinDisplayOrder(DiscussionThreadPtr thread) override {} //empty, only used in subclass
@@ -86,43 +87,60 @@ namespace Forum
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
 
-            auto count()                  const { return byId_.size(); }
+            auto count()                  const { return threads_.size() + temporaryThreads_.size(); }
 
-             auto byId()                  const { return Helpers::toConst(byId_); }
-            auto& byId()                        { return byId_; }
+            auto& byId()                        { return threads_.get<DiscussionThreadCollectionById>(); }
 
-            auto byName()                 const { return Helpers::toConst(byName_); }
-            auto byCreated()              const { return Helpers::toConst(byCreated_); }
-            auto byLastUpdated()          const { return Helpers::toConst(byLastUpdated_); }
-            auto byLatestMessageCreated() const { return Helpers::toConst(byLatestMessageCreated_); }
-            auto byMessageCount()         const { return Helpers::toConst(byMessageCount_); }
-
-            auto& byName()                 { return byName_; }
-            auto& byCreated()              { return byCreated_; }
-            auto& byLastUpdated()          { return byLastUpdated_; }
-            auto& byLatestMessageCreated() { return byLatestMessageCreated_; }
-            auto& byMessageCount()         { return byMessageCount_; }
+            auto byId()                   const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionById>()); }
+            auto byName()                 const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByName>()); }
+            auto byCreated()              const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByCreated>()); }
+            auto byLastUpdated()          const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLastUpdated>()); }
+            auto byLatestMessageCreated() const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLatestMessageCreated>()); }
+            auto byMessageCount()         const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByMessageCount>()); }
 
         protected:
             void prepareCountChange();
             void finishCountChange();
 
+            virtual void onStopBatchInsert();
+
+            void update(DiscussionThreadPtr thread);
+            
+            std::unordered_set<DiscussionThreadPtr> temporaryThreads_;
+
         private:
-            HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
+            struct DiscussionThreadCollectionById {};
+            struct DiscussionThreadCollectionByName {};
+            struct DiscussionThreadCollectionByCreated {};
+            struct DiscussionThreadCollectionByLastUpdated {};
+            struct DiscussionThreadCollectionByLatestMessageCreated {};
+            struct DiscussionThreadCollectionByMessageCount {};
 
-            RANKED_COLLECTION(DiscussionThread, name) byName_;
-            RANKED_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
+            struct DiscussionThreadCollectionIndices : boost::multi_index::indexed_by<
 
-            RANKED_COLLECTION(DiscussionThread, created) byCreated_;
+                    boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionThreadCollectionById>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, id)>,
 
-            RANKED_COLLECTION(DiscussionThread, lastUpdated) byLastUpdated_;
-            RANKED_COLLECTION_ITERATOR(byLastUpdated_) byLastUpdatedUpdateIt_;
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByName>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, name)>,
 
-            RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
-            RANKED_COLLECTION_ITERATOR(byLatestMessageCreated_) byLatestMessageCreatedUpdateIt_;
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByCreated>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, created)>,
 
-            RANKED_COLLECTION(DiscussionThread, messageCount) byMessageCount_;
-            RANKED_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLastUpdated>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, lastUpdated)>,
+
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLatestMessageCreated>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, latestMessageCreated)>,
+
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByMessageCount>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, messageCount)>
+            > {};
+
+            typedef boost::multi_index_container<DiscussionThreadPtr, DiscussionThreadCollectionIndices>
+                    DiscussionThreadCollection;
+
+            DiscussionThreadCollection threads_;
 
             std::function<void()> onPrepareCountChange_;
             std::function<void()> onCountChange_;
@@ -134,7 +152,7 @@ namespace Forum
             bool add(DiscussionThreadPtr thread) override;
             bool remove(DiscussionThreadPtr thread) override;
 
-            void stopBatchInsert() override;
+            void onStopBatchInsert() override;
 
             void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) override;
             void updatePinDisplayOrder(DiscussionThreadPtr thread) override;
@@ -143,7 +161,6 @@ namespace Forum
             auto& byPinDisplayOrder()       { return byPinDisplayOrder_; }
 
         private:
-
             SORTED_VECTOR_COLLECTION(DiscussionThread, pinDisplayOrder) byPinDisplayOrder_;
             SORTED_VECTOR_COLLECTION_ITERATOR(byPinDisplayOrder_) byPinDisplayOrderUpdateIt_;
         };
