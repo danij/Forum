@@ -129,59 +129,67 @@ namespace Forum
         {
             struct
             {
-                PrivilegeValueType view                = DenyPrivilegeValue;
-                PrivilegeValueType viewCreatorUser     = DenyPrivilegeValue;
-                PrivilegeValueType viewIpAddress       = DenyPrivilegeValue;
-                PrivilegeValueType viewVotes           = DenyPrivilegeValue;
-                PrivilegeValueType upVote              = DenyPrivilegeValue;
-                PrivilegeValueType downVote            = DenyPrivilegeValue;
-                PrivilegeValueType resetVote           = DenyPrivilegeValue;
-                PrivilegeValueType addComment          = DenyPrivilegeValue;
-                PrivilegeValueType setCommentToSolved  = DenyPrivilegeValue;
-                PrivilegeValueType getMessageComments  = DenyPrivilegeValue;
-                PrivilegeValueType changeContent       = DenyPrivilegeValue;
-                PrivilegeValueType deleteThreadMessage = DenyPrivilegeValue;
-                PrivilegeValueType move                = DenyPrivilegeValue;
-                PrivilegeValueType adjustPrivilege     = DenyPrivilegeValue;
+                PrivilegeValueType view                   = DenyPrivilegeValue;
+                PrivilegeValueType viewRequiredPrivileges = DenyPrivilegeValue;
+                PrivilegeValueType viewAssignedPrivileges = DenyPrivilegeValue;
+                PrivilegeValueType viewCreatorUser        = DenyPrivilegeValue;
+                PrivilegeValueType viewIpAddress          = DenyPrivilegeValue;
+                PrivilegeValueType viewVotes              = DenyPrivilegeValue;
+                PrivilegeValueType upVote                 = DenyPrivilegeValue;
+                PrivilegeValueType downVote               = DenyPrivilegeValue;
+                PrivilegeValueType resetVote              = DenyPrivilegeValue;
+                PrivilegeValueType addComment             = DenyPrivilegeValue;
+                PrivilegeValueType setCommentToSolved     = DenyPrivilegeValue;
+                PrivilegeValueType getMessageComments     = DenyPrivilegeValue;
+                PrivilegeValueType changeContent          = DenyPrivilegeValue;
+                PrivilegeValueType deleteThreadMessage    = DenyPrivilegeValue;
+                PrivilegeValueType move                   = DenyPrivilegeValue;
+                PrivilegeValueType adjustPrivilege        = DenyPrivilegeValue;
             } threadMessage;
             struct
             {
-                PrivilegeValueType view                  = DenyPrivilegeValue;
-                PrivilegeValueType subscribe             = DenyPrivilegeValue;
-                PrivilegeValueType unsubscribe           = DenyPrivilegeValue;
-                PrivilegeValueType addMessage            = DenyPrivilegeValue;
-                PrivilegeValueType changeName            = DenyPrivilegeValue;
-                PrivilegeValueType changePinDisplayOrder = DenyPrivilegeValue;
-                PrivilegeValueType addTag                = DenyPrivilegeValue;
-                PrivilegeValueType removeTag             = DenyPrivilegeValue;
-                PrivilegeValueType deleteThread          = DenyPrivilegeValue;
-                PrivilegeValueType merge                 = DenyPrivilegeValue;
-                PrivilegeValueType adjustPrivilege       = DenyPrivilegeValue;
+                PrivilegeValueType view                   = DenyPrivilegeValue;
+                PrivilegeValueType viewRequiredPrivileges = DenyPrivilegeValue;
+                PrivilegeValueType viewAssignedPrivileges = DenyPrivilegeValue;
+                PrivilegeValueType subscribe              = DenyPrivilegeValue;
+                PrivilegeValueType unsubscribe            = DenyPrivilegeValue;
+                PrivilegeValueType addMessage             = DenyPrivilegeValue;
+                PrivilegeValueType changeName             = DenyPrivilegeValue;
+                PrivilegeValueType changePinDisplayOrder  = DenyPrivilegeValue;
+                PrivilegeValueType addTag                 = DenyPrivilegeValue;
+                PrivilegeValueType removeTag              = DenyPrivilegeValue;
+                PrivilegeValueType deleteThread           = DenyPrivilegeValue;
+                PrivilegeValueType merge                  = DenyPrivilegeValue;
+                PrivilegeValueType adjustPrivilege        = DenyPrivilegeValue;
             } thread;
 
             struct
             {
-                PrivilegeValueType view                 = DenyPrivilegeValue;
-                PrivilegeValueType getDiscussionThreads = DenyPrivilegeValue;
-                PrivilegeValueType changeName           = DenyPrivilegeValue;
-                PrivilegeValueType changeUiblob         = DenyPrivilegeValue;
-                PrivilegeValueType deleteTag            = DenyPrivilegeValue;
-                PrivilegeValueType merge                = DenyPrivilegeValue;
-                PrivilegeValueType adjustPrivilege      = DenyPrivilegeValue;
+                PrivilegeValueType view                   = DenyPrivilegeValue;
+                PrivilegeValueType viewRequiredPrivileges = DenyPrivilegeValue;
+                PrivilegeValueType viewAssignedPrivileges = DenyPrivilegeValue;
+                PrivilegeValueType getDiscussionThreads   = DenyPrivilegeValue;
+                PrivilegeValueType changeName             = DenyPrivilegeValue;
+                PrivilegeValueType changeUiblob           = DenyPrivilegeValue;
+                PrivilegeValueType deleteTag              = DenyPrivilegeValue;
+                PrivilegeValueType merge                  = DenyPrivilegeValue;
+                PrivilegeValueType adjustPrivilege        = DenyPrivilegeValue;
             } tag;
 
             struct
             {
-                PrivilegeValueType view                 = DenyPrivilegeValue;
-                PrivilegeValueType getDiscussionThreads = DenyPrivilegeValue;
-                PrivilegeValueType changeName           = DenyPrivilegeValue;
-                PrivilegeValueType changeDescription    = DenyPrivilegeValue;
-                PrivilegeValueType changeParent         = DenyPrivilegeValue;
-                PrivilegeValueType changeDisplayorder   = DenyPrivilegeValue;
-                PrivilegeValueType addTag               = DenyPrivilegeValue;
-                PrivilegeValueType removeTag            = DenyPrivilegeValue;
-                PrivilegeValueType deleteCategory       = DenyPrivilegeValue;
-                PrivilegeValueType adjustPrivilege      = DenyPrivilegeValue;
+                PrivilegeValueType view                   = DenyPrivilegeValue;
+                PrivilegeValueType viewRequiredPrivileges = DenyPrivilegeValue;
+                PrivilegeValueType viewAssignedPrivileges = DenyPrivilegeValue;
+                PrivilegeValueType getDiscussionThreads   = DenyPrivilegeValue;
+                PrivilegeValueType changeName             = DenyPrivilegeValue;
+                PrivilegeValueType changeDescription      = DenyPrivilegeValue;
+                PrivilegeValueType changeParent           = DenyPrivilegeValue;
+                PrivilegeValueType changeDisplayorder     = DenyPrivilegeValue;
+                PrivilegeValueType addTag                 = DenyPrivilegeValue;
+                PrivilegeValueType removeTag              = DenyPrivilegeValue;
+                PrivilegeValueType deleteCategory         = DenyPrivilegeValue;
+                PrivilegeValueType adjustPrivilege        = DenyPrivilegeValue;
             } category;
 
             struct
@@ -209,6 +217,9 @@ namespace Forum
                 PrivilegeValueType changeAnyUserName                    = DenyPrivilegeValue;
                 PrivilegeValueType changeAnyUserInfo                    = DenyPrivilegeValue;
                 PrivilegeValueType deleteAnyUser                        = DenyPrivilegeValue;
+                PrivilegeValueType viewForumWideRequiredPrivileges      = DenyPrivilegeValue;
+                PrivilegeValueType viewForumWideAssignedPrivileges      = DenyPrivilegeValue;
+                PrivilegeValueType viewUserAssignedPrivileges           = DenyPrivilegeValue;
                 PrivilegeValueType adjustForumWidePrivilege             = DenyPrivilegeValue;
                 PrivilegeValueType changeOwnUserTitle                   = DenyPrivilegeValue;
                 PrivilegeValueType changeAnyUserTitle                   = DenyPrivilegeValue;

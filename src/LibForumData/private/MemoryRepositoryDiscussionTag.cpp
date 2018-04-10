@@ -58,7 +58,8 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
             return;
         }
 
-        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
+        SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                             currentUser.id(), Context::getCurrentTime());
 
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
         {
@@ -389,16 +390,15 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(IdTypeRef tag
                                return;
                            }
 
-                           auto& threadIndexById = collection.threads().byId();
-                           auto threadIt = threadIndexById.find(threadId);
-                           if (threadIt == threadIndexById.end())
+                           auto threadPtr = collection.threads().findById(threadId);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
                            auto& tag = **tagIt;
-                           auto& thread = **threadIt;
+                           auto& thread = *threadPtr;
 
                            if ( ! (status = authorization_->addDiscussionTagToThread(*currentUser, tag, thread)))
                            {
@@ -423,9 +423,8 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
         return StatusCode::NOT_FOUND;
     }
 
-    auto& threadIndexById = collection.threads().byId();
-    const auto threadIt = threadIndexById.find(threadId);
-    if (threadIt == threadIndexById.end())
+    auto threadPtr = collection.threads().findById(threadId);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
@@ -433,7 +432,6 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
 
     DiscussionTagPtr tagPtr = *tagIt;
     DiscussionTag& tag = *tagPtr;
-    DiscussionThreadPtr threadPtr = *threadIt;
     DiscussionThread& thread = *threadPtr;
 
     const auto currentUser = getCurrentUser(collection);
@@ -474,16 +472,15 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(IdTypeRe
                                return;
                            }
 
-                           auto& threadIndexById = collection.threads().byId();
-                           auto threadIt = threadIndexById.find(threadId);
-                           if (threadIt == threadIndexById.end())
+                           auto threadPtr = collection.threads().findById(threadId);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
                            auto& tag = **tagIt;
-                           auto& thread = **threadIt;
+                           auto& thread = *threadPtr;
 
                            if ( ! (status = authorization_->removeDiscussionTagFromThread(*currentUser, tag, thread)))
                            {
@@ -509,9 +506,8 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
         return StatusCode::NOT_FOUND;
     }
 
-    auto& threadIndexById = collection.threads().byId();
-    const auto threadIt = threadIndexById.find(threadId);
-    if (threadIt == threadIndexById.end())
+    auto threadPtr = collection.threads().findById(threadId);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
@@ -519,7 +515,6 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
 
     DiscussionTagPtr tagPtr = *tagIt;
     DiscussionTag& tag = *tagPtr;
-    DiscussionThreadPtr threadPtr = *threadIt;
     DiscussionThread& thread = *threadPtr;
 
     const auto currentUser = getCurrentUser(collection);
@@ -615,15 +610,15 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& 
 
     const auto currentUser = getCurrentUser(collection);
 
-    for (DiscussionThreadPtr thread : tagFrom.threads().byId())
+    tagFrom.threads().iterateThreads([tagIntoRef, &tagInto, currentUser](DiscussionThreadPtr threadPtr)
     {
-        assert(thread);
-        thread->addTag(tagIntoRef);
+        assert(threadPtr);
+        threadPtr->addTag(tagIntoRef);
 
-        updateThreadLastUpdated(*thread, currentUser);
+        updateThreadLastUpdated(*threadPtr, currentUser);
 
-        tagInto.insertDiscussionThread(thread);
-    }
+        tagInto.insertDiscussionThread(threadPtr);
+    });
 
     for (DiscussionCategoryPtr category : tagFrom.categories())
     {

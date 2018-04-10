@@ -64,6 +64,7 @@ set(HEADER_FILES
         AuthorizationGrantedPrivilegeStore.h
         ThrottlingCheck.h
         SortedVector.h
+        IdOrIpAddress.h
 
         private/ResourceGuard.h
         private/EntitySerialization.h

@@ -156,11 +156,11 @@ bool DiscussionCategory::addTag(DiscussionTagPtr tag)
         return false;
     }
 
-    for (DiscussionThreadPtr thread : tag->threads().byId())
+    tag->threads().iterateThreads([this](DiscussionThreadPtr threadPtr)
     {
-        assert(thread);
-        insertDiscussionThread(thread);
-    }
+        assert(threadPtr);
+        this->insertDiscussionThread(threadPtr);
+    });
     return true;
 }
 
@@ -172,11 +172,11 @@ bool DiscussionCategory::removeTag(DiscussionTagPtr tag)
         return false;
     }
 
-    for (auto& thread : tag->threads().byId())
+    tag->threads().iterateThreads([this](DiscussionThreadPtr threadPtr)
     {
-        assert(thread);
-        deleteDiscussionThreadIfNoOtherTagsReferenceIt(thread, true);
-    }
+        assert(threadPtr);
+        this->deleteDiscussionThreadIfNoOtherTagsReferenceIt(threadPtr, true);
+    });
     return true;
 }
 
@@ -236,4 +236,34 @@ PrivilegeValueType DiscussionCategory::getDiscussionCategoryPrivilege(Discussion
     if (result) return result;
 
     return forumWidePrivileges_.getDiscussionCategoryPrivilege(privilege);
+}
+
+const DiscussionThreadMessage* DiscussionCategory::latestMessage() const
+{
+    const DiscussionThreadMessage* result{};
+
+    const auto& index = threads_.byLatestMessageCreated();
+    if ( ! index.empty())
+    {
+        auto thread = *(index.rbegin());
+
+        auto messageIndex = thread->messages().byCreated();
+        if (messageIndex.size())
+        {
+            result = *(messageIndex.rbegin());
+        }
+    }
+
+    for (DiscussionCategoryPtr child : children_)
+    {
+        auto childLatestMessage = child->latestMessage();
+        if ( ! childLatestMessage) continue;
+
+        if (( ! result) || (result->created() < childLatestMessage->created()))
+        {
+            result = childLatestMessage;
+        }
+    }
+
+    return result;
 }

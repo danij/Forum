@@ -60,7 +60,7 @@ void writePrivilegeValues(const Store& store, Enum maxValue, JsonWriter& writer,
     for (EnumIntType i = 0; i < static_cast<EnumIntType>(maxValue); ++i)
     {
         auto privilege = static_cast<Enum>(i);
-        auto value = (store.*fn)(privilege);
+        auto value = fn(store, privilege);
         if (value)
         {
             writer.startObject();
@@ -76,47 +76,62 @@ void writePrivilegeValues(const Store& store, Enum maxValue, JsonWriter& writer,
 void MemoryRepositoryAuthorization::writeDiscussionThreadMessageRequiredPrivileges(
         const DiscussionThreadMessagePrivilegeStore& store, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_thread_message_privileges");
+    writer.newPropertyWithSafeName("discussionThreadMessagePrivileges");
     writePrivilegeValues(store, DiscussionThreadMessagePrivilege::COUNT, writer, DiscussionThreadMessagePrivilegeStrings,
-                         &DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege);
+                        [](const DiscussionThreadMessagePrivilegeStore& store, DiscussionThreadMessagePrivilege privilege)
+                        {
+                            return store.DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
+                        });
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionThreadRequiredPrivileges(const DiscussionThreadPrivilegeStore& store,
                                                                             JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_thread_privileges");
+    writer.newPropertyWithSafeName("discussionThreadPrivileges");
     writePrivilegeValues(store, DiscussionThreadPrivilege::COUNT, writer, DiscussionThreadPrivilegeStrings,
-                         &DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege);
+                         [](const DiscussionThreadPrivilegeStore& store, DiscussionThreadPrivilege privilege)
+                         {
+                             return store.DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege);
+                         });
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionTagRequiredPrivileges(const DiscussionTagPrivilegeStore& store,
                                                                          JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_tag_privileges");
+    writer.newPropertyWithSafeName("discussionTagPrivileges");
     writePrivilegeValues(store, DiscussionTagPrivilege::COUNT, writer, DiscussionTagPrivilegeStrings,
-                         &DiscussionTagPrivilegeStore::getDiscussionTagPrivilege);
+                        [](const DiscussionTagPrivilegeStore& store, DiscussionTagPrivilege privilege)
+                        {
+                            return store.DiscussionTagPrivilegeStore::getDiscussionTagPrivilege(privilege);
+                        });
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionCategoryRequiredPrivileges(const DiscussionCategoryPrivilegeStore& store,
                                                                               JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_category_privileges");
+    writer.newPropertyWithSafeName("discussionCategoryPrivileges");
     writePrivilegeValues(store, DiscussionCategoryPrivilege::COUNT, writer, DiscussionCategoryPrivilegeStrings,
-                         &DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege);
+                        [](const DiscussionCategoryPrivilegeStore& store, DiscussionCategoryPrivilege privilege)
+                        {
+                            return store.DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege(privilege);
+                        });
 }
 
 void MemoryRepositoryAuthorization::writeForumWideRequiredPrivileges(const ForumWidePrivilegeStore& store,
                                                                      JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("forum_wide_privileges");
+    writer.newPropertyWithSafeName("forumWidePrivileges");
     writePrivilegeValues(store, ForumWidePrivilege::COUNT, writer, ForumWidePrivilegeStrings,
-                         &ForumWidePrivilegeStore::getForumWidePrivilege);
+                        [](const ForumWidePrivilegeStore& store, ForumWidePrivilege privilege)
+                        {
+                            return store.getForumWidePrivilege(privilege);
+                        });
 }
 
 void MemoryRepositoryAuthorization::writeForumWideDefaultPrivilegeLevels(const ForumWidePrivilegeStore& store,
                                                                          JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("forum_wide_default_levels");
+    writer.newPropertyWithSafeName("forumWideDefaultLevels");
     writer.startArray();
 
     for (EnumIntType i = 0; i < static_cast<EnumIntType>(ForumWideDefaultPrivilegeDuration::COUNT); ++i)
@@ -144,10 +159,7 @@ struct AssignedPrivilegeWriter final
 
     AssignedPrivilegeWriter(const AssignedPrivilegeWriter&) = default;
     AssignedPrivilegeWriter(AssignedPrivilegeWriter&&) = default;
-
-    AssignedPrivilegeWriter& operator=(const AssignedPrivilegeWriter&) = default;
-    AssignedPrivilegeWriter& operator=(AssignedPrivilegeWriter&&) = default;
-
+    
     void operator()(IdTypeRef userId, PrivilegeValueIntType privilegeValue, Timestamp grantedAt, Timestamp expiresAt)
     {
         writer_.startObject();
@@ -160,7 +172,7 @@ struct AssignedPrivilegeWriter final
         else
         {
             const auto& index = collection_.users().byId();
-            auto it = index.find(userId);
+            const auto it = index.find(userId);
             if (it != index.end())
             {
                 writer_.newPropertyWithSafeName("name") << (**it).name();
@@ -179,10 +191,12 @@ private:
 
 struct UserAssignedPrivilegeWriter final
 {
-    typedef void(*WriteNameFunction)(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer);
+    typedef bool(*WriteEntityFunction)(const EntityCollection& collection, const SerializationRestriction& restriction,
+                                     IdTypeRef entityId, JsonWriter& writer);
 
-    UserAssignedPrivilegeWriter(JsonWriter& writer, const EntityCollection& collection, WriteNameFunction writeName)
-            : writer_(writer), collection_(collection), writeName_(writeName) {}
+    UserAssignedPrivilegeWriter(JsonWriter& writer, const EntityCollection& collection, 
+        const SerializationRestriction& restriction, WriteEntityFunction writeEntity)
+            : writer_(writer), collection_(collection), restriction_(restriction), writeEntity_(writeEntity) {}
     ~UserAssignedPrivilegeWriter() = default;
 
     UserAssignedPrivilegeWriter(const UserAssignedPrivilegeWriter&) = default;
@@ -194,60 +208,92 @@ struct UserAssignedPrivilegeWriter final
     void operator()(IdTypeRef entityId, PrivilegeValueIntType privilegeValue, Timestamp grantedAt, Timestamp expiresAt)
     {
         writer_.startObject();
-        writer_.newPropertyWithSafeName("id") << entityId;
-
-        writeName_(collection_, entityId, writer_);
-
-        writer_.newPropertyWithSafeName("value") << privilegeValue;
-        writer_.newPropertyWithSafeName("granted") << grantedAt;
-        writer_.newPropertyWithSafeName("expires") << expiresAt;
+        if (writeEntity_(collection_, restriction_, entityId, writer_))
+        {
+            writer_.newPropertyWithSafeName("value") << privilegeValue;
+            writer_.newPropertyWithSafeName("granted") << grantedAt;
+            writer_.newPropertyWithSafeName("expires") << expiresAt;
+        }
         writer_.endObject();
     }
 private:
     JsonWriter& writer_;
     const EntityCollection& collection_;
-    WriteNameFunction writeName_;
+    const SerializationRestriction& restriction_;
+    WriteEntityFunction writeEntity_;
 };
 
-static void writeDiscussionThreadName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+static bool writeDiscussionThreadEntity(const EntityCollection& collection, const SerializationRestriction& restriction, 
+                                        IdTypeRef entityId, JsonWriter& writer)
 {
-    const auto& index = collection.threads().byId();
-    const auto it = index.find(entityId);
-    if (it != index.end())
+    const auto threadPtr = collection.threads().findById(entityId);
+    if (threadPtr)
     {
-        writer.newPropertyWithSafeName("name") << (**it).name();
+        const DiscussionThread& thread = *threadPtr;
+        if (restriction.isAllowed(thread, DiscussionThreadPrivilege::VIEW))
+        {
+            writer.newPropertyWithSafeName("id") << thread.id();
+            writer.newPropertyWithSafeName("name") << thread.name();
+            return true;
+        }
     }
+    return false;
 }
 
-static void writeDiscussionTagName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+static bool writeDiscussionTagEntity(const EntityCollection& collection, const SerializationRestriction& restriction, 
+                                     IdTypeRef entityId, JsonWriter& writer)
 {
     const auto& index = collection.tags().byId();
     const auto it = index.find(entityId);
     if (it != index.end())
     {
-        writer.newPropertyWithSafeName("name") << (**it).name();
+        const DiscussionTag& tag = **it;
+        if (restriction.isAllowed(tag, DiscussionTagPrivilege::VIEW))
+        {
+            writer.newPropertyWithSafeName("id") << tag.id();
+            writer.newPropertyWithSafeName("name") << tag.name();
+            return true;
+        }
     }
+    return false;
 }
 
-static void writeDiscussionCategoryName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+static bool writeDiscussionCategoryEntity(const EntityCollection& collection, const SerializationRestriction& restriction,
+                                          IdTypeRef entityId, JsonWriter& writer)
 {
     const auto& index = collection.categories().byId();
     const auto it = index.find(entityId);
     if (it != index.end())
     {
-        writer.newPropertyWithSafeName("name") << (**it).name();
+        const DiscussionCategory& category = **it;
+        if (restriction.isAllowed(category, DiscussionCategoryPrivilege::VIEW))
+        {
+            writer.newPropertyWithSafeName("id") << category.id();
+            writer.newPropertyWithSafeName("name") << category.name();
+            return true;
+        }
     }
+    return false;
 }
 
-static void writeForumWideName(const EntityCollection& collection, IdTypeRef entityId, JsonWriter& writer)
+static bool writeForumWideEntity(const EntityCollection& collection, const SerializationRestriction& restriction, 
+                                 IdTypeRef entityId, JsonWriter& writer)
 {
     //do nothing
+    return true;
+}
+
+void writeAssignedPrivilegesExtra(JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("now") << Context::getCurrentTime();
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionThreadMessageAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                                    JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_thread_message_privileges");
+    writeAssignedPrivilegesExtra(writer);
+
+    writer.newPropertyWithSafeName("discussionThreadMessagePrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionThreadMessagePrivileges(id,
@@ -259,7 +305,9 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadMessageAssignedPrivileg
 void MemoryRepositoryAuthorization::writeDiscussionThreadAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                             JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_thread_privileges");
+    writeAssignedPrivilegesExtra(writer);
+
+    writer.newPropertyWithSafeName("discussionThreadPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionThreadPrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -270,7 +318,9 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadAssignedPrivileges(cons
 void MemoryRepositoryAuthorization::writeDiscussionTagAssignedPrivileges(const EntityCollection& collection,
                                                                          IdTypeRef id, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_tag_privileges");
+    writeAssignedPrivilegesExtra(writer);
+
+    writer.newPropertyWithSafeName("discussionTagPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionTagPrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -281,7 +331,9 @@ void MemoryRepositoryAuthorization::writeDiscussionTagAssignedPrivileges(const E
 void MemoryRepositoryAuthorization::writeDiscussionCategoryAssignedPrivileges(const EntityCollection& collection,
                                                                               IdTypeRef id, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_category_privileges");
+    writeAssignedPrivilegesExtra(writer);
+
+    writer.newPropertyWithSafeName("discussionCategoryPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionCategoryPrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -292,7 +344,9 @@ void MemoryRepositoryAuthorization::writeDiscussionCategoryAssignedPrivileges(co
 void MemoryRepositoryAuthorization::writeForumWideAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
                                                                      JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("forum_wide_privileges");
+    writeAssignedPrivilegesExtra(writer);
+
+    writer.newPropertyWithSafeName("forumWidePrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateForumWidePrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -301,49 +355,53 @@ void MemoryRepositoryAuthorization::writeForumWideAssignedPrivileges(const Entit
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionThreadUserAssignedPrivileges(const EntityCollection& collection,
+                                                                                const SerializationRestriction& restriction,
                                                                                 IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_thread_privileges");
+    writer.newPropertyWithSafeName("discussionThreadPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionThreadPrivilegesAssignedToUser(userId,
-            UserAssignedPrivilegeWriter(writer, collection, writeDiscussionThreadName));
+            UserAssignedPrivilegeWriter(writer, collection, restriction, writeDiscussionThreadEntity));
 
     writer.endArray();
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionTagUserAssignedPrivileges(const EntityCollection& collection,
+                                                                             const SerializationRestriction& restriction,
                                                                              IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_tag_privileges");
+    writer.newPropertyWithSafeName("discussionTagPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionTagPrivilegesAssignedToUser(userId,
-            UserAssignedPrivilegeWriter(writer, collection, writeDiscussionTagName));
+            UserAssignedPrivilegeWriter(writer, collection, restriction, writeDiscussionTagEntity));
 
     writer.endArray();
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionCategoryUserAssignedPrivileges(const EntityCollection& collection,
+                                                                                  const SerializationRestriction& restriction,
                                                                                   IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("discussion_category_privileges");
+    writer.newPropertyWithSafeName("discussionCategoryPrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionCategoryPrivilegesAssignedToUser(userId,
-            UserAssignedPrivilegeWriter(writer, collection, writeDiscussionCategoryName));
+            UserAssignedPrivilegeWriter(writer, collection, restriction, writeDiscussionCategoryEntity));
 
     writer.endArray();
 }
 
 void MemoryRepositoryAuthorization::writeForumWideUserAssignedPrivileges(const EntityCollection& collection,
+                                                                         const Authorization::SerializationRestriction& restriction,
                                                                          IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyWithSafeName("forum_wide_privileges");
+    writer.newPropertyWithSafeName("forumWidePrivileges");
     writer.startArray();
 
     collection.grantedPrivileges().enumerateForumWidePrivilegesAssignedToUser(userId,
-            UserAssignedPrivilegeWriter(writer, collection, writeForumWideName));
+            UserAssignedPrivilegeWriter(writer, collection, restriction, writeForumWideEntity));
 
     writer.endArray();
 }
@@ -372,7 +430,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForThreadMessage(
 
                           auto& message = **it;
 
-                          if ( ! (status = threadMessageAuthorization_->getDiscussionThreadMessageById(currentUser, message)))
+                          if ( ! (status = threadMessageAuthorization_->getDiscussionThreadMessageRequiredPrivileges(currentUser, message)))
                           {
                               return;
                           }
@@ -412,7 +470,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForThreadMessage(
 
                           auto& message = **it;
 
-                          if ( ! (status = threadMessageAuthorization_->getDiscussionThreadMessageById(currentUser, message)))
+                          if ( ! (status = threadMessageAuthorization_->getDiscussionThreadMessageAssignedPrivileges(currentUser, message)))
                           {
                               return;
                           }
@@ -613,17 +671,16 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForThread(IdTypeR
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          const auto& index = collection.threads().byId();
-                          auto it = index.find(threadId);
-                          if (it == index.end())
+                          const auto threadPtr = collection.threads().findById(threadId);
+                          if ( ! threadPtr)
                           {
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
 
-                          auto& thread = **it;
+                          const auto& thread = *threadPtr;
 
-                          if ( ! (status = threadAuthorization_->getDiscussionThreadById(currentUser, thread)))
+                          if ( ! (status = threadAuthorization_->getDiscussionThreadRequiredPrivileges(currentUser, thread)))
                           {
                               return;
                           }
@@ -653,17 +710,16 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForThread(IdTypeR
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          const auto& index = collection.threads().byId();
-                          auto it = index.find(threadId);
-                          if (it == index.end())
+                          const auto threadPtr = collection.threads().findById(threadId);
+                          if ( ! threadPtr)
                           {
                               status = StatusCode::NOT_FOUND;
                               return;
                           }
 
-                          auto& thread = **it;
+                          const auto& thread = *threadPtr;
 
-                          if ( ! (status = threadAuthorization_->getDiscussionThreadById(currentUser, thread)))
+                          if ( ! (status = threadAuthorization_->getDiscussionThreadAssignedPrivileges(currentUser, thread)))
                           {
                               return;
                           }
@@ -674,7 +730,6 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForThread(IdTypeR
                           writer.startObject();
 
                           writeDiscussionThreadAssignedPrivileges(collection, thread.id(), writer);
-                          writeDiscussionThreadMessageAssignedPrivileges(collection, thread.id(), writer);
 
                           writer.endObject();
 
@@ -697,15 +752,14 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().byId();
-                           auto it = indexById.find(threadId);
-                           if (it == indexById.end())
+                           const auto threadPtr = collection.threads().findById(threadId);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
-                           const DiscussionThread& thread = **it;
+                           const DiscussionThread& thread = *threadPtr;
                            auto oldValue = thread.DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
 
                            if ( ! (status = threadAuthorization_->updateDiscussionThreadMessagePrivilege(
@@ -732,16 +786,14 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    auto& indexById = collection.threads().byId();
-    const auto it = indexById.find(threadId);
-    if (it == indexById.end())
+    auto threadPtr = collection.threads().findById(threadId);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
-    DiscussionThreadPtr thread = *it;
-    thread->setDiscussionThreadMessagePrivilege(privilege, value);
+    threadPtr->setDiscussionThreadMessagePrivilege(privilege, value);
 
     return StatusCode::OK;
 }
@@ -760,15 +812,14 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadRequiredPrivileg
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& indexById = collection.threads().byId();
-                           auto it = indexById.find(threadId);
-                           if (it == indexById.end())
+                           const auto threadPtr = collection.threads().findById(threadId);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
 
-                           const DiscussionThread& thread = **it;
+                           const DiscussionThread& thread = *threadPtr;
                            auto oldValue = thread.DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege);
 
                            if ( ! (status = threadAuthorization_->updateDiscussionThreadPrivilege(
@@ -795,16 +846,14 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadRequiredPrivileg
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    auto& indexById = collection.threads().byId();
-    const auto it = indexById.find(threadId);
-    if (it == indexById.end())
+    auto threadPtr = collection.threads().findById(threadId);
+    if ( ! threadPtr)
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
     }
 
-    DiscussionThreadPtr thread = *it;
-    thread->setDiscussionThreadPrivilege(privilege, value);
+    threadPtr->setDiscussionThreadPrivilege(privilege, value);
 
     return StatusCode::OK;
 }
@@ -824,14 +873,13 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto& threadIndexById = collection.threads().byId();
-                           auto threadIt = threadIndexById.find(threadId);
-                           if (threadIt == threadIndexById.end())
+                           const auto threadPtr = collection.threads().findById(threadId);
+                           if ( ! threadPtr)
                            {
                                status = StatusCode::NOT_FOUND;
                                return;
                            }
-                           const DiscussionThread& thread = **threadIt;
+                           const DiscussionThread& thread = *threadPtr;
 
                            auto targetUser = anonymousUser();
                            if (userId != anonymousUserId())
@@ -869,9 +917,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    auto& indexById = collection.threads().byId();
-    const auto it = indexById.find(threadId);
-    if (it == indexById.end())
+    if ( ! collection.threads().findById(threadId))
     {
         FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
         return StatusCode::NOT_FOUND;
@@ -919,7 +965,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForTag(IdTypeRef 
 
                           auto& tag = **it;
 
-                          if ( ! (status = tagAuthorization_->getDiscussionTagById(currentUser, tag)))
+                          if ( ! (status = tagAuthorization_->getDiscussionTagRequiredPrivileges(currentUser, tag)))
                           {
                               return;
                           }
@@ -960,7 +1006,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForTag(IdTypeRef 
 
                           auto& tag = **it;
 
-                          if ( ! (status = tagAuthorization_->getDiscussionTagById(currentUser, tag)))
+                          if ( ! (status = tagAuthorization_->getDiscussionTagAssignedPrivileges(currentUser, tag)))
                           {
                               return;
                           }
@@ -971,8 +1017,6 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForTag(IdTypeRef 
                           writer.startObject();
 
                           writeDiscussionTagAssignedPrivileges(collection, tag.id(), writer);
-                          writeDiscussionThreadAssignedPrivileges(collection, tag.id(), writer);
-                          writeDiscussionThreadMessageAssignedPrivileges(collection, tag.id(), writer);
 
                           writer.endObject();
 
@@ -1278,7 +1322,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForCategory(IdTyp
 
                           auto& category = **it;
 
-                          if ( ! (status = categoryAuthorization_->getDiscussionCategoryById(currentUser, category)))
+                          if ( ! (status = categoryAuthorization_->getDiscussionCategoryRequiredPrivileges(currentUser, category)))
                           {
                               return;
                           }
@@ -1317,7 +1361,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForCategory(IdTyp
 
                           auto& category = **it;
 
-                          if ( ! (status = categoryAuthorization_->getDiscussionCategoryById(currentUser, category)))
+                          if ( ! (status = categoryAuthorization_->getDiscussionCategoryAssignedPrivileges(currentUser, category)))
                           {
                               return;
                           }
@@ -1503,8 +1547,8 @@ StatusCode MemoryRepositoryAuthorization::getForumWideCurrentUserPrivileges(OutS
 
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
-                                                               Context::getCurrentTime());
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                               currentUser.id(), Context::getCurrentTime());
 
                           JsonWriter writer(output);
                           writer.startObject();
@@ -1527,10 +1571,13 @@ StatusCode MemoryRepositoryAuthorization::getForumWideRequiredPrivileges(OutStre
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          status = StatusCode::OK;
-                          status.disable();
-
                           auto& currentUser = performedBy.get(collection, *store_);
+
+                          if ( ! (status = forumWideAuthorization_->getForumWideRequiredPrivileges(currentUser)))
+                          {
+                              return;
+                          }
+                          status.disable();
 
                           JsonWriter writer(output);
                           writer.startObject();
@@ -1556,10 +1603,13 @@ StatusCode MemoryRepositoryAuthorization::getForumWideDefaultPrivilegeLevels(Out
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          status = StatusCode::OK;
-                          status.disable();
-
                           auto& currentUser = performedBy.get(collection, *store_);
+
+                          if ( ! (status = forumWideAuthorization_->getForumWideRequiredPrivileges(currentUser)))
+                          {
+                              return;
+                          }
+                          status.disable();
 
                           JsonWriter writer(output);
                           writer.startObject();
@@ -1581,19 +1631,18 @@ StatusCode MemoryRepositoryAuthorization::getForumWideAssignedPrivileges(OutStre
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          status = StatusCode::OK;
-                          status.disable();
-
                           auto& currentUser = performedBy.get(collection, *store_);
+
+                          if ( ! (status = forumWideAuthorization_->getForumWideAssignedPrivileges(currentUser)))
+                          {
+                              return;
+                          }
+                          status.disable();
 
                           JsonWriter writer(output);
                           writer.startObject();
 
                           writeForumWideAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionCategoryAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionTagAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionThreadAssignedPrivileges(collection, {}, writer);
-                          writeDiscussionThreadMessageAssignedPrivileges(collection, {}, writer);
 
                           writer.endObject();
 
@@ -1610,9 +1659,6 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForUser(IdTypeRef
 
     collection().read([&](const EntityCollection& collection)
                       {
-                          status = StatusCode::OK;
-                          status.disable();
-
                           const User* userPtr = anonymousUser();
                           if (userId != anonymousUserId())
                           {
@@ -1628,13 +1674,24 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForUser(IdTypeRef
 
                           auto& currentUser = performedBy.get(collection, *store_);
 
+                          if ( ! (status = forumWideAuthorization_->getUserAssignedPrivileges(currentUser, *userPtr)))
+                          {
+                              return;
+                          }
+                          status.disable();
+
                           JsonWriter writer(output);
                           writer.startObject();
 
-                          writeForumWideUserAssignedPrivileges(collection, userId, writer);
-                          writeDiscussionCategoryUserAssignedPrivileges(collection, userId, writer);
-                          writeDiscussionTagUserAssignedPrivileges(collection, userId, writer);
-                          writeDiscussionThreadUserAssignedPrivileges(collection, userId, writer);
+                          writeAssignedPrivilegesExtra(writer);
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                              currentUser.id(), Context::getCurrentTime());
+
+                          writeForumWideUserAssignedPrivileges(collection, restriction, userId, writer);
+                          writeDiscussionCategoryUserAssignedPrivileges(collection, restriction, userId, writer);
+                          writeDiscussionTagUserAssignedPrivileges(collection, restriction, userId, writer);
+                          writeDiscussionThreadUserAssignedPrivileges(collection, restriction, userId, writer);
 
                           writer.endObject();
 

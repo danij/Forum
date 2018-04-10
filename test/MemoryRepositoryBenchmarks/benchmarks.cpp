@@ -407,7 +407,9 @@ void showEntitySizes()
     std::cout << "LastUpdatedInfo                        " << std::setw(5) << sizeof(Entities::LastUpdatedInfo) << '\n';
     std::cout << "EntityPointer<DiscussionThread>        " << std::setw(5) << sizeof(Entities::DiscussionThreadPtr) << '\n';
     std::cout << "WholeChangeableString                  " << std::setw(5) << sizeof(Helpers::WholeChangeableString) << '\n';
+    std::cout << "Json::JsonReadyString<4>               " << std::setw(5) << sizeof(Json::JsonReadyString<4>) << '\n';
     std::cout << "std::string                            " << std::setw(5) << sizeof(std::string) << '\n';
+    std::cout << "std::unique_ptr<VoteCollection>        " << std::setw(5) << sizeof(std::unique_ptr<Entities::DiscussionThreadMessage::VoteCollection>) << '\n';
     std::cout << "-\n";
     std::cout << "UserCollection                         " << std::setw(5) << sizeof(Entities::UserCollection) << '\n';
     std::cout << "DiscussionThreadCollectionHash         " << std::setw(5) << sizeof(Entities::DiscussionThreadCollectionWithHashedId) << '\n';
@@ -672,10 +674,11 @@ void importPersistedData(BenchmarkContext& context)
     {
         context.userIds.push_back(user->id());
     }
-    for (auto& thread : context.entityCollection->threads().byId())
+
+    context.entityCollection->threads().iterateThreads([&context](Entities::DiscussionThreadPtr threadPtr)
     {
-        context.threadIds.push_back(thread->id());
-    }
+        context.threadIds.push_back(threadPtr->id());        
+    });
     for (auto& tag : context.entityCollection->tags().byId())
     {
         context.tagIds.push_back(tag->id());
@@ -929,6 +932,16 @@ void doBenchmarks(BenchmarkContext& context)
             execute(handler, View::GET_DISCUSSION_THREAD_MESSAGES_OF_USER_BY_CREATED,
                     { userIds[userIdDistribution(randomGenerator)] });
         }) << " ";
+    }
+    std::cout << '\n';
+
+    std::cout << "Merge all tags: ";
+    for (size_t i = 1; i < tagIds.size(); ++i)
+    {
+        std::cout << countDuration([&]()
+        {
+            execute(handler, Command::MERGE_DISCUSSION_TAG_INTO_OTHER_TAG, { tagIds[i], tagIds[0] });
+        }) << " " << std::flush;
     }
     std::cout << '\n';
 }

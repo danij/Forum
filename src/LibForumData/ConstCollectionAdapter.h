@@ -41,6 +41,7 @@ namespace Forum
             explicit ConstSharedPointerCollectionAdapter(const TCollection& collection) : collection_(collection) {}
 
             auto size()   const { return collection_.size(); }
+            auto empty()  const { return collection_.empty(); }
 
             auto begin()  const { return cbegin(); }
             auto end()    const { return cend(); }

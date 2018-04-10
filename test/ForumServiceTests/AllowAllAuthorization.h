@@ -60,6 +60,10 @@ namespace Forum
             AuthorizationStatus deleteUser(const Entities::User& currentUser,
                                            const Entities::User& user) const override { return {}; }
 
+            AuthorizationStatus getDiscussionThreadRequiredPrivileges(const Entities::User& currentUser,
+                                                                      const Entities::DiscussionThread& thread) const override { return {}; }
+            AuthorizationStatus getDiscussionThreadAssignedPrivileges(const Entities::User& currentUser,
+                                                                      const Entities::DiscussionThread& thread) const override { return {}; }
             AuthorizationStatus getDiscussionThreads(const Entities::User& currentUser) const override { return {}; }
             AuthorizationStatus getDiscussionThreadById(const Entities::User& currentUser,
                                                         const Entities::DiscussionThread& thread) const override { return {}; }
@@ -93,6 +97,10 @@ namespace Forum
             AuthorizationStatus unsubscribeFromDiscussionThread(const Entities::User& currentUser,
                                                                 const Entities::DiscussionThread& thread) const override { return {}; }
 
+            AuthorizationStatus getDiscussionThreadMessageRequiredPrivileges(const Entities::User& currentUser,
+                                                                             const Entities::DiscussionThreadMessage& message) const override { return {}; }
+            AuthorizationStatus getDiscussionThreadMessageAssignedPrivileges(const Entities::User& currentUser,
+                                                                             const Entities::DiscussionThreadMessage& message) const override { return {}; }
             AuthorizationStatus getDiscussionThreadMessageById(const Entities::User& currentUser,
                                                                const Entities::DiscussionThreadMessage& message) const override { return {}; }
             AuthorizationStatus getDiscussionThreadMessagesOfUserByCreated(const Entities::User& currentUser,
@@ -131,6 +139,10 @@ namespace Forum
             AuthorizationStatus setMessageCommentToSolved(const Entities::User& currentUser,
                                                           const Entities::MessageComment& comment) const override { return {}; }
 
+            AuthorizationStatus getDiscussionTagRequiredPrivileges(const Entities::User& currentUser,
+                                                                   const Entities::DiscussionTag& tag) const override { return {}; }
+            AuthorizationStatus getDiscussionTagAssignedPrivileges(const Entities::User& currentUser,
+                                                                   const Entities::DiscussionTag& tag) const override { return {}; }
             AuthorizationStatus getDiscussionTagById(const Entities::User& currentUser,
                                                      const Entities::DiscussionTag& tag) const override { return {}; }
 
@@ -156,6 +168,10 @@ namespace Forum
                                                     const Entities::DiscussionTag& from,
                                                     const Entities::DiscussionTag& into) const override { return {}; }
 
+            AuthorizationStatus getDiscussionCategoryRequiredPrivileges(const Entities::User& currentUser,
+                                                                        const Entities::DiscussionCategory& category) const override { return {}; }
+            AuthorizationStatus getDiscussionCategoryAssignedPrivileges(const Entities::User& currentUser,
+                                                                        const Entities::DiscussionCategory& category) const override { return {}; }
             AuthorizationStatus getDiscussionCategoryById(const Entities::User& currentUser,
                                                           const Entities::DiscussionCategory& category) const override { return {}; }
             AuthorizationStatus getDiscussionCategories(const Entities::User& currentUser) const override { return {}; }
@@ -262,6 +278,10 @@ namespace Forum
             AuthorizationStatus updateForumWideDefaultPrivilegeLevel(
                     const Entities::User& currentUser, ForumWideDefaultPrivilegeDuration privilege,
                     PrivilegeValueIntType newValue, PrivilegeDurationIntType newDuration) const override { return {}; }
+            AuthorizationStatus getForumWideRequiredPrivileges(const Entities::User& currentUser) const override { return {}; }
+            AuthorizationStatus getForumWideAssignedPrivileges(const Entities::User& currentUser) const override { return {}; }
+            AuthorizationStatus getUserAssignedPrivileges(const Entities::User& currentUser,
+                                                          const Entities::User& targetUser) const override { return {}; }
             AuthorizationStatus assignForumWidePrivilege(const Entities::User& currentUser,
                                                          const Entities::User& targetUser,
                                                          PrivilegeValueIntType newValue) const override { return{}; }

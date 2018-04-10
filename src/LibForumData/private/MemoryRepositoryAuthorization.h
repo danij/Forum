@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MemoryRepositoryCommon.h"
 #include "Authorization.h"
+#include "AuthorizationGrantedPrivilegeStore.h"
 #include "JsonWriter.h"
 
 namespace Forum
@@ -229,15 +230,19 @@ namespace Forum
                                                          Entities::IdTypeRef id, Json::JsonWriter& writer);
 
             static void writeDiscussionThreadUserAssignedPrivileges(const Entities::EntityCollection& collection,
+                                                                    const Authorization::SerializationRestriction& restriction,
                                                                     Entities::IdTypeRef userId,
                                                                     Json::JsonWriter& writer);
             static void writeDiscussionTagUserAssignedPrivileges(const Entities::EntityCollection& collection,
+                                                                 const Authorization::SerializationRestriction& restriction,
                                                                  Entities::IdTypeRef userId,
                                                                  Json::JsonWriter& writer);
             static void writeDiscussionCategoryUserAssignedPrivileges(const Entities::EntityCollection& collection,
+                                                                      const Authorization::SerializationRestriction& restriction,
                                                                       Entities::IdTypeRef userId,
                                                                       Json::JsonWriter& writer);
             static void writeForumWideUserAssignedPrivileges(const Entities::EntityCollection& collection,
+                                                             const Authorization::SerializationRestriction& restriction,
                                                              Entities::IdTypeRef userId,
                                                              Json::JsonWriter& writer);
 

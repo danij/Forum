@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include "ConstCollectionAdapter.h"
+#include "ContextProviders.h"
 #include "EntityDiscussionThread.h"
 #include "TypeHelpers.h"
 
@@ -58,27 +59,67 @@ namespace Forum
             virtual void updatePinDisplayOrder(DiscussionThreadPtr thread) = 0;
         };
 
-        class DiscussionThreadCollectionBase : public IDiscussionThreadCollection
+        class DiscussionThreadCollectionWithHashedId : public IDiscussionThreadCollection
         {
         public:
-            DECLARE_ABSTRACT_MANDATORY(DiscussionThreadCollectionBase)
-
             virtual bool add(DiscussionThreadPtr thread);
             virtual bool remove(DiscussionThreadPtr thread);
 
-            virtual void stopBatchInsert();
+            void stopBatchInsert();
 
-            void prepareUpdateName(DiscussionThreadPtr thread) override;
-            void updateName(DiscussionThreadPtr thread) override;
+            bool contains(DiscussionThreadPtr thread) const;
 
-            void prepareUpdateLastUpdated(DiscussionThreadPtr thread) override;
-            void updateLastUpdated(DiscussionThreadPtr thread) override;
+            const DiscussionThread* findById(IdTypeRef id) const;
+                DiscussionThreadPtr findById(IdTypeRef id);
 
-            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread) override;
-            void updateLatestMessageCreated(DiscussionThreadPtr thread) override;
+            template<typename Fn>
+            void iterateThreads(Fn&& callback) const
+            {
+                if (Context::isBatchInsertInProgress())
+                {
+                    for (auto& pair : temporaryThreads_)
+                    {
+                        callback(static_cast<const DiscussionThread*>(pair.second));
+                    }
+                }
+                else
+                {
+                    for (auto threadPtr : threads_.get<DiscussionThreadCollectionById>())
+                    {
+                        callback(static_cast<const DiscussionThread*>(threadPtr));
+                    }
+                }
+            }
 
-            void prepareUpdateMessageCount(DiscussionThreadPtr thread) override;
-            void updateMessageCount(DiscussionThreadPtr thread) override;
+            template<typename Fn>
+            void iterateThreads(Fn&& callback)
+            {
+                if (Context::isBatchInsertInProgress())
+                {
+                    for (auto& pair : temporaryThreads_)
+                    {
+                        callback(pair.second);
+                    }
+                }
+                else
+                {
+                    for (auto threadPtr : threads_.get<DiscussionThreadCollectionById>())
+                    {
+                        callback(threadPtr);
+                    }
+                }
+            }
+            void prepareUpdateName(DiscussionThreadPtr thread) override {} //empty, not needed
+            void updateName(DiscussionThreadPtr thread) override { update(thread); }
+
+            void prepareUpdateLastUpdated(DiscussionThreadPtr thread) override {} //empty, not needed
+            void updateLastUpdated(DiscussionThreadPtr thread) override { update(thread); }
+
+            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread) override {} //empty, not needed
+            void updateLatestMessageCreated(DiscussionThreadPtr thread) override { update(thread); }
+
+            void prepareUpdateMessageCount(DiscussionThreadPtr thread) override {} //empty, not needed
+            void updateMessageCount(DiscussionThreadPtr thread) override { update(thread); }
 
             void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) override {} //empty, only used in subclass
             void updatePinDisplayOrder(DiscussionThreadPtr thread) override {} //empty, only used in subclass
@@ -86,64 +127,60 @@ namespace Forum
             auto& onPrepareCountChange()        { return onPrepareCountChange_; }
             auto& onCountChange()               { return onCountChange_; }
 
-            auto count()                  const { return countInternal(); }
+            auto count()                  const { return threads_.size() + temporaryThreads_.size(); }
 
-            auto byName()                 const { return Helpers::toConst(byName_); }
-            auto byCreated()              const { return Helpers::toConst(byCreated_); }
-            auto byLastUpdated()          const { return Helpers::toConst(byLastUpdated_); }
-            auto byLatestMessageCreated() const { return Helpers::toConst(byLatestMessageCreated_); }
-            auto byMessageCount()         const { return Helpers::toConst(byMessageCount_); }
-
-            auto& byName()                 { return byName_; }
-            auto& byCreated()              { return byCreated_; }
-            auto& byLastUpdated()          { return byLastUpdated_; }
-            auto& byLatestMessageCreated() { return byLatestMessageCreated_; }
-            auto& byMessageCount()         { return byMessageCount_; }
+            auto byName()                 const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByName>()); }
+            auto byCreated()              const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByCreated>()); }
+            auto byLastUpdated()          const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLastUpdated>()); }
+            auto byLatestMessageCreated() const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByLatestMessageCreated>()); }
+            auto byMessageCount()         const { return Helpers::toConst(threads_.get<DiscussionThreadCollectionByMessageCount>()); }
 
         protected:
-            virtual void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) = 0;
-            virtual size_t countInternal() const = 0;
             void prepareCountChange();
             void finishCountChange();
 
+            virtual void onStopBatchInsert();
+
+            void update(DiscussionThreadPtr thread);
+            
+            std::unordered_map<IdType, DiscussionThreadPtr> temporaryThreads_;
+
         private:
+            struct DiscussionThreadCollectionById {};
+            struct DiscussionThreadCollectionByName {};
+            struct DiscussionThreadCollectionByCreated {};
+            struct DiscussionThreadCollectionByLastUpdated {};
+            struct DiscussionThreadCollectionByLatestMessageCreated {};
+            struct DiscussionThreadCollectionByMessageCount {};
 
-            RANKED_COLLECTION(DiscussionThread, name) byName_;
-            RANKED_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
+            struct DiscussionThreadCollectionIndices : boost::multi_index::indexed_by<
 
-            RANKED_COLLECTION(DiscussionThread, created) byCreated_;
+                    boost::multi_index::hashed_unique<boost::multi_index::tag<DiscussionThreadCollectionById>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, id)>,
 
-            RANKED_COLLECTION(DiscussionThread, lastUpdated) byLastUpdated_;
-            RANKED_COLLECTION_ITERATOR(byLastUpdated_) byLastUpdatedUpdateIt_;
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByName>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, name)>,
 
-            RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
-            RANKED_COLLECTION_ITERATOR(byLatestMessageCreated_) byLatestMessageCreatedUpdateIt_;
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByCreated>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, created)>,
 
-            RANKED_COLLECTION(DiscussionThread, messageCount) byMessageCount_;
-            RANKED_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLastUpdated>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, lastUpdated)>,
+
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByLatestMessageCreated>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, latestMessageCreated)>,
+
+                    boost::multi_index::ranked_non_unique<boost::multi_index::tag<DiscussionThreadCollectionByMessageCount>,
+                            INDEX_CONST_MEM_FUN(DiscussionThread, messageCount)>
+            > {};
+
+            typedef boost::multi_index_container<DiscussionThreadPtr, DiscussionThreadCollectionIndices>
+                    DiscussionThreadCollection;
+
+            DiscussionThreadCollection threads_;
 
             std::function<void()> onPrepareCountChange_;
             std::function<void()> onCountChange_;
-        };
-
-        class DiscussionThreadCollectionWithHashedId : public DiscussionThreadCollectionBase,
-                                                       private boost::noncopyable
-        {
-        public:
-            bool add(DiscussionThreadPtr thread) override;
-            bool remove(DiscussionThreadPtr thread) override;
-
-            bool contains(DiscussionThreadPtr thread) const;
-
-             auto byId() const { return Helpers::toConst(byId_); }
-            auto& byId()       { return byId_; }
-
-        protected:
-            void iterateAllThreads(std::function<void(DiscussionThreadPtr)>&& callback) override;
-            size_t countInternal() const override { return byId_.size(); }
-
-        private:
-            HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
         };
 
         class DiscussionThreadCollectionWithHashedIdAndPinOrder final : public DiscussionThreadCollectionWithHashedId
@@ -152,7 +189,7 @@ namespace Forum
             bool add(DiscussionThreadPtr thread) override;
             bool remove(DiscussionThreadPtr thread) override;
 
-            void stopBatchInsert() override;
+            void onStopBatchInsert() override;
 
             void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) override;
             void updatePinDisplayOrder(DiscussionThreadPtr thread) override;
@@ -161,8 +198,8 @@ namespace Forum
             auto& byPinDisplayOrder()       { return byPinDisplayOrder_; }
 
         private:
-            ORDERED_COLLECTION(DiscussionThread, pinDisplayOrder) byPinDisplayOrder_;
-            ORDERED_COLLECTION_ITERATOR(byPinDisplayOrder_) byPinDisplayOrderUpdateIt_;
+            SORTED_VECTOR_COLLECTION(DiscussionThread, pinDisplayOrder) byPinDisplayOrder_;
+            SORTED_VECTOR_COLLECTION_ITERATOR(byPinDisplayOrder_) byPinDisplayOrderUpdateIt_;
         };
 
         class DiscussionThreadCollectionWithReferenceCountAndMessageCount final : private boost::noncopyable
@@ -188,26 +225,17 @@ namespace Forum
 
             void stopBatchInsert();
 
-            void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread);
-            void updateLatestMessageCreated(DiscussionThreadPtr thread);
-
             auto count()        const { return byId_.size(); }
             auto messageCount() const { return messageCount_; }
             auto& byId()              { return byId_; }
             auto  byId()        const { return Helpers::toConst(byId_); }
 
-            auto& byLatestMessageCreated() { return byLatestMessageCreated_; }
             auto& messageCount()           { return messageCount_; }
-
-            DiscussionThreadMessagePtr latestMessage() const;
 
         private:
             bool add(DiscussionThreadPtr thread, int_fast32_t amount);
 
             HASHED_UNIQUE_COLLECTION(DiscussionThread, id) byId_;
-
-            RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
-            RANKED_COLLECTION_ITERATOR(byLatestMessageCreated_) byLatestMessageCreatedUpdateIt_;
 
             int_fast32_t messageCount_ = 0;
             std::unordered_map<DiscussionThreadPtr, int_fast32_t> referenceCount_;

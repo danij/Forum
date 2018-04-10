@@ -80,7 +80,7 @@ static constexpr auto ipAddressBinarySize = IpAddress::dataSize();
 template<>
 UuidString readAndIncrementBuffer<UuidString>(const uint8_t*& data, size_t& size)
 {
-    UuidString result(data);
+    const UuidString result(data);
     data += uuidBinarySize; size -= uuidBinarySize;
 
     return result;
@@ -100,7 +100,7 @@ StringView readAndIncrementBuffer<StringView>(const uint8_t*& data, size_t& size
 {
     StringView result;
 
-    auto stringSize = readAndIncrementBuffer<BlobSizeType>(data, size);
+    const auto stringSize = readAndIncrementBuffer<BlobSizeType>(data, size);
 
     if (size < stringSize)
     {
@@ -175,11 +175,11 @@ struct CurrentTimeChanger final : private boost::noncopyable
 
 #define READ_UUID(variable, data, size) \
     CHECK_SIZE(size, uuidBinarySize); \
-    auto variable = readAndIncrementBuffer<UuidString>(data, size);
+    const auto variable = readAndIncrementBuffer<UuidString>(data, size);
 
 #define READ_STRING(variable, data, size) \
     CHECK_SIZE(size, sizeof(BlobSizeType)); \
-    auto variable = readAndIncrementBuffer<StringView>(data, size); \
+    const auto variable = readAndIncrementBuffer<StringView>(data, size); \
 
 #define READ_NONEMPTY_STRING(variable, data, size) \
     READ_STRING(variable, data, size) \
@@ -187,7 +187,7 @@ struct CurrentTimeChanger final : private boost::noncopyable
 
 #define READ_TYPE(type, variable, data, size) \
     CHECK_SIZE(size, sizeof(type)); \
-    auto variable = readAndIncrementBuffer<type>(data, size);
+    const auto variable = readAndIncrementBuffer<type>(data, size);
 
 
 struct EventImporter::EventImporterImpl final : private boost::noncopyable
@@ -828,12 +828,14 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
 
         currentTimestamp_ = readAndIncrementBuffer<PersistentTimestampType>(data, size);
+        firstTimestamp_ = std::min(firstTimestamp_, currentTimestamp_);
+
         auto currentUserId = readAndIncrementBuffer<UuidString>(data, size);
 
         Context::setCurrentUserId(currentUserId);
         Context::setCurrentUserIpAddress(readAndIncrementBuffer<IpAddress>(data, size));
 
-        auto it = usersLastSeen_.find(currentUserId);
+        const auto it = usersLastSeen_.find(currentUserId);
         if (it != usersLastSeen_.end())
         {
             it->second = currentTimestamp_;
@@ -863,12 +865,20 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
         try
         {
-            auto mappingMode = boost::interprocess::read_only;
-            boost::interprocess::file_mapping mapping(fileName.c_str(), mappingMode);
+            const auto mappingMode = boost::interprocess::read_only;
+            const boost::interprocess::file_mapping mapping(fileName.c_str(), mappingMode);            
             boost::interprocess::mapped_region region(mapping, mappingMode);
             region.advise(boost::interprocess::mapped_region::advice_sequential);
+            
+            firstTimestamp_ = TimestampMax;
 
-            return iterateBlobsInFile(reinterpret_cast<const unsigned char*>(region.get_address()), region.get_size());
+            const auto result = iterateBlobsInFile(reinterpret_cast<const unsigned char*>(region.get_address()), region.get_size());
+            
+            FORUM_LOG_INFO << "   " << fileName << ": " 
+                           << result.statistic.importedBlobs << " events out of " << result.statistic.readBlobs 
+                           << " blobs read between " << firstTimestamp_ << " and " << currentTimestamp_;
+
+            return result;
         }
         catch(boost::interprocess::interprocess_exception& ex)
         {
@@ -879,7 +889,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
     ImportResult iterateBlobsInFile(const unsigned char* data, size_t size)
     {
-        ImportResult result{};
+        ImportResult result{};        
         CurrentTimeChanger _([this]() { return this->getCurrentTimestamp(); });
 
         while (size > 0)
@@ -891,7 +901,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
                 break;
             }
 
-            auto magic = readAndIncrementBuffer<MagicPrefixType>(data, size);
+            const auto magic = readAndIncrementBuffer<MagicPrefixType>(data, size);
             if (magic != MagicPrefix)
             {
                 FORUM_LOG_ERROR << "Invalid prefix in current blob";
@@ -899,10 +909,10 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
                 break;
             }
 
-            auto blobSize = readAndIncrementBuffer<BlobSizeType>(data, size);
-            auto blobSizeWithPadding = blobSize + blobPaddingRequired(blobSize);
+            const auto blobSize = readAndIncrementBuffer<BlobSizeType>(data, size);
+            const auto blobSizeWithPadding = blobSize + blobPaddingRequired(blobSize);
 
-            auto storedChecksum = readAndIncrementBuffer<BlobChecksumSizeType>(data, size);
+            const auto storedChecksum = readAndIncrementBuffer<BlobChecksumSizeType>(data, size);
 
             if (size < blobSizeWithPadding)
             {
@@ -913,7 +923,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
             if (verifyChecksum_)
             {
-                auto calculatedChecksum = crc32(data, blobSize);
+                const auto calculatedChecksum = crc32(data, blobSize);
                 if (calculatedChecksum != storedChecksum)
                 {
                     FORUM_LOG_ERROR << "Checksum mismatch in event blob: " << calculatedChecksum << " != " << storedChecksum;
@@ -949,8 +959,8 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
 
         currentEventType_ = readAndIncrementBuffer<EventType>(data, size);
-        auto version = readAndIncrementBuffer<EventVersionType>(data, size);
-        auto contextVersion = readAndIncrementBuffer<EventContextVersionType>(data, size);
+        const auto version = readAndIncrementBuffer<EventVersionType>(data, size);
+        const auto contextVersion = readAndIncrementBuffer<EventContextVersionType>(data, size);
 
         if (currentEventType_ >= importFunctions_.size())
         {
@@ -1005,7 +1015,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         ImportResult result{};
         for (auto& pair : eventFileNames)
         {
-            auto currentResult = importFile(pair.second);
+            const auto currentResult = importFile(pair.second);
             if ( ! currentResult.success)
             {
                 result.success = false;
@@ -1022,17 +1032,15 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
     void updateDiscussionThreadVisitCount()
     {
-        auto& threads = entityCollection_.threads().byId();
         for (auto& pair : cachedNrOfThreadVisits_)
         {
             auto& id = pair.first;
-            auto nrOfVisits = static_cast<int_fast64_t>(pair.second);
+            const auto nrOfVisits = static_cast<int_fast64_t>(pair.second);
 
-            auto it = threads.find(id);
-            if (it != threads.end())
+            auto threadPtr = entityCollection_.threads().findById(id);
+            if (threadPtr)
             {
-                const DiscussionThread& thread = **it;
-                thread.visited() += nrOfVisits;
+                threadPtr->visited() += nrOfVisits;
             }
         }
     }
@@ -1065,6 +1073,7 @@ private:
     DirectWriteRepositoryCollection repositories_;
     std::vector<std::vector<std::function<bool(uint16_t, const uint8_t*, size_t)>>> importFunctions_;
     Timestamp currentTimestamp_{};
+    Timestamp firstTimestamp_ = TimestampMax;
     EventType currentEventType_{};
     std::unordered_map<UuidString, uint32_t> cachedNrOfThreadVisits_;
     std::unordered_map<UuidString, Timestamp> usersLastSeen_;
@@ -1078,10 +1087,7 @@ EventImporter::EventImporter(bool verifyChecksum, EntityCollection& entityCollec
 
 EventImporter::~EventImporter()
 {
-    if (impl_)
-    {
-        delete impl_;
-    }
+    delete impl_;
 }
 
 ImportResult EventImporter::import(const boost::filesystem::path& sourcePath)

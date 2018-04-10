@@ -62,7 +62,8 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
         BoolTemporaryChanger _(serializationSettings.hideLatestMessage, true);
         BoolTemporaryChanger __(serializationSettings.onlySendCategoryParentId, true);
 
-        SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(), Context::getCurrentTime());
+        SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                             currentUser.id(), Context::getCurrentTime());
 
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
         {
@@ -131,8 +132,8 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
 
                           status.disable();
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
-                                                               Context::getCurrentTime());
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                               currentUser.id(), Context::getCurrentTime());
 
                           writeArraySafeName(output, "categories", indexBegin, indexRootEnd, restriction);
 
@@ -171,8 +172,8 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(IdTypeR
                           BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
                           BoolTemporaryChanger __(serializationSettings.keepDiscussionCategoryDetails, true);
 
-                          SerializationRestriction restriction(collection.grantedPrivileges(), currentUser.id(),
-                                                               Context::getCurrentTime());
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                               currentUser.id(), Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "category", **it, restriction);
 

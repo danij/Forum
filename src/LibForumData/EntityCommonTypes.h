@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SortedVector.h"
 
 #include <cstdint>
+#include <limits>
 #include <utility>
 #include <type_traits>
 
@@ -44,6 +45,9 @@ namespace Forum
          */
         typedef int_fast64_t Timestamp;
 
+        constexpr Timestamp TimestampMin = std::numeric_limits<Timestamp>::min();
+        constexpr Timestamp TimestampMax = std::numeric_limits<Timestamp>::max();
+
         struct VisitDetails final
         {
             Helpers::IpAddress ip;
@@ -57,34 +61,37 @@ namespace Forum
             EntityPointer<User> by;
         };
 
+#define INDEX_CONST_MEM_FUN(Type, Getter) \
+        const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>
+
 #define HASHED_COLLECTION(Type, Getter) \
-        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::hashed_non_unique< \
-            const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+            boost::multi_index::hashed_non_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define HASHED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define HASHED_UNIQUE_COLLECTION(Type, Getter) \
-        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::hashed_unique< \
-            const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+            boost::multi_index::hashed_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define HASHED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define ORDERED_COLLECTION(Type, Getter) \
-        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ordered_non_unique< \
-            const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+            boost::multi_index::ordered_non_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define ORDERED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define ORDERED_UNIQUE_COLLECTION(Type, Getter) \
-        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ordered_unique< \
-            const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+            boost::multi_index::ordered_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define ORDERED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define RANKED_COLLECTION(Type, Getter) \
-        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ranked_non_unique< \
-            const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+            boost::multi_index::ranked_non_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define RANKED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define RANKED_UNIQUE_COLLECTION(Type, Getter) \
-        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by<boost::multi_index::ranked_unique< \
-            const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>>>>
+        boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+            boost::multi_index::ranked_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define RANKED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
         template<typename TContainer, typename It, typename Value>
@@ -158,6 +165,9 @@ namespace Forum
         DEFINE_PTR_EXTRACTOR(messageCount)
         DEFINE_PTR_COMPARER(messageCount)
 
+        DEFINE_PTR_EXTRACTOR(pinDisplayOrder)
+        DEFINE_PTR_COMPARER(pinDisplayOrder)
+
         template<typename Collection, typename Entity, typename Value>
         void eraseFromNonUniqueCollection(Collection& collection, Entity toCompare, const Value& toSearch)
         {
@@ -170,6 +180,7 @@ namespace Forum
                     return;
                 }
             }
+            assert(false); //not found
         }
 
         template<typename Collection, typename Entity, typename Value>
