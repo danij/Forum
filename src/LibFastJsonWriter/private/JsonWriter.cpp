@@ -17,24 +17,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "JsonWriter.h"
-
 #include <algorithm>
 
 using namespace Json;
 
-bool Json::isEscapeNeeded(const char* value, size_t length)
+bool Json::isEscapeNeeded(const char* value, const size_t length)
 {
-    for (size_t i = 0; i < length; ++i)
+    return std::any_of(value, value + length, [](const char c)
     {
-        const auto c = static_cast<unsigned char>(value[i]);
-        if (c < toEscapeLength)
-        {
-            if(toEscape[c])
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
+        const auto u = static_cast<unsigned char>(c);
+        return (u < ToEscapeLength) && ToEscape[u];
+    });
 }
