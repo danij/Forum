@@ -96,7 +96,7 @@ struct IdType
     }
     operator Entities::IdType() const
     {
-        return Entities::IdType(boost::string_view(data.data(), data.size()));
+        return Entities::IdType(std::string_view(data.data(), data.size()));
     }
 };
 
@@ -230,7 +230,7 @@ void execute(CommandHandler& handler, CommandType command, const std::initialize
 const int nrOfUsers = 1000;
 const int nrOfThreads = nrOfUsers * 1;
 const int maxThreadPinDisplayOrder = 10;
-const float threadPinProbability = 0.1;
+const float threadPinProbability = 0.1f;
 const int nrOfMessages = nrOfThreads * 50;
 const int nrOfVotes = nrOfMessages;
 const float upVoteProbability = 0.75;
@@ -447,7 +447,7 @@ StringView getMessageText(char* buffer, size_t size)
     static const char characters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     constexpr size_t charactersCount = std::extent<decltype(characters)>::value - 1;
 
-    static int startIndex = 0;
+    static size_t startIndex = 0;
     ++startIndex;
 
     auto result = StringView(buffer, size);
@@ -456,9 +456,9 @@ StringView getMessageText(char* buffer, size_t size)
     while (size > 0)
     {
         offset %= charactersCount;
-        auto toCopy = std::min(size, charactersCount - offset);
+        const auto toCopy = std::min(size, charactersCount - offset);
 
-        std::copy(characters + offset, characters + offset + toCopy, buffer);
+        memcpy(buffer, characters + offset, toCopy);
         buffer += toCopy;
         offset += toCopy;
         size -= toCopy;
@@ -489,13 +489,13 @@ size_t appendUInt(char* string, unsigned int value)
 
 void populateData(BenchmarkContext& context)
 {
-    if (context.importFromFolder.size())
+    if (context.importFromFolder.empty())
     {
-        importPersistedData(context);
+        generateRandomData(context);
     }
     else
     {
-        generateRandomData(context);
+        importPersistedData(context);
     }
 }
 
@@ -516,12 +516,12 @@ void generateRandomData(BenchmarkContext& context)
     for (unsigned int i = 0; i < nrOfUsers; i++)
     {
         getRandomText(buffer, 5);
-        auto intSize = appendUInt(buffer + 5, i + 1);
+        const auto intSize = appendUInt(buffer + 5, i + 1);
         userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { StringView(buffer, 5 + intSize), getNewAuth() }));
         context.incrementTimestamp(100);
     }
 
-    std::uniform_int_distribution<> userIdDistribution(0, userIds.size() - 1);
+    std::uniform_int_distribution<> userIdDistribution(0, static_cast<int>(userIds.size() - 1));
     std::normal_distribution<float> messageSizedistribution(messageContentLengthMean, messageContentLengthStddev);
 
     auto config = Configuration::getGlobalConfig();
@@ -544,7 +544,7 @@ void generateRandomData(BenchmarkContext& context)
         context.incrementTimestamp(100);
     }
 
-    std::uniform_int_distribution<> tagIdDistribution(0, tagIds.size() - 1);
+    std::uniform_int_distribution<> tagIdDistribution(0, static_cast<int>(tagIds.size() - 1));
     std::uniform_int_distribution<> nrOfTagsPerCategoryDistribution(nrOfTagsPerCategoryMin, nrOfTagsPerCategoryMax);
     std::uniform_int_distribution<> nrOfTagsPerThreadDistribution(nrOfTagsPerThreadMin, nrOfTagsPerThreadMax);
 
@@ -598,7 +598,7 @@ void generateRandomData(BenchmarkContext& context)
         context.incrementTimestamp(100);
         updateMessagesProcessedPercent();
     }
-    std::uniform_int_distribution<> threadIdDistribution(0, threadIds.size() - 1);
+    std::uniform_int_distribution<> threadIdDistribution(0, static_cast<int>(threadIds.size() - 1));
 
     for (size_t i = 0; i < (nrOfMessages - nrOfThreads); i++)
     {
@@ -609,7 +609,7 @@ void generateRandomData(BenchmarkContext& context)
         updateMessagesProcessedPercent();
     }
 
-    std::uniform_int_distribution<> threadMessageIdDistribution(0, threadMessageIds.size() - 1);
+    std::uniform_int_distribution<> threadMessageIdDistribution(0, static_cast<int>(threadMessageIds.size() - 1));
     std::uniform_real_distribution<> upOrDownVoteDistribution(0.0, 1.0);
 
     for (size_t i = 0; i < nrOfVotes; i++)
@@ -646,7 +646,7 @@ void generateRandomData(BenchmarkContext& context)
         }
         context.incrementTimestamp(100);
     }
-    std::uniform_int_distribution<> categoryIdDistribution(0, categoryIds.size() - 1);
+    std::uniform_int_distribution<> categoryIdDistribution(0, static_cast<int>(categoryIds.size() - 1));
 
     int addedParentChildRelationships = 0;
     while (addedParentChildRelationships < nrOfCategoryParentChildRelationships)
@@ -688,7 +688,7 @@ void importPersistedData(BenchmarkContext& context)
         context.categoryIds.push_back(category->id());
     }
 
-    currentAuthNumber = context.userIds.size() + 1000;
+    currentAuthNumber = static_cast<int>(context.userIds.size()) + 1000;
 
     std::cout << "---\n";
     std::cout << "Imported:\n";
@@ -723,10 +723,10 @@ void doBenchmarks(BenchmarkContext& context)
     }
     std::cout << '\n';
 
-    std::uniform_int_distribution<> userIdDistribution(0, userIds.size() - 1);
-    std::uniform_int_distribution<> threadIdDistribution(0, threadIds.size() - 1);
-    std::uniform_int_distribution<> tagIdDistribution(0, tagIds.size() - 1);
-    std::uniform_int_distribution<> categoryIdDistribution(0, categoryIds.size() - 1);
+    std::uniform_int_distribution<> userIdDistribution(0, static_cast<int>(userIds.size() - 1));
+    std::uniform_int_distribution<> threadIdDistribution(0, static_cast<int>(threadIds.size() - 1));
+    std::uniform_int_distribution<> tagIdDistribution(0, static_cast<int>(tagIds.size() - 1));
+    std::uniform_int_distribution<> categoryIdDistribution(0, static_cast<int>(categoryIds.size() - 1));
 
     char buffer[8192];
 
