@@ -40,7 +40,7 @@ using namespace Forum::Authorization;
 
 static thread_local Json::StringBuffer outputBuffer{ 1 << 20 }; //1 MiByte buffer / thread initial and for each increment
 
-static const std::string emptyString;
+static const std::string EmptyString;
 
 template<typename Collection>
 auto countNonEmpty(const Collection& collection)
@@ -62,7 +62,7 @@ static thread_local std::unique_ptr<char[]> normalizeBuffer8(new char[NormalizeB
  */
 static StringView normalize(StringView input)
 {
-    if (0 == input.size())
+    if (input.empty())
     {
         return input;
     }
@@ -70,7 +70,7 @@ static StringView normalize(StringView input)
     int32_t chars16Written = 0, chars8Written = 0;
     UErrorCode errorCode{};
     const auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before.get(), NormalizeBuffer16MaxChars, &chars16Written,
-                                            input.data(), input.size(), &errorCode);
+                                            input.data(), static_cast<int32_t>(input.size()), &errorCode);
     if (U_FAILURE(errorCode))
     {
         return{};
@@ -92,8 +92,8 @@ static StringView normalize(StringView input)
     }
 
     errorCode = {};
-    auto u16to8Result = u_strToUTF8(normalizeBuffer8.get(), NormalizeBuffer8MaxChars, &chars8Written,
-                                    normalizeBuffer16After.get(), chars16NormalizedWritten, &errorCode);
+    const auto u16to8Result = u_strToUTF8(normalizeBuffer8.get(), NormalizeBuffer8MaxChars, &chars8Written,
+                                          normalizeBuffer16After.get(), chars16NormalizedWritten, &errorCode);
     if (U_FAILURE(errorCode))
     {
         return{};
@@ -116,41 +116,25 @@ struct CommandHandler::CommandHandlerImpl
     StatisticsRepositoryRef statisticsRepository;
     MetricsRepositoryRef metricsRepository;
 
-    static bool checkNumberOfParameters(const std::vector<StringView>& parameters, size_t number)
+    static bool checkNumberOfParameters(const std::vector<StringView>& parameters, const size_t number)
     {
-        if (countNonEmpty(parameters) != number)
-        {
-            return false;
-        }
-        return true;
+        return countNonEmpty(parameters) == number;
     }
 
-    static bool checkNumberOfParametersAtLeast(const std::vector<StringView>& parameters, size_t number)
+    static bool checkNumberOfParametersAtLeast(const std::vector<StringView>& parameters, const size_t number)
     {
-        if (countNonEmpty(parameters) < number)
-        {
-            return false;
-        }
-        return true;
+        return countNonEmpty(parameters) >= number;
     }
 
     template<typename T>
     static bool convertTo(StringView value, T& result)
     {
-        if ( ! boost::conversion::try_lexical_convert(value.data(), value.size(), result))
-        {
-            return false;
-        }
-        return true;
+        return boost::conversion::try_lexical_convert(value.data(), value.size(), result);
     }
 
-    static bool checkMinNumberOfParameters(const std::vector<StringView>& parameters, size_t number)
+    static bool checkMinNumberOfParameters(const std::vector<StringView>& parameters, const size_t number)
     {
-        if (countNonEmpty(parameters) < number)
-        {
-            return false;
-        }
-        return true;
+        return countNonEmpty(parameters) >= number;
     }
 
     template<typename PrivilegeType, typename PrivilegeStringsType>
@@ -183,7 +167,7 @@ struct CommandHandler::CommandHandlerImpl
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
+        if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
         return userRepository->addNewUser(normalizedParam, parameters[1], output);
     }
 
@@ -484,7 +468,7 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT )
     {
         if ( ! checkMinNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
-        auto& changeReason = parameters.size() > 2 ? parameters[2] : emptyString;
+        const auto changeReason = parameters.size() > 2 ? parameters[2] : EmptyString;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->changeDiscussionThreadMessageContent(parameters[0], normalizedParam,
@@ -663,7 +647,7 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_CATEGORY )
     {
         if ( ! checkMinNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        auto& parentId = parameters.size() > 1 ? parameters[1] : emptyString;
+        const auto parentId = parameters.size() > 1 ? parameters[1] : EmptyString;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
         return discussionCategoryRepository->addNewDiscussionCategory(normalizedParam, parentId, output);
@@ -1293,7 +1277,7 @@ WriteEvents& CommandHandler::writeEvents()
     return impl_->observerRepository->writeEvents();
 }
 
-CommandHandler::Result CommandHandler::handle(Command command, const std::vector<StringView>& parameters)
+CommandHandler::Result CommandHandler::handle(const Command command, const std::vector<StringView>& parameters)
 {
     const auto config = getGlobalConfig();
 
@@ -1326,7 +1310,7 @@ CommandHandler::Result CommandHandler::handle(Command command, const std::vector
     return { statusCode, outputBuffer.view() };
 }
 
-CommandHandler::Result CommandHandler::handle(View view, const std::vector<StringView>& parameters)
+CommandHandler::Result CommandHandler::handle(const View view, const std::vector<StringView>& parameters)
 {
     StatusCode statusCode;
     if (view >= 0 && view < LAST_VIEW)

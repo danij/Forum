@@ -196,7 +196,7 @@ namespace Forum
             LAST_VIEW
         };
 
-        class CommandHandler final : private boost::noncopyable
+        class CommandHandler final : boost::noncopyable
         {
         public:
             CommandHandler(Repository::ObservableRepositoryRef observerRepository,

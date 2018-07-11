@@ -27,7 +27,7 @@ namespace Forum
 {
     namespace Commands
     {
-        class ServiceEndpointManager final : private boost::noncopyable
+        class ServiceEndpointManager final : boost::noncopyable
         {
         public:
             explicit ServiceEndpointManager(CommandHandler& handler);

@@ -33,7 +33,7 @@ AbstractEndpoint::AbstractEndpoint(CommandHandler& handler) : commandHandler_(ha
     prefix_ = config->service.responsePrefix;
 }
 
-Http::HttpStatusCode commandStatusToHttpStatus(Repository::StatusCode code)
+Http::HttpStatusCode commandStatusToHttpStatus(const Repository::StatusCode code)
 {
     switch (code)
     {
@@ -119,13 +119,14 @@ void AbstractEndpoint::handle(Http::RequestState& requestState, ExecuteFn execut
     handleInternal(requestState, "application/json", executeCommand, true);
 }
 
-void AbstractEndpoint::handleBinary(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand)
+void AbstractEndpoint::handleBinary(Http::RequestState& requestState, const StringView contentType, 
+                                    const ExecuteFn executeCommand)
 {
     handleInternal(requestState, contentType, executeCommand, false);
 }
 
-void AbstractEndpoint::handleInternal(Http::RequestState& requestState, StringView contentType,
-                                      ExecuteFn executeCommand, bool writePrefix)
+void AbstractEndpoint::handleInternal(Http::RequestState& requestState, const StringView contentType,
+                                      const ExecuteFn executeCommand, const bool writePrefix)
 {
     assert(nullptr != executeCommand);
 

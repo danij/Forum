@@ -50,7 +50,7 @@ namespace Forum
             std::string prefix_;
         };
 
-        class MetricsEndpoint : private AbstractEndpoint
+        class MetricsEndpoint : AbstractEndpoint
         {
         public:
             explicit MetricsEndpoint(CommandHandler& handler);
@@ -58,7 +58,7 @@ namespace Forum
             void getVersion(Http::RequestState& requestState);
         };
 
-        class StatisticsEndpoint : private AbstractEndpoint
+        class StatisticsEndpoint : AbstractEndpoint
         {
         public:
             explicit StatisticsEndpoint(CommandHandler& handler);
@@ -66,7 +66,7 @@ namespace Forum
             void getEntitiesCount(Http::RequestState& requestState);
         };
 
-        class UsersEndpoint : private AbstractEndpoint
+        class UsersEndpoint : AbstractEndpoint
         {
         public:
             explicit UsersEndpoint(CommandHandler& handler);
@@ -90,7 +90,7 @@ namespace Forum
             void deleteLogo(Http::RequestState& requestState);
         };
 
-        class DiscussionThreadsEndpoint : private AbstractEndpoint
+        class DiscussionThreadsEndpoint : AbstractEndpoint
         {
         public:
             explicit DiscussionThreadsEndpoint(CommandHandler& handler);
@@ -115,7 +115,7 @@ namespace Forum
             void removeTag(Http::RequestState& requestState);
         };
 
-        class DiscussionThreadMessagesEndpoint : private AbstractEndpoint
+        class DiscussionThreadMessagesEndpoint : AbstractEndpoint
         {
         public:
             explicit DiscussionThreadMessagesEndpoint(CommandHandler& handler);
@@ -139,7 +139,7 @@ namespace Forum
             void setCommentSolved(Http::RequestState& requestState);
         };
 
-        class DiscussionTagsEndpoint : private AbstractEndpoint
+        class DiscussionTagsEndpoint : AbstractEndpoint
         {
         public:
             explicit DiscussionTagsEndpoint(CommandHandler& handler);
@@ -153,7 +153,7 @@ namespace Forum
             void merge(Http::RequestState& requestState);
         };
 
-        class DiscussionCategoriesEndpoint : private AbstractEndpoint
+        class DiscussionCategoriesEndpoint : AbstractEndpoint
         {
         public:
             explicit DiscussionCategoriesEndpoint(CommandHandler& handler);
@@ -172,7 +172,7 @@ namespace Forum
             void removeTag(Http::RequestState& requestState);
         };
 
-        class AuthorizationEndpoint : private AbstractEndpoint
+        class AuthorizationEndpoint : AbstractEndpoint
         {
         public:
             explicit AuthorizationEndpoint(CommandHandler& handler);
