@@ -278,6 +278,6 @@ namespace Forum
          * Loads the configuration data from a stream and sets it globally.
          * Any exception is thrown up the call stack
          */
-        void loadGlobalConfigFromStream(std::ifstream& stream);
+        void loadGlobalConfigFromStream(std::istream& stream);
     }
 }

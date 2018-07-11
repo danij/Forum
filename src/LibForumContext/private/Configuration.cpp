@@ -17,9 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "Configuration.h"
+#include "ContextProviders.h"
 
 #include <boost/property_tree/json_parser.hpp>
-#include "ContextProviders.h"
 
 static std::shared_ptr<const Forum::Configuration::Config> currentConfig =
         std::make_shared<const Forum::Configuration::Config>();
@@ -38,7 +38,7 @@ void Forum::Configuration::setGlobalConfig(const Config& value)
 #define LOAD_CONFIG_VALUE(path) \
     CONCAT_MEMBER(config, path) = tree.get<decltype(CONCAT_MEMBER(config, path))>(#path, CONCAT_MEMBER(config, path))
 
-void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
+void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
 {
     boost::property_tree::ptree tree;
     boost::property_tree::read_json(stream, tree);
