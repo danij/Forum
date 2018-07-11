@@ -134,13 +134,13 @@ int Application::run(int argc, const char* argv[])
 
     const auto configFileName = arguments["config"].as<std::string>();
 
-    if ( ! boost::filesystem::exists(configFileName))
+    if ( ! std::filesystem::exists(configFileName))
     {
         std::cerr << "The configuration file '" << configFileName << "' does not exist!\n";
         return 1;
     }
 
-    if ( ! boost::filesystem::is_regular_file(configFileName))
+    if ( ! std::filesystem::is_regular_file(configFileName))
     {
         std::cerr << "The configuration file '" << configFileName << "' is not a regular file!\n";
         return 1;
