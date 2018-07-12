@@ -8,12 +8,14 @@ find_package(Boost REQUIRED COMPONENTS system)
 
 set(SOURCE_FILES
         private/Configuration.cpp
-        private/ContextProviders.cpp)
+        private/ContextProviders.cpp
+        private/DefaultIOServiceProvider.cpp)
 
 set(HEADER_FILES
         Configuration.h
         ContextProviders.h
-        ContextProviderMocks.h)
+        ContextProviderMocks.h
+        DefaultIOServiceProvider.h)
 
 include_directories(
         .

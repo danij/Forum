@@ -10,12 +10,10 @@ find_package(ICU)
 
 set(SOURCE_FILES
         app.cpp
-        Application.cpp
-        DefaultIOServiceProvider.cpp)
+        Application.cpp)
 
 set(HEADER_FILES
         Application.h
-        DefaultIOServiceProvider.h
         ../Logging/Logging.h)
 
 include_directories(
