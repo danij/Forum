@@ -26,11 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * This header is only to be included in tests
  */
 
-namespace Forum
+namespace Forum::Context
 {
-    namespace Context
-    {
-        void setCurrentTimeMockForCurrentThread(std::function<Entities::Timestamp()>&& callback);
-        void resetCurrentTimeMock();
-    }
+    void setCurrentTimeMockForCurrentThread(std::function<Entities::Timestamp()>&& callback);
+    void resetCurrentTimeMock();
 }

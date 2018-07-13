@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Forum::Context;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
+using namespace Forum::Network;
 
 Timestamp getTimeSinceEpoch()
 {
