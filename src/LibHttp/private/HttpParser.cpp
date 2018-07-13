@@ -349,6 +349,7 @@ void Parser::interpretPathString()
             if (('?' == c) || ((i + 1) == n))
             {
                 request_.path = viewAfterDecodingUrlEncodingInPlace(parsePathStartsAt_, i);
+                n = static_cast<int>(request_.path.size());
                 state = 1;
                 keyStart = keyEnd = i + 1;
             }
