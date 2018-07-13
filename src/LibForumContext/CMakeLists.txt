@@ -15,6 +15,7 @@ set(HEADER_FILES
         Configuration.h
         ContextProviders.h
         ContextProviderMocks.h
+        IOServiceProvider.h
         DefaultIOServiceProvider.h)
 
 include_directories(

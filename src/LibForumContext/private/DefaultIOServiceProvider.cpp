@@ -17,14 +17,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "DefaultIOServiceProvider.h"
-#include "Configuration.h"
+
+#include <algorithm>
 
 using namespace Forum::Network;
 
-DefaultIOServiceProvider::DefaultIOServiceProvider() : stopping_(false)
+DefaultIOServiceProvider::DefaultIOServiceProvider(size_t nrOfThreads) : stopping_(false)
 {
-    auto nrOfThreads = Configuration::getGlobalConfig()->service.numberOfIOServiceThreads;
-    if (nrOfThreads < 1) nrOfThreads = 1;
+    nrOfThreads = std::clamp(nrOfThreads, size_t(1), size_t(100));
 
     threads_.reserve(nrOfThreads);
 }

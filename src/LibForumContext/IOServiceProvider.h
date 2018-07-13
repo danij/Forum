@@ -18,32 +18,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "IOServiceProvider.h"
+#include "TypeHelpers.h"
 
-#include <cstdint>
-#include <condition_variable>
-#include <mutex>
-#include <thread>
-#include <vector>
+#include <boost/asio/io_service.hpp>
 
 namespace Forum::Network
 {
-    class DefaultIOServiceProvider final : public IIOServiceProvider, boost::noncopyable
+    class IIOServiceProvider
     {
     public:
-        explicit DefaultIOServiceProvider(size_t nrOfThreads);
+        DECLARE_INTERFACE_MANDATORY(IIOServiceProvider)
 
-        boost::asio::io_service& getIOService() override;
-        void start() override;
-        void waitForStop() override;
-        void stop() override;
-
-    private:
-        boost::asio::io_service service_;
-
-        std::vector<std::thread> threads_;
-        std::condition_variable stopVariable_;
-        std::mutex stopMutex_;
-        bool stopping_;
+        virtual boost::asio::io_service& getIOService() = 0;
+        virtual void start() = 0;
+        virtual void waitForStop() = 0;
+        virtual void stop() = 0;
     };
 }
