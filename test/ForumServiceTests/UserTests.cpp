@@ -1593,7 +1593,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_involves_pagination )
     settings.sortOrder = SortOrder::Ascending;
 
     //get full pages
-    for (size_t i = 0; i < pageSize; i++)
+    for (int i = 0; i < pageSize; i++)
     {
         settings.pageNumber = i;
         auto page = handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, settings);
@@ -1605,7 +1605,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_involves_pagination )
         auto users = deserializeUsers(page.get_child("users"));
         BOOST_REQUIRE_EQUAL(static_cast<size_t>(pageSize), users.size());
 
-        for (size_t j = 0; j < users.size(); j++)
+        for (int j = 0; j < static_cast<int>(users.size()); j++)
         {
             BOOST_REQUIRE_EQUAL(userIds[pageSize*i + j], users[j].id);
             BOOST_REQUIRE_EQUAL("User" + std::to_string(pageSize*i + j + 101), users[j].name);
@@ -1657,7 +1657,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descendi
     settings.sortOrder = SortOrder::Descending;
 
     //get full pages
-    for (size_t i = 0; i < pageSize; i++)
+    for (int i = 0; i < pageSize; i++)
     {
         settings.pageNumber = i;
         auto page = handlerToObj(handler, Forum::Commands::GET_USERS_BY_NAME, settings);
@@ -1669,7 +1669,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descendi
         auto users = deserializeUsers(page.get_child("users"));
         BOOST_REQUIRE_EQUAL(static_cast<size_t>(pageSize), users.size());
 
-        for (size_t j = 0; j < users.size(); j++)
+        for (int j = 0; j < users.size(); j++)
         {
             BOOST_REQUIRE_EQUAL(userIds[9 - (pageSize*i + j)], users[j].id);
             BOOST_REQUIRE_EQUAL("User" + std::to_string(9 - (pageSize*i + j) + 101), users[j].name);

@@ -37,6 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 
 using namespace Forum::Commands;
+using namespace Forum::Entities;
 using namespace Forum::Repository;
 using namespace Forum::Helpers;
 using namespace Forum::Authorization;
@@ -45,7 +46,7 @@ std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
 {
     auto authorization = std::make_shared<AllowAllAuthorization>();
 
-    auto store = std::make_shared<MemoryStore>(std::make_shared<Entities::EntityCollection>(StringView{}));
+    auto store = std::make_shared<MemoryStore>(std::make_shared<EntityCollection>(StringView{}));
 
     auto authorizationRepository = std::make_shared<MemoryRepositoryAuthorization>(
             store, authorization, authorization, authorization, authorization, authorization);
