@@ -173,8 +173,8 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "privileges/forum_wide/assign",                      HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignForumWidePrivilege) }
     };
 
-    for (auto& tuple : routes)
+    for (auto& [pathLowerCase, verb, handler] : routes)
     {
-        router.addRoute(std::get<0>(tuple), std::get<1>(tuple), std::move(std::get<2>(tuple)));
+        router.addRoute(pathLowerCase, verb, std::move(handler));
     }
 }

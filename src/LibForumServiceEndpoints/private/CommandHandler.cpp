@@ -1291,10 +1291,11 @@ CommandHandler::Result CommandHandler::handle(const Command command, const std::
         return{ StatusCode::NOT_ALLOWED, {} };
     }
 
+    outputBuffer.clear();
+
     StatusCode statusCode;
     if (command >= 0 && command < LAST_COMMAND)
     {
-        outputBuffer.clear();
         statusCode = impl_->commandHandlers[command](parameters, outputBuffer);
     }
     else
@@ -1312,10 +1313,11 @@ CommandHandler::Result CommandHandler::handle(const Command command, const std::
 
 CommandHandler::Result CommandHandler::handle(const View view, const std::vector<StringView>& parameters)
 {
+    outputBuffer.clear();
+
     StatusCode statusCode;
     if (view >= 0 && view < LAST_VIEW)
     {
-        outputBuffer.clear();
         statusCode = impl_->viewHandlers[view](parameters, outputBuffer);
     }
     else

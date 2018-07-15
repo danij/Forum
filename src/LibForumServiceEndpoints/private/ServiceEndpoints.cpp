@@ -135,23 +135,25 @@ void AbstractEndpoint::handleInternal(Http::RequestState& requestState, const St
 
     const auto result = executeCommand(requestState, commandHandler_, currentParameters);
 
-    requestState.response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
-    requestState.response.writeHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    auto& response = requestState.response;
+
+    response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
+    response.writeHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     if (result.statusCode == Repository::StatusCode::OK)
     {
-        requestState.response.writeHeader("Content-Type", contentType);
+        response.writeHeader("Content-Type", contentType);
     }
     else
     {
-        requestState.response.writeHeader("Content-Type", "application/json");
+        response.writeHeader("Content-Type", "application/json");
     }
     if (writePrefix)
     {
-        requestState.response.writeBodyAndContentLength(result.output, prefix_);
+        response.writeBodyAndContentLength(result.output, prefix_);
     }
     else
     {
-        requestState.response.writeBodyAndContentLength(result.output);
+        response.writeBodyAndContentLength(result.output);
     }
 }
 
