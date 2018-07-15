@@ -311,8 +311,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const MessageComment& commen
 
 //Overload to reduce the number of calls to the authorization engine for checking rights to each message
 template<typename Collection, size_t PropertyNameSize>
-void writeDiscussionThreadMessages(const Collection& collection, int_fast32_t pageNumber, int_fast32_t pageSize,
-                                   bool ascending, const char(&propertyName)[PropertyNameSize], JsonWriter& writer,
+void writeDiscussionThreadMessages(const Collection& collection, const int_fast32_t pageNumber, const int_fast32_t pageSize,
+                                   const bool ascending, const char(&propertyName)[PropertyNameSize], JsonWriter& writer,
                                    const SerializationRestriction& restriction)
 {
     auto totalCount = static_cast<int_fast32_t>(collection.size());
@@ -400,7 +400,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
             << propertySafeName("pinDisplayOrder", thread.pinDisplayOrder())
             << propertySafeName("subscribedUsersCount", thread.subscribedUsersCount());
 
-    IdTypeRef currentUserId = Context::getCurrentUserId();
+    const IdTypeRef currentUserId = Context::getCurrentUserId();
     writer << propertySafeName("subscribedToThread",
         currentUserId && (thread.subscribedUsers().find(currentUserId) != thread.subscribedUsers().end()));
 
@@ -538,8 +538,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
 
     if ( ! serializationSettings.hideLatestMessage)
     {
-        auto latestMessage = category.latestMessage();
-        if (latestMessage)
+        if (const auto latestMessage = category.latestMessage())
         {
             BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
@@ -579,7 +578,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
 
     if (( ! serializationSettings.hideDiscussionCategoryParent) && (depth < maxDisplayDepth))
     {
-        if (DiscussionCategoryConstPtr parent = category.parent())
+        if (const DiscussionCategoryConstPtr parent = category.parent())
         {
             if (serializationSettings.onlySendCategoryParentId)
             {

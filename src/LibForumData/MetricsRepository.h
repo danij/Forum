@@ -18,23 +18,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "MemoryRepositoryCommon.h"
+#include "Repository.h"
 #include "Authorization.h"
+#include "MemoryRepositoryCommon.h"
 
-namespace Forum
+namespace Forum::Repository
 {
-    namespace Repository
+    class MetricsRepository : public MemoryRepositoryBase, public IMetricsRepository
     {
-        class MemoryRepositoryStatistics final : public MemoryRepositoryBase, public IStatisticsRepository
-        {
-        public:
-            explicit MemoryRepositoryStatistics(MemoryStoreRef store,
-                                                Authorization::StatisticsAuthorizationRef authorization);
+    public:
+        MetricsRepository(MemoryStoreRef store, Authorization::MetricsAuthorizationRef authorization);
 
-            StatusCode getEntitiesCount(OutStream& output) const override;
+        StatusCode getVersion(OutStream& output) override;
 
-        private:
-            Authorization::StatisticsAuthorizationRef authorization_;
-        };
-    }
+    private:
+        Authorization::MetricsAuthorizationRef authorization_;
+    };
 }

@@ -232,8 +232,7 @@ void DiscussionCategory::addTotalsFromChild(const DiscussionCategory& childCateg
 
 PrivilegeValueType DiscussionCategory::getDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege) const
 {
-    auto result = DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege(privilege);
-    if (result) return result;
+    if (const auto result = DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege(privilege)) return result;
 
     return forumWidePrivileges_.getDiscussionCategoryPrivilege(privilege);
 }
@@ -245,7 +244,7 @@ const DiscussionThreadMessage* DiscussionCategory::latestMessage() const
     const auto& index = threads_.byLatestMessageCreated();
     if ( ! index.empty())
     {
-        auto thread = *(index.rbegin());
+        const auto thread = *(index.rbegin());
 
         auto messageIndex = thread->messages().byCreated();
         if (messageIndex.size())
@@ -254,9 +253,9 @@ const DiscussionThreadMessage* DiscussionCategory::latestMessage() const
         }
     }
 
-    for (DiscussionCategoryPtr child : children_)
+    for (const DiscussionCategoryPtr child : children_)
     {
-        auto childLatestMessage = child->latestMessage();
+        const auto childLatestMessage = child->latestMessage();
         if ( ! childLatestMessage) continue;
 
         if (( ! result) || (result->created() < childLatestMessage->created()))

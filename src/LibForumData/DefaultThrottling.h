@@ -28,35 +28,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/noncopyable.hpp>
 
-namespace Forum
+namespace Forum::Authorization
 {
-    namespace Authorization
+    class DefaultThrottling final : boost::noncopyable
     {
-        class DefaultThrottling final : private boost::noncopyable
+    public:
+        bool check(UserActionThrottling action, Entities::Timestamp at, const Entities::IdType& id,
+                   const Helpers::IpAddress& ip);
+
+    private:
+        struct UserThrottlingChecks
         {
-        public:
-            bool check(UserActionThrottling action, Entities::Timestamp at, const Entities::IdType& id,
-                       const Helpers::IpAddress& ip);
+            typedef ThrottlingCheck<Entities::Timestamp> CheckType;
 
-        private:
-            struct UserThrottlingChecks
+            UserThrottlingChecks()
             {
-                typedef ThrottlingCheck<Entities::Timestamp> CheckType;
-
-                UserThrottlingChecks()
+                EnumIntType i = 0;
+                std::generate(std::begin(values), std::end(values), [&i]()
                 {
-                    EnumIntType i = 0;
-                    std::generate(std::begin(values), std::end(values), [&i]()
-                    {
-                        auto index = i++;
-                        return CheckType(ThrottlingDefaultValues[index].first, ThrottlingDefaultValues[index].second);
-                    });
-                }
-                CheckType values[static_cast<EnumIntType>(UserActionThrottling::COUNT)];
-            };
-
-            std::unordered_map<Entities::IdOrIpAddress, UserThrottlingChecks> entries_;
-            Helpers::SpinLock lock_;
+                    const auto index = i++;
+                    return CheckType(ThrottlingDefaultValues[index].first, ThrottlingDefaultValues[index].second);
+                });
+            }
+            CheckType values[static_cast<EnumIntType>(UserActionThrottling::COUNT)];
         };
-    }
+
+        std::unordered_map<Entities::IdOrIpAddress, UserThrottlingChecks> entries_;
+        Helpers::SpinLock lock_;
+    };
 }

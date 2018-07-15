@@ -160,7 +160,8 @@ struct AssignedPrivilegeWriter final
     AssignedPrivilegeWriter(const AssignedPrivilegeWriter&) = default;
     AssignedPrivilegeWriter(AssignedPrivilegeWriter&&) = default;
     
-    void operator()(IdTypeRef userId, PrivilegeValueIntType privilegeValue, Timestamp grantedAt, Timestamp expiresAt)
+    void operator()(IdTypeRef userId, const PrivilegeValueIntType privilegeValue, const Timestamp grantedAt, 
+                    const Timestamp expiresAt)
     {
         writer_.startObject();
         writer_.newPropertyWithSafeName("id") << userId;
@@ -202,10 +203,11 @@ struct UserAssignedPrivilegeWriter final
     UserAssignedPrivilegeWriter(const UserAssignedPrivilegeWriter&) = default;
     UserAssignedPrivilegeWriter(UserAssignedPrivilegeWriter&&) = default;
 
-    UserAssignedPrivilegeWriter& operator=(const UserAssignedPrivilegeWriter&) = default;
-    UserAssignedPrivilegeWriter& operator=(UserAssignedPrivilegeWriter&&) = default;
+    UserAssignedPrivilegeWriter& operator=(const UserAssignedPrivilegeWriter&) = delete;
+    UserAssignedPrivilegeWriter& operator=(UserAssignedPrivilegeWriter&&) = delete;
 
-    void operator()(IdTypeRef entityId, PrivilegeValueIntType privilegeValue, Timestamp grantedAt, Timestamp expiresAt)
+    void operator()(IdTypeRef entityId, PrivilegeValueIntType const privilegeValue, const Timestamp grantedAt, 
+                    const Timestamp expiresAt)
     {
         writer_.startObject();
         if (writeEntity_(collection_, restriction_, entityId, writer_))

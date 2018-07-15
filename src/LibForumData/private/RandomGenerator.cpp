@@ -22,6 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/uuid/random_generator.hpp>
 
+using namespace Forum::Entities;
+
 static boost::uuids::random_generator randomUUIDGenerator;
 static std::mutex randomUUIDGeneratorMutex;
 
@@ -31,7 +33,7 @@ boost::uuids::uuid Forum::Entities::generateUUID()
     return randomUUIDGenerator();
 }
 
-Forum::Entities::UuidString Forum::Entities::generateUniqueId()
+UuidString Forum::Entities::generateUniqueId()
 {
-    return Entities::UuidString(generateUUID());
+    return UuidString(generateUUID());
 }

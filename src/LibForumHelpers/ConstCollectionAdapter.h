@@ -21,13 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityPointer.h"
 
 #include <cassert>
-#include <memory>
 #include <map>
 #include <unordered_map>
-#include <set>
 
 #include <boost/iterator/transform_iterator.hpp>
-#include <boost/optional.hpp>
 #include <boost/container/flat_map.hpp>
 
 namespace Forum

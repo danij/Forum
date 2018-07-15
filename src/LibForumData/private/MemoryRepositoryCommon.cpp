@@ -22,15 +22,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ContextProviders.h"
 #include "EntitySerialization.h"
 #include "OutputHelpers.h"
+#include "TypeHelpers.h"
 
 #include <algorithm>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
 
-#include <boost/optional.hpp>
 #include <boost/endian/conversion.hpp>
 
 using namespace Forum;
@@ -117,8 +118,8 @@ UserPtr Repository::getCurrentUser(EntityCollection& collection)
 
 StatusCode MemoryRepositoryBase::validateString(StringView string,
                                                 EmptyStringValidation emptyValidation,
-                                                boost::optional<int_fast32_t> minimumLength,
-                                                boost::optional<int_fast32_t> maximumLength)
+                                                std::optional<int_fast32_t> minimumLength,
+                                                std::optional<int_fast32_t> maximumLength)
 {
     if ((INVALID_PARAMETERS_FOR_EMPTY_STRING == emptyValidation) && string.empty())
     {
@@ -162,7 +163,8 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
     std::copy(lastCharView.data(), lastCharView.data() + nrOfLastCharBytes, firstLastUtf8 + nrOfFirstCharBytes);
 
     const auto u16Chars = u_strFromUTF8(temp, std::extent<decltype(temp)>::value, &written,
-                                        firstLastUtf8, nrOfFirstCharBytes + nrOfLastCharBytes, &errorCode);
+                                        firstLastUtf8, static_cast<int32_t>(nrOfFirstCharBytes + nrOfLastCharBytes),
+                                        &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     errorCode = {};
@@ -172,7 +174,7 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
     return (u_isUWhiteSpace(u32Chars[0]) == FALSE) && (u_isUWhiteSpace(u32Chars[1]) == FALSE);
 }
 
-static boost::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView content)
+static std::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView content)
 {
     static const unsigned char PNGStart[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
     static const unsigned char PNGIHDR[] = { 0x49, 0x48, 0x44, 0x52 };
@@ -203,10 +205,10 @@ static boost::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView con
     data += std::extent<decltype(PNGIHDR)>::value;
 
     uint32_t width, height;
-    memcpy(&width, data, sizeof(width));
+    readValue(data, width);
 
     data += 4;
-    memcpy(&height, data, sizeof(height));
+    readValue(data, height);
 
     boost::endian::big_to_native_inplace(width);
     boost::endian::big_to_native_inplace(height);
@@ -214,8 +216,8 @@ static boost::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView con
     return std::make_tuple(width, height);
 }
 
-StatusCode MemoryRepositoryBase::validateImage(StringView content, uint_fast32_t maxBinarySize, uint_fast32_t maxWidth,
-                                               uint_fast32_t maxHeight)
+StatusCode MemoryRepositoryBase::validateImage(StringView content, const uint_fast32_t maxBinarySize, 
+                                               const uint_fast32_t maxWidth, uint_fast32_t maxHeight)
 {
     if (content.empty())
     {

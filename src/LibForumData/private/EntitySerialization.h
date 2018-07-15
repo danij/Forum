@@ -21,91 +21,88 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "AuthorizationGrantedPrivilegeStore.h"
 #include "JsonWriter.h"
 
-#include <boost/optional.hpp>
+#include <optional>
 
 namespace Json
 {
-    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::EntitiesCount& thread);
+    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::EntitiesCount& value);
 
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::UuidString& id);
 }
 
-namespace Forum
+namespace Forum::Entities
 {
-    namespace Entities
+    struct SerializationSettings final
     {
-        struct SerializationSettings final
+        bool hideDiscussionThreadCreatedBy = false;
+        bool hideDiscussionThreadMessages = false;
+        bool hideDiscussionThreadMessageCreatedBy = false;
+        bool hideDiscussionThreadMessageParentThread = false;
+
+        bool hideMessageCommentMessage = false;
+        bool hideMessageCommentUser = false;
+
+        bool hideVisitedThreadSinceLastChange = false;
+        bool visitedThreadSinceLastChange = false;
+
+        bool hideDiscussionCategoryTags = false;
+        bool hideDiscussionCategoryParent = false;
+        bool showDiscussionCategoryChildren = false;
+        bool hideDiscussionCategoriesOfTags = false;
+        bool keepDiscussionCategoryDetails = false;
+        std::optional<int> displayDiscussionCategoryParentRecursionDepth = std::nullopt;
+
+        std::optional<bool> allowDisplayDiscussionThreadMessage = std::nullopt;
+        std::optional<bool> allowDisplayDiscussionThreadMessageUser = std::nullopt;
+        std::optional<bool> allowDisplayDiscussionThreadMessageVotes = std::nullopt;
+        std::optional<bool> allowDisplayDiscussionThreadMessageIpAddress = std::nullopt;
+        std::optional<bool> allowDisplayDiscussionThreadMessageComments = std::nullopt;
+
+        UserPtr userToCheckVotesOf{};
+
+        bool hideLatestMessage = false;
+        bool hidePrivileges = false;
+        bool onlySendCategoryParentId = false;
+    };
+
+    extern thread_local SerializationSettings serializationSettings;
+
+    Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThreadMessage& message,
+                                const Authorization::SerializationRestriction& restriction);
+
+    Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThread& thread,
+                                const Authorization::SerializationRestriction& restriction);
+
+    Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionTag& tag,
+                                const Authorization::SerializationRestriction& restriction);
+
+    Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionCategory& category,
+                                const Authorization::SerializationRestriction& restriction);
+
+    /**
+     * The restriction parameter is not yet used by these two functions, just keeping a uniform interface
+     */
+    Json::JsonWriter& serialize(Json::JsonWriter& writer, const MessageComment& comment,
+                                const Authorization::SerializationRestriction& restriction);
+
+    Json::JsonWriter& serialize(Json::JsonWriter& writer, const User& user,
+                                const Authorization::SerializationRestriction& restriction);
+
+    template<typename Entity, typename PrivilegeArray, typename PrivilegeStringArray>
+    static void writePrivileges(Json::JsonWriter& writer, const Entity& entity,
+                                const PrivilegeArray& privilegeArray,
+                                const PrivilegeStringArray& privilegeStrings,
+                                const Authorization::SerializationRestriction& restriction)
+    {
+        writer.newPropertyWithSafeName("privileges");
+        writer.startArray();
+        for (auto& value : privilegeArray)
         {
-            bool hideDiscussionThreadCreatedBy = false;
-            bool hideDiscussionThreadMessages = false;
-            bool hideDiscussionThreadMessageCreatedBy = false;
-            bool hideDiscussionThreadMessageParentThread = false;
-
-            bool hideMessageCommentMessage = false;
-            bool hideMessageCommentUser = false;
-
-            bool hideVisitedThreadSinceLastChange = false;
-            bool visitedThreadSinceLastChange = false;
-
-            bool hideDiscussionCategoryTags = false;
-            bool hideDiscussionCategoryParent = false;
-            bool showDiscussionCategoryChildren = false;
-            bool hideDiscussionCategoriesOfTags = false;
-            bool keepDiscussionCategoryDetails = false;
-            boost::optional<int> displayDiscussionCategoryParentRecursionDepth = boost::none;
-
-            boost::optional<bool> allowDisplayDiscussionThreadMessage = boost::none;
-            boost::optional<bool> allowDisplayDiscussionThreadMessageUser = boost::none;
-            boost::optional<bool> allowDisplayDiscussionThreadMessageVotes = boost::none;
-            boost::optional<bool> allowDisplayDiscussionThreadMessageIpAddress = boost::none;
-            boost::optional<bool> allowDisplayDiscussionThreadMessageComments = boost::none;
-
-            UserPtr userToCheckVotesOf{};
-
-            bool hideLatestMessage = false;
-            bool hidePrivileges = false;
-            bool onlySendCategoryParentId = false;
-        };
-
-        extern thread_local SerializationSettings serializationSettings;
-
-        Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThreadMessage& message,
-                                    const Authorization::SerializationRestriction& restriction);
-
-        Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThread& thread,
-                                    const Authorization::SerializationRestriction& restriction);
-
-        Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionTag& tag,
-                                    const Authorization::SerializationRestriction& restriction);
-
-        Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionCategory& category,
-                                    const Authorization::SerializationRestriction& restriction);
-
-        /**
-         * The restriction parameter is not yet used by these two functions, just keeping a uniform interface
-         */
-        Json::JsonWriter& serialize(Json::JsonWriter& writer, const MessageComment& comment,
-                                    const Authorization::SerializationRestriction& restriction);
-
-        Json::JsonWriter& serialize(Json::JsonWriter& writer, const User& user,
-                                    const Authorization::SerializationRestriction& restriction);
-
-        template<typename Entity, typename PrivilegeArray, typename PrivilegeStringArray>
-        static void writePrivileges(Json::JsonWriter& writer, const Entity& entity,
-                                    const PrivilegeArray& privilegeArray,
-                                    const PrivilegeStringArray& privilegeStrings,
-                                    const Authorization::SerializationRestriction& restriction)
-        {
-            writer.newPropertyWithSafeName("privileges");
-            writer.startArray();
-            for (auto& value : privilegeArray)
+            if (restriction.isAllowed(entity, value))
             {
-                if (restriction.isAllowed(entity, value))
-                {
-                    writer.writeSafeString(privilegeStrings[static_cast<int>(value)]);
-                }
+                writer.writeSafeString(privilegeStrings[static_cast<int>(value)]);
             }
-            writer.endArray();
         }
+        writer.endArray();
     }
 }

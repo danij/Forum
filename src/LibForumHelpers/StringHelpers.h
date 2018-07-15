@@ -145,9 +145,10 @@ namespace Forum::Helpers
             }
         }
 
-        WholeChangeableString& operator=(WholeChangeableString otherCopy)
+        WholeChangeableString& operator=(const WholeChangeableString& other)
         {
-            swap(*this, otherCopy);
+            WholeChangeableString copy(other);
+            swap(*this, copy);
             return *this;
         }
 

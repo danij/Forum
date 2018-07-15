@@ -54,7 +54,7 @@ static bool isValidUserName(StringView input)
     UErrorCode errorCode{};
 
     const auto u16Chars = u_strFromUTF8Lenient(validUserNameBuffer16.get(), MaxNrOfUserNameChars16, &written,
-                                               input.data(), input.size(), &errorCode);
+                                               input.data(), static_cast<int32_t>(input.size()), &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     errorCode = {};
@@ -478,7 +478,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    boost::optional<IdType> grantAllPrivilegesTo;
+    std::optional<IdType> grantAllPrivilegesTo;
 
     collection().write([&](EntityCollection& collection)
                        {

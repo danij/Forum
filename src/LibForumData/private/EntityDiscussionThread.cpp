@@ -39,7 +39,7 @@ DiscussionThreadMessage::VoteScoreType DiscussionThread::voteScore() const
     return 0;
 }
 
-PrivilegeValueType DiscussionThread::getDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege) const
+PrivilegeValueType DiscussionThread::getDiscussionThreadMessagePrivilege(const DiscussionThreadMessagePrivilege privilege) const
 {
     auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
     if (result) return result;
@@ -52,7 +52,7 @@ PrivilegeValueType DiscussionThread::getDiscussionThreadMessagePrivilege(Discuss
     return result;
 }
 
-PrivilegeValueType DiscussionThread::getDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege) const
+PrivilegeValueType DiscussionThread::getDiscussionThreadPrivilege(const DiscussionThreadPrivilege privilege) const
 {
     auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege);
     if (result) return result;
@@ -76,7 +76,7 @@ void DiscussionThread::insertMessage(DiscussionThreadMessagePtr message)
 void DiscussionThread::insertMessages(DiscussionThreadMessageCollectionLowMemory& collection)
 {
     Timestamp maxCreated{};
-    for (DiscussionThreadMessagePtr message : collection.byId())
+    for (const DiscussionThreadMessagePtr message : collection.byId())
     {
         if (message)
         {
@@ -98,7 +98,7 @@ void DiscussionThread::deleteDiscussionThreadMessage(DiscussionThreadMessagePtr 
 void DiscussionThread::refreshLatestMessageCreated()
 {
     auto& index = messages_.byCreated();
-    auto it = index.rbegin();
+    const auto it = index.rbegin();
     if (it == index.rend() || (! *it))
     {
         updateLatestMessageCreated(0);

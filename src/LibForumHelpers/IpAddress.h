@@ -37,8 +37,8 @@ namespace Forum::Helpers
         constexpr static int MaxIPv6CharacterCount = 39;
 
         IpAddress();
-        explicit IpAddress(const boost::asio::ip::address& value);
-        explicit IpAddress(const char* string);
+        IpAddress(const boost::asio::ip::address& value);
+        IpAddress(const char* string);
         explicit IpAddress(const uint8_t* dataArray);
         ~IpAddress() = default;
 

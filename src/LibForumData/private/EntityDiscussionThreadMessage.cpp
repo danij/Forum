@@ -25,8 +25,8 @@ using namespace Forum::Authorization;
 PrivilegeValueType DiscussionThreadMessage::getDiscussionThreadMessagePrivilege(
         DiscussionThreadMessagePrivilege privilege) const
 {
-    auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
-    if (result) return result;
+    if (const auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege)) 
+            return result;
 
     assert(parentThread_);
     return parentThread_->getDiscussionThreadMessagePrivilege(privilege);

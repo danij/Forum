@@ -12,6 +12,7 @@ set(SOURCE_FILES
         private/IpAddress.cpp)
 
 set(HEADER_FILES
+        ConstCollectionAdapter.h
         OutputHelpers.h
         StateHelpers.h
         StringHelpers.h

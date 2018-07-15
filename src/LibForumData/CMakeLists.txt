@@ -33,7 +33,9 @@ set(SOURCE_FILES
         private/EntitySerialization.cpp
         private/DefaultAuthorization.cpp
         private/AuthorizationGrantedPrivilegeStore.cpp
-        private/DefaultThrottling.cpp)
+        private/DefaultThrottling.cpp
+        private/RandomGenerator.cpp
+        private/UuidString.cpp)
 
 set(HEADER_FILES
         ../Version.h
@@ -41,7 +43,6 @@ set(HEADER_FILES
         Authorization.h
         Observers.h
         Entities.h
-        ConstCollectionAdapter.h
         EntityCollection.h
         EntityCommonTypes.h
         EntityPointer.h
@@ -64,19 +65,21 @@ set(HEADER_FILES
         AuthorizationGrantedPrivilegeStore.h
         ThrottlingCheck.h
         SortedVector.h
+        RandomGenerator.h
+        UuidString.h
         IdOrIpAddress.h
+        MemoryRepositoryCommon.h
+        MemoryRepositoryUser.h
+        MemoryRepositoryDiscussionThread.h
+        MemoryRepositoryStatistics.h
+        MemoryRepositoryDiscussionThreadMessage.h
+        MemoryRepositoryDiscussionTag.h
+        MemoryRepositoryDiscussionCategory.h
+        MemoryRepositoryAuthorization.h
+        MetricsRepository.h
 
         private/ResourceGuard.h
-        private/EntitySerialization.h
-        private/MemoryRepositoryCommon.h
-        private/MemoryRepositoryUser.h
-        private/MemoryRepositoryDiscussionThread.h
-        private/MemoryRepositoryStatistics.h
-        private/MemoryRepositoryDiscussionThreadMessage.h
-        private/MemoryRepositoryDiscussionTag.h
-        private/MemoryRepositoryDiscussionCategory.h
-        private/MemoryRepositoryAuthorization.h
-        private/MetricsRepository.h)
+        private/EntitySerialization.h)
 
 include_directories(
         .

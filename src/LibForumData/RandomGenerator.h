@@ -23,5 +23,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace Forum::Entities
 {
     boost::uuids::uuid generateUUID();
-    Entities::UuidString generateUniqueId();
+    UuidString generateUniqueId();
 }

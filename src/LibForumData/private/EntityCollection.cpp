@@ -74,26 +74,24 @@ struct EntityCollection::Impl
 
     Impl(StringView messagesFile)
     {
-        if (messagesFile.size())
+        if (messagesFile.empty()) return;
+        try
         {
-            try
-            {
-                const auto mappingMode = boost::interprocess::read_only;
-                boost::interprocess::file_mapping mapping(messagesFile.data(), mappingMode);
-                boost::interprocess::mapped_region region(mapping, mappingMode);
-                region.advise(boost::interprocess::mapped_region::advice_sequential);
+            const auto mappingMode = boost::interprocess::read_only;
+            boost::interprocess::file_mapping mapping(messagesFile.data(), mappingMode);
+            boost::interprocess::mapped_region region(mapping, mappingMode);
+            region.advise(boost::interprocess::mapped_region::advice_sequential);
 
-                messagesFileStart_ = reinterpret_cast<const char*>(region.get_address());
-                messagesFileSize_ = region.get_size();
+            messagesFileStart_ = reinterpret_cast<const char*>(region.get_address());
+            messagesFileSize_ = region.get_size();
 
-                messagesFileMapping_ = std::move(mapping);
-                messagesFileRegion_ = std::move(region);
-            }
-            catch (boost::interprocess::interprocess_exception& ex)
-            {
-                FORUM_LOG_ERROR << "Error mapping messages file: " << messagesFile << " (" << ex.what() << ')';
-                std::abort();
-            }
+            messagesFileMapping_ = std::move(mapping);
+            messagesFileRegion_ = std::move(region);
+        }
+        catch (boost::interprocess::interprocess_exception& ex)
+        {
+            FORUM_LOG_ERROR << "Error mapping messages file: " << messagesFile << " (" << ex.what() << ')';
+            std::abort();
         }
     }
 
@@ -705,7 +703,7 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     }
 }
 
-EntityCollection::EntityCollection(StringView messagesFile)
+EntityCollection::EntityCollection(const StringView messagesFile)
 {
     impl_ = new Impl(messagesFile);
 
@@ -773,7 +771,7 @@ StringView EntityCollection::getMessageContentPointer(size_t offset, size_t size
 UserPtr EntityCollection::createUser(IdType id, User::NameType&& name, Timestamp created, VisitDetails creationDetails)
 {
     auto result = UserPtr(static_cast<UserPtr::IndexType>(
-        impl_->managedEntities.users.add(id, std::move(name), created, std::move(creationDetails))));
+        impl_->managedEntities.users.add(id, std::move(name), created, creationDetails)));
     result->pointer_ = result;
     return result;
 }
@@ -895,7 +893,7 @@ void EntityCollection::insertDiscussionThread(DiscussionThreadPtr thread)
     impl_->insertDiscussionThread(thread);
 }
 
-void EntityCollection::deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages)
+void EntityCollection::deleteDiscussionThread(DiscussionThreadPtr thread, const bool deleteMessages)
 {
     impl_->deleteDiscussionThread(thread, deleteMessages);
 }

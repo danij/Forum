@@ -21,62 +21,55 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityCommonTypes.h"
 #include "StringHelpers.h"
 
-#include <string>
-
 #include <boost/noncopyable.hpp>
 
-
-namespace Forum
+namespace Forum::Entities
 {
-    namespace Entities
+    class User;
+    class DiscussionThreadMessage;
+
+    /**
+     * Stores a comment to a discussion thread message
+     * Does not get deleted if the message is deleted
+     */
+    class MessageComment final : boost::noncopyable
     {
-        class User;
-        class DiscussionThreadMessage;
+    public:
+        const auto& id()              const { return id_; }
 
-        /**
-         * Stores a comment to a discussion thread message
-         * Does not get deleted if the message is deleted
-         */
-        class MessageComment final : private boost::noncopyable
-        {
-        public:
-            const auto& id()              const { return id_; }
+               auto created()         const { return created_; }
+        const auto& creationDetails() const { return creationDetails_; }
 
-                   auto created()         const { return created_; }
-            const auto& creationDetails() const { return creationDetails_; }
+        const User& createdBy()       const { return createdBy_; }
+        const auto& parentMessage()   const { return message_; }
+              auto& parentMessage()         { return message_; }
 
-            const User& createdBy()       const { return createdBy_; }
-            const auto& parentMessage()   const { return message_; }
-                  auto& parentMessage()         { return message_; }
-
-             StringView content()         const { return content_; }
-                   bool solved()          const { return solved_; }
+         StringView content()         const { return content_; }
+               bool solved()          const { return solved_; }
 
 
-            MessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy, Timestamp created,
-                           VisitDetails creationDetails)
-                : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
-                  createdBy_(createdBy), message_(message)
-            {}
+        MessageComment(const IdType id, DiscussionThreadMessage& message, User& createdBy, const Timestamp created,
+                       const VisitDetails creationDetails)
+            : id_(id), created_(created), creationDetails_(creationDetails), createdBy_(createdBy), message_(message)
+        {}
 
-            auto& solved()    { return solved_; }
-            auto& content()   { return content_; }
-            auto& createdBy() { return createdBy_; }
+        auto& solved()    { return solved_; }
+        auto& content()   { return content_; }
+        auto& createdBy() { return createdBy_; }
 
-        private:
-            IdType id_;
-            Timestamp created_{0};
-            VisitDetails creationDetails_;
+    private:
+        IdType id_;
+        Timestamp created_{0};
+        VisitDetails creationDetails_;
 
-            User& createdBy_;
-            DiscussionThreadMessage& message_;
+        User& createdBy_;
+        DiscussionThreadMessage& message_;
 
-            Helpers::WholeChangeableString content_;
+        Helpers::WholeChangeableString content_;
 
-            bool solved_ = false;
-        };
+        bool solved_ = false;
+    };
 
-        typedef EntityPointer<MessageComment> MessageCommentPtr;
-        typedef EntityPointer<const MessageComment> MessageCommentConstPtr;
-    }
+    typedef EntityPointer<MessageComment> MessageCommentPtr;
+    typedef EntityPointer<const MessageComment> MessageCommentConstPtr;
 }

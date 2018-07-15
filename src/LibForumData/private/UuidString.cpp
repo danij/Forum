@@ -29,7 +29,7 @@ UuidString::UuidString() : value_(boost::uuids::uuid{})
     hashValue_ = emptyUuidHash;
 }
 
-UuidString::UuidString(boost::uuids::uuid value) : value_(std::move(value))
+UuidString::UuidString(boost::uuids::uuid value) : value_(value)
 {
     updateHashValue();
 }

@@ -63,12 +63,13 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMultipleDiscussionThreadM
                           auto& currentUser = performedBy.get(collection, *store_);
                           
                           const auto& indexById = collection.threadMessages().byId();
-                          auto lastThreadMessageFound = std::transform(parsedIds.begin(), lastParsedId, threadMessagesFound.begin(), 
-                              [&indexById](auto id)
-                              {
-                                  auto it = indexById.find(id);
-                                  return (it == indexById.end()) ? nullptr : *it;
-                              });
+                          auto lastThreadMessageFound = std::transform(parsedIds.begin(), lastParsedId, 
+                                  threadMessagesFound.begin(), 
+                                  [&indexById](auto id)
+                                  {
+                                      auto it = indexById.find(id);
+                                      return (it == indexById.end()) ? nullptr : *it;
+                                  });
                           
                           status = StatusCode::OK;
                           status.disable();

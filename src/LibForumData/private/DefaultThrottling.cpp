@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 
-bool Forum::Authorization::DefaultThrottling::check(UserActionThrottling action, Timestamp at, const IdType& id,
+bool Forum::Authorization::DefaultThrottling::check(UserActionThrottling action, const Timestamp at, const IdType& id,
                                                     const IpAddress& ip)
 {
     assert(action < UserActionThrottling::COUNT);

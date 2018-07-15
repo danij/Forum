@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdint>
 
 #include <boost/uuid/uuid.hpp>
-#include <boost/asio/ip/impl/address.ipp>
 
 namespace Forum::Entities
 {
@@ -34,9 +33,9 @@ namespace Forum::Entities
     struct UuidString final
     {
         UuidString();
-        explicit UuidString(boost::uuids::uuid value);
-        explicit UuidString(const std::string& value);
-        explicit UuidString(std::string_view value);
+        UuidString(boost::uuids::uuid value);
+        UuidString(const std::string& value);
+        UuidString(std::string_view value);
         explicit UuidString(const uint8_t* uuidArray);
         ~UuidString() = default;
 
@@ -114,7 +113,7 @@ namespace Forum::Entities
         size_t hashValue_;
     };
 
-    inline size_t hashValue(const UuidString& value)
+    inline size_t hash_value(const UuidString& value) //used by boost::hash
     {
         return value.hashValue();
     }
