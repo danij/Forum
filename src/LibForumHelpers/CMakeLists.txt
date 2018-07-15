@@ -8,18 +8,14 @@ find_package(Boost REQUIRED COMPONENTS regex thread system)
 find_package(ICU)
 
 set(SOURCE_FILES
-        private/RandomGenerator.cpp
         private/StringHelpers.cpp
-        private/UuidString.cpp
         private/IpAddress.cpp)
 
 set(HEADER_FILES
         OutputHelpers.h
-        RandomGenerator.h
         StateHelpers.h
         StringHelpers.h
         TypeHelpers.h
-        UuidString.h
         IpAddress.h
         SpinLock.h)
 

@@ -18,9 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <boost/utility/string_view.hpp>
-
 #include <memory>
+#include <string_view>
 
 /**
  * To be used when declaring an interface.
@@ -45,34 +44,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define DECLARE_ABSTRACT_MANDATORY_NO_COPY(TypeName) DECLARE_INTERFACE_MANDATORY_NO_COPY(TypeName)
 
-typedef boost::string_view StringView;
+typedef std::string_view StringView;
 
-namespace Forum
+namespace Forum::Helpers
 {
-    namespace Helpers
+    template<typename T>
+    bool ownerEqual(const std::weak_ptr<T>& first, const std::weak_ptr<T>& second)
     {
-        template<typename T>
-        bool ownerEqual(const std::weak_ptr<T>& first, const std::weak_ptr<T>& second)
-        {
-            return ! first.owner_before(second) && ! second.owner_before(first);
-        }
+        return ! first.owner_before(second) && ! second.owner_before(first);
+    }
 
-        template<typename T>
-        void writeValue(char* destination, T value)
-        {
-            memcpy(destination, &value, sizeof(T));
-        }
+    template<typename T>
+    void writeValue(char* destination, T value)
+    {
+        memmove(destination, &value, sizeof(T));
+    }
 
-        template<typename T>
-        void readValue(const char* source, T& value)
-        {
-            memcpy(&value, source, sizeof(T));
-        }
+    template<typename T>
+    void readValue(const char* source, T& value)
+    {
+        memmove(&value, source, sizeof(T));
+    }
 
-        template<typename T>
-        T absValue(T value)
-        {
-            return value < static_cast<T>(0) ? -value : value;
-        }
+    template<typename T>
+    void readValue(const unsigned char* source, T& value)
+    {
+        memmove(&value, source, sizeof(T));
+    }
+
+    template<typename T>
+    T absValue(T value)
+    {
+        return value < static_cast<T>(0) ? -value : value;
     }
 }

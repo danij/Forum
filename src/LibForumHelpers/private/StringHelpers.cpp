@@ -93,7 +93,7 @@ size_t Forum::Helpers::calculateSortKey(StringView view)
 
     if (view.size() > (MaxSortKeyGenerationUCharBufferSize / 8))
     {
-        throw new std::runtime_error("String for which a sort key is to be generated is too big");
+        throw std::runtime_error("String for which a sort key is to be generated is too big");
     }
 
     const auto stringLength = view.size();
@@ -111,12 +111,12 @@ size_t Forum::Helpers::calculateSortKey(StringView view)
     }
 
     auto u16Chars = u_strFromUTF8Lenient(ucharBuffer, MaxSortKeyGenerationUCharBufferSize,
-                                         &u16Written, view.data(), view.size(), &errorCode);
+                                         &u16Written, view.data(), static_cast<int32_t>(view.size()), &errorCode);
     if (U_FAILURE(errorCode))
     {
         //use string as sort key
         CurrentSortKeyLength = stringLength + 1;
-        std::copy(view.begin(), view.end(), SortKeyGenerationDestinationBuffer.get());
+        memmove(SortKeyGenerationDestinationBuffer.get(), view.data(), view.size());
         SortKeyGenerationDestinationBuffer[CurrentSortKeyLength] = 0;
 
         return CurrentSortKeyLength;

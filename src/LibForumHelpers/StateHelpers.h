@@ -18,62 +18,60 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <optional>
+
 #include <boost/noncopyable.hpp>
-#include <boost/optional.hpp>
 
-namespace Forum
+namespace Forum::Helpers
 {
-    namespace Helpers
+    template<typename T>
+    struct TemporaryChanger final : private boost::noncopyable
     {
-        template<typename T>
-        struct TemporaryChanger final : private boost::noncopyable
+        TemporaryChanger(T& toChange, T newValue) noexcept : toChange_(toChange)
         {
-            TemporaryChanger(T& toChange, T newValue) noexcept : toChange_(toChange)
-            {
-                oldValue_ = toChange;
-                toChange = newValue;
-            }
-            ~TemporaryChanger() noexcept
-            {
-                toChange_ = oldValue_;
-            }
-        private:
-            T& toChange_;
-            T oldValue_;
-        };
-
-        typedef TemporaryChanger<bool> BoolTemporaryChanger;
-
-        /**
-         * Changes a boost::optional and reverts it to boost::none only if it didn't have a value to start with
-         */
-        template<typename T>
-        struct OptionalRevertToNoneChanger final : private boost::noncopyable
+            oldValue_ = toChange;
+            toChange = newValue;
+        }
+        ~TemporaryChanger() noexcept
         {
-            OptionalRevertToNoneChanger(boost::optional<T>& optional, T value) : optional_(optional)
-            {
-                if ( ! optional)
-                {
-                    revertToNone_ = true;
-                    optional = value;
-                }
-                else
-                {
-                    revertToNone_ = false;
-                }
-            }
+            toChange_ = oldValue_;
+        }
+    private:
+        T& toChange_;
+        T oldValue_;
+    };
 
-            ~OptionalRevertToNoneChanger()
-            {
-                if (revertToNone_)
-                {
-                    optional_ = boost::none;
-                }
-            }
+    typedef TemporaryChanger<bool> BoolTemporaryChanger;
 
-        private:
-            boost::optional<T>& optional_;
-            bool revertToNone_;
-        };
-    }
+    /**
+     * Changes a std::optional and reverts it to std::nullopt only if it didn't have a value to start with
+     */
+    template<typename T>
+    struct OptionalRevertToNoneChanger final : private boost::noncopyable
+    {
+        OptionalRevertToNoneChanger(std::optional<T>& optional, T value) : optional_(optional)
+        {
+            if ( ! optional)
+            {
+                revertToNone_ = true;
+                optional = value;
+            }
+            else
+            {
+                revertToNone_ = false;
+            }
+        }
+
+        ~OptionalRevertToNoneChanger()
+        {
+            if (revertToNone_)
+            {
+                optional_ = std::nullopt;
+            }
+        }
+
+    private:
+        std::optional<T>& optional_;
+        bool revertToNone_;
+    };
 }

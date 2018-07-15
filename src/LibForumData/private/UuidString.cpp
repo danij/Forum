@@ -73,11 +73,11 @@ static bool parseUuid(const char* data, size_t size, boost::uuids::uuid& destina
     return true;
 }
 
-UuidString::UuidString(const std::string& value) : UuidString(boost::string_view(value))
+UuidString::UuidString(const std::string& value) : UuidString(std::string_view(value))
 {
 }
 
-UuidString::UuidString(boost::string_view value)
+UuidString::UuidString(std::string_view value) : value_{}
 {
     if ( ! parseUuid(value.data(), value.size(), value_))
     {
@@ -86,7 +86,7 @@ UuidString::UuidString(boost::string_view value)
     updateHashValue();
 }
 
-UuidString::UuidString(const uint8_t* uuidArray)
+UuidString::UuidString(const uint8_t* uuidArray) : value_{}
 {
     std::copy(uuidArray, uuidArray + boost::uuids::uuid::static_size(), value_.data);
     updateHashValue();

@@ -22,24 +22,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/noncopyable.hpp>
 
-namespace Forum
+namespace Forum::Helpers
 {
-    namespace Helpers
+    class SpinLock final : boost::noncopyable
     {
-        class SpinLock final : private boost::noncopyable
+    public:
+        void lock()
         {
-        public:
-            void lock()
-            {
-                while (lockFlag_.test_and_set(std::memory_order_acq_rel)) {}
-            }
+            while (lockFlag_.test_and_set(std::memory_order_acq_rel)) {}
+        }
 
-            void unlock()
-            {
-                lockFlag_.clear(std::memory_order_release);
-            }
-        private:
-            std::atomic_flag lockFlag_ = ATOMIC_FLAG_INIT;
-        };
-    }
+        void unlock()
+        {
+            lockFlag_.clear(std::memory_order_release);
+        }
+    private:
+        std::atomic_flag lockFlag_ = ATOMIC_FLAG_INIT;
+    };
 }

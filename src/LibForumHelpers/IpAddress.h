@@ -29,91 +29,88 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #undef DELETE
 #endif
 
-namespace Forum
+namespace Forum::Helpers
 {
-    namespace Helpers
+    struct IpAddress final
     {
-        struct IpAddress final
+        constexpr static int MaxIPv4CharacterCount = 15;
+        constexpr static int MaxIPv6CharacterCount = 39;
+
+        IpAddress();
+        explicit IpAddress(const boost::asio::ip::address& value);
+        explicit IpAddress(const char* string);
+        explicit IpAddress(const uint8_t* dataArray);
+        ~IpAddress() = default;
+
+        IpAddress(const IpAddress&) = default;
+        IpAddress(IpAddress&&) = default;
+        IpAddress& operator=(const IpAddress&) = default;
+        IpAddress& operator=(IpAddress&&) = default;
+
+        bool isV4() const noexcept
         {
-            constexpr static int MaxIPv4CharacterCount = 15;
-            constexpr static int MaxIPv6CharacterCount = 39;
+            return data_.int32[1] == data_.int32[2]
+                && data_.int32[2] == data_.int32[3]
+                && data_.int32[1] == 0;
+        }
 
-            IpAddress();
-            IpAddress(const boost::asio::ip::address& value);
-            IpAddress(const char* string);
-            explicit IpAddress(const uint8_t* dataArray);
-            ~IpAddress() = default;
+        auto nrOfBytes() const noexcept
+        {
+            return isV4() ? 4 : 16;
+        }
 
-            IpAddress(const IpAddress&) = default;
-            IpAddress(IpAddress&&) = default;
-            IpAddress& operator=(const IpAddress&) = default;
-            IpAddress& operator=(IpAddress&&) = default;
+        const uint8_t* data() const { return data_.bytes; }
+        const uint32_t* intData() const { return data_.int32; }
 
-            bool isV4() const noexcept
-            {
-                return data_.int32[1] == data_.int32[2]
-                    && data_.int32[2] == data_.int32[3]
-                    && data_.int32[1] == 0;
-            }
+        static constexpr size_t dataSize() { return 16; }
 
-            auto nrOfBytes() const noexcept
-            {
-                return isV4() ? 4 : 16;
-            }
+        /**
+         * Writes the string representation of the address to a buffer and returns the amount of bytes written
+         */
+        size_t toString(char* buffer, size_t bufferSize) const noexcept;
 
-            const uint8_t* data() const { return data_.bytes; }
-            const uint32_t* intData() const { return data_.int32; }
+        bool operator==(const IpAddress& other) const
+        {
+            return (data_.int32[0] == other.data_.int32[0])
+                && (data_.int32[1] == other.data_.int32[1])
+                && (data_.int32[2] == other.data_.int32[2])
+                && (data_.int32[3] == other.data_.int32[3]);
+        }
 
-            static constexpr size_t dataSize() { return 16; }
+        bool operator!=(const IpAddress& other) const
+        {
+            return ! this->operator==(other);
+        }
 
-            /**
-             * Writes the string representation of the address to a buffer and returns the amount of bytes written
-             */
-            size_t toString(char* buffer, size_t bufferSize) const noexcept;
+        bool operator<(const IpAddress& other) const
+        {
+            return std::lexicographical_compare(data_.bytes, data_.bytes + nrOfBytes(),
+                                                other.data_.bytes, other.data_.bytes + nrOfBytes());
+        }
 
-            bool operator==(const IpAddress& other) const
-            {
-                return (data_.int32[0] == other.data_.int32[0])
-                    && (data_.int32[1] == other.data_.int32[1])
-                    && (data_.int32[2] == other.data_.int32[2])
-                    && (data_.int32[3] == other.data_.int32[3]);
-            }
+        bool operator<=(const IpAddress& other) const
+        {
+            return ! this->operator>(other);
+        }
 
-            bool operator!=(const IpAddress& other) const
-            {
-                return ! this->operator==(other);
-            }
+        bool operator>(const IpAddress& other) const
+        {
+            return std::lexicographical_compare(other.data_.bytes, other.data_.bytes + nrOfBytes(),
+                                                data_.bytes, data_.bytes + nrOfBytes());
+        }
 
-            bool operator<(const IpAddress& other) const
-            {
-                return std::lexicographical_compare(data_.bytes, data_.bytes + nrOfBytes(),
-                                                    other.data_.bytes, other.data_.bytes + nrOfBytes());
-            }
+        bool operator>=(const IpAddress& other) const
+        {
+            return ! this->operator<(other);
+        }
 
-            bool operator<=(const IpAddress& other) const
-            {
-                return ! this->operator>(other);
-            }
-
-            bool operator>(const IpAddress& other) const
-            {
-                return std::lexicographical_compare(other.data_.bytes, other.data_.bytes + nrOfBytes(),
-                                                    data_.bytes, data_.bytes + nrOfBytes());
-            }
-
-            bool operator>=(const IpAddress& other) const
-            {
-                return ! this->operator<(other);
-            }
-
-        private:
-            union
-            {
-                uint8_t bytes[16];
-                uint32_t int32[4] = { 0, 0, 0, 0 };
-            } data_;
-        };
-    }
+    private:
+        union
+        {
+            uint8_t bytes[16];
+            uint32_t int32[4] = { 0, 0, 0, 0 };
+        } data_;
+    };
 }
 
 namespace std
@@ -123,11 +120,13 @@ namespace std
     {
         size_t operator()(const Forum::Helpers::IpAddress& value) const
         {
+            static_assert(sizeof(size_t) >= sizeof(value.intData()[0]));
+
             if (value.isV4())
             {
                 return static_cast<size_t>(value.intData()[0]);
             }
-            auto ints = value.intData();
+            const auto ints = value.intData();
             return boost::hash_range(ints, ints + 4);
         }
     };

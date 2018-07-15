@@ -16,15 +16,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "RandomGenerator.h"
 
-#include "UuidString.h"
+#include <mutex>
 
-namespace Forum
+#include <boost/uuid/random_generator.hpp>
+
+static boost::uuids::random_generator randomUUIDGenerator;
+static std::mutex randomUUIDGeneratorMutex;
+
+boost::uuids::uuid Forum::Entities::generateUUID()
 {
-    namespace Helpers
-    {
-        boost::uuids::uuid generateUUID();
-        Entities::UuidString generateUniqueId();
-    }
+    std::lock_guard<std::mutex> guard(randomUUIDGeneratorMutex);
+    return randomUUIDGenerator();
+}
+
+Forum::Entities::UuidString Forum::Entities::generateUniqueId()
+{
+    return Entities::UuidString(generateUUID());
 }
