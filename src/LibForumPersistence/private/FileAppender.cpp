@@ -31,10 +31,10 @@ using namespace Forum;
 using namespace Forum::Persistence;
 using namespace Forum::Helpers;
 
-FileAppender::FileAppender(const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
+FileAppender::FileAppender(const std::filesystem::path& destinationFolder, time_t refreshEverySeconds)
     : destinationFolder_(destinationFolder), refreshEverySeconds_(refreshEverySeconds), lastFileNameCreatedAt_(0)
 {
-    if ( ! boost::filesystem::is_directory(destinationFolder))
+    if ( ! std::filesystem::is_directory(destinationFolder))
     {
         throw std::runtime_error("The destination folder does not exist or is not a folder");
     }

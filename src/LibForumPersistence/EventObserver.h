@@ -21,24 +21,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Observers.h"
 
 #include <ctime>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <boost/noncopyable.hpp>
 
-namespace Forum
+namespace Forum::Persistence
 {
-    namespace Persistence
+    class EventObserver final : boost::noncopyable
     {
-        class EventObserver final : private boost::noncopyable
-        {
-        public:
-            EventObserver(Repository::ReadEvents& readEvents, Repository::WriteEvents& writeEvents,
-                          const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds);
-            ~EventObserver();
+    public:
+        EventObserver(Repository::ReadEvents& readEvents, Repository::WriteEvents& writeEvents,
+                      const std::filesystem::path& destinationFolder, time_t refreshEverySeconds);
+        ~EventObserver();
 
-        private:
-            struct EventObserverImpl;
-            EventObserverImpl* impl_;
-        };
-    }
+    private:
+        struct EventObserverImpl;
+        EventObserverImpl* impl_;
+    };
 }

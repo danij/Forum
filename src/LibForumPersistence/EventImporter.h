@@ -22,53 +22,49 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Repository.h"
 
 #include <cstddef>
-#include <string>
+#include <filesystem>
 
 #include <boost/noncopyable.hpp>
-#include <boost/filesystem.hpp>
 
-namespace Forum
+namespace Forum::Persistence
 {
-    namespace Persistence
+    struct ImportStatistic final
     {
-        struct ImportStatistic final
+        size_t readBlobs = 0;
+        size_t importedBlobs = 0;
+
+        ImportStatistic operator+(ImportStatistic other) const
         {
-            size_t readBlobs = 0;
-            size_t importedBlobs = 0;
+            other.readBlobs += readBlobs;
+            other.importedBlobs += importedBlobs;
 
-            ImportStatistic operator+(ImportStatistic other) const
-            {
-                other.readBlobs += readBlobs;
-                other.importedBlobs += importedBlobs;
+            return other;
+        }
+    };
 
-                return other;
-            }
-        };
+    struct ImportResult final
+    {
+        ImportStatistic statistic;
+        bool success = true;
+    };
 
-        struct ImportResult final
-        {
-            ImportStatistic statistic;
-            bool success = true;
-        };
+    class EventImporter final : boost::noncopyable
+    {
+    public:
+        explicit EventImporter(bool verifyChecksum, Entities::EntityCollection& entityCollection,
+                               Repository::DirectWriteRepositoryCollection repositories);
+        ~EventImporter();
 
-        class EventImporter final : private boost::noncopyable
-        {
-        public:
-            explicit EventImporter(bool verifyChecksum, Entities::EntityCollection& entityCollection,
-                                   Repository::DirectWriteRepositoryCollection repositories);
-            ~EventImporter();
+        /**
+         * Imports eventsin chronological order from files found after recursively searching the provided path
+         * Files are sorted based on timestamp before import
+         *
+         * @return Number of events imported
+         */
+        ImportResult import(const std::filesystem::path& sourcePath);
 
-            /**
-             * Imports eventsin chronological order from files found after recursively searching the provided path
-             * Files are sorted based on timestamp before import
-             *
-             * @return Number of events imported
-             */
-            ImportResult import(const boost::filesystem::path& sourcePath);
-
-        private:
-            struct EventImporterImpl;
-            EventImporterImpl* impl_ = nullptr;
-        };
-    }
+    private:
+        struct EventImporterImpl;
+        EventImporterImpl* impl_ = nullptr;
+    };
 }

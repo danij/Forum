@@ -20,24 +20,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <cstddef>
 
-namespace Forum
+namespace Forum::Persistence
 {
-    namespace Persistence
+    struct Blob final
     {
-        struct Blob final
-        {
-            Blob();
-            explicit Blob(size_t size);
-            ~Blob() = default;
-            Blob(const Blob&) = default;
-            Blob(Blob&&) = default;
-            Blob& operator=(const Blob&) = default;
-            Blob& operator=(Blob&&) = default;
+        Blob();
+        explicit Blob(size_t size);
+        ~Blob() = default;
+        Blob(const Blob&) = default;
+        Blob(Blob&&) = default;
+        Blob& operator=(const Blob&) = default;
+        Blob& operator=(Blob&&) = default;
 
-            char* buffer; //storing raw pointer so that Blob can be placed in a boost lockfree queue
-            size_t size;
+        char* buffer; //storing raw pointer so that Blob can be placed in a boost lockfree queue
+        size_t size;
 
-            static void free(Blob& blob);
-        };
-    }
+        static void free(Blob& blob);
+    };
 }

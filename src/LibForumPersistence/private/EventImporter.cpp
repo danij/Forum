@@ -49,11 +49,11 @@ using namespace Forum::Authorization;
 using namespace Forum::Helpers;
 
 template<typename Fn>
-static void iteratePathRecursively(const boost::filesystem::path& sourcePath, Fn&& action)
+static void iteratePathRecursively(const std::filesystem::path& sourcePath, Fn&& action)
 {
     if (is_directory(sourcePath))
     {
-        for (auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(sourcePath), {}))
+        for (auto& entry : boost::make_iterator_range(std::filesystem::directory_iterator(sourcePath), {}))
         {
             iteratePathRecursively(entry, action);
         }
@@ -89,7 +89,7 @@ UuidString readAndIncrementBuffer<UuidString>(const uint8_t*& data, size_t& size
 template<>
 IpAddress readAndIncrementBuffer<IpAddress>(const uint8_t*& data, size_t& size)
 {
-    IpAddress result(data);
+    const IpAddress result(data);
     data += ipAddressBinarySize; size -= ipAddressBinarySize;
 
     return result;
@@ -192,7 +192,7 @@ struct CurrentTimeChanger final : private boost::noncopyable
 
 struct EventImporter::EventImporterImpl final : private boost::noncopyable
 {
-    explicit EventImporterImpl(bool verifyChecksum, EntityCollection& entityCollection,
+    explicit EventImporterImpl(const bool verifyChecksum, EntityCollection& entityCollection,
                                DirectWriteRepositoryCollection&& repositories)
         : verifyChecksum_(verifyChecksum), entityCollection_(entityCollection), repositories_(std::move(repositories))
     {
@@ -985,7 +985,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         return fn(contextVersion, data, size);
     }
 
-    ImportResult import(const boost::filesystem::path& sourcePath)
+    ImportResult import(const std::filesystem::path& sourcePath)
     {
         std::map<time_t, std::string> eventFileNames;
         std::regex eventFileMatcher("^forum-(\\d+).events$", std::regex_constants::icase);
@@ -1090,7 +1090,7 @@ EventImporter::~EventImporter()
     delete impl_;
 }
 
-ImportResult EventImporter::import(const boost::filesystem::path& sourcePath)
+ImportResult EventImporter::import(const std::filesystem::path& sourcePath)
 {
     return impl_->import(sourcePath);
 }

@@ -55,10 +55,10 @@ struct BlobPart
     }
 };
 
-class EventCollector final : private boost::noncopyable
+class EventCollector final : boost::noncopyable
 {
 public:
-    EventCollector(const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
+    EventCollector(const std::filesystem::path& destinationFolder, time_t refreshEverySeconds)
         : appender_(destinationFolder, refreshEverySeconds)
     {
         writeThread_ = std::thread([this]() { this->writeLoop(); });
@@ -105,9 +105,9 @@ private:
         Blob* blobs = blobsToWrite;
 
         size_t nrOfBlobsToWrite = 0;
-        queue_.consume_all([&blobs, &nrOfBlobsToWrite](Blob blob)
+        queue_.consume_all([blobs, &nrOfBlobsToWrite](Blob blob)
         {
-            blobsToWrite[nrOfBlobsToWrite++] = blob;
+            blobs[nrOfBlobsToWrite++] = blob;
         });
 
         appender_.append(blobsToWrite, nrOfBlobsToWrite);
@@ -130,7 +130,7 @@ private:
 struct EventObserver::EventObserverImpl final : private boost::noncopyable
 {
     EventObserverImpl(ReadEvents& readEvents, WriteEvents& writeEvents,
-                      const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
+                      const std::filesystem::path& destinationFolder, time_t refreshEverySeconds)
         : readEvents(readEvents), writeEvents(writeEvents), collector(destinationFolder, refreshEverySeconds)
     {
         timerThread = std::thread([this]() {this->timerLoop();});
@@ -163,9 +163,9 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     static constexpr EventContextVersionType ContextVersion = 1;
 
-    void recordBlob(EventType eventType, EventVersionType version, BlobPart* parts, size_t nrOfParts)
+    void recordBlob(EventType eventType, EventVersionType version, BlobPart* parts, const size_t nrOfParts)
     {
-        const auto totalSize = std::accumulate(parts, parts + nrOfParts, 0, [](uint32_t total, BlobPart& part)
+        const auto totalSize = std::accumulate(parts, parts + nrOfParts, size_t(0), [](const size_t total, BlobPart& part)
         {
            return total + part.totalSize();
         }) + EventHeaderSize;
@@ -230,24 +230,24 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         connections.push_back(readEvents.             onGetDiscussionThreadById.connect([this](auto context, auto& thread)                     { this->onGetDiscussionThreadById            (context, thread); }));
 
         //authorization
-        connections.push_back(writeEvents.changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage.connect([this](auto context, auto& message, auto privilege, auto value)                             { this->changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(context, message, privilege, value); }));
-        connections.push_back(writeEvents.       changeDiscussionThreadMessageRequiredPrivilegeForThread.connect([this](auto context, auto& thread, auto privilege, auto value)                              { this->changeDiscussionThreadMessageRequiredPrivilegeForThread       (context, thread, privilege, value); }));
-        connections.push_back(writeEvents.          changeDiscussionThreadMessageRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                                 { this->changeDiscussionThreadMessageRequiredPrivilegeForTag          (context, tag, privilege, value); }));
-        connections.push_back(writeEvents.       changeDiscussionThreadMessageRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                                            { this->changeDiscussionThreadMessageRequiredPrivilegeForumWide       (context, privilege, value); }));
-        connections.push_back(writeEvents.              changeDiscussionThreadRequiredPrivilegeForThread.connect([this](auto context, auto& thread, auto privilege, auto value)                              { this->changeDiscussionThreadRequiredPrivilegeForThread              (context, thread, privilege, value); }));
-        connections.push_back(writeEvents.                 changeDiscussionThreadRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                                 { this->changeDiscussionThreadRequiredPrivilegeForTag                 (context, tag, privilege, value); }));
-        connections.push_back(writeEvents.              changeDiscussionThreadRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                                            { this->changeDiscussionThreadRequiredPrivilegeForumWide              (context, privilege, value); }));
-        connections.push_back(writeEvents.                    changeDiscussionTagRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                                 { this->changeDiscussionTagRequiredPrivilegeForTag                    (context, tag, privilege, value); }));
-        connections.push_back(writeEvents.                 changeDiscussionTagRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                                            { this->changeDiscussionTagRequiredPrivilegeForumWide                 (context, privilege, value); }));
-        connections.push_back(writeEvents.          changeDiscussionCategoryRequiredPrivilegeForCategory.connect([this](auto context, auto& category, auto privilege, auto value)                            { this->changeDiscussionCategoryRequiredPrivilegeForCategory          (context, category, privilege, value); }));
-        connections.push_back(writeEvents.            changeDiscussionCategoryRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                                            { this->changeDiscussionCategoryRequiredPrivilegeForumWide            (context, privilege, value); }));
-        connections.push_back(writeEvents.                              changeForumWideRequiredPrivilege.connect([this](auto context, auto privilege, auto value)                                            { this->changeForumWideRequiredPrivilege                              (context, privilege, value); }));
-        connections.push_back(writeEvents.                          changeForumWideDefaultPrivilegeLevel.connect([this](auto context, auto privilegeDuration, auto value, auto duration)                     { this->changeForumWideDefaultPrivilegeLevel                          (context, privilegeDuration, value, duration); }));
-        connections.push_back(writeEvents.                        assignDiscussionThreadMessagePrivilege.connect([this](auto context, auto& message, auto& user, auto value, auto duration)                  { this->assignDiscussionThreadMessagePrivilege                        (context, message, user, value, duration); }));
-        connections.push_back(writeEvents.                               assignDiscussionThreadPrivilege.connect([this](auto context, auto& thread, auto& user, auto value, auto duration)                   { this->assignDiscussionThreadPrivilege                               (context, thread, user, value, duration); }));
-        connections.push_back(writeEvents.                                  assignDiscussionTagPrivilege.connect([this](auto context, auto& tag, auto& user, auto value, auto duration)                      { this->assignDiscussionTagPrivilege                                  (context, tag, user, value, duration); }));
-        connections.push_back(writeEvents.                             assignDiscussionCategoryPrivilege.connect([this](auto context, auto& category, auto& user, auto value, auto duration)                 { this->assignDiscussionCategoryPrivilege                             (context, category, user, value, duration); }));
-        connections.push_back(writeEvents.                                      assignForumWidePrivilege.connect([this](auto context, auto& user, auto value, auto duration)                                 { this->assignForumWidePrivilege                                      (context, user, value, duration); }));
+        connections.push_back(writeEvents.changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage.connect([this](auto context, auto& message, auto privilege, auto value)             { this->changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(context, message, privilege, value); }));
+        connections.push_back(writeEvents.       changeDiscussionThreadMessageRequiredPrivilegeForThread.connect([this](auto context, auto& thread, auto privilege, auto value)              { this->changeDiscussionThreadMessageRequiredPrivilegeForThread       (context, thread, privilege, value); }));
+        connections.push_back(writeEvents.          changeDiscussionThreadMessageRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                 { this->changeDiscussionThreadMessageRequiredPrivilegeForTag          (context, tag, privilege, value); }));
+        connections.push_back(writeEvents.       changeDiscussionThreadMessageRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                            { this->changeDiscussionThreadMessageRequiredPrivilegeForumWide       (context, privilege, value); }));
+        connections.push_back(writeEvents.              changeDiscussionThreadRequiredPrivilegeForThread.connect([this](auto context, auto& thread, auto privilege, auto value)              { this->changeDiscussionThreadRequiredPrivilegeForThread              (context, thread, privilege, value); }));
+        connections.push_back(writeEvents.                 changeDiscussionThreadRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                 { this->changeDiscussionThreadRequiredPrivilegeForTag                 (context, tag, privilege, value); }));
+        connections.push_back(writeEvents.              changeDiscussionThreadRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                            { this->changeDiscussionThreadRequiredPrivilegeForumWide              (context, privilege, value); }));
+        connections.push_back(writeEvents.                    changeDiscussionTagRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                 { this->changeDiscussionTagRequiredPrivilegeForTag                    (context, tag, privilege, value); }));
+        connections.push_back(writeEvents.                 changeDiscussionTagRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                            { this->changeDiscussionTagRequiredPrivilegeForumWide                 (context, privilege, value); }));
+        connections.push_back(writeEvents.          changeDiscussionCategoryRequiredPrivilegeForCategory.connect([this](auto context, auto& category, auto privilege, auto value)            { this->changeDiscussionCategoryRequiredPrivilegeForCategory          (context, category, privilege, value); }));
+        connections.push_back(writeEvents.            changeDiscussionCategoryRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                            { this->changeDiscussionCategoryRequiredPrivilegeForumWide            (context, privilege, value); }));
+        connections.push_back(writeEvents.                              changeForumWideRequiredPrivilege.connect([this](auto context, auto privilege, auto value)                            { this->changeForumWideRequiredPrivilege                              (context, privilege, value); }));
+        connections.push_back(writeEvents.                          changeForumWideDefaultPrivilegeLevel.connect([this](auto context, auto privilegeDuration, auto value, auto duration)     { this->changeForumWideDefaultPrivilegeLevel                          (context, privilegeDuration, value, duration); }));
+        connections.push_back(writeEvents.                        assignDiscussionThreadMessagePrivilege.connect([this](auto context, auto& message, auto& user, auto value, auto duration)  { this->assignDiscussionThreadMessagePrivilege                        (context, message, user, value, duration); }));
+        connections.push_back(writeEvents.                               assignDiscussionThreadPrivilege.connect([this](auto context, auto& thread, auto& user, auto value, auto duration)   { this->assignDiscussionThreadPrivilege                               (context, thread, user, value, duration); }));
+        connections.push_back(writeEvents.                                  assignDiscussionTagPrivilege.connect([this](auto context, auto& tag, auto& user, auto value, auto duration)      { this->assignDiscussionTagPrivilege                                  (context, tag, user, value, duration); }));
+        connections.push_back(writeEvents.                             assignDiscussionCategoryPrivilege.connect([this](auto context, auto& category, auto& user, auto value, auto duration) { this->assignDiscussionCategoryPrivilege                             (context, category, user, value, duration); }));
+        connections.push_back(writeEvents.                                      assignForumWidePrivilege.connect([this](auto context, auto& user, auto value, auto duration)                 { this->assignForumWidePrivilege                                      (context, user, value, duration); }));
     }
 
     static constexpr size_t UuidSize = boost::uuids::uuid::static_size();
@@ -1290,7 +1290,7 @@ const std::chrono::seconds EventObserver::EventObserverImpl::timerThreadCheckEve
 
 
 EventObserver::EventObserver(ReadEvents& readEvents, WriteEvents& writeEvents,
-                             const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
+                             const std::filesystem::path& destinationFolder, time_t refreshEverySeconds)
     : impl_(new EventObserverImpl(readEvents, writeEvents, destinationFolder, refreshEverySeconds))
 {
 }

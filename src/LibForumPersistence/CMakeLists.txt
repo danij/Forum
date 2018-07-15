@@ -16,9 +16,9 @@ set(SOURCE_FILES
 set(HEADER_FILES
         EventImporter.h
         EventObserver.h
+        PersistenceFormat.h
         private/FileAppender.h
-        private/PersistenceBlob.h
-        private/PersistenceFormat.h)
+        private/PersistenceBlob.h)
 
 include_directories(
         .
