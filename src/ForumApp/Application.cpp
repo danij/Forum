@@ -42,6 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <fstream>
 #include <iostream>
+#include <string>
 
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/filter_parser.hpp>
@@ -62,21 +63,11 @@ using namespace Forum::Repository;
 
 using namespace Http;
 
-bool Application::initialize(const std::string& configurationFileName)
+bool Application::initialize()
 {
-    try
-    {
-        std::ifstream input(configurationFileName);
-        Configuration::loadGlobalConfigFromStream(input);
-    }
-    catch(std::exception& ex)
-    {
-        std::cerr << "Error loading configuration: " << ex.what() << '\n';
-        return false;
-    }
-
     setApplicationEventCollection(std::make_unique<ApplicationEventCollection>());
-    setIOServiceProvider(std::make_unique<DefaultIOServiceProvider>());
+    setIOServiceProvider(std::make_unique<DefaultIOServiceProvider>(
+            Configuration::getGlobalConfig()->service.numberOfIOServiceThreads));
 
     initializeLogging();
 
@@ -134,19 +125,12 @@ int Application::run(int argc, const char* argv[])
 
     const auto configFileName = arguments["config"].as<std::string>();
 
-    if ( ! std::filesystem::exists(configFileName))
+    if ( ! loadConfiguration(configFileName))
     {
-        std::cerr << "The configuration file '" << configFileName << "' does not exist!\n";
         return 1;
     }
 
-    if ( ! std::filesystem::is_regular_file(configFileName))
-    {
-        std::cerr << "The configuration file '" << configFileName << "' is not a regular file!\n";
-        return 1;
-    }
-
-    if ( ! initialize(configFileName))
+    if ( ! initialize())
     {
         std::cerr << "Initialization failed!\n";
         return 1;
@@ -191,6 +175,34 @@ void Application::cleanup()
 
     //clean up resources cached by ICU so that they don't show up as memory leaks
     u_cleanup();
+}
+
+bool Application::loadConfiguration(const std::string_view fileName)
+{
+    try
+    {
+        if ( ! std::filesystem::exists(fileName))
+        {
+            std::cerr << "The configuration file '" << fileName << "' does not exist!\n";
+            return false;
+        }
+
+        if ( ! std::filesystem::is_regular_file(fileName))
+        {
+            std::cerr << "The configuration file '" << fileName << "' is not a regular file!\n";
+            return false;
+        }
+
+        std::ifstream input(fileName);
+        Configuration::loadGlobalConfigFromStream(input);
+
+        return true;
+    }
+    catch (std::exception& ex)
+    {
+        std::cerr << "Error loading configuration: " << ex.what() << '\n';
+        return false;
+    }
 }
 
 void Application::validateConfiguration()
@@ -285,7 +297,6 @@ void Application::initializeHttp()
     const auto forumConfig = Configuration::getGlobalConfig();
 
     HttpListener::Configuration httpConfig;
-    httpConfig.numberOfIOServiceThreads = forumConfig->service.numberOfIOServiceThreads;
     httpConfig.numberOfReadBuffers = forumConfig->service.numberOfReadBuffers;
     httpConfig.numberOfWriteBuffers = forumConfig->service.numberOfWriteBuffers;
     httpConfig.listenIPAddress = forumConfig->service.listenIPAddress;

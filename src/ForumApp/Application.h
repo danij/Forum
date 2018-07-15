@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/noncopyable.hpp>
 
 #include <memory>
-#include <string>
+#include <string_view>
 
 namespace Forum
 {
@@ -38,7 +38,8 @@ namespace Forum
 
     private:
         void cleanup();
-        bool initialize(const std::string& configurationFileName);
+        bool initialize();
+        bool loadConfiguration(std::string_view fileName);
         void validateConfiguration();
         void createCommandHandler();
         void importEvents();
