@@ -35,7 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace Http
 {
     template<typename T>
-    class TimeoutManager final : private boost::noncopyable
+    class TimeoutManager final : boost::noncopyable
     {
     public:
 

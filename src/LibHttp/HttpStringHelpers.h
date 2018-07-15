@@ -22,13 +22,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <ctime>
 #include <limits>
 #include <type_traits>
+#include <string_view>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/utility/string_view.hpp>
 
 namespace Http
 {
-    typedef boost::string_view HttpStringView;
+    typedef std::string_view HttpStringView;
 
     /**
      * Matches a string against another one, optionally ignoring case

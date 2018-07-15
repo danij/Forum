@@ -46,7 +46,7 @@ namespace Http
         void extractExtraPathParts(size_t nrOfPathCharactersUsedInRoute);
     };
 
-    class HttpRouter final : private boost::noncopyable
+    class HttpRouter final : boost::noncopyable
     {
     public:
         void forward(const HttpRequest& request, HttpResponseBuilder& response);

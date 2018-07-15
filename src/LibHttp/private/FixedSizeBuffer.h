@@ -151,7 +151,7 @@ namespace Http
 
 
     template<size_t BufferSize, size_t MaxNrOfBuffers>
-    class ReadWriteBufferArray final : private boost::noncopyable
+    class ReadWriteBufferArray final : boost::noncopyable
     {
     public:
         explicit ReadWriteBufferArray(FixedSizeBufferPool<BufferSize>& bufferPool) : bufferPool_(bufferPool)

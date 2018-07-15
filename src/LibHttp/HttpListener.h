@@ -28,12 +28,11 @@ namespace Http
 {
     class HttpRouter;
 
-    class HttpListener final : private boost::noncopyable
+    class HttpListener final : boost::noncopyable
     {
     public:
         struct Configuration
         {
-            int_fast16_t numberOfIOServiceThreads;
             int_fast32_t numberOfReadBuffers;
             int_fast32_t numberOfWriteBuffers;
             std::string listenIPAddress;

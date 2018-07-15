@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Http
 {
-    class Parser final : private boost::noncopyable
+    class Parser final : boost::noncopyable
     {
     public:
         //returns true if there is still room for more bytes

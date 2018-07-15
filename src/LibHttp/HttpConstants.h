@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <boost/utility/string_view.hpp>
+#include <string_view>
 
 namespace Http
 {
@@ -116,7 +116,7 @@ namespace Http
         HTTP_STATUS_CODES_COUNT
     };
 
-    typedef boost::string_view HttpStringView;
+    typedef std::string_view HttpStringView;
 
     HttpStringView getStatusCodeString(HttpStatusCode code);
 
