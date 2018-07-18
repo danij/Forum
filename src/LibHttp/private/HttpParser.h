@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "HttpRequest.h"
 
 #include <boost/noncopyable.hpp>
-#include <boost/utility/string_view.hpp>
 
 namespace Http
 {
@@ -32,7 +31,7 @@ namespace Http
         //returns true if there is still room for more bytes
         typedef bool(*PushBodyBytesFn)(const char* buffer, size_t bufferSize, void* state);
 
-        explicit Parser(char* headerBuffer, size_t headerBufferSize, size_t maxBodyLength,
+        explicit Parser(char* headerBuffer, size_t headerBufferSize, size_t maxContentLength,
                         PushBodyBytesFn pushBodyBytes, void* pushBodyBytesState);
 
         enum ParseResult
@@ -87,7 +86,7 @@ namespace Http
         void onFinishedParsingHeaders();
         void interpretImportantHeaders();
         void interpretPathString();
-        void interpretCookies(char* value, int size);
+        void interpretCookies(char* value, size_t size);
 
         char* headerBuffer_;
         size_t headerBufferSize_;

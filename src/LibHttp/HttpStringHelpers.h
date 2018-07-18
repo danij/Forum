@@ -83,7 +83,7 @@ namespace Http
         }
     }
 
-    inline void trimLeadingChar(HttpStringView& view, char toTrim)
+    inline void trimLeadingChar(HttpStringView& view, const char toTrim)
     {
         size_t toRemove = 0;
         for (auto c : view)

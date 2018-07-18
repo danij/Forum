@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Http;
 
-Parser::Parser(char* headerBuffer, size_t headerBufferSize, size_t maxContentLength,
+Parser::Parser(char* headerBuffer, const size_t headerBufferSize, const size_t maxContentLength,
                PushBodyBytesFn pushBodyBytes, void* pushBodyBytesState)
     : headerBuffer_(headerBuffer), headerBufferSize_(headerBufferSize), pushBodyBytes_(pushBodyBytes),
       pushBodyBytesState_(pushBodyBytesState), parsePathStartsAt_(headerBuffer_),
@@ -75,8 +75,8 @@ void Parser::reset()
  * Checks if there is enough room in the buffer
  * @return true if the character was reached, false otherwise
  */
-static bool copyUntil(char toSearch, char*& buffer, size_t& size, bool& valid, HttpStatusCode& errorCode,
-                      char* headerBuffer, size_t& headerSize, size_t headerBufferSize)
+static bool copyUntil(const char toSearch, char*& buffer, size_t& size, bool& valid, HttpStatusCode& errorCode,
+                      char* headerBuffer, size_t& headerSize, const size_t headerBufferSize)
 {
     bool continueLoop = true;
     do
@@ -97,7 +97,7 @@ static bool copyUntil(char toSearch, char*& buffer, size_t& size, bool& valid, H
     return true;
 }
 
-static HttpVerb parseHttpVerb(char* buffer, size_t size)
+static HttpVerb parseHttpVerb(char* buffer, const size_t size)
 {
     switch (size)
     {
@@ -338,18 +338,19 @@ void Parser::interpretPathString()
 {
     int state = 0;
     const auto pathStart = parsePathStartsAt_;
-    char c;
     int keyStart = 0, keyEnd = 0, valueStart = 0, valueEnd = 0;
-    for (int i = 0, n = static_cast<int>(request_.path.size()); i < n; ++i)
+
+    auto fullPath = request_.path;
+
+    for (int i = 0, n = static_cast<int>(fullPath.size()); i < n; ++i)
     {
-        c = request_.path[i];
+        const auto c = fullPath[i];
         switch (state)
         {
         case 0: //path
             if (('?' == c) || ((i + 1) == n))
             {
                 request_.path = viewAfterDecodingUrlEncodingInPlace(parsePathStartsAt_, i);
-                n = static_cast<int>(request_.path.size());
                 state = 1;
                 keyStart = keyEnd = i + 1;
             }
@@ -377,19 +378,22 @@ void Parser::interpretPathString()
                 state = 1;
             }
             break;
+        default: 
+            assert(false);
+            break;
         }
     }
 }
 
-void Parser::interpretCookies(char* value, int size)
+void Parser::interpretCookies(char* value, const size_t size)
 {
     int state = 0;
     const auto cookieStart = value;
     int nameStart = 0, nameEnd = 0, valueStart = 0, valueEnd = 0;
 
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
     {
-        auto c = value[i];
+        const auto c = value[i];
 
         switch (state)
         {
@@ -444,6 +448,9 @@ void Parser::interpretCookies(char* value, int size)
                 nameStart = nameEnd = valueStart = valueEnd = i + 1;
                 state = 0;
             }
+            break;
+        default: 
+            assert(false);
             break;
         }
     }
