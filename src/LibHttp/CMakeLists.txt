@@ -20,6 +20,7 @@ set(HEADER_FILES
         HttpResponseBuilder.h
         HttpRouter.h
         HttpStringHelpers.h
+        Trie.h
         private/FixedSizeBuffer.h
         private/HttpParser.h
         private/TimeoutManager.h)
