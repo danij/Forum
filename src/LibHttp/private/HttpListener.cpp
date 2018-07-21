@@ -156,7 +156,7 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
             {
                 static thread_local char nullTerminatedAddressBuffer[128];
                 auto xForwardedFor = request.headers[Http::Request::X_Forwarded_For];
-                const auto toCopy = std::min(std::extent<decltype(nullTerminatedAddressBuffer)>::value - 1, xForwardedFor.size());
+                const auto toCopy = std::min(std::size(nullTerminatedAddressBuffer) - 1, xForwardedFor.size());
                 std::copy(xForwardedFor.data(), xForwardedFor.data() + toCopy, nullTerminatedAddressBuffer);
                 nullTerminatedAddressBuffer[toCopy] = 0;
 

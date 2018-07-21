@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "UuidString.h"
 
-#include <type_traits>
 #include <boost/uuid/uuid_io.hpp>
 
 using namespace Forum::Entities;
@@ -62,7 +61,7 @@ static bool parseUuid(const char* data, size_t size, boost::uuids::uuid& destina
         return false;
     }
 
-    static_assert(std::extent<decltype(hexValues)>::value >= sizeof(uint8_t), "hexValues does not contain enough values");
+    static_assert(std::size(hexValues) >= sizeof(uint8_t), "hexValues does not contain enough values");
 
     for (int src = 0, dst = 0; dst < 16; src += 2, dst += 1)
     {

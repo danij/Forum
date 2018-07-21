@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <functional>
 #include <stdexcept>
-#include <type_traits>
 
 #include "TypeHelpers.h"
 

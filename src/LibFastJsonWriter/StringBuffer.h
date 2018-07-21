@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstddef>
 #include <cstring>
 #include <memory>
-#include <type_traits>
 #include <string_view>
 
 #include <boost/noncopyable.hpp>

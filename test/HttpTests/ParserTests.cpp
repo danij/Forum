@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <random>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 #include <boost/test/unit_test.hpp>
@@ -62,7 +61,7 @@ static void testParser(HttpStringView input, TestCallback&& callback, const size
     if (nullptr == headerBuffer)
     {
         headerBuffer = buffer;
-        headerBufferSize = std::extent<decltype(buffer)>::value;
+        headerBufferSize = std::size(buffer);
     }
 
     std::string requestBody;
@@ -358,7 +357,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_does_not_exceed_header_buffer )
 {
     {
         char headerBuffer[5] = { 0 };
-        const auto headerBufferSize = std::extent<decltype(headerBuffer)>::value;
+        const auto headerBufferSize = std::size(headerBuffer);
 
         testParser("GET /app HTTP/1.0\r\n\r\n",
                [&headerBuffer, headerBufferSize](const Parser& parser, std::string_view requestBody)
@@ -375,7 +374,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_does_not_exceed_header_buffer )
     }
     {
         char headerBuffer[22] = { 0 };
-        const auto headerBufferSize = std::extent<decltype(headerBuffer)>::value;
+        const auto headerBufferSize = std::size(headerBuffer);
 
         testParser("GET /app HTTP/1.0\r\nHost:host\r\n\r\n",
                [&headerBuffer, headerBufferSize](const Parser& parser, std::string_view requestBody)

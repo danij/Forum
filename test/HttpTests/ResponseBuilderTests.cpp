@@ -19,7 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "HttpResponseBuilder.h"
 
 #include <string>
-#include <type_traits>
 
 #include <boost/test/unit_test.hpp>
 

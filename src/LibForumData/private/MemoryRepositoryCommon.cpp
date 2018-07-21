@@ -27,7 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <optional>
 #include <tuple>
-#include <type_traits>
 
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
@@ -162,9 +161,8 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
     std::copy(firstCharView.data(), firstCharView.data() + nrOfFirstCharBytes, firstLastUtf8);
     std::copy(lastCharView.data(), lastCharView.data() + nrOfLastCharBytes, firstLastUtf8 + nrOfFirstCharBytes);
 
-    const auto u16Chars = u_strFromUTF8(temp, std::extent<decltype(temp)>::value, &written,
-                                        firstLastUtf8, static_cast<int32_t>(nrOfFirstCharBytes + nrOfLastCharBytes),
-                                        &errorCode);
+    const auto u16Chars = u_strFromUTF8(temp, static_cast<int32_t>(std::size(temp)), &written, firstLastUtf8, 
+                                        static_cast<int32_t>(nrOfFirstCharBytes + nrOfLastCharBytes), &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     errorCode = {};
@@ -179,9 +177,9 @@ static std::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView conte
     static const unsigned char PNGStart[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
     static const unsigned char PNGIHDR[] = { 0x49, 0x48, 0x44, 0x52 };
 
-    const auto requiredSize = std::extent<decltype(PNGStart)>::value
+    const auto requiredSize = std::size(PNGStart)
                               + 4  //size
-                              + std::extent<decltype(PNGIHDR)>::value
+                              + std::size(PNGIHDR)
                               + 4  //width
                               + 4; //height
 
@@ -196,13 +194,13 @@ static std::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView conte
     {
         return{};
     }
-    data += std::extent<decltype(PNGStart)>::value;
+    data += std::size(PNGStart);
     data += 4;
     if ( ! std::equal(std::begin(PNGIHDR), std::end(PNGIHDR), data))
     {
         return{};
     }
-    data += std::extent<decltype(PNGIHDR)>::value;
+    data += std::size(PNGIHDR);
 
     uint32_t width, height;
     readValue(data, width);

@@ -26,7 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <limits>
 #include <utility>
-#include <type_traits>
 
 #include <boost/preprocessor/cat.hpp>
 

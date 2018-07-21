@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <cstddef>
 #include <cstdint>
-#include <type_traits>
 
 using namespace Http;
 
@@ -60,7 +59,7 @@ static HttpStringView statusCodes[] =
 
 HttpStringView Http::getStatusCodeString(HttpStatusCode code)
 {
-    static_assert(std::extent<decltype(statusCodes)>::value >= (HTTP_STATUS_CODES_COUNT - 1),
+    static_assert(std::size(statusCodes) >= (HTTP_STATUS_CODES_COUNT - 1),
                   "statusCodes array is not big enough");
 
     HttpStringView result;

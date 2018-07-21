@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
         }
     }
 
-    auto nrOfCalls = std::extent<decltype(views)>::value * std::extent<decltype(sortOrders)>::value;
+    auto nrOfCalls = std::size(views) * std::size(sortOrders);
     BOOST_REQUIRE_EQUAL(nrOfCalls, observerCalledNTimes);
 }
 

@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstddef>
 #include <ctime>
 #include <limits>
-#include <type_traits>
 #include <string_view>
 
 #include <boost/lexical_cast.hpp>
@@ -138,7 +137,7 @@ namespace Http
 
     inline size_t decodeUrlEncodingInPlace(char* value, size_t size)
     {
-        static_assert(std::extent<decltype(HexParsingValues)>::value > std::numeric_limits<unsigned char>::max(),
+        static_assert(std::size(HexParsingValues) > std::numeric_limits<unsigned char>::max(),
                       "The HexParsingValues array is too small");
 
         if (nullptr == value) return 0;

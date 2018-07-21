@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 #include <limits>
-#include <type_traits>
 
 #include <boost/lexical_cast/try_lexical_convert.hpp>
 

@@ -32,7 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <numeric>
 #include <regex>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 #include <boost/noncopyable.hpp>

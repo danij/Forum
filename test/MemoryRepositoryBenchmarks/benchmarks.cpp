@@ -445,7 +445,7 @@ StringView getMessageText(char* buffer, size_t size)
 {
     //randomness is not that important
     static const char characters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    constexpr size_t charactersCount = std::extent<decltype(characters)>::value - 1;
+    constexpr size_t charactersCount = std::size(characters) - 1;
 
     static size_t startIndex = 0;
     ++startIndex;

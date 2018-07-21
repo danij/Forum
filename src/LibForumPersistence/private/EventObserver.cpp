@@ -30,7 +30,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <mutex>
 #include <numeric>
 #include <thread>
-#include <type_traits>
 #include <vector>
 #include <cstring>
 
@@ -281,7 +280,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(userName.data()), static_cast<SizeType>(userName.size()), true }, \
         };
 
-        recordBlob(EventType::ADD_NEW_USER, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_NEW_USER, 1, parts, std::size(parts));
     }
 
     void onChangeUser(ObserverContext context, const User& user, User::ChangeType change)
@@ -320,7 +319,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(userName.data()), static_cast<SizeType>(userName.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_USER_NAME, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_USER_NAME, 1, parts, std::size(parts));
     }
 
     void onChangeUserInfo(ObserverContext context, const User& user)
@@ -335,7 +334,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(userInfo.data()), static_cast<SizeType>(userInfo.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_USER_INFO, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_USER_INFO, 1, parts, std::size(parts));
     }
 
     void onChangeUserTitle(ObserverContext context, const User& user)
@@ -350,7 +349,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(userTitle.data()), static_cast<SizeType>(userTitle.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_USER_TITLE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_USER_TITLE, 1, parts, std::size(parts));
     }
 
     void onChangeUserSignature(ObserverContext context, const User& user)
@@ -365,7 +364,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(userSignature.data()), static_cast<SizeType>(userSignature.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_USER_SIGNATURE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_USER_SIGNATURE, 1, parts, std::size(parts));
     }
 
     void onChangeUserLogo(ObserverContext context, const User& user)
@@ -380,7 +379,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(userLogo.data()), static_cast<SizeType>(userLogo.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_USER_LOGO, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_USER_LOGO, 1, parts, std::size(parts));
     }
 
     void onDeleteUser(ObserverContext context, const User& user)
@@ -392,7 +391,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&user.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DELETE_USER, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DELETE_USER, 1, parts, std::size(parts));
     }
 
     void onAddNewDiscussionThread(ObserverContext context, const DiscussionThread& thread)
@@ -407,7 +406,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(threadName.data()), static_cast<SizeType>(threadName.size()), true }
         };
 
-        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionThread(ObserverContext context, const DiscussionThread& thread,
@@ -438,7 +437,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(threadName.data()), static_cast<SizeType>(threadName.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_NAME, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_NAME, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionThreadPinDisplayOrder(ObserverContext context, const DiscussionThread& thread)
@@ -453,7 +452,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&pinDisplayOrder), static_cast<SizeType>(sizeof(pinDisplayOrder)), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER, 1, parts, std::size(parts));
     }
 
     void onDeleteDiscussionThread(ObserverContext context, const DiscussionThread& thread)
@@ -465,7 +464,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&thread.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DELETE_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DELETE_DISCUSSION_THREAD, 1, parts, std::size(parts));
     }
 
     void onMergeDiscussionThreads(ObserverContext context, const DiscussionThread& fromThread,
@@ -479,7 +478,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&toThread.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::MERGE_DISCUSSION_THREADS, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::MERGE_DISCUSSION_THREADS, 1, parts, std::size(parts));
     }
 
     void onMoveDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message,
@@ -493,7 +492,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&intoThread.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::MOVE_DISCUSSION_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::MOVE_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void onSubscribeToDiscussionThread(ObserverContext context, const DiscussionThread& thread)
@@ -505,7 +504,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&thread.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::SUBSCRIBE_TO_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::SUBSCRIBE_TO_DISCUSSION_THREAD, 1, parts, std::size(parts));
     }
 
     void onUnsubscribeFromDiscussionThread(ObserverContext context, const DiscussionThread& thread)
@@ -517,7 +516,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&thread.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::UNSUBSCRIBE_FROM_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::UNSUBSCRIBE_FROM_DISCUSSION_THREAD, 1, parts, std::size(parts));
     }
 
     void onAddNewDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message)
@@ -534,7 +533,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(message.content().data()), static_cast<SizeType>(message.content().size()), true }
         };
 
-        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message,
@@ -561,7 +560,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(message.lastUpdatedReason().data()), static_cast<SizeType>(message.lastUpdatedReason().size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1, parts, std::size(parts));
     }
 
     void onDeleteDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message)
@@ -573,7 +572,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&message.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DELETE_DISCUSSION_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DELETE_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void onDiscussionThreadMessageUpVote(ObserverContext context, const DiscussionThreadMessage& message)
@@ -585,7 +584,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&message.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_UP_VOTE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_UP_VOTE, 1, parts, std::size(parts));
     }
 
     void onDiscussionThreadMessageDownVote(ObserverContext context, const DiscussionThreadMessage& message)
@@ -597,7 +596,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&message.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_DOWN_VOTE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_DOWN_VOTE, 1, parts, std::size(parts));
     }
 
     void onDiscussionThreadMessageResetVote(ObserverContext context, const DiscussionThreadMessage& message)
@@ -609,7 +608,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&message.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_RESET_VOTE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_RESET_VOTE, 1, parts, std::size(parts));
     }
 
     void onAddCommentToDiscussionThreadMessage(ObserverContext context, const MessageComment& comment)
@@ -625,7 +624,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(comment.content().data()), static_cast<SizeType>(comment.content().size()), true }
         };
 
-        recordBlob(EventType::ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void onSolveDiscussionThreadMessageComment(ObserverContext context, const MessageComment& comment)
@@ -637,7 +636,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&comment.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT, 1, parts, std::size(parts));
     }
 
     void onAddNewDiscussionTag(ObserverContext context, const DiscussionTag& tag)
@@ -652,7 +651,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(tagName.data()), static_cast<SizeType>(tagName.size()), true }
         };
 
-        recordBlob(EventType::ADD_NEW_DISCUSSION_TAG, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_NEW_DISCUSSION_TAG, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionTag(ObserverContext context, const DiscussionTag& tag, DiscussionTag::ChangeType change)
@@ -682,7 +681,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(tagName.data()), static_cast<SizeType>(tagName.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_TAG_NAME, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_TAG_NAME, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionTagUIBlob(ObserverContext context, const DiscussionTag& tag)
@@ -695,7 +694,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(tag.uiBlob().data()), static_cast<SizeType>(tag.uiBlob().size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_TAG_UI_BLOB, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_TAG_UI_BLOB, 1, parts, std::size(parts));
     }
 
     void onDeleteDiscussionTag(ObserverContext context, const DiscussionTag& tag)
@@ -707,7 +706,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&tag.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DELETE_DISCUSSION_TAG, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DELETE_DISCUSSION_TAG, 1, parts, std::size(parts));
     }
 
     void onAddDiscussionTagToThread(ObserverContext context, const DiscussionTag& tag, const DiscussionThread& thread)
@@ -720,7 +719,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&thread.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::ADD_DISCUSSION_TAG_TO_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_DISCUSSION_TAG_TO_THREAD, 1, parts, std::size(parts));
     }
 
     void onRemoveDiscussionTagFromThread(ObserverContext context, const DiscussionTag& tag, const DiscussionThread& thread)
@@ -733,7 +732,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&thread.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_THREAD, 1, parts, std::size(parts));
     }
 
     void onMergeDiscussionTags(ObserverContext context, const DiscussionTag& fromTag, const DiscussionTag& toTag)
@@ -746,7 +745,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&toTag.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::MERGE_DISCUSSION_TAGS, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::MERGE_DISCUSSION_TAGS, 1, parts, std::size(parts));
     }
 
     void onAddNewDiscussionCategory(ObserverContext context, const DiscussionCategory& category)
@@ -767,7 +766,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(categoryName.data()), static_cast<SizeType>(categoryName.size()), true }
         };
 
-        recordBlob(EventType::ADD_NEW_DISCUSSION_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_NEW_DISCUSSION_CATEGORY, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionCategory(ObserverContext context, const DiscussionCategory& category,
@@ -803,7 +802,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(categoryName.data()), static_cast<SizeType>(categoryName.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_NAME, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_NAME, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionCategoryDescription(ObserverContext context, const DiscussionCategory& category)
@@ -816,7 +815,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(category.description().data()), static_cast<SizeType>(category.description().size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_DESCRIPTION, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_DESCRIPTION, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionCategoryDisplayOrder(ObserverContext context, const DiscussionCategory& category)
@@ -830,7 +829,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&displayOrder), sizeof(displayOrder), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionCategoryParent(ObserverContext context, const DiscussionCategory& category)
@@ -849,7 +848,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&parentCategoryId.value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_PARENT, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_PARENT, 1, parts, std::size(parts));
     }
 
     void onDeleteDiscussionCategory(ObserverContext context, const DiscussionCategory& category)
@@ -861,7 +860,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&category.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DELETE_DISCUSSION_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DELETE_DISCUSSION_CATEGORY, 1, parts, std::size(parts));
     }
 
     void onAddDiscussionTagToCategory(ObserverContext context, const DiscussionTag& tag,
@@ -875,7 +874,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&category.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::ADD_DISCUSSION_TAG_TO_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_DISCUSSION_TAG_TO_CATEGORY, 1, parts, std::size(parts));
     }
 
     void onRemoveDiscussionTagFromCategory(ObserverContext context, const DiscussionTag& tag,
@@ -889,7 +888,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&category.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, 1, parts, std::size(parts));
     }
 
     void onGetDiscussionThreadById(ObserverContext context, const DiscussionThread& thread)
@@ -925,7 +924,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadMessageRequiredPrivilegeForThread(ObserverContext context,
@@ -945,7 +944,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadMessageRequiredPrivilegeForTag(ObserverContext context,
@@ -965,7 +964,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadMessageRequiredPrivilegeForumWide(ObserverContext context,
@@ -983,7 +982,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadRequiredPrivilegeForThread(ObserverContext context,
@@ -1003,7 +1002,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_THREAD, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadRequiredPrivilegeForTag(ObserverContext context,
@@ -1023,7 +1022,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadRequiredPrivilegeForumWide(ObserverContext context,
@@ -1041,7 +1040,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::size(parts));
     }
 
     void changeDiscussionTagRequiredPrivilegeForTag(ObserverContext context,
@@ -1061,7 +1060,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::size(parts));
     }
 
     void changeDiscussionTagRequiredPrivilegeForumWide(ObserverContext context,
@@ -1079,7 +1078,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::size(parts));
     }
 
     void changeDiscussionCategoryRequiredPrivilegeForCategory(ObserverContext context,
@@ -1099,7 +1098,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FOR_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FOR_CATEGORY, 1, parts, std::size(parts));
     }
 
     void changeDiscussionCategoryRequiredPrivilegeForumWide(ObserverContext context,
@@ -1117,7 +1116,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::size(parts));
     }
 
     void changeForumWideRequiredPrivilege(ObserverContext context, ForumWidePrivilege privilege,
@@ -1134,7 +1133,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_FORUM_WIDE_REQUIRED_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_FORUM_WIDE_REQUIRED_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void changeForumWideDefaultPrivilegeLevel(ObserverContext context,
@@ -1154,7 +1153,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentDuration), sizeof(currentDuration), false }
         };
 
-        recordBlob(EventType::CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVEL, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVEL, 1, parts, std::size(parts));
     }
 
     void assignDiscussionThreadMessagePrivilege(ObserverContext context,
@@ -1176,7 +1175,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void assignDiscussionThreadPrivilege(ObserverContext context, const DiscussionThread& thread, const User& user,
@@ -1195,7 +1194,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void assignDiscussionTagPrivilege(ObserverContext context, const DiscussionTag& tag, const User& user,
@@ -1214,7 +1213,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_TAG_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_TAG_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void assignDiscussionCategoryPrivilege(ObserverContext context, const DiscussionCategory& category,
@@ -1234,7 +1233,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void assignForumWidePrivilege(ObserverContext context, const User& user, PrivilegeValueIntType value,
@@ -1252,7 +1251,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             { POINTER(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_FORUM_WIDE_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_FORUM_WIDE_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void updateThreadVisited()
@@ -1268,7 +1267,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
                 { POINTER(&pair.second), sizeof(pair.second), false },
             };
 
-            recordBlob(EventType::INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS, 1, parts, std::extent<decltype(parts)>::value);
+            recordBlob(EventType::INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS, 1, parts, std::size(parts));
         }
         cachedNrOfThreadVisits.clear();
     }

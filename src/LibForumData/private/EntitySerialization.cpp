@@ -21,8 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "StateHelpers.h"
 #include "OutputHelpers.h"
 
-#include <type_traits>
-
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -51,7 +49,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const UuidString& id)
 
     id.toString(buffer);
 
-    return writer.writeSafeString(buffer, std::extent<decltype(buffer)>::value);
+    return writer.writeSafeString(buffer, std::size(buffer));
 }
 
 JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const SerializationRestriction& restriction)
@@ -107,7 +105,7 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
     char buffer[IpAddress::MaxIPv6CharacterCount + 1];
     writer.newPropertyWithSafeName("ip");
 
-    const auto addressLength = visitDetails.ip.toString(buffer, std::extent<decltype(buffer)>::value);
+    const auto addressLength = visitDetails.ip.toString(buffer, std::size(buffer));
 
     writer.writeSafeString(buffer, addressLength);
     return writer;
