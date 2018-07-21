@@ -40,6 +40,14 @@ namespace Http
      */
     size_t buildSimpleResponseFromStatusCode(HttpStatusCode code, int_fast8_t majorVersion, int_fast8_t minorVersion,
                                              char* buffer);
+    
+    /**
+    * Writes a date string as expected by the HTTP protocol, e.g. Tue, 18 Apr 2017 09:00:00 GMT
+    * The functions doesn't check bounds, the output buffer must be large enough
+    *
+    * @return The amount of characters written
+    */
+    size_t writeHttpDateGMT(time_t value, char* output);
 
     struct CookieExtra final
     {

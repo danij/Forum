@@ -58,6 +58,63 @@ size_t Http::buildSimpleResponseFromStatusCode(const HttpStatusCode code, const 
     return buffer - originalBufferStart;
 }
 
+size_t Http::writeHttpDateGMT(time_t value, char* output)
+{
+    //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date
+    static const char DayNames[][4] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    static const char MonthNames[][4] = {
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    };
+    std::tm time;
+#if defined(_WIN32) || defined (WIN32)
+    if (0 != gmtime_s(&time, &value))
+    {
+        return 0;
+    }
+#else
+        //gmtime is not guaranteed to be thread-safe
+        if (nullptr == gmtime_r(&value, &time))
+        {
+            return 0;
+        }
+#endif
+    char* currentOutput = output;
+
+    currentOutput = std::copy(DayNames[time.tm_wday], DayNames[time.tm_wday] + 3, currentOutput);
+    *currentOutput++ = ',';
+    *currentOutput++ = ' ';
+
+    *currentOutput++ = '0' + (time.tm_mday / 10);
+    *currentOutput++ = '0' + (time.tm_mday % 10);
+    *currentOutput++ = ' ';
+
+    currentOutput = std::copy(MonthNames[time.tm_mon], MonthNames[time.tm_mon] + 3, currentOutput);
+    *currentOutput++ = ' ';
+
+    const auto year = 1900 + time.tm_year;
+    *currentOutput++ = '0' + (year / 1000);
+    *currentOutput++ = '0' + ((year % 1000) / 100);
+    *currentOutput++ = '0' + ((year % 100) / 10);
+    *currentOutput++ = '0' + (year % 10);
+    *currentOutput++ = ' ';
+
+    *currentOutput++ = '0' + (time.tm_hour / 10);
+    *currentOutput++ = '0' + (time.tm_hour % 10);
+    *currentOutput++ = ':';
+    *currentOutput++ = '0' + (time.tm_min / 10);
+    *currentOutput++ = '0' + (time.tm_min % 10);
+    *currentOutput++ = ':';
+    *currentOutput++ = '0' + (time.tm_sec / 10);
+    *currentOutput++ = '0' + (time.tm_sec % 10);
+    *currentOutput++ = ' ';
+    *currentOutput++ = 'G';
+    *currentOutput++ = 'M';
+    *currentOutput++ = 'T';
+
+    return currentOutput - output;
+}
+
 HttpResponseBuilder::HttpResponseBuilder(WriteFn writeFn, void* writeState)
     : writeFn_(writeFn), writeState_(writeState)
 {
