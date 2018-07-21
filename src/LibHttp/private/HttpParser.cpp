@@ -388,7 +388,7 @@ void Parser::interpretCookies(char* value, const size_t size)
 {
     int state = 0;
     const auto cookieStart = value;
-    int nameStart = 0, nameEnd = 0, valueStart = 0, valueEnd = 0;
+    size_t nameStart = 0, nameEnd = 0, valueStart = 0, valueEnd = 0;
 
     for (size_t i = 0; i < size; ++i)
     {
