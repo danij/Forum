@@ -271,7 +271,7 @@ void Parser::parseHeaderValue(char*& buffer, size_t& size)
                                               headerBuffer_ + headerSize_ - 1 - parseHeaderValueStartsAt_);
 
     currentParser_ = &Parser::parseNewLine;
-    const auto currentHeader = Request::matchHttpHeader(parseCurrentHeaderName_.data(), parseCurrentHeaderName_.size());
+    const auto currentHeader = Request::matchHttpHeader(parseCurrentHeaderName_);
     if (currentHeader)
     {
         request_.headers[currentHeader] = parseCurrentHeaderValue_;

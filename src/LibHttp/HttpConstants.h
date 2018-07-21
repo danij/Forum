@@ -194,6 +194,6 @@ namespace Http
             HTTP_HEADERS_COUNT
         };
 
-        HttpHeader matchHttpHeader(const char* headerName, size_t size);
+        HttpHeader matchHttpHeader(HttpStringView header);
     }
 }
