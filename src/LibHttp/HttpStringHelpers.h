@@ -35,18 +35,20 @@ namespace Http
      *
      * @pre source must point to (AgainstSize - 1) / 2 characters
      * @param source String to be searched
-     * @param against A string where each character appears as both upper and lower case (e.g. HhEeLlLlO  WwOoRrLlDd)
+     * @param against A string where each character appears as both upper and lower case (e.g. hello worldHELLO WORLD)
      */
     template<size_t AgainstSize>
-    bool matchStringUpperOrLower(const char* source, const char (&against)[AgainstSize])
+    bool matchStringUpperOrLowerSameSize(const char* source, const char (&against)[AgainstSize])
     {
-        char result = 0;
+        bool misMatchFound = false;
+
         auto size = (AgainstSize - 1) / 2; //-1 because AgainstSize also contains terminating null character
-        for (size_t iSource = 0, iAgainst = 0; iSource < size; ++iSource, iAgainst += 2)
+        for (size_t iSource = 0, iAgainst1 = 0, iAgainst2 = size; iSource < size; ++iSource, ++iAgainst1, ++iAgainst2)
         {
-            result |= (source[iSource] ^ against[iAgainst]) & (source[iSource] ^ against[iAgainst + 1]);
+            misMatchFound |= (source[iSource] != against[iAgainst1])
+                          && (source[iSource] != against[iAgainst2]);
         }
-        return result == 0;
+        return ! misMatchFound;
     }
 
     /**
@@ -55,7 +57,7 @@ namespace Http
      * @pre source must point to (AgainstSize - 1) / 2 characters
      * @param source String to be searched
      * @param sourceSize Size of string to be searched
-     * @param against A string where each character appears as both upper and lower case (e.g. HhEeLlLlO  WwOoRrLlDd)
+     * @param against A string where each character appears as both upper and lower case (e.g. hello worldHELLO WORLD)
      */
     template<size_t AgainstSize>
     bool matchStringUpperOrLower(const char* source, size_t sourceSize, const char(&against)[AgainstSize])
@@ -65,7 +67,7 @@ namespace Http
         {
             return false;
         }
-        return matchStringUpperOrLower(source, against);
+        return matchStringUpperOrLowerSameSize(source, against);
     }
 
     template<size_t AgainstSize>

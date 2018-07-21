@@ -78,12 +78,12 @@ static void updateContextForRequest(const Http::HttpRequest& request)
         auto& name = request.queryPairs[i].first;
         auto& value = request.queryPairs[i].second;
 
-        if (Http::matchStringUpperOrLower(name, "pPaAgGeE"))
+        if (Http::matchStringUpperOrLower(name, "pagePAGE"))
         {
             Http::fromStringOrDefault(value, displayContext.pageNumber, static_cast<decltype(displayContext.pageNumber)>(0));
         }
-        else if (Http::matchStringUpperOrLower(name, "sSoOrRtT") &&
-                 Http::matchStringUpperOrLower(value, "dDeEsScCeEnNdDiInNgG"))
+        else if (Http::matchStringUpperOrLower(name, "sortSORT") &&
+                 Http::matchStringUpperOrLower(value, "descendingDESCENDING"))
         {
             displayContext.sortOrder = Context::SortOrder::Descending;
         }
@@ -187,13 +187,13 @@ UsersEndpoint::UsersEndpoint(CommandHandler& handler) : AbstractEndpoint(handler
 {
 }
 
-static const char OrderBy[] = "oOrRdDeErRbByY";
-static const char OrderByCreated[] = "cCrReEaAtTeEdD";
-static const char OrderByLastSeen[] = "lLaAsStTsSeEeEnN";
-static const char OrderByLastUpdated[] = "lLaAsStTuUpPdDaAtTeEdD";
-static const char OrderByLatestMessageCreated[] = "lLaAtTeEsStTmMeEsSsSaAgGeEcCrReEaAtTeEdD";
-static const char OrderByThreadCount[] = "tThHrReEaAdDcCoOuUnNtT";
-static const char OrderByMessageCount[] = "mMeEsSsSaAgGeEcCoOuUnNtT";
+static const char OrderBy[] = "orderbyORDERBY";
+static const char OrderByCreated[] = "createdCREATED";
+static const char OrderByLastSeen[] = "lastseenLASTSEEN";
+static const char OrderByLastUpdated[] = "lastupdatedLASTUPDATED";
+static const char OrderByLatestMessageCreated[] = "latestmessagecreatedLATESTMESSAGECREATED";
+static const char OrderByThreadCount[] = "threadcountTHREADCOUNT";
+static const char OrderByMessageCount[] = "messagecountMESSAGECOUNT";
 
 void UsersEndpoint::getAll(Http::RequestState& requestState)
 {

@@ -102,17 +102,17 @@ static HttpVerb parseHttpVerb(char* buffer, const size_t size)
     switch (size)
     {
     case 3:
-        if (matchStringUpperOrLower(buffer, "GgEeTt")) return HttpVerb::GET;
-        if (matchStringUpperOrLower(buffer, "PpUuTt")) return HttpVerb::PUT;
+        if (matchStringUpperOrLowerSameSize(buffer, "getGET")) return HttpVerb::GET;
+        if (matchStringUpperOrLowerSameSize(buffer, "putPUT")) return HttpVerb::PUT;
         break;
     case 4:
-        if (matchStringUpperOrLower(buffer, "PpOoSsTt")) return HttpVerb::POST;
+        if (matchStringUpperOrLowerSameSize(buffer, "postPOST")) return HttpVerb::POST;
         break;
     case 5:
-        if (matchStringUpperOrLower(buffer, "PpAaTtCcHh")) return HttpVerb::PATCH;
+        if (matchStringUpperOrLowerSameSize(buffer, "patchPATCH")) return HttpVerb::PATCH;
         break;
     case 6:
-        if (matchStringUpperOrLower(buffer, "DdEeLlEeTtEe")) return HttpVerb::DELETE;
+        if (matchStringUpperOrLowerSameSize(buffer, "deleteDELETE")) return HttpVerb::DELETE;
         break;
     }
     return HttpVerb::UNKNOWN;
@@ -321,7 +321,7 @@ void Parser::interpretImportantHeaders()
     auto connectionHeaderString = request_.headers[Request::HttpHeader::Connection];
     request_.keepConnectionAlive = matchStringUpperOrLower(connectionHeaderString.data(),
                                                            connectionHeaderString.size(),
-                                                           "kKeEeEpP--aAlLiIvVeE");
+                                                           "keep-aliveKEEP-ALIVE");
 
     if ( ! request_.headers[Request::HttpHeader::Expect].empty())
     {
