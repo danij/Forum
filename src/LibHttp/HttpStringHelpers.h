@@ -257,6 +257,18 @@ namespace Http
     }
 
     /**
+     * Appends characters to a string, also incrementing the pointer
+     */
+    template<size_t SourceSize>
+    void appendAndIncrement(char*& destination, const char (&source)[SourceSize])
+    {
+        for (size_t i = 0, n = SourceSize - 1; i < n; ++i)
+        {
+            *destination++ = source[i];
+        }
+    }
+
+    /**
      * Writes a date string as expected by the HTTP protocol, e.g. Tue, 18 Apr 2017 09:00:00 GMT
      * The functions doesn't check bounds, the output buffer must be large enough
      *

@@ -43,37 +43,37 @@ namespace Http
 
     struct CookieExtra final
     {
-        CookieExtra& expiresAt(time_t value)
+        CookieExtra& expiresAt(const time_t value)
         {
             expires = value;
             return *this;
         }
 
-        CookieExtra& maxAge(uint32_t seconds)
+        CookieExtra& maxAge(const uint32_t seconds)
         {
             cookieMaxAge = seconds;
             return *this;
         }
 
-        CookieExtra& domain(HttpStringView value)
+        CookieExtra& domain(const HttpStringView value)
         {
             cookieDomain = value;
             return *this;
         }
 
-        CookieExtra& path(HttpStringView value)
+        CookieExtra& path(const HttpStringView value)
         {
             cookiePath = value;
             return *this;
         }
 
-        CookieExtra& secure(bool value)
+        CookieExtra& secure(const bool value)
         {
             isSecure = value;
             return *this;
         }
 
-        CookieExtra& httpOnly(bool value)
+        CookieExtra& httpOnly(const bool value)
         {
             isHttpOnly = value;
             return *this;
@@ -105,13 +105,13 @@ namespace Http
         void writeHeader(HttpStringView name, int value);
 
         template<size_t NameSize>
-        void writeHeader(const char (&name)[NameSize], HttpStringView value)
+        void writeHeader(const char (&name)[NameSize], const HttpStringView value)
         {
             writeHeader(HttpStringView(name, NameSize - 1), value);
         }
 
         template<size_t NameSize>
-        void writeHeader(const char(&name)[NameSize], int value)
+        void writeHeader(const char(&name)[NameSize], const int value)
         {
             writeHeader(HttpStringView(name, NameSize - 1), value);
         }
@@ -125,7 +125,7 @@ namespace Http
         void writeCookie(HttpStringView name, HttpStringView value, CookieExtra extra = {});
 
         template<size_t NameSize>
-        void writeCookie(const char(&name)[NameSize], HttpStringView value, CookieExtra extra = {})
+        void writeCookie(const char(&name)[NameSize], const HttpStringView value, CookieExtra extra = {})
         {
             writeCookie(HttpStringView(name, NameSize - 1), value, std::move(extra));
         }
@@ -136,7 +136,7 @@ namespace Http
         void writeBodyAndContentLength(HttpStringView value, HttpStringView prefix);
 
     private:
-        void write(const char* data, size_t size)
+        void write(const char* data, const size_t size)
         {
             writeFn_(data, size, writeState_);
         }
