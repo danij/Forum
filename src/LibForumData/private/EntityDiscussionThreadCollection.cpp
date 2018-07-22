@@ -183,6 +183,8 @@ bool DiscussionThreadCollectionWithHashedIdAndPinOrder::remove(DiscussionThreadP
 
 void DiscussionThreadCollectionWithHashedIdAndPinOrder::onStopBatchInsert()
 {
+    DiscussionThreadCollectionWithHashedId::onStopBatchInsert();
+
     byPinDisplayOrder_.clear();
 
     const auto valuesBegin = boost::make_transform_iterator(temporaryThreads_.begin(), GetPtrFromPair);
