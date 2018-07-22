@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <string_view>
 #include <cstdint>
+#include <cstring>
 
 #include <boost/uuid/uuid.hpp>
 
@@ -51,7 +52,13 @@ namespace Forum::Entities
         static constexpr size_t StringRepresentationSize = boost::uuids::uuid::static_size() * 2 + 4;
 
         const boost::uuids::uuid& value() const { return value_; }
-        auto                  hashValue() const { return hashValue_; }
+
+        size_t hashValue() const
+        {
+            size_t result;
+            memcpy(&result, std::cend(value_.data) - sizeof(size_t) / sizeof(decltype(value_.data[0])), sizeof(size_t));
+            return result;
+        }
 
         bool operator==(const UuidString& other) const
         {
@@ -107,10 +114,7 @@ namespace Forum::Entities
         static const UuidString empty;
 
     private:
-        void updateHashValue();
-
         boost::uuids::uuid value_;
-        size_t hashValue_;
     };
 
     inline size_t hash_value(const UuidString& value) //used by boost::hash

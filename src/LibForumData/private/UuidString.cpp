@@ -23,15 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Forum::Entities;
 
 UuidString::UuidString() : value_(boost::uuids::uuid{})
-{
-    static auto emptyUuidHash = hash_value(boost::uuids::uuid{});
-    hashValue_ = emptyUuidHash;
-}
+{}
 
-UuidString::UuidString(boost::uuids::uuid value) : value_(value)
-{
-    updateHashValue();
-}
+UuidString::UuidString(const boost::uuids::uuid value) : value_(value)
+{}
 
 static const uint8_t hexValues[] =
 {
@@ -54,7 +49,7 @@ static const int uuidValuePositions[] =
     /*12*/ 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
 };
 
-static bool parseUuid(const char* data, size_t size, boost::uuids::uuid& destination)
+static bool parseUuid(const char* data, const size_t size, boost::uuids::uuid& destination)
 {
     if (size != 36)
     {
@@ -82,13 +77,11 @@ UuidString::UuidString(std::string_view value) : value_{}
     {
         value_ = {};
     }
-    updateHashValue();
 }
 
 UuidString::UuidString(const uint8_t* uuidArray) : value_{}
 {
     std::copy(uuidArray, uuidArray + boost::uuids::uuid::static_size(), value_.data);
-    updateHashValue();
 }
 
 UuidString::operator std::string() const
@@ -114,11 +107,6 @@ void UuidString::toString(char* buffer) const
             buffer[destination++] = '-';
         }
     }
-}
-
-void UuidString::updateHashValue()
-{
-    hashValue_ = hash_value(value_);
 }
 
 const UuidString UuidString::empty = {};
