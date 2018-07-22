@@ -44,7 +44,7 @@ namespace Forum
         void createCommandHandler();
         void importEvents();
         void initializeHttp();
-        void initializeLogging();
+        bool initializeLogging();
 
         std::unique_ptr<Http::HttpRouter> httpRouter_;
         std::unique_ptr<Http::HttpListener> httpListener_;

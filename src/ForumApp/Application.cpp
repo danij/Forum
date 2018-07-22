@@ -69,7 +69,7 @@ bool Application::initialize()
     setIOServiceProvider(std::make_unique<DefaultIOServiceProvider>(
             Configuration::getGlobalConfig()->service.numberOfIOServiceThreads));
 
-    initializeLogging();
+    if ( ! initializeLogging()) return false;
 
     FORUM_LOG_INFO << "Starting Forum Backend v" << VERSION;
 
@@ -311,17 +311,18 @@ void Application::initializeHttp()
     httpListener_ = std::make_unique<HttpListener>(httpConfig, *httpRouter_, getIOServiceProvider().getIOService());
 }
 
-void Application::initializeLogging()
+bool Application::initializeLogging()
 {
     const auto forumConfig = Configuration::getGlobalConfig();
     auto& settingsFile = forumConfig->logging.settingsFile;
 
-    if (settingsFile.size() < 1) return;
+    if (settingsFile.empty()) return true;
 
     std::ifstream file(settingsFile, std::ios::in);
     if ( ! file)
     {
         std::cerr << "Unable to find log settings file: " << settingsFile << '\n';
+        return false;
     }
     try
     {
@@ -333,5 +334,7 @@ void Application::initializeLogging()
     catch(std::exception& ex)
     {
         std::cerr << "Unable to load log settings from file: " << ex.what() << '\n';
+        return false;
     }
+    return true;
 }
