@@ -61,6 +61,7 @@ namespace Forum::Entities
     {
     public:
         virtual bool add(DiscussionThreadPtr thread);
+        virtual bool add(DiscussionThreadPtr* threads, size_t threadCount);
         virtual bool remove(DiscussionThreadPtr thread);
 
         void stopBatchInsert();
@@ -185,6 +186,7 @@ namespace Forum::Entities
     {
     public:
         bool add(DiscussionThreadPtr thread) override;
+        bool add(DiscussionThreadPtr* threads, size_t threadCount) override;
         bool remove(DiscussionThreadPtr thread) override;
 
         void onStopBatchInsert() override;

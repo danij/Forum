@@ -174,6 +174,9 @@ namespace Forum::Entities
         void addTotalsFromChild(const DiscussionCategory& childCategory);
 
     private:
+        bool insertDiscussionThreadsOfTag(DiscussionTagPtr tag);
+
+    private:
         static ChangeNotification changeNotifications_;
 
         IdType id_;

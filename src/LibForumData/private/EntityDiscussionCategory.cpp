@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityDiscussionCategory.h"
 #include "EntityCollection.h"
 
-#include <map>
+#include <vector>
 
 using namespace Forum;
 using namespace Forum::Entities;
@@ -93,6 +93,54 @@ bool DiscussionCategory::insertDiscussionThread(DiscussionThreadPtr thread)
     return true;
 }
 
+bool DiscussionCategory::insertDiscussionThreadsOfTag(DiscussionTagPtr tag)
+{
+    assert(tag);
+
+    std::vector<DiscussionThreadPtr> threadsToInsert;
+    threadsToInsert.reserve(tag->threads().count());
+
+    tag->threads().iterateThreads([this, &threadsToInsert](DiscussionThreadPtr threadPtr)
+    {
+        assert(threadPtr);
+        if ( ! this->threads_.contains(threadPtr))
+        {
+            threadsToInsert.push_back(threadPtr);
+        }
+    });
+
+    if (threadsToInsert.empty())
+    {
+        return false;
+    }
+
+    changeNotifications_.onPrepareUpdateMessageCount(*this);
+
+    if ( ! threads_.add(threadsToInsert.data(), threadsToInsert.size()))
+    {
+        return false;
+    }
+
+    //don't use updateMessageCount() as insertDiscussionThread will take care of that for totals
+    for (auto thread : threadsToInsert)
+    {
+        messageCount_ += static_cast<decltype(messageCount_)>(thread->messageCount());
+        thread->addCategory(pointer());
+    }
+    changeNotifications_.onUpdateMessageCount(*this);
+
+    executeOnCategoryAndAllParents(*this, [&](auto& category)
+    {
+        //this category and all parents will hold separate references to the new threads
+        for (auto thread : threadsToInsert)
+        {
+            category.totalThreads_.add(thread);            
+        }
+    });
+
+    return true;
+}
+
 bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages)
 {
     assert(thread);
@@ -156,11 +204,8 @@ bool DiscussionCategory::addTag(DiscussionTagPtr tag)
         return false;
     }
 
-    tag->threads().iterateThreads([this](DiscussionThreadPtr threadPtr)
-    {
-        assert(threadPtr);
-        this->insertDiscussionThread(threadPtr);
-    });
+    insertDiscussionThreadsOfTag(tag);
+
     return true;
 }
 
