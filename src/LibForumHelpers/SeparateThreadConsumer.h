@@ -54,7 +54,6 @@ namespace Forum::Helpers
         }
 
     private:
-
         void threadLoop()
         {
             while ( ! stopWriteThread_)

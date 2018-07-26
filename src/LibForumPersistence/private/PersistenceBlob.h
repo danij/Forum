@@ -27,8 +27,6 @@ namespace Forum::Persistence
         char* buffer{nullptr}; //storing raw pointer so that Blob can be placed in a boost lockfree queue
         size_t size{};
 
-        //Blob& operator=(const Blob&) = default;
-
         static Blob withSize(const size_t size)
         {
             return { new char[size], size };
