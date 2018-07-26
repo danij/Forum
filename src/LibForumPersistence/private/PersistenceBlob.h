@@ -24,17 +24,20 @@ namespace Forum::Persistence
 {
     struct Blob final
     {
-        Blob();
-        explicit Blob(size_t size);
-        ~Blob() = default;
-        Blob(const Blob&) = default;
-        Blob(Blob&&) = default;
-        Blob& operator=(const Blob&) = default;
-        Blob& operator=(Blob&&) = default;
+        char* buffer{nullptr}; //storing raw pointer so that Blob can be placed in a boost lockfree queue
+        size_t size{};
 
-        char* buffer; //storing raw pointer so that Blob can be placed in a boost lockfree queue
-        size_t size;
+        //Blob& operator=(const Blob&) = default;
 
-        static void free(Blob& blob);
+        static Blob withSize(const size_t size)
+        {
+            return { new char[size], size };
+        }
+
+        static void free(Blob& blob)
+        {
+            delete[] blob.buffer;
+            blob.buffer = nullptr;
+        }
     };
 }

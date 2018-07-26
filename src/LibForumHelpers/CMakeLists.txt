@@ -18,6 +18,7 @@ set(HEADER_FILES
         StringHelpers.h
         TypeHelpers.h
         IpAddress.h
+        SeparateThreadConsumer.h
         SpinLock.h)
 
 include_directories(

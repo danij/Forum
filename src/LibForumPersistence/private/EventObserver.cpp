@@ -22,18 +22,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "FileAppender.h"
 #include "TypeHelpers.h"
 #include "Logging.h"
+#include "SeparateThreadConsumer.h"
 
-#include <atomic>
 #include <chrono>
-#include <condition_variable>
 #include <map>
 #include <mutex>
 #include <numeric>
 #include <thread>
 #include <vector>
 #include <cstring>
-
-#include <boost/lockfree/queue.hpp>
 
 using namespace Forum;
 using namespace Forum::Persistence;
@@ -54,76 +51,37 @@ struct BlobPart
     }
 };
 
-class EventCollector final : boost::noncopyable
+class EventCollector final : public SeparateThreadConsumer<EventCollector, Blob>
 {
 public:
-    EventCollector(const std::filesystem::path& destinationFolder, time_t refreshEverySeconds)
+    EventCollector(const std::filesystem::path& destinationFolder, const time_t refreshEverySeconds)
         : appender_(destinationFolder, refreshEverySeconds)
     {
-        writeThread_ = std::thread([this]() { this->writeLoop(); });
-    }
-
-    ~EventCollector()
-    {
-        stopWriteThread_ = true;
-        blobInQueueCondition_.notify_one();
-        writeThread_.join();
-    }
-
-    void addToQueue(const Blob& blob)
-    {
-        bool loggedWarning = false;
-        while ( ! queue_.bounded_push(blob))
-        {
-            if ( ! loggedWarning)
-            {
-                FORUM_LOG_WARNING << "Persistence queue is full";
-                loggedWarning = true;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(400));
-        }
-        blobInQueueCondition_.notify_one();
     }
 
 private:
+    friend class SeparateThreadConsumer<EventCollector, Blob>;
 
-    void writeLoop()
+    void onFail(const uint32_t failNr)
     {
-        while ( ! stopWriteThread_)
+        if (0 == failNr)
         {
-            std::unique_lock<decltype(conditionMutex_)> lock(conditionMutex_);
-            blobInQueueCondition_.wait(lock, [this]() { return ! queue_.empty() || stopWriteThread_; });
-            writeBlobsInQueue();
+            FORUM_LOG_WARNING << "Persistence queue is full";
         }
-        writeBlobsInQueue();
+        std::this_thread::sleep_for(std::chrono::milliseconds(400));
     }
 
-    void writeBlobsInQueue()
+    void consumeValues(Blob* values, const size_t nrOfValues)
     {
-        static thread_local Blob blobsToWrite[MaxBlobsInQueue];
-        Blob* blobs = blobsToWrite;
+        appender_.append(values, nrOfValues);
 
-        size_t nrOfBlobsToWrite = 0;
-        queue_.consume_all([blobs, &nrOfBlobsToWrite](Blob blob)
+        for (size_t i = 0; i < nrOfValues; ++i)
         {
-            blobs[nrOfBlobsToWrite++] = blob;
-        });
-
-        appender_.append(blobsToWrite, nrOfBlobsToWrite);
-
-        for (size_t i = 0; i < nrOfBlobsToWrite; ++i)
-        {
-            Blob::free(blobsToWrite[i]);
+            Blob::free(values[i]);
         }
     }
 
     FileAppender appender_;
-    static constexpr size_t MaxBlobsInQueue = 32768;
-    boost::lockfree::queue<Blob, boost::lockfree::capacity<MaxBlobsInQueue>> queue_;
-    std::thread writeThread_;
-    std::atomic_bool stopWriteThread_{ false };
-    std::condition_variable blobInQueueCondition_;
-    std::mutex conditionMutex_;
 };
 
 struct EventObserver::EventObserverImpl final : private boost::noncopyable
@@ -169,7 +127,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
            return total + part.totalSize();
         }) + EventHeaderSize;
 
-        const auto blob = Blob(totalSize);
+        const auto blob = Blob::withSize(totalSize);
 
         char* buffer = blob.buffer;
 
@@ -191,7 +149,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             }
         }
 
-        collector.addToQueue(blob);
+        collector.enqueue(blob);
     }
 
     void bindObservers()

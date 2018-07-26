@@ -10,8 +10,7 @@ find_package(Boost REQUIRED COMPONENTS log filesystem)
 set(SOURCE_FILES
         private/EventImporter.cpp
         private/EventObserver.cpp
-        private/FileAppender.cpp
-        private/PersistenceBlob.cpp)
+        private/FileAppender.cpp)
 
 set(HEADER_FILES
         EventImporter.h
