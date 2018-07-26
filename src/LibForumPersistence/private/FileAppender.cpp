@@ -42,7 +42,17 @@ FileAppender::FileAppender(const std::filesystem::path& destinationFolder, time_
 
 static constexpr uint8_t Padding[8] = { 0 };
 
-void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
+static void writeOrAbort(FILE* file, const void* bytes, const size_t nrOfBytes)
+{
+    fwrite(bytes, sizeof(char), nrOfBytes, file);
+    if (ferror(file))
+    {
+        FORUM_LOG_ERROR << "Could not persist blob to file";
+        std::abort();
+    }
+}
+
+void FileAppender::append(const Blob* blobs, const size_t nrOfBlobs)
 {
     if (nrOfBlobs < 1)
     {
@@ -74,20 +84,14 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
         writeValue(prefix, blobSize); prefix += sizeof(blobSize);
         writeValue(prefix, blobCRC32);
 
-        fwrite(prefixBuffer, 1, prefixSize, file);
+        writeOrAbort(file, prefixBuffer, prefixSize);
 
-        fwrite(blob.buffer, 1, blobSize, file);
+        writeOrAbort(file, blob.buffer, blobSize);
 
         const auto paddingNeeded = blobPaddingRequired(blobSize);
         if (paddingNeeded)
         {
-            fwrite(Padding, 1, paddingNeeded, file);
-        }
-
-        if (ferror(file))
-        {
-            FORUM_LOG_ERROR << "Could not persist blob to file";
-            std::abort();
+            writeOrAbort(file, Padding, paddingNeeded);
         }
     }
     fclose(file);
