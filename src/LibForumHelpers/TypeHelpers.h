@@ -37,7 +37,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DECLARE_INTERFACE_MANDATORY_NO_COPY(TypeName) \
     TypeName() = default; \
     virtual ~TypeName() = default; \
+    TypeName(const TypeName&) = delete; \
     TypeName(TypeName&&) = default; \
+    TypeName& operator=(const TypeName&) = delete; \
     TypeName& operator=(TypeName&&) = default;
 
 #define DECLARE_ABSTRACT_MANDATORY(TypeName) DECLARE_INTERFACE_MANDATORY(TypeName)
