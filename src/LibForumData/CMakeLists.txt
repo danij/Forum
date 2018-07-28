@@ -58,7 +58,8 @@ set(HEADER_FILES
         EntityDiscussionCategory.h
         EntityDiscussionCategoryCollection.h
         EntityMessageComment.h
-        EntityMessageCommentCollection.h
+        EntityMessageCommentCollection.h        
+        EntitySerialization.h
         DefaultAuthorization.h
         DefaultThrottling.h
         AuthorizationPrivileges.h
@@ -78,8 +79,7 @@ set(HEADER_FILES
         MemoryRepositoryAuthorization.h
         MetricsRepository.h
 
-        private/ResourceGuard.h
-        private/EntitySerialization.h)
+        private/ResourceGuard.h)
 
 include_directories(
         .
