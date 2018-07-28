@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "EventObserver.h"
-#include "PersistenceBlob.h"
 #include "PersistenceFormat.h"
 #include "FileAppender.h"
 #include "TypeHelpers.h"
@@ -51,7 +50,7 @@ struct BlobPart
     }
 };
 
-class EventCollector final : public SeparateThreadConsumer<EventCollector, Blob>
+class EventCollector final : public SeparateThreadConsumer<EventCollector, SeparateThreadConsumerBlob>
 {
 public:
     EventCollector(const std::filesystem::path& destinationFolder, const time_t refreshEverySeconds)
@@ -60,7 +59,7 @@ public:
     }
 
 private:
-    friend class SeparateThreadConsumer<EventCollector, Blob>;
+    friend class SeparateThreadConsumer<EventCollector, SeparateThreadConsumerBlob>;
 
     void onFail(const uint32_t failNr)
     {
@@ -71,13 +70,13 @@ private:
         std::this_thread::sleep_for(std::chrono::milliseconds(400));
     }
 
-    void consumeValues(Blob* values, const size_t nrOfValues)
+    void consumeValues(SeparateThreadConsumerBlob* values, const size_t nrOfValues)
     {
         appender_.append(values, nrOfValues);
 
         for (size_t i = 0; i < nrOfValues; ++i)
         {
-            Blob::free(values[i]);
+            SeparateThreadConsumerBlob::free(values[i]);
         }
     }
 
@@ -127,7 +126,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
            return total + part.totalSize();
         }) + EventHeaderSize;
 
-        const auto blob = Blob::withSize(totalSize);
+        const auto blob = SeparateThreadConsumerBlob::allowNew(totalSize);
 
         char* buffer = blob.buffer;
 

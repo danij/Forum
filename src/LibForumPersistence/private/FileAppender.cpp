@@ -52,7 +52,7 @@ static void writeOrAbort(FILE* file, const void* bytes, const size_t nrOfBytes)
     }
 }
 
-void FileAppender::append(const Blob* blobs, const size_t nrOfBlobs)
+void FileAppender::append(const SeparateThreadConsumerBlob* blobs, const size_t nrOfBlobs)
 {
     if (nrOfBlobs < 1)
     {

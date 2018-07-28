@@ -38,9 +38,7 @@ namespace Forum::Helpers
 
         virtual ~SeparateThreadConsumer()
         {
-            stopWriteThread_ = true;
-            blobInQueueCondition_.notify_one();
-            writeThread_.join();
+            stop();
         }
 
         void enqueue(T value)
@@ -51,6 +49,13 @@ namespace Forum::Helpers
                 static_cast<Derived*>(this)->onFail(failNr);
             }
             blobInQueueCondition_.notify_one();
+        }
+
+        void stop()
+        {
+            stopWriteThread_ = true;
+            blobInQueueCondition_.notify_one();
+            writeThread_.join();
         }
 
     private:
@@ -87,5 +92,22 @@ namespace Forum::Helpers
         std::atomic_bool stopWriteThread_{ false };
         std::condition_variable blobInQueueCondition_;
         std::mutex conditionMutex_;
+    };
+
+    struct SeparateThreadConsumerBlob final
+    {
+        char* buffer{ nullptr }; //storing raw pointer so that Blob can be placed in a boost lockfree queue
+        size_t size{};
+
+        static SeparateThreadConsumerBlob allowNew(const size_t size)
+        {
+            return { new char[size], size };
+        }
+
+        static void free(SeparateThreadConsumerBlob& blob)
+        {
+            delete[] blob.buffer;
+            blob.buffer = nullptr;
+        }
     };
 }

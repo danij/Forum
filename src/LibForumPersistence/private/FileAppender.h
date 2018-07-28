@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "PersistenceBlob.h"
+#include "SeparateThreadConsumer.h"
 
 #include <ctime>
 #include <filesystem>
@@ -33,7 +33,7 @@ namespace Forum::Persistence
     public:
         FileAppender(const std::filesystem::path& destinationFolder, time_t refreshEverySeconds);
 
-        void append(const Blob* blobs, size_t nrOfBlobs);
+        void append(const Helpers::SeparateThreadConsumerBlob* blobs, size_t nrOfBlobs);
 
     private:
         void updateCurrentFileIfNeeded();
