@@ -62,7 +62,10 @@ namespace Forum::Helpers
         {
             stopWriteThread_ = true;
             blobInQueueCondition_.notify_one();
-            writeThread_.join();
+            if (writeThread_.joinable())
+            {
+                writeThread_.join();                
+            }
         }
 
     private:
