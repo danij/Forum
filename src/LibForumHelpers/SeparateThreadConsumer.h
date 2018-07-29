@@ -22,7 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <condition_variable>
 #include <mutex>
+#include <string_view>
 #include <thread>
+#include <cstring>
 
 #include <boost/lockfree/queue.hpp>
 #include <boost/noncopyable.hpp>
@@ -38,9 +40,12 @@ namespace Forum::Helpers
 
         virtual ~SeparateThreadConsumer()
         {
-            stop();
+            stopConsumer();
         }
 
+        /**
+         * Can be called from any thread
+         */
         void enqueue(T value)
         {
             uint32_t failNr = 0;
@@ -51,7 +56,7 @@ namespace Forum::Helpers
             blobInQueueCondition_.notify_one();
         }
 
-        void stop()
+        void stopConsumer()
         {
             stopWriteThread_ = true;
             blobInQueueCondition_.notify_one();
@@ -69,6 +74,8 @@ namespace Forum::Helpers
                 consumeValues();
             }
             consumeValues();
+
+            static_cast<Derived*>(this)->onThreadFinish();
         }
 
         void consumeValues()
@@ -88,10 +95,11 @@ namespace Forum::Helpers
         }
 
         boost::lockfree::queue<T, boost::lockfree::capacity<Capacity>> queue_;
-        std::thread writeThread_;
         std::atomic_bool stopWriteThread_{ false };
         std::condition_variable blobInQueueCondition_;
         std::mutex conditionMutex_;
+        //other variabiles need to be initialized once the thread starts
+        std::thread writeThread_;
     };
 
     struct SeparateThreadConsumerBlob final
@@ -99,9 +107,21 @@ namespace Forum::Helpers
         char* buffer{ nullptr }; //storing raw pointer so that Blob can be placed in a boost lockfree queue
         size_t size{};
 
-        static SeparateThreadConsumerBlob allowNew(const size_t size)
+        static SeparateThreadConsumerBlob allocateNew(const size_t size)
         {
             return { new char[size], size };
+        }
+
+        static SeparateThreadConsumerBlob allocateCopy(const std::string_view view)
+        {
+            if (view.empty())
+            {
+                return { nullptr, view.size() };
+            }
+            auto buffer = new char[view.size()];
+            memcpy(buffer, view.data(), view.size());
+
+            return { buffer, view.size() };
         }
 
         static void free(SeparateThreadConsumerBlob& blob)

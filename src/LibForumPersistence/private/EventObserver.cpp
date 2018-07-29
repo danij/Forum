@@ -80,6 +80,9 @@ private:
         }
     }
 
+    void onThreadFinish()
+    {}
+
     FileAppender appender_;
 };
 
@@ -126,7 +129,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
            return total + part.totalSize();
         }) + EventHeaderSize;
 
-        const auto blob = SeparateThreadConsumerBlob::allowNew(totalSize);
+        const auto blob = SeparateThreadConsumerBlob::allocateNew(totalSize);
 
         char* buffer = blob.buffer;
 
