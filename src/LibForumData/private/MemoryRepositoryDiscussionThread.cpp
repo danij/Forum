@@ -543,19 +543,21 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
 
                            writeEvents().onAddNewDiscussionThread(createObserverContext(*currentUser), thread);
 
-                           auto levelToGrant = collection.getForumWideDefaultPrivilegeLevel(
-                                   ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD);
-                           if (levelToGrant)
+                           if (anonymousUser() != currentUser)
                            {
-                               auto value = levelToGrant->value;
-                               auto duration = levelToGrant->duration;
+                               auto levelToGrant = collection.getForumWideDefaultPrivilegeLevel(
+                                       ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD);
+                               if (levelToGrant)
+                               {
+                                   const auto value = levelToGrant->value;
+                                   const auto duration = levelToGrant->duration;
 
-                               authorizationDirectWriteRepository_->assignDiscussionThreadPrivilege(
-                                       collection, thread.id(), currentUser->id(), value, duration);
-                               writeEvents().assignDiscussionThreadPrivilege(
-                                       createObserverContext(*currentUser), thread, *currentUser, value, duration);
+                                   authorizationDirectWriteRepository_->assignDiscussionThreadPrivilege(
+                                           collection, thread.id(), currentUser->id(), value, duration);
+                                   writeEvents().assignDiscussionThreadPrivilege(
+                                           createObserverContext(*currentUser), thread, *currentUser, value, duration);
+                               }
                            }
-
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", thread.id());
