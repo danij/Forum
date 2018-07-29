@@ -35,7 +35,9 @@ namespace Forum::Helpers
     class SeparateThreadConsumer : boost::noncopyable
     {
     public:
-        SeparateThreadConsumer() : writeThread_{ [this]() { this->threadLoop(); } }
+        SeparateThreadConsumer(const std::chrono::milliseconds loopWaitMilliseconds = std::chrono::milliseconds::max())
+            : loopWaitMilliseconds_(loopWaitMilliseconds),
+            writeThread_{ [this]() { this->threadLoop(); } }
         {}
 
         virtual ~SeparateThreadConsumer()
@@ -69,9 +71,17 @@ namespace Forum::Helpers
             while ( ! stopWriteThread_)
             {
                 std::unique_lock<decltype(conditionMutex_)> lock(conditionMutex_);
-                blobInQueueCondition_.wait(lock, [this]() { return ! queue_.empty() || stopWriteThread_; });
-
-                consumeValues();
+                if (blobInQueueCondition_.wait_for(lock, loopWaitMilliseconds_, [this]()
+                {
+                    return ! queue_.empty() || stopWriteThread_;
+                }))
+                {
+                    consumeValues();                    
+                }
+                else
+                {
+                    static_cast<Derived*>(this)->onThreadWaitNoValues();
+                }
             }
             consumeValues();
 
@@ -98,8 +108,9 @@ namespace Forum::Helpers
         std::atomic_bool stopWriteThread_{ false };
         std::condition_variable blobInQueueCondition_;
         std::mutex conditionMutex_;
+        std::chrono::milliseconds loopWaitMilliseconds_;
         //other variabiles need to be initialized once the thread starts
-        std::thread writeThread_;
+        std::thread writeThread_;        
     };
 
     struct SeparateThreadConsumerBlob final

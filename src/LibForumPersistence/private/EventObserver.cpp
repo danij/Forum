@@ -83,6 +83,9 @@ private:
     void onThreadFinish()
     {}
 
+    void onThreadWaitNoValues()
+    {}
+
     FileAppender appender_;
 };
 

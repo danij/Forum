@@ -63,7 +63,7 @@ namespace Forum::Extensibility
         void consumeValues(Helpers::SeparateThreadConsumerBlob* values, size_t nrOfValues);
         void prepareFile();
         void closeFile();
-        void onCloseReminder();
+        void onThreadWaitNoValues();
 
         template<typename Fn>
         void enqueueJson(Fn&& action);
@@ -83,9 +83,6 @@ namespace Forum::Extensibility
         size_t elementsWritten_{};
         time_t refreshEverySeconds_{};
         time_t lastFileCreatedAt_{};
-
-        std::atomic_bool stopCloseReminderThread_{ false };
-        std::thread closeReminderThread_;
     };
 
     template <typename Fn>

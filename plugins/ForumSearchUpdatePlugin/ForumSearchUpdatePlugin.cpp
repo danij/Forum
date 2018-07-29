@@ -17,11 +17,11 @@ using namespace Json;
 
 using FilePtr = std::unique_ptr<FILE, decltype(&fclose)>;
 
-ForumSearchUpdatePlugin::ForumSearchUpdatePlugin(PluginInput& input) : 
+ForumSearchUpdatePlugin::ForumSearchUpdatePlugin(PluginInput& input) :
+    SeparateThreadConsumer<ForumSearchUpdatePlugin, SeparateThreadConsumerBlob>{ std::chrono::milliseconds(5000) },
     writeEvents_{ *input.writeEvents },
     destinationFileTemplate_{ input.configuration->get<std::string>("outputFileNameTemplate") },
-    refreshEverySeconds_{ input.configuration->get<time_t>("createNewOutputFileEverySeconds") },
-    closeReminderThread_([this]() { this->onCloseReminder();})
+    refreshEverySeconds_{ input.configuration->get<time_t>("createNewOutputFileEverySeconds") }
 {
     registerEvents();
 }
@@ -38,7 +38,6 @@ StringView ForumSearchUpdatePlugin::version() const noexcept
 
 void ForumSearchUpdatePlugin::stop()
 {
-    stopCloseReminderThread_ = true;
     stopConsumer();
 
     writeEvents_.onAddNewDiscussionThread.disconnect(onAddNewDiscussionThreadConnection_);
@@ -51,15 +50,10 @@ void ForumSearchUpdatePlugin::stop()
     writeEvents_.onDeleteDiscussionThreadMessage.disconnect(onDeleteDiscussionThreadMessageConnection_);
 }
 
-void ForumSearchUpdatePlugin::onCloseReminder()
+void ForumSearchUpdatePlugin::onThreadWaitNoValues()
 {
-    while ( ! stopCloseReminderThread_)
-    {
-        //send a reminder so that files are closed even if no other activity occurs
-        enqueue({});
-
-        std::this_thread::sleep_for(std::chrono::seconds(static_cast<long>(refreshEverySeconds_)));
-    }
+    //send a reminder so that files are closed even if no other activity occurs
+    enqueue({});
 }
 
 void ForumSearchUpdatePlugin::registerEvents()
