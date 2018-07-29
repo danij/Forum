@@ -554,7 +554,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
 
                                    authorizationDirectWriteRepository_->assignDiscussionThreadPrivilege(
                                            collection, thread.id(), currentUser->id(), value, duration);
-                                   writeEvents().assignDiscussionThreadPrivilege(
+                                   writeEvents().onAssignDiscussionThreadPrivilege(
                                            createObserverContext(*currentUser), thread, *currentUser, value, duration);
                                }
                            }
