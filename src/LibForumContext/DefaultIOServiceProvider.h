@@ -20,9 +20,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "IOServiceProvider.h"
 
+#include <boost/asio/signal_set.hpp>
+
+#include <atomic>
 #include <cstdint>
-#include <condition_variable>
-#include <mutex>
 #include <thread>
 #include <vector>
 
@@ -39,11 +40,10 @@ namespace Forum::Network
         void stop() override;
 
     private:
+        std::atomic_bool stop_{ false };
         boost::asio::io_service service_;
 
         std::vector<std::thread> threads_;
-        std::condition_variable stopVariable_;
-        std::mutex stopMutex_;
-        bool stopping_;
+        boost::asio::signal_set signalWaiter_;
     };
 }

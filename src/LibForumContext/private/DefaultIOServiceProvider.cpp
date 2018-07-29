@@ -18,11 +18,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "DefaultIOServiceProvider.h"
 
+#include <boost/asio/signal_set.hpp>
+
 #include <algorithm>
 
 using namespace Forum::Network;
 
-DefaultIOServiceProvider::DefaultIOServiceProvider(size_t nrOfThreads) : stopping_(false)
+DefaultIOServiceProvider::DefaultIOServiceProvider(size_t nrOfThreads) : signalWaiter_{service_, SIGINT, SIGTERM}
 {
     nrOfThreads = std::clamp(nrOfThreads, size_t(1), size_t(100));
 
@@ -43,12 +45,23 @@ void DefaultIOServiceProvider::start()
             service_.run();
         });
     }
+    signalWaiter_.async_wait([this](auto ec, auto signal)
+    {
+        if ( ! ec)
+        {
+            this->stop();            
+        }
+    });
 }
 
 void DefaultIOServiceProvider::waitForStop()
 {
-    std::unique_lock<decltype(stopMutex_)> lock(stopMutex_);
-    stopVariable_.wait(lock, [&]() { return stopping_; });
+    while ( ! stop_)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    service_.stop();
 
     if ( ! threads_.empty())
     {
@@ -62,9 +75,5 @@ void DefaultIOServiceProvider::waitForStop()
 
 void DefaultIOServiceProvider::stop()
 {
-    {
-        std::lock_guard<decltype(stopMutex_)> guard(stopMutex_);
-        stopping_ = true;
-    }
-    stopVariable_.notify_all();
+    stop_ = true;
 }
