@@ -44,9 +44,9 @@ namespace Forum
         bool initialize();
         bool loadConfiguration(std::string_view fileName);
         void validateConfiguration();
-        void createCommandHandler();
-        void importEvents();
-        void initializeHttp();
+        bool createCommandHandler();
+        bool importEvents();
+        bool initializeHttp();
         bool initializeLogging();
         bool loadPlugins();
         void prepareToStop();

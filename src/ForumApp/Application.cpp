@@ -77,14 +77,7 @@ bool Application::initialize()
 
     FORUM_LOG_INFO << "Starting Forum Backend v" << VERSION;
 
-    createCommandHandler();
-    FORUM_LOG_INFO << "Initialized command handlers";
-
-    importEvents();
-    if ( ! loadPlugins()) return false;
-    initializeHttp();
-
-    return true;
+    return createCommandHandler() && importEvents() && loadPlugins() && initializeHttp();
 }
 
 int Application::run(int argc, const char* argv[])
@@ -215,7 +208,7 @@ void Application::validateConfiguration()
     //TODO
 }
 
-void Application::createCommandHandler()
+bool Application::createCommandHandler()
 {
     const auto config = Configuration::getGlobalConfig();
     entityCollection_ = std::make_shared<Entities::EntityCollection>(config->persistence.messagesFile);
@@ -265,15 +258,19 @@ void Application::createCommandHandler()
                                                                persistenceConfig.outputFolder,
                                                                persistenceConfig.createNewOutputFileEverySeconds);
         (void)persistenceObserver_; //prevent unused member warnings, no need to use is explicitly
+
+        FORUM_LOG_INFO << "Initialized command handlers";
+
+        return true;
     }
     catch(std::exception& ex)
     {
         FORUM_LOG_FATAL << "Cannot create persistence observer: " << ex.what();
-        std::exit(1);
+        return false;
     }
 }
 
-void Application::importEvents()
+bool Application::importEvents()
 {
     FORUM_LOG_INFO << "Starting import of persisted events";
 
@@ -291,15 +288,16 @@ void Application::importEvents()
     {
         FORUM_LOG_INFO << "Finished importing " << result.statistic.importedBlobs << " events out of "
                                                 << result.statistic.readBlobs << " blobs read";
+        return true;
     }
     else
     {
         FORUM_LOG_ERROR << "Import failed!";
-        std::exit(2);
+        return false;
     }
 }
 
-void Application::initializeHttp()
+bool Application::initializeHttp()
 {
     const auto forumConfig = Configuration::getGlobalConfig();
 
@@ -316,6 +314,8 @@ void Application::initializeHttp()
     endpointManager_->registerRoutes(*httpRouter_);
 
     httpListener_ = std::make_unique<HttpListener>(httpConfig, *httpRouter_, getIOServiceProvider().getIOService());
+
+    return true;
 }
 
 bool Application::initializeLogging()
