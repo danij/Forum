@@ -44,6 +44,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <string>
 
+#include <boost/dll.hpp>
+
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/filter_parser.hpp>
 #include <boost/log/utility/setup/formatter_parser.hpp>
@@ -56,7 +58,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Forum;
 using namespace Forum::Authorization;
 using namespace Forum::Commands;
+using namespace Forum::Configuration;
 using namespace Forum::Context;
+using namespace Forum::Extensibility;
 using namespace Forum::Network;
 using namespace Forum::Persistence;
 using namespace Forum::Repository;
@@ -76,9 +80,8 @@ bool Application::initialize()
     createCommandHandler();
     FORUM_LOG_INFO << "Initialized command handlers";
 
-    FORUM_LOG_INFO << "Starting import of persisted events";
     importEvents();
-
+    if ( ! loadPlugins()) return false;
     initializeHttp();
 
     return true;
@@ -162,7 +165,7 @@ int Application::run(int argc, const char* argv[])
 
     FORUM_LOG_INFO << "Stopped listening for HTTP connections";
 
-    events.beforeApplicationStop();
+    prepareToStop();
 
     cleanup();
 
@@ -171,6 +174,8 @@ int Application::run(int argc, const char* argv[])
 
 void Application::cleanup()
 {
+    plugins_.clear();
+
     Helpers::cleanupStringHelpers();
 
     //clean up resources cached by ICU so that they don't show up as memory leaks
@@ -215,7 +220,7 @@ void Application::createCommandHandler()
     const auto config = Configuration::getGlobalConfig();
     entityCollection_ = std::make_shared<Entities::EntityCollection>(config->persistence.messagesFile);
 
-    auto store = std::make_shared<MemoryStore>(entityCollection_);
+    auto store = memoryStore_ = std::make_shared<MemoryStore>(entityCollection_);    
     auto authorization = std::make_shared<DefaultAuthorization>(entityCollection_->grantedPrivileges(),
                                                                 *entityCollection_, config->service.disableThrottling);
 
@@ -270,6 +275,8 @@ void Application::createCommandHandler()
 
 void Application::importEvents()
 {
+    FORUM_LOG_INFO << "Starting import of persisted events";
+
     const auto forumConfig = Configuration::getGlobalConfig();
     auto& persistenceConfig = forumConfig->persistence;
 
@@ -337,4 +344,69 @@ bool Application::initializeLogging()
         return false;
     }
     return true;
+}
+
+LoadedPlugin loadPlugin(const PluginEntry& entry, MemoryStore& memoryStore)
+{
+    FORUM_LOG_INFO << "\tLoading plugin from " << entry.libraryPath;
+
+    try
+    {
+        boost::dll::shared_library library(entry.libraryPath);
+        auto loadFn = library.get<PluginLoaderFn>("loadPlugin");
+
+        PluginInput input
+        {
+            &Entities::Private::getGlobalEntityCollection(),
+            &memoryStore.readEvents,
+            &memoryStore.writeEvents,
+            &entry.configuration
+        };
+        PluginPtr plugin;
+
+        loadFn(&input, &plugin);
+
+        if (plugin)
+        {
+            FORUM_LOG_INFO << "\t\tLoaded " << plugin->name() << " (version " << plugin->version() << ")";
+        }
+
+        return 
+        {
+            std::move(library),
+            std::move(plugin)
+        };
+    }
+    catch (std::exception& ex)
+    {
+        FORUM_LOG_ERROR << "Unable to load plugin: " << ex.what();
+        return {};
+    }
+}
+
+bool Application::loadPlugins()
+{
+    FORUM_LOG_INFO << "Loading plugins";
+
+    const auto forumConfig = Configuration::getGlobalConfig();
+
+    for (const auto& entry : forumConfig->plugins)
+    {
+        auto result = loadPlugin(entry, *memoryStore_);
+        if ( ! result.plugin) return false;
+
+        plugins_.emplace_back(std::move(result));
+    }
+
+    return true;
+}
+
+void Application::prepareToStop()
+{
+    for (auto loadedPlugin : plugins_)
+    {
+        loadedPlugin.plugin->stop();
+    }
+
+    getApplicationEvents().beforeApplicationStop();
 }

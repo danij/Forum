@@ -74,6 +74,14 @@
         "createNewOutputFileEverySeconds": 86400
     },
     
+    "plugins": [{
+        "libraryPath": "ForumSearchUpdatePlugin.so",
+        "configuration": {
+            "outputFileNameTemplate": "search_updates-%1%.json",
+            "createNewOutputFileEverySeconds": 60
+        }
+    }],
+    
     "defaultPrivileges": {
         "threadMessage": {
             "view": 0,

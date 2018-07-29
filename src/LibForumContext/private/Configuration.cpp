@@ -21,10 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/property_tree/json_parser.hpp>
 
-static std::shared_ptr<const Forum::Configuration::Config> currentConfig =
-        std::make_shared<const Forum::Configuration::Config>();
+using namespace Forum::Configuration;
 
-std::shared_ptr<const Forum::Configuration::Config> Forum::Configuration::getGlobalConfig()
+static std::shared_ptr<const Config> currentConfig = std::make_shared<const Config>();
+
+std::shared_ptr<const Config> Forum::Configuration::getGlobalConfig()
 {
     return std::atomic_load(&currentConfig);
 }
@@ -37,6 +38,18 @@ void Forum::Configuration::setGlobalConfig(const Config& value)
 #define CONCAT_MEMBER(structure, member) structure.member
 #define LOAD_CONFIG_VALUE(path) \
     CONCAT_MEMBER(config, path) = tree.get<decltype(CONCAT_MEMBER(config, path))>(#path, CONCAT_MEMBER(config, path))
+
+static void loadPluginConfig(boost::property_tree::ptree& source, Config& config)
+{
+    for (const auto& [_, entry] : source.get_child("plugins"))
+    {
+        config.plugins.push_back(
+            {
+                entry.get<std::string>("libraryPath"),
+                entry.get_child("configuration")
+            });
+    }
+}
 
 void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
 {
@@ -198,6 +211,8 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     
     LOAD_CONFIG_VALUE(defaultPrivilegeGrants.thread.create.value);
     LOAD_CONFIG_VALUE(defaultPrivilegeGrants.thread.create.duration);
+
+    loadPluginConfig(tree, config);
 
     setGlobalConfig(config);
 }

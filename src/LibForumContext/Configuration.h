@@ -23,6 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <limits>
 #include <memory>
 #include <string>
+#include <vector>
+
+#include <boost/property_tree/ptree.hpp>
 
 namespace Forum::Configuration
 {
@@ -117,6 +120,12 @@ namespace Forum::Configuration
         std::string messagesFile = "";
         bool validateChecksum = true;
         int_fast32_t createNewOutputFileEverySeconds = 3600 * 24;
+    };
+
+    struct PluginEntry
+    {
+        std::string libraryPath = "";
+        boost::property_tree::ptree configuration;
     };
 
     typedef uint_fast16_t PrivilegeValueType;
@@ -254,6 +263,7 @@ namespace Forum::Configuration
         ServiceConfig service;
         LoggingConfig logging;
         PersistenceConfig persistence;
+        std::vector<PluginEntry> plugins;
         DefaultPrivilegesConfig defaultPrivileges;
         DefaultPrivilegeDurationConfig defaultPrivilegeGrants;
     };

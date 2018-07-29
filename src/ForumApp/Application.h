@@ -21,13 +21,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "HttpListener.h"
 #include "HttpRouter.h"
 #include "CommandHandler.h"
+#include "MemoryRepositoryCommon.h"
 #include "ServiceEndpointManager.h"
 #include "EventObserver.h"
+#include "Plugin.h"
 
 #include <boost/noncopyable.hpp>
 
 #include <memory>
 #include <string_view>
+#include <vector>
 
 namespace Forum
 {
@@ -45,6 +48,8 @@ namespace Forum
         void importEvents();
         void initializeHttp();
         bool initializeLogging();
+        bool loadPlugins();
+        void prepareToStop();
 
         std::unique_ptr<Http::HttpRouter> httpRouter_;
         std::unique_ptr<Http::HttpListener> httpListener_;
@@ -52,7 +57,10 @@ namespace Forum
         std::unique_ptr<Commands::ServiceEndpointManager> endpointManager_;
         std::unique_ptr<Persistence::EventObserver> persistenceObserver_;
 
+        Repository::MemoryStoreRef memoryStore_;
         Entities::EntityCollectionRef entityCollection_;
         Repository::DirectWriteRepositoryCollection directWriteRepositories_;
+
+        std::vector<Extensibility::LoadedPlugin> plugins_;
     };
 }
