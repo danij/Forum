@@ -42,9 +42,10 @@ FileAppender::FileAppender(const std::filesystem::path& destinationFolder, time_
 
 static constexpr uint8_t Padding[8] = { 0 };
 
-static void writeOrAbort(FILE* file, const void* bytes, const size_t nrOfBytes)
+template<typename T>
+static void writeOrAbort(FILE* file, const T* elements, const size_t nrOfElements)
 {
-    fwrite(bytes, sizeof(char), nrOfBytes, file);
+    fwrite(elements, sizeof(T), nrOfElements, file);
     if (ferror(file))
     {
         FORUM_LOG_ERROR << "Could not persist blob to file";
