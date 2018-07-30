@@ -160,7 +160,7 @@ struct CurrentTimeChanger final : private boost::noncopyable
     }
 
 #define CHECK_STATUS_CODE(value) \
-    if ((StatusCode::OK) != value && (StatusCode::NO_EFFECT != value)) { \
+    if (auto v = value; (StatusCode::OK) != v && (StatusCode::NO_EFFECT != v)) { \
         FORUM_LOG_ERROR << "Unable to import event of type " << currentEventType_ << ": unexpected status code: " << value; \
         return false; \
     }
