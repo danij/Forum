@@ -42,3 +42,4 @@ add_subdirectory(test/ForumServiceTests)
 add_subdirectory(test/MemoryRepositoryBenchmarks)
 
 add_subdirectory(tools/MessageExtractor)
+add_subdirectory(tools/SearchDataExtractor)
