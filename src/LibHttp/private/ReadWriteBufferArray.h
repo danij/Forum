@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-present Daniel Jurcau
+Copyright (C) Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,10 +18,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "FixedSizeBufferPool.h"
+
 #include <algorithm>
+#include <array>
 #include <cstddef>
-#include <memory>
-#include <mutex>
 
 #include <boost/noncopyable.hpp>
 #include <boost/asio/buffer.hpp>
@@ -29,127 +30,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Http
 {
-    template<size_t BufferSize, size_t AlignSpecifier = 1>
-    class FixedSizeBufferPool final : boost::noncopyable
-    {
-    public:
-        struct Buffer
-        {
-            alignas(AlignSpecifier) char data[BufferSize];
-            static constexpr size_t size = BufferSize;
-        };
-
-        struct BringBackBuffer final
-        {
-            void operator()(Buffer* toReturn)
-            {
-                if (manager) manager->returnBuffer(toReturn);
-            }
-
-            FixedSizeBufferPool* manager;
-        };
-
-        typedef std::unique_ptr<Buffer, BringBackBuffer> LeasedBufferType;
-
-        explicit FixedSizeBufferPool(size_t maxBufferCount) :
-            maxBufferCount_(maxBufferCount), numberOfUsedBuffers(0),
-            buffers_(std::make_unique<Buffer[]>(maxBufferCount)),
-            availableIndexes_(std::make_unique<size_t[]>(maxBufferCount))
-        {
-            for (size_t i = 0; i < maxBufferCount_; ++i)
-            {
-                availableIndexes_[i] = i;
-            }
-        }
-
-        /**
-         * Returns a buffer which must be manually returned to the pool
-         */
-        Buffer* leaseBufferForManualRelease()
-        {
-            std::lock_guard<decltype(mutex_)> lock(mutex_);
-            if (numberOfUsedBuffers >= maxBufferCount_)
-            {
-                return {};
-            }
-            return &buffers_[availableIndexes_[numberOfUsedBuffers++]];
-        }
-
-        /**
-         * Returns a buffer that automatically returns to the pool on destruction
-         */
-        LeasedBufferType leaseBuffer()
-        {
-            return{ leaseBufferForManualRelease() , { this } };
-        }
-
-        void returnBuffer(void* dataPtr)
-        {
-            returnBuffer(reinterpret_cast<Buffer*>(reinterpret_cast<char*>(dataPtr) - offsetof(Buffer, data)));
-        }
-
-        void returnBuffer(Buffer* value)
-        {
-            if (nullptr == value)
-            {
-                return;
-            }
-            const size_t index = value - &buffers_[0];
-            if (index >= maxBufferCount_)
-            {
-                return;
-            }
-
-            std::lock_guard<decltype(mutex_)> lock(mutex_);
-            if (numberOfUsedBuffers < 1)
-            {
-                return;
-            }
-            availableIndexes_[--numberOfUsedBuffers] = index;
-        }
-
-    private:
-        const size_t maxBufferCount_;
-        size_t numberOfUsedBuffers;
-        std::unique_ptr<Buffer[]> buffers_;
-        std::unique_ptr<size_t[]> availableIndexes_;
-        std::mutex mutex_;
-    };
-
-    template<typename T>
-    class FixedSizeObjectPool final : boost::noncopyable
-    {
-    public:
-        explicit FixedSizeObjectPool(size_t maxBufferCount) : bufferPool_(maxBufferCount)
-        {
-        }
-
-        template<typename ...Args>
-        T* getObject(Args&& ...constructorArgs)
-        {
-            auto buffer = bufferPool_.leaseBufferForManualRelease();
-            if (nullptr == buffer)
-            {
-                return nullptr;
-            }
-            return new (buffer->data) T(std::forward<Args>(constructorArgs)...);
-        }
-
-        void returnObject(T* value)
-        {
-            if (nullptr == value)
-            {
-                return;
-            }
-            value->~T();
-            bufferPool_.returnBuffer(value);
-        }
-
-    private:
-        FixedSizeBufferPool<sizeof(T), alignof(T)> bufferPool_;
-    };
-
-
     template<size_t BufferSize, size_t MaxNrOfBuffers>
     class ReadWriteBufferArray final : boost::noncopyable
     {
@@ -239,8 +119,8 @@ namespace Http
 
             typedef boost::asio::const_buffer value_type;
 
-            struct const_iterator : public boost::iterator_facade<const_iterator, value_type,
-                                                                  boost::random_access_traversal_tag, value_type>
+            struct const_iterator : 
+                boost::iterator_facade<const_iterator, value_type, boost::random_access_traversal_tag, value_type>
             {
                 const_iterator() : bufferArray_(nullptr), currentIndex_(0)
                 {}
@@ -266,7 +146,7 @@ namespace Http
                     return (bufferArray_ == other.bufferArray_) && (currentIndex_ == other.currentIndex_);
                 }
 
-                void advance(int n)
+                void advance(const int n)
                 {
                     currentIndex_ += n;
                 }
@@ -334,7 +214,7 @@ namespace Http
             return true;
         }
 
-        BufferType buffers_[MaxNrOfBuffers];
+        std::array<BufferType, MaxNrOfBuffers> buffers_;
         FixedSizeBufferPool<BufferSize>& bufferPool_;
 
         int latestBuffer_ = -1;

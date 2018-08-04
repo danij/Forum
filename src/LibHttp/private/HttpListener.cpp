@@ -17,7 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "HttpListener.h"
-#include "FixedSizeBuffer.h"
+#include "FixedSizeObjectPool.h"
+#include "ReadWriteBufferArray.h"
 #include "HttpParser.h"
 #include "HttpResponseBuilder.h"
 #include "HttpRouter.h"
@@ -78,7 +79,7 @@ struct HttpListener::HttpConnection final : private boost::noncopyable
           headerBuffer_(std::move(headerBuffer)), requestBodyBuffer_(readBufferPool), responseBuffer_(writeBufferPool),
           responseBuilder_(writeToBuffer, &responseBuffer_), timeoutManager_(timeoutManager),
           trustIpFromXForwardedFor_(trustIpFromXForwardedFor),
-          parser_(headerBuffer_->data, headerBuffer_->size, Buffer::MaxRequestBodyLength,
+          parser_(headerBuffer_->data, Buffer::ReadBufferSize, Buffer::MaxRequestBodyLength,
               [](auto buffer, auto size, auto state)
               {
                   return reinterpret_cast<HttpConnection*>(state)->onReadBody(buffer, size);
