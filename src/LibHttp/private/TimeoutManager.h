@@ -42,7 +42,7 @@ namespace Http
         typedef std::function<void(T)> ReleaseFn;
         typedef int64_t Timestamp;
 
-        explicit TimeoutManager(ReleaseFn&& release, Timestamp defaultTimeout)
+        explicit TimeoutManager(ReleaseFn&& release, const Timestamp defaultTimeout)
             : release_(std::move(release)), defaultTimeout_(defaultTimeout)
         {
             assert(nullptr != release_);
@@ -53,12 +53,12 @@ namespace Http
             return defaultTimeout_;
         }
 
-        void addExpireIn(T element, Timestamp expiresIn)
+        void addExpireIn(T element, const Timestamp expiresIn)
         {
             addExpireAt(element, getTimeSinceEpoch() + expiresIn);
         }
 
-        void addExpireAt(T element, Timestamp expiresAt)
+        void addExpireAt(T element, const Timestamp expiresAt)
         {
             std::lock_guard<decltype(mutex_)> lock(mutex_);
 
@@ -84,7 +84,7 @@ namespace Http
             checkTimeout(getTimeSinceEpoch());
         }
 
-        void checkTimeout(Timestamp at)
+        void checkTimeout(const Timestamp at)
         {
             std::lock_guard<decltype(mutex_)> lock(mutex_);
 
@@ -119,7 +119,7 @@ namespace Http
 
         typedef boost::multi_index_container<EntryPair, TimeoutManagerCollectionIndices> TimeoutManagerCollection;
 
-        auto getTimeSinceEpoch()
+        auto getTimeSinceEpoch() const
         {
             return static_cast<Timestamp>(std::chrono::duration_cast<std::chrono::seconds>(
                     std::chrono::system_clock::now().time_since_epoch()).count());
