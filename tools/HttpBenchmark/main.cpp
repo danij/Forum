@@ -16,10 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "HttpListener.h"
-#include "HttpRouter.h"
-
+#include "ConnectionManagerWithTimeout.h"
 #include "DefaultIOServiceProvider.h"
+#include "FixedHttpConnectionManager.h"
+#include "HttpRouter.h"
+#include "TcpListener.h"
 
 #include <atomic>
 #include <iostream>
@@ -78,7 +79,7 @@ public:
 
         try
         {
-            httpListener_->startListening();
+            tcpListener_->startListening();
         }
         catch (std::exception& ex)
         {
@@ -86,10 +87,10 @@ public:
             return 1;
         }
 
-        ioService_->start();
-        ioService_->waitForStop();
+        ioServiceProvider_->start();
+        ioServiceProvider_->waitForStop();
 
-        httpListener_->stopListening();
+        tcpListener_->stopListening();
 
         return 0;
     }
@@ -97,28 +98,26 @@ public:
 private:
     void initialize()
     {
-        ioService_ = std::make_unique<DefaultIOServiceProvider>(std::thread::hardware_concurrency());
+        ioServiceProvider_ = std::make_unique<DefaultIOServiceProvider>(std::thread::hardware_concurrency());
+        auto& ioService = ioServiceProvider_->getIOService();
         
-        HttpListener::Configuration httpConfig;
-
-        httpConfig.numberOfReadBuffers = 10;
-        httpConfig.numberOfWriteBuffers = 10;
-        httpConfig.listenIPAddress = "127.0.0.1";
-        httpConfig.listenPort = 8081;
-        httpConfig.connectionTimeoutSeconds = 30;
-        httpConfig.trustIpFromXForwardedFor = false;
-
         endpoints_ = std::make_unique<Endpoints>();
 
         httpRouter_ = std::make_unique<HttpRouter>();
         endpoints_->registerRoutes(*httpRouter_);
 
-        httpListener_ = std::make_unique<HttpListener>(httpConfig, *httpRouter_, ioService_->getIOService());
+        auto httpConnectionManager = std::make_shared<FixedHttpConnectionManager>(std::move(httpRouter_),
+            10, 10, false);
+
+        auto connectionManagerWithTimeout = std::make_shared<ConnectionManagerWithTimeout>(ioService,
+            httpConnectionManager, 30);
+
+        tcpListener_ = std::make_unique<TcpListener>(ioService, "127.0.0.1", 8081, connectionManagerWithTimeout);
     }
 
-    std::unique_ptr<DefaultIOServiceProvider> ioService_;
+    std::unique_ptr<DefaultIOServiceProvider> ioServiceProvider_;
     std::unique_ptr<HttpRouter> httpRouter_;
-    std::unique_ptr<HttpListener> httpListener_;
+    std::unique_ptr<TcpListener> tcpListener_;
     std::unique_ptr<Endpoints> endpoints_;
 };
 

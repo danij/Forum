@@ -1,6 +1,6 @@
 /*
 Fast Forum Backend
-Copyright (C) 2016-present Daniel Jurcau
+Copyright (C) Daniel Jurcau
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,48 +18,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "IConnectionManager.h"
+
 #include <cstdint>
-#include <string>
+#include <memory>
+#include <string_view>
 
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
 
 namespace Http
 {
-    class HttpRouter;
-
-    class HttpListener final : boost::noncopyable
+    class TcpListener final : boost::noncopyable
     {
     public:
-        struct Configuration
-        {
-            int_fast32_t numberOfReadBuffers;
-            int_fast32_t numberOfWriteBuffers;
-            std::string listenIPAddress;
-            uint16_t listenPort;
-            int_fast16_t connectionTimeoutSeconds;
-            bool trustIpFromXForwardedFor;
-        };
-
-        explicit HttpListener(Configuration config, HttpRouter& router, boost::asio::io_service& ioService);
-        ~HttpListener();
+        explicit TcpListener(boost::asio::io_service& ioService, std::string_view listenIpAddress, uint16_t listenPort,
+            std::shared_ptr<IConnectionManager> connectionManager);
+        ~TcpListener();
 
         void startListening();
         void stopListening();
 
-        HttpRouter& router();
-
     private:
 
         void startAccept();
-        friend struct HttpListenerOnAcceptCallback;
         void onAccept(const boost::system::error_code& ec);
-
-        struct HttpConnection;
-        friend struct HttpConnection;
-        void release(HttpConnection* connection);
-
-        struct HttpListenerImpl;
-        HttpListenerImpl* impl_;
+        
+        boost::asio::ip::address listenIpAddress_;
+        uint16_t listenPort_;
+        boost::asio::ip::tcp::acceptor acceptor_;
+        boost::asio::ip::tcp::socket currentSocket_;
+        std::shared_ptr<IConnectionManager> connectionManager_;
+        bool listening_;
     };
 }

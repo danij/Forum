@@ -100,7 +100,7 @@ namespace Forum::Configuration
         int_fast32_t numberOfWriteBuffers = 8192;
         std::string listenIPAddress = "127.0.0.1";
         uint16_t listenPort = 8081;
-        int_fast16_t connectionTimeoutSeconds = 20;
+        size_t connectionTimeoutSeconds = 20;
         bool trustIpFromXForwardedFor = false;
         bool disableCommands = false;
         bool disableCommandsForAnonymousUsers = false;

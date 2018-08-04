@@ -18,6 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Application.h"
 #include "Configuration.h"
+#include "ConnectionManagerWithTimeout.h"
+#include "FixedHttpConnectionManager.h"
 #include "ContextProviders.h"
 #include "DefaultIOServiceProvider.h"
 #include "StringHelpers.h"
@@ -142,7 +144,7 @@ int Application::run(int argc, const char* argv[])
                    << config->service.listenIPAddress << ":" << config->service.listenPort;
     try
     {
-        httpListener_->startListening();
+        tcpListener_->startListening();
     }
     catch(std::exception& ex)
     {
@@ -154,7 +156,7 @@ int Application::run(int argc, const char* argv[])
     getIOServiceProvider().start();
     getIOServiceProvider().waitForStop();
 
-    httpListener_->stopListening();
+    tcpListener_->stopListening();
 
     FORUM_LOG_INFO << "Stopped listening for HTTP connections";
 
@@ -300,20 +302,25 @@ bool Application::importEvents()
 bool Application::initializeHttp()
 {
     const auto forumConfig = Configuration::getGlobalConfig();
-
-    HttpListener::Configuration httpConfig;
-    httpConfig.numberOfReadBuffers = forumConfig->service.numberOfReadBuffers;
-    httpConfig.numberOfWriteBuffers = forumConfig->service.numberOfWriteBuffers;
-    httpConfig.listenIPAddress = forumConfig->service.listenIPAddress;
-    httpConfig.listenPort = forumConfig->service.listenPort;
-    httpConfig.connectionTimeoutSeconds = forumConfig->service.connectionTimeoutSeconds;
-    httpConfig.trustIpFromXForwardedFor = forumConfig->service.trustIpFromXForwardedFor;
-
+    
     httpRouter_ = std::make_unique<HttpRouter>();
     endpointManager_ = std::make_unique<ServiceEndpointManager>(*commandHandler_);
     endpointManager_->registerRoutes(*httpRouter_);
 
-    httpListener_ = std::make_unique<HttpListener>(httpConfig, *httpRouter_, getIOServiceProvider().getIOService());
+    auto& ioService = getIOServiceProvider().getIOService();
+
+    auto httpConnectionManager = std::make_shared<FixedHttpConnectionManager>(std::move(httpRouter_),
+        forumConfig->service.numberOfReadBuffers,
+        forumConfig->service.numberOfWriteBuffers,
+        forumConfig->service.trustIpFromXForwardedFor);
+
+    auto connectionManagerWithTimeout = std::make_shared<ConnectionManagerWithTimeout>(ioService,
+        httpConnectionManager, forumConfig->service.connectionTimeoutSeconds);
+
+    tcpListener_ = std::make_unique<TcpListener>(ioService, 
+        forumConfig->service.listenIPAddress, 
+        forumConfig->service.listenPort, 
+        connectionManagerWithTimeout);
 
     return true;
 }

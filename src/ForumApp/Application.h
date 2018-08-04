@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "HttpListener.h"
+#include "TcpListener.h"
 #include "HttpRouter.h"
 #include "CommandHandler.h"
 #include "MemoryRepositoryCommon.h"
@@ -52,7 +52,7 @@ namespace Forum
         void prepareToStop();
 
         std::unique_ptr<Http::HttpRouter> httpRouter_;
-        std::unique_ptr<Http::HttpListener> httpListener_;
+        std::unique_ptr<Http::TcpListener> tcpListener_;
         std::unique_ptr<Commands::CommandHandler> commandHandler_;
         std::unique_ptr<Commands::ServiceEndpointManager> endpointManager_;
         std::unique_ptr<Persistence::EventObserver> persistenceObserver_;
