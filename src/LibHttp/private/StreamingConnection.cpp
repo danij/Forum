@@ -69,7 +69,7 @@ void StreamingConnection::onRead(const boost::system::error_code& ec, const size
     }
 }
 
-void StreamingConnection::onWritten(const boost::system::error_code& ec, size_t bytesTransfered)
+void StreamingConnection::onWritten(const boost::system::error_code& ec, const size_t bytesTransfered)
 {
     if (ec)
     {

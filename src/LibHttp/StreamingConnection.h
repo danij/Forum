@@ -41,7 +41,7 @@ namespace Http
         template<typename ConstBuffer>
         void write(const ConstBuffer& buffer)
         {
-            strand_.post([this, &buffer]()
+            strand_.post([this, buffer]()
             {
                 boost::asio::async_write(socket_, buffer, boost::asio::transfer_all(), 
                     strand_.wrap([this](const boost::system::error_code& ec, const size_t bytesTransfered)

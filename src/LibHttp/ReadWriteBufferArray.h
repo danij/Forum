@@ -117,6 +117,13 @@ namespace Http
             explicit ConstBufferWrapper(const ReadWriteBufferArray* bufferArray) : bufferArray_(bufferArray)
             {}
 
+            virtual ~ConstBufferWrapper() = default;
+
+            ConstBufferWrapper(const ConstBufferWrapper& other) = default;
+            ConstBufferWrapper(ConstBufferWrapper&& other) = default;
+            ConstBufferWrapper& operator=(const ConstBufferWrapper& other) = default;
+            ConstBufferWrapper& operator=(ConstBufferWrapper&& other) = default;
+
             typedef boost::asio::const_buffer value_type;
 
             struct const_iterator : 
