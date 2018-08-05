@@ -229,6 +229,13 @@ AuthorizationStatus DefaultAuthorization::getDiscussionThreadsOfCategory(const U
     return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::GET_DISCUSSION_THREADS, with);
 }
 
+AuthorizationStatus DefaultAuthorization::getAllowDiscussionThreadPrivilegeChange(const User& currentUser,
+                                                                                  const DiscussionThread& thread) const
+{
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
+}
+
 AuthorizationStatus DefaultAuthorization::addNewDiscussionThread(const User& currentUser, StringView name) const
 {
     if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
@@ -310,6 +317,13 @@ AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessageById(const U
 {
     PrivilegeValueType with;
     return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW, with);
+}
+
+AuthorizationStatus DefaultAuthorization::getAllowDiscussionThreadMessagePrivilegeChange(const User& currentUser, 
+                                                                                         const DiscussionThreadMessage& message) const
+{
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessagesOfUserByCreated(const User& currentUser,
@@ -458,6 +472,13 @@ AuthorizationStatus DefaultAuthorization::getDiscussionTags(const User& currentU
     return isAllowed(currentUser.id(), ForumWidePrivilege::GET_ALL_DISCUSSION_TAGS, with);
 }
 
+AuthorizationStatus DefaultAuthorization::getAllowDiscussionTagPrivilegeChange(const User& currentUser,
+                                                                               const DiscussionTag& tag) const
+{
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
+}
+
 AuthorizationStatus DefaultAuthorization::addNewDiscussionTag(const User& currentUser, StringView name) const
 {
     if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
@@ -549,6 +570,13 @@ AuthorizationStatus DefaultAuthorization::getDiscussionCategoriesFromRoot(const 
 {
     PrivilegeValueType with;
     return isAllowed(currentUser.id(), ForumWidePrivilege::GET_DISCUSSION_CATEGORIES_FROM_ROOT, with);
+}
+
+AuthorizationStatus DefaultAuthorization::getAllowDiscussionCategoryPrivilegeChange(const User& currentUser,
+                                                                                    const DiscussionCategory& category) const
+{
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addNewDiscussionCategory(const User& currentUser, StringView name,
@@ -1114,6 +1142,12 @@ AuthorizationStatus DefaultAuthorization::getUserAssignedPrivileges(const User& 
     PrivilegeValueType with;
     const auto status = isAllowed(currentUser.id(), ForumWidePrivilege::VIEW_USER_ASSIGNED_PRIVILEGES, with);
     return status;
+}
+
+AuthorizationStatus DefaultAuthorization::getAllowForumWidePrivilegeChange(const Entities::User& currentUser) const
+{
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::assignForumWidePrivilege(const User& currentUser,

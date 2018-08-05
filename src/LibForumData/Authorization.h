@@ -91,6 +91,8 @@ namespace Forum::Authorization
 
         virtual AuthorizationStatus getDiscussionThreadsOfCategory(const Entities::User& currentUser,
                                                                    const Entities::DiscussionCategory& category) const = 0;
+        virtual AuthorizationStatus getAllowDiscussionThreadPrivilegeChange(const Entities::User& currentUser,
+                                                                            const Entities::DiscussionThread& thead) const = 0;
 
         virtual AuthorizationStatus addNewDiscussionThread(const Entities::User& currentUser,
                                                            StringView name) const = 0;
@@ -149,6 +151,8 @@ namespace Forum::Authorization
                                                                                 const Entities::DiscussionThreadMessage& message) const = 0;
         virtual AuthorizationStatus getMessageCommentsOfUser(const Entities::User& currentUser,
                                                              const Entities::User& user) const = 0;
+        virtual AuthorizationStatus getAllowDiscussionThreadMessagePrivilegeChange(const Entities::User& currentUser,
+                                                                                   const Entities::DiscussionThreadMessage& threadMessage) const = 0;
 
         virtual AuthorizationStatus addNewDiscussionMessageInThread(const Entities::User& currentUser,
                                                                     const Entities::DiscussionThread& thread,
@@ -200,6 +204,8 @@ namespace Forum::Authorization
         virtual AuthorizationStatus getDiscussionTagById(const Entities::User& currentUser,
                                                          const Entities::DiscussionTag& tag) const = 0;
         virtual AuthorizationStatus getDiscussionTags(const Entities::User& currentUser) const = 0;
+        virtual AuthorizationStatus getAllowDiscussionTagPrivilegeChange(const Entities::User& currentUser,
+                                                                         const Entities::DiscussionTag& tag) const = 0;
 
         virtual AuthorizationStatus addNewDiscussionTag(const Entities::User& currentUser,
                                                         StringView name) const = 0;
@@ -257,6 +263,8 @@ namespace Forum::Authorization
                                                               const Entities::DiscussionCategory& category) const = 0;
         virtual AuthorizationStatus getDiscussionCategories(const Entities::User& currentUser) const = 0;
         virtual AuthorizationStatus getDiscussionCategoriesFromRoot(const Entities::User& currentUser) const = 0;
+        virtual AuthorizationStatus getAllowDiscussionCategoryPrivilegeChange(const Entities::User& currentUser,
+                                                                              const Entities::DiscussionCategory& category) const = 0;
 
         virtual AuthorizationStatus addNewDiscussionCategory(const Entities::User& currentUser,
                                                              StringView name,
@@ -327,6 +335,7 @@ namespace Forum::Authorization
         virtual AuthorizationStatus getForumWideAssignedPrivileges(const Entities::User& currentUser) const = 0;
         virtual AuthorizationStatus getUserAssignedPrivileges(const Entities::User& currentUser,
                                                               const Entities::User& targetUser) const = 0;
+        virtual AuthorizationStatus getAllowForumWidePrivilegeChange(const Entities::User& currentUser) const = 0;
 
         virtual AuthorizationStatus assignForumWidePrivilege(const Entities::User& currentUser,
                                                              const Entities::User& targetUser,
