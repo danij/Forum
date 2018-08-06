@@ -54,7 +54,8 @@ class EventCollector final : public SeparateThreadConsumer<EventCollector, Separ
 {
 public:
     EventCollector(const std::filesystem::path& destinationFolder, const time_t refreshEverySeconds)
-        : appender_(destinationFolder, refreshEverySeconds)
+        : SeparateThreadConsumer<EventCollector, SeparateThreadConsumerBlob>{ std::chrono::milliseconds(1000) },
+          appender_(destinationFolder, refreshEverySeconds)
     {
     }
 

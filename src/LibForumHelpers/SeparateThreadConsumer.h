@@ -35,9 +35,8 @@ namespace Forum::Helpers
     class SeparateThreadConsumer : boost::noncopyable
     {
     public:
-        SeparateThreadConsumer(const std::chrono::milliseconds loopWaitMilliseconds = std::chrono::milliseconds::max())
-            : loopWaitMilliseconds_(loopWaitMilliseconds),
-            writeThread_{ [this]() { this->threadLoop(); } }
+        explicit SeparateThreadConsumer(const std::chrono::milliseconds loopWaitMilliseconds)
+            : loopWaitMilliseconds_(loopWaitMilliseconds), writeThread_{ [this]() { this->threadLoop(); } }
         {}
 
         virtual ~SeparateThreadConsumer()
