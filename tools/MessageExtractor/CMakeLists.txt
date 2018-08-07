@@ -12,7 +12,7 @@ set(SOURCE_FILES
 include_directories(
         ../
         ../../src/LibForumHelpers
-        ../../src/LibForumPersistence/private
+        ../../src/LibForumPersistence
         ${Boost_INCLUDE_DIRS})
 
 add_executable(MessageExtractor ${SOURCE_FILES} ${HEADER_FILES})
