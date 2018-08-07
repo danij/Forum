@@ -84,7 +84,7 @@ struct IdType
     IdType& operator=(const IdType&) = default;
     IdType& operator=(IdType&&) = default;
 
-    IdType(const Entities::UuidString& uuid)
+    IdType(const Helpers::UuidString& uuid)
     {
         uuid.toString(data.data());
     }
