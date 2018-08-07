@@ -22,7 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "IpAddress.h"
 
 #include <tuple>
-#include <variant>
+
+#include <boost/variant.hpp>
 
 namespace Forum::Entities
 {
@@ -81,15 +82,15 @@ namespace Forum::Entities
     private:
         std::tuple<IdType, Helpers::IpAddress> getCompareStructure() const
         {
-            const auto* idPtr = std::get_if<IdType>(&data_);
-            const auto* ipPtr = std::get_if<Helpers::IpAddress>(&data_);
+            const auto* idPtr = boost::get<IdType>(&data_);
+            const auto* ipPtr = boost::get<Helpers::IpAddress>(&data_);
 
             return{ idPtr ? *idPtr : IdType{}, ipPtr ? *ipPtr : Helpers::IpAddress{} };
         }
 
         friend struct std::hash<IdOrIpAddress>;
 
-        std::variant<IdType, Helpers::IpAddress> data_;
+        boost::variant<IdType, Helpers::IpAddress> data_;
     };
 }
 
@@ -100,12 +101,12 @@ namespace std
     {
         size_t operator()(const Forum::Entities::IdOrIpAddress& value) const
         {
-            if (const auto* idPtr = std::get_if<Forum::Entities::IdType>(&value.data_))
+            if (const auto* idPtr = boost::get<Forum::Entities::IdType>(&value.data_))
             {
                 return hash<Forum::Entities::IdType>()(*idPtr);
             }
 
-            if (const auto* ipPtr = std::get_if<Forum::Helpers::IpAddress>(&value.data_))
+            if (const auto* ipPtr = boost::get<Forum::Helpers::IpAddress>(&value.data_))
             {
                 return hash<Forum::Helpers::IpAddress>()(*ipPtr);
             }
