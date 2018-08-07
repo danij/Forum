@@ -21,9 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Observers.h"
 
 #include <ctime>
-#include <filesystem>
 
 #include <boost/noncopyable.hpp>
+#include <boost/filesystem.hpp>
 
 namespace Forum::Persistence
 {
@@ -31,7 +31,7 @@ namespace Forum::Persistence
     {
     public:
         EventObserver(Repository::ReadEvents& readEvents, Repository::WriteEvents& writeEvents,
-                      const std::filesystem::path& destinationFolder, time_t refreshEverySeconds);
+                      const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds);
         ~EventObserver();
 
     private:

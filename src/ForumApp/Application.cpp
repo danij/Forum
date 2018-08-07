@@ -181,13 +181,13 @@ bool Application::loadConfiguration(const std::string_view fileName)
 {
     try
     {
-        if ( ! std::filesystem::exists(fileName))
+        if ( ! boost::filesystem::exists(fileName))
         {
             std::cerr << "The configuration file '" << fileName << "' does not exist!\n";
             return false;
         }
 
-        if ( ! std::filesystem::is_regular_file(fileName))
+        if ( ! boost::filesystem::is_regular_file(fileName))
         {
             std::cerr << "The configuration file '" << fileName << "' is not a regular file!\n";
             return false;

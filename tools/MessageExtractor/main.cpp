@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
-#include <filesystem>
 #include <fstream>
 #include <string>
 #include <cstdint>
@@ -31,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/filesystem.hpp>
 
 #include "PersistenceFormat.h"
 #include "TypeHelpers.h"
@@ -115,9 +115,9 @@ int startExtraction(const std::string& input, const std::string& output, const s
 
     uint64_t messagesFileSize = 0;
 
-    if (std::filesystem::is_regular_file(messages))
+    if (boost::filesystem::is_regular_file(messages))
     {
-        messagesFileSize = static_cast<decltype(messagesFileSize)>(std::filesystem::file_size(messages));
+        messagesFileSize = static_cast<decltype(messagesFileSize)>(boost::filesystem::file_size(messages));
     }
 
     std::ofstream messageStream(messages, std::ios_base::app | std::ios_base::binary);

@@ -22,9 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Repository.h"
 
 #include <cstddef>
-#include <filesystem>
 
 #include <boost/noncopyable.hpp>
+#include <boost/filesystem.hpp>
 
 namespace Forum::Persistence
 {
@@ -61,7 +61,7 @@ namespace Forum::Persistence
          *
          * @return Number of events imported
          */
-        ImportResult import(const std::filesystem::path& sourcePath);
+        ImportResult import(const boost::filesystem::path& sourcePath);
 
     private:
         struct EventImporterImpl;

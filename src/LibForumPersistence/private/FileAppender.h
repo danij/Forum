@@ -21,24 +21,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SeparateThreadConsumer.h"
 
 #include <ctime>
-#include <filesystem>
 #include <string>
 
 #include <boost/noncopyable.hpp>
+#include <boost/filesystem.hpp>
 
 namespace Forum::Persistence
 {
     class FileAppender final : boost::noncopyable
     {
     public:
-        FileAppender(const std::filesystem::path& destinationFolder, time_t refreshEverySeconds);
+        FileAppender(const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds);
 
         void append(const Helpers::SeparateThreadConsumerBlob* blobs, size_t nrOfBlobs);
 
     private:
         void updateCurrentFileIfNeeded();
 
-        std::filesystem::path destinationFolder_;
+        boost::filesystem::path destinationFolder_;
         std::string currentFileName_;
         time_t refreshEverySeconds_;
         time_t lastFileNameCreatedAt_;

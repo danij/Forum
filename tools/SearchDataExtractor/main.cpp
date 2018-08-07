@@ -28,10 +28,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <utility>
+#include <boost/filesystem.hpp>
 
 #include <iostream>
-#include <filesystem>
 #include <string>
 #include <cstdint>
 #include <cstring>
@@ -40,6 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <regex>
 #include <set>
 #include <string_view>
+#include <utility>
 
 using namespace Forum::Persistence;
 using namespace Forum::Helpers;
@@ -124,11 +124,11 @@ int main(int argc, const char* argv[])
 }
 
 template<typename Fn>
-static void iteratePathRecursively(const std::filesystem::path& sourcePath, Fn&& action)
+static void iteratePathRecursively(const boost::filesystem::path& sourcePath, Fn&& action)
 {
     if (is_directory(sourcePath))
     {
-        for (auto& entry : boost::make_iterator_range(std::filesystem::directory_iterator(sourcePath), {}))
+        for (auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(sourcePath), {}))
         {
             iteratePathRecursively(entry, action);
         }
@@ -139,7 +139,7 @@ static void iteratePathRecursively(const std::filesystem::path& sourcePath, Fn&&
     }
 }
 
-std::vector<std::string> getSortedEventFileNames(const std::filesystem::path& sourcePath)
+std::vector<std::string> getSortedEventFileNames(const boost::filesystem::path& sourcePath)
 {
     std::map<time_t, std::string> eventFileNames;
     std::regex eventFileMatcher("^forum-(\\d+).events$", std::regex_constants::icase);

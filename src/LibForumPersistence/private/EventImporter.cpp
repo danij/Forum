@@ -48,11 +48,11 @@ using namespace Forum::Authorization;
 using namespace Forum::Helpers;
 
 template<typename Fn>
-static void iteratePathRecursively(const std::filesystem::path& sourcePath, Fn&& action)
+static void iteratePathRecursively(const boost::filesystem::path& sourcePath, Fn&& action)
 {
     if (is_directory(sourcePath))
     {
-        for (auto& entry : boost::make_iterator_range(std::filesystem::directory_iterator(sourcePath), {}))
+        for (auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(sourcePath), {}))
         {
             iteratePathRecursively(entry, action);
         }
@@ -984,7 +984,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         return fn(contextVersion, data, size);
     }
 
-    ImportResult import(const std::filesystem::path& sourcePath)
+    ImportResult import(const boost::filesystem::path& sourcePath)
     {
         std::map<time_t, std::string> eventFileNames;
         std::regex eventFileMatcher("^forum-(\\d+).events$", std::regex_constants::icase);
@@ -1089,7 +1089,7 @@ EventImporter::~EventImporter()
     delete impl_;
 }
 
-ImportResult EventImporter::import(const std::filesystem::path& sourcePath)
+ImportResult EventImporter::import(const boost::filesystem::path& sourcePath)
 {
     return impl_->import(sourcePath);
 }

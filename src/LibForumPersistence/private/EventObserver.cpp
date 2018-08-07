@@ -53,7 +53,7 @@ struct BlobPart
 class EventCollector final : public SeparateThreadConsumer<EventCollector, SeparateThreadConsumerBlob>
 {
 public:
-    EventCollector(const std::filesystem::path& destinationFolder, const time_t refreshEverySeconds)
+    EventCollector(const boost::filesystem::path& destinationFolder, const time_t refreshEverySeconds)
         : SeparateThreadConsumer<EventCollector, SeparateThreadConsumerBlob>{ std::chrono::milliseconds(1000) },
           appender_(destinationFolder, refreshEverySeconds)
     {
@@ -93,7 +93,7 @@ private:
 struct EventObserver::EventObserverImpl final : private boost::noncopyable
 {
     EventObserverImpl(ReadEvents& readEvents, WriteEvents& writeEvents,
-                      const std::filesystem::path& destinationFolder, time_t refreshEverySeconds)
+                      const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
         : readEvents(readEvents), writeEvents(writeEvents), collector(destinationFolder, refreshEverySeconds)
     {
         timerThread = std::thread([this]() {this->timerLoop();});
@@ -1255,7 +1255,7 @@ const std::chrono::seconds EventObserver::EventObserverImpl::timerThreadCheckEve
 
 
 EventObserver::EventObserver(ReadEvents& readEvents, WriteEvents& writeEvents,
-                             const std::filesystem::path& destinationFolder, time_t refreshEverySeconds)
+                             const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
     : impl_(new EventObserverImpl(readEvents, writeEvents, destinationFolder, refreshEverySeconds))
 {
 }
