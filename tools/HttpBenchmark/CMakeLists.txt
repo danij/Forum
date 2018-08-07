@@ -12,10 +12,14 @@ set(SOURCE_FILES
 include_directories(
         ../
         ../../src/LibFastJsonWriter
+        ../../src/LibForumContext
+        ../../src/LibForumHelpers
         ../../src/LibHttp
         ${Boost_INCLUDE_DIRS})
 
 add_executable(HttpBenchmark ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(HttpBenchmark
+        ForumContext
+        Http
         ${Boost_LIBRARIES})
