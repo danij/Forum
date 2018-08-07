@@ -143,14 +143,14 @@ BOOST_AUTO_TEST_CASE( Http_Parser_supports_various_http_verbs )
 
     for (const auto& [verbString, expectedVerb] : toTest)
     {
-        testParser(verbString + " / HTTP/1.0", [expectedVerb](const Parser& parser, std::string_view requestBody)
+        testParser(verbString + " / HTTP/1.0", [expected=expectedVerb](const Parser& parser, std::string_view requestBody)
         {
             BOOST_REQUIRE_EQUAL(Parser::ParseResult::ONGOING, parser);
             BOOST_REQUIRE_EQUAL(HttpStatusCode::Bad_Request, parser.errorCode());
 
             const auto& request = parser.request();
 
-            BOOST_REQUIRE_EQUAL(true, expectedVerb == request.verb);
+            BOOST_REQUIRE_EQUAL(true, expected == request.verb);
         });
     }
 }
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_does_not_exceed_header_buffer )
         const auto headerBufferSize = std::size(headerBuffer);
 
         testParser("GET /app HTTP/1.0\r\n\r\n",
-               [&headerBuffer, headerBufferSize](const Parser& parser, std::string_view requestBody)
+               [&headerBuffer](const Parser& parser, std::string_view requestBody)
         {
             BOOST_REQUIRE_EQUAL(Parser::ParseResult::INVALID_INPUT, parser);
             BOOST_REQUIRE_EQUAL(HttpStatusCode::Payload_Too_Large, parser.errorCode());
@@ -377,7 +377,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_does_not_exceed_header_buffer )
         const auto headerBufferSize = std::size(headerBuffer);
 
         testParser("GET /app HTTP/1.0\r\nHost:host\r\n\r\n",
-               [&headerBuffer, headerBufferSize](const Parser& parser, std::string_view requestBody)
+               [&headerBuffer](const Parser& parser, std::string_view requestBody)
         {
             BOOST_REQUIRE_EQUAL(Parser::ParseResult::INVALID_INPUT, parser);
             BOOST_REQUIRE_EQUAL(HttpStatusCode::Payload_Too_Large, parser.errorCode());

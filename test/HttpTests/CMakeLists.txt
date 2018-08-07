@@ -23,6 +23,7 @@ add_executable(HttpTests
         ${HEADER_FILES})
 
 target_link_libraries(HttpTests
+        Http
         ${Boost_LIBRARIES})
 
 add_test(NAME Http_Tests COMMAND HttpTests)

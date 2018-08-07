@@ -38,7 +38,7 @@ namespace Http
 
         std::array<Key, NrOfResults> operator()(Key value) const
         {
-            return { value };
+            return {{ value }};
         }
     };
     
@@ -49,10 +49,10 @@ namespace Http
         std::array<char, NrOfResults> operator()(const char value) const
         {
             return 
-            {
+            {{
                 static_cast<char>(std::tolower(static_cast<unsigned char>(value))),
                 static_cast<char>(std::toupper(static_cast<unsigned char>(value)))
-            };
+            }};
         }
     };
 

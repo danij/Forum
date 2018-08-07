@@ -26,7 +26,11 @@ ConnectionManagerWithTimeout::ConnectionManagerWithTimeout(boost::asio::io_servi
     std::shared_ptr<IConnectionManager> delegateTo, const size_t connectionTimeoutSeconds) :
     delegateTo_{ std::move(delegateTo) }, 
     timeoutTimer_{ ioService, boost::posix_time::seconds(CheckTimeoutEverySeconds) },
-    timeoutManager_{ [this](auto identifier) { this->closeConnection(identifier, false); }, connectionTimeoutSeconds }
+    timeoutManager_
+    {
+            [this](auto identifier) { this->closeConnection(identifier, false); },
+            static_cast<decltype(timeoutManager_)::Timestamp>(connectionTimeoutSeconds)
+    }
 {
     startTimer();
 }
