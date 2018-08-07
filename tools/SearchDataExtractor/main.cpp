@@ -313,11 +313,12 @@ std::string_view readStringViewWithPrefix(const char* data)
 bool SearchDataExtractor::processBlob(const char* data, size_t size)
 {
     const auto blobStart = data;
-    const auto blobSize = size;
+    //const auto blobSize = size;
 
     const auto eventType = readAndIncrementBuffer<EventType>(data, size);
     const auto version = readAndIncrementBuffer<EventVersionType>(data, size);
     const auto contextVersion = readAndIncrementBuffer<EventContextVersionType>(data, size);
+    (void)contextVersion;
 
     static constexpr auto uuidSize = boost::uuids::uuid::static_size();
 
@@ -535,7 +536,7 @@ void SearchDataExtractor::onDeleteDiscussionThread(const IdType& id)
 
     for (const auto& messageId : findMessagesOfThread->second)
     {
-        onDeleteDiscussionThreadMessage(id);
+        onDeleteDiscussionThreadMessage(messageId);
     }
 
     threadMessages_.erase(findMessagesOfThread);
