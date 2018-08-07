@@ -1669,7 +1669,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_with_pagination_works_ok_also_in_descendi
         auto users = deserializeUsers(page.get_child("users"));
         BOOST_REQUIRE_EQUAL(static_cast<size_t>(pageSize), users.size());
 
-        for (int j = 0; j < users.size(); j++)
+        for (size_t j = 0; j < users.size(); j++)
         {
             BOOST_REQUIRE_EQUAL(userIds[9 - (pageSize*i + j)], users[j].id);
             BOOST_REQUIRE_EQUAL("User" + std::to_string(9 - (pageSize*i + j) + 101), users[j].name);

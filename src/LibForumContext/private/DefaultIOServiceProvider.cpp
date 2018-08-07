@@ -45,7 +45,7 @@ void DefaultIOServiceProvider::start()
             service_.run();
         });
     }
-    signalWaiter_.async_wait([this](auto ec, auto signal)
+    signalWaiter_.async_wait([this](auto ec, auto /*signal*/)
     {
         if ( ! ec)
         {

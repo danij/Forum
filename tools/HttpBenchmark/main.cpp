@@ -65,7 +65,7 @@ private:
 class Application final : boost::noncopyable
 {
 public:
-    int run(int argc, const char* argv[])
+    int run(int /*argc*/, const char* /*argv*/[])
     {
         try
         {

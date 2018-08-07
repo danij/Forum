@@ -194,7 +194,7 @@ namespace Json
     }
 
     template <size_t StackSize>
-    size_t JsonReadyString<StackSize>::extraBytesNeeded(std::string_view source)
+    size_t JsonReadyString<StackSize>::extraBytesNeeded(std::string_view /*source*/)
     {
         return 0;
     }

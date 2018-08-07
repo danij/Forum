@@ -164,7 +164,7 @@ MetricsEndpoint::MetricsEndpoint(CommandHandler& handler) : AbstractEndpoint(han
 void MetricsEndpoint::getVersion(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::SHOW_VERSION, parameters);
     });
@@ -177,7 +177,7 @@ StatisticsEndpoint::StatisticsEndpoint(CommandHandler& handler) : AbstractEndpoi
 void StatisticsEndpoint::getEntitiesCount(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& _, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::COUNT_ENTITIES, parameters);
     });
@@ -235,7 +235,7 @@ void UsersEndpoint::getAll(Http::RequestState& requestState)
 void UsersEndpoint::getOnline(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_USERS_ONLINE, parameters);
     });
@@ -732,7 +732,7 @@ void DiscussionThreadMessagesEndpoint::getThreadMessagesOfUser(Http::RequestStat
 void DiscussionThreadMessagesEndpoint::getLatestThreadMessages(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_LATEST_DISCUSSION_THREAD_MESSAGES, parameters);
     });
@@ -751,7 +751,7 @@ void DiscussionThreadMessagesEndpoint::getRankOfMessage(Http::RequestState& requ
 void DiscussionThreadMessagesEndpoint::getAllComments(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& _, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_MESSAGE_COMMENTS, parameters);
     });
@@ -989,7 +989,7 @@ void DiscussionCategoriesEndpoint::getAll(Http::RequestState& requestState)
 void DiscussionCategoriesEndpoint::getRootCategories(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& _, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_DISCUSSION_CATEGORIES_FROM_ROOT, parameters);
     });
@@ -1180,7 +1180,7 @@ void AuthorizationEndpoint::getAssignedPrivilegesForCategory(Http::RequestState&
 void AuthorizationEndpoint::getForumWideCurrentUserPrivileges(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES, parameters);
     });
@@ -1189,7 +1189,7 @@ void AuthorizationEndpoint::getForumWideCurrentUserPrivileges(Http::RequestState
 void AuthorizationEndpoint::getForumWideRequiredPrivileges(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_FORUM_WIDE_REQUIRED_PRIVILEGES, parameters);
     });
@@ -1198,7 +1198,7 @@ void AuthorizationEndpoint::getForumWideRequiredPrivileges(Http::RequestState& r
 void AuthorizationEndpoint::getForumWideDefaultPrivilegeLevels(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVELS, parameters);
     });
@@ -1207,7 +1207,7 @@ void AuthorizationEndpoint::getForumWideDefaultPrivilegeLevels(Http::RequestStat
 void AuthorizationEndpoint::getForumWideAssignedPrivileges(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_FORUM_WIDE_ASSIGNED_PRIVILEGES, parameters);
     });

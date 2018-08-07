@@ -278,8 +278,8 @@ static bool writeDiscussionCategoryEntity(const EntityCollection& collection, co
     return false;
 }
 
-static bool writeForumWideEntity(const EntityCollection& collection, const SerializationRestriction& restriction, 
-                                 IdTypeRef entityId, JsonWriter& writer)
+static bool writeForumWideEntity(const EntityCollection& /*collection*/, const SerializationRestriction& /*restriction*/,
+                                 IdTypeRef /*entityId*/, JsonWriter& /*writer*/)
 {
     //do nothing
     return true;

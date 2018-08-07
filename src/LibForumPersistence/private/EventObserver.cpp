@@ -855,7 +855,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, 1, parts, std::size(parts));
     }
 
-    void onGetDiscussionThreadById(ObserverContext context, const DiscussionThread& thread)
+    void onGetDiscussionThreadById(ObserverContext /*context*/, const DiscussionThread& thread)
     {
         std::lock_guard<decltype(threadVisitedMutex)> lock(threadVisitedMutex);
 

@@ -63,7 +63,7 @@ bool HttpConnection::onBytesRead(char* bytes, size_t bytesTransfered)
     return false;
 }
 
-void HttpConnection::onWritten(size_t bytesTransfered)
+void HttpConnection::onWritten(size_t /*bytesTransfered*/)
 {
     if (keepConnectionAlive_)
     {

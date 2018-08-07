@@ -108,20 +108,20 @@ namespace Forum::Entities
                 }
             }
         }
-        void prepareUpdateName(DiscussionThreadPtr thread) override {} //empty, not needed
+        void prepareUpdateName(DiscussionThreadPtr /*thread*/) override {} //empty, not needed
         void updateName(DiscussionThreadPtr thread) override { update(thread); }
 
-        void prepareUpdateLastUpdated(DiscussionThreadPtr thread) override {} //empty, not needed
+        void prepareUpdateLastUpdated(DiscussionThreadPtr /*thread*/) override {} //empty, not needed
         void updateLastUpdated(DiscussionThreadPtr thread) override { update(thread); }
 
-        void prepareUpdateLatestMessageCreated(DiscussionThreadPtr thread) override {} //empty, not needed
+        void prepareUpdateLatestMessageCreated(DiscussionThreadPtr /*thread*/) override {} //empty, not needed
         void updateLatestMessageCreated(DiscussionThreadPtr thread) override { update(thread); }
 
-        void prepareUpdateMessageCount(DiscussionThreadPtr thread) override {} //empty, not needed
+        void prepareUpdateMessageCount(DiscussionThreadPtr /*thread*/) override {} //empty, not needed
         void updateMessageCount(DiscussionThreadPtr thread) override { update(thread); }
 
-        void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) override {} //empty, only used in subclass
-        void updatePinDisplayOrder(DiscussionThreadPtr thread) override {} //empty, only used in subclass
+        void prepareUpdatePinDisplayOrder(DiscussionThreadPtr /*thread*/) override {} //empty, only used in subclass
+        void updatePinDisplayOrder(DiscussionThreadPtr /*thread*/) override {} //empty, only used in subclass
 
         auto& onPrepareCountChange()        { return onPrepareCountChange_; }
         auto& onCountChange()               { return onCountChange_; }
@@ -264,8 +264,8 @@ namespace Forum::Entities
         void prepareUpdateMessageCount(DiscussionThreadPtr thread) override;
         void updateMessageCount(DiscussionThreadPtr thread) override;
 
-        void prepareUpdatePinDisplayOrder(DiscussionThreadPtr thread) override {} //unused
-        void updatePinDisplayOrder(DiscussionThreadPtr thread) override {} //unused
+        void prepareUpdatePinDisplayOrder(DiscussionThreadPtr /*thread*/) override {} //unused
+        void updatePinDisplayOrder(DiscussionThreadPtr /*thread*/) override {} //unused
 
         auto& onPrepareCountChange()        { return onPrepareCountChange_; }
         auto& onCountChange()               { return onCountChange_; }

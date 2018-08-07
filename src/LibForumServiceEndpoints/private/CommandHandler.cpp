@@ -38,6 +38,9 @@ using namespace Forum::Authorization;
 #define COMMAND_HANDLER_METHOD(name) \
     StatusCode name(const std::vector<StringView>& parameters, OutStream& output)
 
+#define COMMAND_HANDLER_METHOD_SIMPLE(name) \
+    StatusCode name(const std::vector<StringView>& /*parameters*/, OutStream& output)
+
 static thread_local Json::StringBuffer outputBuffer{ 1 << 20 }; //1 MiByte buffer / thread initial and for each increment
 
 static const std::string EmptyString;
@@ -153,12 +156,12 @@ struct CommandHandler::CommandHandlerImpl
         return false;
     }
 
-    COMMAND_HANDLER_METHOD( SHOW_VERSION )
+    COMMAND_HANDLER_METHOD_SIMPLE( SHOW_VERSION )
     {
         return metricsRepository->getVersion(output);
     }
 
-    COMMAND_HANDLER_METHOD( COUNT_ENTITIES )
+    COMMAND_HANDLER_METHOD_SIMPLE( COUNT_ENTITIES )
     {
         return statisticsRepository->getEntitiesCount(output);
     }
@@ -171,32 +174,32 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->addNewUser(normalizedParam, parameters[1], output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_BY_NAME )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_BY_NAME )
     {
         return userRepository->getUsers(output, RetrieveUsersBy::Name);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_BY_CREATED )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_BY_CREATED )
     {
         return userRepository->getUsers(output, RetrieveUsersBy::Created);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_BY_LAST_SEEN )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_BY_LAST_SEEN )
     {
         return userRepository->getUsers(output, RetrieveUsersBy::LastSeen);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_BY_THREAD_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_BY_THREAD_COUNT )
     {
         return userRepository->getUsers(output, RetrieveUsersBy::ThreadCount);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_BY_MESSAGE_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_BY_MESSAGE_COUNT )
     {
         return userRepository->getUsers(output, RetrieveUsersBy::MessageCount);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_ONLINE )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_ONLINE )
     {
         return userRepository->getUsersOnline(output);
     }
@@ -282,27 +285,27 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->deleteUser(parameters[0], output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_NAME )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_THREADS_BY_NAME )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::Name);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_CREATED )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_THREADS_BY_CREATED )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::Created);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_LAST_UPDATED )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_THREADS_BY_LAST_UPDATED )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::LatestMessageCreated);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::MessageCount);
     }
@@ -511,7 +514,7 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadMessageRepository->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_LATEST_DISCUSSION_THREAD_MESSAGES )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_LATEST_DISCUSSION_THREAD_MESSAGES )
     {
         return discussionThreadMessageRepository->getLatestDiscussionThreadMessages(output);
     }
@@ -530,7 +533,7 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadMessageRepository->addCommentToDiscussionThreadMessage(parameters[0], normalizedParam, output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_MESSAGE_COMMENTS )
     {
         return discussionThreadMessageRepository->getMessageComments(output);
     }
@@ -561,17 +564,17 @@ struct CommandHandler::CommandHandlerImpl
         return discussionTagRepository->addNewDiscussionTag(normalizedParam, output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_NAME )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_TAGS_BY_NAME )
     {
         return discussionTagRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::Name);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_THREAD_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_TAGS_BY_THREAD_COUNT )
     {
         return discussionTagRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::ThreadCount);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT )
     {
         return discussionTagRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::MessageCount);
     }
@@ -659,17 +662,17 @@ struct CommandHandler::CommandHandlerImpl
         return discussionCategoryRepository->getDiscussionCategoryById(parameters[0], output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_NAME )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_CATEGORIES_BY_NAME )
     {
         return discussionCategoryRepository->getDiscussionCategories(output, RetrieveDiscussionCategoriesBy::Name);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT )
     {
         return discussionCategoryRepository->getDiscussionCategories(output, RetrieveDiscussionCategoriesBy::MessageCount);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_FROM_ROOT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_CATEGORIES_FROM_ROOT )
     {
         return discussionCategoryRepository->getDiscussionCategoriesFromRoot(output);
     }
@@ -902,22 +905,22 @@ struct CommandHandler::CommandHandlerImpl
                 parameters[0], privilege, value, output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES )
     {
         return authorizationRepository->getForumWideCurrentUserPrivileges(output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_REQUIRED_PRIVILEGES )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_FORUM_WIDE_REQUIRED_PRIVILEGES )
     {
         return authorizationRepository->getForumWideRequiredPrivileges(output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVELS )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVELS )
     {
         return authorizationRepository->getForumWideDefaultPrivilegeLevels(output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_ASSIGNED_PRIVILEGES )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_FORUM_WIDE_ASSIGNED_PRIVILEGES )
     {
         return authorizationRepository->getForumWideAssignedPrivileges(output);
     }

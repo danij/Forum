@@ -448,7 +448,7 @@ void GrantedPrivilegeStore::enumerateDiscussionCategoryPrivileges(IdTypeRef id, 
     }
 }
 
-void GrantedPrivilegeStore::enumerateForumWidePrivileges(IdTypeRef id, EnumerationCallback&& callback) const
+void GrantedPrivilegeStore::enumerateForumWidePrivileges(IdTypeRef /*id*/, EnumerationCallback&& callback) const
 {
     auto range = forumWideSpecificPrivileges_.get<PrivilegeEntryCollectionByEntityId>().equal_range(IdType{});
 

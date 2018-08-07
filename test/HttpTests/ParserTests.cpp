@@ -107,7 +107,7 @@ static void testParser(HttpStringView input, TestCallback&& callback, const size
 
 BOOST_AUTO_TEST_CASE( Http_Parser_result_is_empty_when_nothing_is_processed )
 {
-    testParser({}, [](const Parser& parser, std::string_view requestBody)
+    testParser({}, [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::ONGOING, parser);
         BOOST_REQUIRE_EQUAL(HttpStatusCode::Bad_Request, parser.errorCode());
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_supports_various_http_verbs )
 
     for (const auto& [verbString, expectedVerb] : toTest)
     {
-        testParser(verbString + " / HTTP/1.0", [expected=expectedVerb](const Parser& parser, std::string_view requestBody)
+        testParser(verbString + " / HTTP/1.0", [expected=expectedVerb](const Parser& parser, std::string_view /*requestBody*/)
         {
             BOOST_REQUIRE_EQUAL(Parser::ParseResult::ONGOING, parser);
             BOOST_REQUIRE_EQUAL(HttpStatusCode::Bad_Request, parser.errorCode());
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_supports_various_http_verbs )
 
 BOOST_AUTO_TEST_CASE( Http_Parser_removes_trailing_slash_in_path )
 {
-    testParser("GET / HTTP/1.0", [](const Parser& parser, std::string_view requestBody)
+    testParser("GET / HTTP/1.0", [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::ONGOING, parser);
         BOOST_REQUIRE_EQUAL(HttpStatusCode::Bad_Request, parser.errorCode());
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_removes_trailing_slash_in_path )
 
         BOOST_REQUIRE_EQUAL("", request.path);
     });
-    testParser("GET /hello/ HTTP/1.0", [](const Parser& parser, std::string_view requestBody)
+    testParser("GET /hello/ HTTP/1.0", [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::ONGOING, parser);
         BOOST_REQUIRE_EQUAL(HttpStatusCode::Bad_Request, parser.errorCode());
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_removes_trailing_slash_in_path )
 
         BOOST_REQUIRE_EQUAL("hello/", request.path);
     });
-    testParser("GET ////test HTTP/1.0", [](const Parser& parser, std::string_view requestBody)
+    testParser("GET ////test HTTP/1.0", [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::ONGOING, parser);
         BOOST_REQUIRE_EQUAL(HttpStatusCode::Bad_Request, parser.errorCode());
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_removes_trailing_slash_in_path )
 
 BOOST_AUTO_TEST_CASE( Http_Parser_only_supports_version_10_and_11 )
 {
-    testParser("GET / HTTP/1.0\r\n", [](const Parser& parser, std::string_view requestBody)
+    testParser("GET / HTTP/1.0\r\n", [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::ONGOING, parser);
         BOOST_REQUIRE_EQUAL(HttpStatusCode::Bad_Request, parser.errorCode());
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_only_supports_version_10_and_11 )
         BOOST_REQUIRE_EQUAL(1, request.versionMajor);
         BOOST_REQUIRE_EQUAL(0, request.versionMinor);
     });
-    testParser("GET / HTTP/1.1\r\n", [](const Parser& parser, std::string_view requestBody)
+    testParser("GET / HTTP/1.1\r\n", [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::ONGOING, parser);
         BOOST_REQUIRE_EQUAL(HttpStatusCode::Bad_Request, parser.errorCode());
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_only_supports_version_10_and_11 )
         BOOST_REQUIRE_EQUAL(1, request.versionMajor);
         BOOST_REQUIRE_EQUAL(1, request.versionMinor);
     });
-    testParser("GET / HTTP/1.2\r\n", [](const Parser& parser, std::string_view requestBody)
+    testParser("GET / HTTP/1.2\r\n", [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::INVALID_INPUT, parser);
         BOOST_REQUIRE_EQUAL(HttpStatusCode::HTTP_Version_Not_Supported, parser.errorCode());
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_only_supports_version_10_and_11 )
         BOOST_REQUIRE_EQUAL(1, request.versionMajor);
         BOOST_REQUIRE_EQUAL(0, request.versionMinor);
     });
-    testParser("GET / HTTP/2.0\r\n", [](const Parser& parser, std::string_view requestBody)
+    testParser("GET / HTTP/2.0\r\n", [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::INVALID_INPUT, parser);
         BOOST_REQUIRE_EQUAL(HttpStatusCode::HTTP_Version_Not_Supported, parser.errorCode());
@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_only_supports_version_10_and_11 )
         BOOST_REQUIRE_EQUAL(1, request.versionMajor);
         BOOST_REQUIRE_EQUAL(0, request.versionMinor);
     });
-    testParser("GET / HTTP/0\r\n", [](const Parser& parser, std::string_view requestBody)
+    testParser("GET / HTTP/0\r\n", [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::INVALID_INPUT, parser);
         BOOST_REQUIRE_EQUAL(HttpStatusCode::HTTP_Version_Not_Supported, parser.errorCode());
@@ -238,7 +238,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_only_supports_version_10_and_11 )
         BOOST_REQUIRE_EQUAL(1, request.versionMajor);
         BOOST_REQUIRE_EQUAL(0, request.versionMinor);
     });
-    testParser("GET / HTTP/0.1.2\r\n", [](const Parser& parser, std::string_view requestBody)
+    testParser("GET / HTTP/0.1.2\r\n", [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::INVALID_INPUT, parser);
         BOOST_REQUIRE_EQUAL(HttpStatusCode::HTTP_Version_Not_Supported, parser.errorCode());
@@ -252,20 +252,20 @@ BOOST_AUTO_TEST_CASE( Http_Parser_only_supports_version_10_and_11 )
 
 BOOST_AUTO_TEST_CASE( Http_Parser_decodes_url_encoding_in_path )
 {
-    testParser("GET /hello%20world/ HTTP/1.0", [](const Parser& parser, std::string_view requestBody)
+    testParser("GET /hello%20world/ HTTP/1.0", [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::ONGOING, parser);
 
         const auto& request = parser.request();
 
         BOOST_REQUIRE_EQUAL("hello world/", request.path);
-        BOOST_REQUIRE_EQUAL(0, request.nrOfQueryPairs);
+        BOOST_REQUIRE_EQUAL(0u, request.nrOfQueryPairs);
     });
 }
 
 BOOST_AUTO_TEST_CASE( Http_Parser_extracts_query_parameters )
 {
-    testParser("GET /app?bb=123&a=abcd%20e HTTP/1.0", [](const Parser& parser, std::string_view requestBody)
+    testParser("GET /app?bb=123&a=abcd%20e HTTP/1.0", [](const Parser& parser, std::string_view /*requestBody*/)
     {
         BOOST_REQUIRE_EQUAL(Parser::ParseResult::ONGOING, parser);
 
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_extracts_query_parameters )
 
         BOOST_REQUIRE_EQUAL("app", request.path);
 
-        BOOST_REQUIRE_EQUAL(2, request.nrOfQueryPairs);
+        BOOST_REQUIRE_EQUAL(2u, request.nrOfQueryPairs);
         BOOST_REQUIRE_EQUAL("bb", request.queryPairs[0].first);
         BOOST_REQUIRE_EQUAL("123", request.queryPairs[0].second);
         BOOST_REQUIRE_EQUAL("a", request.queryPairs[1].first);
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_parses_only_known_headers )
             }
         }
 
-        BOOST_REQUIRE_EQUAL(0, requestBody.size());
+        BOOST_REQUIRE_EQUAL(0u, requestBody.size());
     });
 }
 
@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_parses_cookies )
 
         BOOST_REQUIRE_EQUAL("app", request.path);
 
-        BOOST_REQUIRE_EQUAL(4, request.nrOfCookies);
+        BOOST_REQUIRE_EQUAL(4u, request.nrOfCookies);
         BOOST_REQUIRE_EQUAL("a", request.cookies[0].first);
         BOOST_REQUIRE_EQUAL("123", request.cookies[0].second);
         BOOST_REQUIRE_EQUAL("bb", request.cookies[1].first);
@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_parses_cookies )
         BOOST_REQUIRE_EQUAL("", request.cookies[3].first);
         BOOST_REQUIRE_EQUAL("just_value", request.cookies[3].second);
 
-        BOOST_REQUIRE_EQUAL(0, requestBody.size());
+        BOOST_REQUIRE_EQUAL(0u, requestBody.size());
     });
 }
 
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_does_not_exceed_header_buffer )
         const auto headerBufferSize = std::size(headerBuffer);
 
         testParser("GET /app HTTP/1.0\r\n\r\n",
-               [&headerBuffer](const Parser& parser, std::string_view requestBody)
+               [&headerBuffer](const Parser& parser, std::string_view /*requestBody*/)
         {
             BOOST_REQUIRE_EQUAL(Parser::ParseResult::INVALID_INPUT, parser);
             BOOST_REQUIRE_EQUAL(HttpStatusCode::Payload_Too_Large, parser.errorCode());
@@ -377,7 +377,7 @@ BOOST_AUTO_TEST_CASE( Http_Parser_does_not_exceed_header_buffer )
         const auto headerBufferSize = std::size(headerBuffer);
 
         testParser("GET /app HTTP/1.0\r\nHost:host\r\n\r\n",
-               [&headerBuffer](const Parser& parser, std::string_view requestBody)
+               [&headerBuffer](const Parser& parser, std::string_view /*requestBody*/)
         {
             BOOST_REQUIRE_EQUAL(Parser::ParseResult::INVALID_INPUT, parser);
             BOOST_REQUIRE_EQUAL(HttpStatusCode::Payload_Too_Large, parser.errorCode());

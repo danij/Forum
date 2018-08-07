@@ -57,8 +57,8 @@ BOOST_AUTO_TEST_CASE( Counting_entities_invokes_observer )
     bool observerCalled = false;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetEntitiesCount,
-                          [&](auto& _) { observerCalled = true; });
+    addHandler(handler->readEvents().onGetEntitiesCount,
+               [&](auto&) { observerCalled = true; });
 
     handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
     BOOST_REQUIRE(observerCalled);
@@ -69,8 +69,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_invokes_observer )
     auto observerCalledNTimes = 0u;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetUsers,
-                          [&](auto& _) { observerCalledNTimes += 1; });
+    addHandler(handler->readEvents().onGetUsers,
+               [&](auto&) { observerCalledNTimes += 1; });
 
     Forum::Commands::View views[] =
     {
@@ -99,8 +99,8 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_invokes_observer )
     std::string newUserName;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onAddNewUser,
-                          [&](auto& _, auto& newUser) { newUserName = toString(newUser.name().string()); });
+    addHandler(handler->writeEvents().onAddNewUser,
+               [&](auto&, auto& newUser) { newUserName = toString(newUser.name().string()); });
 
     createUserAndGetId(handler, "Foo");
     BOOST_REQUIRE_EQUAL("Foo", newUserName);
@@ -111,8 +111,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_by_id_invokes_observer )
     std::string idToBeRetrieved;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetUserById,
-                          [&](auto& _, auto& user) { idToBeRetrieved = static_cast<std::string>(user.id()); });
+    addHandler(handler->readEvents().onGetUserById,
+               [&](auto&, auto& user) { idToBeRetrieved = static_cast<std::string>(user.id()); });
 
     auto userId = createUserAndGetId(handler, "User");
     handlerToObj(handler, Forum::Commands::GET_USER_BY_ID, { userId });
@@ -124,8 +124,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_by_name_invokes_observer )
     std::string nameToBeRetrieved;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetUserByName,
-                          [&](auto& _, auto name) { nameToBeRetrieved = toString(name); });
+    addHandler(handler->readEvents().onGetUserByName,
+               [&](auto&, auto name) { nameToBeRetrieved = toString(name); });
 
     createUserAndGetId(handler, "SampleUser");
     handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "SampleUser" });
@@ -138,12 +138,12 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_name_invokes_observer )
     auto userChange = User::ChangeType::None;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onChangeUser,
-                          [&](auto& _, auto& user, auto change)
-                          {
-                              newName = toString(user.name().string());
-                              userChange = change;
-                          });
+    addHandler(handler->writeEvents().onChangeUser,
+               [&](auto&, auto& user, auto change)
+               {
+                   newName = toString(user.name().string());
+                   userChange = change;
+               });
 
     createUserAndGetId(handler, "Abc");
     auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
@@ -160,12 +160,12 @@ BOOST_AUTO_TEST_CASE( Modifying_a_user_info_invokes_observer )
     auto userChange = User::ChangeType::None;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onChangeUser,
-                          [&](auto& _, auto& user, auto change)
-                          {
-                              newInfo = toString(user.info().string());
-                              userChange = change;
-                          });
+    addHandler(handler->writeEvents().onChangeUser,
+               [&](auto&, auto& user, auto change)
+               {
+                   newInfo = toString(user.info().string());
+                   userChange = change;
+               });
 
     auto userId = createUserAndGetId(handler, "Abc");
 
@@ -179,8 +179,8 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_invokes_observer )
     std::string deletedUserName;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onDeleteUser,
-                          [&](auto& _, auto& user) { deletedUserName = toString(user.name().string()); });
+    addHandler(handler->writeEvents().onDeleteUser,
+               [&](auto&, auto& user) { deletedUserName = toString(user.name().string()); });
 
     createUserAndGetId(handler, "Abc");
     auto user = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
@@ -195,8 +195,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_of_user_invokes_observer )
     int methodCalledNrTimes = 0;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetDiscussionThreadsOfUser,
-                          [&](auto& _, auto& __) { methodCalledNrTimes += 1; });
+    addHandler(handler->readEvents().onGetDiscussionThreadsOfUser,
+               [&](auto&, auto&) { methodCalledNrTimes += 1; });
 
     auto user1 = createUserAndGetId(handler, "User1");
 
@@ -215,8 +215,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_thread_messages_of_user_invokes_obse
     int methodCalledNrTimes = 0;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetDiscussionThreadMessagesOfUser,
-                          [&](auto& _, auto& __) { methodCalledNrTimes += 1; });
+    addHandler(handler->readEvents().onGetDiscussionThreadMessagesOfUser,
+               [&](auto&, auto&) { methodCalledNrTimes += 1; });
 
     auto user1 = createUserAndGetId(handler, "User1");
 
@@ -233,8 +233,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_invokes_observer )
     int observerCalledNTimes = 0;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetDiscussionThreads,
-                          [&](auto& _) { observerCalledNTimes += 1; });
+    addHandler(handler->readEvents().onGetDiscussionThreads,
+               [&](auto&) { observerCalledNTimes += 1; });
 
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, SortOrder::Ascending);
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREADS_BY_NAME, SortOrder::Descending);
@@ -251,8 +251,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_by_id_invokes_observer )
     std::string idOfThread;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetDiscussionThreadById,
-                          [&](auto& _, auto& thread) { idOfThread = static_cast<std::string>(thread.id()); });
+    addHandler(handler->readEvents().onGetDiscussionThreadById,
+               [&](auto&, auto& thread) { idOfThread = static_cast<std::string>(thread.id()); });
 
     auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { threadId });
@@ -267,12 +267,12 @@ BOOST_AUTO_TEST_CASE( Modifying_a_discussion_thread_invokes_observer )
 
     LoggedInUserChanger __(createUserAndGetId(handler, "User"));
 
-    auto ___ = addHandler(handler->writeEvents().onChangeDiscussionThread,
-                          [&](auto& _, auto& thread, auto change)
-                          {
-                              newName = toString(thread.name().string());
-                              threadChange = change;
-                          });
+    addHandler(handler->writeEvents().onChangeDiscussionThread,
+               [&](auto&, auto& thread, auto change)
+               {
+                   newName = toString(thread.name().string());
+                   threadChange = change;
+               });
 
     auto threadId = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Abc" }).get<std::string>("id");
 
@@ -286,8 +286,8 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_invokes_observer )
     std::string deletedThreadId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onDeleteDiscussionThread,
-                          [&](auto& _, auto& thread) { deletedThreadId = static_cast<std::string>(thread.id()); });
+    addHandler(handler->writeEvents().onDeleteDiscussionThread,
+               [&](auto&, auto& thread) { deletedThreadId = static_cast<std::string>(thread.id()); });
 
     auto threadId = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Abc" }).get<std::string>("id");
 
@@ -300,12 +300,12 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_invokes_observer )
     std::string observedFromThreadId, observedToThreadId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onMergeDiscussionThreads,
-                          [&](auto& _, auto& fromThread, auto& toThread)
-                          {
-                              observedFromThreadId = static_cast<std::string>(fromThread.id());
-                              observedToThreadId = static_cast<std::string>(toThread.id());
-                          });
+    addHandler(handler->writeEvents().onMergeDiscussionThreads,
+               [&](auto&, auto& fromThread, auto& toThread)
+               {
+                   observedFromThreadId = static_cast<std::string>(fromThread.id());
+                   observedToThreadId = static_cast<std::string>(toThread.id());
+               });
 
     auto fromThreadId = createDiscussionThreadAndGetId(handler, "Thread1");
     auto toThreadId = createDiscussionThreadAndGetId(handler, "Thread2");
@@ -321,12 +321,12 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_invokes_observer )
     std::string observedMessageId, observedToThreadId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onMoveDiscussionThreadMessage,
-                          [&](auto& _, auto& message, auto& intoThread)
-                          {
-                              observedMessageId = static_cast<std::string>(message.id());
-                              observedToThreadId = static_cast<std::string>(intoThread.id());
-                          });
+    addHandler(handler->writeEvents().onMoveDiscussionThreadMessage,
+               [&](auto&, auto& message, auto& intoThread)
+               {
+                   observedMessageId = static_cast<std::string>(message.id());
+                   observedToThreadId = static_cast<std::string>(intoThread.id());
+               });
 
     auto fromThreadId = createDiscussionThreadAndGetId(handler, "Thread1");
     auto messageId = createDiscussionMessageAndGetId(handler, fromThreadId, "Message1");
@@ -344,13 +344,13 @@ BOOST_AUTO_TEST_CASE( Modifying_the_content_of_a_discussion_message_invokes_obse
     auto messageChange = DiscussionThreadMessage::ChangeType::None;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onChangeDiscussionThreadMessage,
-                          [&](auto& _, auto& message, auto change)
-                          {
-                              newContent = toString(message.content());
-                              changeReason = toString(message.lastUpdatedReason());
-                              messageChange = change;
-                          });
+    addHandler(handler->writeEvents().onChangeDiscussionThreadMessage,
+               [&](auto&, auto& message, auto change)
+               {
+                   newContent = toString(message.content());
+                   changeReason = toString(message.lastUpdatedReason());
+                   messageChange = change;
+               });
 
     auto userId = createUserAndGetId(handler, "User");
     LoggedInUserChanger _(userId);
@@ -369,8 +369,8 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_invokes_observer )
     std::string deletedMessageId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onDeleteDiscussionThreadMessage,
-                          [&](auto& _, auto& message) { deletedMessageId = static_cast<std::string>(message.id()); });
+    addHandler(handler->writeEvents().onDeleteDiscussionThreadMessage,
+               [&](auto&, auto& message) { deletedMessageId = static_cast<std::string>(message.id()); });
 
     auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
     auto messageId = createDiscussionMessageAndGetId(handler, threadId, "aaaaaaaaaaa");
@@ -386,12 +386,13 @@ BOOST_AUTO_TEST_CASE( Observer_context_includes_user_that_performs_the_action )
     std::string userIdFromContext;
     std::string userNameFromContext;
 
-    auto ___ = addHandler(handler->readEvents().onGetEntitiesCount,
-                          [&](auto& context)
-                          {
-                              userIdFromContext = static_cast<std::string>(context.performedBy.id());
-                              userNameFromContext = toString(context.performedBy.name().string());
-                          });
+    addHandler(handler->readEvents().onGetEntitiesCount,
+               [&](auto& context)
+               {
+                   userIdFromContext = static_cast<std::string>(context.performedBy.id());
+                   userNameFromContext = toString(context.performedBy.name().string());
+               });
+
     user1 = createUserAndGetId(handler, "User1");
     {
         LoggedInUserChanger _(user1);
@@ -407,12 +408,12 @@ BOOST_AUTO_TEST_CASE( Observer_context_performed_by_is_the_anonymous_user )
     std::string userIdFromContext;
     std::string userNameFromContext;
 
-    auto ___ = addHandler(handler->readEvents().onGetEntitiesCount,
-                          [&](auto& context)
-                          {
-                              userIdFromContext = static_cast<std::string>(context.performedBy.id());
-                              userNameFromContext = toString(context.performedBy.name().string());
-                          });
+    addHandler(handler->readEvents().onGetEntitiesCount,
+               [&](auto& context)
+               {
+                   userIdFromContext = static_cast<std::string>(context.performedBy.id());
+                   userNameFromContext = toString(context.performedBy.name().string());
+               });
 
     handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
 
@@ -426,8 +427,8 @@ BOOST_AUTO_TEST_CASE( Observer_context_includes_timestamp_of_action )
     const Timestamp timestamp = 1000;
     Timestamp timestampFromContext = 0;
 
-    auto ___ = addHandler(handler->readEvents().onGetEntitiesCount,
-                          [&](auto& context) { timestampFromContext = context.timestamp; });
+    addHandler(handler->readEvents().onGetEntitiesCount,
+               [&](auto& context) { timestampFromContext = context.timestamp; });
     {
         TimestampChanger _(timestamp);
         handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
@@ -440,8 +441,8 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_tag_invokes_observer )
     std::string newTagName;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onAddNewDiscussionTag,
-                          [&](auto& _, auto& newTag) { newTagName = toString(newTag.name().string()); });
+    addHandler(handler->writeEvents().onAddNewDiscussionTag,
+               [&](auto&, auto& newTag) { newTagName = toString(newTag.name().string()); });
 
     createDiscussionTagAndGetId(handler, "Foo");
     BOOST_REQUIRE_EQUAL("Foo", newTagName);
@@ -452,8 +453,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_tags_invokes_observer )
     int observerCalledNTimes = 0;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetDiscussionTags,
-                          [&](auto& _) { observerCalledNTimes += 1; });
+    addHandler(handler->readEvents().onGetDiscussionTags,
+               [&](auto&) { observerCalledNTimes += 1; });
 
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME, SortOrder::Ascending);
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_TAGS_BY_NAME, SortOrder::Descending);
@@ -469,12 +470,12 @@ BOOST_AUTO_TEST_CASE( Renaming_a_discussion_tag_invokes_observer )
     auto tagChange = DiscussionTag::ChangeType::None;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onChangeDiscussionTag,
-                          [&](auto& _, auto& tag, auto change)
-                          {
-                              newName = toString(tag.name().string());
-                              tagChange = change;
-                          });
+    addHandler(handler->writeEvents().onChangeDiscussionTag,
+               [&](auto&, auto& tag, auto change)
+               {
+                   newName = toString(tag.name().string());
+                   tagChange = change;
+               });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Abc");
 
@@ -489,12 +490,12 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_tag_ui_blob_invokes_observer )
     auto tagChange = DiscussionTag::ChangeType::None;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onChangeDiscussionTag,
-                          [&](auto& _, auto& tag, auto change)
-                          {
-                              newBlob = toString(tag.uiBlob());
-                              tagChange = change;
-                          });
+    addHandler(handler->writeEvents().onChangeDiscussionTag,
+               [&](auto&, auto& tag, auto change)
+               {
+                   newBlob = toString(tag.uiBlob());
+                   tagChange = change;
+               });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Abc");
 
@@ -508,11 +509,11 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_invokes_observer )
     std::string deletedTagId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onDeleteDiscussionTag,
-                          [&](auto& _, auto& tag)
-                          {
-                              deletedTagId = static_cast<std::string>(tag.id());
-                          });
+    addHandler(handler->writeEvents().onDeleteDiscussionTag,
+               [&](auto&, auto& tag)
+               {
+                   deletedTagId = static_cast<std::string>(tag.id());
+               });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Abc");
 
@@ -525,12 +526,12 @@ BOOST_AUTO_TEST_CASE( Attaching_a_discussion_tag_to_a_thread_invokes_observer )
     std::string observedTagId, observedThreadId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onAddDiscussionTagToThread,
-                          [&](auto& _, auto& tag, auto& thread)
-                          {
-                              observedTagId = static_cast<std::string>(tag.id());
-                              observedThreadId = static_cast<std::string>(thread.id());
-                          });
+    addHandler(handler->writeEvents().onAddDiscussionTagToThread,
+               [&](auto&, auto& tag, auto& thread)
+               {
+                   observedTagId = static_cast<std::string>(tag.id());
+                   observedThreadId = static_cast<std::string>(thread.id());
+               });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
     auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
@@ -546,12 +547,12 @@ BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_thread_invokes_observer 
     std::string observedTagId, observedThreadId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onRemoveDiscussionTagFromThread,
-                          [&](auto& _, auto& tag, auto& thread)
-                          {
-                              observedTagId = static_cast<std::string>(tag.id());
-                              observedThreadId = static_cast<std::string>(thread.id());
-                          });
+    addHandler(handler->writeEvents().onRemoveDiscussionTagFromThread,
+               [&](auto&, auto& tag, auto& thread)
+               {
+                   observedTagId = static_cast<std::string>(tag.id());
+                   observedThreadId = static_cast<std::string>(thread.id());
+               });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
     auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
@@ -569,12 +570,12 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_tags_invokes_obs
     std::string observedTagId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetDiscussionThreadsWithTag,
-                          [&](auto& _, auto& tag)
-                          {
-                              observerCalledNTimes += 1;
-                              observedTagId = static_cast<std::string>(tag.id());
-                          });
+    addHandler(handler->readEvents().onGetDiscussionThreadsWithTag,
+               [&](auto&, auto& tag)
+               {
+                   observerCalledNTimes += 1;
+                   observedTagId = static_cast<std::string>(tag.id());
+               });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
 
@@ -601,12 +602,12 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_tags_invokes_observer)
     std::string observedFromTagId, observedToTagId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onMergeDiscussionTags,
-                          [&](auto& _, auto& fromTag, auto& toTag)
-                          {
-                              observedFromTagId = static_cast<std::string>(fromTag.id());
-                              observedToTagId = static_cast<std::string>(toTag.id());
-                          });
+    addHandler(handler->writeEvents().onMergeDiscussionTags,
+               [&](auto&, auto& fromTag, auto& toTag)
+               {
+                   observedFromTagId = static_cast<std::string>(fromTag.id());
+                   observedToTagId = static_cast<std::string>(toTag.id());
+               });
 
     auto fromTagId = createDiscussionTagAndGetId(handler, "Tag1");
     auto toTagId = createDiscussionTagAndGetId(handler, "Tag2");
@@ -622,8 +623,8 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_category_invokes_observer )
     std::string newCategoryName;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onAddNewDiscussionCategory,
-                          [&](auto& _, auto& newCategory) { newCategoryName = toString(newCategory.name().string()); });
+    addHandler(handler->writeEvents().onAddNewDiscussionCategory,
+               [&](auto&, auto& newCategory) { newCategoryName = toString(newCategory.name().string()); });
 
     createDiscussionCategoryAndGetId(handler, "Foo");
     BOOST_REQUIRE_EQUAL("Foo", newCategoryName);
@@ -634,8 +635,8 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_categories_invokes_observer )
     int observerCalledNTimes = 0;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetDiscussionCategories,
-                          [&](auto& _) { observerCalledNTimes += 1; });
+    addHandler(handler->readEvents().onGetDiscussionCategories,
+               [&](auto&) { observerCalledNTimes += 1; });
 
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_CATEGORIES_BY_NAME, SortOrder::Ascending);
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_CATEGORIES_BY_NAME, SortOrder::Descending);
@@ -650,8 +651,8 @@ BOOST_AUTO_TEST_CASE(Retrieving_root_discussion_categories_invokes_observer)
     int observerCalledNTimes = 0;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetRootDiscussionCategories,
-        [&](auto& _) { observerCalledNTimes += 1; });
+    addHandler(handler->readEvents().onGetRootDiscussionCategories,
+               [&](auto&) { observerCalledNTimes += 1; });
 
     handlerToObj(handler, Forum::Commands::GET_DISCUSSION_CATEGORIES_FROM_ROOT);
 
@@ -664,12 +665,12 @@ BOOST_AUTO_TEST_CASE( Renaming_a_discussion_category_invokes_observer )
     auto categoryChange = DiscussionCategory::ChangeType::None;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onChangeDiscussionCategory,
-                          [&](auto& _, auto& category, auto change)
-                          {
-                              newName = toString(category.name().string());
-                              categoryChange = change;
-                          });
+    addHandler(handler->writeEvents().onChangeDiscussionCategory,
+               [&](auto&, auto& category, auto change)
+               {
+                   newName = toString(category.name().string());
+                   categoryChange = change;
+               });
 
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Abc");
 
@@ -684,12 +685,12 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_description_invokes_observe
     auto categoryChange = DiscussionCategory::ChangeType::None;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onChangeDiscussionCategory,
-                          [&](auto& _, auto& category, auto change)
-                          {
-                              newDescription = toString(category.description());
-                              categoryChange = change;
-                          });
+    addHandler(handler->writeEvents().onChangeDiscussionCategory,
+               [&](auto&, auto& category, auto change)
+               {
+                   newDescription = toString(category.description());
+                   categoryChange = change;
+               });
 
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Abc");
 
@@ -704,12 +705,12 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_displayOrder_invokes_observ
     auto categoryChange = DiscussionCategory::ChangeType::None;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onChangeDiscussionCategory,
-                          [&](auto& _, auto& category, auto change)
-                          {
-                              newDisplayOrder = category.displayOrder();
-                              categoryChange = change;
-                          });
+    addHandler(handler->writeEvents().onChangeDiscussionCategory,
+               [&](auto&, auto& category, auto change)
+               {
+                   newDisplayOrder = category.displayOrder();
+                   categoryChange = change;
+               });
 
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Abc");
 
@@ -724,15 +725,15 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_parent_invokes_observer )
     auto categoryChange = DiscussionCategory::ChangeType::None;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onChangeDiscussionCategory,
-                          [&](auto& _, auto& category, auto change)
-                          {
-                              if (auto parent = category.parent())
-                              {
-                                  newParentId = static_cast<std::string>(parent->id());
-                              }
-                              categoryChange = change;
-                          });
+    addHandler(handler->writeEvents().onChangeDiscussionCategory,
+               [&](auto&, auto& category, auto change)
+               {
+                   if (auto parent = category.parent())
+                   {
+                       newParentId = static_cast<std::string>(parent->id());
+                   }
+                   categoryChange = change;
+               });
 
     auto category1Id = createDiscussionCategoryAndGetId(handler, "Category1");
     auto childCategory1Id = createDiscussionCategoryAndGetId(handler, "ChildCategory1", category1Id);
@@ -748,11 +749,11 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_category_invokes_observer )
     std::string deletedCategoryId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onDeleteDiscussionCategory,
-                          [&](auto& _, auto& tag)
-                          {
-                              deletedCategoryId = static_cast<std::string>(tag.id());
-                          });
+    addHandler(handler->writeEvents().onDeleteDiscussionCategory,
+               [&](auto&, auto& tag)
+               {
+                   deletedCategoryId = static_cast<std::string>(tag.id());
+               });
 
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Abc");
 
@@ -765,12 +766,12 @@ BOOST_AUTO_TEST_CASE( Attaching_a_discussion_tag_to_a_category_invokes_observer 
     std::string observedTagId, observedCategoryId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onAddDiscussionTagToCategory,
-                          [&](auto& _, auto& tag, auto& category)
-                          {
-                              observedTagId = static_cast<std::string>(tag.id());
-                              observedCategoryId = static_cast<std::string>(category.id());
-                          });
+    addHandler(handler->writeEvents().onAddDiscussionTagToCategory,
+               [&](auto&, auto& tag, auto& category)
+               {
+                   observedTagId = static_cast<std::string>(tag.id());
+                   observedCategoryId = static_cast<std::string>(category.id());
+               });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Category");
@@ -786,12 +787,12 @@ BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_category_invokes_observe
     std::string observedTagId, observedCategoryId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->writeEvents().onRemoveDiscussionTagFromCategory,
-                          [&](auto& _, auto& tag, auto& category)
-                          {
-                              observedTagId = static_cast<std::string>(tag.id());
-                              observedCategoryId = static_cast<std::string>(category.id());
-                          });
+    addHandler(handler->writeEvents().onRemoveDiscussionTagFromCategory,
+               [&](auto&, auto& tag, auto& category)
+               {
+                   observedTagId = static_cast<std::string>(tag.id());
+                   observedCategoryId = static_cast<std::string>(category.id());
+               });
 
     auto tagId = createDiscussionTagAndGetId(handler, "Tag");
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Category");
@@ -810,12 +811,12 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_categories_invok
     std::string observedCategoryId;
     auto handler = createCommandHandler();
 
-    auto ___ = addHandler(handler->readEvents().onGetDiscussionThreadsOfCategory,
-                          [&](auto& _, auto& category)
-                          {
-                              observerCalledNTimes += 1;
-                              observedCategoryId = static_cast<std::string>(category.id());
-                          });
+    addHandler(handler->readEvents().onGetDiscussionThreadsOfCategory,
+               [&](auto&, auto& category)
+               {
+                   observerCalledNTimes += 1;
+                   observedCategoryId = static_cast<std::string>(category.id());
+               });
 
     auto categoryId = createDiscussionCategoryAndGetId(handler, "Category");
 
@@ -843,24 +844,24 @@ BOOST_AUTO_TEST_CASE( Voting_discussion_thread_messages_invokes_observers )
 
     auto handler = createCommandHandler();
 
-    auto __1 = addHandler(handler->writeEvents().onDiscussionThreadMessageUpVote,
-                          [&](auto& context, auto& message)
-                          {
-                             upVoteUser = static_cast<std::string>(context.performedBy.id());
-                             votedMessages[0] = static_cast<std::string>(message.id());
-                          });
-    auto __2 = addHandler(handler->writeEvents().onDiscussionThreadMessageDownVote,
-                          [&](auto& context, auto& message)
-                          {
-                             downVoteUser = static_cast<std::string>(context.performedBy.id());
-                             votedMessages[1] = static_cast<std::string>(message.id());
-                          });
-    auto __3 = addHandler(handler->writeEvents().onDiscussionThreadMessageResetVote,
-                          [&](auto& context, auto& message)
-                          {
-                             resetVoteUser = static_cast<std::string>(context.performedBy.id());
-                             votedMessages[2] = static_cast<std::string>(message.id());
-                          });
+    addHandler(handler->writeEvents().onDiscussionThreadMessageUpVote,
+               [&](auto& context, auto& message)
+               {
+                  upVoteUser = static_cast<std::string>(context.performedBy.id());
+                  votedMessages[0] = static_cast<std::string>(message.id());
+               });
+    addHandler(handler->writeEvents().onDiscussionThreadMessageDownVote,
+               [&](auto& context, auto& message)
+               {
+                  downVoteUser = static_cast<std::string>(context.performedBy.id());
+                  votedMessages[1] = static_cast<std::string>(message.id());
+               });
+    addHandler(handler->writeEvents().onDiscussionThreadMessageResetVote,
+               [&](auto& context, auto& message)
+               {
+                  resetVoteUser = static_cast<std::string>(context.performedBy.id());
+                  votedMessages[2] = static_cast<std::string>(message.id());
+               });
 
     auto user1Id = createUserAndGetId(handler, "User1");
     auto user2Id = createUserAndGetId(handler, "User2");

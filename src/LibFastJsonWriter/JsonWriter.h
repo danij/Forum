@@ -47,7 +47,7 @@ namespace Json
         }
 
         template <>
-        inline void writeString<1>(StringBuffer& stringBufferOutput, const char(&value)[0 + 1])
+        inline void writeString<1>(StringBuffer& /*stringBufferOutput*/, const char(&/*value*/)[0 + 1])
         {
             //ignore null terminator
         }

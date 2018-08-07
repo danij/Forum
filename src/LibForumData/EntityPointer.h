@@ -42,7 +42,7 @@ namespace Forum::Entities
         void setGlobalEntityCollection(EntityCollection* collection);
 
         template<typename T>
-        T* getEntityFromGlobalCollection(size_t index)
+        T* getEntityFromGlobalCollection(size_t /*index*/)
         {
             throw std::runtime_error("Should no be called");
         }
