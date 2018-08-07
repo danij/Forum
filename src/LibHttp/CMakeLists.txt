@@ -7,23 +7,34 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost REQUIRED COMPONENTS system)
 
 set(SOURCE_FILES
+        private/ConnectionManagerWithTimeout.cpp
+        private/FixedHttpConnectionManager.cpp
+        private/HttpConnection.cpp
         private/HttpConstants.cpp
-        private/HttpListener.cpp
         private/HttpParser.cpp
         private/HttpResponseBuilder.cpp
-        private/HttpRouter.cpp)
+        private/HttpRouter.cpp
+        private/StreamingConnection.cpp
+        private/TcpListener.cpp)
 
 set(HEADER_FILES
+        ConnectionManagerWithTimeout.h
+        FixedHttpConnectionManager.h
+        FixedSizeBufferPool.h
+        FixedSizeObjectPool.h
+        HttpConnection.h
         HttpConstants.h
-        HttpListener.h
+        HttpParser.h
         HttpRequest.h
         HttpResponseBuilder.h
         HttpRouter.h
         HttpStringHelpers.h
-        Trie.h
-        private/FixedSizeBuffer.h
-        private/HttpParser.h
-        private/TimeoutManager.h)
+        IConnectionManager.h
+        ReadWriteBufferArray.h
+        StreamingConnection.h
+        TcpListener.h
+        TimeoutManager.h
+        Trie.h)
 
 include_directories(
         .

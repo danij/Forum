@@ -8,7 +8,7 @@ if(IS_BIG_ENDIAN)
     message(FATAL_ERROR "Big endian is currently not supported by this project")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Werror -Wno-error=deprecated-declarations")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Werror -Wno-error=deprecated-declarations")
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
@@ -39,7 +39,9 @@ add_subdirectory(src/LibForumPersistence)
 add_subdirectory(src/ForumApp)
 
 add_subdirectory(test/ForumServiceTests)
+add_subdirectory(test/HttpTests)
 add_subdirectory(test/MemoryRepositoryBenchmarks)
 
+add_subdirectory(tools/HttpBenchmark)
 add_subdirectory(tools/MessageExtractor)
 add_subdirectory(tools/SearchDataExtractor)

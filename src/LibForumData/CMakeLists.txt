@@ -78,8 +78,7 @@ set(HEADER_FILES
         MemoryRepositoryDiscussionCategory.h
         MemoryRepositoryAuthorization.h
         MetricsRepository.h
-
-        private/ResourceGuard.h)
+        ResourceGuard.h)
 
 include_directories(
         .
