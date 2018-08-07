@@ -24,9 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Repository.h"
 #include "ResourceGuard.h"
 
-#include <boost/core/noncopyable.hpp>
-
-#include <optional>
+#include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 
 namespace Forum::Repository
 {
@@ -92,14 +91,14 @@ namespace Forum::Repository
 
         static StatusCode validateString(StringView string,
                                          EmptyStringValidation emptyValidation,
-                                         std::optional<int_fast32_t> minimumLength,
-                                         std::optional<int_fast32_t> maximumLength);
+                                         boost::optional<int_fast32_t> minimumLength,
+                                         boost::optional<int_fast32_t> maximumLength);
 
         template<typename Fn>
         static StatusCode validateString(StringView string,
                                          EmptyStringValidation emptyValidation,
-                                         std::optional<int_fast32_t> minimumLength,
-                                         std::optional<int_fast32_t> maximumLength,
+                                         boost::optional<int_fast32_t> minimumLength,
+                                         boost::optional<int_fast32_t> maximumLength,
                                          Fn&& extraValidation)
         {
             const auto initialResult = validateString(string, emptyValidation, minimumLength, maximumLength);

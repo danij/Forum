@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "AuthorizationGrantedPrivilegeStore.h"
 #include "JsonWriter.h"
 
-#include <optional>
+#include <boost/optional.hpp>
 
 namespace Json
 {
@@ -50,13 +50,13 @@ namespace Forum::Entities
         bool showDiscussionCategoryChildren = false;
         bool hideDiscussionCategoriesOfTags = false;
         bool keepDiscussionCategoryDetails = false;
-        std::optional<int> displayDiscussionCategoryParentRecursionDepth = std::nullopt;
+        boost::optional<int> displayDiscussionCategoryParentRecursionDepth = boost::none;
 
-        std::optional<bool> allowDisplayDiscussionThreadMessage = std::nullopt;
-        std::optional<bool> allowDisplayDiscussionThreadMessageUser = std::nullopt;
-        std::optional<bool> allowDisplayDiscussionThreadMessageVotes = std::nullopt;
-        std::optional<bool> allowDisplayDiscussionThreadMessageIpAddress = std::nullopt;
-        std::optional<bool> allowDisplayDiscussionThreadMessageComments = std::nullopt;
+        boost::optional<bool> allowDisplayDiscussionThreadMessage = boost::none;
+        boost::optional<bool> allowDisplayDiscussionThreadMessageUser = boost::none;
+        boost::optional<bool> allowDisplayDiscussionThreadMessageVotes = boost::none;
+        boost::optional<bool> allowDisplayDiscussionThreadMessageIpAddress = boost::none;
+        boost::optional<bool> allowDisplayDiscussionThreadMessageComments = boost::none;
 
         UserPtr userToCheckVotesOf{};
 

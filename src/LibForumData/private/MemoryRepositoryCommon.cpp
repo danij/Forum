@@ -25,13 +25,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "TypeHelpers.h"
 
 #include <algorithm>
-#include <optional>
 #include <tuple>
 
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
 
 #include <boost/endian/conversion.hpp>
+#include <boost/optional.hpp>
 
 using namespace Forum;
 using namespace Forum::Authorization;
@@ -117,8 +117,8 @@ UserPtr Repository::getCurrentUser(EntityCollection& collection)
 
 StatusCode MemoryRepositoryBase::validateString(StringView string,
                                                 EmptyStringValidation emptyValidation,
-                                                std::optional<int_fast32_t> minimumLength,
-                                                std::optional<int_fast32_t> maximumLength)
+                                                boost::optional<int_fast32_t> minimumLength,
+                                                boost::optional<int_fast32_t> maximumLength)
 {
     if ((INVALID_PARAMETERS_FOR_EMPTY_STRING == emptyValidation) && string.empty())
     {
@@ -172,7 +172,7 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
     return (u_isUWhiteSpace(u32Chars[0]) == FALSE) && (u_isUWhiteSpace(u32Chars[1]) == FALSE);
 }
 
-static std::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView content)
+static boost::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView content)
 {
     static const unsigned char PNGStart[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
     static const unsigned char PNGIHDR[] = { 0x49, 0x48, 0x44, 0x52 };

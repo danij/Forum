@@ -24,10 +24,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "StringHelpers.h"
 
 #include <string>
-#include <optional>
 
 #include <boost/container/flat_map.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 
 namespace Forum::Entities
 {
@@ -106,7 +106,7 @@ namespace Forum::Entities
             return Helpers::toConst(downVotes_ ? *downVotes_ : emptyVoteCollection);
         }
 
-        std::optional<Timestamp> votedAt(const EntityPointer<User> user) const
+        boost::optional<Timestamp> votedAt(const EntityPointer<User> user) const
         {
             if (upVotes_)
             {

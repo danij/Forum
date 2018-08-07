@@ -478,7 +478,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
     }
 
     PerformedByWithLastSeenUpdateGuard performedBy;
-    std::optional<IdType> grantAllPrivilegesTo;
+    boost::optional<IdType> grantAllPrivilegesTo;
 
     collection().write([&](EntityCollection& collection)
                        {

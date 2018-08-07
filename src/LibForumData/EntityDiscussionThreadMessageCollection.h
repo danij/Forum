@@ -22,9 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityDiscussionThreadMessage.h"
 
 #include <functional>
-#include <optional>
 
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
@@ -53,7 +53,7 @@ namespace Forum::Entities
         auto byCreated()       const { return Helpers::toConst(byCreated_); }
         auto& byCreated()            { return byCreated_; }
 
-        std::optional<size_t> findRankByCreated(IdTypeRef messageId) const
+        boost::optional<size_t> findRankByCreated(IdTypeRef messageId) const
         {
             const auto idIt = byId_.find(messageId);
             if (idIt == byId_.end())
@@ -102,7 +102,7 @@ namespace Forum::Entities
         auto byCreated()      const { return Helpers::toConst(byCreated_); }
         auto& byCreated()           { return byCreated_; }
 
-        std::optional<size_t> findRankByCreated(IdTypeRef messageId) const
+        boost::optional<size_t> findRankByCreated(IdTypeRef messageId) const
         {
             const auto idIt = byId_.find(messageId);
             if (idIt == byId_.end())

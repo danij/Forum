@@ -24,9 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstddef>
 #include <cstdint>
 #include <ctime>
-#include <optional>
 
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 
 namespace Http
 {
@@ -87,8 +87,8 @@ namespace Http
             return *this;
         }
 
-        std::optional<time_t> expires;
-        std::optional<uint32_t> cookieMaxAge;
+        boost::optional<time_t> expires;
+        boost::optional<uint32_t> cookieMaxAge;
         HttpStringView cookieDomain;
         HttpStringView cookiePath;
         bool isSecure = false;

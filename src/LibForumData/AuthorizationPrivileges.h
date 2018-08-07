@@ -26,7 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <ctime>
 #include <memory>
-#include <optional>
+
+#include <boost/optional.hpp>
 
 namespace Forum::Authorization
 {
@@ -393,7 +394,7 @@ namespace Forum::Authorization
     };
 
     typedef int16_t PrivilegeValueIntType;
-    typedef std::optional<PrivilegeValueIntType> PrivilegeValueType;
+    typedef boost::optional<PrivilegeValueIntType> PrivilegeValueType;
     typedef time_t PrivilegeDurationIntType;
 
     struct PrivilegeDefaultLevel
@@ -402,14 +403,14 @@ namespace Forum::Authorization
         PrivilegeDurationIntType duration;
     };
 
-    typedef std::optional<PrivilegeDefaultLevel> PrivilegeDefaultLevelType;
+    typedef boost::optional<PrivilegeDefaultLevel> PrivilegeDefaultLevelType;
 
     static constexpr PrivilegeValueIntType MinPrivilegeValue = -32000;
     static constexpr PrivilegeValueIntType MaxPrivilegeValue = 32000;
     static constexpr PrivilegeDurationIntType UnlimitedDuration = 0;
 
     template<typename T>
-    T optionalOrZero(std::optional<T> value)
+    T optionalOrZero(boost::optional<T> value)
     {
         return value ? *value : 0;
     }

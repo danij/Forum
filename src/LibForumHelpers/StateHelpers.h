@@ -18,9 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <optional>
-
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 
 namespace Forum::Helpers
 {
@@ -44,12 +43,12 @@ namespace Forum::Helpers
     typedef TemporaryChanger<bool> BoolTemporaryChanger;
 
     /**
-     * Changes a std::optional and reverts it to std::nullopt only if it didn't have a value to start with
+     * Changes a boost::optional and reverts it to boost::none only if it didn't have a value to start with
      */
     template<typename T>
     struct OptionalRevertToNoneChanger final : private boost::noncopyable
     {
-        OptionalRevertToNoneChanger(std::optional<T>& optional, T value) : optional_(optional)
+        OptionalRevertToNoneChanger(boost::optional<T>& optional, T value) : optional_(optional)
         {
             if ( ! optional)
             {
@@ -66,12 +65,12 @@ namespace Forum::Helpers
         {
             if (revertToNone_)
             {
-                optional_ = std::nullopt;
+                optional_ = boost::none;
             }
         }
 
     private:
-        std::optional<T>& optional_;
+        boost::optional<T>& optional_;
         bool revertToNone_;
     };
 }
