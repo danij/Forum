@@ -49,7 +49,10 @@ order to construct each reply.
 The code is designed to handle multiple requests at the same time, using a multiple readers/single-writer lock.
  
 Apart from storing entities in memory, they will also be persisted to a more durable storage. Observers will pick up
-events and asynchronously store them into an event store on disk. When the application is started, all events are read
+events and asynchronously store them into an event store on disk. In case of a crash, the events that have not reached 
+the disk will be lost. 
+
+When the application is started, all events are read
 from disk and replied to fill the repositories.
 
 ## Development Info
