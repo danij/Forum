@@ -521,7 +521,7 @@ namespace Json
             writeString(digit, bufferEnd - digit);
 
             return *this;
-        };
+        }
 
         template<size_t Size>
         void writeString(const char(&value)[Size])
