@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/uuid/uuid.hpp>
 
-namespace Forum::Entities
+namespace Forum::Helpers
 {
     /**
      * Stores a binary and string representation of a uuid on the stack
@@ -167,9 +167,9 @@ namespace Forum::Entities
 namespace std
 {
     template<>
-    struct hash<Forum::Entities::UuidString>
+    struct hash<Forum::Helpers::UuidString>
     {
-        size_t operator()(const Forum::Entities::UuidString& value) const
+        size_t operator()(const Forum::Helpers::UuidString& value) const
         {
             return value.hashValue();
         }

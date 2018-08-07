@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "UuidString.h"
 
-namespace Forum::Entities
+namespace Forum::Helpers
 {
     boost::uuids::uuid generateUUID();
     UuidString generateUniqueId();

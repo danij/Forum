@@ -9,7 +9,9 @@ find_package(ICU)
 
 set(SOURCE_FILES
         private/StringHelpers.cpp
-        private/IpAddress.cpp)
+        private/IpAddress.cpp
+        private/RandomGenerator.cpp
+        private/UuidString.cpp)
 
 set(HEADER_FILES
         ConstCollectionAdapter.h
@@ -18,8 +20,10 @@ set(HEADER_FILES
         StringHelpers.h
         TypeHelpers.h
         IpAddress.h
+        RandomGenerator.h
         SeparateThreadConsumer.h
-        SpinLock.h)
+        SpinLock.h
+        UuidString.h)
 
 include_directories(
         .

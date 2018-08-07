@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/uuid/uuid_io.hpp>
 
-using namespace Forum::Entities;
+using namespace Forum::Helpers;
 
 UuidString::UuidString() : value_(boost::uuids::uuid{})
 {}

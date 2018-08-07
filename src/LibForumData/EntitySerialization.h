@@ -27,7 +27,7 @@ namespace Json
 {
     JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::EntitiesCount& value);
 
-    JsonWriter& operator<<(JsonWriter& writer, const Forum::Entities::UuidString& id);
+    JsonWriter& operator<<(JsonWriter& writer, const Forum::Helpers::UuidString& id);
 }
 
 namespace Forum::Entities

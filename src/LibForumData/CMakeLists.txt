@@ -33,9 +33,7 @@ set(SOURCE_FILES
         private/EntitySerialization.cpp
         private/DefaultAuthorization.cpp
         private/AuthorizationGrantedPrivilegeStore.cpp
-        private/DefaultThrottling.cpp
-        private/RandomGenerator.cpp
-        private/UuidString.cpp)
+        private/DefaultThrottling.cpp)
 
 set(HEADER_FILES
         ../Version.h
@@ -66,8 +64,6 @@ set(HEADER_FILES
         AuthorizationGrantedPrivilegeStore.h
         ThrottlingCheck.h
         SortedVector.h
-        RandomGenerator.h
-        UuidString.h
         IdOrIpAddress.h
         MemoryRepositoryCommon.h
         MemoryRepositoryUser.h

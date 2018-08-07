@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/noncopyable.hpp>
 
 #include <unicode/ucol.h>
+#include <unicode/ustring.h>
 
 using namespace Forum::Helpers;
 
