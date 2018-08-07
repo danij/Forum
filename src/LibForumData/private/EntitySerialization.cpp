@@ -398,7 +398,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
             << propertySafeName("pinDisplayOrder", thread.pinDisplayOrder())
             << propertySafeName("subscribedUsersCount", thread.subscribedUsersCount());
 
-    const IdTypeRef currentUserId = Context::getCurrentUserId();
+    IdTypeRef currentUserId = Context::getCurrentUserId();
     writer << propertySafeName("subscribedToThread",
         currentUserId && (thread.subscribedUsers().find(currentUserId) != thread.subscribedUsers().end()));
 

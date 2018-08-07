@@ -78,6 +78,8 @@ namespace Forum
 
             AuthorizationStatus getDiscussionThreadsOfCategory(const Entities::User& currentUser,
                                                                const Entities::DiscussionCategory& category) const override { return {}; }
+            AuthorizationStatus getAllowDiscussionThreadPrivilegeChange(const Entities::User& currentUser,
+                                                                        const Entities::DiscussionThread& thread) const override { return {}; }
 
             AuthorizationStatus addNewDiscussionThread(const Entities::User& currentUser,
                                                        StringView name) const override { return {}; }
@@ -113,6 +115,8 @@ namespace Forum
                                                                             const Entities::DiscussionThreadMessage& message) const override { return {}; }
             AuthorizationStatus getMessageCommentsOfUser(const Entities::User& currentUser,
                                                          const Entities::User& user) const override { return {}; }
+            AuthorizationStatus getAllowDiscussionThreadMessagePrivilegeChange(const Entities::User& currentUser,
+                                                                               const Entities::DiscussionThreadMessage& message) const override { return {}; }
 
             AuthorizationStatus addNewDiscussionMessageInThread(const Entities::User& currentUser,
                                                                 const Entities::DiscussionThread& thread,
@@ -147,6 +151,8 @@ namespace Forum
                                                      const Entities::DiscussionTag& tag) const override { return {}; }
 
             AuthorizationStatus getDiscussionTags(const Entities::User& currentUser) const override { return {}; }
+            AuthorizationStatus getAllowDiscussionTagPrivilegeChange(const Entities::User& currentUser,
+                                                                     const Entities::DiscussionTag& tag) const override { return {}; }
 
             AuthorizationStatus addNewDiscussionTag(const Entities::User& currentUser,
                                                     StringView name) const override { return {}; }
@@ -176,6 +182,8 @@ namespace Forum
                                                           const Entities::DiscussionCategory& category) const override { return {}; }
             AuthorizationStatus getDiscussionCategories(const Entities::User& currentUser) const override { return {}; }
             AuthorizationStatus getDiscussionCategoriesFromRoot(const Entities::User& currentUser) const override { return {}; }
+            AuthorizationStatus getAllowDiscussionCategoryPrivilegeChange(const Entities::User& currentUser,
+                                                                          const Entities::DiscussionCategory& category) const override { return {}; }
 
             AuthorizationStatus addNewDiscussionCategory(const Entities::User& currentUser,
                                                          StringView name,
@@ -282,6 +290,8 @@ namespace Forum
             AuthorizationStatus getForumWideAssignedPrivileges(const Entities::User& currentUser) const override { return {}; }
             AuthorizationStatus getUserAssignedPrivileges(const Entities::User& currentUser,
                                                           const Entities::User& targetUser) const override { return {}; }
+            AuthorizationStatus getAllowForumWidePrivilegeChange(const Entities::User& currentUser) const override { return {}; }
+
             AuthorizationStatus assignForumWidePrivilege(const Entities::User& currentUser,
                                                          const Entities::User& targetUser,
                                                          PrivilegeValueIntType newValue) const override { return{}; }

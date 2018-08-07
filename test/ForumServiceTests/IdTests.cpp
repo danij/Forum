@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/test/unit_test.hpp>
 
-using namespace Forum::Entities;
+using namespace Forum::Helpers;
 
 BOOST_AUTO_TEST_CASE( UuidString_can_be_converted_to_and_from_strings )
 {

@@ -45,7 +45,7 @@ namespace Forum
 
         inline bool isIdEmpty(const std::string& id)
         {
-            return Entities::UuidString(id) == Entities::UuidString::empty;
+            return Helpers::UuidString(id) == Helpers::UuidString::empty;
         }
 
         template<size_t StackSize>
