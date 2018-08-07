@@ -514,21 +514,30 @@ AuthorizationStatus DefaultAuthorization::deleteDiscussionTag(const User& curren
     return isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::DELETE, with);
 }
 
-AuthorizationStatus DefaultAuthorization::addDiscussionTagToThread(const User& currentUser, const DiscussionTag& /*tag*/,
+AuthorizationStatus DefaultAuthorization::addDiscussionTagToThread(const User& currentUser, const DiscussionTag& tag,
                                                                    const DiscussionThread& thread) const
 {
     if ( ! thread.empty() && isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
+
+    const auto allowViewTag = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW, with);
+    if (AuthorizationStatus::OK != allowViewTag) return allowViewTag;
+
     return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADD_TAG, with);
 }
 
-AuthorizationStatus DefaultAuthorization::removeDiscussionTagFromThread(const User& currentUser, const DiscussionTag& /*tag*/,
+AuthorizationStatus DefaultAuthorization::removeDiscussionTagFromThread(const User& currentUser, 
+                                                                        const DiscussionTag& tag,
                                                                         const DiscussionThread& thread) const
 {
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
+
+    const auto allowViewTag = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW, with);
+    if (AuthorizationStatus::OK != allowViewTag) return allowViewTag;
+
     return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::REMOVE_TAG, with);
 }
 
@@ -638,22 +647,31 @@ AuthorizationStatus DefaultAuthorization::deleteDiscussionCategory(const User& c
     return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::DELETE, with);
 }
 
-AuthorizationStatus DefaultAuthorization::addDiscussionTagToCategory(const User& currentUser, const DiscussionTag& /*tag*/,
+AuthorizationStatus DefaultAuthorization::addDiscussionTagToCategory(const User& currentUser, const DiscussionTag& tag,
                                                                      const DiscussionCategory& category) const
 {
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
+    
+    const auto allowViewTag = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW, with);
+    if (AuthorizationStatus::OK != allowViewTag) return allowViewTag;
+
     return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::ADD_TAG, with);
 }
 
 AuthorizationStatus DefaultAuthorization::removeDiscussionTagFromCategory(const User& currentUser,
-                                                                          const DiscussionTag& /*tag*/,
+                                                                          const DiscussionTag& tag,
                                                                           const DiscussionCategory& category) const
 {
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
+
+    const auto allowViewTag = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW, with);
+    if (AuthorizationStatus::OK != allowViewTag) return allowViewTag;
+
+
     return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::REMOVE_TAG, with);
 }
 
