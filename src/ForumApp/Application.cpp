@@ -47,6 +47,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 
 #include <boost/dll.hpp>
+#include <boost/filesystem.hpp>
 
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/filter_parser.hpp>
@@ -177,7 +178,7 @@ void Application::cleanup()
     u_cleanup();
 }
 
-bool Application::loadConfiguration(const std::string_view fileName)
+bool Application::loadConfiguration(const std::string& fileName)
 {
     try
     {

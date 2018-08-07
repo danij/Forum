@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/noncopyable.hpp>
 
 #include <memory>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -42,7 +43,7 @@ namespace Forum
     private:
         void cleanup();
         bool initialize();
-        bool loadConfiguration(std::string_view fileName);
+        bool loadConfiguration(const std::string& fileName);
         void validateConfiguration();
         bool createCommandHandler();
         bool importEvents();
