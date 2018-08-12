@@ -18,6 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#ifndef NDEBUG
+#include <cassert>
+#endif
 #include <cstddef>
 #include <memory>
 #include <mutex>
@@ -33,6 +36,9 @@ namespace Http
         struct Buffer
         {
             alignas(AlignSpecifier) char data[BufferSize];
+#ifndef NDEBUG
+            bool inUse = false;
+#endif
         };
 
         struct BringBackBuffer final
@@ -68,7 +74,12 @@ namespace Http
             {
                 return {};
             }
-            return &buffers_[availableIndexes_[numberOfUsedBuffers_++]];
+            auto result = &buffers_[availableIndexes_[numberOfUsedBuffers_++]];
+#ifndef NDEBUG
+            assert( ! result->inUse);
+            result->inUse = true;
+#endif
+            return result;
         }
 
         /**
@@ -95,12 +106,15 @@ namespace Http
             {
                 return;
             }
+#ifndef NDEBUG
+            assert(value->inUse);
+            value->inUse = false;
+#endif
 
             std::lock_guard<decltype(mutex_)> lock(mutex_);
-            if (numberOfUsedBuffers_ < 1)
-            {
-                return;
-            }
+#ifndef NDEBUG
+            assert(numberOfUsedBuffers_ > 0);
+#endif
             availableIndexes_[--numberOfUsedBuffers_] = index;
         }
 

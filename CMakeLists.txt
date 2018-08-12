@@ -26,6 +26,12 @@ endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 
+if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    add_definitions(-DDEBUG)
+else()
+    add_definitions(-DNDEBUG)
+endif()
+
 add_definitions(-DBOOST_ASIO_ENABLE_OLD_SERVICES)
 
 add_subdirectory(src/LibFastJsonWriter)
