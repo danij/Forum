@@ -39,6 +39,7 @@ target_link_libraries(ForumApp
         ForumData
         ForumHelpers
         ForumPersistence
+        dl
         ${Boost_LIBRARIES}
         ${ICU_LIBRARIES}
         ${ICU_I18N_LIBRARIES})
