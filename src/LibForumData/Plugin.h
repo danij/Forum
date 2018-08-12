@@ -56,5 +56,9 @@ namespace Forum::Extensibility
         const boost::property_tree::ptree* configuration;
     };
 
+#ifdef _MSC_VER 
     using PluginLoaderFn = void __cdecl(PluginInput* input, PluginPtr* output);
+#else
+    using PluginLoaderFn = void (PluginInput* input, PluginPtr* output);
+#endif
 }
