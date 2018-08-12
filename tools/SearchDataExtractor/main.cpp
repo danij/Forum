@@ -169,6 +169,7 @@ std::vector<std::string> getSortedEventFileNames(const boost::filesystem::path& 
 
     for (auto& [_, fileName] : eventFileNames)
     {
+        (void)_;
         result.emplace_back(std::move(fileName));
     }
 
