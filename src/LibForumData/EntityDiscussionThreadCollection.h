@@ -39,7 +39,7 @@ namespace Forum::Entities
     class IDiscussionThreadCollection
     {
     public:
-        DECLARE_INTERFACE_MANDATORY(IDiscussionThreadCollection);
+        DECLARE_INTERFACE_MANDATORY(IDiscussionThreadCollection)
 
         virtual void prepareUpdateName(DiscussionThreadPtr thread) = 0;
         virtual void updateName(DiscussionThreadPtr thread) = 0;

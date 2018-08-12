@@ -84,7 +84,7 @@ static bool SerializedDiscussionMessageVoteLess(const SerializedDiscussionMessag
                                                 const SerializedDiscussionMessageVote& second)
 {
     return first.at < second.at;
-};
+}
 
 struct SerializedDiscussionMessageLastUpdated
 {
