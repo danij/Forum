@@ -50,8 +50,8 @@
 
     "service": {
         "numberOfIOServiceThreads": 4,
-        "numberOfReadBuffers": 8192,
-        "numberOfWriteBuffers": 8192,
+        "numberOfReadBuffers": 512,
+        "numberOfWriteBuffers": 512,
         "listenIPAddress": "127.0.0.1",
         "listenPort": 8081,
         "connectionTimeoutSeconds": 20,
