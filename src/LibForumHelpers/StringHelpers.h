@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -186,7 +187,7 @@ namespace Forum::Helpers
         }
 
     private:
-        WholeChangeableString(StringView view, bool copy)
+        WholeChangeableString(StringView view, const bool copy)
         {
             info_.ownsMemory = copy ? 1 : 0;
             info_.size = view.size();
