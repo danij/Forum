@@ -65,3 +65,8 @@ void FixedHttpConnectionManager::closeConnection(const ConnectionIdentifier iden
 {
     connectionPool_.returnObject(reinterpret_cast<HttpConnection*>(identifier));
 }
+
+void FixedHttpConnectionManager::disconnectConnection(const ConnectionIdentifier identifier)
+{
+    reinterpret_cast<HttpConnection*>(identifier)->disconnect();
+}

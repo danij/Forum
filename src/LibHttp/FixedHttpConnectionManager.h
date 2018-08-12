@@ -37,6 +37,8 @@ namespace Http
 
         ConnectionIdentifier newConnection(IConnectionManager* manager, boost::asio::ip::tcp::socket&& socket) override;
         void closeConnection(ConnectionIdentifier identifier) override;
+        void disconnectConnection(ConnectionIdentifier identifier) override;
+
 
     private:
         FixedSizeObjectPool<HttpConnection> connectionPool_;

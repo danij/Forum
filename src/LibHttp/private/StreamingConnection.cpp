@@ -42,6 +42,11 @@ void StreamingConnection::startReading()
     });
 }
 
+void StreamingConnection::disconnect()
+{
+    closeSocket(socket_);
+}
+
 void StreamingConnection::onRead(const boost::system::error_code& ec, const size_t bytesTransfered)
 {
     if (ec == boost::asio::error::eof)

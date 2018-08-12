@@ -28,7 +28,7 @@ ConnectionManagerWithTimeout::ConnectionManagerWithTimeout(boost::asio::io_servi
     timeoutTimer_{ ioService, boost::posix_time::seconds(CheckTimeoutEverySeconds) },
     timeoutManager_
     {
-            [this](auto identifier) { this->closeConnection(identifier, false); },
+            [this](auto identifier) { this->disconnectConnection(identifier); },
             static_cast<decltype(timeoutManager_)::Timestamp>(connectionTimeoutSeconds)
     }
 {
@@ -50,18 +50,18 @@ IConnectionManager::ConnectionIdentifier ConnectionManagerWithTimeout::newConnec
 
 void ConnectionManagerWithTimeout::closeConnection(const ConnectionIdentifier identifier)
 {
-    closeConnection(identifier, true);
-}
-
-void ConnectionManagerWithTimeout::closeConnection(const ConnectionIdentifier identifier, const bool removeFromTimeout)
-{
-    if (removeFromTimeout && identifier)
+    if (identifier)
     {
         timeoutManager_.remove(identifier);
     }
 
     delegateTo_->closeConnection(identifier);
     nrOfCurrentlyOpenConnections_ -= 1;
+}
+
+void ConnectionManagerWithTimeout::disconnectConnection(const ConnectionIdentifier identifier)
+{
+    delegateTo_->disconnectConnection(identifier);
 }
 
 void ConnectionManagerWithTimeout::stop()

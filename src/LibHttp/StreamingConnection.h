@@ -32,6 +32,7 @@ namespace Http
         virtual ~StreamingConnection() = default;
 
         void startReading();
+        void disconnect();
 
     protected:
         void release();

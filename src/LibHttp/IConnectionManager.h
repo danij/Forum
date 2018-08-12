@@ -37,6 +37,7 @@ namespace Http
 
         virtual ConnectionIdentifier newConnection(IConnectionManager* manager, boost::asio::ip::tcp::socket&& socket) = 0;
         virtual void closeConnection(ConnectionIdentifier identifier) = 0;
+        virtual void disconnectConnection(ConnectionIdentifier identifier) = 0;
         virtual void stop() {}
     };
 }

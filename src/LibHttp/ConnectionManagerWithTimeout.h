@@ -34,12 +34,13 @@ namespace Http
 
         ConnectionIdentifier newConnection(IConnectionManager* manager, boost::asio::ip::tcp::socket&& socket) override;
         void closeConnection(ConnectionIdentifier identifier) override;
+        void disconnectConnection(ConnectionIdentifier identifier) override;
+
         void stop() override;
 
     private:
         void startTimer();
         void onCheckTimeout(const boost::system::error_code& ec);
-        void closeConnection(ConnectionIdentifier identifier, bool removeFromTimeout);
 
         std::shared_ptr<IConnectionManager> delegateTo_;
         boost::asio::deadline_timer timeoutTimer_;
