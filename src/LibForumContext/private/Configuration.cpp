@@ -43,6 +43,7 @@ static void loadPluginConfig(boost::property_tree::ptree& source, Config& config
 {
     for (const auto& [_, entry] : source.get_child("plugins"))
     {
+        (void)_;
         config.plugins.push_back(
             {
                 entry.get<std::string>("libraryPath"),
