@@ -167,7 +167,7 @@ namespace Http
 
         for (auto it = begin; it != end; ++it)
         {
-            const auto&[key, value] = *it;
+            const auto& key = it->first;
             keyPairs.emplace_back(std::cbegin(key), std::cend(key));
         }
         return countRequiredNumberedOfNodes(keyPairs);
@@ -193,6 +193,7 @@ namespace Http
 
         for (const auto&[keys, subKeyValuePairs] : sameKeys)
         {
+            (void)keys;
             result += countRequiredNumberedOfNodes(subKeyValuePairs);
         }
 
