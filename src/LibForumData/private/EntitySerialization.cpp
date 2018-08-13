@@ -290,8 +290,6 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const MessageComment& commen
 
     if ( ! serializationSettings.hideMessageCommentMessage)
     {
-        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
-
         writer.newPropertyWithSafeName("message");
         serialize(writer, comment.parentMessage(), restriction);
     }
