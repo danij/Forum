@@ -21,6 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ContextProviders.h"
 #include "HttpStringHelpers.h"
 
+#include <boost/thread/tss.hpp>
+
 #include <vector>
 
 using namespace Forum;
@@ -90,10 +92,16 @@ static void updateContextForRequest(const Http::HttpRequest& request)
     }
 }
 
-static thread_local std::vector<char> currentRequestContent(Http::Buffer::MaxRequestBodyLength);
-
 static StringView getPointerToEntireRequestBody(const Http::HttpRequest& request)
 {
+    static boost::thread_specific_ptr<std::vector<char>> currentRequestContentPtr;
+
+    if ( ! currentRequestContentPtr.get())
+    {
+        currentRequestContentPtr.reset(new std::vector<char>(Http::Buffer::MaxRequestBodyLength));
+    }
+    auto& currentRequestContent = *currentRequestContentPtr;
+
     if (request.nrOfRequestContentBuffers < 1)
     {
         return{};

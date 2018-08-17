@@ -71,7 +71,7 @@ void FileAppender::append(const SeparateThreadConsumerBlob* blobs, const size_t 
     }
 
     static constexpr size_t prefixSize = sizeof(MagicPrefix) + sizeof(uint32_t) + sizeof(uint32_t);
-    static thread_local char prefixBuffer[prefixSize];
+    char prefixBuffer[prefixSize];
 
     for (size_t i = 0; i < nrOfBlobs; ++i)
     {

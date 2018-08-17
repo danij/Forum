@@ -23,6 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SeparateThreadConsumer.h"
 #include "JsonWriter.h"
 
+#include <boost/thread/tss.hpp>
+
 #include <atomic>
 #include <ctime>
 #include <cstdio>
@@ -88,7 +90,13 @@ namespace Forum::Extensibility
     template <typename Fn>
     void ForumSearchUpdatePlugin::enqueueJson(Fn&& action)
     {
-        static thread_local Json::StringBuffer outputBuffer{1 << 20}; //1 MiByte buffer / thread initial and for each increment
+        static boost::thread_specific_ptr<Json::StringBuffer> outputBufferPtr;
+
+        if ( ! outputBufferPtr.get())
+        {
+            outputBufferPtr.reset(new Json::StringBuffer{ 1 << 20 }); //1 MiByte buffer / thread initial and for each increment
+        }
+        auto& outputBuffer = *outputBufferPtr;
 
         outputBuffer.clear();
 

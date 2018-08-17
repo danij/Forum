@@ -238,7 +238,7 @@ namespace Http
     template<size_t TableSize>
     HttpStringView percentEncode(HttpStringView input, const char (&table)[TableSize])
     {
-        static thread_local char output[MaxPercentEncodingOutputSize];
+        char output[MaxPercentEncodingOutputSize];
         return percentEncode(input, output, table);
     }
 
@@ -250,7 +250,7 @@ namespace Http
      */
     inline HttpStringView urlEncode(HttpStringView input)
     {
-        static thread_local char output[MaxPercentEncodingOutputSize];
+        char output[MaxPercentEncodingOutputSize];
         return urlEncode(input, output);
     }
 

@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <memory>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/thread/tss.hpp>
 
 #include <unicode/ustring.h>
 #include <unicode/unorm2.h>
@@ -41,7 +42,16 @@ using namespace Forum::Authorization;
 #define COMMAND_HANDLER_METHOD_SIMPLE(name) \
     StatusCode name(const std::vector<StringView>& /*parameters*/, OutStream& output)
 
-static thread_local Json::StringBuffer outputBuffer{ 1 << 20 }; //1 MiByte buffer / thread initial and for each increment
+static Json::StringBuffer& getOutputBuffer()
+{
+    static boost::thread_specific_ptr<Json::StringBuffer> value;
+
+    if ( ! value.get())
+    {
+        value.reset(new Json::StringBuffer{ 1 << 20 }); //1 MiByte buffer / thread initial and for each increment
+    }
+    return *value;
+}
 
 static const std::string EmptyString;
 
@@ -55,16 +65,34 @@ auto countNonEmpty(const Collection& collection)
 static constexpr size_t NormalizeBuffer16MaxChars = 2 << 20;
 static constexpr size_t NormalizeBuffer8MaxChars = 2 * NormalizeBuffer16MaxChars;
 
-static thread_local std::unique_ptr<UChar[]> normalizeBuffer16Before(new UChar[NormalizeBuffer16MaxChars]);
-static thread_local std::unique_ptr<UChar[]> normalizeBuffer16After(new UChar[NormalizeBuffer16MaxChars]);
-static thread_local std::unique_ptr<char[]> normalizeBuffer8(new char[NormalizeBuffer8MaxChars]);
-
 /**
  * Performs a Unicode NFC normalization on a UTF-8 encoded string and returns a view also to a UTF-8 encoded string
  * If an error occurs or the input contains invalid characters, an empty view is returned
  */
 static StringView normalize(StringView input)
 {
+    static boost::thread_specific_ptr<UChar> normalizeBuffer16BeforePtr;
+    static boost::thread_specific_ptr<UChar> normalizeBuffer16AfterPtr;
+    static boost::thread_specific_ptr<char> normalizeBuffer8Ptr;
+
+    if ( ! normalizeBuffer16BeforePtr.get())
+    {
+        normalizeBuffer16BeforePtr.reset(new UChar[NormalizeBuffer16MaxChars]);
+    }
+    auto* normalizeBuffer16Before = normalizeBuffer16BeforePtr.get();
+
+    if ( ! normalizeBuffer16AfterPtr.get())
+    {
+        normalizeBuffer16AfterPtr.reset(new UChar[NormalizeBuffer16MaxChars]);
+    }
+    auto* normalizeBuffer16After = normalizeBuffer16AfterPtr.get();
+
+    if ( ! normalizeBuffer8Ptr.get())
+    {
+        normalizeBuffer8Ptr.reset(new char[NormalizeBuffer8MaxChars]);
+    }
+    auto* normalizeBuffer8 = normalizeBuffer8Ptr.get();
+
     if (input.empty())
     {
         return input;
@@ -72,7 +100,7 @@ static StringView normalize(StringView input)
 
     int32_t chars16Written = 0, chars8Written = 0;
     UErrorCode errorCode{};
-    const auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before.get(), NormalizeBuffer16MaxChars, &chars16Written,
+    const auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before, NormalizeBuffer16MaxChars, &chars16Written,
                                             input.data(), static_cast<int32_t>(input.size()), &errorCode);
     if (U_FAILURE(errorCode))
     {
@@ -88,15 +116,15 @@ static StringView normalize(StringView input)
 
     errorCode = {};
     const auto chars16NormalizedWritten = unorm2_normalize(normalizer, u8to16Result, chars16Written,
-                                                           normalizeBuffer16After.get(), NormalizeBuffer16MaxChars, &errorCode);
+                                                           normalizeBuffer16After, NormalizeBuffer16MaxChars, &errorCode);
     if (U_FAILURE(errorCode))
     {
         return{};
     }
 
     errorCode = {};
-    const auto u16to8Result = u_strToUTF8(normalizeBuffer8.get(), NormalizeBuffer8MaxChars, &chars8Written,
-                                          normalizeBuffer16After.get(), chars16NormalizedWritten, &errorCode);
+    const auto u16to8Result = u_strToUTF8(normalizeBuffer8, NormalizeBuffer8MaxChars, &chars8Written,
+                                          normalizeBuffer16After, chars16NormalizedWritten, &errorCode);
     if (U_FAILURE(errorCode))
     {
         return{};
@@ -1294,6 +1322,8 @@ CommandHandler::Result CommandHandler::handle(const Command command, const std::
         return{ StatusCode::NOT_ALLOWED, {} };
     }
 
+    auto& outputBuffer = getOutputBuffer();
+
     outputBuffer.clear();
 
     StatusCode statusCode;
@@ -1316,6 +1346,8 @@ CommandHandler::Result CommandHandler::handle(const Command command, const std::
 
 CommandHandler::Result CommandHandler::handle(const View view, const std::vector<StringView>& parameters)
 {
+    auto& outputBuffer = getOutputBuffer();
+
     outputBuffer.clear();
 
     StatusCode statusCode;

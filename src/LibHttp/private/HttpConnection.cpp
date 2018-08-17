@@ -127,7 +127,7 @@ boost::asio::ip::address HttpConnection::getRemoteAddress(const HttpRequest& req
 {
     if (trustIpFromXForwardedFor_)
     {
-        static thread_local char nullTerminatedAddressBuffer[128];
+        char nullTerminatedAddressBuffer[128];
 
         auto xForwardedFor = request.headers[Http::Request::X_Forwarded_For];
         const auto toCopy = std::min(std::size(nullTerminatedAddressBuffer) - 1, xForwardedFor.size());

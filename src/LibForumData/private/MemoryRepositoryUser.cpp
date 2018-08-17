@@ -30,6 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unicode/ustring.h>
 #include <unicode/uchar.h>
 
+#include <boost/thread/tss.hpp>
+
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -39,11 +41,24 @@ using namespace Forum::Authorization;
 
 static constexpr size_t MaxNrOfUserNameChars16 = 65536;
 static constexpr size_t MaxNrOfUserNameChars32 = MaxNrOfUserNameChars16 / 2;
-static thread_local std::unique_ptr<UChar[]> validUserNameBuffer16(new UChar[MaxNrOfUserNameChars16]);
-static thread_local std::unique_ptr<UChar32[]> validUserNameBuffer32(new UChar32[MaxNrOfUserNameChars32]);
 
 static bool isValidUserName(StringView input)
 {
+    static boost::thread_specific_ptr<UChar> validUserNameBuffer16Ptr;
+    static boost::thread_specific_ptr<UChar32> validUserNameBuffer32Ptr;
+
+    if ( ! validUserNameBuffer16Ptr.get())
+    {
+        validUserNameBuffer16Ptr.reset(new UChar[MaxNrOfUserNameChars16]);
+    }
+    auto* validUserNameBuffer16 = validUserNameBuffer16Ptr.get();
+    
+    if ( ! validUserNameBuffer32Ptr.get())
+    {
+        validUserNameBuffer32Ptr.reset(new UChar32[MaxNrOfUserNameChars32]);
+    }
+    auto* validUserNameBuffer32 = validUserNameBuffer32Ptr.get();
+
     //"^[[:alnum:]]+[ _-]*[[:alnum:]]+$"
     if (input.empty())
     {
@@ -53,12 +68,12 @@ static bool isValidUserName(StringView input)
     int32_t written;
     UErrorCode errorCode{};
 
-    const auto u16Chars = u_strFromUTF8Lenient(validUserNameBuffer16.get(), MaxNrOfUserNameChars16, &written,
+    const auto u16Chars = u_strFromUTF8Lenient(validUserNameBuffer16, MaxNrOfUserNameChars16, &written,
                                                input.data(), static_cast<int32_t>(input.size()), &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     errorCode = {};
-    const auto u32Chars = u_strToUTF32(validUserNameBuffer32.get(), MaxNrOfUserNameChars32, &written,
+    const auto u32Chars = u_strToUTF32(validUserNameBuffer32, MaxNrOfUserNameChars32, &written,
                                        u16Chars, written, &errorCode);
     if (U_FAILURE(errorCode)) return false;
 

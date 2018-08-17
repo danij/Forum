@@ -27,6 +27,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "StringHelpers.h"
 #include "Logging.h"
 
+#include <boost/thread/tss.hpp>
+
 #include <utility>
 
 using namespace Forum;
@@ -234,8 +236,19 @@ StatusCode MemoryRepositoryDiscussionThread::getMultipleDiscussionThreadsById(St
     PerformedByWithLastSeenUpdateGuard performedBy;
 
     constexpr size_t MaxIdBuffer = 64;
-    static thread_local std::array<UuidString, MaxIdBuffer> parsedIds;
-    static thread_local std::array<const DiscussionThread*, MaxIdBuffer> threadsFound;
+    static boost::thread_specific_ptr<std::array<UuidString, MaxIdBuffer>> parsedIdsPtr;
+    static boost::thread_specific_ptr<std::array<const DiscussionThread*, MaxIdBuffer>> threadsFoundPtr;
+
+    if ( ! parsedIdsPtr.get())
+    {
+        parsedIdsPtr.reset(new std::array<UuidString, MaxIdBuffer>);
+    }
+    auto& parsedIds = *parsedIdsPtr;
+    if ( ! threadsFoundPtr.get())
+    {
+        threadsFoundPtr.reset(new std::array<const DiscussionThread*, MaxIdBuffer>);
+    }
+    auto& threadsFound = *threadsFoundPtr;
 
     const auto maxThreadsToSearch = std::min(MaxIdBuffer, 
                                              static_cast<size_t>(getGlobalConfig()->discussionThread.maxThreadsPerPage));
