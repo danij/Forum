@@ -357,10 +357,10 @@ BOOST_AUTO_TEST_CASE( Http_Parser_does_not_exceed_header_buffer )
 {
     {
         char headerBuffer[5] = { 0 };
-        const auto headerBufferSize = std::size(headerBuffer);
+        constexpr auto headerBufferSize = std::size(headerBuffer);
 
         testParser("GET /app HTTP/1.0\r\n\r\n",
-               [&headerBuffer, headerBufferSize](const Parser& parser, std::string_view /*requestBody*/)
+               [&headerBuffer](const Parser& parser, std::string_view /*requestBody*/)
         {
             BOOST_REQUIRE_EQUAL(Parser::ParseResult::INVALID_INPUT, parser);
             BOOST_REQUIRE_EQUAL(HttpStatusCode::Payload_Too_Large, parser.errorCode());
@@ -374,10 +374,10 @@ BOOST_AUTO_TEST_CASE( Http_Parser_does_not_exceed_header_buffer )
     }
     {
         char headerBuffer[22] = { 0 };
-        const auto headerBufferSize = std::size(headerBuffer);
+        constexpr auto headerBufferSize = std::size(headerBuffer);
 
         testParser("GET /app HTTP/1.0\r\nHost:host\r\n\r\n",
-               [&headerBuffer, headerBufferSize](const Parser& parser, std::string_view /*requestBody*/)
+               [&headerBuffer](const Parser& parser, std::string_view /*requestBody*/)
         {
             BOOST_REQUIRE_EQUAL(Parser::ParseResult::INVALID_INPUT, parser);
             BOOST_REQUIRE_EQUAL(HttpStatusCode::Payload_Too_Large, parser.errorCode());
