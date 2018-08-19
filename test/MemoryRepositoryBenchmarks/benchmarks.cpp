@@ -230,7 +230,7 @@ void execute(CommandHandler& handler, CommandType command, const std::initialize
 const int nrOfUsers = 1000;
 const int nrOfThreads = nrOfUsers * 1;
 const int maxThreadPinDisplayOrder = 10;
-const float threadPinProbability = 0.1f;
+const float threadPinProbability = 0.01f;
 const int nrOfMessages = nrOfThreads * 50;
 const int nrOfVotes = nrOfMessages;
 const float upVoteProbability = 0.75;
@@ -911,6 +911,20 @@ void doBenchmarks(BenchmarkContext& context)
     for (int i = 0; i < retries; ++i)
     {
         Context::getMutableDisplayContext().pageNumber = 0;
+        Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
+
+        std::cout << countDuration([&]()
+        {
+            execute(handler, View::GET_DISCUSSION_THREADS_OF_CATEGORY_BY_NAME,
+                    { categoryIds[categoryIdDistribution(randomGenerator)] });
+        }) << " ";
+    }
+    std::cout << '\n';
+
+    std::cout << "Get second page of discussion threads of category by name: ";
+    for (int i = 0; i < retries; ++i)
+    {
+        Context::getMutableDisplayContext().pageNumber = 1;
         Context::getMutableDisplayContext().sortOrder = Context::SortOrder::Ascending;
 
         std::cout << countDuration([&]()
