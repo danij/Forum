@@ -106,6 +106,7 @@ namespace Forum::Configuration
         bool disableCommandsForAnonymousUsers = false;
         bool disableThrottling = false;
         std::string responsePrefix = "";
+        std::string expectedOriginReferer = "";
     };
 
     struct LoggingConfig

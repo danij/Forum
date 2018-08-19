@@ -138,14 +138,25 @@ void AbstractEndpoint::handleInternal(Http::RequestState& requestState, const St
 {
     assert(nullptr != executeCommand);
 
-    currentParameters.clear();
-    updateContextForRequest(requestState.request);
-
-    const auto result = executeCommand(requestState, commandHandler_, currentParameters);
-
+    auto& request = requestState.request;
     auto& response = requestState.response;
 
-    response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
+    Http::HttpStatusCode validationResponseCode;
+    Http::HttpStringView validationMessage;
+
+    if ( ! validateRequest(request, validationResponseCode, validationMessage))
+    {
+        response.writeResponseCode(request, validationResponseCode);
+        response.writeBodyAndContentLength(validationMessage);
+        return;
+    }
+
+    currentParameters.clear();
+    updateContextForRequest(request);
+
+    const auto result = executeCommand(requestState, commandHandler_, currentParameters);
+    
+    response.writeResponseCode(request, commandStatusToHttpStatus(result.statusCode));
     response.writeHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     if (result.statusCode == Repository::StatusCode::OK)
     {
@@ -163,6 +174,53 @@ void AbstractEndpoint::handleInternal(Http::RequestState& requestState, const St
     {
         response.writeBodyAndContentLength(result.output);
     }
+}
+
+bool AbstractEndpoint::validateRequest(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
+                                       Http::HttpStringView& message)
+{
+    if ( ! validateOriginReferer(request, responseCode, message)) return false;
+
+    return true;
+}
+
+static bool validateAddressStart(Http::HttpStringView needle, Http::HttpStringView haystack)
+{
+    if (haystack.find(needle) != 0) return false;
+
+    return (needle.size() == haystack.size())
+        || haystack[needle.size()] == '/';
+}
+
+bool AbstractEndpoint::validateOriginReferer(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
+                                             Http::HttpStringView& message)
+{
+    const auto& expected = Configuration::getGlobalConfig()->service.expectedOriginReferer;
+
+    if (expected.empty()) return true;
+
+    auto origin = request.headers[Http::Request::HttpHeader::Origin];
+    auto referer = request.headers[Http::Request::HttpHeader::Referer];
+
+    if (origin.empty() && referer.empty())
+    {
+        responseCode = Http::Bad_Request;
+        message = "An Origin or Referer header is required.";
+        return false;
+    }
+    if ( ! origin.empty() && ! validateAddressStart(expected, origin))
+    {
+        responseCode = Http::Bad_Request;
+        message = "Unexpected Origin header.";
+        return false;
+    }
+    if ( ! referer.empty() && ! validateAddressStart(expected, referer))
+    {
+        responseCode = Http::Bad_Request;
+        message = "Unexpected Referer header.";
+        return false;
+    }
+    return true;
 }
 
 MetricsEndpoint::MetricsEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)

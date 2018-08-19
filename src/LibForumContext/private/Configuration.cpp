@@ -109,6 +109,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(service.disableCommandsForAnonymousUsers);
     LOAD_CONFIG_VALUE(service.disableThrottling);
     LOAD_CONFIG_VALUE(service.responsePrefix);
+    LOAD_CONFIG_VALUE(service.expectedOriginReferer);
 
     LOAD_CONFIG_VALUE(logging.settingsFile);
 

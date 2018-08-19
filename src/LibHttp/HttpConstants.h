@@ -178,6 +178,7 @@ namespace Http
             Last_Modified,
             Location,
             Max_Forwards,
+            Origin,
             Pragma,
             Proxy_Authenticate,
             Proxy_Authorization,

@@ -44,6 +44,11 @@ namespace Forum::Commands
                             bool writePrefix);
         void handleBinary(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand);
 
+        bool validateRequest(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode, 
+                             Http::HttpStringView& message);
+        bool validateOriginReferer(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
+                                   Http::HttpStringView& message);
+
         CommandHandler& commandHandler_;
         std::string prefix_;
     };

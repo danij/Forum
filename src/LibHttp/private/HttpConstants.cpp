@@ -109,6 +109,7 @@ static const ImmutableAsciiCaseInsensitiveTrie<Request::HttpHeader> httpHeaders
     std::make_pair("last-modified"s, Request::HttpHeader::Last_Modified),
     std::make_pair("location"s, Request::HttpHeader::Location),
     std::make_pair("max-forwards"s, Request::HttpHeader::Max_Forwards),
+    std::make_pair("origin"s, Request::HttpHeader::Origin),
     std::make_pair("pragma"s, Request::HttpHeader::Pragma),
     std::make_pair("proxy-authenticate"s, Request::HttpHeader::Proxy_Authenticate),
     std::make_pair("proxy-authorization"s, Request::HttpHeader::Proxy_Authorization),

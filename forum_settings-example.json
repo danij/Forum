@@ -59,7 +59,8 @@
         "disableCommands": false,
         "disableCommandsForAnonymousUsers": false,
         "disableThrottling": false,
-        "responsePrefix": "while(1);"
+        "responsePrefix": "while(1);",
+        "expectedOriginReferer": "https://host without trailing /"
     },
 
     "logging": {
