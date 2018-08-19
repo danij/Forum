@@ -199,6 +199,7 @@ namespace Http
             X_ATT_DeviceId,
             X_Correlation_ID,
             X_Csrf_Token,
+            X_Double_Submit,
             X_Forwarded_For,
             X_Forwarded_Host,
             X_Forwarded_Proto,

@@ -49,6 +49,9 @@ namespace Forum::Commands
         bool validateOriginReferer(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
                                    Http::HttpStringView& message);
 
+        bool validateCsrf(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
+                          Http::HttpStringView& message);
+
         CommandHandler& commandHandler_;
         std::string prefix_;
     };

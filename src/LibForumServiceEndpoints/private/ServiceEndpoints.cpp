@@ -181,6 +181,8 @@ bool AbstractEndpoint::validateRequest(const Http::HttpRequest& request, Http::H
 {
     if ( ! validateOriginReferer(request, responseCode, message)) return false;
 
+    if ( ! validateCsrf(request, responseCode, message)) return false;
+
     return true;
 }
 
@@ -220,6 +222,38 @@ bool AbstractEndpoint::validateOriginReferer(const Http::HttpRequest& request, H
         message = "Unexpected Referer header.";
         return false;
     }
+    return true;
+}
+
+bool AbstractEndpoint::validateCsrf(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
+                                    Http::HttpStringView& message)
+{
+    Http::HttpStringView expected;
+    const auto doubleSubmitValue = request.headers[Http::Request::HttpHeader::X_Double_Submit];
+    
+    for (size_t i = 0; i < request.nrOfCookies; ++i)
+    {
+        const auto& [name, value] = request.cookies[i];
+        if (name == "double_submit")
+        {
+            expected = value;
+        }
+    }
+
+    if (expected.empty() && doubleSubmitValue.empty())
+    {
+        responseCode = Http::Bad_Request;
+        message = "Missing double submit cookie and header.";
+        return false;
+    }
+
+    if (doubleSubmitValue != expected)
+    {
+        responseCode = Http::Bad_Request;
+        message = "Double submit cookie mismatch.";
+        return false;
+    }
+
     return true;
 }
 

@@ -130,6 +130,7 @@ static const ImmutableAsciiCaseInsensitiveTrie<Request::HttpHeader> httpHeaders
     std::make_pair("x-att-deviceid"s, Request::HttpHeader::X_ATT_DeviceId),
     std::make_pair("x-correlation-id"s, Request::HttpHeader::X_Correlation_ID),
     std::make_pair("x-csrf-token"s, Request::HttpHeader::X_Csrf_Token),
+    std::make_pair("x-double-submit"s, Request::HttpHeader::X_Double_Submit),
     std::make_pair("x-forwarded-for"s, Request::HttpHeader::X_Forwarded_For),
     std::make_pair("x-forwarded-host"s, Request::HttpHeader::X_Forwarded_Host),
     std::make_pair("x-forwarded-proto"s, Request::HttpHeader::X_Forwarded_Proto),
