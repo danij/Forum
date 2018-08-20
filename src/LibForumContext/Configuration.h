@@ -96,8 +96,8 @@ namespace Forum::Configuration
     {
         //changing the following values requires rebooting the application
         int_fast16_t numberOfIOServiceThreads = 4;
-        int_fast32_t numberOfReadBuffers = 8192;
-        int_fast32_t numberOfWriteBuffers = 8192;
+        int_fast32_t numberOfReadBuffers = 512;
+        int_fast32_t numberOfWriteBuffers = 512;
         std::string listenIPAddress = "127.0.0.1";
         uint16_t listenPort = 8081;
         size_t connectionTimeoutSeconds = 20;
