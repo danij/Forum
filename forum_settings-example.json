@@ -52,6 +52,7 @@
         "numberOfIOServiceThreads": 4,
         "numberOfReadBuffers": 512,
         "numberOfWriteBuffers": 512,
+        "connectionPoolSize": 100,
         "listenIPAddress": "127.0.0.1",
         "listenPort": 8081,
         "connectionTimeoutSeconds": 20,

@@ -311,6 +311,7 @@ bool Application::initializeHttp()
     auto& ioService = getIOServiceProvider().getIOService();
 
     auto httpConnectionManager = std::make_shared<FixedHttpConnectionManager>(std::move(httpRouter_),
+        forumConfig->service.connectionPoolSize,
         forumConfig->service.numberOfReadBuffers,
         forumConfig->service.numberOfWriteBuffers,
         forumConfig->service.trustIpFromXForwardedFor);

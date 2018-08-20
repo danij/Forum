@@ -32,7 +32,7 @@ namespace Http
     {
     public:
         FixedHttpConnectionManager(std::unique_ptr<HttpRouter>&& httpRouter,
-                                   size_t numberOfReadBuffers, size_t numberOfWriteBuffers, 
+                                   size_t connectionPoolSize, size_t numberOfReadBuffers, size_t numberOfWriteBuffers,
                                    bool trustIpFromXForwardedFor);
 
         ConnectionIdentifier newConnection(IConnectionManager* manager, boost::asio::ip::tcp::socket&& socket) override;

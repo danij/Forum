@@ -21,9 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Http;
 
 FixedHttpConnectionManager::FixedHttpConnectionManager(std::unique_ptr<HttpRouter>&& httpRouter,
-    const size_t numberOfReadBuffers, const size_t numberOfWriteBuffers, const bool trustIpFromXForwardedFor) :
+    const size_t connectionPoolSize, const size_t numberOfReadBuffers, const size_t numberOfWriteBuffers, 
+    const bool trustIpFromXForwardedFor) :
 
-    connectionPool_{ numberOfReadBuffers }, httpRouter_{ std::move(httpRouter) }, 
+    connectionPool_{ connectionPoolSize }, httpRouter_{ std::move(httpRouter) },
     readBuffers_{ std::make_unique<HttpConnection::ReadBufferPoolType>(numberOfReadBuffers) },
     writeBuffers_{ std::make_unique<HttpConnection::WriteBufferPoolType>(numberOfWriteBuffers) },
     trustIpFromXForwardedFor_{ trustIpFromXForwardedFor }

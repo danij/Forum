@@ -101,6 +101,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(service.numberOfIOServiceThreads);
     LOAD_CONFIG_VALUE(service.numberOfReadBuffers);
     LOAD_CONFIG_VALUE(service.numberOfWriteBuffers);
+    LOAD_CONFIG_VALUE(service.connectionPoolSize);
     LOAD_CONFIG_VALUE(service.listenIPAddress);
     LOAD_CONFIG_VALUE(service.listenPort);
     LOAD_CONFIG_VALUE(service.connectionTimeoutSeconds);
