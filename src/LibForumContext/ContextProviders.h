@@ -25,6 +25,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/signals2/signal.hpp>
 
+#include <string>
+#include <string_view>
+
 namespace Forum::Context
 {
     /**
@@ -41,6 +44,16 @@ namespace Forum::Context
      * Sets the id of the current user executing an action (thread-local)
      */
     void setCurrentUserId(Entities::IdType value);
+
+    /**
+     * Returns the auth of the current user executing an action
+     */
+    const std::string& getCurrentUserAuth();
+
+    /**
+     * Sets the auth of the current user executing an action (thread-local)
+     */
+    void setCurrentUserAuth(std::string_view value);
 
     /**
      * Returns the IP address of the current user executing an action

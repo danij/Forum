@@ -141,22 +141,39 @@ int Application::run(int argc, const char* argv[])
 
     const auto config = Configuration::getGlobalConfig();
 
-    FORUM_LOG_INFO << "Starting to listen under "
-                   << config->service.listenIPAddress << ":" << config->service.listenPort;
-    try
     {
-        tcpListener_->startListening();
+        FORUM_LOG_INFO << "Starting to listen under "
+                       << config->service.listenIPAddress << ":" << config->service.listenPort;
+        try
+        {
+            tcpListener_->startListening();
+        }
+        catch (std::exception& ex)
+        {
+            FORUM_LOG_ERROR << "Could not start listening: " << ex.what();
+            std::cerr << "Could not start listening: " << ex.what() << '\n';
+            return 1;
+        }
     }
-    catch(std::exception& ex)
     {
-        FORUM_LOG_ERROR << "Could not start listening: " << ex.what();
-        std::cerr << "Could not start listening: " << ex.what() << '\n';
-        return 1;
+        FORUM_LOG_INFO << "Starting to listen for auth requests under "
+                       << config->service.authListenIPAddress << ":" << config->service.authListenPort;
+        try
+        {
+            tcpListenerAuth_->startListening();
+        }
+        catch (std::exception& ex)
+        {
+            FORUM_LOG_ERROR << "Could not start listening: " << ex.what();
+            std::cerr << "Could not start listening: " << ex.what() << '\n';
+            return 1;
+        }
     }
 
     getIOServiceProvider().start();
     getIOServiceProvider().waitForStop();
 
+    tcpListenerAuth_->stopListening();
     tcpListener_->stopListening();
 
     FORUM_LOG_INFO << "Stopped listening for HTTP connections";
@@ -304,26 +321,48 @@ bool Application::initializeHttp()
 {
     const auto forumConfig = Configuration::getGlobalConfig();
     
-    httpRouter_ = std::make_unique<HttpRouter>();
-    endpointManager_ = std::make_unique<ServiceEndpointManager>(*commandHandler_);
-    endpointManager_->registerRoutes(*httpRouter_);
-
     auto& ioService = getIOServiceProvider().getIOService();
 
-    auto httpConnectionManager = std::make_shared<FixedHttpConnectionManager>(std::move(httpRouter_),
-        forumConfig->service.connectionPoolSize,
-        forumConfig->service.numberOfReadBuffers,
-        forumConfig->service.numberOfWriteBuffers,
-        forumConfig->service.trustIpFromXForwardedFor);
+    endpointManager_ = std::make_unique<ServiceEndpointManager>(*commandHandler_);
 
-    auto connectionManagerWithTimeout = std::make_shared<ConnectionManagerWithTimeout>(ioService,
-        httpConnectionManager, forumConfig->service.connectionTimeoutSeconds);
+    {
+        //API listener
+        auto httpRouter = std::make_unique<HttpRouter>();
+        endpointManager_->registerRoutes(*httpRouter);
 
-    tcpListener_ = std::make_unique<TcpListener>(ioService, 
-        forumConfig->service.listenIPAddress, 
-        forumConfig->service.listenPort, 
-        connectionManagerWithTimeout);
+        auto httpConnectionManager = std::make_shared<FixedHttpConnectionManager>(std::move(httpRouter),
+            forumConfig->service.connectionPoolSize,
+            forumConfig->service.numberOfReadBuffers,
+            forumConfig->service.numberOfWriteBuffers,
+            forumConfig->service.trustIpFromXForwardedFor);
 
+        auto connectionManagerWithTimeout = std::make_shared<ConnectionManagerWithTimeout>(ioService,
+            httpConnectionManager, forumConfig->service.connectionTimeoutSeconds);
+
+        tcpListener_ = std::make_unique<TcpListener>(ioService,
+            forumConfig->service.listenIPAddress,
+            forumConfig->service.listenPort,
+            connectionManagerWithTimeout);
+    }
+    {
+        //auth API listener
+        auto httpRouterAuth = std::make_unique<HttpRouter>();
+        endpointManager_->registerAuthRoutes(*httpRouterAuth);
+
+        auto httpConnectionManagerAuth = std::make_shared<FixedHttpConnectionManager>(std::move(httpRouterAuth),
+            forumConfig->service.connectionPoolSize,
+            forumConfig->service.numberOfReadBuffers,
+            forumConfig->service.numberOfWriteBuffers,
+            false);
+
+        auto connectionManagerWithTimeoutAuth = std::make_shared<ConnectionManagerWithTimeout>(ioService,
+            httpConnectionManagerAuth, forumConfig->service.connectionTimeoutSeconds);
+
+        tcpListenerAuth_ = std::make_unique<TcpListener>(ioService,
+            forumConfig->service.authListenIPAddress,
+            forumConfig->service.authListenPort,
+            connectionManagerWithTimeoutAuth);
+    }
     return true;
 }
 

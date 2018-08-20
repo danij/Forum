@@ -59,6 +59,8 @@ namespace Forum::Repository
         StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) override;
         StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
+        void updateCurrentUserId() override;
+
     private:
         StatusWithResource<Entities::UserPtr> addNewUser(Entities::EntityCollection& collection,
                                                          Entities::IdTypeRef id, Entities::User::NameType&& name,

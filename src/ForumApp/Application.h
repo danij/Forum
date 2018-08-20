@@ -52,8 +52,9 @@ namespace Forum
         bool loadPlugins();
         void prepareToStop();
 
-        std::unique_ptr<Http::HttpRouter> httpRouter_;
         std::unique_ptr<Http::TcpListener> tcpListener_;
+        std::unique_ptr<Http::TcpListener> tcpListenerAuth_;
+
         std::unique_ptr<Commands::CommandHandler> commandHandler_;
         std::unique_ptr<Commands::ServiceEndpointManager> endpointManager_;
         std::unique_ptr<Persistence::EventObserver> persistenceObserver_;

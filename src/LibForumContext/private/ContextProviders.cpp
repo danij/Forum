@@ -61,6 +61,18 @@ void Forum::Context::setCurrentUserId(const IdType value)
     currentUser = value;
 }
 
+static thread_local std::string currentUserAuth{};
+
+const std::string& Forum::Context::getCurrentUserAuth()
+{
+    return currentUserAuth;
+}
+
+void Forum::Context::setCurrentUserAuth(const std::string_view value)
+{
+    currentUserAuth = value;
+}
+
 static thread_local IpAddress currentIpAddress = {};
 
 const IpAddress& Forum::Context::getCurrentUserIpAddress()

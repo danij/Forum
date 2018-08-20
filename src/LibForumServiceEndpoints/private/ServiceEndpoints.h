@@ -51,7 +51,7 @@ namespace Forum::Commands
 
         bool validateCsrf(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
                           Http::HttpStringView& message);
-
+        
         CommandHandler& commandHandler_;
         std::string prefix_;
     };
@@ -85,6 +85,8 @@ namespace Forum::Commands
         void getUserLogo(Http::RequestState& requestState);
         void getUserVoteHistory(Http::RequestState& requestState);
         void getUsersSubscribedToThread(Http::RequestState& requestState);
+
+        void login(Http::RequestState& requestState);
 
         void add(Http::RequestState& requestState);
         void remove(Http::RequestState& requestState);

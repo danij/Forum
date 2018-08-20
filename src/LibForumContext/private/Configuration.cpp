@@ -104,6 +104,8 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(service.connectionPoolSize);
     LOAD_CONFIG_VALUE(service.listenIPAddress);
     LOAD_CONFIG_VALUE(service.listenPort);
+    LOAD_CONFIG_VALUE(service.authListenIPAddress);
+    LOAD_CONFIG_VALUE(service.authListenPort);
     LOAD_CONFIG_VALUE(service.connectionTimeoutSeconds);
     LOAD_CONFIG_VALUE(service.trustIpFromXForwardedFor);
     LOAD_CONFIG_VALUE(service.disableCommands);

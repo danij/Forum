@@ -962,3 +962,20 @@ StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdType
 
     return StatusCode::OK;
 }
+
+void MemoryRepositoryUser::updateCurrentUserId()
+{
+    auto currentUserAuth = Context::getCurrentUserAuth();
+    if (currentUserAuth.empty()) return;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          const auto& indexByAuth = collection.users().byAuth();
+                          const auto it = indexByAuth.find(currentUserAuth);
+                      
+                          if (it == indexByAuth.end()) return;
+                      
+                          const User& user = **it;
+                          Context::setCurrentUserId(user.id());
+                      });
+}

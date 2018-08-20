@@ -178,3 +178,16 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         router.addRoute(pathLowerCase, verb, std::move(handler));
     }
 }
+
+void ServiceEndpointManager::registerAuthRoutes(HttpRouter& router)
+{
+    std::tuple<StringView, HttpVerb, HttpRouter::HandlerFn> routes[] =
+    {
+        { "login", HttpVerb::POST, ENDPOINT_DELEGATE(usersEndpoint.login) }
+    };
+
+    for (auto& [pathLowerCase, verb, handler] : routes)
+    {
+        router.addRoute(pathLowerCase, verb, std::move(handler));
+    }
+}

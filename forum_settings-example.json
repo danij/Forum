@@ -55,6 +55,8 @@
         "connectionPoolSize": 100,
         "listenIPAddress": "127.0.0.1",
         "listenPort": 8081,
+        "authListenIPAddress": "127.0.0.1",
+        "authListenPort": 18081,
         "connectionTimeoutSeconds": 20,
         "trustIpFromXForwardedFor": false,
         "disableCommands": false,

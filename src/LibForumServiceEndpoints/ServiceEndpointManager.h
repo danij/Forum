@@ -32,6 +32,7 @@ namespace Forum::Commands
         ~ServiceEndpointManager();
 
         void registerRoutes(Http::HttpRouter& router);
+        void registerAuthRoutes(Http::HttpRouter& router);
 
     private:
         struct ServiceEndpointManagerImpl;

@@ -101,6 +101,8 @@ namespace Forum::Configuration
         int_fast32_t connectionPoolSize = 100;
         std::string listenIPAddress = "127.0.0.1";
         uint16_t listenPort = 8081;
+        std::string authListenIPAddress = "127.0.0.1";
+        uint16_t authListenPort = 18081;
         size_t connectionTimeoutSeconds = 20;
         bool trustIpFromXForwardedFor = false;
         bool disableCommands = false;

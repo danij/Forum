@@ -1310,6 +1310,8 @@ WriteEvents& CommandHandler::writeEvents()
 
 CommandHandler::Result CommandHandler::handle(const Command command, const std::vector<StringView>& parameters)
 {
+    impl_->userRepository->updateCurrentUserId();
+
     const auto config = getGlobalConfig();
 
     if (config->service.disableCommands)
@@ -1346,6 +1348,8 @@ CommandHandler::Result CommandHandler::handle(const Command command, const std::
 
 CommandHandler::Result CommandHandler::handle(const View view, const std::vector<StringView>& parameters)
 {
+    impl_->userRepository->updateCurrentUserId();
+    
     auto& outputBuffer = getOutputBuffer();
 
     outputBuffer.clear();

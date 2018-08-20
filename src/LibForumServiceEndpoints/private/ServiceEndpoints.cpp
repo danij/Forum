@@ -17,16 +17,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "ServiceEndpoints.h"
+#include "AuthStore.h"
 #include "Configuration.h"
 #include "ContextProviders.h"
 #include "HttpStringHelpers.h"
 
+#include <boost/lexical_cast.hpp>
 #include <boost/thread/tss.hpp>
 
 #include <vector>
 
 using namespace Forum;
 using namespace Forum::Commands;
+using namespace Forum::Entities;
 using namespace Forum::Helpers;
 
 AbstractEndpoint::AbstractEndpoint(CommandHandler& handler) : commandHandler_(handler)
@@ -66,9 +69,54 @@ Http::HttpStatusCode commandStatusToHttpStatus(const Repository::StatusCode code
 //reserve space for the parameter views up-front so that no reallocations should occur when handling invididual requests
 static thread_local std::vector<StringView> currentParameters{ 128 };
 
+static constexpr Timestamp maxLoginDuration = 3600 * 24 * 30; // 30 days
+
+static AuthStore authStore;
+
+static CommandHandler::Result loginUser(const Http::HttpStringView authToken, const Http::HttpStringView authId, 
+                                        const Http::HttpStringView expiresInString)
+{
+    if (authToken.empty() || authId.empty() || expiresInString.empty())
+    {
+        return { Repository::StatusCode::INVALID_PARAMETERS, "" };
+    }
+
+    Timestamp expiresIn;
+    if ( ! boost::conversion::try_lexical_convert(expiresInString.data(), expiresInString.size(), expiresIn))
+    {
+        expiresIn = 0;
+    }
+    if (expiresIn < 1)
+    {
+        return { Repository::StatusCode::INVALID_PARAMETERS, "" };
+    }
+
+    authStore.add(std::string{ authToken }, std::string{ authId }, expiresIn);
+
+    return { Repository::StatusCode::OK, "ok" };
+}
+
+static std::string getAuth(const Http::HttpStringView token)
+{
+    return authStore.find(std::string{ token });
+}
+
 static void updateContextForRequest(const Http::HttpRequest& request)
 {
+    Context::setCurrentUserId({});
+    Context::setCurrentUserAuth({});
     Context::setCurrentUserIpAddress(request.remoteAddress);
+
+    {
+        const auto authToken = request.getCookie("auth");
+        if (authToken.empty()) return;
+
+        auto authResult = getAuth(authToken);
+        if ( ! authResult.empty())
+        {
+            Context::setCurrentUserAuth(authResult);
+        }
+    }
 
     auto& displayContext = Context::getMutableDisplayContext();
     displayContext.sortOrder = Context::SortOrder::Ascending;
@@ -228,18 +276,9 @@ bool AbstractEndpoint::validateOriginReferer(const Http::HttpRequest& request, H
 bool AbstractEndpoint::validateCsrf(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
                                     Http::HttpStringView& message)
 {
-    Http::HttpStringView expected;
+    const auto expected = request.getCookie("double_submit");
     const auto doubleSubmitValue = request.headers[Http::Request::HttpHeader::X_Double_Submit];
     
-    for (size_t i = 0; i < request.nrOfCookies; ++i)
-    {
-        const auto& [name, value] = request.cookies[i];
-        if (name == "double_submit")
-        {
-            expected = value;
-        }
-    }
-
     if (expected.empty() && doubleSubmitValue.empty())
     {
         responseCode = Http::Bad_Request;
@@ -399,6 +438,16 @@ void UsersEndpoint::getUsersSubscribedToThread(Http::RequestState& requestState)
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_USERS_SUBSCRIBED_TO_DISCUSSION_THREAD, parameters);
     });
+}
+
+void UsersEndpoint::login(Http::RequestState& requestState)
+{
+    const auto result = loginUser(requestState.extraPathParts[0], requestState.extraPathParts[1], 
+                                  requestState.extraPathParts[2]);
+    auto& response = requestState.response;
+
+    response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
+    response.writeBodyAndContentLength(result.output);
 }
 
 void UsersEndpoint::add(Http::RequestState& requestState)

@@ -131,6 +131,8 @@ namespace Forum::Repository
         virtual StatusCode deleteUserLogo(Entities::IdTypeRef id, OutStream& output) = 0;
 
         virtual StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) = 0;
+
+        virtual void updateCurrentUserId() = 0;
     };
     typedef std::shared_ptr<IUserRepository> UserRepositoryRef;
 
