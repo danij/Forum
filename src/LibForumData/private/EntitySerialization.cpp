@@ -85,26 +85,6 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
     return writer;
 }
 
-template<typename Collection, size_t NameSize>
-static JsonWriter& writeVotes(JsonWriter& writer, const char(&name)[NameSize], const Collection& votes)
-{
-    writer.newPropertyWithSafeName(name);
-    writer.startArray();
-    for (const auto& pair : votes)
-    {
-        if (auto user = pair.first)
-        {
-            writer << objStart
-                << propertySafeName("userId", user->id())
-                << propertySafeName("userName", user->name())
-                << propertySafeName("at", pair.second)
-                << objEnd;
-        }
-    }
-    writer.endArray();
-    return writer;
-}
-
 JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetails)
 {
     //does not currently start a new object
@@ -207,8 +187,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
 
     if (allowViewVotes)
     {
-        writeVotes(writer, "upVotes", upVotes);
-        writeVotes(writer, "downVotes", downVotes);
+        writer << propertySafeName("nrOfUpVotes", upVotes.size());
+        writer << propertySafeName("nrOfDownVotes", downVotes.size());
     }
     auto voteStatus = 0;
     if (downVotes.find(serializationSettings.userToCheckVotesOf) != downVotes.end())
