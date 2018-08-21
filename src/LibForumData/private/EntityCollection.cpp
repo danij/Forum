@@ -780,7 +780,7 @@ DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& cr
                                                              Timestamp created, VisitDetails creationDetails)
 {
     auto result = DiscussionThreadPtr(static_cast<DiscussionThreadPtr::IndexType>(impl_->managedEntities.threads.add(
-        id, createdBy, std::move(name), created, creationDetails)));
+        id, createdBy, std::move(name), created, creationDetails, *this)));
     result->pointer_ = result;
     return result;
 }

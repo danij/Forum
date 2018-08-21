@@ -130,9 +130,10 @@ namespace Forum::Entities
 
         static auto& changeNotifications() { return changeNotifications_; }
 
-        DiscussionThread(IdType id, User& createdBy, NameType&& name, Timestamp created, VisitDetails creationDetails)
+        DiscussionThread(IdType id, User& createdBy, NameType&& name, Timestamp created, VisitDetails creationDetails,
+                         Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
             : id_(id), created_(created), creationDetails_(creationDetails),
-              createdBy_(createdBy), name_(std::move(name))
+              createdBy_(createdBy), name_(std::move(name)), forumWidePrivileges_(forumWidePrivileges)
         {
             messages_.onPrepareCountChange() = [this]() { changeNotifications_.onPrepareUpdateMessageCount(*this); };
             messages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
@@ -252,6 +253,8 @@ namespace Forum::Entities
         boost::container::flat_set<EntityPointer<DiscussionTag>> tags_;
         boost::container::flat_set<EntityPointer<DiscussionCategory>> categories_;
         boost::container::flat_map<IdType, EntityPointer<User>> subscribedUsers_;
+
+        Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
     };
 
     typedef EntityPointer<DiscussionThread> DiscussionThreadPtr;

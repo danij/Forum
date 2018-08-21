@@ -44,6 +44,10 @@ PrivilegeValueType DiscussionThread::getDiscussionThreadMessagePrivilege(const D
     auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
     if (result) return result;
 
+    if (tags_.empty())
+    {
+        return forumWidePrivileges_.getDiscussionThreadMessagePrivilege(privilege);
+    }
     for (auto tag : tags_)
     {
         assert(tag);
@@ -57,6 +61,10 @@ PrivilegeValueType DiscussionThread::getDiscussionThreadPrivilege(const Discussi
     auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege);
     if (result) return result;
 
+    if (tags_.empty())
+    {
+        return forumWidePrivileges_.getDiscussionThreadPrivilege(privilege);
+    }
     for (auto tag : tags_)
     {
         assert(tag);
