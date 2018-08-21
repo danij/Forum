@@ -241,7 +241,6 @@ namespace Forum::Configuration
             PrivilegeValueType changeAnyUserLogo                    = DenyPrivilegeValue;
             PrivilegeValueType deleteOwnUserLogo                    = DenyPrivilegeValue;
             PrivilegeValueType deleteAnyUserLogo                    = DenyPrivilegeValue;
-            PrivilegeValueType getUserVoteHistory                   = DenyPrivilegeValue;
             PrivilegeValueType noThrottling                         = DenyPrivilegeValue;
         } forumWide;
     };

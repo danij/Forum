@@ -692,7 +692,6 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_USER_LOGO,                      defaultPrivileges.forumWide.changeAnyUserLogo);
     store.setForumWidePrivilege(ForumWidePrivilege::DELETE_OWN_USER_LOGO,                      defaultPrivileges.forumWide.deleteOwnUserLogo);
     store.setForumWidePrivilege(ForumWidePrivilege::DELETE_ANY_USER_LOGO,                      defaultPrivileges.forumWide.deleteAnyUserLogo);
-    store.setForumWidePrivilege(ForumWidePrivilege::GET_USER_VOTE_HISTORY,                     defaultPrivileges.forumWide.getUserVoteHistory);
     store.setForumWidePrivilege(ForumWidePrivilege::NO_THROTTLING,                             defaultPrivileges.forumWide.noThrottling);
 
     const auto& defaultPrivilegeGrants = config->defaultPrivilegeGrants;

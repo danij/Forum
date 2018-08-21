@@ -212,7 +212,6 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserLogo);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteOwnUserLogo);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteAnyUserLogo);
-    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getUserVoteHistory);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.noThrottling);
     
     LOAD_CONFIG_VALUE(defaultPrivilegeGrants.thread.create.value);

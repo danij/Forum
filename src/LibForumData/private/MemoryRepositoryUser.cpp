@@ -382,7 +382,7 @@ StatusCode MemoryRepositoryUser::getUserLogo(IdTypeRef id, OutStream& output) co
     return status;
 }
 
-StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& output) const
+StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -391,19 +391,10 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& out
     collection().read([&](const EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
-
-                          const auto& index = collection.users().byId();
-                          auto it = index.find(id);
-                          if (it == index.end())
+                                                    
+                          if (currentUser.id() == anonymousUserId())
                           {
                               status = StatusCode::NOT_FOUND;
-                              return;
-                          }
-
-                          auto& user = **it;
-
-                          if ( ! (status = authorization_->getUserVoteHistory(currentUser, user)))
-                          {
                               return;
                           }
 
@@ -412,18 +403,18 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& out
                           Json::JsonWriter writer(output);
                           writer.startObject();
                           writer.newPropertyWithSafeName("lastRetrievedAt")
-                                  << user.voteHistoryLastRetrieved().exchange(static_cast<int64_t>(Context::getCurrentTime()));
+                                  << currentUser.voteHistoryLastRetrieved().exchange(static_cast<int64_t>(Context::getCurrentTime()));
 
                           writer.newPropertyWithSafeName("receivedVotes");
                           writer.startArray();
 
                           const auto& messageIndex = collection.threadMessages().byId();
 
-                          for (const User::ReceivedVoteHistory& entry : user.voteHistory())
+                          for (const User::ReceivedVoteHistory& entry : currentUser.voteHistory())
                           {
                               writer.startObject();
 
-                              auto messageIt = messageIndex.find(entry.discussionThreadMessageId);
+                              const auto messageIt = messageIndex.find(entry.discussionThreadMessageId);
                               if (messageIt != messageIndex.end())
                               {
                                   auto& message = **messageIt;
@@ -440,14 +431,6 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& out
 
                                   writer.newPropertyWithSafeName("threadId") << parentThread->id();
                                   writer.newPropertyWithSafeName("threadName") << parentThread->name();
-                              }
-
-                              auto userIt = index.find(entry.voterId);
-                              if (userIt != index.end())
-                              {
-                                  auto& voter = **userIt;
-                                  writer.newPropertyWithSafeName("voterId") << voter.id();
-                                  writer.newPropertyWithSafeName("voterName") << voter.name();
                               }
 
                               writer.newPropertyWithSafeName("at") << entry.at;
@@ -473,7 +456,7 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& out
                           writer.endArray();
                           writer.endObject();
 
-                          readEvents().onGetUserVoteHistory(createObserverContext(currentUser), user);
+                          readEvents().onGetUserVoteHistory(createObserverContext(currentUser));
                       });
     return status;
 }

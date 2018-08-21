@@ -427,7 +427,6 @@ void UsersEndpoint::getUserVoteHistory(Http::RequestState& requestState)
     handle(requestState,
            [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
-        parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_USER_VOTE_HISTORY, parameters);
     });
 }

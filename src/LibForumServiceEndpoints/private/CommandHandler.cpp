@@ -262,8 +262,7 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( GET_USER_VOTE_HISTORY )
     {
-        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return userRepository->getUserVoteHistory(parameters[0], output);
+        return userRepository->getUserVoteHistory(output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_NAME )

@@ -120,7 +120,7 @@ namespace Forum::Repository
         virtual StatusCode getUserByName(StringView name, OutStream& output) const = 0;
         virtual StatusCode searchUsersByName(StringView name, OutStream& output) const = 0;
         virtual StatusCode getUserLogo(Entities::IdTypeRef id, OutStream& output) const = 0;
-        virtual StatusCode getUserVoteHistory(Entities::IdTypeRef id, OutStream& output) const = 0;
+        virtual StatusCode getUserVoteHistory(OutStream& output) const = 0;
 
         virtual StatusCode addNewUser(StringView name, StringView auth, OutStream& output) = 0;
         virtual StatusCode changeUserName(Entities::IdTypeRef id, StringView newName, OutStream& output) = 0;

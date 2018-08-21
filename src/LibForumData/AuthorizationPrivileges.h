@@ -277,7 +277,6 @@ namespace Forum::Authorization
         CHANGE_ANY_USER_LOGO,
         DELETE_OWN_USER_LOGO,
         DELETE_ANY_USER_LOGO,
-        GET_USER_VOTE_HISTORY,
         
         NO_THROTTLING,
 
@@ -323,7 +322,6 @@ namespace Forum::Authorization
         "change_any_user_logo",
         "delete_own_user_logo",
         "delete_any_user_logo",
-        "get_user_vote_history",
 
         "no_throttling",
     };
@@ -363,7 +361,6 @@ namespace Forum::Authorization
         ForumWidePrivilege::CHANGE_ANY_USER_LOGO,
         ForumWidePrivilege::DELETE_OWN_USER_LOGO,
         ForumWidePrivilege::DELETE_ANY_USER_LOGO,
-        ForumWidePrivilege::GET_USER_VOTE_HISTORY,
         ForumWidePrivilege::NO_THROTTLING
     };
 

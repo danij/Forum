@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "DefaultAuthorization.h"
 
 #include "ContextProviders.h"
+#include "EntityCollection.h"
 #include "TypeHelpers.h"
 
 using namespace Forum;
@@ -68,16 +69,6 @@ AuthorizationStatus DefaultAuthorization::getUserByName(const User& currentUser,
     }
     PrivilegeValueType with;
     return isAllowed(currentUser.id(), ForumWidePrivilege::GET_USER_INFO, with);
-}
-
-AuthorizationStatus DefaultAuthorization::getUserVoteHistory(const User& currentUser, const User& user) const
-{
-    if (currentUser.id() == user.id())
-    {
-        return AuthorizationStatus::OK;
-    }
-    PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_USER_VOTE_HISTORY, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addNewUser(const User& currentUser, StringView /*name*/) const
@@ -409,6 +400,8 @@ AuthorizationStatus DefaultAuthorization::moveDiscussionThreadMessage(const User
 AuthorizationStatus DefaultAuthorization::upVoteDiscussionThreadMessage(const User& currentUser,
                                                                         const DiscussionThreadMessage& message) const
 {
+    if (currentUser.id() == anonymousUserId()) return AuthorizationStatus::NOT_ALLOWED;
+
     if (isThrottled(UserActionThrottling::VOTE, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
@@ -418,6 +411,8 @@ AuthorizationStatus DefaultAuthorization::upVoteDiscussionThreadMessage(const Us
 AuthorizationStatus DefaultAuthorization::downVoteDiscussionThreadMessage(const User& currentUser,
                                                                           const DiscussionThreadMessage& message) const
 {
+    if (currentUser.id() == anonymousUserId()) return AuthorizationStatus::NOT_ALLOWED;
+
     if (isThrottled(UserActionThrottling::VOTE, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
@@ -427,6 +422,8 @@ AuthorizationStatus DefaultAuthorization::downVoteDiscussionThreadMessage(const 
 AuthorizationStatus DefaultAuthorization::resetVoteDiscussionThreadMessage(const User& currentUser,
                                                                            const DiscussionThreadMessage& message) const
 {
+    if (currentUser.id() == anonymousUserId()) return AuthorizationStatus::NOT_ALLOWED;
+
     if (isThrottled(UserActionThrottling::VOTE, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
