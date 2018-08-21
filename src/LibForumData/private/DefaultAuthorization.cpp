@@ -196,6 +196,13 @@ AuthorizationStatus DefaultAuthorization::getDiscussionThreadById(const User& cu
     return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::VIEW, with);
 }
 
+AuthorizationStatus DefaultAuthorization::getDiscussionThreadSubscribedUsers(const User& currentUser,
+                                                                             const DiscussionThread& thread) const
+{
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::GET_SUBSCRIBED_USERS, with);
+}
+
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadsOfUser(const User& currentUser, const User& user) const
 {
     if (currentUser.id() == user.id())

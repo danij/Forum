@@ -80,6 +80,8 @@ namespace Forum::Authorization
         virtual AuthorizationStatus getDiscussionThreads(const Entities::User& currentUser) const = 0;
         virtual AuthorizationStatus getDiscussionThreadById(const Entities::User& currentUser,
                                                             const Entities::DiscussionThread& thread) const = 0;
+        virtual AuthorizationStatus getDiscussionThreadSubscribedUsers(const Entities::User& currentUser,
+                                                                       const Entities::DiscussionThread& thread) const = 0;
 
         virtual AuthorizationStatus getDiscussionThreadsOfUser(const Entities::User& currentUser,
                                                                const Entities::User& user) const = 0;

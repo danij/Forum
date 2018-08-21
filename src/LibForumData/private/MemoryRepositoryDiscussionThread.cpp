@@ -418,7 +418,7 @@ StatusCode MemoryRepositoryDiscussionThread::getUsersSubscribedToDiscussionThrea
 
                           const DiscussionThread& thread = *threadPtr;
 
-                          if ( ! (status = authorization_->getDiscussionThreadById(currentUser, thread)))
+                          if ( ! (status = authorization_->getDiscussionThreadSubscribedUsers(currentUser, thread)))
                           {
                               return;
                           }

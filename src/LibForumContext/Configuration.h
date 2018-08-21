@@ -162,6 +162,7 @@ namespace Forum::Configuration
             PrivilegeValueType view                   = DenyPrivilegeValue;
             PrivilegeValueType viewRequiredPrivileges = DenyPrivilegeValue;
             PrivilegeValueType viewAssignedPrivileges = DenyPrivilegeValue;
+            PrivilegeValueType getSubscribedUsers     = DenyPrivilegeValue;
             PrivilegeValueType subscribe              = DenyPrivilegeValue;
             PrivilegeValueType unsubscribe            = DenyPrivilegeValue;
             PrivilegeValueType addMessage             = DenyPrivilegeValue;

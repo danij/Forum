@@ -99,6 +99,7 @@ namespace Forum::Authorization
         VIEW,
         VIEW_REQUIRED_PRIVILEGES,
         VIEW_ASSIGNED_PRIVILEGES,
+        GET_SUBSCRIBED_USERS,
         SUBSCRIBE,
         UNSUBSCRIBE,
         ADD_MESSAGE,
@@ -119,6 +120,7 @@ namespace Forum::Authorization
         "view",
         "view_required_privileges",
         "view_assigned_privileges",
+        "get_subscribed_users",
         "subscribe",
         "unsubscribe",
         "add_message",
@@ -135,6 +137,7 @@ namespace Forum::Authorization
     {
         DiscussionThreadPrivilege::VIEW_REQUIRED_PRIVILEGES,
         DiscussionThreadPrivilege::VIEW_ASSIGNED_PRIVILEGES,
+        DiscussionThreadPrivilege::GET_SUBSCRIBED_USERS,
         DiscussionThreadPrivilege::ADD_MESSAGE,
         DiscussionThreadPrivilege::CHANGE_NAME,
         DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER,

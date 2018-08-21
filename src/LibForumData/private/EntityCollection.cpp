@@ -622,6 +622,7 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::VIEW,                     defaultPrivileges.thread.view);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::VIEW_REQUIRED_PRIVILEGES, defaultPrivileges.thread.viewRequiredPrivileges);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::VIEW_ASSIGNED_PRIVILEGES, defaultPrivileges.thread.viewAssignedPrivileges);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::GET_SUBSCRIBED_USERS,     defaultPrivileges.thread.getSubscribedUsers);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::SUBSCRIBE,                defaultPrivileges.thread.subscribe);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::UNSUBSCRIBE,              defaultPrivileges.thread.unsubscribe);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::ADD_MESSAGE,              defaultPrivileges.thread.addMessage);

@@ -142,6 +142,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.view);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.viewRequiredPrivileges);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.viewAssignedPrivileges);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.getSubscribedUsers);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.subscribe);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.unsubscribe);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.addMessage);

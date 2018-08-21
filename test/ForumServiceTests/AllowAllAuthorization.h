@@ -67,6 +67,8 @@ namespace Forum
             AuthorizationStatus getDiscussionThreads(const Entities::User& /*currentUser*/) const override { return {}; }
             AuthorizationStatus getDiscussionThreadById(const Entities::User& /*currentUser*/,
                                                         const Entities::DiscussionThread& /*thread*/) const override { return {}; }
+            AuthorizationStatus getDiscussionThreadSubscribedUsers(const Entities::User& /*currentUser*/,
+                                                                   const Entities::DiscussionThread& /*thread*/) const override { return {}; }
 
             AuthorizationStatus getDiscussionThreadsOfUser(const Entities::User& /*currentUser*/,
                                                            const Entities::User& /*user*/) const override { return {}; }
