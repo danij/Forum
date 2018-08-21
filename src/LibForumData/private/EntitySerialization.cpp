@@ -59,9 +59,16 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
             << propertySafeName("id", user.id())
             << propertySafeName("name", user.name());
 
-    if (restriction.isAllowed(ForumWidePrivilege::GET_USER_INFO))
+    const auto sameUser = Context::getCurrentUserId() == user.id();
+
+    if (sameUser || restriction.isAllowed(ForumWidePrivilege::GET_USER_INFO))
     {
         writer << propertySafeName("info", user.info());
+    }
+
+    if (sameUser || restriction.isAllowed(ForumWidePrivilege::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER))
+    {
+        writer << propertySafeName("subscribedThreadCount", user.subscribedThreads().count());
     }
 
     writer
@@ -72,7 +79,6 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
             << propertySafeName("lastSeen", user.lastSeen())
             << propertySafeName("threadCount", user.threads().count())
             << propertySafeName("messageCount", user.threadMessages().byId().size())
-            << propertySafeName("subscribedThreadCount", user.subscribedThreads().count())
             << propertySafeName("receivedUpVotes", user.receivedUpVotes())
             << propertySafeName("receivedDownVotes", user.receivedDownVotes())
         << objEnd;
