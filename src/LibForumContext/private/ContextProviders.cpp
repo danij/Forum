@@ -73,6 +73,18 @@ void Forum::Context::setCurrentUserAuth(const std::string_view value)
     currentUserAuth = value;
 }
 
+static thread_local bool currentUserShowInOnlineUsers{ false };
+
+bool Forum::Context::getCurrentUserShowInOnlineUsers()
+{
+    return currentUserShowInOnlineUsers;
+}
+
+void Forum::Context::setCurrentUserShowInOnlineUsers(const bool value)
+{
+    currentUserShowInOnlineUsers = value;
+}
+
 static thread_local IpAddress currentIpAddress = {};
 
 const IpAddress& Forum::Context::getCurrentUserIpAddress()

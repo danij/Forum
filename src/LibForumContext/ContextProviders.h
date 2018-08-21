@@ -56,6 +56,16 @@ namespace Forum::Context
     void setCurrentUserAuth(std::string_view value);
 
     /**
+     * Returns whether to return the current user in the list of online users
+     */
+    bool getCurrentUserShowInOnlineUsers();
+
+    /**
+     * Sets whether to return the current user in the list of online users (thread-local)
+     */
+    void setCurrentUserShowInOnlineUsers(bool value);
+
+    /**
      * Returns the IP address of the current user executing an action
      */
     const Helpers::IpAddress& getCurrentUserIpAddress();

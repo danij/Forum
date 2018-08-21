@@ -118,6 +118,8 @@ static void updateContextForRequest(const Http::HttpRequest& request)
         }
     }
 
+    Context::setCurrentUserShowInOnlineUsers(request.getCookie("show_my_user_in_users_online") == "true");
+
     auto& displayContext = Context::getMutableDisplayContext();
     displayContext.sortOrder = Context::SortOrder::Ascending;
     displayContext.pageNumber = 0;

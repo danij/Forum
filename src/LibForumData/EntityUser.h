@@ -168,6 +168,8 @@ namespace Forum::Entities
         auto& voteHistory()                    { return voteHistory_; }
         auto& voteHistoryLastRetrieved() const { return voteHistoryLastRetrieved_; }
 
+        auto& showInOnlineUsers()        const { return showInOnlineUsers_; }
+
         void updateAuth(std::string&& value)
         {
             changeNotifications_.onPrepareUpdateAuth(*this);
@@ -238,6 +240,8 @@ namespace Forum::Entities
 
         int_fast32_t receivedUpVotes_{ 0 };
         int_fast32_t receivedDownVotes_{ 0 };
+
+        mutable std::atomic_bool showInOnlineUsers_{ false };
     };
 
     typedef EntityPointer<User> UserPtr;

@@ -62,6 +62,8 @@ PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& 
 
     const User& result = **it;
 
+    result.showInOnlineUsers() = Context::getCurrentUserShowInOnlineUsers();
+
     auto now = Context::getCurrentTime();
 
     if ((result.lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
@@ -94,9 +96,9 @@ UserPtr PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
     {
         return result;
     }
-
+    
     const auto now = Context::getCurrentTime();
-
+    
     if ((result->lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
     {
         result->updateLastSeen(now);
@@ -112,6 +114,9 @@ UserPtr Repository::getCurrentUser(EntityCollection& collection)
     {
         return anonymousUser();
     }
+
+    (*it)->showInOnlineUsers() = Context::getCurrentUserShowInOnlineUsers();
+
     return *it;
 }
 

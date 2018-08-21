@@ -197,13 +197,17 @@ StatusCode MemoryRepositoryUser::getUsersOnline(OutStream& output) const
                               const User* userPtr = *it;
                               assert(userPtr);
 
-                              if (userPtr->lastSeen() < onlineUsersTimeLimit)
+                              const User& user = *userPtr;
+
+                              if ( ! user.showInOnlineUsers()) continue;
+
+                              if (user.lastSeen() < onlineUsersTimeLimit)
                               {
                                   break;
                               }
                               else
                               {
-                                  serialize(writer, *userPtr, restriction);
+                                  serialize(writer, user, restriction);
                               }
                           }
 
