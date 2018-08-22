@@ -101,12 +101,13 @@ static std::string getAuth(const Http::HttpStringView token)
     return authStore.find(std::string{ token });
 }
 
-static void updateContextForRequest(const Http::HttpRequest& request)
+static void updateContextForRequest(const Http::HttpRequest& request, const bool allowAuth)
 {
     Context::setCurrentUserId({});
     Context::setCurrentUserAuth({});
     Context::setCurrentUserIpAddress(request.remoteAddress);
 
+    if (allowAuth)
     {
         const auto authToken = request.getCookie("auth");
         if ( ! authToken.empty())
@@ -202,8 +203,11 @@ void AbstractEndpoint::handleInternal(Http::RequestState& requestState, const St
         return;
     }
 
+    //if the CSRF check does not pass, treat the user as anonymous
+    const auto allowAuth = validateCsrf(request);
+
     currentParameters.clear();
-    updateContextForRequest(request);
+    updateContextForRequest(request, allowAuth);
 
     const auto result = executeCommand(requestState, commandHandler_, currentParameters);
     
@@ -232,8 +236,6 @@ bool AbstractEndpoint::validateRequest(const Http::HttpRequest& request, Http::H
 {
     if ( ! validateOriginReferer(request, responseCode, message)) return false;
 
-    if ( ! validateCsrf(request, responseCode, message)) return false;
-
     return true;
 }
 
@@ -242,7 +244,7 @@ static bool validateAddressStart(Http::HttpStringView needle, Http::HttpStringVi
     if (haystack.find(needle) != 0) return false;
 
     return (needle.size() == haystack.size())
-        || haystack[needle.size()] == '/';
+        || (haystack[needle.size()] == '/');
 }
 
 bool AbstractEndpoint::validateOriginReferer(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
@@ -276,23 +278,22 @@ bool AbstractEndpoint::validateOriginReferer(const Http::HttpRequest& request, H
     return true;
 }
 
-bool AbstractEndpoint::validateCsrf(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
-                                    Http::HttpStringView& message)
+bool AbstractEndpoint::validateCsrf(const Http::HttpRequest& request)
 {
     const auto expected = request.getCookie("double_submit");
     const auto doubleSubmitValue = request.headers[Http::Request::HttpHeader::X_Double_Submit];
     
     if (expected.empty() && doubleSubmitValue.empty())
     {
-        responseCode = Http::Bad_Request;
-        message = "Missing double submit cookie and header.";
+        //responseCode = Http::Bad_Request;
+        //message = "Missing double submit cookie and header.";
         return false;
     }
 
     if (doubleSubmitValue != expected)
     {
-        responseCode = Http::Bad_Request;
-        message = "Double submit cookie mismatch.";
+        //responseCode = Http::Bad_Request;
+        //message = "Double submit cookie mismatch.";
         return false;
     }
 
