@@ -109,12 +109,13 @@ static void updateContextForRequest(const Http::HttpRequest& request)
 
     {
         const auto authToken = request.getCookie("auth");
-        if (authToken.empty()) return;
-
-        auto authResult = getAuth(authToken);
-        if ( ! authResult.empty())
+        if ( ! authToken.empty())
         {
-            Context::setCurrentUserAuth(authResult);
+            auto authResult = getAuth(authToken);
+            if ( ! authResult.empty())
+            {
+                Context::setCurrentUserAuth(authResult);
+            }
         }
     }
 
