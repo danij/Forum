@@ -870,6 +870,8 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadMessagePrivilege
                                                                                  const User& targetUser,
                                                                                  PrivilegeValueIntType newValue) const
 {
+    if (currentUser.id() == targetUser.id()) return AuthorizationStatus::NOT_ALLOWED;
+
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
@@ -927,6 +929,8 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const 
                                                                           const User& targetUser,
                                                                           PrivilegeValueIntType newValue) const
 {
+    if (currentUser.id() == targetUser.id()) return AuthorizationStatus::NOT_ALLOWED;
+
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
@@ -1001,6 +1005,8 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionTagPrivilege(const Use
                                                                        const User& targetUser,
                                                                        PrivilegeValueIntType newValue) const
 {
+    if (currentUser.id() == targetUser.id()) return AuthorizationStatus::NOT_ALLOWED;
+
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
@@ -1104,6 +1110,8 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionCategoryPrivilege(cons
                                                                             const User& targetUser,
                                                                             PrivilegeValueIntType newValue) const
 {
+    if (currentUser.id() == targetUser.id()) return AuthorizationStatus::NOT_ALLOWED;
+
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
@@ -1181,6 +1189,8 @@ AuthorizationStatus DefaultAuthorization::assignForumWidePrivilege(const User& c
                                                                    const User& targetUser,
                                                                    PrivilegeValueIntType newValue) const
 {
+    if (currentUser.id() == targetUser.id()) return AuthorizationStatus::NOT_ALLOWED;
+
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
