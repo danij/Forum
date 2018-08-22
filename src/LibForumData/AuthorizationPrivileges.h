@@ -138,6 +138,8 @@ namespace Forum::Authorization
         DiscussionThreadPrivilege::VIEW_REQUIRED_PRIVILEGES,
         DiscussionThreadPrivilege::VIEW_ASSIGNED_PRIVILEGES,
         DiscussionThreadPrivilege::GET_SUBSCRIBED_USERS,
+        DiscussionThreadPrivilege::SUBSCRIBE,
+        DiscussionThreadPrivilege::UNSUBSCRIBE,
         DiscussionThreadPrivilege::ADD_MESSAGE,
         DiscussionThreadPrivilege::CHANGE_NAME,
         DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER,

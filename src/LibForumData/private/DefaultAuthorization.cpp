@@ -281,6 +281,8 @@ AuthorizationStatus DefaultAuthorization::mergeDiscussionThreads(const User& cur
 AuthorizationStatus DefaultAuthorization::subscribeToDiscussionThread(const User& currentUser,
                                                                       const DiscussionThread& thread) const
 {
+    if (anonymousUserId() == currentUser.id()) return AuthorizationStatus::NOT_ALLOWED;
+
     if (isThrottled(UserActionThrottling::SUBSCRIBE, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
@@ -290,6 +292,8 @@ AuthorizationStatus DefaultAuthorization::subscribeToDiscussionThread(const User
 AuthorizationStatus DefaultAuthorization::unsubscribeFromDiscussionThread(const User& currentUser,
                                                                           const DiscussionThread& thread) const
 {
+    if (anonymousUserId() == currentUser.id()) return AuthorizationStatus::NOT_ALLOWED;
+
     if (isThrottled(UserActionThrottling::SUBSCRIBE, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
