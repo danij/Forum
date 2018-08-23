@@ -75,7 +75,8 @@
         "outputFolder": "/mnt/forum/output",
         "messagesFile": "",
         "validateChecksum": true,
-        "createNewOutputFileEverySeconds": 86400
+        "createNewOutputFileEverySeconds": 86400,
+        "persistIPAddresses": false
     },
     
     "plugins": [{

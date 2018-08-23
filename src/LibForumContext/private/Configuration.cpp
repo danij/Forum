@@ -121,6 +121,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(persistence.messagesFile);
     LOAD_CONFIG_VALUE(persistence.validateChecksum);
     LOAD_CONFIG_VALUE(persistence.createNewOutputFileEverySeconds);
+    LOAD_CONFIG_VALUE(persistence.persistIPAddresses);
 
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.view);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewRequiredPrivileges);

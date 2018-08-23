@@ -124,6 +124,7 @@ namespace Forum::Configuration
         std::string messagesFile = "";
         bool validateChecksum = true;
         int_fast32_t createNewOutputFileEverySeconds = 3600 * 24;
+        bool persistIPAddresses = false;
     };
 
     struct PluginEntry

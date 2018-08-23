@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include "Entities.h"
+#include "Configuration.h"
 #include "TypeHelpers.h"
 #include "ContextProviders.h"
 
@@ -33,12 +34,15 @@ namespace Forum::Repository
         PerformedByType performedBy;
         const Entities::Timestamp timestamp;
         const Context::DisplayContext displayContext;
-        const Helpers::IpAddress ipAddress;
+        Helpers::IpAddress ipAddress;
 
         ObserverContext_(PerformedByType performedBy, const Entities::Timestamp timestamp,
-                         const Context::DisplayContext displayContext, const Helpers::IpAddress ipAddress) :
-                performedBy(performedBy), timestamp(timestamp), displayContext(displayContext), ipAddress(ipAddress)
+                         const Context::DisplayContext displayContext, const Helpers::IpAddress currentIpAddress) :
+                performedBy(performedBy), timestamp(timestamp), displayContext(displayContext)
         {
+            ipAddress = Configuration::getGlobalConfig()->persistence.persistIPAddresses
+                ? currentIpAddress
+                : Helpers::IpAddress{};
         }
     };
 
