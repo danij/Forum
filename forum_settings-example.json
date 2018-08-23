@@ -162,7 +162,7 @@
             "getAllDiscussionTags": 0,
             "getAllDiscussionThreads": 0,
             "getAllMessageComments": 0,
-            "getMessageCommentsOfUser": 0,
+            "getMessageCommentsOfUser": 30000,
             "addDiscussionCategory": 10000,
             "addDiscussionTag": 10000,
             "addDiscussionThread": 1,
