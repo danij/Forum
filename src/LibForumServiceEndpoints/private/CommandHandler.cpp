@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "CommandHandler.h"
 #include "Configuration.h"
 #include "OutputHelpers.h"
+#include "StringHelpers.h"
 
 #include <cstddef>
 #include <memory>
@@ -74,6 +75,12 @@ static StringView normalize(StringView input)
     static boost::thread_specific_ptr<UChar> normalizeBuffer16BeforePtr;
     static boost::thread_specific_ptr<UChar> normalizeBuffer16AfterPtr;
     static boost::thread_specific_ptr<char> normalizeBuffer8Ptr;
+
+    if (onlyASCII(input)) {
+
+        //no normalization needed
+        return input;
+    }
 
     if ( ! normalizeBuffer16BeforePtr.get())
     {

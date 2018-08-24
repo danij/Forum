@@ -98,6 +98,11 @@ namespace Forum::Helpers
         return StringView{};
     }
 
+    inline bool onlyASCII(StringView view)
+    {
+        return std::all_of(view.begin(), view.end(), [](auto c) { return static_cast<uint8_t>(c) < 128; });
+    }
+
     /**
      * Enables a deterministic release of all cached resources used by string helpers
      * Used before cleaning up ICU
