@@ -69,8 +69,6 @@ Http::HttpStatusCode commandStatusToHttpStatus(const Repository::StatusCode code
 //reserve space for the parameter views up-front so that no reallocations should occur when handling invididual requests
 static thread_local std::vector<StringView> currentParameters{ 128 };
 
-static constexpr Timestamp maxLoginDuration = 3600 * 24 * 30; // 30 days
-
 static AuthStore authStore;
 
 static CommandHandler::Result loginUser(const Http::HttpStringView authToken, const Http::HttpStringView authId, 
