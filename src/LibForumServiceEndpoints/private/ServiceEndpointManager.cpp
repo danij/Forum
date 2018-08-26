@@ -68,6 +68,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "statistics/entitycount", HttpVerb::GET, ENDPOINT_DELEGATE(statisticsEndpoint.getEntitiesCount) },
 
         { "users",                   HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getAll) },
+        { "users/current",           HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getCurrent) },
         { "users/online",            HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getOnline) },
         { "users/id",                HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserById) },
         { "users/name",              HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserByName) },

@@ -30,6 +30,7 @@ namespace Forum::Repository
         explicit MemoryRepositoryUser(MemoryStoreRef store, Authorization::UserAuthorizationRef authorization,
                                       AuthorizationRepositoryRef authorizationRepository);
 
+        StatusCode getCurrentUser(OutStream& output) const override;
         StatusCode getUsers(OutStream& output, RetrieveUsersBy by) const override;
         StatusCode getUsersOnline(OutStream& output) const override;
 

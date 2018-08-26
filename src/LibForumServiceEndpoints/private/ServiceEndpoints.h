@@ -77,6 +77,7 @@ namespace Forum::Commands
         explicit UsersEndpoint(CommandHandler& handler);
 
         void getAll(Http::RequestState& requestState);
+        void getCurrent(Http::RequestState& requestState);
         void getOnline(Http::RequestState& requestState);
         void getUserById(Http::RequestState& requestState);
         void getUserByName(Http::RequestState& requestState);

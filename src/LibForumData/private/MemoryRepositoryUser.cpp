@@ -106,6 +106,40 @@ MemoryRepositoryUser::MemoryRepositoryUser(MemoryStoreRef store, UserAuthorizati
     }
 }
 
+StatusCode MemoryRepositoryUser::getCurrentUser(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          status = AuthorizationStatus::OK;
+                          status.disable();
+                      
+                          Json::JsonWriter writer(output);
+                      
+                          writer.startObject();
+                      
+                          writer.newPropertyWithSafeName("authenticated") << ! Context::getCurrentUserAuth().empty();
+                      
+                          if (currentUser.id() != anonymousUserId())
+                          {
+                              const SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                                         currentUser.id(), Context::getCurrentTime());
+                              writer.newPropertyWithSafeName("user");
+                              serialize(writer, currentUser, restriction);
+                          }
+                      
+                          writer.endObject();
+                      
+                          readEvents().onGetCurrentUser(createObserverContext(currentUser));
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by) const
 {
     StatusWriter status(output);

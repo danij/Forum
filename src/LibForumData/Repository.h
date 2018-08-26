@@ -113,6 +113,7 @@ namespace Forum::Repository
     public:
         DECLARE_INTERFACE_MANDATORY(IUserRepository)
 
+        virtual StatusCode getCurrentUser(OutStream& output) const = 0;
         virtual StatusCode getUsers(OutStream& output, RetrieveUsersBy by) const = 0;
         virtual StatusCode getUsersOnline(OutStream& output) const = 0;
 

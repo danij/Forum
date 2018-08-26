@@ -209,6 +209,11 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->addNewUser(normalizedParam, parameters[1], output);
     }
 
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_CURRENT_USER )
+    {
+        return userRepository->getCurrentUser(output);
+    }
+
     COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_BY_NAME )
     {
         return userRepository->getUsers(output, RetrieveUsersBy::Name);
@@ -1220,6 +1225,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
 
     setViewHandler(GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES);
 
+    setViewHandler(GET_CURRENT_USER);
     setViewHandler(GET_USERS_BY_NAME);
     setViewHandler(GET_USERS_BY_CREATED);
     setViewHandler(GET_USERS_BY_LAST_SEEN);

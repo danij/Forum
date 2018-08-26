@@ -373,6 +373,15 @@ void UsersEndpoint::getAll(Http::RequestState& requestState)
     });
 }
 
+void UsersEndpoint::getCurrent(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::GET_CURRENT_USER, parameters);
+    });
+}
+
 void UsersEndpoint::getOnline(Http::RequestState& requestState)
 {
     handle(requestState,

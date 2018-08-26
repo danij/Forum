@@ -53,6 +53,7 @@ namespace Forum::Repository
     {
         boost::signals2::signal<void(ObserverContext)> onGetEntitiesCount;
 
+        boost::signals2::signal<void(ObserverContext)> onGetCurrentUser;
         boost::signals2::signal<void(ObserverContext)> onGetUsers;
         boost::signals2::signal<void(ObserverContext)> onGetUsersOnline;
         boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetUserById;
