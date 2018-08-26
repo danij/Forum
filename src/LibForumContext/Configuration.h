@@ -256,6 +256,14 @@ namespace Forum::Configuration
                 PrivilegeDurationType duration = 0;
             } create;
         } thread;
+        struct
+        {
+            struct
+            {
+                PrivilegeValueType value = 0;
+                PrivilegeDurationType duration = 0;
+            } create;
+        } threadMessage;
     };
 
     struct Config

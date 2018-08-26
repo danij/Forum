@@ -369,13 +369,15 @@ namespace Forum::Authorization
     enum class ForumWideDefaultPrivilegeDuration : EnumIntType
     {
         CREATE_DISCUSSION_THREAD,
+        CREATE_DISCUSSION_THREAD_MESSAGE,
 
         COUNT
     };
 
     const StringView ForumWideDefaultPrivilegeDurationStrings[] =
     {
-        "create_discussion_thread"
+        "create_discussion_thread",
+        "create_discussion_thread_message"
     };
 
     enum class UserActionThrottling : EnumIntType

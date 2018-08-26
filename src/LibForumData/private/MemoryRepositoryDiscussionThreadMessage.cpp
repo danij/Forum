@@ -37,8 +37,10 @@ using namespace Forum::Repository;
 using namespace Forum::Authorization;
 
 MemoryRepositoryDiscussionThreadMessage::MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store,
-                                                                                 DiscussionThreadMessageAuthorizationRef authorization)
-    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization))
+                                                                                 DiscussionThreadMessageAuthorizationRef authorization,
+                                                                                 AuthorizationDirectWriteRepositoryRef authorizationDirectWriteRepository)
+    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization)),
+      authorizationDirectWriteRepository_(std::move(authorizationDirectWriteRepository))
 {
     if ( ! authorization_)
     {
@@ -287,6 +289,22 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                            if ( ! alreadySubscribed)
                            {
                                writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), thread);
+                           }
+
+                           if (anonymousUser() != currentUser)
+                           {
+                               auto levelToGrant = collection.getForumWideDefaultPrivilegeLevel(
+                                       ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD_MESSAGE);
+                               if (levelToGrant)
+                               {
+                                   const auto value = levelToGrant->value;
+                                   const auto duration = levelToGrant->duration;
+
+                                   authorizationDirectWriteRepository_->assignDiscussionThreadMessagePrivilege(
+                                           collection, message->id(), currentUser->id(), value, duration);
+                                   writeEvents().onAssignDiscussionThreadMessagePrivilege(
+                                           createObserverContext(*currentUser), *message, *currentUser, value, duration);
+                               }
                            }
 
                            status.writeNow([&](auto& writer)

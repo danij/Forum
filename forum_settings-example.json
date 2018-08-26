@@ -191,7 +191,13 @@
     "defaultPrivilegeGrants" : {
         "thread": {
             "create": {
-                "value": 1000,
+                "value": 100,
+                "duration": 900
+            }
+        },
+        "threadMessage": {
+            "create": {
+                "value": 100,
                 "duration": 600
             }
         }

@@ -697,9 +697,14 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     const auto& defaultPrivilegeGrants = config->defaultPrivilegeGrants;
     {
         PrivilegeDefaultLevel defaults;
+
         defaults.value = defaultPrivilegeGrants.thread.create.value;
         defaults.duration = defaultPrivilegeGrants.thread.create.duration;
         store.setForumWideDefaultPrivilegeLevel(ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD, defaults);
+
+        defaults.value = defaultPrivilegeGrants.threadMessage.create.value;
+        defaults.duration = defaultPrivilegeGrants.threadMessage.create.duration;
+        store.setForumWideDefaultPrivilegeLevel(ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD_MESSAGE, defaults);
     }
 }
 

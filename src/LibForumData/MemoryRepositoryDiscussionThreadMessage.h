@@ -29,7 +29,8 @@ namespace Forum::Repository
     {
     public:
         explicit MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store,
-                                                         Authorization::DiscussionThreadMessageAuthorizationRef authorization);
+                                                         Authorization::DiscussionThreadMessageAuthorizationRef authorization,
+                                                         AuthorizationDirectWriteRepositoryRef authorizationDirectWriteRepository);
 
         StatusCode addNewDiscussionMessageInThread(Entities::IdTypeRef threadId,
                                                    StringView content, OutStream& output) override;
@@ -90,5 +91,6 @@ namespace Forum::Repository
         StatusCode voteDiscussionThreadMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id, bool up);
 
         Authorization::DiscussionThreadMessageAuthorizationRef authorization_;
+        AuthorizationDirectWriteRepositoryRef authorizationDirectWriteRepository_;
     };
 }

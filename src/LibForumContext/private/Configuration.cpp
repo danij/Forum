@@ -217,6 +217,8 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     
     LOAD_CONFIG_VALUE(defaultPrivilegeGrants.thread.create.value);
     LOAD_CONFIG_VALUE(defaultPrivilegeGrants.thread.create.duration);
+    LOAD_CONFIG_VALUE(defaultPrivilegeGrants.threadMessage.create.value);
+    LOAD_CONFIG_VALUE(defaultPrivilegeGrants.threadMessage.create.duration);
 
     loadPluginConfig(tree, config);
 
