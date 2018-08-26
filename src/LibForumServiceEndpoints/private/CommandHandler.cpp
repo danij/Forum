@@ -203,10 +203,10 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( ADD_USER )
     {
-        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
-        return userRepository->addNewUser(normalizedParam, parameters[1], output);
+        return userRepository->addNewUser(normalizedParam, Context::getCurrentUserAuth(), output);
     }
 
     COMMAND_HANDLER_METHOD_SIMPLE( GET_CURRENT_USER )
