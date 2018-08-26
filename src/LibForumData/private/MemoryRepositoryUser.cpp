@@ -549,7 +549,8 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                            if (1 == collection.users().count())
                            {
                                //this is the first user, so grant all privileges
-                               grantAllPrivilegesTo = user->id();
+                               authorizationRepository_->assignForumWidePrivilege(collection, user->id(), 
+                                       MaxPrivilegeValue, UnlimitedDuration);
                            }
 
                            status.writeNow([&](auto& writer)
@@ -559,13 +560,6 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                                writer << Json::propertySafeName("created", user->created());
                                            });
                        });
-    if (grantAllPrivilegesTo)
-    {
-        Json::StringBuffer nullOutput;
-
-        authorizationRepository_->assignForumWidePrivilege(*grantAllPrivilegesTo, MaxPrivilegeValue, UnlimitedDuration,
-                                                           nullOutput);
-    }
     return status;
 }
 

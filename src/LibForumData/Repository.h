@@ -491,6 +491,9 @@ namespace Forum::Repository
                 Entities::IdTypeRef userId,
                 Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration,
                 OutStream& output) = 0;
+        virtual StatusCode assignForumWidePrivilege(
+                Entities::EntityCollection& collection, Entities::IdTypeRef userId,
+                Authorization::PrivilegeValueIntType value, Authorization::PrivilegeDurationIntType duration) = 0;
     };
     typedef std::shared_ptr<IAuthorizationRepository> AuthorizationRepositoryRef;
 
