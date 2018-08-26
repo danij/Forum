@@ -519,6 +519,13 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
+
+                           if (currentUser->id() != anonymousUserId())
+                           {
+                               status = AuthorizationStatus::NOT_ALLOWED;
+                               return;
+                           }
+
                            if ( ! (status = authorization_->addNewUser(*currentUser, name)))
                            {
                                return;
