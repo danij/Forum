@@ -168,6 +168,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getLatestDiscussionThreadMes
         TemporaryChanger<UserPtr> ___(serializationSettings.userToCheckVotesOf, currentUser.pointer());
 
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
+        auto& displayContext = Context::getDisplayContext();
 
         status = StatusCode::OK;
         status.disable();
@@ -175,7 +176,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getLatestDiscussionThreadMes
         SerializationRestriction restriction(collection.grantedPrivileges(), collection,
                                              currentUser.id(), Context::getCurrentTime());
 
-        writeEntitiesWithPagination(messages, "messages", output, 0, pageSize, false, restriction);
+        writeEntitiesWithPagination(messages, "messages", output, displayContext.pageNumber, pageSize, false, restriction);
 
         readEvents().onGetLatestDiscussionThreadMessages(createObserverContext(currentUser));
     });
