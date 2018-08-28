@@ -38,8 +38,6 @@ namespace Forum::Authorization
     public:
         DECLARE_INTERFACE_MANDATORY(IUserAuthorization)
 
-        virtual AuthorizationStatus login(Entities::IdType userId) const = 0;
-
         virtual AuthorizationStatus getUsers(const Entities::User& currentUser) const = 0;
 
         virtual AuthorizationStatus getUserById(const Entities::User& currentUser,

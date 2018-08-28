@@ -179,7 +179,6 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.category.adjustPrivilege);
 
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.addUser);
-    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.login);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getEntitiesCount);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getVersion);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getAllUsers);

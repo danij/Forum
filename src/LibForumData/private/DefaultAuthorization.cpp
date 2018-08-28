@@ -39,12 +39,6 @@ DefaultAuthorization::DefaultAuthorization(GrantedPrivilegeStore& grantedPrivile
 {
 }
 
-AuthorizationStatus DefaultAuthorization::login(IdType userId) const
-{
-    PrivilegeValueType with;
-    return isAllowed(userId, ForumWidePrivilege::LOGIN, with);
-}
-
 AuthorizationStatus DefaultAuthorization::getUsers(const User& currentUser) const
 {
     PrivilegeValueType with;

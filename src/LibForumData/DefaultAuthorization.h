@@ -42,8 +42,6 @@ namespace Forum::Authorization
         explicit DefaultAuthorization(GrantedPrivilegeStore& grantedPrivilegeStore,
                                       ForumWidePrivilegeStore& forumWidePrivilegeStore, bool disableThrottling);
 
-        AuthorizationStatus login(Entities::IdType userId) const override;
-
         AuthorizationStatus getUsers(const Entities::User& currentUser) const override;
 
         AuthorizationStatus getUserById(const Entities::User& currentUser,

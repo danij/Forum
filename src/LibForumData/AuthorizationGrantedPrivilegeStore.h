@@ -266,12 +266,12 @@ namespace Forum::Authorization
         }
 
         bool isAllowed(const ForumWidePrivilegeStore& forumWidePrivilegeStore, 
-                       const ForumWidePrivilege privilege = ForumWidePrivilege::LOGIN) const
+                       const ForumWidePrivilege privilege = ForumWidePrivilege::ADD_USER) const
         {
             return static_cast<bool>(privilegeStore_.isAllowed(userId_, forumWidePrivilegeStore, privilege, now_));
         }
 
-        bool isAllowed(const ForumWidePrivilege privilege = ForumWidePrivilege::LOGIN) const
+        bool isAllowed(const ForumWidePrivilege privilege = ForumWidePrivilege::ADD_USER) const
         {
             return isAllowed(forumWidePrivilegeStore_, privilege);
         }

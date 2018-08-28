@@ -149,7 +149,6 @@
         },
         "forumWide": {
             "addUser": 0,
-            "login": 0,
             "getEntitiesCount": 0,
             "getVersion": 0,
             "getAllUsers": 0,

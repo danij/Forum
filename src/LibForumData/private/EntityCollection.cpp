@@ -658,7 +658,6 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::ADJUST_PRIVILEGE,         defaultPrivileges.category.adjustPrivilege);
 
     store.setForumWidePrivilege(ForumWidePrivilege::ADD_USER,                                  defaultPrivileges.forumWide.addUser);
-    store.setForumWidePrivilege(ForumWidePrivilege::LOGIN,                                     defaultPrivileges.forumWide.login);
     store.setForumWidePrivilege(ForumWidePrivilege::GET_ENTITIES_COUNT,                        defaultPrivileges.forumWide.getEntitiesCount);
     store.setForumWidePrivilege(ForumWidePrivilege::GET_VERSION,                               defaultPrivileges.forumWide.getVersion);
     store.setForumWidePrivilege(ForumWidePrivilege::GET_ALL_USERS,                             defaultPrivileges.forumWide.getAllUsers);

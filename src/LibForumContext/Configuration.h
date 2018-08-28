@@ -208,7 +208,6 @@ namespace Forum::Configuration
         struct
         {
             PrivilegeValueType addUser                              = DenyPrivilegeValue;
-            PrivilegeValueType login                                = DenyPrivilegeValue;
             PrivilegeValueType getEntitiesCount                     = DenyPrivilegeValue;
             PrivilegeValueType getVersion                           = DenyPrivilegeValue;
             PrivilegeValueType getAllUsers                          = DenyPrivilegeValue;

@@ -243,7 +243,6 @@ namespace Forum::Authorization
     enum class ForumWidePrivilege : EnumIntType
     {
         ADD_USER,
-        LOGIN,
         GET_ENTITIES_COUNT,
         GET_VERSION,
         GET_ALL_USERS,
@@ -288,7 +287,6 @@ namespace Forum::Authorization
     const StringView ForumWidePrivilegeStrings[] =
     {
         "add_user",
-        "login",
         "get_entities_count",
         "get_version",
         "get_all_users",

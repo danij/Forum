@@ -33,8 +33,6 @@ namespace Forum
                                       public IStatisticsAuthorization,
                                       public IMetricsAuthorization
         {
-            AuthorizationStatus login(Entities::IdType /*userId*/) const override { return {}; }
-
             AuthorizationStatus getUsers(const Entities::User& /*currentUser*/) const override { return {}; }
 
             AuthorizationStatus getUserById(const Entities::User& /*currentUser*/,
