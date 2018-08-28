@@ -159,7 +159,9 @@ BenchmarkContext createContext(int argc, const char* argv[])
     auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization, authorizationRepository);
     auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization,
                                                                                          authorizationRepository);
-    auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, authorization);
+    auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, 
+                                                                                                       authorization,
+                                                                                                       authorizationRepository);
     auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
     auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store, authorization);
     auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store, authorization);
