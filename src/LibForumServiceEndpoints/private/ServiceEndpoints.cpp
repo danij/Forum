@@ -58,7 +58,7 @@ Http::HttpStatusCode commandStatusToHttpStatus(const Repository::StatusCode code
     case Repository::NOT_UPDATED_SINCE_LAST_CHECK:
         return Http::HttpStatusCode::Not_Modified;
     case Repository::UNAUTHORIZED:
-        return Http::HttpStatusCode::Unauthorized;
+        return Http::HttpStatusCode::Forbidden;
     case Repository::THROTTLED:
         return Http::HttpStatusCode::Too_Many_Requests;
     default:
