@@ -908,6 +908,7 @@ BOOST_AUTO_TEST_CASE( Voting_discussion_thread_messages_invokes_observers )
 
     const auto user1Id = createUserAndGetId(handler, "User1");
     const auto user2Id = createUserAndGetId(handler, "User2");
+    const auto user3Id = createUserAndGetId(handler, "User3");
     const auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
     const auto messageId = createDiscussionMessageAndGetId(handler, threadId, "Message");
 
