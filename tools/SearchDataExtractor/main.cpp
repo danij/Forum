@@ -111,7 +111,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    if (arguments.count("input") && arguments.count("output"))
+    if (arguments.count("input") && arguments.count("output") && arguments.count("events-per-file"))
     {
         return startExtraction(arguments["input"].as<std::string>(), arguments["output"].as<std::string>(),
                                arguments["events-per-file"].as<size_t>());
