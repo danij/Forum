@@ -117,10 +117,13 @@ namespace Forum
             {
                 oldId_ = Context::getCurrentUserId();
                 Context::setCurrentUserId(userId);
+                Context::setCurrentUserAuth({});
+                Context::setCurrentUserShowInOnlineUsers(true);
             }
             ~LoggedInUserChanger()
             {
                 Context::setCurrentUserId(oldId_);
+                Context::setCurrentUserAuth({});
             }
 
         private:
