@@ -584,6 +584,7 @@ BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
     {
         assertStatusCodeEqual(StatusCode::OK, createUser(handler, name));
     }
+    LoggedInUserChanger loggedInChanger(anonymousUserId());
 
     //perform an action while "logged in" as each user
     {
@@ -596,27 +597,24 @@ BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
         TimestampChanger changer(30000);
         auto userId = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Ghi" }).get<std::string>("user.id");
         LoggedInUserChanger loggedInChanger(userId);
-        assertStatusCodeEqual(StatusCode::OK, createUser(handler, "Xyz"));
+        (void)handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
     }
-    IdType userToDelete;
     {
         TimestampChanger changer(20000);
         auto userId = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Def" }).get<std::string>("user.id");
         LoggedInUserChanger loggedInChanger(userId);
-        userToDelete = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Xyz" }).get<std::string>("user.id");
+        (void)handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
     }
     {
         TimestampChanger changer(20050);//difference to previous action is lower than the minimum for updating last seen
         auto userId = handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Def" }).get<std::string>("user.id");
         LoggedInUserChanger loggedInChanger(userId);
-        assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler,
-                                                           Forum::Commands::DELETE_USER, { static_cast<std::string>(userToDelete) }));
+        (void)handlerToObj(handler, Forum::Commands::GET_USER_BY_NAME, { "Abc" });
     }
-
     std::vector<Timestamp> retrievedLastSeen;
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN, SortOrder::Ascending)
                                .get_child("users"), "lastSeen", std::back_inserter(retrievedLastSeen), Timestamp());
-
+    
     BOOST_REQUIRE_EQUAL(names.size(), retrievedLastSeen.size());
     BOOST_REQUIRE_EQUAL(10000, retrievedLastSeen[0]);
     BOOST_REQUIRE_EQUAL(20000, retrievedLastSeen[1]);
@@ -630,11 +628,11 @@ BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
     BOOST_REQUIRE_EQUAL(30000, retrievedLastSeen[0]);
     BOOST_REQUIRE_EQUAL(20000, retrievedLastSeen[1]);
     BOOST_REQUIRE_EQUAL(10000, retrievedLastSeen[2]);
-
+    
     std::vector<std::string> retrievedNames;
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN, SortOrder::Descending)
                                .get_child("users"), "name", std::back_inserter(retrievedNames), std::string());
-
+                               
     BOOST_REQUIRE_EQUAL(names.size(), retrievedNames.size());
     BOOST_REQUIRE_EQUAL("Ghi", retrievedNames[0]);
     BOOST_REQUIRE_EQUAL("Def", retrievedNames[1]);
