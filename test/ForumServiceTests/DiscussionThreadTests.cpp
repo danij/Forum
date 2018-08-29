@@ -80,12 +80,6 @@ struct SerializedDiscussionMessageVote
     }
 };
 
-static bool SerializedDiscussionMessageVoteLess(const SerializedDiscussionMessageVote& first,
-                                                const SerializedDiscussionMessageVote& second)
-{
-    return first.at < second.at;
-}
-
 struct SerializedDiscussionMessageLastUpdated
 {
     Timestamp at = 0;
