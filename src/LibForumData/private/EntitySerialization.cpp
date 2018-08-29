@@ -71,12 +71,16 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
         writer << propertySafeName("subscribedThreadCount", user.subscribedThreads().count());
     }
 
+    if ((0 == user.lastSeen()) || user.showInOnlineUsers())
+    {
+        writer << propertySafeName("lastSeen", user.lastSeen());
+    }
+
     writer
             << propertySafeName("title", user.title())
             << propertySafeName("signature", user.signature())
             << propertySafeName("hasLogo", user.hasLogo())
             << propertySafeName("created", user.created())
-            << propertySafeName("lastSeen", user.lastSeen())
             << propertySafeName("threadCount", user.threads().count())
             << propertySafeName("messageCount", user.threadMessages().byId().size())
             << propertySafeName("receivedUpVotes", user.receivedUpVotes())
