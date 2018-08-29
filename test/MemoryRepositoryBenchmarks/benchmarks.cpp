@@ -519,7 +519,9 @@ void generateRandomData(BenchmarkContext& context)
     {
         getRandomText(buffer, 5);
         const auto intSize = appendUInt(buffer + 5, i + 1);
-        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { StringView(buffer, 5 + intSize), getNewAuth() }));
+        Context::setCurrentUserAuth(getNewAuth());
+        userIds.emplace_back(executeAndGetId(handler, Command::ADD_USER, { StringView(buffer, 5 + intSize) }));
+        Context::setCurrentUserAuth({});
         context.incrementTimestamp(100);
     }
 
@@ -719,7 +721,9 @@ void doBenchmarks(BenchmarkContext& context)
     {
         std::cout << countDuration([&]()
         {
-            execute(handler, Command::ADD_USER, { "User" + std::to_string(i + 1), getNewAuth() });
+            Context::setCurrentUserAuth(getNewAuth());
+            execute(handler, Command::ADD_USER, { "User" + std::to_string(i + 1) });
+            Context::setCurrentUserAuth({});
         }) << " ";
         context.incrementTimestamp(100);
     }
