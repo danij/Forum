@@ -23,21 +23,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/noncopyable.hpp>
 
-namespace Forum
+namespace Forum::Commands
 {
-    namespace Commands
+    class ServiceEndpointManager final : boost::noncopyable
     {
-        class ServiceEndpointManager final : private boost::noncopyable
-        {
-        public:
-            explicit ServiceEndpointManager(CommandHandler& handler);
-            ~ServiceEndpointManager();
+    public:
+        explicit ServiceEndpointManager(CommandHandler& handler);
+        ~ServiceEndpointManager();
 
-            void registerRoutes(Http::HttpRouter& router);
+        void registerRoutes(Http::HttpRouter& router);
+        void registerAuthRoutes(Http::HttpRouter& router);
 
-        private:
-            struct ServiceEndpointManagerImpl;
-            ServiceEndpointManagerImpl* impl_;
-        };
-    }
+    private:
+        struct ServiceEndpointManagerImpl;
+        ServiceEndpointManagerImpl* impl_;
+    };
 }

@@ -42,7 +42,18 @@ FileAppender::FileAppender(const boost::filesystem::path& destinationFolder, tim
 
 static constexpr uint8_t Padding[8] = { 0 };
 
-void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
+template<typename T>
+static void writeOrAbort(FILE* file, const T* elements, const size_t nrOfElements)
+{
+    fwrite(elements, sizeof(T), nrOfElements, file);
+    if (ferror(file))
+    {
+        FORUM_LOG_ERROR << "Could not persist blob to file";
+        std::abort();
+    }
+}
+
+void FileAppender::append(const SeparateThreadConsumerBlob* blobs, const size_t nrOfBlobs)
 {
     if (nrOfBlobs < 1)
     {
@@ -60,7 +71,7 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
     }
 
     static constexpr size_t prefixSize = sizeof(MagicPrefix) + sizeof(uint32_t) + sizeof(uint32_t);
-    static thread_local char prefixBuffer[prefixSize];
+    char prefixBuffer[prefixSize];
 
     for (size_t i = 0; i < nrOfBlobs; ++i)
     {
@@ -74,20 +85,14 @@ void FileAppender::append(const Blob* blobs, size_t nrOfBlobs)
         writeValue(prefix, blobSize); prefix += sizeof(blobSize);
         writeValue(prefix, blobCRC32);
 
-        fwrite(prefixBuffer, 1, prefixSize, file);
+        writeOrAbort(file, prefixBuffer, prefixSize);
 
-        fwrite(blob.buffer, 1, blobSize, file);
+        writeOrAbort(file, blob.buffer, blobSize);
 
         const auto paddingNeeded = blobPaddingRequired(blobSize);
         if (paddingNeeded)
         {
-            fwrite(Padding, 1, paddingNeeded, file);
-        }
-
-        if (ferror(file))
-        {
-            FORUM_LOG_ERROR << "Could not persist blob to file";
-            std::abort();
+            writeOrAbort(file, Padding, paddingNeeded);
         }
     }
     fclose(file);

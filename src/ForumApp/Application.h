@@ -18,16 +18,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "HttpListener.h"
+#include "TcpListener.h"
 #include "HttpRouter.h"
 #include "CommandHandler.h"
+#include "MemoryRepositoryCommon.h"
 #include "ServiceEndpointManager.h"
 #include "EventObserver.h"
+#include "Plugin.h"
 
 #include <boost/noncopyable.hpp>
 
 #include <memory>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace Forum
 {
@@ -38,20 +42,27 @@ namespace Forum
 
     private:
         void cleanup();
-        bool initialize(const std::string& configurationFileName);
+        bool initialize();
+        bool loadConfiguration(const std::string& fileName);
         void validateConfiguration();
-        void createCommandHandler();
-        void importEvents();
-        void initializeHttp();
-        void initializeLogging();
+        bool createCommandHandler();
+        bool importEvents();
+        bool initializeHttp();
+        bool initializeLogging();
+        bool loadPlugins();
+        void prepareToStop();
 
-        std::unique_ptr<Http::HttpRouter> httpRouter_;
-        std::unique_ptr<Http::HttpListener> httpListener_;
+        std::unique_ptr<Http::TcpListener> tcpListener_;
+        std::unique_ptr<Http::TcpListener> tcpListenerAuth_;
+
         std::unique_ptr<Commands::CommandHandler> commandHandler_;
         std::unique_ptr<Commands::ServiceEndpointManager> endpointManager_;
         std::unique_ptr<Persistence::EventObserver> persistenceObserver_;
 
+        Repository::MemoryStoreRef memoryStore_;
         Entities::EntityCollectionRef entityCollection_;
         Repository::DirectWriteRepositoryCollection directWriteRepositories_;
+
+        std::vector<Extensibility::LoadedPlugin> plugins_;
     };
 }

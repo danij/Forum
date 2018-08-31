@@ -17,14 +17,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "ServiceEndpoints.h"
+#include "AuthStore.h"
 #include "Configuration.h"
 #include "ContextProviders.h"
 #include "HttpStringHelpers.h"
+
+#include <boost/crc.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread/tss.hpp>
 
 #include <vector>
 
 using namespace Forum;
 using namespace Forum::Commands;
+using namespace Forum::Entities;
 using namespace Forum::Helpers;
 
 AbstractEndpoint::AbstractEndpoint(CommandHandler& handler) : commandHandler_(handler)
@@ -33,7 +39,7 @@ AbstractEndpoint::AbstractEndpoint(CommandHandler& handler) : commandHandler_(ha
     prefix_ = config->service.responsePrefix;
 }
 
-Http::HttpStatusCode commandStatusToHttpStatus(Repository::StatusCode code)
+Http::HttpStatusCode commandStatusToHttpStatus(const Repository::StatusCode code)
 {
     switch (code)
     {
@@ -53,7 +59,7 @@ Http::HttpStatusCode commandStatusToHttpStatus(Repository::StatusCode code)
     case Repository::NOT_UPDATED_SINCE_LAST_CHECK:
         return Http::HttpStatusCode::Not_Modified;
     case Repository::UNAUTHORIZED:
-        return Http::HttpStatusCode::Unauthorized;
+        return Http::HttpStatusCode::Forbidden;
     case Repository::THROTTLED:
         return Http::HttpStatusCode::Too_Many_Requests;
     default:
@@ -64,9 +70,56 @@ Http::HttpStatusCode commandStatusToHttpStatus(Repository::StatusCode code)
 //reserve space for the parameter views up-front so that no reallocations should occur when handling invididual requests
 static thread_local std::vector<StringView> currentParameters{ 128 };
 
-static void updateContextForRequest(const Http::HttpRequest& request)
+static AuthStore authStore;
+
+static CommandHandler::Result loginUser(const Http::HttpStringView authToken, const Http::HttpStringView authId, 
+                                        const Http::HttpStringView expiresInString)
 {
+    if (authToken.empty() || authId.empty() || expiresInString.empty())
+    {
+        return { Repository::StatusCode::INVALID_PARAMETERS, "" };
+    }
+
+    Timestamp expiresIn;
+    if ( ! boost::conversion::try_lexical_convert(expiresInString.data(), expiresInString.size(), expiresIn))
+    {
+        expiresIn = 0;
+    }
+    if (expiresIn < 1)
+    {
+        return { Repository::StatusCode::INVALID_PARAMETERS, "" };
+    }
+
+    authStore.add(std::string{ authToken }, std::string{ authId }, expiresIn);
+
+    return { Repository::StatusCode::OK, "ok" };
+}
+
+static std::string getAuth(const Http::HttpStringView token)
+{
+    return authStore.find(std::string{ token });
+}
+
+static void updateContextForRequest(const Http::HttpRequest& request, const bool allowAuth)
+{
+    Context::setCurrentUserId({});
+    Context::setCurrentUserAuth({});
     Context::setCurrentUserIpAddress(request.remoteAddress);
+
+    if (allowAuth)
+    {
+        const auto authToken = request.getCookie("auth");
+        if ( ! authToken.empty())
+        {
+            auto authResult = getAuth(authToken);
+            if ( ! authResult.empty())
+            {
+                Context::setCurrentUserAuth(authResult);
+            }
+        }
+    }
+
+    Context::setCurrentUserShowInOnlineUsers(request.getCookie("show_my_user_in_users_online") == "true");
 
     auto& displayContext = Context::getMutableDisplayContext();
     displayContext.sortOrder = Context::SortOrder::Ascending;
@@ -78,22 +131,28 @@ static void updateContextForRequest(const Http::HttpRequest& request)
         auto& name = request.queryPairs[i].first;
         auto& value = request.queryPairs[i].second;
 
-        if (Http::matchStringUpperOrLower(name, "pPaAgGeE"))
+        if (Http::matchStringUpperOrLower(name, "pagePAGE"))
         {
             Http::fromStringOrDefault(value, displayContext.pageNumber, static_cast<decltype(displayContext.pageNumber)>(0));
         }
-        else if (Http::matchStringUpperOrLower(name, "sSoOrRtT") &&
-                 Http::matchStringUpperOrLower(value, "dDeEsScCeEnNdDiInNgG"))
+        else if (Http::matchStringUpperOrLower(name, "sortSORT") &&
+                 Http::matchStringUpperOrLower(value, "descendingDESCENDING"))
         {
             displayContext.sortOrder = Context::SortOrder::Descending;
         }
     }
 }
 
-static thread_local std::vector<char> currentRequestContent(Http::Buffer::MaxRequestBodyLength);
-
 static StringView getPointerToEntireRequestBody(const Http::HttpRequest& request)
 {
+    static boost::thread_specific_ptr<std::vector<char>> currentRequestContentPtr;
+
+    if ( ! currentRequestContentPtr.get())
+    {
+        currentRequestContentPtr.reset(new std::vector<char>(Http::Buffer::MaxRequestBodyLength));
+    }
+    auto& currentRequestContent = *currentRequestContentPtr;
+
     if (request.nrOfRequestContentBuffers < 1)
     {
         return{};
@@ -114,44 +173,155 @@ static StringView getPointerToEntireRequestBody(const Http::HttpRequest& request
     return StringView(currentRequestContent.data(), currentRequestContent.size());
 }
 
+static uint32_t crc32(IpAddress value)
+{
+    boost::crc_32_type hash;
+    hash.process_bytes(value.data(), value.nrOfBytes());
+    return hash.checksum();
+}
+
+static uint32_t crc32(StringView value)
+{
+    boost::crc_32_type hash;
+    hash.process_bytes(value.data(), value.size());
+    return hash.checksum();
+}
+
+static void updateVisitorsCount(const Http::HttpRequest& request)
+{
+    const Repository::VisitorCollection::VisitorId id =
+        static_cast<uint64_t>(crc32(request.remoteAddress)) << 32
+        | static_cast<uint64_t>(crc32(request.headers[Http::Request::HttpHeader::User_Agent]));
+
+    Context::getVisitorCollection().add(id);
+}
+
 void AbstractEndpoint::handle(Http::RequestState& requestState, ExecuteFn executeCommand)
 {
     handleInternal(requestState, "application/json", executeCommand, true);
 }
 
-void AbstractEndpoint::handleBinary(Http::RequestState& requestState, StringView contentType, ExecuteFn executeCommand)
+void AbstractEndpoint::handleBinary(Http::RequestState& requestState, const StringView contentType, 
+                                    const ExecuteFn executeCommand)
 {
     handleInternal(requestState, contentType, executeCommand, false);
 }
 
-void AbstractEndpoint::handleInternal(Http::RequestState& requestState, StringView contentType,
-                                      ExecuteFn executeCommand, bool writePrefix)
+void AbstractEndpoint::handleInternal(Http::RequestState& requestState, const StringView contentType,
+                                      const ExecuteFn executeCommand, const bool writePrefix)
 {
     assert(nullptr != executeCommand);
 
+    auto& request = requestState.request;
+    auto& response = requestState.response;
+
+    updateVisitorsCount(request);
+
+    Http::HttpStatusCode validationResponseCode;
+    Http::HttpStringView validationMessage;
+
+    if ( ! validateRequest(request, validationResponseCode, validationMessage))
+    {
+        response.writeResponseCode(request, validationResponseCode);
+        response.writeBodyAndContentLength(validationMessage);
+        return;
+    }
+
+    //if the CSRF check does not pass, treat the user as anonymous
+    const auto allowAuth = validateCsrf(request);
+
     currentParameters.clear();
-    updateContextForRequest(requestState.request);
+    updateContextForRequest(request, allowAuth);
 
     const auto result = executeCommand(requestState, commandHandler_, currentParameters);
-
-    requestState.response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
-    requestState.response.writeHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    
+    response.writeResponseCode(request, commandStatusToHttpStatus(result.statusCode));
+    response.writeHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     if (result.statusCode == Repository::StatusCode::OK)
     {
-        requestState.response.writeHeader("Content-Type", contentType);
+        response.writeHeader("Content-Type", contentType);
     }
     else
     {
-        requestState.response.writeHeader("Content-Type", "application/json");
+        response.writeHeader("Content-Type", "application/json");
     }
     if (writePrefix)
     {
-        requestState.response.writeBodyAndContentLength(result.output, prefix_);
+        response.writeBodyAndContentLength(result.output, prefix_);
     }
     else
     {
-        requestState.response.writeBodyAndContentLength(result.output);
+        response.writeBodyAndContentLength(result.output);
     }
+}
+
+bool AbstractEndpoint::validateRequest(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
+                                       Http::HttpStringView& message)
+{
+    if ( ! validateOriginReferer(request, responseCode, message)) return false;
+
+    return true;
+}
+
+static bool validateAddressStart(Http::HttpStringView needle, Http::HttpStringView haystack)
+{
+    if (haystack.find(needle) != 0) return false;
+
+    return (needle.size() == haystack.size())
+        || (haystack[needle.size()] == '/');
+}
+
+bool AbstractEndpoint::validateOriginReferer(const Http::HttpRequest& request, Http::HttpStatusCode& responseCode,
+                                             Http::HttpStringView& message)
+{
+    const auto& expected = Configuration::getGlobalConfig()->service.expectedOriginReferer;
+
+    if (expected.empty()) return true;
+
+    auto origin = request.headers[Http::Request::HttpHeader::Origin];
+    auto referer = request.headers[Http::Request::HttpHeader::Referer];
+
+    if (origin.empty() && referer.empty())
+    {
+        responseCode = Http::Bad_Request;
+        message = "An Origin or Referer header is required.";
+        return false;
+    }
+    if ( ! origin.empty() && ! validateAddressStart(expected, origin))
+    {
+        responseCode = Http::Bad_Request;
+        message = "Unexpected Origin header.";
+        return false;
+    }
+    if ( ! referer.empty() && ! validateAddressStart(expected, referer))
+    {
+        responseCode = Http::Bad_Request;
+        message = "Unexpected Referer header.";
+        return false;
+    }
+    return true;
+}
+
+bool AbstractEndpoint::validateCsrf(const Http::HttpRequest& request)
+{
+    const auto expected = request.getCookie("double_submit");
+    const auto doubleSubmitValue = request.headers[Http::Request::HttpHeader::X_Double_Submit];
+    
+    if (expected.empty() && doubleSubmitValue.empty())
+    {
+        //responseCode = Http::Bad_Request;
+        //message = "Missing double submit cookie and header.";
+        return false;
+    }
+
+    if (doubleSubmitValue != expected)
+    {
+        //responseCode = Http::Bad_Request;
+        //message = "Double submit cookie mismatch.";
+        return false;
+    }
+
+    return true;
 }
 
 MetricsEndpoint::MetricsEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
@@ -161,7 +331,7 @@ MetricsEndpoint::MetricsEndpoint(CommandHandler& handler) : AbstractEndpoint(han
 void MetricsEndpoint::getVersion(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::SHOW_VERSION, parameters);
     });
@@ -174,7 +344,7 @@ StatisticsEndpoint::StatisticsEndpoint(CommandHandler& handler) : AbstractEndpoi
 void StatisticsEndpoint::getEntitiesCount(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& _, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::COUNT_ENTITIES, parameters);
     });
@@ -184,13 +354,13 @@ UsersEndpoint::UsersEndpoint(CommandHandler& handler) : AbstractEndpoint(handler
 {
 }
 
-static const char OrderBy[] = "oOrRdDeErRbByY";
-static const char OrderByCreated[] = "cCrReEaAtTeEdD";
-static const char OrderByLastSeen[] = "lLaAsStTsSeEeEnN";
-static const char OrderByLastUpdated[] = "lLaAsStTuUpPdDaAtTeEdD";
-static const char OrderByLatestMessageCreated[] = "lLaAtTeEsStTmMeEsSsSaAgGeEcCrReEaAtTeEdD";
-static const char OrderByThreadCount[] = "tThHrReEaAdDcCoOuUnNtT";
-static const char OrderByMessageCount[] = "mMeEsSsSaAgGeEcCoOuUnNtT";
+static const char OrderBy[] = "orderbyORDERBY";
+static const char OrderByCreated[] = "createdCREATED";
+static const char OrderByLastSeen[] = "lastseenLASTSEEN";
+static const char OrderByLastUpdated[] = "lastupdatedLASTUPDATED";
+static const char OrderByLatestMessageCreated[] = "latestmessagecreatedLATESTMESSAGECREATED";
+static const char OrderByThreadCount[] = "threadcountTHREADCOUNT";
+static const char OrderByMessageCount[] = "messagecountMESSAGECOUNT";
 
 void UsersEndpoint::getAll(Http::RequestState& requestState)
 {
@@ -229,10 +399,19 @@ void UsersEndpoint::getAll(Http::RequestState& requestState)
     });
 }
 
+void UsersEndpoint::getCurrent(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::GET_CURRENT_USER, parameters);
+    });
+}
+
 void UsersEndpoint::getOnline(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_USERS_ONLINE, parameters);
     });
@@ -283,7 +462,6 @@ void UsersEndpoint::getUserVoteHistory(Http::RequestState& requestState)
     handle(requestState,
            [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
-        parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_USER_VOTE_HISTORY, parameters);
     });
 }
@@ -296,6 +474,16 @@ void UsersEndpoint::getUsersSubscribedToThread(Http::RequestState& requestState)
         parameters.push_back(requestState.extraPathParts[0]);
         return commandHandler.handle(View::GET_USERS_SUBSCRIBED_TO_DISCUSSION_THREAD, parameters);
     });
+}
+
+void UsersEndpoint::login(Http::RequestState& requestState)
+{
+    const auto result = loginUser(requestState.extraPathParts[0], requestState.extraPathParts[1], 
+                                  requestState.extraPathParts[2]);
+    auto& response = requestState.response;
+
+    response.writeResponseCode(requestState.request, commandStatusToHttpStatus(result.statusCode));
+    response.writeBodyAndContentLength(result.output);
 }
 
 void UsersEndpoint::add(Http::RequestState& requestState)
@@ -729,7 +917,7 @@ void DiscussionThreadMessagesEndpoint::getThreadMessagesOfUser(Http::RequestStat
 void DiscussionThreadMessagesEndpoint::getLatestThreadMessages(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_LATEST_DISCUSSION_THREAD_MESSAGES, parameters);
     });
@@ -748,7 +936,7 @@ void DiscussionThreadMessagesEndpoint::getRankOfMessage(Http::RequestState& requ
 void DiscussionThreadMessagesEndpoint::getAllComments(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& _, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_MESSAGE_COMMENTS, parameters);
     });
@@ -986,7 +1174,7 @@ void DiscussionCategoriesEndpoint::getAll(Http::RequestState& requestState)
 void DiscussionCategoriesEndpoint::getRootCategories(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& _, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_DISCUSSION_CATEGORIES_FROM_ROOT, parameters);
     });
@@ -1177,7 +1365,7 @@ void AuthorizationEndpoint::getAssignedPrivilegesForCategory(Http::RequestState&
 void AuthorizationEndpoint::getForumWideCurrentUserPrivileges(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES, parameters);
     });
@@ -1186,7 +1374,7 @@ void AuthorizationEndpoint::getForumWideCurrentUserPrivileges(Http::RequestState
 void AuthorizationEndpoint::getForumWideRequiredPrivileges(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_FORUM_WIDE_REQUIRED_PRIVILEGES, parameters);
     });
@@ -1195,7 +1383,7 @@ void AuthorizationEndpoint::getForumWideRequiredPrivileges(Http::RequestState& r
 void AuthorizationEndpoint::getForumWideDefaultPrivilegeLevels(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVELS, parameters);
     });
@@ -1204,7 +1392,7 @@ void AuthorizationEndpoint::getForumWideDefaultPrivilegeLevels(Http::RequestStat
 void AuthorizationEndpoint::getForumWideAssignedPrivileges(Http::RequestState& requestState)
 {
     handle(requestState,
-           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         return commandHandler.handle(View::GET_FORUM_WIDE_ASSIGNED_PRIVILEGES, parameters);
     });

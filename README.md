@@ -1,7 +1,4 @@
 # Fast Forum Backend 
-[![Build Status](https://travis-ci.org/danij/Forum.svg?branch=master)](https://travis-ci.org/danij/Forum) 
-[![Coverage Status](https://coveralls.io/repos/github/danij/Forum/badge.svg?branch=master)](https://coveralls.io/github/danij/Forum?branch=master)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/13668/badge.svg)](https://scan.coverity.com/projects/danij-forum) 
 
 Cross-platform backend software for providing a discussion forum. 
 
@@ -52,7 +49,10 @@ order to construct each reply.
 The code is designed to handle multiple requests at the same time, using a multiple readers/single-writer lock.
  
 Apart from storing entities in memory, they will also be persisted to a more durable storage. Observers will pick up
-events and asynchronously store them into an event store on disk. When the application is started, all events are read
+events and asynchronously store them into an event store on disk. In case of a crash, the events that have not reached 
+the disk will be lost. 
+
+When the application is started, all events are read
 from disk and replied to fill the repositories.
 
 ## Development Info

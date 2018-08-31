@@ -74,26 +74,24 @@ struct EntityCollection::Impl
 
     Impl(StringView messagesFile)
     {
-        if (messagesFile.size())
+        if (messagesFile.empty()) return;
+        try
         {
-            try
-            {
-                const auto mappingMode = boost::interprocess::read_only;
-                boost::interprocess::file_mapping mapping(messagesFile.data(), mappingMode);
-                boost::interprocess::mapped_region region(mapping, mappingMode);
-                region.advise(boost::interprocess::mapped_region::advice_sequential);
+            const auto mappingMode = boost::interprocess::read_only;
+            boost::interprocess::file_mapping mapping(messagesFile.data(), mappingMode);
+            boost::interprocess::mapped_region region(mapping, mappingMode);
+            region.advise(boost::interprocess::mapped_region::advice_sequential);
 
-                messagesFileStart_ = reinterpret_cast<const char*>(region.get_address());
-                messagesFileSize_ = region.get_size();
+            messagesFileStart_ = reinterpret_cast<const char*>(region.get_address());
+            messagesFileSize_ = region.get_size();
 
-                messagesFileMapping_ = std::move(mapping);
-                messagesFileRegion_ = std::move(region);
-            }
-            catch (boost::interprocess::interprocess_exception& ex)
-            {
-                FORUM_LOG_ERROR << "Error mapping messages file: " << messagesFile << " (" << ex.what() << ')';
-                std::abort();
-            }
+            messagesFileMapping_ = std::move(mapping);
+            messagesFileRegion_ = std::move(region);
+        }
+        catch (boost::interprocess::interprocess_exception& ex)
+        {
+            FORUM_LOG_ERROR << "Error mapping messages file: " << messagesFile << " (" << ex.what() << ')';
+            std::abort();
         }
     }
 
@@ -624,6 +622,7 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::VIEW,                     defaultPrivileges.thread.view);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::VIEW_REQUIRED_PRIVILEGES, defaultPrivileges.thread.viewRequiredPrivileges);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::VIEW_ASSIGNED_PRIVILEGES, defaultPrivileges.thread.viewAssignedPrivileges);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::GET_SUBSCRIBED_USERS,     defaultPrivileges.thread.getSubscribedUsers);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::SUBSCRIBE,                defaultPrivileges.thread.subscribe);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::UNSUBSCRIBE,              defaultPrivileges.thread.unsubscribe);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::ADD_MESSAGE,              defaultPrivileges.thread.addMessage);
@@ -659,7 +658,6 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege::ADJUST_PRIVILEGE,         defaultPrivileges.category.adjustPrivilege);
 
     store.setForumWidePrivilege(ForumWidePrivilege::ADD_USER,                                  defaultPrivileges.forumWide.addUser);
-    store.setForumWidePrivilege(ForumWidePrivilege::LOGIN,                                     defaultPrivileges.forumWide.login);
     store.setForumWidePrivilege(ForumWidePrivilege::GET_ENTITIES_COUNT,                        defaultPrivileges.forumWide.getEntitiesCount);
     store.setForumWidePrivilege(ForumWidePrivilege::GET_VERSION,                               defaultPrivileges.forumWide.getVersion);
     store.setForumWidePrivilege(ForumWidePrivilege::GET_ALL_USERS,                             defaultPrivileges.forumWide.getAllUsers);
@@ -693,19 +691,23 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_USER_LOGO,                      defaultPrivileges.forumWide.changeAnyUserLogo);
     store.setForumWidePrivilege(ForumWidePrivilege::DELETE_OWN_USER_LOGO,                      defaultPrivileges.forumWide.deleteOwnUserLogo);
     store.setForumWidePrivilege(ForumWidePrivilege::DELETE_ANY_USER_LOGO,                      defaultPrivileges.forumWide.deleteAnyUserLogo);
-    store.setForumWidePrivilege(ForumWidePrivilege::GET_USER_VOTE_HISTORY,                     defaultPrivileges.forumWide.getUserVoteHistory);
     store.setForumWidePrivilege(ForumWidePrivilege::NO_THROTTLING,                             defaultPrivileges.forumWide.noThrottling);
 
     const auto& defaultPrivilegeGrants = config->defaultPrivilegeGrants;
     {
         PrivilegeDefaultLevel defaults;
+
         defaults.value = defaultPrivilegeGrants.thread.create.value;
         defaults.duration = defaultPrivilegeGrants.thread.create.duration;
         store.setForumWideDefaultPrivilegeLevel(ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD, defaults);
+
+        defaults.value = defaultPrivilegeGrants.threadMessage.create.value;
+        defaults.duration = defaultPrivilegeGrants.threadMessage.create.duration;
+        store.setForumWideDefaultPrivilegeLevel(ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD_MESSAGE, defaults);
     }
 }
 
-EntityCollection::EntityCollection(StringView messagesFile)
+EntityCollection::EntityCollection(const StringView messagesFile)
 {
     impl_ = new Impl(messagesFile);
 
@@ -773,7 +775,7 @@ StringView EntityCollection::getMessageContentPointer(size_t offset, size_t size
 UserPtr EntityCollection::createUser(IdType id, User::NameType&& name, Timestamp created, VisitDetails creationDetails)
 {
     auto result = UserPtr(static_cast<UserPtr::IndexType>(
-        impl_->managedEntities.users.add(id, std::move(name), created, std::move(creationDetails))));
+        impl_->managedEntities.users.add(id, std::move(name), created, creationDetails)));
     result->pointer_ = result;
     return result;
 }
@@ -782,7 +784,7 @@ DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& cr
                                                              Timestamp created, VisitDetails creationDetails)
 {
     auto result = DiscussionThreadPtr(static_cast<DiscussionThreadPtr::IndexType>(impl_->managedEntities.threads.add(
-        id, createdBy, std::move(name), created, creationDetails)));
+        id, createdBy, std::move(name), created, creationDetails, *this)));
     result->pointer_ = result;
     return result;
 }
@@ -895,7 +897,7 @@ void EntityCollection::insertDiscussionThread(DiscussionThreadPtr thread)
     impl_->insertDiscussionThread(thread);
 }
 
-void EntityCollection::deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages)
+void EntityCollection::deleteDiscussionThread(DiscussionThreadPtr thread, const bool deleteMessages)
 {
     impl_->deleteDiscussionThread(thread, deleteMessages);
 }

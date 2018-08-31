@@ -104,7 +104,8 @@ int main(int argc, const char* argv[])
     }
 }
 
-int startExtraction(const std::string& input, const std::string& output, const std::string& messages, bool skipLatest)
+int startExtraction(const std::string& input, const std::string& output, const std::string& messages, 
+                    const bool skipLatest)
 {
     std::ofstream outputStream(output, std::ios_base::binary);
     if ( ! outputStream)
@@ -129,13 +130,13 @@ int startExtraction(const std::string& input, const std::string& output, const s
 
     try
     {
-        auto mappingMode = boost::interprocess::read_only;
+        const auto mappingMode = boost::interprocess::read_only;
         boost::interprocess::file_mapping mapping(input.c_str(), mappingMode);
         boost::interprocess::mapped_region region(mapping, mappingMode);
         region.advise(boost::interprocess::mapped_region::advice_sequential);
 
-        auto ptr = reinterpret_cast<const char*>(region.get_address());
-        auto size = region.get_size();
+        const auto ptr = reinterpret_cast<const char*>(region.get_address());
+        const auto size = region.get_size();
 
         MessageExtractor extractor(ptr, size, messagesFileSize, skipLatest, outputStream, messageStream);
         return extractor.perform();
@@ -159,8 +160,8 @@ T readAndIncrementBuffer(const char*& data, size_t& size)
     return result;
 }
 
-MessageExtractor::MessageExtractor(const char* inputData, size_t inputSize, uint64_t currentOffset, bool skipLatest,
-                                   std::ostream& eventOutput, std::ostream& messagesOutput)
+MessageExtractor::MessageExtractor(const char* inputData, const size_t inputSize, const uint64_t currentOffset, 
+                                   const bool skipLatest, std::ostream& eventOutput, std::ostream& messagesOutput)
     : inputData_(inputData), inputSize_(inputSize), currentOffset_(currentOffset), skipLatest_(skipLatest),
       eventOutput_(eventOutput), messagesOutput_(messagesOutput)
 {
@@ -170,14 +171,14 @@ int MessageExtractor::perform()
 {
     if (skipLatest_)
     {
-        auto result = iterateBlobs([this](const char* data, size_t blobSize)
+        const auto result = iterateBlobs([this](const char* data, const size_t blobSize)
         {
             return this->updateLatestMessages(data, blobSize);
         });
         if (result) return result;
     }
 
-    return iterateBlobs([this](const char* data, size_t blobSize)
+    return iterateBlobs([this](const char* data, const size_t blobSize)
     {
         return this->processBlob(data, blobSize);
     });
@@ -197,15 +198,15 @@ int MessageExtractor::iterateBlobs(std::function<int(const char*, size_t)>&& fn)
             break;
         }
 
-        auto magic = readAndIncrementBuffer<MagicPrefixType>(data, size);
+        const auto magic = readAndIncrementBuffer<MagicPrefixType>(data, size);
         if (magic != MagicPrefix)
         {
             std::cerr << "Invalid prefix in current blob";
             break;
         }
 
-        auto blobSize = readAndIncrementBuffer<BlobSizeType>(data, size);
-        auto blobSizeWithPadding = blobSize + blobPaddingRequired(blobSize);
+        const auto blobSize = readAndIncrementBuffer<BlobSizeType>(data, size);
+        const auto blobSizeWithPadding = blobSize + blobPaddingRequired(blobSize);
 
         auto storedChecksum = readAndIncrementBuffer<BlobChecksumSizeType>(data, size);
         (void)storedChecksum;
@@ -222,7 +223,7 @@ int MessageExtractor::iterateBlobs(std::function<int(const char*, size_t)>&& fn)
             return false;
         }
 
-        auto result = fn(data, blobSize);
+        const auto result = fn(data, blobSize);
         if (result != 0)
         {
             return result;
@@ -231,8 +232,8 @@ int MessageExtractor::iterateBlobs(std::function<int(const char*, size_t)>&& fn)
         data += blobSizeWithPadding;
         size -= blobSizeWithPadding;
 
-        auto processed = inputSize_ - size;
-        auto processedPercent = static_cast<int>((processed * 100.0) / inputSize_);
+        const auto processed = inputSize_ - size;
+        const auto processedPercent = static_cast<int>((processed * 100.0) / inputSize_);
         if (processedPercent > oldProcessedPercent)
         {
             std::cout << processedPercent << "% " << std::flush;
@@ -252,11 +253,11 @@ boost::uuids::uuid parseUuid(const char* data)
 
 int MessageExtractor::updateLatestMessages(const char* data, size_t size)
 {
-    auto blobStart = data;
+    const auto blobStart = data;
 
-    auto eventType = readAndIncrementBuffer<EventType>(data, size);
-    auto version = readAndIncrementBuffer<EventVersionType>(data, size);
-    auto contextVersion = readAndIncrementBuffer<EventContextVersionType>(data, size);
+    const auto eventType = readAndIncrementBuffer<EventType>(data, size);
+    const auto version = readAndIncrementBuffer<EventVersionType>(data, size);
+    const auto contextVersion = readAndIncrementBuffer<EventContextVersionType>(data, size);
 
     static constexpr auto uuidSize = boost::uuids::uuid::static_size();
 
@@ -290,7 +291,7 @@ int MessageExtractor::updateLatestMessages(const char* data, size_t size)
 
 int MessageExtractor::processBlob(const char* data, size_t size)
 {
-    auto blobStart = data;
+    const auto blobStart = data;
     auto blobSize = size;
 
     auto eventType = readAndIncrementBuffer<EventType>(data, size);
@@ -316,10 +317,10 @@ int MessageExtractor::processBlob(const char* data, size_t size)
             return false;
         }
 
-        auto messageId = parseUuid(blobStart + eventHeaderSize + contextSize);
-        auto threadId = parseUuid(blobStart + eventHeaderSize + contextSize + uuidSize);
+        const auto messageId = parseUuid(blobStart + eventHeaderSize + contextSize);
+        const auto threadId = parseUuid(blobStart + eventHeaderSize + contextSize + uuidSize);
 
-        auto it = latestThreadMessages_.find(threadId);
+        const auto it = latestThreadMessages_.find(threadId);
         if ((it == latestThreadMessages_.end()) || (it->second != messageId))
         {
             char* blobData = blobBuffer;
@@ -330,7 +331,7 @@ int MessageExtractor::processBlob(const char* data, size_t size)
             writeValue(blobData, version); blobData += sizeof(version);
             writeValue(blobData, contextVersion); blobData += sizeof(contextVersion);
 
-            memcpy(blobData, data, sameAsOldVersionSize); blobData += sameAsOldVersionSize;
+            memmove(blobData, data, sameAsOldVersionSize); blobData += sameAsOldVersionSize;
             data += sameAsOldVersionSize; size -= sameAsOldVersionSize;
 
             auto messageSize = readAndIncrementBuffer<uint32_t>(data, size);
@@ -340,7 +341,7 @@ int MessageExtractor::processBlob(const char* data, size_t size)
                 std::cerr << "Remaining size (" << size << ") is different from the expected one (" << messageSize << ")\n";
                 return 2;
             }
-            auto message = data;
+            const auto message = data;
 
             if ( ! messagesOutput_.write(message, messageSize))
             {
@@ -358,7 +359,7 @@ int MessageExtractor::processBlob(const char* data, size_t size)
         }
     }
 
-    auto result = writeBlob(blobToWrite, blobSize);
+    const auto result = writeBlob(blobToWrite, blobSize);
     if (result != 0)
     {
         return result;
@@ -367,13 +368,13 @@ int MessageExtractor::processBlob(const char* data, size_t size)
     return 0;
 }
 
-int MessageExtractor::writeBlob(const char* data, size_t size)
+int MessageExtractor::writeBlob(const char* data, const size_t size)
 {
     static constexpr size_t prefixSize = sizeof(MagicPrefix) + sizeof(uint32_t) + sizeof(uint32_t);
     char prefixBuffer[prefixSize];
 
     auto blobSize = static_cast<BlobSizeType>(size);
-    auto blobCRC32 = crc32(data, size);
+    const auto blobCRC32 = crc32(data, size);
 
     auto prefix = prefixBuffer;
 
@@ -392,7 +393,7 @@ int MessageExtractor::writeBlob(const char* data, size_t size)
         return 2;
     }
 
-    auto paddingNeeded = blobPaddingRequired(blobSize);
+    const auto paddingNeeded = blobPaddingRequired(blobSize);
     if (paddingNeeded)
     {
         if ( ! eventOutput_.write(Padding, paddingNeeded))

@@ -27,6 +27,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "StringHelpers.h"
 #include "Logging.h"
 
+#include <boost/thread/tss.hpp>
+
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -35,8 +37,10 @@ using namespace Forum::Repository;
 using namespace Forum::Authorization;
 
 MemoryRepositoryDiscussionThreadMessage::MemoryRepositoryDiscussionThreadMessage(MemoryStoreRef store,
-                                                                                 DiscussionThreadMessageAuthorizationRef authorization)
-    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization))
+                                                                                 DiscussionThreadMessageAuthorizationRef authorization,
+                                                                                 AuthorizationDirectWriteRepositoryRef authorizationDirectWriteRepository)
+    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization)),
+      authorizationDirectWriteRepository_(std::move(authorizationDirectWriteRepository))
 {
     if ( ! authorization_)
     {
@@ -51,8 +55,19 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMultipleDiscussionThreadM
     PerformedByWithLastSeenUpdateGuard performedBy;
 
     constexpr size_t MaxIdBuffer = 64;
-    static thread_local std::array<UuidString, MaxIdBuffer> parsedIds;
-    static thread_local std::array<const DiscussionThreadMessage*, MaxIdBuffer> threadMessagesFound;
+    static boost::thread_specific_ptr<std::array<UuidString, MaxIdBuffer>> parsedIdsPtr;
+    static boost::thread_specific_ptr<std::array<const DiscussionThreadMessage*, MaxIdBuffer>> threadMessagesFoundPtr;
+
+    if ( ! parsedIdsPtr.get())
+    {
+        parsedIdsPtr.reset(new std::array<UuidString, MaxIdBuffer>);
+    }
+    auto& parsedIds = *parsedIdsPtr;
+    if ( ! threadMessagesFoundPtr.get())
+    {
+        threadMessagesFoundPtr.reset(new std::array<const DiscussionThreadMessage*, MaxIdBuffer>);
+    }
+    auto& threadMessagesFound = *threadMessagesFoundPtr;
 
     const auto maxThreadsToSearch = std::min(MaxIdBuffer, 
                                              static_cast<size_t>(getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage));
@@ -63,12 +78,13 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMultipleDiscussionThreadM
                           auto& currentUser = performedBy.get(collection, *store_);
                           
                           const auto& indexById = collection.threadMessages().byId();
-                          auto lastThreadMessageFound = std::transform(parsedIds.begin(), lastParsedId, threadMessagesFound.begin(), 
-                              [&indexById](auto id)
-                              {
-                                  auto it = indexById.find(id);
-                                  return (it == indexById.end()) ? nullptr : *it;
-                              });
+                          auto lastThreadMessageFound = std::transform(parsedIds.begin(), lastParsedId, 
+                                  threadMessagesFound.begin(), 
+                                  [&indexById](auto id)
+                                  {
+                                      auto it = indexById.find(id);
+                                      return (it == indexById.end()) ? nullptr : *it;
+                                  });
                           
                           status = StatusCode::OK;
                           status.disable();
@@ -154,6 +170,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getLatestDiscussionThreadMes
         TemporaryChanger<UserPtr> ___(serializationSettings.userToCheckVotesOf, currentUser.pointer());
 
         auto pageSize = getGlobalConfig()->discussionThreadMessage.maxMessagesPerPage;
+        auto& displayContext = Context::getDisplayContext();
 
         status = StatusCode::OK;
         status.disable();
@@ -161,7 +178,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getLatestDiscussionThreadMes
         SerializationRestriction restriction(collection.grantedPrivileges(), collection,
                                              currentUser.id(), Context::getCurrentTime());
 
-        writeEntitiesWithPagination(messages, "messages", output, 0, pageSize, false, restriction);
+        writeEntitiesWithPagination(messages, "messages", output, displayContext.pageNumber, pageSize, false, restriction);
 
         readEvents().onGetLatestDiscussionThreadMessages(createObserverContext(currentUser));
     });
@@ -274,6 +291,22 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), thread);
                            }
 
+                           if (anonymousUser() != currentUser)
+                           {
+                               auto levelToGrant = collection.getForumWideDefaultPrivilegeLevel(
+                                       ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD_MESSAGE);
+                               if (levelToGrant)
+                               {
+                                   const auto value = levelToGrant->value;
+                                   const auto duration = levelToGrant->duration;
+
+                                   authorizationDirectWriteRepository_->assignDiscussionThreadMessagePrivilege(
+                                           collection, message->id(), currentUser->id(), value, duration);
+                                   writeEvents().onAssignDiscussionThreadMessagePrivilege(
+                                           createObserverContext(*currentUser), *message, *currentUser, value, duration);
+                               }
+                           }
+
                            status.writeNow([&](auto& writer)
                                            {
                                                writer << Json::propertySafeName("id", message->id());
@@ -339,7 +372,11 @@ StatusWithResource<DiscussionThreadMessagePtr>
     thread.insertMessage(message);
     thread.resetVisitorsSinceLastEdit();
     thread.latestVisibleChange() = message->created();
-    thread.subscribedUsers().insert(std::make_pair(currentUser->id(), currentUser));
+
+    if (anonymousUser() != currentUser)
+    {
+        thread.subscribedUsers().insert(std::make_pair(currentUser->id(), currentUser));
+    }
 
     for (DiscussionTagPtr tag : thread.tags())
     {

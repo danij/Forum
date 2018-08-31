@@ -26,21 +26,22 @@ using namespace Http;
 
 static const HttpStringView simpleResponseHeaders{"Connection: close\r\nContent-Length: 0\r\n"};
 
-size_t Http::buildSimpleResponseFromStatusCode(HttpStatusCode code, int_fast8_t majorVersion, int_fast8_t minorVersion,
-                                               char* buffer)
+size_t Http::buildSimpleResponseFromStatusCode(const HttpStatusCode code, const int_fast8_t majorVersion, 
+                                               const int_fast8_t minorVersion, char* buffer)
 {
-    auto originalBufferStart = buffer;
-    *buffer++ = 'H';
-    *buffer++ = 'T';
-    *buffer++ = 'T';
-    *buffer++ = 'P';
-    *buffer++ = '/';
+    assert(majorVersion >= 0);
+    assert(majorVersion < 10);
+    assert(minorVersion >= 0);
+    assert(minorVersion < 10);
+
+    const auto originalBufferStart = buffer;
+    appendAndIncrement(buffer, "HTTP/");
     *buffer++ = majorVersion + '0';
     *buffer++ = '.';
     *buffer++ = minorVersion + '0';
     *buffer++ = ' ';
 
-    int intCode = static_cast<int>(code);
+    const auto intCode = static_cast<int>(code);
     *buffer++ = (intCode / 100) + '0';
     *buffer++ = ((intCode / 10) % 10) + '0';
     *buffer++ = (intCode % 100) + '0';
@@ -49,16 +50,69 @@ size_t Http::buildSimpleResponseFromStatusCode(HttpStatusCode code, int_fast8_t 
     auto codeString = getStatusCodeString(code);
 
     buffer = std::copy(codeString.begin(), codeString.end(), buffer);
-
-    *buffer++ = '\r';
-    *buffer++ = '\n';
+    appendAndIncrement(buffer, "\r\n");
 
     buffer = std::copy(simpleResponseHeaders.begin(), simpleResponseHeaders.end(), buffer);
-
-    *buffer++ = '\r';
-    *buffer++ = '\n';
+    appendAndIncrement(buffer, "\r\n");
 
     return buffer - originalBufferStart;
+}
+
+size_t Http::writeHttpDateGMT(time_t value, char* output)
+{
+    //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date
+    static const char DayNames[][4] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    static const char MonthNames[][4] = {
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    };
+    std::tm time;
+#if defined(_WIN32) || defined (WIN32)
+    if (0 != gmtime_s(&time, &value))
+    {
+        return 0;
+    }
+#else
+        //gmtime is not guaranteed to be thread-safe
+        if (nullptr == gmtime_r(&value, &time))
+        {
+            return 0;
+        }
+#endif
+    char* currentOutput = output;
+
+    currentOutput = std::copy(DayNames[time.tm_wday], DayNames[time.tm_wday] + 3, currentOutput);
+    *currentOutput++ = ',';
+    *currentOutput++ = ' ';
+
+    *currentOutput++ = '0' + (time.tm_mday / 10);
+    *currentOutput++ = '0' + (time.tm_mday % 10);
+    *currentOutput++ = ' ';
+
+    currentOutput = std::copy(MonthNames[time.tm_mon], MonthNames[time.tm_mon] + 3, currentOutput);
+    *currentOutput++ = ' ';
+
+    const auto year = 1900 + time.tm_year;
+    *currentOutput++ = '0' + (year / 1000);
+    *currentOutput++ = '0' + ((year % 1000) / 100);
+    *currentOutput++ = '0' + ((year % 100) / 10);
+    *currentOutput++ = '0' + (year % 10);
+    *currentOutput++ = ' ';
+
+    *currentOutput++ = '0' + (time.tm_hour / 10);
+    *currentOutput++ = '0' + (time.tm_hour % 10);
+    *currentOutput++ = ':';
+    *currentOutput++ = '0' + (time.tm_min / 10);
+    *currentOutput++ = '0' + (time.tm_min % 10);
+    *currentOutput++ = ':';
+    *currentOutput++ = '0' + (time.tm_sec / 10);
+    *currentOutput++ = '0' + (time.tm_sec % 10);
+    *currentOutput++ = ' ';
+    *currentOutput++ = 'G';
+    *currentOutput++ = 'M';
+    *currentOutput++ = 'T';
+
+    return currentOutput - output;
 }
 
 HttpResponseBuilder::HttpResponseBuilder(WriteFn writeFn, void* writeState)
@@ -67,7 +121,7 @@ HttpResponseBuilder::HttpResponseBuilder(WriteFn writeFn, void* writeState)
     assert(writeFn);
 }
 
-void HttpResponseBuilder::writeResponseCode(int majorVersion, int minorVersion, HttpStatusCode code)
+void HttpResponseBuilder::writeResponseCode(const int majorVersion, const int minorVersion, const HttpStatusCode code)
 {
     assert(ProtocolState::NothingWritten == protocolState_);
     assert(1 == majorVersion);
@@ -78,7 +132,7 @@ void HttpResponseBuilder::writeResponseCode(int majorVersion, int minorVersion, 
     buffer[5] = majorVersion + '0';
     buffer[7] = minorVersion + '0';
 
-    const int intCode = static_cast<int>(code);
+    const auto intCode = static_cast<int>(code);
     buffer[9] = (intCode / 100) + '0';
     buffer[10] = ((intCode / 10) % 10) + '0';
     buffer[11] = (intCode % 100) + '0';
@@ -90,12 +144,12 @@ void HttpResponseBuilder::writeResponseCode(int majorVersion, int minorVersion, 
     protocolState_ = ProtocolState::ResponseCodeWritten;
 }
 
-void HttpResponseBuilder::writeResponseCode(const HttpRequest& request, HttpStatusCode code)
+void HttpResponseBuilder::writeResponseCode(const HttpRequest& request, const HttpStatusCode code)
 {
     writeResponseCode(request.versionMajor, request.versionMinor, code);
 }
 
-void HttpResponseBuilder::writeHeader(HttpStringView name, HttpStringView value)
+void HttpResponseBuilder::writeHeader(const HttpStringView name, const HttpStringView value)
 {
     assert(ProtocolState::ResponseCodeWritten == protocolState_);
 
@@ -105,7 +159,7 @@ void HttpResponseBuilder::writeHeader(HttpStringView name, HttpStringView value)
     write("\r\n");
 }
 
-void HttpResponseBuilder::writeHeader(HttpStringView name, int value)
+void HttpResponseBuilder::writeHeader(const HttpStringView name, const int value)
 {
     char buffer[50];
     const auto written = sprintf(buffer, "%d", value);
@@ -137,7 +191,7 @@ static const char ReservedCharactersForUrlEncodingWithoutSlash[] =
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 };
 
-void HttpResponseBuilder::writeCookie(HttpStringView name, HttpStringView value, CookieExtra extra)
+void HttpResponseBuilder::writeCookie(const HttpStringView name, const HttpStringView value, const CookieExtra extra)
 {
     assert(name.length() < MaxPercentEncodingInputSize);
     assert(value.length() < MaxPercentEncodingInputSize);
@@ -155,47 +209,19 @@ void HttpResponseBuilder::writeCookie(HttpStringView name, HttpStringView value,
 
     if (extra.expires)
     {
-        *buffer++ = ';';
-        *buffer++ = ' ';
-        *buffer++ = 'E';
-        *buffer++ = 'x';
-        *buffer++ = 'p';
-        *buffer++ = 'i';
-        *buffer++ = 'r';
-        *buffer++ = 'e';
-        *buffer++ = 's';
-        *buffer++ = '=';
-
+        appendAndIncrement(buffer, "; Expires=");
         buffer += writeHttpDateGMT(*extra.expires, buffer);
     }
 
     if (extra.cookieMaxAge)
     {
-        *buffer++ = ';';
-        *buffer++ = ' ';
-        *buffer++ = 'M';
-        *buffer++ = 'a';
-        *buffer++ = 'x';
-        *buffer++ = '-';
-        *buffer++ = 'A';
-        *buffer++ = 'g';
-        *buffer++ = 'e';
-        *buffer++ = '=';
-
+        appendAndIncrement(buffer, "; Max-Age=");
         buffer += sprintf(buffer, "%u", *extra.cookieMaxAge);
     }
 
     if (extra.cookieDomain.length())
     {
-        *buffer++ = ';';
-        *buffer++ = ' ';
-        *buffer++ = 'D';
-        *buffer++ = 'o';
-        *buffer++ = 'm';
-        *buffer++ = 'a';
-        *buffer++ = 'i';
-        *buffer++ = 'n';
-        *buffer++ = '=';
+        appendAndIncrement(buffer, "; Domain=");
 
         auto encodedDomain = urlEncode(extra.cookieDomain);
         buffer = std::copy(encodedDomain.begin(), encodedDomain.end(), buffer);
@@ -203,13 +229,7 @@ void HttpResponseBuilder::writeCookie(HttpStringView name, HttpStringView value,
 
     if (extra.cookiePath.length())
     {
-        *buffer++ = ';';
-        *buffer++ = ' ';
-        *buffer++ = 'P';
-        *buffer++ = 'a';
-        *buffer++ = 't';
-        *buffer++ = 'h';
-        *buffer++ = '=';
+        appendAndIncrement(buffer, "; Path=");
 
         auto encodedPath = percentEncode(extra.cookiePath, ReservedCharactersForUrlEncodingWithoutSlash);
         buffer = std::copy(encodedPath.begin(), encodedPath.end(), buffer);
@@ -217,42 +237,25 @@ void HttpResponseBuilder::writeCookie(HttpStringView name, HttpStringView value,
 
     if (extra.isSecure)
     {
-        *buffer++ = ';';
-        *buffer++ = ' ';
-        *buffer++ = 'S';
-        *buffer++ = 'e';
-        *buffer++ = 'c';
-        *buffer++ = 'u';
-        *buffer++ = 'r';
-        *buffer++ = 'e';
+        appendAndIncrement(buffer, "; Secure");
     }
 
     if (extra.isHttpOnly)
     {
-        *buffer++ = ';';
-        *buffer++ = ' ';
-        *buffer++ = 'H';
-        *buffer++ = 't';
-        *buffer++ = 't';
-        *buffer++ = 'p';
-        *buffer++ = 'O';
-        *buffer++ = 'n';
-        *buffer++ = 'l';
-        *buffer++ = 'y';
+        appendAndIncrement(buffer, "; HttpOnly");
     }
 
-    *buffer++ = '\r';
-    *buffer++ = '\n';
+    appendAndIncrement(buffer, "\r\n");
 
     write(extraBuffer, buffer - extraBuffer);
 }
 
-void HttpResponseBuilder::writeBody(HttpStringView value)
+void HttpResponseBuilder::writeBody(const HttpStringView value)
 {
     writeBody(value, {});
 }
 
-void HttpResponseBuilder::writeBody(HttpStringView value, HttpStringView prefix)
+void HttpResponseBuilder::writeBody(const HttpStringView value, const HttpStringView prefix)
 {
     assert(ProtocolState::ResponseCodeWritten == protocolState_);
 
@@ -263,14 +266,15 @@ void HttpResponseBuilder::writeBody(HttpStringView value, HttpStringView prefix)
     protocolState_ = ProtocolState::BodyWritten;
 }
 
-void HttpResponseBuilder::writeBodyAndContentLength(HttpStringView value)
+void HttpResponseBuilder::writeBodyAndContentLength(const HttpStringView value)
 {
     writeBodyAndContentLength(value, {});
 }
 
-void HttpResponseBuilder::writeBodyAndContentLength(HttpStringView value, HttpStringView prefix)
+void HttpResponseBuilder::writeBodyAndContentLength(const HttpStringView value, const HttpStringView prefix)
 {
     assert(ProtocolState::ResponseCodeWritten == protocolState_);
+
     writeHeader("Content-Length", static_cast<int>(value.size() + prefix.size()));
     writeBody(value, prefix);
 }

@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE( String_to_IPv4_Address_to_string_works_as_expected )
     BOOST_REQUIRE(address.isV4());
 
     char buffer[IpAddress::MaxIPv4CharacterCount];
-    auto bytesWritten = address.toString(buffer, std::extent<decltype(buffer)>::value);
+    auto bytesWritten = address.toString(buffer, std::size(buffer));
 
     BOOST_REQUIRE_EQUAL(v4Address.size(), bytesWritten);
     BOOST_REQUIRE_EQUAL(v4Address, std::string(buffer, bytesWritten));
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE( String_to_IPv6_Address_to_string_works_as_expected )
     BOOST_REQUIRE( ! address.isV4());
 
     char buffer[IpAddress::MaxIPv6CharacterCount];
-    auto bytesWritten = address.toString(buffer, std::extent<decltype(buffer)>::value);
+    auto bytesWritten = address.toString(buffer, std::size(buffer));
 
     BOOST_REQUIRE_EQUAL(v6Address.size(), bytesWritten);
     BOOST_REQUIRE_EQUAL(v6Address, std::string(buffer, bytesWritten));

@@ -15,7 +15,8 @@
         "maxLogoWidth": 128,
         "maxLogoHeight": 128,
         "defaultPrivilegeValueForLoggedInUser": 1,
-        "resetVoteExpiresInSeconds": 3600
+        "resetVoteExpiresInSeconds": 3600,
+        "visitorOnlineForSeconds": 300 
     },
 
     "discussionThread": {
@@ -50,16 +51,20 @@
 
     "service": {
         "numberOfIOServiceThreads": 4,
-        "numberOfReadBuffers": 8192,
-        "numberOfWriteBuffers": 8192,
+        "numberOfReadBuffers": 512,
+        "numberOfWriteBuffers": 512,
+        "connectionPoolSize": 100,
         "listenIPAddress": "127.0.0.1",
         "listenPort": 8081,
+        "authListenIPAddress": "127.0.0.1",
+        "authListenPort": 18081,
         "connectionTimeoutSeconds": 20,
         "trustIpFromXForwardedFor": false,
         "disableCommands": false,
         "disableCommandsForAnonymousUsers": false,
         "disableThrottling": false,
-        "responsePrefix": "while(1);"
+        "responsePrefix": "while(1);",
+        "expectedOriginReferer": "https://host without trailing /"
     },
 
     "logging": {
@@ -71,14 +76,23 @@
         "outputFolder": "/mnt/forum/output",
         "messagesFile": "",
         "validateChecksum": true,
-        "createNewOutputFileEverySeconds": 86400
+        "createNewOutputFileEverySeconds": 86400,
+        "persistIPAddresses": false
     },
+    
+    "plugins": [{
+        "libraryPath": "ForumSearchUpdatePlugin.so",
+        "configuration": {
+            "outputFileNameTemplate": "search_updates-%1%.json",
+            "createNewOutputFileEverySeconds": 60
+        }
+    }],
     
     "defaultPrivileges": {
         "threadMessage": {
             "view": 0,
             "viewRequiredPrivileges": 1,
-            "viewAssignedPrivilges": 1,
+            "viewAssignedPrivileges": 1,
             "viewCreatorUser": 0,
             "viewIpAddress": 10000,
             "viewVotes": 0,
@@ -96,7 +110,8 @@
         "thread": {
             "view": 0,
             "viewRequiredPrivileges": 1,
-            "viewAssignedPrivilges": 1,
+            "viewAssignedPrivileges": 1,
+            "getSubscribedUsers": 30000,
             "subscribe": 0,
             "unsubscribe": 0,
             "addMessage": 0,
@@ -111,7 +126,7 @@
         "tag": {
             "view": 0,
             "viewRequiredPrivileges": 1,
-            "viewAssignedPrivilges": 1,
+            "viewAssignedPrivileges": 1,
             "getDiscussionThreads": 0,
             "changeName": 10000,
             "changeUiblob": 10000,
@@ -122,7 +137,7 @@
         "category": {
             "view": 0,
             "viewRequiredPrivileges": 1,
-            "viewAssignedPrivilges": 1,
+            "viewAssignedPrivileges": 1,
             "getDiscussionThreads": 0,
             "changeName": 10000,
             "changeDescription": 10000,
@@ -135,20 +150,19 @@
         },
         "forumWide": {
             "addUser": 0,
-            "login": 0,
             "getEntitiesCount": 0,
             "getVersion": 0,
             "getAllUsers": 0,
             "getUserInfo": 1,
             "getDiscussionThreadsOfUser": 0,
             "getDiscussionThreadMessagesOfUser": 0,
-            "getSubscribedDiscussionThreadsOfUser": 0,
+            "getSubscribedDiscussionThreadsOfUser": 30000,
             "getAllDiscussionCategories": 0,
             "getDiscussionCategoriesFromRoot": 0,
             "getAllDiscussionTags": 0,
             "getAllDiscussionThreads": 0,
             "getAllMessageComments": 0,
-            "getMessageCommentsOfUser": 0,
+            "getMessageCommentsOfUser": 30000,
             "addDiscussionCategory": 10000,
             "addDiscussionTag": 10000,
             "addDiscussionThread": 1,
@@ -158,8 +172,8 @@
             "changeAnyUserInfo": 30000,
             "deleteAnyUser": 30000,
             "viewForumWideRequiredPrivileges": 1000,
-            "viewForumWideAssignedPrivilges": 1000,
-            "viewUserAssignedPrivilges": 1000,
+            "viewForumWideAssignedPrivileges": 1000,
+            "viewUserAssignedPrivileges": 1000,
             "adjustForumWidePrivilege": 30000,
             "changeOwnUserTitle": 1,
             "changeAnyUserTitle": 10000,
@@ -177,7 +191,13 @@
     "defaultPrivilegeGrants" : {
         "thread": {
             "create": {
-                "value": 1000,
+                "value": 100,
+                "duration": 900
+            }
+        },
+        "threadMessage": {
+            "create": {
+                "value": 100,
                 "duration": 600
             }
         }

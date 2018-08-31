@@ -56,5 +56,18 @@ namespace Http
 
         std::array<HttpStringView, Buffer::MaximumBuffersForRequestBody> requestContentBuffers;
         size_t nrOfRequestContentBuffers = 0;
+
+        HttpStringView getCookie(const HttpStringView searchName) const
+        {
+            for (size_t i = 0; i < nrOfCookies; ++i)
+            {
+                const auto&[name, value] = cookies[i];
+                if (name == searchName)
+                {
+                    return value;
+                }
+            }
+            return {};
+        }
     };
 }

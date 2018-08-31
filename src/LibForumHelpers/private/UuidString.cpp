@@ -18,21 +18,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "UuidString.h"
 
-#include <type_traits>
 #include <boost/uuid/uuid_io.hpp>
 
-using namespace Forum::Entities;
+using namespace Forum::Helpers;
 
 UuidString::UuidString() : value_(boost::uuids::uuid{})
-{
-    static auto emptyUuidHash = hash_value(boost::uuids::uuid{});
-    hashValue_ = emptyUuidHash;
-}
+{}
 
-UuidString::UuidString(boost::uuids::uuid value) : value_(std::move(value))
-{
-    updateHashValue();
-}
+UuidString::UuidString(const boost::uuids::uuid value) : value_(value)
+{}
 
 static const uint8_t hexValues[] =
 {
@@ -55,14 +49,14 @@ static const int uuidValuePositions[] =
     /*12*/ 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
 };
 
-static bool parseUuid(const char* data, size_t size, boost::uuids::uuid& destination)
+static bool parseUuid(const char* data, const size_t size, boost::uuids::uuid& destination)
 {
     if (size != 36)
     {
         return false;
     }
 
-    static_assert(std::extent<decltype(hexValues)>::value >= sizeof(uint8_t), "hexValues does not contain enough values");
+    static_assert(std::size(hexValues) >= sizeof(uint8_t), "hexValues does not contain enough values");
 
     for (int src = 0, dst = 0; dst < 16; src += 2, dst += 1)
     {
@@ -73,23 +67,21 @@ static bool parseUuid(const char* data, size_t size, boost::uuids::uuid& destina
     return true;
 }
 
-UuidString::UuidString(const std::string& value) : UuidString(boost::string_view(value))
+UuidString::UuidString(const std::string& value) : UuidString(std::string_view(value))
 {
 }
 
-UuidString::UuidString(boost::string_view value)
+UuidString::UuidString(std::string_view value) : value_{}
 {
     if ( ! parseUuid(value.data(), value.size(), value_))
     {
         value_ = {};
     }
-    updateHashValue();
 }
 
-UuidString::UuidString(const uint8_t* uuidArray)
+UuidString::UuidString(const uint8_t* uuidArray) : value_{}
 {
     std::copy(uuidArray, uuidArray + boost::uuids::uuid::static_size(), value_.data);
-    updateHashValue();
 }
 
 UuidString::operator std::string() const
@@ -115,11 +107,6 @@ void UuidString::toString(char* buffer) const
             buffer[destination++] = '-';
         }
     }
-}
-
-void UuidString::updateHashValue()
-{
-    hashValue_ = hash_value(value_);
 }
 
 const UuidString UuidString::empty = {};

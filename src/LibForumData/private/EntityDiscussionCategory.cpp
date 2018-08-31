@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityDiscussionCategory.h"
 #include "EntityCollection.h"
 
-#include <map>
+#include <vector>
 
 using namespace Forum;
 using namespace Forum::Entities;
@@ -93,6 +93,54 @@ bool DiscussionCategory::insertDiscussionThread(DiscussionThreadPtr thread)
     return true;
 }
 
+bool DiscussionCategory::insertDiscussionThreadsOfTag(DiscussionTagPtr tag)
+{
+    assert(tag);
+
+    std::vector<DiscussionThreadPtr> threadsToInsert;
+    threadsToInsert.reserve(tag->threads().count());
+
+    tag->threads().iterateThreads([this, &threadsToInsert](DiscussionThreadPtr threadPtr)
+    {
+        assert(threadPtr);
+        if ( ! this->threads_.contains(threadPtr))
+        {
+            threadsToInsert.push_back(threadPtr);
+        }
+    });
+
+    if (threadsToInsert.empty())
+    {
+        return false;
+    }
+
+    changeNotifications_.onPrepareUpdateMessageCount(*this);
+
+    if ( ! threads_.add(threadsToInsert.data(), threadsToInsert.size()))
+    {
+        return false;
+    }
+
+    //don't use updateMessageCount() as insertDiscussionThread will take care of that for totals
+    for (auto thread : threadsToInsert)
+    {
+        messageCount_ += static_cast<decltype(messageCount_)>(thread->messageCount());
+        thread->addCategory(pointer());
+    }
+    changeNotifications_.onUpdateMessageCount(*this);
+
+    executeOnCategoryAndAllParents(*this, [&](auto& category)
+    {
+        //this category and all parents will hold separate references to the new threads
+        for (auto thread : threadsToInsert)
+        {
+            category.totalThreads_.add(thread);            
+        }
+    });
+
+    return true;
+}
+
 bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages)
 {
     assert(thread);
@@ -156,11 +204,8 @@ bool DiscussionCategory::addTag(DiscussionTagPtr tag)
         return false;
     }
 
-    tag->threads().iterateThreads([this](DiscussionThreadPtr threadPtr)
-    {
-        assert(threadPtr);
-        this->insertDiscussionThread(threadPtr);
-    });
+    insertDiscussionThreadsOfTag(tag);
+
     return true;
 }
 
@@ -232,8 +277,7 @@ void DiscussionCategory::addTotalsFromChild(const DiscussionCategory& childCateg
 
 PrivilegeValueType DiscussionCategory::getDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege) const
 {
-    auto result = DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege(privilege);
-    if (result) return result;
+    if (const auto result = DiscussionCategoryPrivilegeStore::getDiscussionCategoryPrivilege(privilege)) return result;
 
     return forumWidePrivileges_.getDiscussionCategoryPrivilege(privilege);
 }
@@ -245,7 +289,7 @@ const DiscussionThreadMessage* DiscussionCategory::latestMessage() const
     const auto& index = threads_.byLatestMessageCreated();
     if ( ! index.empty())
     {
-        auto thread = *(index.rbegin());
+        const auto thread = *(index.rbegin());
 
         auto messageIndex = thread->messages().byCreated();
         if (messageIndex.size())
@@ -254,9 +298,9 @@ const DiscussionThreadMessage* DiscussionCategory::latestMessage() const
         }
     }
 
-    for (DiscussionCategoryPtr child : children_)
+    for (const DiscussionCategoryPtr child : children_)
     {
-        auto childLatestMessage = child->latestMessage();
+        const auto childLatestMessage = child->latestMessage();
         if ( ! childLatestMessage) continue;
 
         if (( ! result) || (result->created() < childLatestMessage->created()))

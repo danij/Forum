@@ -18,6 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "JsonWriter.h"
 
+#include <limits>
+
 #include <boost/test/unit_test.hpp>
 
 using namespace Json;
@@ -46,7 +48,7 @@ BOOST_AUTO_TEST_CASE( Json_serialization_works_for_integers )
     writer.newPropertyWithSafeName("prop2") << 0;
     writer.newPropertyWithSafeName("prop3") << 2147483647;
     writer.newPropertyWithSafeName("prop4") << static_cast<int8_t>(-128);
-    writer.newPropertyWithSafeName("prop5") << static_cast<int32_t>(-2147483648);
+    writer.newPropertyWithSafeName("prop5") << static_cast<int32_t>(std::numeric_limits<int32_t>::min());
     writer.endObject();
 
     auto str = buffer.view();
@@ -115,7 +117,7 @@ BOOST_AUTO_TEST_CASE( JsonReadyString_can_add_quotes_for_strings_that_dont_requi
 {
     for (auto str : { "", "a", "ab", "abc", "abcd", "abcde", "abcdef" })
     {
-        auto view = boost::string_view(str);
+        auto view = std::string_view(str);
         auto quotedString = "\"" + std::string(str) + "\"";
 
         JsonReadyString<5> jsonReadyString(view);
@@ -134,7 +136,7 @@ BOOST_AUTO_TEST_CASE( JsonReadyString_does_not_add_quotes_for_strings_that_requi
 {
     for (auto str : { "a\\", "a\\b", "ab\\c", "abc\\d", "abc\\de", "abcd\\ef" })
     {
-        auto view = boost::string_view(str);
+        auto view = std::string_view(str);
 
         JsonReadyString<5> jsonReadyString(view);
         BOOST_REQUIRE(jsonReadyString.needsJsonEscape());

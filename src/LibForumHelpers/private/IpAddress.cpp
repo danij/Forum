@@ -89,7 +89,7 @@ static int writeUInt8(char* buffer, uint8_t value) noexcept
 
 const char* hexDigits = "0123456789ABCDEF";
 
-static int writeUInt16Hex(char* buffer, uint8_t mostSignificant, uint8_t leastSignificant) noexcept
+static int writeUInt16Hex(char* buffer, const uint8_t mostSignificant, const uint8_t leastSignificant) noexcept
 {
     const int base = 16;
     if (mostSignificant > 0)
@@ -117,7 +117,7 @@ static int writeUInt16Hex(char* buffer, uint8_t mostSignificant, uint8_t leastSi
     return 1;
 }
 
-size_t IpAddress::toString(char* buffer, size_t bufferSize) const noexcept
+size_t IpAddress::toString(char* buffer, const size_t bufferSize) const noexcept
 {
     if (isV4())
     {

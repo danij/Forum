@@ -19,11 +19,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ContextProviders.h"
 #include "ContextProviderMocks.h"
 
+#include <cassert>
 #include <chrono>
 
 using namespace Forum::Context;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
+using namespace Forum::Network;
+using namespace Forum::Repository;
 
 Timestamp getTimeSinceEpoch()
 {
@@ -55,9 +58,33 @@ IdTypeRef Forum::Context::getCurrentUserId()
     return currentUser;
 }
 
-void Forum::Context::setCurrentUserId(IdType value)
+void Forum::Context::setCurrentUserId(const IdType value)
 {
-    currentUser = std::move(value);
+    currentUser = value;
+}
+
+static thread_local std::string currentUserAuth{};
+
+const std::string& Forum::Context::getCurrentUserAuth()
+{
+    return currentUserAuth;
+}
+
+void Forum::Context::setCurrentUserAuth(const std::string_view value)
+{
+    currentUserAuth = value;
+}
+
+static thread_local bool currentUserShowInOnlineUsers{ false };
+
+bool Forum::Context::getCurrentUserShowInOnlineUsers()
+{
+    return currentUserShowInOnlineUsers;
+}
+
+void Forum::Context::setCurrentUserShowInOnlineUsers(const bool value)
+{
+    currentUserShowInOnlineUsers = value;
 }
 
 static thread_local IpAddress currentIpAddress = {};
@@ -67,9 +94,23 @@ const IpAddress& Forum::Context::getCurrentUserIpAddress()
     return currentIpAddress;
 }
 
-void Forum::Context::setCurrentUserIpAddress(IpAddress value)
+void Forum::Context::setCurrentUserIpAddress(const IpAddress value)
 {
-    currentIpAddress = std::move(value);
+    currentIpAddress = value;
+}
+
+static std::shared_ptr<VisitorCollection> visitorCollection = {};
+
+VisitorCollection& Forum::Context::getVisitorCollection()
+{
+    assert(visitorCollection.get());
+    return *visitorCollection;
+}
+
+void Forum::Context::setVisitorCollection(std::shared_ptr<VisitorCollection> value)
+{
+    assert(nullptr == visitorCollection.get());
+    visitorCollection = value;
 }
 
 static bool batchInsertInProgress{ false };
@@ -79,7 +120,7 @@ bool Forum::Context::isBatchInsertInProgress()
     return batchInsertInProgress;
 }
 
-void Forum::Context::setBatchInsertInProgres(bool value)
+void Forum::Context::setBatchInsertInProgres(const bool value)
 {
     batchInsertInProgress = value;
 }

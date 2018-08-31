@@ -160,7 +160,8 @@ struct AssignedPrivilegeWriter final
     AssignedPrivilegeWriter(const AssignedPrivilegeWriter&) = default;
     AssignedPrivilegeWriter(AssignedPrivilegeWriter&&) = default;
     
-    void operator()(IdTypeRef userId, PrivilegeValueIntType privilegeValue, Timestamp grantedAt, Timestamp expiresAt)
+    void operator()(IdTypeRef userId, const PrivilegeValueIntType privilegeValue, const Timestamp grantedAt, 
+                    const Timestamp expiresAt)
     {
         writer_.startObject();
         writer_.newPropertyWithSafeName("id") << userId;
@@ -202,10 +203,11 @@ struct UserAssignedPrivilegeWriter final
     UserAssignedPrivilegeWriter(const UserAssignedPrivilegeWriter&) = default;
     UserAssignedPrivilegeWriter(UserAssignedPrivilegeWriter&&) = default;
 
-    UserAssignedPrivilegeWriter& operator=(const UserAssignedPrivilegeWriter&) = default;
-    UserAssignedPrivilegeWriter& operator=(UserAssignedPrivilegeWriter&&) = default;
+    UserAssignedPrivilegeWriter& operator=(const UserAssignedPrivilegeWriter&) = delete;
+    UserAssignedPrivilegeWriter& operator=(UserAssignedPrivilegeWriter&&) = delete;
 
-    void operator()(IdTypeRef entityId, PrivilegeValueIntType privilegeValue, Timestamp grantedAt, Timestamp expiresAt)
+    void operator()(IdTypeRef entityId, PrivilegeValueIntType const privilegeValue, const Timestamp grantedAt, 
+                    const Timestamp expiresAt)
     {
         writer_.startObject();
         if (writeEntity_(collection_, restriction_, entityId, writer_))
@@ -276,8 +278,8 @@ static bool writeDiscussionCategoryEntity(const EntityCollection& collection, co
     return false;
 }
 
-static bool writeForumWideEntity(const EntityCollection& collection, const SerializationRestriction& restriction, 
-                                 IdTypeRef entityId, JsonWriter& writer)
+static bool writeForumWideEntity(const EntityCollection& /*collection*/, const SerializationRestriction& /*restriction*/,
+                                 IdTypeRef /*entityId*/, JsonWriter& /*writer*/)
 {
     //do nothing
     return true;
@@ -394,7 +396,7 @@ void MemoryRepositoryAuthorization::writeDiscussionCategoryUserAssignedPrivilege
 }
 
 void MemoryRepositoryAuthorization::writeForumWideUserAssignedPrivileges(const EntityCollection& collection,
-                                                                         const Authorization::SerializationRestriction& restriction,
+                                                                         const SerializationRestriction& restriction,
                                                                          IdTypeRef userId, JsonWriter& writer)
 {
     writer.newPropertyWithSafeName("forumWidePrivileges");
@@ -404,6 +406,41 @@ void MemoryRepositoryAuthorization::writeForumWideUserAssignedPrivileges(const E
             UserAssignedPrivilegeWriter(writer, collection, restriction, writeForumWideEntity));
 
     writer.endArray();
+}
+
+static void writeAllowPrivilegeChange(const IDiscussionThreadMessageAuthorization& authorization, 
+                                      const DiscussionThreadMessage& threadMessage, const User& currentUser, JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("allowAdjustPrivilege") <<
+        (AuthorizationStatus::OK == authorization.getAllowDiscussionThreadMessagePrivilegeChange(currentUser, threadMessage));
+}
+
+static void writeAllowPrivilegeChange(const IDiscussionThreadAuthorization& authorization, 
+                                      const DiscussionThread& thread, const User& currentUser, JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("allowAdjustPrivilege") <<
+        (AuthorizationStatus::OK == authorization.getAllowDiscussionThreadPrivilegeChange(currentUser, thread));
+}
+
+static void writeAllowPrivilegeChange(const IDiscussionTagAuthorization& authorization, 
+                                      const DiscussionTag& tag, const User& currentUser, JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("allowAdjustPrivilege") <<
+        (AuthorizationStatus::OK == authorization.getAllowDiscussionTagPrivilegeChange(currentUser, tag));
+}
+
+static void writeAllowPrivilegeChange(const IDiscussionCategoryAuthorization& authorization, 
+                                      const DiscussionCategory& category, const User& currentUser, JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("allowAdjustPrivilege") <<
+        (AuthorizationStatus::OK == authorization.getAllowDiscussionCategoryPrivilegeChange(currentUser, category));
+}
+
+static void writeAllowPrivilegeChange(const IForumWideAuthorization& authorization, 
+                                      const User& currentUser, JsonWriter& writer)
+{
+    writer.newPropertyWithSafeName("allowAdjustPrivilege") <<
+        (AuthorizationStatus::OK == authorization.getAllowForumWidePrivilegeChange(currentUser));
 }
 
 //
@@ -441,6 +478,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForThreadMessage(
                           writer.startObject();
 
                           writeDiscussionThreadMessageRequiredPrivileges(message, writer);
+                          writeAllowPrivilegeChange(*threadMessageAuthorization_, message, currentUser, writer);
 
                           writer.endObject();
 
@@ -481,6 +519,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForThreadMessage(
                           writer.startObject();
 
                           writeDiscussionThreadMessageAssignedPrivileges(collection, message.id(), writer);
+                          writeAllowPrivilegeChange(*threadMessageAuthorization_, message, currentUser, writer);
 
                           writer.endObject();
 
@@ -538,7 +577,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
                                return;
                            }
 
-                           writeEvents().changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(
+                           writeEvents().onChangeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(
                                    createObserverContext(*currentUser), message, privilege, value);
 
                            status = changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(
@@ -613,7 +652,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
                                return;
                            }
 
-                           writeEvents().assignDiscussionThreadMessagePrivilege(
+                           writeEvents().onAssignDiscussionThreadMessagePrivilege(
                                    createObserverContext(*currentUser), message, *targetUser, value, duration);
 
                            status = assignDiscussionThreadMessagePrivilege(
@@ -692,6 +731,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForThread(IdTypeR
 
                           writeDiscussionThreadRequiredPrivileges(thread, writer);
                           writeDiscussionThreadMessageRequiredPrivileges(thread, writer);
+                          writeAllowPrivilegeChange(*threadAuthorization_, thread, currentUser, writer);
 
                           writer.endObject();
 
@@ -730,6 +770,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForThread(IdTypeR
                           writer.startObject();
 
                           writeDiscussionThreadAssignedPrivileges(collection, thread.id(), writer);
+                          writeAllowPrivilegeChange(*threadAuthorization_, thread, currentUser, writer);
 
                           writer.endObject();
 
@@ -768,7 +809,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
                                return;
                            }
 
-                           writeEvents().changeDiscussionThreadMessageRequiredPrivilegeForThread(
+                           writeEvents().onChangeDiscussionThreadMessageRequiredPrivilegeForThread(
                                    createObserverContext(*currentUser), thread, privilege, value);
 
                            status = changeDiscussionThreadMessageRequiredPrivilegeForThread(
@@ -828,7 +869,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadRequiredPrivileg
                                return;
                            }
 
-                           writeEvents().changeDiscussionThreadRequiredPrivilegeForThread(
+                           writeEvents().onChangeDiscussionThreadRequiredPrivilegeForThread(
                                    createObserverContext(*currentUser), thread, privilege, value);
 
                            status = changeDiscussionThreadRequiredPrivilegeForThread(
@@ -900,7 +941,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
                                return;
                            }
 
-                           writeEvents().assignDiscussionThreadPrivilege(
+                           writeEvents().onAssignDiscussionThreadPrivilege(
                                    createObserverContext(*currentUser), thread, *targetUser, value, duration);
 
                            status = assignDiscussionThreadPrivilege(collection, threadId, userId, value, duration);
@@ -978,6 +1019,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForTag(IdTypeRef 
                           writeDiscussionTagRequiredPrivileges(tag, writer);
                           writeDiscussionThreadRequiredPrivileges(tag, writer);
                           writeDiscussionThreadMessageRequiredPrivileges(tag, writer);
+                          writeAllowPrivilegeChange(*tagAuthorization_, tag, currentUser, writer);
 
                           writer.endObject();
 
@@ -1017,6 +1059,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForTag(IdTypeRef 
                           writer.startObject();
 
                           writeDiscussionTagAssignedPrivileges(collection, tag.id(), writer);
+                          writeAllowPrivilegeChange(*tagAuthorization_, tag, currentUser, writer);
 
                           writer.endObject();
 
@@ -1056,7 +1099,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
                                return;
                            }
 
-                           writeEvents().changeDiscussionThreadMessageRequiredPrivilegeForTag(
+                           writeEvents().onChangeDiscussionThreadMessageRequiredPrivilegeForTag(
                                    createObserverContext(*currentUser), tag, privilege, value);
 
                            status = changeDiscussionThreadMessageRequiredPrivilegeForTag(
@@ -1119,7 +1162,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadRequiredPrivileg
                                return;
                            }
 
-                           writeEvents().changeDiscussionThreadRequiredPrivilegeForTag(
+                           writeEvents().onChangeDiscussionThreadRequiredPrivilegeForTag(
                                    createObserverContext(*currentUser), tag, privilege, value);
 
                            status = changeDiscussionThreadRequiredPrivilegeForTag(
@@ -1181,7 +1224,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionTagRequiredPrivilegeFo
                                return;
                            }
 
-                           writeEvents().changeDiscussionTagRequiredPrivilegeForTag(
+                           writeEvents().onChangeDiscussionTagRequiredPrivilegeForTag(
                                    createObserverContext(*currentUser), tag, privilege, value);
 
                            status = changeDiscussionTagRequiredPrivilegeForTag(
@@ -1255,7 +1298,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
                                return;
                            }
 
-                           writeEvents().assignDiscussionTagPrivilege(
+                           writeEvents().onAssignDiscussionTagPrivilege(
                                    createObserverContext(*currentUser), tag, *targetUser, value, duration);
 
                            status = assignDiscussionTagPrivilege(collection, tagId, userId, value, duration);
@@ -1333,6 +1376,7 @@ StatusCode MemoryRepositoryAuthorization::getRequiredPrivilegesForCategory(IdTyp
                           writer.startObject();
 
                           writeDiscussionCategoryRequiredPrivileges(category, writer);
+                          writeAllowPrivilegeChange(*categoryAuthorization_, category, currentUser, writer);
 
                           writer.endObject();
 
@@ -1372,6 +1416,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForCategory(IdTyp
                           writer.startObject();
 
                           writeDiscussionCategoryAssignedPrivileges(collection, category.id(), writer);
+                          writeAllowPrivilegeChange(*categoryAuthorization_, category, currentUser, writer);
 
                           writer.endObject();
 
@@ -1411,7 +1456,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionCategoryRequiredPrivil
                                return;
                            }
 
-                           writeEvents().changeDiscussionCategoryRequiredPrivilegeForCategory(
+                           writeEvents().onChangeDiscussionCategoryRequiredPrivilegeForCategory(
                                    createObserverContext(*currentUser), category, privilege, value);
 
                            status = changeDiscussionCategoryRequiredPrivilegeForCategory(
@@ -1486,7 +1531,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
                                return;
                            }
 
-                           writeEvents().assignDiscussionCategoryPrivilege(
+                           writeEvents().onAssignDiscussionCategoryPrivilege(
                                    createObserverContext(*currentUser), category, *targetUser, value, duration);
 
                            status = assignDiscussionCategoryPrivilege(collection, categoryId, userId, value, duration);
@@ -1587,6 +1632,7 @@ StatusCode MemoryRepositoryAuthorization::getForumWideRequiredPrivileges(OutStre
                           writeDiscussionTagRequiredPrivileges(collection, writer);
                           writeDiscussionThreadRequiredPrivileges(collection, writer);
                           writeDiscussionThreadMessageRequiredPrivileges(collection, writer);
+                          writeAllowPrivilegeChange(*forumWideAuthorization_, currentUser, writer);
 
                           writer.endObject();
 
@@ -1643,6 +1689,7 @@ StatusCode MemoryRepositoryAuthorization::getForumWideAssignedPrivileges(OutStre
                           writer.startObject();
 
                           writeForumWideAssignedPrivileges(collection, {}, writer);
+                          writeAllowPrivilegeChange(*forumWideAuthorization_, currentUser, writer);
 
                           writer.endObject();
 
@@ -1723,7 +1770,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadMessageRequiredP
                                return;
                            }
 
-                           writeEvents().changeDiscussionThreadMessageRequiredPrivilegeForumWide(
+                           writeEvents().onChangeDiscussionThreadMessageRequiredPrivilegeForumWide(
                                    createObserverContext(*currentUser), privilege, value);
 
                            status = changeDiscussionThreadMessageRequiredPrivilege(collection, privilege, value);
@@ -1766,7 +1813,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionThreadRequiredPrivileg
                                return;
                            }
 
-                           writeEvents().changeDiscussionThreadRequiredPrivilegeForumWide(
+                           writeEvents().onChangeDiscussionThreadRequiredPrivilegeForumWide(
                                    createObserverContext(*currentUser), privilege, value);
 
                            status = changeDiscussionThreadRequiredPrivilege(collection, privilege, value);
@@ -1809,7 +1856,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionTagRequiredPrivilege(
                                return;
                            }
 
-                           writeEvents().changeDiscussionTagRequiredPrivilegeForumWide(
+                           writeEvents().onChangeDiscussionTagRequiredPrivilegeForumWide(
                                    createObserverContext(*currentUser), privilege, value);
 
                            status = changeDiscussionTagRequiredPrivilege(collection, privilege, value);
@@ -1852,7 +1899,7 @@ StatusCode MemoryRepositoryAuthorization::changeDiscussionCategoryRequiredPrivil
                                return;
                            }
 
-                           writeEvents().changeDiscussionCategoryRequiredPrivilegeForumWide(
+                           writeEvents().onChangeDiscussionCategoryRequiredPrivilegeForumWide(
                                    createObserverContext(*currentUser), privilege, value);
 
                            status = changeDiscussionCategoryRequiredPrivilege(collection, privilege, value);
@@ -1895,7 +1942,7 @@ StatusCode MemoryRepositoryAuthorization::changeForumWideRequiredPrivilege(
                                return;
                            }
 
-                           writeEvents().changeForumWideRequiredPrivilege(
+                           writeEvents().onChangeForumWideRequiredPrivilege(
                                    createObserverContext(*currentUser), privilege, value);
 
                            status = changeForumWideRequiredPrivilege(collection, privilege, value);
@@ -1937,7 +1984,7 @@ StatusCode MemoryRepositoryAuthorization::changeForumWideDefaultPrivilegeLevel(
                                return;
                            }
 
-                           writeEvents().changeForumWideDefaultPrivilegeLevel(
+                           writeEvents().onChangeForumWideDefaultPrivilegeLevel(
                                    createObserverContext(*currentUser), privilege, value, duration);
 
                            status = changeForumWideDefaultPrivilegeLevel(collection, privilege, value, duration);
@@ -1996,7 +2043,7 @@ StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
                                return;
                            }
 
-                           writeEvents().assignForumWidePrivilege(
+                           writeEvents().onAssignForumWidePrivilege(
                                    createObserverContext(*currentUser), *targetUser, value, duration);
 
                            status = assignForumWidePrivilege(collection, userId, value, duration);

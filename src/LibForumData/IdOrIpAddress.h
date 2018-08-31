@@ -25,76 +25,73 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/variant.hpp>
 
-namespace Forum
+namespace Forum::Entities
 {
-    namespace Entities
+    /**
+     * Stores both an id and an IP address
+     */
+    struct IdOrIpAddress final
     {
-        /**
-         * Stores both an id and an IP address
-         */
-        struct IdOrIpAddress final
+        IdOrIpAddress(const IdType& id, const Helpers::IpAddress& ip)
         {
-            IdOrIpAddress(const IdType& id, const Helpers::IpAddress& ip)
+            if (id)
             {
-                if (id)
-                {
-                    data_ = id;
-                }
-                else
-                {
-                    data_ = ip;
-                }
+                data_ = id;
             }
-
-            IdOrIpAddress(const IdOrIpAddress& other) = default;
-            IdOrIpAddress(IdOrIpAddress&&) = default;
-
-            IdOrIpAddress& operator=(const IdOrIpAddress&) = default;
-            IdOrIpAddress& operator=(IdOrIpAddress&&) = default;
-
-            bool operator==(const IdOrIpAddress& other) const
+            else
             {
-                return getCompareStructure() == other.getCompareStructure();
+                data_ = ip;
             }
+        }
 
-            bool operator!=(const IdOrIpAddress& other) const
-            {
-                return getCompareStructure() != other.getCompareStructure();
-            }
+        IdOrIpAddress(const IdOrIpAddress& other) = default;
+        IdOrIpAddress(IdOrIpAddress&&) = default;
 
-            bool operator<(const IdOrIpAddress& other) const
-            {
-                return getCompareStructure() < other.getCompareStructure();
-            }
+        IdOrIpAddress& operator=(const IdOrIpAddress&) = default;
+        IdOrIpAddress& operator=(IdOrIpAddress&&) = default;
 
-            bool operator<=(const IdOrIpAddress& other) const
-            {
-                return getCompareStructure() <= other.getCompareStructure();
-            }
-            bool operator>(const IdOrIpAddress& other) const
-            {
-                return getCompareStructure() > other.getCompareStructure();
-            }
+        bool operator==(const IdOrIpAddress& other) const
+        {
+            return getCompareStructure() == other.getCompareStructure();
+        }
 
-            bool operator>=(const IdOrIpAddress& other) const
-            {
-                return getCompareStructure() >= other.getCompareStructure();
-            }
+        bool operator!=(const IdOrIpAddress& other) const
+        {
+            return getCompareStructure() != other.getCompareStructure();
+        }
 
-        private:
-            std::tuple<IdType, Helpers::IpAddress> getCompareStructure() const
-            {
-                const auto* idPtr = boost::get<IdType>(&data_);
-                const auto* ipPtr = boost::get<Helpers::IpAddress>(&data_);
+        bool operator<(const IdOrIpAddress& other) const
+        {
+            return getCompareStructure() < other.getCompareStructure();
+        }
 
-                return{ idPtr ? *idPtr : IdType{}, ipPtr ? *ipPtr : Helpers::IpAddress{} };
-            }
+        bool operator<=(const IdOrIpAddress& other) const
+        {
+            return getCompareStructure() <= other.getCompareStructure();
+        }
+        bool operator>(const IdOrIpAddress& other) const
+        {
+            return getCompareStructure() > other.getCompareStructure();
+        }
 
-            friend struct std::hash<IdOrIpAddress>;
+        bool operator>=(const IdOrIpAddress& other) const
+        {
+            return getCompareStructure() >= other.getCompareStructure();
+        }
 
-            boost::variant<IdType, Helpers::IpAddress> data_;
-        };
-    }
+    private:
+        std::tuple<IdType, Helpers::IpAddress> getCompareStructure() const
+        {
+            const auto* idPtr = boost::get<IdType>(&data_);
+            const auto* ipPtr = boost::get<Helpers::IpAddress>(&data_);
+
+            return{ idPtr ? *idPtr : IdType{}, ipPtr ? *ipPtr : Helpers::IpAddress{} };
+        }
+
+        friend struct std::hash<IdOrIpAddress>;
+
+        boost::variant<IdType, Helpers::IpAddress> data_;
+    };
 }
 
 namespace std
@@ -104,14 +101,12 @@ namespace std
     {
         size_t operator()(const Forum::Entities::IdOrIpAddress& value) const
         {
-            const auto* idPtr = boost::get<Forum::Entities::IdType>(&value.data_);
-            const auto* ipPtr = boost::get<Forum::Helpers::IpAddress>(&value.data_);
-
-            if (idPtr)
+            if (const auto* idPtr = boost::get<Forum::Entities::IdType>(&value.data_))
             {
                 return hash<Forum::Entities::IdType>()(*idPtr);
             }
-            if (ipPtr)
+
+            if (const auto* ipPtr = boost::get<Forum::Helpers::IpAddress>(&value.data_))
             {
                 return hash<Forum::Helpers::IpAddress>()(*ipPtr);
             }

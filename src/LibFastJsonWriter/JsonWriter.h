@@ -16,24 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-Fast class for writing Json documents
-Copyright (C) 2015 dani.user@gmail.com
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 #pragma once
 
 #include <array>
@@ -47,12 +29,12 @@ namespace Json
 {
     namespace Detail
     {
-        inline void writeChar(StringBuffer& stringBufferOutput, char value)
+        inline void writeChar(StringBuffer& stringBufferOutput, const char value)
         {
             stringBufferOutput.write(value);
         }
 
-        inline void writeString(StringBuffer& stringBufferOutput, const char* value, size_t size)
+        inline void writeString(StringBuffer& stringBufferOutput, const char* value, const size_t size)
         {
             stringBufferOutput.write(value, size);
         }
@@ -65,7 +47,7 @@ namespace Json
         }
 
         template <>
-        inline void writeString<1>(StringBuffer& stringBufferOutput, const char(&value)[0 + 1])
+        inline void writeString<1>(StringBuffer& /*stringBufferOutput*/, const char(&/*value*/)[0 + 1])
         {
             //ignore null terminator
         }
@@ -99,7 +81,7 @@ namespace Json
         }
     }
 
-    const unsigned char toEscape[] =
+    const unsigned char ToEscape[] =
     {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x62, 0x74, 0x6E, 0xFF, 0x66, 0x72, 0xFF, 0xFF,
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -108,28 +90,28 @@ namespace Json
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5C, 0x00, 0x00, 0x00
     };
-    constexpr int toEscapeLength = sizeof(toEscape) / sizeof(toEscape[0]);
+    constexpr int ToEscapeLength = sizeof(ToEscape) / sizeof(ToEscape[0]);
 
-    const char hexDigits[16] = {
+    const char HexDigits[16] = {
         '0', '1', '2', '3', '4', '5', '6', '7',
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
 
     template<typename OutputBuffer>
-    void escapeString(const char* value, size_t length, OutputBuffer& destination)
+    void escapeString(const char* value, const size_t length, OutputBuffer& destination)
     {
-        static thread_local char twoCharEscapeBuffer[2+1] = { '\\', 0, 0 };
-        static thread_local char sixCharEscapeBuffer[6+1] = { '\\', 'u', '0', '0', 0, 0, 0 };
+        char twoCharEscapeBuffer[2+1] = { '\\', 0, 0 };
+        char sixCharEscapeBuffer[6+1] = { '\\', 'u', '0', '0', 0, 0, 0 };
 
         auto directWriteFrom = value;
         const auto endValue = value + length;
 
         while (value < endValue)
         {
-            unsigned char c = static_cast<unsigned char>(*value);
-            if (c < toEscapeLength)
+            const auto c = static_cast<unsigned char>(*value);
+            if (c < ToEscapeLength)
             {
-                auto r = toEscape[c];
+                const auto r = ToEscape[c];
                 if (r)
                 {
                     //escape needed
@@ -149,8 +131,8 @@ namespace Json
                     {
                         //we must use the six-character sequence
                         //simplified as we only escape control characters this way
-                        sixCharEscapeBuffer[4] = hexDigits[c / 16];
-                        sixCharEscapeBuffer[5] = hexDigits[c % 16];
+                        sixCharEscapeBuffer[4] = HexDigits[c / 16];
+                        sixCharEscapeBuffer[5] = HexDigits[c % 16];
                         Detail::writeString(destination, sixCharEscapeBuffer);
                     }
                 }
@@ -249,7 +231,7 @@ namespace Json
             return *this;
         }
 
-        JsonWriterBase& newProperty(boost::string_view name)
+        JsonWriterBase& newProperty(std::string_view name)
         {
             writeEscapedString(name.data(), name.length());
             writeChar(':');
@@ -258,7 +240,7 @@ namespace Json
             return *this;
         }
 
-        JsonWriterBase& newPropertyWithSafeName(const char* name, size_t length)
+        JsonWriterBase& newPropertyWithSafeName(const char* name, const size_t length)
         {
             if (isCommaNeeded())
             {
@@ -282,7 +264,7 @@ namespace Json
             return newPropertyWithSafeName(name, Length - 1);
         }
 
-        JsonWriterBase& newPropertyWithSafeName(boost::string_view name)
+        JsonWriterBase& newPropertyWithSafeName(std::string_view name)
         {
             return newPropertyWithSafeName(name.data(), name.size());
         }
@@ -309,12 +291,12 @@ namespace Json
             return *this;
         }
 
-        JsonWriterBase& writeEscapedString(boost::string_view value)
+        JsonWriterBase& writeEscapedString(std::string_view value)
         {
             return writeEscapedString(value.data(), value.size());
         }
 
-        JsonWriterBase& writeSafeString(const char* value, size_t length)
+        JsonWriterBase& writeSafeString(const char* value, const size_t length)
         {
             if (isCommaNeeded())
             {
@@ -329,12 +311,12 @@ namespace Json
             return *this;
         }
 
-        JsonWriterBase& writeSafeString(boost::string_view value)
+        JsonWriterBase& writeSafeString(std::string_view value)
         {
             return writeSafeString(value.data(), value.size());
         }
 
-        JsonWriterBase& operator<<(bool value)
+        JsonWriterBase& operator<<(const bool value)
         {
             if (isCommaNeeded())
             {
@@ -347,52 +329,52 @@ namespace Json
             return *this;
         }
 
-        JsonWriterBase& operator<<(char value)
+        JsonWriterBase& operator<<(const char value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriterBase& operator<<(unsigned char value)
+        JsonWriterBase& operator<<(const unsigned char value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriterBase& operator<<(short value)
+        JsonWriterBase& operator<<(const short value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriterBase& operator<<(unsigned short value)
+        JsonWriterBase& operator<<(const unsigned short value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriterBase& operator<<(int value)
+        JsonWriterBase& operator<<(const int value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriterBase& operator<<(unsigned int value)
+        JsonWriterBase& operator<<(const unsigned int value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriterBase& operator<<(long value)
+        JsonWriterBase& operator<<(const long value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriterBase& operator<<(unsigned long value)
+        JsonWriterBase& operator<<(const unsigned long value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriterBase& operator<<(long long value)
+        JsonWriterBase& operator<<(const long long value)
         {
             return writeNumber(value, isCommaNeeded());
         }
 
-        JsonWriterBase& operator<<(unsigned long long value)
+        JsonWriterBase& operator<<(const unsigned long long value)
         {
             return writeNumber(value, isCommaNeeded());
         }
@@ -402,7 +384,7 @@ namespace Json
             return writeEscapedString(value);
         }
 
-        JsonWriterBase& operator<<(boost::string_view value)
+        JsonWriterBase& operator<<(const std::string_view value)
         {
             return writeEscapedString(value);
         }
@@ -466,7 +448,7 @@ namespace Json
             return result;
         }
 
-        constexpr static int maxDigitsOfNumber(int numberOfBytes) noexcept
+        constexpr static int maxDigitsOfNumber(const int numberOfBytes) noexcept
         {
             return 1 == numberOfBytes ? 3
                 : 2 == numberOfBytes ? 5
@@ -478,29 +460,32 @@ namespace Json
 
         template<typename T>
         typename std::enable_if<std::numeric_limits<T>::is_integer, JsonWriterBase&>::type
-            writeNumber(T value, bool includeComma)
+            writeNumber(T value, const bool includeComma)
         {
             //minimum integer values cannot be negated
-            if (std::numeric_limits<T>::is_signed && std::numeric_limits<T>::min() == value)
+            if constexpr (std::numeric_limits<T>::is_signed)
             {
-                switch (sizeof(T))
+                if (std::numeric_limits<T>::min() == value)
                 {
-                case 1:
-                    writeString("-128");
-                    break;
-                case 2:
-                    writeString("-32768");
-                    break;
-                case 4:
-                    writeString("-2147483648");
-                    break;
-                case 8:
-                    writeString("-9223372036854775808");
-                    break;
-                default:
-                    break;
+                    switch (sizeof(T))
+                    {
+                    case 1:
+                        writeString("-128");
+                        break;
+                    case 2:
+                        writeString("-32768");
+                        break;
+                    case 4:
+                        writeString("-2147483648");
+                        break;
+                    case 8:
+                        writeString("-9223372036854775808");
+                        break;
+                    default:
+                        break;
+                    }
+                    return *this;
                 }
-                return *this;
             }
 
             char digitsBuffer[maxDigitsOfNumber(sizeof(T)) + 3]; //extra space for sign and comma
@@ -509,7 +494,7 @@ namespace Json
             char* digit = bufferEnd - 1;
 
             bool addSign = false;
-            if (std::numeric_limits<T>::is_signed)
+            if constexpr (std::numeric_limits<T>::is_signed)
             {
                 if (value < 0)
                 {
@@ -536,7 +521,7 @@ namespace Json
             writeString(digit, bufferEnd - digit);
 
             return *this;
-        };
+        }
 
         template<size_t Size>
         void writeString(const char(&value)[Size])
@@ -544,7 +529,7 @@ namespace Json
             Detail::writeString<Size>(stringBufferOutput_, value);
         }
 
-        void writeString(boost::string_view& value)
+        void writeString(std::string_view& value)
         {
             writeString(value.data(), value.size());
         }
@@ -663,7 +648,7 @@ namespace Json
         const T1& argument1;
         const T2& argument2;
 
-        JsonWriterManipulatorWithTwoParams(Function func, const T1& arg1, const T2& arg2) :
+        JsonWriterManipulatorWithTwoParams(const Function func, const T1& arg1, const T2& arg2) :
                 function(func), argument1(arg1), argument2(arg2)
         { }
     };
@@ -709,7 +694,7 @@ namespace Json
                                              JsonWriterManipulatorPropertySafeNameArrayValueArray<T1, T1Size, T2, T2Size> manipulator)
     {
         return writer.newPropertyWithSafeName(manipulator.argument1)
-                << boost::string_view(manipulator.argument2, T2Size - 1);
+                << std::string_view(manipulator.argument2, T2Size - 1);
     }
 
     template<typename OutputBuffer, typename StringType, typename ValueType>

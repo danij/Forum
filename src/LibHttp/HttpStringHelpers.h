@@ -19,34 +19,34 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <cstddef>
-#include <ctime>
 #include <limits>
-#include <type_traits>
+#include <string_view>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/utility/string_view.hpp>
 
 namespace Http
 {
-    typedef boost::string_view HttpStringView;
+    typedef std::string_view HttpStringView;
 
     /**
      * Matches a string against another one, optionally ignoring case
      *
      * @pre source must point to (AgainstSize - 1) / 2 characters
      * @param source String to be searched
-     * @param against A string where each character appears as both upper and lower case (e.g. HhEeLlLlO  WwOoRrLlDd)
+     * @param against A string where each character appears as both upper and lower case (e.g. hello worldHELLO WORLD)
      */
     template<size_t AgainstSize>
-    bool matchStringUpperOrLower(const char* source, const char (&against)[AgainstSize])
+    bool matchStringUpperOrLowerSameSize(const char* source, const char (&against)[AgainstSize])
     {
-        char result = 0;
+        bool misMatchFound = false;
+
         auto size = (AgainstSize - 1) / 2; //-1 because AgainstSize also contains terminating null character
-        for (size_t iSource = 0, iAgainst = 0; iSource < size; ++iSource, iAgainst += 2)
+        for (size_t iSource = 0, iAgainst1 = 0, iAgainst2 = size; iSource < size; ++iSource, ++iAgainst1, ++iAgainst2)
         {
-            result |= (source[iSource] ^ against[iAgainst]) & (source[iSource] ^ against[iAgainst + 1]);
+            misMatchFound |= (source[iSource] != against[iAgainst1])
+                          && (source[iSource] != against[iAgainst2]);
         }
-        return result == 0;
+        return ! misMatchFound;
     }
 
     /**
@@ -55,7 +55,7 @@ namespace Http
      * @pre source must point to (AgainstSize - 1) / 2 characters
      * @param source String to be searched
      * @param sourceSize Size of string to be searched
-     * @param against A string where each character appears as both upper and lower case (e.g. HhEeLlLlO  WwOoRrLlDd)
+     * @param against A string where each character appears as both upper and lower case (e.g. hello worldHELLO WORLD)
      */
     template<size_t AgainstSize>
     bool matchStringUpperOrLower(const char* source, size_t sourceSize, const char(&against)[AgainstSize])
@@ -65,7 +65,7 @@ namespace Http
         {
             return false;
         }
-        return matchStringUpperOrLower(source, against);
+        return matchStringUpperOrLowerSameSize(source, against);
     }
 
     template<size_t AgainstSize>
@@ -83,7 +83,7 @@ namespace Http
         }
     }
 
-    inline void trimLeadingChar(HttpStringView& view, char toTrim)
+    inline void trimLeadingChar(HttpStringView& view, const char toTrim)
     {
         size_t toRemove = 0;
         for (auto c : view)
@@ -136,7 +136,7 @@ namespace Http
 
     inline size_t decodeUrlEncodingInPlace(char* value, size_t size)
     {
-        static_assert(std::extent<decltype(HexParsingValues)>::value > std::numeric_limits<unsigned char>::max(),
+        static_assert(std::size(HexParsingValues) > std::numeric_limits<unsigned char>::max(),
                       "The HexParsingValues array is too small");
 
         if (nullptr == value) return 0;
@@ -238,7 +238,7 @@ namespace Http
     template<size_t TableSize>
     HttpStringView percentEncode(HttpStringView input, const char (&table)[TableSize])
     {
-        static thread_local char output[MaxPercentEncodingOutputSize];
+        char output[MaxPercentEncodingOutputSize];
         return percentEncode(input, output, table);
     }
 
@@ -250,68 +250,19 @@ namespace Http
      */
     inline HttpStringView urlEncode(HttpStringView input)
     {
-        static thread_local char output[MaxPercentEncodingOutputSize];
+        char output[MaxPercentEncodingOutputSize];
         return urlEncode(input, output);
     }
 
     /**
-     * Writes a date string as expected by the HTTP protocol, e.g. Tue, 18 Apr 2017 09:00:00 GMT
-     * The functions doesn't check bounds, the output buffer must be large enough
-     *
-     * @return The amount of characters written
+     * Appends characters to a string, also incrementing the pointer
      */
-    inline size_t writeHttpDateGMT(time_t value, char* output)
+    template<size_t SourceSize>
+    void appendAndIncrement(char*& destination, const char (&source)[SourceSize])
     {
-        //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date
-        static const char DayNames[][4] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-        static const char MonthNames[][4] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-        std::tm time;
-#if defined(_WIN32) || defined (WIN32)
-        if (0 != gmtime_s(&time, &value))
+        for (size_t i = 0, n = SourceSize - 1; i < n; ++i)
         {
-            return 0;
+            *destination++ = source[i];
         }
-#else
-        //gmtime is not guaranteed to be thread-safe
-        if (nullptr == gmtime_r(&value, &time))
-        {
-            return 0;
-        }
-#endif
-        char* currentOutput = output;
-
-        currentOutput = std::copy(DayNames[time.tm_wday], DayNames[time.tm_wday] + 3, currentOutput);
-        *currentOutput++ = ',';
-        *currentOutput++ = ' ';
-
-        *currentOutput++ = '0' + (time.tm_mday / 10);
-        *currentOutput++ = '0' + (time.tm_mday % 10);
-        *currentOutput++ = ' ';
-
-        currentOutput = std::copy(MonthNames[time.tm_mon], MonthNames[time.tm_mon] + 3, currentOutput);
-        *currentOutput++ = ' ';
-
-        const auto year = 1900 + time.tm_year;
-        *currentOutput++ = '0' + (year / 1000);
-        *currentOutput++ = '0' + ((year % 1000) / 100);
-        *currentOutput++ = '0' + ((year % 100) / 10);
-        *currentOutput++ = '0' + (year % 10);
-        *currentOutput++ = ' ';
-
-        *currentOutput++ = '0' + (time.tm_hour / 10);
-        *currentOutput++ = '0' + (time.tm_hour % 10);
-        *currentOutput++ = ':';
-        *currentOutput++ = '0' + (time.tm_min / 10);
-        *currentOutput++ = '0' + (time.tm_min % 10);
-        *currentOutput++ = ':';
-        *currentOutput++ = '0' + (time.tm_sec / 10);
-        *currentOutput++ = '0' + (time.tm_sec % 10);
-        *currentOutput++ = ' ';
-        *currentOutput++ = 'G';
-        *currentOutput++ = 'M';
-        *currentOutput++ = 'T';
-
-        return currentOutput - output;
     }
 }

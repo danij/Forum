@@ -47,37 +47,37 @@ void Private::setGlobalEntityCollection(EntityCollection* collection)
 }
 
 template<>
-User* Private::getEntityFromGlobalCollection<User>(size_t index)
+User* Private::getEntityFromGlobalCollection<User>(const size_t index)
 {
     return getGlobalEntityCollectionInline().getUserPoolRoot()[index].get();
 }
 
 template<>
-DiscussionThread* Private::getEntityFromGlobalCollection<DiscussionThread>(size_t index)
+DiscussionThread* Private::getEntityFromGlobalCollection<DiscussionThread>(const size_t index)
 {
     return getGlobalEntityCollectionInline().getDiscussionThreadPoolRoot()[index].get();
 }
 
 template<>
-DiscussionThreadMessage* Private::getEntityFromGlobalCollection<DiscussionThreadMessage>(size_t index)
+DiscussionThreadMessage* Private::getEntityFromGlobalCollection<DiscussionThreadMessage>(const size_t index)
 {
     return getGlobalEntityCollectionInline().getDiscussionThreadMessagePoolRoot()[index].get();
 }
 
 template<>
-DiscussionTag* Private::getEntityFromGlobalCollection<DiscussionTag>(size_t index)
+DiscussionTag* Private::getEntityFromGlobalCollection<DiscussionTag>(const size_t index)
 {
     return getGlobalEntityCollectionInline().getDiscussionTagPoolRoot()[index].get();
 }
 
 template<>
-DiscussionCategory* Private::getEntityFromGlobalCollection<DiscussionCategory>(size_t index)
+DiscussionCategory* Private::getEntityFromGlobalCollection<DiscussionCategory>(const size_t index)
 {
     return getGlobalEntityCollectionInline().getDiscussionCategoryPoolRoot()[index].get();
 }
 
 template<>
-MessageComment* Private::getEntityFromGlobalCollection<MessageComment>(size_t index)
+MessageComment* Private::getEntityFromGlobalCollection<MessageComment>(const size_t index)
 {
     return getGlobalEntityCollectionInline().getMessageCommentPoolRoot()[index].get();
 }

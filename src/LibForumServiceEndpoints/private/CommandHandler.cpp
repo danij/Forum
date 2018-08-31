@@ -19,11 +19,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "CommandHandler.h"
 #include "Configuration.h"
 #include "OutputHelpers.h"
+#include "StringHelpers.h"
 
 #include <cstddef>
 #include <memory>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/thread/tss.hpp>
 
 #include <unicode/ustring.h>
 #include <unicode/unorm2.h>
@@ -38,9 +40,21 @@ using namespace Forum::Authorization;
 #define COMMAND_HANDLER_METHOD(name) \
     StatusCode name(const std::vector<StringView>& parameters, OutStream& output)
 
-static thread_local Json::StringBuffer outputBuffer{ 1 << 20 }; //1 MiByte buffer / thread initial and for each increment
+#define COMMAND_HANDLER_METHOD_SIMPLE(name) \
+    StatusCode name(const std::vector<StringView>& /*parameters*/, OutStream& output)
 
-static const std::string emptyString;
+static Json::StringBuffer& getOutputBuffer()
+{
+    static boost::thread_specific_ptr<Json::StringBuffer> value;
+
+    if ( ! value.get())
+    {
+        value.reset(new Json::StringBuffer{ 1 << 20 }); //1 MiByte buffer / thread initial and for each increment
+    }
+    return *value;
+}
+
+static const std::string EmptyString;
 
 template<typename Collection>
 auto countNonEmpty(const Collection& collection)
@@ -52,25 +66,49 @@ auto countNonEmpty(const Collection& collection)
 static constexpr size_t NormalizeBuffer16MaxChars = 2 << 20;
 static constexpr size_t NormalizeBuffer8MaxChars = 2 * NormalizeBuffer16MaxChars;
 
-static thread_local std::unique_ptr<UChar[]> normalizeBuffer16Before(new UChar[NormalizeBuffer16MaxChars]);
-static thread_local std::unique_ptr<UChar[]> normalizeBuffer16After(new UChar[NormalizeBuffer16MaxChars]);
-static thread_local std::unique_ptr<char[]> normalizeBuffer8(new char[NormalizeBuffer8MaxChars]);
-
 /**
  * Performs a Unicode NFC normalization on a UTF-8 encoded string and returns a view also to a UTF-8 encoded string
  * If an error occurs or the input contains invalid characters, an empty view is returned
  */
 static StringView normalize(StringView input)
 {
-    if (0 == input.size())
+    static boost::thread_specific_ptr<UChar> normalizeBuffer16BeforePtr;
+    static boost::thread_specific_ptr<UChar> normalizeBuffer16AfterPtr;
+    static boost::thread_specific_ptr<char> normalizeBuffer8Ptr;
+
+    if (onlyASCII(input)) {
+
+        //no normalization needed
+        return input;
+    }
+
+    if ( ! normalizeBuffer16BeforePtr.get())
+    {
+        normalizeBuffer16BeforePtr.reset(new UChar[NormalizeBuffer16MaxChars]);
+    }
+    auto* normalizeBuffer16Before = normalizeBuffer16BeforePtr.get();
+
+    if ( ! normalizeBuffer16AfterPtr.get())
+    {
+        normalizeBuffer16AfterPtr.reset(new UChar[NormalizeBuffer16MaxChars]);
+    }
+    auto* normalizeBuffer16After = normalizeBuffer16AfterPtr.get();
+
+    if ( ! normalizeBuffer8Ptr.get())
+    {
+        normalizeBuffer8Ptr.reset(new char[NormalizeBuffer8MaxChars]);
+    }
+    auto* normalizeBuffer8 = normalizeBuffer8Ptr.get();
+
+    if (input.empty())
     {
         return input;
     }
 
     int32_t chars16Written = 0, chars8Written = 0;
     UErrorCode errorCode{};
-    const auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before.get(), NormalizeBuffer16MaxChars, &chars16Written,
-                                            input.data(), input.size(), &errorCode);
+    const auto u8to16Result = u_strFromUTF8(normalizeBuffer16Before, NormalizeBuffer16MaxChars, &chars16Written,
+                                            input.data(), static_cast<int32_t>(input.size()), &errorCode);
     if (U_FAILURE(errorCode))
     {
         return{};
@@ -85,15 +123,15 @@ static StringView normalize(StringView input)
 
     errorCode = {};
     const auto chars16NormalizedWritten = unorm2_normalize(normalizer, u8to16Result, chars16Written,
-                                                           normalizeBuffer16After.get(), NormalizeBuffer16MaxChars, &errorCode);
+                                                           normalizeBuffer16After, NormalizeBuffer16MaxChars, &errorCode);
     if (U_FAILURE(errorCode))
     {
         return{};
     }
 
     errorCode = {};
-    auto u16to8Result = u_strToUTF8(normalizeBuffer8.get(), NormalizeBuffer8MaxChars, &chars8Written,
-                                    normalizeBuffer16After.get(), chars16NormalizedWritten, &errorCode);
+    const auto u16to8Result = u_strToUTF8(normalizeBuffer8, NormalizeBuffer8MaxChars, &chars8Written,
+                                          normalizeBuffer16After, chars16NormalizedWritten, &errorCode);
     if (U_FAILURE(errorCode))
     {
         return{};
@@ -116,41 +154,25 @@ struct CommandHandler::CommandHandlerImpl
     StatisticsRepositoryRef statisticsRepository;
     MetricsRepositoryRef metricsRepository;
 
-    static bool checkNumberOfParameters(const std::vector<StringView>& parameters, size_t number)
+    static bool checkNumberOfParameters(const std::vector<StringView>& parameters, const size_t number)
     {
-        if (countNonEmpty(parameters) != number)
-        {
-            return false;
-        }
-        return true;
+        return countNonEmpty(parameters) == number;
     }
 
-    static bool checkNumberOfParametersAtLeast(const std::vector<StringView>& parameters, size_t number)
+    static bool checkNumberOfParametersAtLeast(const std::vector<StringView>& parameters, const size_t number)
     {
-        if (countNonEmpty(parameters) < number)
-        {
-            return false;
-        }
-        return true;
+        return countNonEmpty(parameters) >= number;
     }
 
     template<typename T>
     static bool convertTo(StringView value, T& result)
     {
-        if ( ! boost::conversion::try_lexical_convert(value.data(), value.size(), result))
-        {
-            return false;
-        }
-        return true;
+        return boost::conversion::try_lexical_convert(value.data(), value.size(), result);
     }
 
-    static bool checkMinNumberOfParameters(const std::vector<StringView>& parameters, size_t number)
+    static bool checkMinNumberOfParameters(const std::vector<StringView>& parameters, const size_t number)
     {
-        if (countNonEmpty(parameters) < number)
-        {
-            return false;
-        }
-        return true;
+        return countNonEmpty(parameters) >= number;
     }
 
     template<typename PrivilegeType, typename PrivilegeStringsType>
@@ -169,50 +191,55 @@ struct CommandHandler::CommandHandlerImpl
         return false;
     }
 
-    COMMAND_HANDLER_METHOD( SHOW_VERSION )
+    COMMAND_HANDLER_METHOD_SIMPLE( SHOW_VERSION )
     {
         return metricsRepository->getVersion(output);
     }
 
-    COMMAND_HANDLER_METHOD( COUNT_ENTITIES )
+    COMMAND_HANDLER_METHOD_SIMPLE( COUNT_ENTITIES )
     {
         return statisticsRepository->getEntitiesCount(output);
     }
 
     COMMAND_HANDLER_METHOD( ADD_USER )
     {
-        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         StringView normalizedParam;
-        if ((normalizedParam = normalize(parameters[0])).size() < 1) return INVALID_PARAMETERS;
-        return userRepository->addNewUser(normalizedParam, parameters[1], output);
+        if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
+        return userRepository->addNewUser(normalizedParam, Context::getCurrentUserAuth(), output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_BY_NAME )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_CURRENT_USER )
+    {
+        return userRepository->getCurrentUser(output);
+    }
+
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_BY_NAME )
     {
         return userRepository->getUsers(output, RetrieveUsersBy::Name);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_BY_CREATED )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_BY_CREATED )
     {
         return userRepository->getUsers(output, RetrieveUsersBy::Created);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_BY_LAST_SEEN )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_BY_LAST_SEEN )
     {
         return userRepository->getUsers(output, RetrieveUsersBy::LastSeen);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_BY_THREAD_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_BY_THREAD_COUNT )
     {
         return userRepository->getUsers(output, RetrieveUsersBy::ThreadCount);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_BY_MESSAGE_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_BY_MESSAGE_COUNT )
     {
         return userRepository->getUsers(output, RetrieveUsersBy::MessageCount);
     }
 
-    COMMAND_HANDLER_METHOD( GET_USERS_ONLINE )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_USERS_ONLINE )
     {
         return userRepository->getUsersOnline(output);
     }
@@ -247,8 +274,7 @@ struct CommandHandler::CommandHandlerImpl
 
     COMMAND_HANDLER_METHOD( GET_USER_VOTE_HISTORY )
     {
-        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        return userRepository->getUserVoteHistory(parameters[0], output);
+        return userRepository->getUserVoteHistory(output);
     }
 
     COMMAND_HANDLER_METHOD( CHANGE_USER_NAME )
@@ -298,27 +324,27 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->deleteUser(parameters[0], output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_NAME )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_THREADS_BY_NAME )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::Name);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_CREATED )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_THREADS_BY_CREATED )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::Created);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_LAST_UPDATED )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_THREADS_BY_LAST_UPDATED )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::LastUpdated);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_THREADS_BY_LATEST_MESSAGE_CREATED )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::LatestMessageCreated);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_THREADS_BY_MESSAGE_COUNT )
     {
         return discussionThreadRepository->getDiscussionThreads(output, RetrieveDiscussionThreadsBy::MessageCount);
     }
@@ -484,7 +510,7 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT )
     {
         if ( ! checkMinNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
-        auto& changeReason = parameters.size() > 2 ? parameters[2] : emptyString;
+        const auto changeReason = parameters.size() > 2 ? parameters[2] : EmptyString;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->changeDiscussionThreadMessageContent(parameters[0], normalizedParam,
@@ -527,7 +553,7 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadMessageRepository->getDiscussionThreadMessagesOfUserByCreated(parameters[0], output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_LATEST_DISCUSSION_THREAD_MESSAGES )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_LATEST_DISCUSSION_THREAD_MESSAGES )
     {
         return discussionThreadMessageRepository->getLatestDiscussionThreadMessages(output);
     }
@@ -546,7 +572,7 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadMessageRepository->addCommentToDiscussionThreadMessage(parameters[0], normalizedParam, output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_MESSAGE_COMMENTS )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_MESSAGE_COMMENTS )
     {
         return discussionThreadMessageRepository->getMessageComments(output);
     }
@@ -577,17 +603,17 @@ struct CommandHandler::CommandHandlerImpl
         return discussionTagRepository->addNewDiscussionTag(normalizedParam, output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_NAME )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_TAGS_BY_NAME )
     {
         return discussionTagRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::Name);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_THREAD_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_TAGS_BY_THREAD_COUNT )
     {
         return discussionTagRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::ThreadCount);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_TAGS_BY_MESSAGE_COUNT )
     {
         return discussionTagRepository->getDiscussionTags(output, RetrieveDiscussionTagsBy::MessageCount);
     }
@@ -663,7 +689,7 @@ struct CommandHandler::CommandHandlerImpl
     COMMAND_HANDLER_METHOD( ADD_DISCUSSION_CATEGORY )
     {
         if ( ! checkMinNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
-        auto& parentId = parameters.size() > 1 ? parameters[1] : emptyString;
+        const auto parentId = parameters.size() > 1 ? parameters[1] : EmptyString;
         StringView normalizedParam;
         if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
         return discussionCategoryRepository->addNewDiscussionCategory(normalizedParam, parentId, output);
@@ -675,17 +701,17 @@ struct CommandHandler::CommandHandlerImpl
         return discussionCategoryRepository->getDiscussionCategoryById(parameters[0], output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_NAME )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_CATEGORIES_BY_NAME )
     {
         return discussionCategoryRepository->getDiscussionCategories(output, RetrieveDiscussionCategoriesBy::Name);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_CATEGORIES_BY_MESSAGE_COUNT )
     {
         return discussionCategoryRepository->getDiscussionCategories(output, RetrieveDiscussionCategoriesBy::MessageCount);
     }
 
-    COMMAND_HANDLER_METHOD( GET_DISCUSSION_CATEGORIES_FROM_ROOT )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_CATEGORIES_FROM_ROOT )
     {
         return discussionCategoryRepository->getDiscussionCategoriesFromRoot(output);
     }
@@ -918,22 +944,22 @@ struct CommandHandler::CommandHandlerImpl
                 parameters[0], privilege, value, output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES )
     {
         return authorizationRepository->getForumWideCurrentUserPrivileges(output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_REQUIRED_PRIVILEGES )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_FORUM_WIDE_REQUIRED_PRIVILEGES )
     {
         return authorizationRepository->getForumWideRequiredPrivileges(output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVELS )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVELS )
     {
         return authorizationRepository->getForumWideDefaultPrivilegeLevels(output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_FORUM_WIDE_ASSIGNED_PRIVILEGES )
+    COMMAND_HANDLER_METHOD_SIMPLE( GET_FORUM_WIDE_ASSIGNED_PRIVILEGES )
     {
         return authorizationRepository->getForumWideAssignedPrivileges(output);
     }
@@ -1199,6 +1225,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
 
     setViewHandler(GET_FORUM_WIDE_CURRENT_USER_PRIVILEGES);
 
+    setViewHandler(GET_CURRENT_USER);
     setViewHandler(GET_USERS_BY_NAME);
     setViewHandler(GET_USERS_BY_CREATED);
     setViewHandler(GET_USERS_BY_LAST_SEEN);
@@ -1293,8 +1320,10 @@ WriteEvents& CommandHandler::writeEvents()
     return impl_->observerRepository->writeEvents();
 }
 
-CommandHandler::Result CommandHandler::handle(Command command, const std::vector<StringView>& parameters)
+CommandHandler::Result CommandHandler::handle(const Command command, const std::vector<StringView>& parameters)
 {
+    impl_->userRepository->updateCurrentUserId();
+
     const auto config = getGlobalConfig();
 
     if (config->service.disableCommands)
@@ -1307,10 +1336,13 @@ CommandHandler::Result CommandHandler::handle(Command command, const std::vector
         return{ StatusCode::NOT_ALLOWED, {} };
     }
 
+    auto& outputBuffer = getOutputBuffer();
+
+    outputBuffer.clear();
+
     StatusCode statusCode;
     if (command >= 0 && command < LAST_COMMAND)
     {
-        outputBuffer.clear();
         statusCode = impl_->commandHandlers[command](parameters, outputBuffer);
     }
     else
@@ -1326,12 +1358,17 @@ CommandHandler::Result CommandHandler::handle(Command command, const std::vector
     return { statusCode, outputBuffer.view() };
 }
 
-CommandHandler::Result CommandHandler::handle(View view, const std::vector<StringView>& parameters)
+CommandHandler::Result CommandHandler::handle(const View view, const std::vector<StringView>& parameters)
 {
+    impl_->userRepository->updateCurrentUserId();
+    
+    auto& outputBuffer = getOutputBuffer();
+
+    outputBuffer.clear();
+
     StatusCode statusCode;
     if (view >= 0 && view < LAST_VIEW)
     {
-        outputBuffer.clear();
         statusCode = impl_->viewHandlers[view](parameters, outputBuffer);
     }
     else

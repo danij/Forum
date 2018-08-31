@@ -18,6 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Application.h"
 #include "Configuration.h"
+#include "ConnectionManagerWithTimeout.h"
+#include "FixedHttpConnectionManager.h"
 #include "ContextProviders.h"
 #include "DefaultIOServiceProvider.h"
 #include "StringHelpers.h"
@@ -42,6 +44,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <fstream>
 #include <iostream>
+#include <string>
+
+#include <boost/dll.hpp>
+#include <boost/filesystem.hpp>
 
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/filter_parser.hpp>
@@ -55,42 +61,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Forum;
 using namespace Forum::Authorization;
 using namespace Forum::Commands;
+using namespace Forum::Configuration;
 using namespace Forum::Context;
+using namespace Forum::Extensibility;
 using namespace Forum::Network;
 using namespace Forum::Persistence;
 using namespace Forum::Repository;
 
 using namespace Http;
 
-bool Application::initialize(const std::string& configurationFileName)
+bool Application::initialize()
 {
-    try
-    {
-        std::ifstream input(configurationFileName);
-        Configuration::loadGlobalConfigFromStream(input);
-    }
-    catch(std::exception& ex)
-    {
-        std::cerr << "Error loading configuration: " << ex.what() << '\n';
-        return false;
-    }
-
     setApplicationEventCollection(std::make_unique<ApplicationEventCollection>());
-    setIOServiceProvider(std::make_unique<DefaultIOServiceProvider>());
+    setIOServiceProvider(std::make_unique<DefaultIOServiceProvider>(
+            Configuration::getGlobalConfig()->service.numberOfIOServiceThreads));
 
-    initializeLogging();
+    if ( ! initializeLogging()) return false;
 
     FORUM_LOG_INFO << "Starting Forum Backend v" << VERSION;
 
-    createCommandHandler();
-    FORUM_LOG_INFO << "Initialized command handlers";
-
-    FORUM_LOG_INFO << "Starting import of persisted events";
-    importEvents();
-
-    initializeHttp();
-
-    return true;
+    return createCommandHandler() && importEvents() && loadPlugins() && initializeHttp();
 }
 
 int Application::run(int argc, const char* argv[])
@@ -134,19 +124,12 @@ int Application::run(int argc, const char* argv[])
 
     const auto configFileName = arguments["config"].as<std::string>();
 
-    if ( ! boost::filesystem::exists(configFileName))
+    if ( ! loadConfiguration(configFileName))
     {
-        std::cerr << "The configuration file '" << configFileName << "' does not exist!\n";
         return 1;
     }
 
-    if ( ! boost::filesystem::is_regular_file(configFileName))
-    {
-        std::cerr << "The configuration file '" << configFileName << "' is not a regular file!\n";
-        return 1;
-    }
-
-    if ( ! initialize(configFileName))
+    if ( ! initialize())
     {
         std::cerr << "Initialization failed!\n";
         return 1;
@@ -158,27 +141,44 @@ int Application::run(int argc, const char* argv[])
 
     const auto config = Configuration::getGlobalConfig();
 
-    FORUM_LOG_INFO << "Starting to listen under "
-                   << config->service.listenIPAddress << ":" << config->service.listenPort;
-    try
     {
-        httpListener_->startListening();
+        FORUM_LOG_INFO << "Starting to listen under "
+                       << config->service.listenIPAddress << ":" << config->service.listenPort;
+        try
+        {
+            tcpListener_->startListening();
+        }
+        catch (std::exception& ex)
+        {
+            FORUM_LOG_ERROR << "Could not start listening: " << ex.what();
+            std::cerr << "Could not start listening: " << ex.what() << '\n';
+            return 1;
+        }
     }
-    catch(std::exception& ex)
     {
-        FORUM_LOG_ERROR << "Could not start listening: " << ex.what();
-        std::cerr << "Could not start listening: " << ex.what() << '\n';
-        return 1;
+        FORUM_LOG_INFO << "Starting to listen for auth requests under "
+                       << config->service.authListenIPAddress << ":" << config->service.authListenPort;
+        try
+        {
+            tcpListenerAuth_->startListening();
+        }
+        catch (std::exception& ex)
+        {
+            FORUM_LOG_ERROR << "Could not start listening: " << ex.what();
+            std::cerr << "Could not start listening: " << ex.what() << '\n';
+            return 1;
+        }
     }
 
     getIOServiceProvider().start();
     getIOServiceProvider().waitForStop();
 
-    httpListener_->stopListening();
+    tcpListenerAuth_->stopListening();
+    tcpListener_->stopListening();
 
     FORUM_LOG_INFO << "Stopped listening for HTTP connections";
 
-    events.beforeApplicationStop();
+    prepareToStop();
 
     cleanup();
 
@@ -187,10 +187,40 @@ int Application::run(int argc, const char* argv[])
 
 void Application::cleanup()
 {
+    plugins_.clear();
+
     Helpers::cleanupStringHelpers();
 
     //clean up resources cached by ICU so that they don't show up as memory leaks
     u_cleanup();
+}
+
+bool Application::loadConfiguration(const std::string& fileName)
+{
+    try
+    {
+        if ( ! boost::filesystem::exists(fileName))
+        {
+            std::cerr << "The configuration file '" << fileName << "' does not exist!\n";
+            return false;
+        }
+
+        if ( ! boost::filesystem::is_regular_file(fileName))
+        {
+            std::cerr << "The configuration file '" << fileName << "' is not a regular file!\n";
+            return false;
+        }
+
+        std::ifstream input(fileName);
+        Configuration::loadGlobalConfigFromStream(input);
+
+        return true;
+    }
+    catch (std::exception& ex)
+    {
+        std::cerr << "Error loading configuration: " << ex.what() << '\n';
+        return false;
+    }
 }
 
 void Application::validateConfiguration()
@@ -198,12 +228,12 @@ void Application::validateConfiguration()
     //TODO
 }
 
-void Application::createCommandHandler()
+bool Application::createCommandHandler()
 {
     const auto config = Configuration::getGlobalConfig();
     entityCollection_ = std::make_shared<Entities::EntityCollection>(config->persistence.messagesFile);
 
-    auto store = std::make_shared<MemoryStore>(entityCollection_);
+    auto store = memoryStore_ = std::make_shared<MemoryStore>(entityCollection_);    
     auto authorization = std::make_shared<DefaultAuthorization>(entityCollection_->grantedPrivileges(),
                                                                 *entityCollection_, config->service.disableThrottling);
 
@@ -213,7 +243,8 @@ void Application::createCommandHandler()
     auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization, authorizationRepository);
     auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization,
                                                                                          authorizationRepository);
-    auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, authorization);
+    auto discussionThreadMessageRepository = 
+            std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, authorization, authorizationRepository);
     auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
     auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store, authorization);
     auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store, authorization);
@@ -248,16 +279,22 @@ void Application::createCommandHandler()
                                                                persistenceConfig.outputFolder,
                                                                persistenceConfig.createNewOutputFileEverySeconds);
         (void)persistenceObserver_; //prevent unused member warnings, no need to use is explicitly
+
+        FORUM_LOG_INFO << "Initialized command handlers";
+
+        return true;
     }
     catch(std::exception& ex)
     {
         FORUM_LOG_FATAL << "Cannot create persistence observer: " << ex.what();
-        std::exit(1);
+        return false;
     }
 }
 
-void Application::importEvents()
+bool Application::importEvents()
 {
+    FORUM_LOG_INFO << "Starting import of persisted events";
+
     const auto forumConfig = Configuration::getGlobalConfig();
     auto& persistenceConfig = forumConfig->persistence;
 
@@ -272,45 +309,76 @@ void Application::importEvents()
     {
         FORUM_LOG_INFO << "Finished importing " << result.statistic.importedBlobs << " events out of "
                                                 << result.statistic.readBlobs << " blobs read";
+        return true;
     }
     else
     {
         FORUM_LOG_ERROR << "Import failed!";
-        std::exit(2);
+        return false;
     }
 }
 
-void Application::initializeHttp()
+bool Application::initializeHttp()
 {
     const auto forumConfig = Configuration::getGlobalConfig();
+    
+    auto& ioService = getIOServiceProvider().getIOService();
 
-    HttpListener::Configuration httpConfig;
-    httpConfig.numberOfIOServiceThreads = forumConfig->service.numberOfIOServiceThreads;
-    httpConfig.numberOfReadBuffers = forumConfig->service.numberOfReadBuffers;
-    httpConfig.numberOfWriteBuffers = forumConfig->service.numberOfWriteBuffers;
-    httpConfig.listenIPAddress = forumConfig->service.listenIPAddress;
-    httpConfig.listenPort = forumConfig->service.listenPort;
-    httpConfig.connectionTimeoutSeconds = forumConfig->service.connectionTimeoutSeconds;
-    httpConfig.trustIpFromXForwardedFor = forumConfig->service.trustIpFromXForwardedFor;
-
-    httpRouter_ = std::make_unique<HttpRouter>();
     endpointManager_ = std::make_unique<ServiceEndpointManager>(*commandHandler_);
-    endpointManager_->registerRoutes(*httpRouter_);
 
-    httpListener_ = std::make_unique<HttpListener>(httpConfig, *httpRouter_, getIOServiceProvider().getIOService());
+    {
+        //API listener
+        auto httpRouter = std::make_unique<HttpRouter>();
+        endpointManager_->registerRoutes(*httpRouter);
+
+        auto httpConnectionManager = std::make_shared<FixedHttpConnectionManager>(std::move(httpRouter),
+            forumConfig->service.connectionPoolSize,
+            forumConfig->service.numberOfReadBuffers,
+            forumConfig->service.numberOfWriteBuffers,
+            forumConfig->service.trustIpFromXForwardedFor);
+
+        auto connectionManagerWithTimeout = std::make_shared<ConnectionManagerWithTimeout>(ioService,
+            httpConnectionManager, forumConfig->service.connectionTimeoutSeconds);
+
+        tcpListener_ = std::make_unique<TcpListener>(ioService,
+            forumConfig->service.listenIPAddress,
+            forumConfig->service.listenPort,
+            connectionManagerWithTimeout);
+    }
+    {
+        //auth API listener
+        auto httpRouterAuth = std::make_unique<HttpRouter>();
+        endpointManager_->registerAuthRoutes(*httpRouterAuth);
+
+        auto httpConnectionManagerAuth = std::make_shared<FixedHttpConnectionManager>(std::move(httpRouterAuth),
+            forumConfig->service.connectionPoolSize,
+            forumConfig->service.numberOfReadBuffers,
+            forumConfig->service.numberOfWriteBuffers,
+            false);
+
+        auto connectionManagerWithTimeoutAuth = std::make_shared<ConnectionManagerWithTimeout>(ioService,
+            httpConnectionManagerAuth, forumConfig->service.connectionTimeoutSeconds);
+
+        tcpListenerAuth_ = std::make_unique<TcpListener>(ioService,
+            forumConfig->service.authListenIPAddress,
+            forumConfig->service.authListenPort,
+            connectionManagerWithTimeoutAuth);
+    }
+    return true;
 }
 
-void Application::initializeLogging()
+bool Application::initializeLogging()
 {
     const auto forumConfig = Configuration::getGlobalConfig();
     auto& settingsFile = forumConfig->logging.settingsFile;
 
-    if (settingsFile.size() < 1) return;
+    if (settingsFile.empty()) return true;
 
     std::ifstream file(settingsFile, std::ios::in);
     if ( ! file)
     {
         std::cerr << "Unable to find log settings file: " << settingsFile << '\n';
+        return false;
     }
     try
     {
@@ -322,5 +390,72 @@ void Application::initializeLogging()
     catch(std::exception& ex)
     {
         std::cerr << "Unable to load log settings from file: " << ex.what() << '\n';
+        return false;
     }
+    return true;
+}
+
+LoadedPlugin loadPlugin(const PluginEntry& entry, MemoryStore& memoryStore)
+{
+    FORUM_LOG_INFO << "\tLoading plugin from " << entry.libraryPath;
+
+    try
+    {
+        boost::dll::shared_library library(entry.libraryPath);
+        auto loadFn = library.get<PluginLoaderFn>("loadPlugin");
+
+        PluginInput input
+        {
+            &Entities::Private::getGlobalEntityCollection(),
+            &memoryStore.readEvents,
+            &memoryStore.writeEvents,
+            &entry.configuration
+        };
+        PluginPtr plugin;
+
+        loadFn(&input, &plugin);
+
+        if (plugin)
+        {
+            FORUM_LOG_INFO << "\t\tLoaded " << plugin->name() << " (version " << plugin->version() << ")";
+        }
+
+        return 
+        {
+            std::move(library),
+            std::move(plugin)
+        };
+    }
+    catch (std::exception& ex)
+    {
+        FORUM_LOG_ERROR << "Unable to load plugin: " << ex.what();
+        return {};
+    }
+}
+
+bool Application::loadPlugins()
+{
+    FORUM_LOG_INFO << "Loading plugins";
+
+    const auto forumConfig = Configuration::getGlobalConfig();
+
+    for (const auto& entry : forumConfig->plugins)
+    {
+        auto result = loadPlugin(entry, *memoryStore_);
+        if ( ! result.plugin) return false;
+
+        plugins_.emplace_back(std::move(result));
+    }
+
+    return true;
+}
+
+void Application::prepareToStop()
+{
+    for (auto loadedPlugin : plugins_)
+    {
+        loadedPlugin.plugin->stop();
+    }
+
+    getApplicationEvents().beforeApplicationStop();
 }

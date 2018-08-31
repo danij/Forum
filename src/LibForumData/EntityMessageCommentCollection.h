@@ -28,48 +28,45 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/multi_index/ranked_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 
-namespace Forum
+namespace Forum::Entities
 {
-    namespace Entities
+    class MessageCommentCollection final : boost::noncopyable
     {
-        class MessageCommentCollection final : private boost::noncopyable
-        {
-        public:
-            bool add(MessageCommentPtr comment);
-            bool remove(MessageCommentPtr comment);
+    public:
+        bool add(MessageCommentPtr comment);
+        bool remove(MessageCommentPtr comment);
 
-            auto count()          const { return byId_.size(); }
+        auto count()      const { return byId_.size(); }
 
-            auto byId()           const { return Helpers::toConst(byId_); }
-            auto byCreated()      const { return Helpers::toConst(byCreated_); }
+        auto byId()       const { return Helpers::toConst(byId_); }
+        auto& byId()            { return byId_; }
 
-            auto& byId()      { return byId_; }
-            auto& byCreated() { return byCreated_; }
+        auto byCreated()  const { return Helpers::toConst(byCreated_); }
+        auto& byCreated()       { return byCreated_; }
 
-        private:
-            HASHED_UNIQUE_COLLECTION(MessageComment, id) byId_;
+    private:
+        HASHED_UNIQUE_COLLECTION(MessageComment, id) byId_;
 
-            RANKED_COLLECTION(MessageComment, created) byCreated_;
-        };
+        RANKED_COLLECTION(MessageComment, created) byCreated_;
+    };
 
-        class MessageCommentCollectionLowMemory final : private boost::noncopyable
-        {
-        public:
-            bool add(MessageCommentPtr comment);
-            bool remove(MessageCommentPtr comment);
+    class MessageCommentCollectionLowMemory final : boost::noncopyable
+    {
+    public:
+        bool add(MessageCommentPtr comment);
+        bool remove(MessageCommentPtr comment);
 
-            auto count()          const { return byId_.size(); }
+        auto count()      const { return byId_.size(); }
 
-            auto byId()           const { return Helpers::toConst(byId_); }
-            auto byCreated()      const { return Helpers::toConst(byCreated_); }
+        auto byId()       const { return Helpers::toConst(byId_); }
+        auto& byId()            { return byId_; }
 
-            auto& byId()      { return byId_; }
-            auto& byCreated() { return byCreated_; }
+        auto byCreated()  const { return Helpers::toConst(byCreated_); }
+        auto& byCreated()       { return byCreated_; }
 
-        private:
-            SORTED_VECTOR_UNIQUE_COLLECTION(MessageComment, id) byId_;
+    private:
+        SORTED_VECTOR_UNIQUE_COLLECTION(MessageComment, id) byId_;
 
-            SORTED_VECTOR_COLLECTION(MessageComment, created) byCreated_;
-        };
-    }
+        SORTED_VECTOR_COLLECTION(MessageComment, created) byCreated_;
+    };
 }

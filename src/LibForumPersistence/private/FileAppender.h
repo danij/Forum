@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "PersistenceBlob.h"
+#include "SeparateThreadConsumer.h"
 
 #include <ctime>
 #include <string>
@@ -26,24 +26,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/noncopyable.hpp>
 #include <boost/filesystem.hpp>
 
-namespace Forum
+namespace Forum::Persistence
 {
-    namespace Persistence
+    class FileAppender final : boost::noncopyable
     {
-        class FileAppender final : private boost::noncopyable
-        {
-        public:
-            FileAppender(const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds);
+    public:
+        FileAppender(const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds);
 
-            void append(const Blob* blobs, size_t nrOfBlobs);
+        void append(const Helpers::SeparateThreadConsumerBlob* blobs, size_t nrOfBlobs);
 
-        private:
-            void updateCurrentFileIfNeeded();
+    private:
+        void updateCurrentFileIfNeeded();
 
-            boost::filesystem::path destinationFolder_;
-            std::string currentFileName_;
-            time_t refreshEverySeconds_;
-            time_t lastFileNameCreatedAt_;
-        };
-    }
+        boost::filesystem::path destinationFolder_;
+        std::string currentFileName_;
+        time_t refreshEverySeconds_;
+        time_t lastFileNameCreatedAt_;
+    };
 }

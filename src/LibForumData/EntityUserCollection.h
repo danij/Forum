@@ -30,70 +30,67 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/multi_index/ranked_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 
-namespace Forum
+namespace Forum::Entities
 {
-    namespace Entities
+    class UserCollection final : boost::noncopyable
     {
-        class UserCollection final : private boost::noncopyable
-        {
-        public:
-            bool add(UserPtr user);
-            bool remove(UserPtr user);
+    public:
+        bool add(UserPtr user);
+        bool remove(UserPtr user);
 
-            void stopBatchInsert();
+        void stopBatchInsert();
 
-            void prepareUpdateAuth(UserPtr user);
-            void updateAuth(UserPtr user);
+        void prepareUpdateAuth(UserPtr user);
+        void updateAuth(UserPtr user);
 
-            void prepareUpdateName(UserPtr user);
-            void updateName(UserPtr user);
+        void prepareUpdateName(UserPtr user);
+        void updateName(UserPtr user);
 
-            void prepareUpdateLastSeen(UserPtr user);
-            void updateLastSeen(UserPtr user);
+        void prepareUpdateLastSeen(UserPtr user);
+        void updateLastSeen(UserPtr user);
 
-            void prepareUpdateThreadCount(UserPtr user);
-            void updateThreadCount(UserPtr user);
+        void prepareUpdateThreadCount(UserPtr user);
+        void updateThreadCount(UserPtr user);
 
-            void prepareUpdateMessageCount(UserPtr user);
-            void updateMessageCount(UserPtr user);
+        void prepareUpdateMessageCount(UserPtr user);
+        void updateMessageCount(UserPtr user);
 
-            auto count()          const { return byId_.size(); }
+        auto count()          const { return byId_.size(); }
 
-            auto byId()           const { return Helpers::toConst(byId_); }
-            auto byAuth()         const { return Helpers::toConst(byAuth_); }
-            auto byName()         const { return Helpers::toConst(byName_); }
-            auto byCreated()      const { return Helpers::toConst(byCreated_); }
-            auto byLastSeen()     const { return Helpers::toConst(byLastSeen_); }
-            auto byThreadCount()  const { return Helpers::toConst(byThreadCount_); }
-            auto byMessageCount() const { return Helpers::toConst(byMessageCount_); }
+        auto byId()           const { return Helpers::toConst(byId_); }
+        auto byAuth()         const { return Helpers::toConst(byAuth_); }
+        auto byName()         const { return Helpers::toConst(byName_); }
+        auto byCreated()      const { return Helpers::toConst(byCreated_); }
+        auto byLastSeen()     const { return Helpers::toConst(byLastSeen_); }
+        auto byThreadCount()  const { return Helpers::toConst(byThreadCount_); }
+        auto byMessageCount() const { return Helpers::toConst(byMessageCount_); }
 
-            auto& byId()           { return byId_; }
-            auto& byAuth()         { return byAuth_; }
-            auto& byName()         { return byName_; }
-            auto& byCreated()      { return byCreated_; }
-            auto& byLastSeen()     { return byLastSeen_; }
-            auto& byThreadCount()  { return byThreadCount_; }
-            auto& byMessageCount() { return byMessageCount_; }
+        auto& byId()           { return byId_; }
+        auto& byAuth()         { return byAuth_; }
+        auto& byName()         { return byName_; }
+        auto& byCreated()      { return byCreated_; }
+        auto& byLastSeen()     { return byLastSeen_; }
+        auto& byThreadCount()  { return byThreadCount_; }
+        auto& byMessageCount() { return byMessageCount_; }
 
-        private:
-            HASHED_UNIQUE_COLLECTION(User, id) byId_;
+    private:
+        HASHED_UNIQUE_COLLECTION(User, id) byId_;
 
-            HASHED_UNIQUE_COLLECTION(User, auth) byAuth_;
-            HASHED_UNIQUE_COLLECTION_ITERATOR(byAuth_) byAuthUpdateIt_;
+        HASHED_UNIQUE_COLLECTION(User, auth) byAuth_;
+        HASHED_UNIQUE_COLLECTION_ITERATOR(byAuth_) byAuthUpdateIt_;
 
-            RANKED_UNIQUE_COLLECTION(User, name) byName_;
-            RANKED_UNIQUE_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
+        RANKED_UNIQUE_COLLECTION(User, name) byName_;
+        RANKED_UNIQUE_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
 
-            RANKED_COLLECTION(User, created) byCreated_;
+        RANKED_COLLECTION(User, created) byCreated_;
 
-            RANKED_COLLECTION(User, lastSeen) byLastSeen_;
-            RANKED_COLLECTION_ITERATOR(byLastSeen_) byLastSeenUpdateIt_;
+        RANKED_COLLECTION(User, lastSeen) byLastSeen_;
+        RANKED_COLLECTION_ITERATOR(byLastSeen_) byLastSeenUpdateIt_;
 
-            RANKED_COLLECTION(User, threadCount) byThreadCount_;
-            RANKED_COLLECTION_ITERATOR(byThreadCount_) byThreadCountUpdateIt_;
+        RANKED_COLLECTION(User, threadCount) byThreadCount_;
+        RANKED_COLLECTION_ITERATOR(byThreadCount_) byThreadCountUpdateIt_;
 
-            RANKED_COLLECTION(User, messageCount) byMessageCount_;
-            RANKED_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
-        };
-    }
+        RANKED_COLLECTION(User, messageCount) byMessageCount_;
+        RANKED_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
+    };
 }

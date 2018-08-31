@@ -22,16 +22,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ContextProviders.h"
 #include "EntitySerialization.h"
 #include "OutputHelpers.h"
+#include "TypeHelpers.h"
 
 #include <algorithm>
 #include <tuple>
-#include <type_traits>
 
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
 
-#include <boost/optional.hpp>
 #include <boost/endian/conversion.hpp>
+#include <boost/optional.hpp>
 
 using namespace Forum;
 using namespace Forum::Authorization;
@@ -61,6 +61,8 @@ PerformedByType PerformedByWithLastSeenUpdateGuard::get(const EntityCollection& 
     }
 
     const User& result = **it;
+
+    result.showInOnlineUsers() = Context::getCurrentUserShowInOnlineUsers();
 
     auto now = Context::getCurrentTime();
 
@@ -94,9 +96,9 @@ UserPtr PerformedByWithLastSeenUpdateGuard::getAndUpdate(EntityCollection& colle
     {
         return result;
     }
-
+    
     const auto now = Context::getCurrentTime();
-
+    
     if ((result->lastSeen() + getGlobalConfig()->user.lastSeenUpdatePrecision) < now)
     {
         result->updateLastSeen(now);
@@ -112,6 +114,9 @@ UserPtr Repository::getCurrentUser(EntityCollection& collection)
     {
         return anonymousUser();
     }
+
+    (*it)->showInOnlineUsers() = Context::getCurrentUserShowInOnlineUsers();
+
     return *it;
 }
 
@@ -161,8 +166,8 @@ bool MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace(StringView&
     std::copy(firstCharView.data(), firstCharView.data() + nrOfFirstCharBytes, firstLastUtf8);
     std::copy(lastCharView.data(), lastCharView.data() + nrOfLastCharBytes, firstLastUtf8 + nrOfFirstCharBytes);
 
-    const auto u16Chars = u_strFromUTF8(temp, std::extent<decltype(temp)>::value, &written,
-                                        firstLastUtf8, nrOfFirstCharBytes + nrOfLastCharBytes, &errorCode);
+    const auto u16Chars = u_strFromUTF8(temp, static_cast<int32_t>(std::size(temp)), &written, firstLastUtf8, 
+                                        static_cast<int32_t>(nrOfFirstCharBytes + nrOfLastCharBytes), &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     errorCode = {};
@@ -177,9 +182,9 @@ static boost::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView con
     static const unsigned char PNGStart[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
     static const unsigned char PNGIHDR[] = { 0x49, 0x48, 0x44, 0x52 };
 
-    const auto requiredSize = std::extent<decltype(PNGStart)>::value
+    const auto requiredSize = std::size(PNGStart)
                               + 4  //size
-                              + std::extent<decltype(PNGIHDR)>::value
+                              + std::size(PNGIHDR)
                               + 4  //width
                               + 4; //height
 
@@ -194,19 +199,19 @@ static boost::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView con
     {
         return{};
     }
-    data += std::extent<decltype(PNGStart)>::value;
+    data += std::size(PNGStart);
     data += 4;
     if ( ! std::equal(std::begin(PNGIHDR), std::end(PNGIHDR), data))
     {
         return{};
     }
-    data += std::extent<decltype(PNGIHDR)>::value;
+    data += std::size(PNGIHDR);
 
     uint32_t width, height;
-    memcpy(&width, data, sizeof(width));
+    readValue(data, width);
 
     data += 4;
-    memcpy(&height, data, sizeof(height));
+    readValue(data, height);
 
     boost::endian::big_to_native_inplace(width);
     boost::endian::big_to_native_inplace(height);
@@ -214,8 +219,8 @@ static boost::optional<std::tuple<uint32_t, uint32_t>> getPNGSize(StringView con
     return std::make_tuple(width, height);
 }
 
-StatusCode MemoryRepositoryBase::validateImage(StringView content, uint_fast32_t maxBinarySize, uint_fast32_t maxWidth,
-                                               uint_fast32_t maxHeight)
+StatusCode MemoryRepositoryBase::validateImage(StringView content, const uint_fast32_t maxBinarySize, 
+                                               const uint_fast32_t maxWidth, uint_fast32_t maxHeight)
 {
     if (content.empty())
     {

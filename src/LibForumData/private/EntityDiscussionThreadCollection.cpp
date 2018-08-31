@@ -45,6 +45,37 @@ bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr thread)
     return result;
 }
 
+bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr* threads, const size_t threadCount)
+{
+    if (threadCount < 1) return false;
+    assert(threads);
+
+    const auto sizeBefore = count();
+
+    prepareCountChange();
+
+    if (Context::isBatchInsertInProgress())
+    {
+        for (size_t i = 0; i < threadCount; ++i)
+        {
+            auto thread = threads[i];
+            temporaryThreads_.insert(std::make_pair(thread->id(), thread));
+        }
+    }
+    else
+    {
+        threads_.insert(threads, threads + threadCount);
+    }
+
+    finishCountChange();
+
+    const auto sizeAfter = count();
+
+    assert(sizeAfter >= sizeBefore);
+
+    return sizeAfter != sizeBefore;
+}
+
 void DiscussionThreadCollectionWithHashedId::prepareCountChange()
 {
     if (onPrepareCountChange_) onPrepareCountChange_();
@@ -169,6 +200,17 @@ bool DiscussionThreadCollectionWithHashedIdAndPinOrder::add(DiscussionThreadPtr 
     return true;
 }
 
+bool DiscussionThreadCollectionWithHashedIdAndPinOrder::add(DiscussionThreadPtr* threads, const size_t threadCount)
+{
+    if ( ! DiscussionThreadCollectionWithHashedId::add(threads, threadCount)) return false;
+
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        byPinDisplayOrder_.insert(threads, threads + threadCount);
+    }
+    return true;
+}
+
 bool DiscussionThreadCollectionWithHashedIdAndPinOrder::remove(DiscussionThreadPtr thread)
 {
     if ( ! DiscussionThreadCollectionWithHashedId::remove(thread)) return false;
@@ -183,6 +225,8 @@ bool DiscussionThreadCollectionWithHashedIdAndPinOrder::remove(DiscussionThreadP
 
 void DiscussionThreadCollectionWithHashedIdAndPinOrder::onStopBatchInsert()
 {
+    DiscussionThreadCollectionWithHashedId::onStopBatchInsert();
+
     byPinDisplayOrder_.clear();
 
     const auto valuesBegin = boost::make_transform_iterator(temporaryThreads_.begin(), GetPtrFromPair);

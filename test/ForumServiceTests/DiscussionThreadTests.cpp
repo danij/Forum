@@ -80,12 +80,6 @@ struct SerializedDiscussionMessageVote
     }
 };
 
-static bool SerializedDiscussionMessageVoteLess(const SerializedDiscussionMessageVote& first,
-                                                const SerializedDiscussionMessageVote& second)
-{
-    return first.at < second.at;
-};
-
 struct SerializedDiscussionMessageLastUpdated
 {
     Timestamp at = 0;
@@ -111,8 +105,8 @@ struct SerializedDiscussionMessage
     Timestamp created = 0;
     std::string ip;
     SerializedDiscussionThreadOrMessageUser createdBy;
-    std::vector<SerializedDiscussionMessageVote> upVotes;
-    std::vector<SerializedDiscussionMessageVote> downVotes;
+    size_t nrOfUpVotes;
+    size_t nrOfDownVotes;
     std::unique_ptr<SerializedDiscussionMessageLastUpdated> lastUpdated;
 
     void populate(const boost::property_tree::ptree& tree)
@@ -128,16 +122,13 @@ struct SerializedDiscussionMessage
                 lastUpdated = std::make_unique<SerializedDiscussionMessageLastUpdated>();
                 lastUpdated->populate(pair.second);
             }
-            //votes need to be sorted on the client to avoid the complexity of using multi-index containers on each message
-            if (pair.first == "upVotes")
+            if (pair.first == "nrOfUpVotes")
             {
-                upVotes = deserializeEntities<SerializedDiscussionMessageVote>(tree.get_child("upVotes"));
-                std::sort(upVotes.begin(), upVotes.end(), SerializedDiscussionMessageVoteLess);
+                nrOfUpVotes = tree.get<size_t>("nrOfUpVotes");
             }
-            if (pair.first == "downVotes")
+            if (pair.first == "nrOfDownVotes")
             {
-                downVotes = deserializeEntities<SerializedDiscussionMessageVote>(tree.get_child("downVotes"));
-                std::sort(downVotes.begin(), downVotes.end(), SerializedDiscussionMessageVoteLess);
+                nrOfDownVotes = tree.get<size_t>("nrOfDownVotes");
             }
         }
 
@@ -2265,8 +2256,8 @@ BOOST_AUTO_TEST_CASE( Voting_a_discussion_thread_message_can_only_occur_once_unl
 
     BOOST_REQUIRE_EQUAL(2u, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
-    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].upVotes.size());
-    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].downVotes.size());
+    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].nrOfUpVotes);
+    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].nrOfDownVotes);
 
     {
         LoggedInUserChanger _(user2Id);
@@ -2293,18 +2284,12 @@ BOOST_AUTO_TEST_CASE( Voting_a_discussion_thread_message_can_only_occur_once_unl
 
     BOOST_REQUIRE_EQUAL(2u, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
-    BOOST_REQUIRE_EQUAL(1u, thread.messages[0].upVotes.size());
-    BOOST_REQUIRE_EQUAL(user2Id, thread.messages[0].upVotes[0].userId);
-    BOOST_REQUIRE_EQUAL("User2", thread.messages[0].upVotes[0].userName);
-    BOOST_REQUIRE_EQUAL(3000, thread.messages[0].upVotes[0].at);
-    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].downVotes.size());
+    BOOST_REQUIRE_EQUAL(1u, thread.messages[0].nrOfUpVotes);
+    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].nrOfDownVotes);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
-    BOOST_REQUIRE_EQUAL(0u, thread.messages[1].upVotes.size());
-    BOOST_REQUIRE_EQUAL(1u, thread.messages[1].downVotes.size());
-    BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].downVotes[0].userId);
-    BOOST_REQUIRE_EQUAL("User2", thread.messages[1].downVotes[0].userName);
-    BOOST_REQUIRE_EQUAL(3000, thread.messages[1].downVotes[0].at);
+    BOOST_REQUIRE_EQUAL(0u, thread.messages[1].nrOfUpVotes);
+    BOOST_REQUIRE_EQUAL(1u, thread.messages[1].nrOfDownVotes);
 
     {
         LoggedInUserChanger _(user2Id);
@@ -2325,18 +2310,12 @@ BOOST_AUTO_TEST_CASE( Voting_a_discussion_thread_message_can_only_occur_once_unl
 
     BOOST_REQUIRE_EQUAL(2u, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
-    BOOST_REQUIRE_EQUAL(1u, thread.messages[0].upVotes.size());
-    BOOST_REQUIRE_EQUAL(user2Id, thread.messages[0].upVotes[0].userId);
-    BOOST_REQUIRE_EQUAL("User2", thread.messages[0].upVotes[0].userName);
-    BOOST_REQUIRE_EQUAL(3000, thread.messages[0].upVotes[0].at);
-    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].downVotes.size());
+    BOOST_REQUIRE_EQUAL(1u, thread.messages[0].nrOfUpVotes);
+    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].nrOfDownVotes);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
-    BOOST_REQUIRE_EQUAL(1u, thread.messages[1].upVotes.size());
-    BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].upVotes[0].userId);
-    BOOST_REQUIRE_EQUAL("User2", thread.messages[1].upVotes[0].userName);
-    BOOST_REQUIRE_EQUAL(4000, thread.messages[1].upVotes[0].at);
-    BOOST_REQUIRE_EQUAL(0u, thread.messages[1].downVotes.size());
+    BOOST_REQUIRE_EQUAL(1u, thread.messages[1].nrOfUpVotes);
+    BOOST_REQUIRE_EQUAL(0u, thread.messages[1].nrOfDownVotes);
 }
 
 BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_votes_cast_by_that_user )
@@ -2368,8 +2347,8 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_votes_cast_by_that_user )
 
     BOOST_REQUIRE_EQUAL(2u, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
-    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].upVotes.size());
-    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].downVotes.size());
+    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].nrOfUpVotes);
+    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].nrOfDownVotes);
 
     {
         LoggedInUserChanger _(user3Id);
@@ -2397,24 +2376,12 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_votes_cast_by_that_user )
 
     BOOST_REQUIRE_EQUAL(2u, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
-    BOOST_REQUIRE_EQUAL(1u, thread.messages[0].upVotes.size());
-    BOOST_REQUIRE_EQUAL(user2Id, thread.messages[0].upVotes[0].userId);
-    BOOST_REQUIRE_EQUAL("User2", thread.messages[0].upVotes[0].userName);
-    BOOST_REQUIRE_EQUAL(4000, thread.messages[0].upVotes[0].at);
-    BOOST_REQUIRE_EQUAL(1u, thread.messages[0].downVotes.size());
-    BOOST_REQUIRE_EQUAL(user3Id, thread.messages[0].downVotes[0].userId);
-    BOOST_REQUIRE_EQUAL("User3", thread.messages[0].downVotes[0].userName);
-    BOOST_REQUIRE_EQUAL(3000, thread.messages[0].downVotes[0].at);
+    BOOST_REQUIRE_EQUAL(1u, thread.messages[0].nrOfUpVotes);
+    BOOST_REQUIRE_EQUAL(1u, thread.messages[0].nrOfDownVotes);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
-    BOOST_REQUIRE_EQUAL(0u, thread.messages[1].upVotes.size());
-    BOOST_REQUIRE_EQUAL(2u, thread.messages[1].downVotes.size());
-    BOOST_REQUIRE_EQUAL(user3Id, thread.messages[1].downVotes[0].userId);
-    BOOST_REQUIRE_EQUAL("User3", thread.messages[1].downVotes[0].userName);
-    BOOST_REQUIRE_EQUAL(3000, thread.messages[1].downVotes[0].at);
-    BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].downVotes[1].userId);
-    BOOST_REQUIRE_EQUAL("User2", thread.messages[1].downVotes[1].userName);
-    BOOST_REQUIRE_EQUAL(4000, thread.messages[1].downVotes[1].at);
+    BOOST_REQUIRE_EQUAL(0u, thread.messages[1].nrOfUpVotes);
+    BOOST_REQUIRE_EQUAL(2u, thread.messages[1].nrOfDownVotes);
 
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_USER, { user3Id }));
 
@@ -2424,18 +2391,12 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_votes_cast_by_that_user )
 
     BOOST_REQUIRE_EQUAL(2u, thread.messages.size());
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
-    BOOST_REQUIRE_EQUAL(1u, thread.messages[0].upVotes.size());
-    BOOST_REQUIRE_EQUAL(user2Id, thread.messages[0].upVotes[0].userId);
-    BOOST_REQUIRE_EQUAL("User2", thread.messages[0].upVotes[0].userName);
-    BOOST_REQUIRE_EQUAL(4000, thread.messages[0].upVotes[0].at);
-    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].downVotes.size());
+    BOOST_REQUIRE_EQUAL(1u, thread.messages[0].nrOfUpVotes);
+    BOOST_REQUIRE_EQUAL(0u, thread.messages[0].nrOfDownVotes);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
-    BOOST_REQUIRE_EQUAL(0u, thread.messages[1].upVotes.size());
-    BOOST_REQUIRE_EQUAL(1u, thread.messages[1].downVotes.size());
-    BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].downVotes[0].userId);
-    BOOST_REQUIRE_EQUAL("User2", thread.messages[1].downVotes[0].userName);
-    BOOST_REQUIRE_EQUAL(4000, thread.messages[1].downVotes[0].at);
+    BOOST_REQUIRE_EQUAL(0u, thread.messages[1].nrOfUpVotes);
+    BOOST_REQUIRE_EQUAL(1u, thread.messages[1].nrOfDownVotes);
 }
 
 BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_does_not_include_votes )

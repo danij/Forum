@@ -5,10 +5,10 @@ enable_testing()
 include(TestBigEndian)
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(IS_BIG_ENDIAN)
-    message(FATAL_ERROR "Big endian is currently not supported by this project")
+    message(FATAL_ERROR "Big endian is currently not supported by this project.")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Werror -Wno-error=deprecated-declarations")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pedantic -Wall -Werror -Wno-error=deprecated-declarations")
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
@@ -26,6 +26,12 @@ endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 
+if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    add_definitions(-DDEBUG)
+else()
+    add_definitions(-DNDEBUG)
+endif()
+
 add_definitions(-DBOOST_ASIO_ENABLE_OLD_SERVICES)
 
 add_subdirectory(src/LibFastJsonWriter)
@@ -39,6 +45,9 @@ add_subdirectory(src/LibForumPersistence)
 add_subdirectory(src/ForumApp)
 
 add_subdirectory(test/ForumServiceTests)
+add_subdirectory(test/HttpTests)
 add_subdirectory(test/MemoryRepositoryBenchmarks)
 
+add_subdirectory(tools/HttpBenchmark)
 add_subdirectory(tools/MessageExtractor)
+add_subdirectory(tools/SearchDataExtractor)

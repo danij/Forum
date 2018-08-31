@@ -37,6 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 
 using namespace Forum::Commands;
+using namespace Forum::Entities;
 using namespace Forum::Repository;
 using namespace Forum::Helpers;
 using namespace Forum::Authorization;
@@ -45,7 +46,7 @@ std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
 {
     auto authorization = std::make_shared<AllowAllAuthorization>();
 
-    auto store = std::make_shared<MemoryStore>(std::make_shared<Entities::EntityCollection>(StringView{}));
+    auto store = std::make_shared<MemoryStore>(std::make_shared<EntityCollection>(StringView{}));
 
     auto authorizationRepository = std::make_shared<MemoryRepositoryAuthorization>(
             store, authorization, authorization, authorization, authorization, authorization);
@@ -53,7 +54,9 @@ std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
     auto userRepository = std::make_shared<MemoryRepositoryUser>(store, authorization, authorizationRepository);
     auto discussionThreadRepository = std::make_shared<MemoryRepositoryDiscussionThread>(store, authorization,
                                                                                          authorizationRepository);
-    auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, authorization);
+    auto discussionThreadMessageRepository = std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, 
+                                                                                                       authorization,
+                                                                                                       authorizationRepository);
     auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
     auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store, authorization);
     auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store, authorization);
@@ -211,7 +214,8 @@ TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& han
 
 TreeType Forum::Helpers::createUser(CommandHandlerRef& handler, const std::string& name)
 {
-    return handlerToObj(handler, Command::ADD_USER, { name, static_cast<std::string>(generateUniqueId()) });
+    Context::setCurrentUserAuth(static_cast<std::string>(generateUniqueId()));
+    return handlerToObj(handler, Command::ADD_USER, { name });
 }
 
 std::string Forum::Helpers::createUserAndGetId(CommandHandlerRef& handler, const std::string& name)

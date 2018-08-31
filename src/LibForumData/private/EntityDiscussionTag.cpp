@@ -27,24 +27,22 @@ DiscussionTag::ChangeNotification DiscussionTag::changeNotifications_;
 
 PrivilegeValueType DiscussionTag::getDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege) const
 {
-    auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege);
-    if (result) return result;
+    if (const auto result = DiscussionThreadMessagePrivilegeStore::getDiscussionThreadMessagePrivilege(privilege))
+            return result;
 
     return forumWidePrivileges_.getDiscussionThreadMessagePrivilege(privilege);
 }
 
 PrivilegeValueType DiscussionTag::getDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege) const
 {
-    auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege);
-    if (result) return result;
+    if (const auto result = DiscussionThreadPrivilegeStore::getDiscussionThreadPrivilege(privilege)) return result;
 
     return forumWidePrivileges_.getDiscussionThreadPrivilege(privilege);
 }
 
 PrivilegeValueType DiscussionTag::getDiscussionTagPrivilege(DiscussionTagPrivilege privilege) const
 {
-    auto result = DiscussionTagPrivilegeStore::getDiscussionTagPrivilege(privilege);
-    if (result) return result;
+    if (const auto result = DiscussionTagPrivilegeStore::getDiscussionTagPrivilege(privilege)) return result;
 
     return forumWidePrivileges_.getDiscussionTagPrivilege(privilege);
 }

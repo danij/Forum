@@ -14,6 +14,7 @@ set(SOURCE_FILES
 set(HEADER_FILES
         CommandHandler.h
         ServiceEndpointManager.h
+        private/AuthStore.h
         private/ServiceEndpoints.h)
 
 include_directories(

@@ -20,11 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "UuidString.h"
 
-namespace Forum
+namespace Forum::Helpers
 {
-    namespace Helpers
-    {
-        boost::uuids::uuid generateUUID();
-        Entities::UuidString generateUniqueId();
-    }
+    boost::uuids::uuid generateUUID();
+    UuidString generateUniqueId();
 }

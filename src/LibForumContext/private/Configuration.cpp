@@ -17,14 +17,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "Configuration.h"
-
-#include <boost/property_tree/json_parser.hpp>
 #include "ContextProviders.h"
 
-static std::shared_ptr<const Forum::Configuration::Config> currentConfig =
-        std::make_shared<const Forum::Configuration::Config>();
+#include <boost/property_tree/json_parser.hpp>
 
-std::shared_ptr<const Forum::Configuration::Config> Forum::Configuration::getGlobalConfig()
+using namespace Forum::Configuration;
+
+static std::shared_ptr<const Config> currentConfig = std::make_shared<const Config>();
+
+std::shared_ptr<const Config> Forum::Configuration::getGlobalConfig()
 {
     return std::atomic_load(&currentConfig);
 }
@@ -38,7 +39,20 @@ void Forum::Configuration::setGlobalConfig(const Config& value)
 #define LOAD_CONFIG_VALUE(path) \
     CONCAT_MEMBER(config, path) = tree.get<decltype(CONCAT_MEMBER(config, path))>(#path, CONCAT_MEMBER(config, path))
 
-void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
+static void loadPluginConfig(boost::property_tree::ptree& source, Config& config)
+{
+    for (const auto& [_, entry] : source.get_child("plugins"))
+    {
+        (void)_;
+        config.plugins.push_back(
+            {
+                entry.get<std::string>("libraryPath"),
+                entry.get_child("configuration")
+            });
+    }
+}
+
+void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
 {
     boost::property_tree::ptree tree;
     boost::property_tree::read_json(stream, tree);
@@ -61,6 +75,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(user.maxLogoHeight);
     LOAD_CONFIG_VALUE(user.defaultPrivilegeValueForLoggedInUser);
     LOAD_CONFIG_VALUE(user.resetVoteExpiresInSeconds);
+    LOAD_CONFIG_VALUE(user.visitorOnlineForSeconds);
 
     LOAD_CONFIG_VALUE(discussionThread.minNameLength);
     LOAD_CONFIG_VALUE(discussionThread.maxNameLength);
@@ -87,14 +102,18 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(service.numberOfIOServiceThreads);
     LOAD_CONFIG_VALUE(service.numberOfReadBuffers);
     LOAD_CONFIG_VALUE(service.numberOfWriteBuffers);
+    LOAD_CONFIG_VALUE(service.connectionPoolSize);
     LOAD_CONFIG_VALUE(service.listenIPAddress);
     LOAD_CONFIG_VALUE(service.listenPort);
+    LOAD_CONFIG_VALUE(service.authListenIPAddress);
+    LOAD_CONFIG_VALUE(service.authListenPort);
     LOAD_CONFIG_VALUE(service.connectionTimeoutSeconds);
     LOAD_CONFIG_VALUE(service.trustIpFromXForwardedFor);
     LOAD_CONFIG_VALUE(service.disableCommands);
     LOAD_CONFIG_VALUE(service.disableCommandsForAnonymousUsers);
     LOAD_CONFIG_VALUE(service.disableThrottling);
     LOAD_CONFIG_VALUE(service.responsePrefix);
+    LOAD_CONFIG_VALUE(service.expectedOriginReferer);
 
     LOAD_CONFIG_VALUE(logging.settingsFile);
 
@@ -103,6 +122,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(persistence.messagesFile);
     LOAD_CONFIG_VALUE(persistence.validateChecksum);
     LOAD_CONFIG_VALUE(persistence.createNewOutputFileEverySeconds);
+    LOAD_CONFIG_VALUE(persistence.persistIPAddresses);
 
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.view);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewRequiredPrivileges);
@@ -124,6 +144,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.view);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.viewRequiredPrivileges);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.viewAssignedPrivileges);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.getSubscribedUsers);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.subscribe);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.unsubscribe);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.addMessage);
@@ -159,7 +180,6 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.category.adjustPrivilege);
 
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.addUser);
-    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.login);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getEntitiesCount);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getVersion);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getAllUsers);
@@ -193,11 +213,14 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::ifstream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserLogo);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteOwnUserLogo);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteAnyUserLogo);
-    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getUserVoteHistory);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.noThrottling);
     
     LOAD_CONFIG_VALUE(defaultPrivilegeGrants.thread.create.value);
     LOAD_CONFIG_VALUE(defaultPrivilegeGrants.thread.create.duration);
+    LOAD_CONFIG_VALUE(defaultPrivilegeGrants.threadMessage.create.value);
+    LOAD_CONFIG_VALUE(defaultPrivilegeGrants.threadMessage.create.duration);
+
+    loadPluginConfig(tree, config);
 
     setGlobalConfig(config);
 }

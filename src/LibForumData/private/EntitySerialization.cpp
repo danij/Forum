@@ -21,8 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "StateHelpers.h"
 #include "OutputHelpers.h"
 
-#include <type_traits>
-
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -41,6 +39,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const EntitiesCount& value)
             << propertySafeName("discussionMessages", value.nrOfDiscussionMessages)
             << propertySafeName("discussionTags", value.nrOfDiscussionTags)
             << propertySafeName("discussionCategories", value.nrOfDiscussionCategories)
+            << propertySafeName("visitors", value.nrOfVisitors)
         << objEnd;
     return writer;
 }
@@ -51,7 +50,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const UuidString& id)
 
     id.toString(buffer);
 
-    return writer.writeSafeString(buffer, std::extent<decltype(buffer)>::value);
+    return writer.writeSafeString(buffer, std::size(buffer));
 }
 
 JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const SerializationRestriction& restriction)
@@ -61,9 +60,21 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
             << propertySafeName("id", user.id())
             << propertySafeName("name", user.name());
 
-    if (restriction.isAllowed(ForumWidePrivilege::GET_USER_INFO))
+    const auto sameUser = Context::getCurrentUserId() == user.id();
+
+    if (sameUser || restriction.isAllowed(ForumWidePrivilege::GET_USER_INFO))
     {
         writer << propertySafeName("info", user.info());
+    }
+
+    if (sameUser || restriction.isAllowed(ForumWidePrivilege::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER))
+    {
+        writer << propertySafeName("subscribedThreadCount", user.subscribedThreads().count());
+    }
+
+    if ((0 == user.lastSeen()) || user.showInOnlineUsers())
+    {
+        writer << propertySafeName("lastSeen", user.lastSeen());
     }
 
     writer
@@ -71,33 +82,11 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
             << propertySafeName("signature", user.signature())
             << propertySafeName("hasLogo", user.hasLogo())
             << propertySafeName("created", user.created())
-            << propertySafeName("lastSeen", user.lastSeen())
             << propertySafeName("threadCount", user.threads().count())
             << propertySafeName("messageCount", user.threadMessages().byId().size())
-            << propertySafeName("subscribedThreadCount", user.subscribedThreads().count())
             << propertySafeName("receivedUpVotes", user.receivedUpVotes())
             << propertySafeName("receivedDownVotes", user.receivedDownVotes())
         << objEnd;
-    return writer;
-}
-
-template<typename Collection, size_t NameSize>
-static JsonWriter& writeVotes(JsonWriter& writer, const char(&name)[NameSize], const Collection& votes)
-{
-    writer.newPropertyWithSafeName(name);
-    writer.startArray();
-    for (const auto& pair : votes)
-    {
-        if (auto user = pair.first)
-        {
-            writer << objStart
-                << propertySafeName("userId", user->id())
-                << propertySafeName("userName", user->name())
-                << propertySafeName("at", pair.second)
-                << objEnd;
-        }
-    }
-    writer.endArray();
     return writer;
 }
 
@@ -107,7 +96,7 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
     char buffer[IpAddress::MaxIPv6CharacterCount + 1];
     writer.newPropertyWithSafeName("ip");
 
-    const auto addressLength = visitDetails.ip.toString(buffer, std::extent<decltype(buffer)>::value);
+    const auto addressLength = visitDetails.ip.toString(buffer, std::size(buffer));
 
     writer.writeSafeString(buffer, addressLength);
     return writer;
@@ -203,8 +192,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
 
     if (allowViewVotes)
     {
-        writeVotes(writer, "upVotes", upVotes);
-        writeVotes(writer, "downVotes", downVotes);
+        writer << propertySafeName("nrOfUpVotes", upVotes.size());
+        writer << propertySafeName("nrOfDownVotes", downVotes.size());
     }
     auto voteStatus = 0;
     if (downVotes.find(serializationSettings.userToCheckVotesOf) != downVotes.end())
@@ -292,8 +281,6 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const MessageComment& commen
 
     if ( ! serializationSettings.hideMessageCommentMessage)
     {
-        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
-
         writer.newPropertyWithSafeName("message");
         serialize(writer, comment.parentMessage(), restriction);
     }
@@ -311,8 +298,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const MessageComment& commen
 
 //Overload to reduce the number of calls to the authorization engine for checking rights to each message
 template<typename Collection, size_t PropertyNameSize>
-void writeDiscussionThreadMessages(const Collection& collection, int_fast32_t pageNumber, int_fast32_t pageSize,
-                                   bool ascending, const char(&propertyName)[PropertyNameSize], JsonWriter& writer,
+void writeDiscussionThreadMessages(const Collection& collection, const int_fast32_t pageNumber, const int_fast32_t pageSize,
+                                   const bool ascending, const char(&propertyName)[PropertyNameSize], JsonWriter& writer,
                                    const SerializationRestriction& restriction)
 {
     auto totalCount = static_cast<int_fast32_t>(collection.size());
@@ -538,8 +525,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
 
     if ( ! serializationSettings.hideLatestMessage)
     {
-        auto latestMessage = category.latestMessage();
-        if (latestMessage)
+        if (const auto latestMessage = category.latestMessage())
         {
             BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
@@ -579,7 +565,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
 
     if (( ! serializationSettings.hideDiscussionCategoryParent) && (depth < maxDisplayDepth))
     {
-        if (DiscussionCategoryConstPtr parent = category.parent())
+        if (const DiscussionCategoryConstPtr parent = category.parent())
         {
             if (serializationSettings.onlySendCategoryParentId)
             {

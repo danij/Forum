@@ -23,14 +23,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstddef>
 #include <cstring>
 #include <memory>
-#include <type_traits>
+#include <string_view>
 
 #include <boost/noncopyable.hpp>
-#include <boost/utility/string_view.hpp>
 
 namespace Json
 {
-    class StringBuffer final : private boost::noncopyable
+    class StringBuffer final : boost::noncopyable
     {
     public:
         explicit StringBuffer(size_t growWith = 1024)
@@ -38,16 +37,13 @@ namespace Json
         {
             assert(growWith >= 128);
         }
-
-        StringBuffer(StringBuffer&&) = default;
-        StringBuffer& operator=(StringBuffer&&) = default;
-
+        
         void clear()
         {
             used_ = 0;
         }
 
-        void write(char value)
+        void write(const char value)
         {
             if (capacity_ < (used_ + sizeof(char)))
             {
@@ -64,23 +60,23 @@ namespace Json
             {
                 resize();
             }
-            memcpy(buffer_.get() + used_, value, Size);
+            memmove(buffer_.get() + used_, value, Size);
             used_ += Size;
         }
 
-        void write(const char* value, size_t size)
+        void write(const char* value, const size_t size)
         {
             while (capacity_ < (used_ + size))
             {
                 resize();
             }
-            std::copy(value, value + size, buffer_.get() + used_);
+            memmove(buffer_.get() + used_, value, size);
             used_ += size;
         }
 
-        boost::string_view view() const
+        std::string_view view() const
         {
-            return boost::string_view(buffer_.get(), used_);
+            return std::string_view(buffer_.get(), used_);
         }
 
     private:

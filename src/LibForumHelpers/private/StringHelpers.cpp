@@ -25,8 +25,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 
 #include <boost/noncopyable.hpp>
+#include <boost/thread/tss.hpp>
 
 #include <unicode/ucol.h>
+#include <unicode/ustring.h>
 
 using namespace Forum::Helpers;
 
@@ -78,22 +80,34 @@ std::unique_ptr<LocaleCache> LocaleCache::instance_;
 static constexpr size_t MaxSortKeyGenerationUCharBufferSize = 65536;
 static constexpr size_t MaxSortKeyGenerationDestinationBufferSize = 10 * MaxSortKeyGenerationUCharBufferSize;
 
-static thread_local std::unique_ptr<UChar[]> SortKeyGenerationUCharBuffer(new UChar[MaxSortKeyGenerationUCharBufferSize]);
-static thread_local std::unique_ptr<uint8_t[]> SortKeyGenerationDestinationBuffer(new uint8_t[MaxSortKeyGenerationDestinationBufferSize]);
+static boost::thread_specific_ptr<UChar> SortKeyGenerationUCharBufferPtr;
+static boost::thread_specific_ptr<uint8_t> SortKeyGenerationDestinationBufferPtr;
 
 static thread_local size_t CurrentSortKeyLength;
 
 size_t Forum::Helpers::calculateSortKey(StringView view)
 {
+    if ( ! SortKeyGenerationUCharBufferPtr.get())
+    {
+        SortKeyGenerationUCharBufferPtr.reset(new UChar[MaxSortKeyGenerationUCharBufferSize]);
+    }
+    auto* SortKeyGenerationUCharBuffer = SortKeyGenerationUCharBufferPtr.get();
+
+    if ( ! SortKeyGenerationDestinationBufferPtr.get())
+    {
+        SortKeyGenerationDestinationBufferPtr.reset(new uint8_t[MaxSortKeyGenerationDestinationBufferSize]);
+    }
+    auto* SortKeyGenerationDestinationBuffer = SortKeyGenerationDestinationBufferPtr.get();
+
     if (view.empty())
     {
-        SortKeyGenerationDestinationBuffer.get()[0] = 0;
+        SortKeyGenerationDestinationBuffer[0] = 0;
         return CurrentSortKeyLength = 1;
     }
 
     if (view.size() > (MaxSortKeyGenerationUCharBufferSize / 8))
     {
-        throw new std::runtime_error("String for which a sort key is to be generated is too big");
+        throw std::runtime_error("String for which a sort key is to be generated is too big");
     }
 
     const auto stringLength = view.size();
@@ -101,7 +115,7 @@ size_t Forum::Helpers::calculateSortKey(StringView view)
     int32_t u16Written{};
     UErrorCode errorCode{};
 
-    auto ucharBuffer = SortKeyGenerationUCharBuffer.get();
+    auto ucharBuffer = SortKeyGenerationUCharBuffer;
     std::unique_ptr<UChar[]> ucharBufferIfThreadLocalOneIsNotYetInitialized;
 
     if ( ! ucharBuffer)
@@ -111,18 +125,18 @@ size_t Forum::Helpers::calculateSortKey(StringView view)
     }
 
     auto u16Chars = u_strFromUTF8Lenient(ucharBuffer, MaxSortKeyGenerationUCharBufferSize,
-                                         &u16Written, view.data(), view.size(), &errorCode);
+                                         &u16Written, view.data(), static_cast<int32_t>(view.size()), &errorCode);
     if (U_FAILURE(errorCode))
     {
         //use string as sort key
         CurrentSortKeyLength = stringLength + 1;
-        std::copy(view.begin(), view.end(), SortKeyGenerationDestinationBuffer.get());
+        memmove(SortKeyGenerationDestinationBuffer, view.data(), view.size());
         SortKeyGenerationDestinationBuffer[CurrentSortKeyLength] = 0;
 
         return CurrentSortKeyLength;
     }
 
-    auto sortKeyBuffer = SortKeyGenerationDestinationBuffer.get();
+    auto sortKeyBuffer = SortKeyGenerationDestinationBuffer;
     std::unique_ptr<uint8_t[]> sortKeyBufferIfThreadLocalOneIsNotYetInitialized;
 
     if ( ! sortKeyBuffer)
@@ -139,7 +153,7 @@ size_t Forum::Helpers::calculateSortKey(StringView view)
 
 char* Forum::Helpers::getCurrentSortKey()
 {
-    return reinterpret_cast<char*>(SortKeyGenerationDestinationBuffer.get());
+    return reinterpret_cast<char*>(SortKeyGenerationDestinationBufferPtr.get());
 }
 
 size_t Forum::Helpers::getCurrentSortKeyLength()

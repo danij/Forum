@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <boost/utility/string_view.hpp>
+#include <string_view>
 
 namespace Http
 {
@@ -27,16 +27,32 @@ namespace Http
 #undef DELETE
 #endif
 
+#ifndef HTTP_READ_BUFFER_SIZE
+#define HTTP_READ_BUFFER_SIZE 4096
+#endif
+
+#ifndef HTTP_MAXIMUM_BUFFERS_FOR_REQUEST_BODY
+#define HTTP_MAXIMUM_BUFFERS_FOR_REQUEST_BODY 100
+#endif
+
+#ifndef HTTP_MAXIMUM_BUFFERS_FOR_RESPONSE
+#define HTTP_MAXIMUM_BUFFERS_FOR_RESPONSE 256
+#endif
+
+#ifndef HTTP_WRITE_BUFFER_SIZE
+#define HTTP_WRITE_BUFFER_SIZE 8192
+#endif
+
     namespace Buffer
     {
         /**
         * Each request needs at least one buffer; the request header must fit into one buffer to avoid fragmentation
         */
-        static constexpr size_t ReadBufferSize = 4096;
+        static constexpr size_t ReadBufferSize = HTTP_READ_BUFFER_SIZE;
         /**
         * The body of a request can occupy at most this amount of buffers
         */
-        static constexpr size_t MaximumBuffersForRequestBody = 100;
+        static constexpr size_t MaximumBuffersForRequestBody = HTTP_MAXIMUM_BUFFERS_FOR_REQUEST_BODY;
         /**
         * The maximum size of a request body
         */
@@ -44,11 +60,11 @@ namespace Http
         /**
         * The response can occupy at most this amount of buffers
         */
-        static constexpr size_t MaximumBuffersForResponse = 256;
+        static constexpr size_t MaximumBuffersForResponse = HTTP_MAXIMUM_BUFFERS_FOR_RESPONSE;
         /**
         * Each response can request multiple buffers
         */
-        static constexpr size_t WriteBufferSize = 8192;
+        static constexpr size_t WriteBufferSize = HTTP_WRITE_BUFFER_SIZE;
     }
 
     enum class HttpVerb
@@ -116,7 +132,7 @@ namespace Http
         HTTP_STATUS_CODES_COUNT
     };
 
-    typedef boost::string_view HttpStringView;
+    typedef std::string_view HttpStringView;
 
     HttpStringView getStatusCodeString(HttpStatusCode code);
 
@@ -162,6 +178,7 @@ namespace Http
             Last_Modified,
             Location,
             Max_Forwards,
+            Origin,
             Pragma,
             Proxy_Authenticate,
             Proxy_Authorization,
@@ -182,6 +199,7 @@ namespace Http
             X_ATT_DeviceId,
             X_Correlation_ID,
             X_Csrf_Token,
+            X_Double_Submit,
             X_Forwarded_For,
             X_Forwarded_Host,
             X_Forwarded_Proto,
@@ -194,6 +212,6 @@ namespace Http
             HTTP_HEADERS_COUNT
         };
 
-        HttpHeader matchHttpHeader(const char* headerName, size_t size);
+        HttpHeader matchHttpHeader(HttpStringView header);
     }
 }

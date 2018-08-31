@@ -28,108 +28,104 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
-#include <boost/multi_index/ranked_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 
-namespace Forum
+namespace Forum::Entities
 {
-    namespace Entities
+    class DiscussionThreadMessageCollection final : boost::noncopyable
     {
-        class DiscussionThreadMessageCollection final : private boost::noncopyable
+    public:
+        bool add(DiscussionThreadMessagePtr message);
+        bool add(DiscussionThreadMessageCollection& collection);
+        bool remove(DiscussionThreadMessagePtr message);
+        void clear();
+
+        void stopBatchInsert();
+
+        auto& onPrepareCountChange() { return onPrepareCountChange_; }
+        auto& onCountChange()        { return onCountChange_; }
+
+        auto count()           const { return byId_.size(); }
+                              
+        auto byId()            const { return Helpers::toConst(byId_); }
+        auto& byId()                 { return byId_; }
+                              
+        auto byCreated()       const { return Helpers::toConst(byCreated_); }
+        auto& byCreated()            { return byCreated_; }
+
+        boost::optional<size_t> findRankByCreated(IdTypeRef messageId) const
         {
-        public:
-            bool add(DiscussionThreadMessagePtr message);
-            bool add(DiscussionThreadMessageCollection& collection);
-            bool remove(DiscussionThreadMessagePtr message);
-            void clear();
-
-            void stopBatchInsert();
-
-            auto& onPrepareCountChange() { return onPrepareCountChange_; }
-            auto& onCountChange()        { return onCountChange_; }
-
-            auto count()          const { return byId_.size(); }
-
-            auto byId()           const { return Helpers::toConst(byId_); }
-            auto byCreated()      const { return Helpers::toConst(byCreated_); }
-
-            auto& byId()      { return byId_; }
-            auto& byCreated() { return byCreated_; }
-
-            boost::optional<size_t> findRankByCreated(IdTypeRef messageId) const
+            const auto idIt = byId_.find(messageId);
+            if (idIt == byId_.end())
             {
-                const auto idIt = byId_.find(messageId);
-                if (idIt == byId_.end())
-                {
-                    return{};
-                }
-                const auto range = byCreated_.equal_range(*idIt);
-                for (auto it = range.first; it != range.second; ++it)
-                {
-                    if (*it == *idIt)
-                    {
-                        return byCreated_.index_of(it);
-                    }
-                }
                 return{};
             }
-
-        private:
-            HASHED_UNIQUE_COLLECTION(DiscussionThreadMessage, id) byId_;
-
-            SORTED_VECTOR_COLLECTION(DiscussionThreadMessage, created) byCreated_;
-
-            std::function<void()> onPrepareCountChange_;
-            std::function<void()> onCountChange_;
-        };
-
-        class DiscussionThreadMessageCollectionLowMemory final : private boost::noncopyable
-        {
-        public:
-            bool add(DiscussionThreadMessagePtr message);
-            bool add(DiscussionThreadMessageCollectionLowMemory& collection);
-            bool remove(DiscussionThreadMessagePtr message);
-            void clear();
-
-            void stopBatchInsert();
-
-            auto& onPrepareCountChange() { return onPrepareCountChange_; }
-            auto& onCountChange()        { return onCountChange_; }
-
-            auto count()          const { return byId_.size(); }
-            auto empty()          const { return byId_.empty(); }
-
-            auto byId()           const { return Helpers::toConst(byId_); }
-            auto byCreated()      const { return Helpers::toConst(byCreated_); }
-
-            auto& byId()      { return byId_; }
-            auto& byCreated() { return byCreated_; }
-
-            boost::optional<size_t> findRankByCreated(IdTypeRef messageId) const
+            const auto range = byCreated_.equal_range(*idIt);
+            for (auto it = range.first; it != range.second; ++it)
             {
-                const auto idIt = byId_.find(messageId);
-                if (idIt == byId_.end())
+                if (*it == *idIt)
                 {
-                    return{};
+                    return byCreated_.index_of(it);
                 }
-                const auto range = byCreated_.equal_range(*idIt);
-                for (auto it = range.first; it != range.second; ++it)
-                {
-                    if (*it == *idIt)
-                    {
-                        return byCreated_.index_of(it);
-                    }
-                }
+            }
+            return{};
+        }
+
+    private:
+        HASHED_UNIQUE_COLLECTION(DiscussionThreadMessage, id) byId_;
+
+        SORTED_VECTOR_COLLECTION(DiscussionThreadMessage, created) byCreated_;
+
+        std::function<void()> onPrepareCountChange_;
+        std::function<void()> onCountChange_;
+    };
+
+    class DiscussionThreadMessageCollectionLowMemory final : boost::noncopyable
+    {
+    public:
+        bool add(DiscussionThreadMessagePtr message);
+        bool add(DiscussionThreadMessageCollectionLowMemory& collection);
+        bool remove(DiscussionThreadMessagePtr message);
+        void clear();
+
+        void stopBatchInsert();
+
+        auto& onPrepareCountChange() { return onPrepareCountChange_; }
+        auto& onCountChange()        { return onCountChange_; }
+
+        auto count()          const { return byId_.size(); }
+        auto empty()          const { return byId_.empty(); }
+
+        auto byId()           const { return Helpers::toConst(byId_); }
+        auto& byId()                { return byId_; }
+
+        auto byCreated()      const { return Helpers::toConst(byCreated_); }
+        auto& byCreated()           { return byCreated_; }
+
+        boost::optional<size_t> findRankByCreated(IdTypeRef messageId) const
+        {
+            const auto idIt = byId_.find(messageId);
+            if (idIt == byId_.end())
+            {
                 return{};
             }
+            const auto range = byCreated_.equal_range(*idIt);
+            for (auto it = range.first; it != range.second; ++it)
+            {
+                if (*it == *idIt)
+                {
+                    return byCreated_.index_of(it);
+                }
+            }
+            return{};
+        }
 
-        private:
-            SORTED_VECTOR_UNIQUE_COLLECTION(DiscussionThreadMessage, id) byId_;
+    private:
+        SORTED_VECTOR_UNIQUE_COLLECTION(DiscussionThreadMessage, id) byId_;
 
-            SORTED_VECTOR_COLLECTION(DiscussionThreadMessage, created) byCreated_;
+        SORTED_VECTOR_COLLECTION(DiscussionThreadMessage, created) byCreated_;
 
-            std::function<void()> onPrepareCountChange_;
-            std::function<void()> onCountChange_;
-        };
-    }
+        std::function<void()> onPrepareCountChange_;
+        std::function<void()> onCountChange_;
+    };
 }

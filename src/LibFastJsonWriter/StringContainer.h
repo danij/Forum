@@ -81,7 +81,7 @@ namespace Json
     }
 
     template <size_t StackSize, typename SizeType>
-    StringContainer<StackSize, SizeType>::StringContainer(size_t size) : size_(size)
+    StringContainer<StackSize, SizeType>::StringContainer(const size_t size) : size_(size)
     {
         if (usingHeapBuffer())
         {

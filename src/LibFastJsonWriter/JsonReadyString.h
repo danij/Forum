@@ -22,9 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 #include <cstdint>
-
-#include <boost/utility/string_view.hpp>
-#include <boost/functional/hash.hpp>
+#include <string_view>
 
 namespace Json
 {
@@ -34,17 +32,20 @@ namespace Json
         uint32_t size    :31;
 
         SizeWithBool() : boolean(0), size(0) {}
-        SizeWithBool(size_t size) : boolean(0), size(static_cast<decltype(SizeWithBool::size)>(size)) {}
+        explicit SizeWithBool(const size_t size) : boolean(0), size(static_cast<decltype(SizeWithBool::size)>(size)) {}
+        ~SizeWithBool() = default;
 
         SizeWithBool(const SizeWithBool&) = default;
+        SizeWithBool(SizeWithBool&&) = default;
         SizeWithBool& operator=(const SizeWithBool&) = default;
+        SizeWithBool& operator=(SizeWithBool&&) = default;
 
         explicit operator size_t() const noexcept
         {
             return static_cast<size_t>(size);
         }
 
-        SizeWithBool& operator=(size_t value) noexcept
+        SizeWithBool& operator=(const size_t value) noexcept
         {
             size = static_cast<decltype(size)>(value);
             return *this;
@@ -55,7 +56,7 @@ namespace Json
             return boolean != 0;
         }
 
-        SizeWithBool& operator=(bool value) noexcept
+        SizeWithBool& operator=(const bool value) noexcept
         {
             boolean = value ? 1 : 0;
             return *this;
@@ -66,7 +67,7 @@ namespace Json
     class JsonReadyStringBase
     {
     public:
-        explicit JsonReadyStringBase(boost::string_view source);
+        explicit JsonReadyStringBase(std::string_view source);
         virtual ~JsonReadyStringBase() = default;
 
         JsonReadyStringBase(const JsonReadyStringBase&) = default;
@@ -79,8 +80,8 @@ namespace Json
 
         bool needsJsonEscape() const noexcept;
 
-        boost::string_view string() const noexcept;
-        boost::string_view quotedString() const noexcept;
+        std::string_view string() const noexcept;
+        std::string_view quotedString() const noexcept;
 
     protected:
         StringContainer<StackSize, SizeType> container_;
@@ -92,7 +93,8 @@ namespace Json
     class JsonReadyString : public JsonReadyStringBase<StackSize, JsonReadyString<StackSize>>
     {
     public:
-        explicit JsonReadyString(boost::string_view source);
+        explicit JsonReadyString(std::string_view source);
+        ~JsonReadyString() = default;
         JsonReadyString(const JsonReadyString&) = default;
         JsonReadyString(JsonReadyString&&) noexcept = default;
 
@@ -101,11 +103,11 @@ namespace Json
 
         size_t getExtraSize() const noexcept;
 
-        static size_t extraBytesNeeded(boost::string_view source);
+        static size_t extraBytesNeeded(std::string_view source);
     };
 
     template <size_t StackSize, typename Derived, typename SizeType>
-    JsonReadyStringBase<StackSize, Derived, SizeType>::JsonReadyStringBase(boost::string_view source)
+    JsonReadyStringBase<StackSize, Derived, SizeType>::JsonReadyStringBase(std::string_view source)
     {
         auto sourceSize = source.size();
         auto bytesNeeded = sourceSize;
@@ -147,12 +149,12 @@ namespace Json
     }
 
     template <size_t StackSize, typename Derived, typename SizeType>
-    boost::string_view JsonReadyStringBase<StackSize, Derived, SizeType>::string() const noexcept
+    std::string_view JsonReadyStringBase<StackSize, Derived, SizeType>::string() const noexcept
     {
         auto strStart = *container_;
         auto extraSize = static_cast<const Derived*>(this)->getExtraSize();
 
-        auto strSize = static_cast<boost::string_view::size_type>(container_.size());
+        auto strSize = static_cast<std::string_view::size_type>(container_.size());
         assert(strSize > extraSize);
 
         strSize -= extraSize;
@@ -164,11 +166,11 @@ namespace Json
             strSize -= 2;
         }
 
-        return boost::string_view(strStart, strSize);
+        return std::string_view(strStart, strSize);
     }
 
     template <size_t StackSize, typename Derived, typename SizeType>
-    boost::string_view JsonReadyStringBase<StackSize, Derived, SizeType>::quotedString() const noexcept
+    std::string_view JsonReadyStringBase<StackSize, Derived, SizeType>::quotedString() const noexcept
     {
         if (needsJsonEscape())
         {
@@ -177,22 +179,22 @@ namespace Json
         }
 
         auto extraSize = static_cast<const Derived*>(this)->getExtraSize();
-        auto strSize = static_cast<boost::string_view::size_type>(container_.size());
+        auto strSize = static_cast<std::string_view::size_type>(container_.size());
 
         assert(strSize > extraSize);
         strSize -= extraSize;
 
-        return boost::string_view(*container_, strSize);
+        return std::string_view(*container_, strSize);
     }
 
     template <size_t StackSize>
-    JsonReadyString<StackSize>::JsonReadyString(boost::string_view source)
+    JsonReadyString<StackSize>::JsonReadyString(std::string_view source)
         : JsonReadyStringBase<StackSize, JsonReadyString<StackSize>>(source)
     {
     }
 
     template <size_t StackSize>
-    size_t JsonReadyString<StackSize>::extraBytesNeeded(boost::string_view source)
+    size_t JsonReadyString<StackSize>::extraBytesNeeded(std::string_view /*source*/)
     {
         return 0;
     }
@@ -211,7 +213,7 @@ namespace std
     {
         size_t operator()(const Json::JsonReadyStringBase<StackSize, Derived, SizeType>& value) const
         {
-            return boost::hash<boost::string_view>{}(value.string());
+            return std::hash<std::string_view>{}(value.string());
         }
     };
 }

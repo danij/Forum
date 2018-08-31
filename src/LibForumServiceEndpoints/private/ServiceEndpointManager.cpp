@@ -68,6 +68,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "statistics/entitycount", HttpVerb::GET, ENDPOINT_DELEGATE(statisticsEndpoint.getEntitiesCount) },
 
         { "users",                   HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getAll) },
+        { "users/current",           HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getCurrent) },
         { "users/online",            HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getOnline) },
         { "users/id",                HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserById) },
         { "users/name",              HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserByName) },
@@ -173,8 +174,21 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "privileges/forum_wide/assign",                      HttpVerb::POST, ENDPOINT_DELEGATE(authorizationEndpoint.assignForumWidePrivilege) }
     };
 
-    for (auto& tuple : routes)
+    for (auto& [pathLowerCase, verb, handler] : routes)
     {
-        router.addRoute(std::get<0>(tuple), std::get<1>(tuple), std::move(std::get<2>(tuple)));
+        router.addRoute(pathLowerCase, verb, std::move(handler));
+    }
+}
+
+void ServiceEndpointManager::registerAuthRoutes(HttpRouter& router)
+{
+    std::tuple<StringView, HttpVerb, HttpRouter::HandlerFn> routes[] =
+    {
+        { "login", HttpVerb::POST, ENDPOINT_DELEGATE(usersEndpoint.login) }
+    };
+
+    for (auto& [pathLowerCase, verb, handler] : routes)
+    {
+        router.addRoute(pathLowerCase, verb, std::move(handler));
     }
 }

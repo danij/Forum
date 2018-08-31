@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/test/unit_test.hpp>
 
-using namespace Forum::Entities;
+using namespace Forum::Helpers;
 
 BOOST_AUTO_TEST_CASE( UuidString_can_be_converted_to_and_from_strings )
 {
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE( UuidString_can_be_converted_to_and_from_string_views )
 {
     const char* uuidString = "084904c2-22a1-4c79-8284-7c78dd065048";
 
-    UuidString uuid(boost::string_view{ uuidString });
+    UuidString uuid(std::string_view{ uuidString });
 
     auto convertedString = static_cast<std::string>(uuid);
 
@@ -53,10 +53,10 @@ BOOST_AUTO_TEST_CASE( Multiple_UuidStrings_can_be_parsed_from_a_string_view )
 
     const auto distance = std::distance(output.begin(), lastInsertAt);
     BOOST_REQUIRE_EQUAL(static_cast<decltype(distance)>(output.size()), distance);
-    BOOST_REQUIRE_EQUAL(UuidString(boost::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
-    BOOST_REQUIRE_EQUAL(UuidString(boost::string_view("084904c2-22A1-4C79-8284-7c78dd065048")), output[1]);
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22A1-4C79-8284-7c78dd065048")), output[1]);
     BOOST_REQUIRE_EQUAL(output[0], output[1]);
-    BOOST_REQUIRE_EQUAL(UuidString(boost::string_view("E99A4894-D285-43D5-AA0C-E4DA00DAC2A0")), output[2]);
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("E99A4894-D285-43D5-AA0C-E4DA00DAC2A0")), output[2]);
 }
 
 BOOST_AUTO_TEST_CASE( Multiple_UuidStrings_can_be_parsed_from_a_string_view_ignoring_invalid_values )
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE( Multiple_UuidStrings_can_be_parsed_from_a_string_view_igno
 
     const auto distance = std::distance(output.begin(), lastInsertAt);
     BOOST_REQUIRE_EQUAL(static_cast<decltype(distance)>(1), distance);
-    BOOST_REQUIRE_EQUAL(UuidString(boost::string_view("E99A4894-D285-43D5-AA0C-E4DA00DAC2A0")), output[0]);
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("E99A4894-D285-43D5-AA0C-E4DA00DAC2A0")), output[0]);
 }
 
 BOOST_AUTO_TEST_CASE( Multiple_UuidStrings_can_be_parsed_from_a_string_view_without_exceeding_the_output_container )
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( Multiple_UuidStrings_can_be_parsed_from_a_string_view_with
 
     const auto distance = std::distance(output.begin(), lastInsertAt);
     BOOST_REQUIRE_EQUAL(static_cast<decltype(distance)>(2), distance);
-    BOOST_REQUIRE_EQUAL(UuidString(boost::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
-    BOOST_REQUIRE_EQUAL(UuidString(boost::string_view("084904c2-22A1-4C79-8284-7c78dd065048")), output[1]);
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22A1-4C79-8284-7c78dd065048")), output[1]);
     BOOST_REQUIRE_EQUAL(output[0], output[1]);
 }

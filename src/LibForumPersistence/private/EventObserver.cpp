@@ -17,24 +17,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "EventObserver.h"
-#include "PersistenceBlob.h"
 #include "PersistenceFormat.h"
 #include "FileAppender.h"
 #include "TypeHelpers.h"
 #include "Logging.h"
+#include "SeparateThreadConsumer.h"
 
-#include <atomic>
 #include <chrono>
-#include <condition_variable>
 #include <map>
 #include <mutex>
 #include <numeric>
 #include <thread>
-#include <type_traits>
 #include <vector>
 #include <cstring>
-
-#include <boost/lockfree/queue.hpp>
 
 using namespace Forum;
 using namespace Forum::Persistence;
@@ -55,76 +50,44 @@ struct BlobPart
     }
 };
 
-class EventCollector final : private boost::noncopyable
+class EventCollector final : public SeparateThreadConsumer<EventCollector, SeparateThreadConsumerBlob>
 {
 public:
-    EventCollector(const boost::filesystem::path& destinationFolder, time_t refreshEverySeconds)
-        : appender_(destinationFolder, refreshEverySeconds)
+    EventCollector(const boost::filesystem::path& destinationFolder, const time_t refreshEverySeconds)
+        : SeparateThreadConsumer<EventCollector, SeparateThreadConsumerBlob>{ std::chrono::milliseconds(1000) },
+          appender_(destinationFolder, refreshEverySeconds)
     {
-        writeThread_ = std::thread([this]() { this->writeLoop(); });
-    }
-
-    ~EventCollector()
-    {
-        stopWriteThread_ = true;
-        blobInQueueCondition_.notify_one();
-        writeThread_.join();
-    }
-
-    void addToQueue(const Blob& blob)
-    {
-        bool loggedWarning = false;
-        while ( ! queue_.bounded_push(blob))
-        {
-            if ( ! loggedWarning)
-            {
-                FORUM_LOG_WARNING << "Persistence queue is full";
-                loggedWarning = true;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(400));
-        }
-        blobInQueueCondition_.notify_one();
     }
 
 private:
+    friend class SeparateThreadConsumer<EventCollector, SeparateThreadConsumerBlob>;
 
-    void writeLoop()
+    void onFail(const uint32_t failNr)
     {
-        while ( ! stopWriteThread_)
+        if (0 == failNr)
         {
-            std::unique_lock<decltype(conditionMutex_)> lock(conditionMutex_);
-            blobInQueueCondition_.wait(lock, [this]() { return ! queue_.empty() || stopWriteThread_; });
-            writeBlobsInQueue();
+            FORUM_LOG_WARNING << "Persistence queue is full";
         }
-        writeBlobsInQueue();
+        std::this_thread::sleep_for(std::chrono::milliseconds(400));
     }
 
-    void writeBlobsInQueue()
+    void consumeValues(SeparateThreadConsumerBlob* values, const size_t nrOfValues)
     {
-        static thread_local Blob blobsToWrite[MaxBlobsInQueue];
-        Blob* blobs = blobsToWrite;
+        appender_.append(values, nrOfValues);
 
-        size_t nrOfBlobsToWrite = 0;
-        queue_.consume_all([&blobs, &nrOfBlobsToWrite](Blob blob)
+        for (size_t i = 0; i < nrOfValues; ++i)
         {
-            blobsToWrite[nrOfBlobsToWrite++] = blob;
-        });
-
-        appender_.append(blobsToWrite, nrOfBlobsToWrite);
-
-        for (size_t i = 0; i < nrOfBlobsToWrite; ++i)
-        {
-            Blob::free(blobsToWrite[i]);
+            SeparateThreadConsumerBlob::free(values[i]);
         }
     }
+
+    void onThreadFinish()
+    {}
+
+    void onThreadWaitNoValues()
+    {}
 
     FileAppender appender_;
-    static constexpr size_t MaxBlobsInQueue = 32768;
-    boost::lockfree::queue<Blob, boost::lockfree::capacity<MaxBlobsInQueue>> queue_;
-    std::thread writeThread_;
-    std::atomic_bool stopWriteThread_{ false };
-    std::condition_variable blobInQueueCondition_;
-    std::mutex conditionMutex_;
 };
 
 struct EventObserver::EventObserverImpl final : private boost::noncopyable
@@ -163,14 +126,14 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     static constexpr EventContextVersionType ContextVersion = 1;
 
-    void recordBlob(EventType eventType, EventVersionType version, BlobPart* parts, size_t nrOfParts)
+    void recordBlob(EventType eventType, EventVersionType version, BlobPart* parts, const size_t nrOfParts)
     {
-        const auto totalSize = std::accumulate(parts, parts + nrOfParts, 0, [](uint32_t total, BlobPart& part)
+        const auto totalSize = std::accumulate(parts, parts + nrOfParts, size_t(0), [](const size_t total, BlobPart& part)
         {
            return total + part.totalSize();
         }) + EventHeaderSize;
 
-        const auto blob = Blob(totalSize);
+        const auto blob = SeparateThreadConsumerBlob::allocateNew(totalSize);
 
         char* buffer = blob.buffer;
 
@@ -192,7 +155,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             }
         }
 
-        collector.addToQueue(blob);
+        collector.enqueue(blob);
     }
 
     void bindObservers()
@@ -230,41 +193,43 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         connections.push_back(readEvents.             onGetDiscussionThreadById.connect([this](auto context, auto& thread)                     { this->onGetDiscussionThreadById            (context, thread); }));
 
         //authorization
-        connections.push_back(writeEvents.changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage.connect([this](auto context, auto& message, auto privilege, auto value)                             { this->changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(context, message, privilege, value); }));
-        connections.push_back(writeEvents.       changeDiscussionThreadMessageRequiredPrivilegeForThread.connect([this](auto context, auto& thread, auto privilege, auto value)                              { this->changeDiscussionThreadMessageRequiredPrivilegeForThread       (context, thread, privilege, value); }));
-        connections.push_back(writeEvents.          changeDiscussionThreadMessageRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                                 { this->changeDiscussionThreadMessageRequiredPrivilegeForTag          (context, tag, privilege, value); }));
-        connections.push_back(writeEvents.       changeDiscussionThreadMessageRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                                            { this->changeDiscussionThreadMessageRequiredPrivilegeForumWide       (context, privilege, value); }));
-        connections.push_back(writeEvents.              changeDiscussionThreadRequiredPrivilegeForThread.connect([this](auto context, auto& thread, auto privilege, auto value)                              { this->changeDiscussionThreadRequiredPrivilegeForThread              (context, thread, privilege, value); }));
-        connections.push_back(writeEvents.                 changeDiscussionThreadRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                                 { this->changeDiscussionThreadRequiredPrivilegeForTag                 (context, tag, privilege, value); }));
-        connections.push_back(writeEvents.              changeDiscussionThreadRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                                            { this->changeDiscussionThreadRequiredPrivilegeForumWide              (context, privilege, value); }));
-        connections.push_back(writeEvents.                    changeDiscussionTagRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                                 { this->changeDiscussionTagRequiredPrivilegeForTag                    (context, tag, privilege, value); }));
-        connections.push_back(writeEvents.                 changeDiscussionTagRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                                            { this->changeDiscussionTagRequiredPrivilegeForumWide                 (context, privilege, value); }));
-        connections.push_back(writeEvents.          changeDiscussionCategoryRequiredPrivilegeForCategory.connect([this](auto context, auto& category, auto privilege, auto value)                            { this->changeDiscussionCategoryRequiredPrivilegeForCategory          (context, category, privilege, value); }));
-        connections.push_back(writeEvents.            changeDiscussionCategoryRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                                            { this->changeDiscussionCategoryRequiredPrivilegeForumWide            (context, privilege, value); }));
-        connections.push_back(writeEvents.                              changeForumWideRequiredPrivilege.connect([this](auto context, auto privilege, auto value)                                            { this->changeForumWideRequiredPrivilege                              (context, privilege, value); }));
-        connections.push_back(writeEvents.                          changeForumWideDefaultPrivilegeLevel.connect([this](auto context, auto privilegeDuration, auto value, auto duration)                     { this->changeForumWideDefaultPrivilegeLevel                          (context, privilegeDuration, value, duration); }));
-        connections.push_back(writeEvents.                        assignDiscussionThreadMessagePrivilege.connect([this](auto context, auto& message, auto& user, auto value, auto duration)                  { this->assignDiscussionThreadMessagePrivilege                        (context, message, user, value, duration); }));
-        connections.push_back(writeEvents.                               assignDiscussionThreadPrivilege.connect([this](auto context, auto& thread, auto& user, auto value, auto duration)                   { this->assignDiscussionThreadPrivilege                               (context, thread, user, value, duration); }));
-        connections.push_back(writeEvents.                                  assignDiscussionTagPrivilege.connect([this](auto context, auto& tag, auto& user, auto value, auto duration)                      { this->assignDiscussionTagPrivilege                                  (context, tag, user, value, duration); }));
-        connections.push_back(writeEvents.                             assignDiscussionCategoryPrivilege.connect([this](auto context, auto& category, auto& user, auto value, auto duration)                 { this->assignDiscussionCategoryPrivilege                             (context, category, user, value, duration); }));
-        connections.push_back(writeEvents.                                      assignForumWidePrivilege.connect([this](auto context, auto& user, auto value, auto duration)                                 { this->assignForumWidePrivilege                                      (context, user, value, duration); }));
+        connections.push_back(writeEvents.onChangeDiscussionThreadMessageRequiredPrivilegeForThreadMessage.connect([this](auto context, auto& message, auto privilege, auto value)             { this->changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(context, message, privilege, value); }));
+        connections.push_back(writeEvents.       onChangeDiscussionThreadMessageRequiredPrivilegeForThread.connect([this](auto context, auto& thread, auto privilege, auto value)              { this->changeDiscussionThreadMessageRequiredPrivilegeForThread       (context, thread, privilege, value); }));
+        connections.push_back(writeEvents.          onChangeDiscussionThreadMessageRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                 { this->changeDiscussionThreadMessageRequiredPrivilegeForTag          (context, tag, privilege, value); }));
+        connections.push_back(writeEvents.       onChangeDiscussionThreadMessageRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                            { this->changeDiscussionThreadMessageRequiredPrivilegeForumWide       (context, privilege, value); }));
+        connections.push_back(writeEvents.              onChangeDiscussionThreadRequiredPrivilegeForThread.connect([this](auto context, auto& thread, auto privilege, auto value)              { this->changeDiscussionThreadRequiredPrivilegeForThread              (context, thread, privilege, value); }));
+        connections.push_back(writeEvents.                 onChangeDiscussionThreadRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                 { this->changeDiscussionThreadRequiredPrivilegeForTag                 (context, tag, privilege, value); }));
+        connections.push_back(writeEvents.              onChangeDiscussionThreadRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                            { this->changeDiscussionThreadRequiredPrivilegeForumWide              (context, privilege, value); }));
+        connections.push_back(writeEvents.                    onChangeDiscussionTagRequiredPrivilegeForTag.connect([this](auto context, auto& tag, auto privilege, auto value)                 { this->changeDiscussionTagRequiredPrivilegeForTag                    (context, tag, privilege, value); }));
+        connections.push_back(writeEvents.                 onChangeDiscussionTagRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                            { this->changeDiscussionTagRequiredPrivilegeForumWide                 (context, privilege, value); }));
+        connections.push_back(writeEvents.          onChangeDiscussionCategoryRequiredPrivilegeForCategory.connect([this](auto context, auto& category, auto privilege, auto value)            { this->changeDiscussionCategoryRequiredPrivilegeForCategory          (context, category, privilege, value); }));
+        connections.push_back(writeEvents.            onChangeDiscussionCategoryRequiredPrivilegeForumWide.connect([this](auto context, auto privilege, auto value)                            { this->changeDiscussionCategoryRequiredPrivilegeForumWide            (context, privilege, value); }));
+        connections.push_back(writeEvents.                              onChangeForumWideRequiredPrivilege.connect([this](auto context, auto privilege, auto value)                            { this->changeForumWideRequiredPrivilege                              (context, privilege, value); }));
+        connections.push_back(writeEvents.                          onChangeForumWideDefaultPrivilegeLevel.connect([this](auto context, auto privilegeDuration, auto value, auto duration)     { this->changeForumWideDefaultPrivilegeLevel                          (context, privilegeDuration, value, duration); }));
+        connections.push_back(writeEvents.                        onAssignDiscussionThreadMessagePrivilege.connect([this](auto context, auto& message, auto& user, auto value, auto duration)  { this->assignDiscussionThreadMessagePrivilege                        (context, message, user, value, duration); }));
+        connections.push_back(writeEvents.                               onAssignDiscussionThreadPrivilege.connect([this](auto context, auto& thread, auto& user, auto value, auto duration)   { this->assignDiscussionThreadPrivilege                               (context, thread, user, value, duration); }));
+        connections.push_back(writeEvents.                                  onAssignDiscussionTagPrivilege.connect([this](auto context, auto& tag, auto& user, auto value, auto duration)      { this->assignDiscussionTagPrivilege                                  (context, tag, user, value, duration); }));
+        connections.push_back(writeEvents.                             onAssignDiscussionCategoryPrivilege.connect([this](auto context, auto& category, auto& user, auto value, auto duration) { this->assignDiscussionCategoryPrivilege                             (context, category, user, value, duration); }));
+        connections.push_back(writeEvents.                                      onAssignForumWidePrivilege.connect([this](auto context, auto& user, auto value, auto duration)                 { this->assignForumWidePrivilege                                      (context, user, value, duration); }));
     }
 
     static constexpr size_t UuidSize = boost::uuids::uuid::static_size();
     static const PersistentTimestampType ZeroTimestamp;
-    static const Helpers::IpAddress ZeroIpAddress;
+    static const IpAddress ZeroIpAddress;
 
     typedef BlobSizeType SizeType;
 
+#define POINTER(x) reinterpret_cast<const char*>(x)
+
 #define ADD_CONTEXT_BLOB_PARTS \
-    { reinterpret_cast<const char*>(&contextTimestamp), sizeof(contextTimestamp), false }, \
-    { reinterpret_cast<const char*>(&context.performedBy.id().value().data), UuidSize, false }, \
-    { reinterpret_cast<const char*>(context.ipAddress.data()), static_cast<SizeType>(context.ipAddress.dataSize()), false }
+    { POINTER(&contextTimestamp), sizeof(contextTimestamp), false }, \
+    { POINTER(&context.performedBy.id().value().data), UuidSize, false }, \
+    { POINTER(context.ipAddress.data()), static_cast<SizeType>(context.ipAddress.dataSize()), false }
 
 #define ADD_EMPTY_CONTEXT_BLOB_PARTS \
-    { reinterpret_cast<const char*>(&ZeroTimestamp), sizeof(ZeroTimestamp), false }, \
-    { reinterpret_cast<const char*>(&UuidString::empty.value().data), UuidSize, false }, \
-    { reinterpret_cast<const char*>(ZeroIpAddress.data()), static_cast<SizeType>(ZeroIpAddress.dataSize()), false }
+    { POINTER(&ZeroTimestamp), sizeof(ZeroTimestamp), false }, \
+    { POINTER(&UuidString::empty.value().data), UuidSize, false }, \
+    { POINTER(ZeroIpAddress.data()), static_cast<SizeType>(ZeroIpAddress.dataSize()), false }
 
     void onAddNewUser(ObserverContext context, const User& user)
     {
@@ -274,12 +239,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false }, \
-            { reinterpret_cast<const char*>(user.auth().data()), static_cast<SizeType>(user.auth().size()), true }, \
-            { reinterpret_cast<const char*>(userName.data()), static_cast<SizeType>(userName.size()), true }, \
+            { POINTER(&user.id().value().data), UuidSize, false }, \
+            { POINTER(user.auth().data()), static_cast<SizeType>(user.auth().size()), true }, \
+            { POINTER(userName.data()), static_cast<SizeType>(userName.size()), true }, \
         };
 
-        recordBlob(EventType::ADD_NEW_USER, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_NEW_USER, 1, parts, std::size(parts));
     }
 
     void onChangeUser(ObserverContext context, const User& user, User::ChangeType change)
@@ -314,11 +279,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(userName.data()), static_cast<SizeType>(userName.size()), true }
+            { POINTER(&user.id().value().data), UuidSize, false },
+            { POINTER(userName.data()), static_cast<SizeType>(userName.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_USER_NAME, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_USER_NAME, 1, parts, std::size(parts));
     }
 
     void onChangeUserInfo(ObserverContext context, const User& user)
@@ -329,11 +294,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(userInfo.data()), static_cast<SizeType>(userInfo.size()), true }
+            { POINTER(&user.id().value().data), UuidSize, false },
+            { POINTER(userInfo.data()), static_cast<SizeType>(userInfo.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_USER_INFO, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_USER_INFO, 1, parts, std::size(parts));
     }
 
     void onChangeUserTitle(ObserverContext context, const User& user)
@@ -344,11 +309,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(userTitle.data()), static_cast<SizeType>(userTitle.size()), true }
+            { POINTER(&user.id().value().data), UuidSize, false },
+            { POINTER(userTitle.data()), static_cast<SizeType>(userTitle.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_USER_TITLE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_USER_TITLE, 1, parts, std::size(parts));
     }
 
     void onChangeUserSignature(ObserverContext context, const User& user)
@@ -359,11 +324,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(userSignature.data()), static_cast<SizeType>(userSignature.size()), true }
+            { POINTER(&user.id().value().data), UuidSize, false },
+            { POINTER(userSignature.data()), static_cast<SizeType>(userSignature.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_USER_SIGNATURE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_USER_SIGNATURE, 1, parts, std::size(parts));
     }
 
     void onChangeUserLogo(ObserverContext context, const User& user)
@@ -374,11 +339,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(userLogo.data()), static_cast<SizeType>(userLogo.size()), true }
+            { POINTER(&user.id().value().data), UuidSize, false },
+            { POINTER(userLogo.data()), static_cast<SizeType>(userLogo.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_USER_LOGO, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_USER_LOGO, 1, parts, std::size(parts));
     }
 
     void onDeleteUser(ObserverContext context, const User& user)
@@ -387,10 +352,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false }
+            { POINTER(&user.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DELETE_USER, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DELETE_USER, 1, parts, std::size(parts));
     }
 
     void onAddNewDiscussionThread(ObserverContext context, const DiscussionThread& thread)
@@ -401,11 +366,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(threadName.data()), static_cast<SizeType>(threadName.size()), true }
+            { POINTER(&thread.id().value().data), UuidSize, false },
+            { POINTER(threadName.data()), static_cast<SizeType>(threadName.size()), true }
         };
 
-        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionThread(ObserverContext context, const DiscussionThread& thread,
@@ -432,11 +397,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(threadName.data()), static_cast<SizeType>(threadName.size()), true }
+            { POINTER(&thread.id().value().data), UuidSize, false },
+            { POINTER(threadName.data()), static_cast<SizeType>(threadName.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_NAME, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_NAME, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionThreadPinDisplayOrder(ObserverContext context, const DiscussionThread& thread)
@@ -447,11 +412,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&pinDisplayOrder), static_cast<SizeType>(sizeof(pinDisplayOrder)), false }
+            { POINTER(&thread.id().value().data), UuidSize, false },
+            { POINTER(&pinDisplayOrder), static_cast<SizeType>(sizeof(pinDisplayOrder)), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER, 1, parts, std::size(parts));
     }
 
     void onDeleteDiscussionThread(ObserverContext context, const DiscussionThread& thread)
@@ -460,10 +425,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false }
+            { POINTER(&thread.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DELETE_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DELETE_DISCUSSION_THREAD, 1, parts, std::size(parts));
     }
 
     void onMergeDiscussionThreads(ObserverContext context, const DiscussionThread& fromThread,
@@ -473,11 +438,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&fromThread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&toThread.id().value().data), UuidSize, false }
+            { POINTER(&fromThread.id().value().data), UuidSize, false },
+            { POINTER(&toThread.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::MERGE_DISCUSSION_THREADS, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::MERGE_DISCUSSION_THREADS, 1, parts, std::size(parts));
     }
 
     void onMoveDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message,
@@ -487,11 +452,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&intoThread.id().value().data), UuidSize, false },
+            { POINTER(&message.id().value().data), UuidSize, false },
+            { POINTER(&intoThread.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::MOVE_DISCUSSION_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::MOVE_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void onSubscribeToDiscussionThread(ObserverContext context, const DiscussionThread& thread)
@@ -500,10 +465,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false }
+            { POINTER(&thread.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::SUBSCRIBE_TO_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::SUBSCRIBE_TO_DISCUSSION_THREAD, 1, parts, std::size(parts));
     }
 
     void onUnsubscribeFromDiscussionThread(ObserverContext context, const DiscussionThread& thread)
@@ -512,10 +477,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false }
+            { POINTER(&thread.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::UNSUBSCRIBE_FROM_DISCUSSION_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::UNSUBSCRIBE_FROM_DISCUSSION_THREAD, 1, parts, std::size(parts));
     }
 
     void onAddNewDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message)
@@ -527,12 +492,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&parentThreadId.value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(message.content().data()), static_cast<SizeType>(message.content().size()), true }
+            { POINTER(&message.id().value().data), UuidSize, false },
+            { POINTER(&parentThreadId.value().data), UuidSize, false },
+            { POINTER(message.content().data()), static_cast<SizeType>(message.content().size()), true }
         };
 
-        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message,
@@ -554,12 +519,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(message.content().data()), static_cast<SizeType>(message.content().size()), true },
-            { reinterpret_cast<const char*>(message.lastUpdatedReason().data()), static_cast<SizeType>(message.lastUpdatedReason().size()), true }
+            { POINTER(&message.id().value().data), UuidSize, false },
+            { POINTER(message.content().data()), static_cast<SizeType>(message.content().size()), true },
+            { POINTER(message.lastUpdatedReason().data()), static_cast<SizeType>(message.lastUpdatedReason().size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1, parts, std::size(parts));
     }
 
     void onDeleteDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message)
@@ -568,10 +533,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false }
+            { POINTER(&message.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DELETE_DISCUSSION_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DELETE_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void onDiscussionThreadMessageUpVote(ObserverContext context, const DiscussionThreadMessage& message)
@@ -580,10 +545,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false }
+            { POINTER(&message.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_UP_VOTE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_UP_VOTE, 1, parts, std::size(parts));
     }
 
     void onDiscussionThreadMessageDownVote(ObserverContext context, const DiscussionThreadMessage& message)
@@ -592,10 +557,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false }
+            { POINTER(&message.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_DOWN_VOTE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_DOWN_VOTE, 1, parts, std::size(parts));
     }
 
     void onDiscussionThreadMessageResetVote(ObserverContext context, const DiscussionThreadMessage& message)
@@ -604,10 +569,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false }
+            { POINTER(&message.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_RESET_VOTE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DISCUSSION_THREAD_MESSAGE_RESET_VOTE, 1, parts, std::size(parts));
     }
 
     void onAddCommentToDiscussionThreadMessage(ObserverContext context, const MessageComment& comment)
@@ -618,12 +583,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&comment.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&parentMessageId.value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(comment.content().data()), static_cast<SizeType>(comment.content().size()), true }
+            { POINTER(&comment.id().value().data), UuidSize, false },
+            { POINTER(&parentMessageId.value().data), UuidSize, false },
+            { POINTER(comment.content().data()), static_cast<SizeType>(comment.content().size()), true }
         };
 
-        recordBlob(EventType::ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_COMMENT_TO_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void onSolveDiscussionThreadMessageComment(ObserverContext context, const MessageComment& comment)
@@ -632,10 +597,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&comment.id().value().data), UuidSize, false }
+            { POINTER(&comment.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT, 1, parts, std::size(parts));
     }
 
     void onAddNewDiscussionTag(ObserverContext context, const DiscussionTag& tag)
@@ -646,11 +611,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(tagName.data()), static_cast<SizeType>(tagName.size()), true }
+            { POINTER(&tag.id().value().data), UuidSize, false },
+            { POINTER(tagName.data()), static_cast<SizeType>(tagName.size()), true }
         };
 
-        recordBlob(EventType::ADD_NEW_DISCUSSION_TAG, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_NEW_DISCUSSION_TAG, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionTag(ObserverContext context, const DiscussionTag& tag, DiscussionTag::ChangeType change)
@@ -676,11 +641,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(tagName.data()), static_cast<SizeType>(tagName.size()), true }
+            { POINTER(&tag.id().value().data), UuidSize, false },
+            { POINTER(tagName.data()), static_cast<SizeType>(tagName.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_TAG_NAME, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_TAG_NAME, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionTagUIBlob(ObserverContext context, const DiscussionTag& tag)
@@ -689,11 +654,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(tag.uiBlob().data()), static_cast<SizeType>(tag.uiBlob().size()), true }
+            { POINTER(&tag.id().value().data), UuidSize, false },
+            { POINTER(tag.uiBlob().data()), static_cast<SizeType>(tag.uiBlob().size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_TAG_UI_BLOB, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_TAG_UI_BLOB, 1, parts, std::size(parts));
     }
 
     void onDeleteDiscussionTag(ObserverContext context, const DiscussionTag& tag)
@@ -702,10 +667,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false }
+            { POINTER(&tag.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DELETE_DISCUSSION_TAG, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DELETE_DISCUSSION_TAG, 1, parts, std::size(parts));
     }
 
     void onAddDiscussionTagToThread(ObserverContext context, const DiscussionTag& tag, const DiscussionThread& thread)
@@ -714,11 +679,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
+            { POINTER(&tag.id().value().data), UuidSize, false },
+            { POINTER(&thread.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::ADD_DISCUSSION_TAG_TO_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_DISCUSSION_TAG_TO_THREAD, 1, parts, std::size(parts));
     }
 
     void onRemoveDiscussionTagFromThread(ObserverContext context, const DiscussionTag& tag, const DiscussionThread& thread)
@@ -727,11 +692,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
+            { POINTER(&tag.id().value().data), UuidSize, false },
+            { POINTER(&thread.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_THREAD, 1, parts, std::size(parts));
     }
 
     void onMergeDiscussionTags(ObserverContext context, const DiscussionTag& fromTag, const DiscussionTag& toTag)
@@ -740,11 +705,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&fromTag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&toTag.id().value().data), UuidSize, false },
+            { POINTER(&fromTag.id().value().data), UuidSize, false },
+            { POINTER(&toTag.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::MERGE_DISCUSSION_TAGS, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::MERGE_DISCUSSION_TAGS, 1, parts, std::size(parts));
     }
 
     void onAddNewDiscussionCategory(ObserverContext context, const DiscussionCategory& category)
@@ -760,12 +725,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&parentCategoryId.value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(categoryName.data()), static_cast<SizeType>(categoryName.size()), true }
+            { POINTER(&category.id().value().data), UuidSize, false },
+            { POINTER(&parentCategoryId.value().data), UuidSize, false },
+            { POINTER(categoryName.data()), static_cast<SizeType>(categoryName.size()), true }
         };
 
-        recordBlob(EventType::ADD_NEW_DISCUSSION_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_NEW_DISCUSSION_CATEGORY, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionCategory(ObserverContext context, const DiscussionCategory& category,
@@ -797,11 +762,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(categoryName.data()), static_cast<SizeType>(categoryName.size()), true }
+            { POINTER(&category.id().value().data), UuidSize, false },
+            { POINTER(categoryName.data()), static_cast<SizeType>(categoryName.size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_NAME, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_NAME, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionCategoryDescription(ObserverContext context, const DiscussionCategory& category)
@@ -810,11 +775,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(category.description().data()), static_cast<SizeType>(category.description().size()), true }
+            { POINTER(&category.id().value().data), UuidSize, false },
+            { POINTER(category.description().data()), static_cast<SizeType>(category.description().size()), true }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_DESCRIPTION, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_DESCRIPTION, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionCategoryDisplayOrder(ObserverContext context, const DiscussionCategory& category)
@@ -824,11 +789,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&displayOrder), sizeof(displayOrder), false }
+            { POINTER(&category.id().value().data), UuidSize, false },
+            { POINTER(&displayOrder), sizeof(displayOrder), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_DISPLAY_ORDER, 1, parts, std::size(parts));
     }
 
     void onChangeDiscussionCategoryParent(ObserverContext context, const DiscussionCategory& category)
@@ -843,11 +808,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&parentCategoryId.value().data), UuidSize, false }
+            { POINTER(&category.id().value().data), UuidSize, false },
+            { POINTER(&parentCategoryId.value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_PARENT, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_PARENT, 1, parts, std::size(parts));
     }
 
     void onDeleteDiscussionCategory(ObserverContext context, const DiscussionCategory& category)
@@ -856,10 +821,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false }
+            { POINTER(&category.id().value().data), UuidSize, false }
         };
 
-        recordBlob(EventType::DELETE_DISCUSSION_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::DELETE_DISCUSSION_CATEGORY, 1, parts, std::size(parts));
     }
 
     void onAddDiscussionTagToCategory(ObserverContext context, const DiscussionTag& tag,
@@ -869,11 +834,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
+            { POINTER(&tag.id().value().data), UuidSize, false },
+            { POINTER(&category.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::ADD_DISCUSSION_TAG_TO_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ADD_DISCUSSION_TAG_TO_CATEGORY, 1, parts, std::size(parts));
     }
 
     void onRemoveDiscussionTagFromCategory(ObserverContext context, const DiscussionTag& tag,
@@ -883,14 +848,14 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
+            { POINTER(&tag.id().value().data), UuidSize, false },
+            { POINTER(&category.id().value().data), UuidSize, false },
         };
 
-        recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, 1, parts, std::size(parts));
     }
 
-    void onGetDiscussionThreadById(ObserverContext context, const DiscussionThread& thread)
+    void onGetDiscussionThreadById(ObserverContext /*context*/, const DiscussionThread& thread)
     {
         std::lock_guard<decltype(threadVisitedMutex)> lock(threadVisitedMutex);
 
@@ -918,12 +883,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&message.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD_MESSAGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadMessageRequiredPrivilegeForThread(ObserverContext context,
@@ -938,12 +903,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&thread.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadMessageRequiredPrivilegeForTag(ObserverContext context,
@@ -958,12 +923,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&tag.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadMessageRequiredPrivilegeForumWide(ObserverContext context,
@@ -977,11 +942,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadRequiredPrivilegeForThread(ObserverContext context,
@@ -996,12 +961,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&thread.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_THREAD, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_THREAD, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadRequiredPrivilegeForTag(ObserverContext context,
@@ -1016,12 +981,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&tag.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::size(parts));
     }
 
     void changeDiscussionThreadRequiredPrivilegeForumWide(ObserverContext context,
@@ -1035,11 +1000,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::size(parts));
     }
 
     void changeDiscussionTagRequiredPrivilegeForTag(ObserverContext context,
@@ -1054,12 +1019,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&tag.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FOR_TAG, 1, parts, std::size(parts));
     }
 
     void changeDiscussionTagRequiredPrivilegeForumWide(ObserverContext context,
@@ -1073,11 +1038,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_TAG_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::size(parts));
     }
 
     void changeDiscussionCategoryRequiredPrivilegeForCategory(ObserverContext context,
@@ -1092,12 +1057,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&category.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FOR_CATEGORY, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FOR_CATEGORY, 1, parts, std::size(parts));
     }
 
     void changeDiscussionCategoryRequiredPrivilegeForumWide(ObserverContext context,
@@ -1111,11 +1076,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_DISCUSSION_CATEGORY_REQUIRED_PRIVILEGE_FORUM_WIDE, 1, parts, std::size(parts));
     }
 
     void changeForumWideRequiredPrivilege(ObserverContext context, ForumWidePrivilege privilege,
@@ -1128,11 +1093,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&currentPrivilege), sizeof(currentPrivilege), false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
+            { POINTER(&currentPrivilege), sizeof(currentPrivilege), false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false }
         };
 
-        recordBlob(EventType::CHANGE_FORUM_WIDE_REQUIRED_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_FORUM_WIDE_REQUIRED_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void changeForumWideDefaultPrivilegeLevel(ObserverContext context,
@@ -1147,12 +1112,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&currentPrivilegeLevel), sizeof(currentPrivilegeLevel), false },
-            { reinterpret_cast<const char*>(&currentValue), sizeof(currentValue), false },
-            { reinterpret_cast<const char*>(&currentDuration), sizeof(currentDuration), false }
+            { POINTER(&currentPrivilegeLevel), sizeof(currentPrivilegeLevel), false },
+            { POINTER(&currentValue), sizeof(currentValue), false },
+            { POINTER(&currentDuration), sizeof(currentDuration), false }
         };
 
-        recordBlob(EventType::CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVEL, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::CHANGE_FORUM_WIDE_DEFAULT_PRIVILEGE_LEVEL, 1, parts, std::size(parts));
     }
 
     void assignDiscussionThreadMessagePrivilege(ObserverContext context,
@@ -1168,13 +1133,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&message.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
+            { POINTER(&message.id().value().data), UuidSize, false },
+            { POINTER(&user.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
+            { POINTER(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_MESSAGE_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void assignDiscussionThreadPrivilege(ObserverContext context, const DiscussionThread& thread, const User& user,
@@ -1187,13 +1152,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&thread.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
+            { POINTER(&thread.id().value().data), UuidSize, false },
+            { POINTER(&user.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
+            { POINTER(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_THREAD_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void assignDiscussionTagPrivilege(ObserverContext context, const DiscussionTag& tag, const User& user,
@@ -1206,13 +1171,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&tag.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
+            { POINTER(&tag.id().value().data), UuidSize, false },
+            { POINTER(&user.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
+            { POINTER(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_TAG_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_TAG_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void assignDiscussionCategoryPrivilege(ObserverContext context, const DiscussionCategory& category,
@@ -1226,13 +1191,13 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&category.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
+            { POINTER(&category.id().value().data), UuidSize, false },
+            { POINTER(&user.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
+            { POINTER(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void assignForumWidePrivilege(ObserverContext context, const User& user, PrivilegeValueIntType value,
@@ -1245,12 +1210,12 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
-            { reinterpret_cast<const char*>(&user.id().value().data), UuidSize, false },
-            { reinterpret_cast<const char*>(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
-            { reinterpret_cast<const char*>(&currentDurationValue), sizeof(currentDurationValue), false }
+            { POINTER(&user.id().value().data), UuidSize, false },
+            { POINTER(&currentPrivilegeValue), sizeof(currentPrivilegeValue), false },
+            { POINTER(&currentDurationValue), sizeof(currentDurationValue), false }
         };
 
-        recordBlob(EventType::ASSIGN_FORUM_WIDE_PRIVILEGE, 1, parts, std::extent<decltype(parts)>::value);
+        recordBlob(EventType::ASSIGN_FORUM_WIDE_PRIVILEGE, 1, parts, std::size(parts));
     }
 
     void updateThreadVisited()
@@ -1262,11 +1227,11 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             BlobPart parts[] =
             {
                 ADD_EMPTY_CONTEXT_BLOB_PARTS,
-                { reinterpret_cast<const char*>(&pair.first.value().data), UuidSize, false },
-                { reinterpret_cast<const char*>(&pair.second), sizeof(pair.second), false },
+                { POINTER(&pair.first.value().data), UuidSize, false },
+                { POINTER(&pair.second), sizeof(pair.second), false },
             };
 
-            recordBlob(EventType::INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS, 1, parts, std::extent<decltype(parts)>::value);
+            recordBlob(EventType::INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS, 1, parts, std::size(parts));
         }
         cachedNrOfThreadVisits.clear();
     }

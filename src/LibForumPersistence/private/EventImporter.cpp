@@ -32,7 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <numeric>
 #include <regex>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
@@ -89,7 +88,7 @@ UuidString readAndIncrementBuffer<UuidString>(const uint8_t*& data, size_t& size
 template<>
 IpAddress readAndIncrementBuffer<IpAddress>(const uint8_t*& data, size_t& size)
 {
-    IpAddress result(data);
+    const IpAddress result(data);
     data += ipAddressBinarySize; size -= ipAddressBinarySize;
 
     return result;
@@ -161,7 +160,7 @@ struct CurrentTimeChanger final : private boost::noncopyable
     }
 
 #define CHECK_STATUS_CODE(value) \
-    if ((StatusCode::OK) != value && (StatusCode::NO_EFFECT != value)) { \
+    if (auto v = value; (StatusCode::OK) != v && (StatusCode::NO_EFFECT != v)) { \
         FORUM_LOG_ERROR << "Unable to import event of type " << currentEventType_ << ": unexpected status code: " << value; \
         return false; \
     }
@@ -192,7 +191,7 @@ struct CurrentTimeChanger final : private boost::noncopyable
 
 struct EventImporter::EventImporterImpl final : private boost::noncopyable
 {
-    explicit EventImporterImpl(bool verifyChecksum, EntityCollection& entityCollection,
+    explicit EventImporterImpl(const bool verifyChecksum, EntityCollection& entityCollection,
                                DirectWriteRepositoryCollection&& repositories)
         : verifyChecksum_(verifyChecksum), entityCollection_(entityCollection), repositories_(std::move(repositories))
     {

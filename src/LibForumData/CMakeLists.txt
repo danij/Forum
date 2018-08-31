@@ -33,7 +33,8 @@ set(SOURCE_FILES
         private/EntitySerialization.cpp
         private/DefaultAuthorization.cpp
         private/AuthorizationGrantedPrivilegeStore.cpp
-        private/DefaultThrottling.cpp)
+        private/DefaultThrottling.cpp
+        private/VisitorCollection.cpp)
 
 set(HEADER_FILES
         ../Version.h
@@ -41,7 +42,6 @@ set(HEADER_FILES
         Authorization.h
         Observers.h
         Entities.h
-        ConstCollectionAdapter.h
         EntityCollection.h
         EntityCommonTypes.h
         EntityPointer.h
@@ -57,7 +57,8 @@ set(HEADER_FILES
         EntityDiscussionCategory.h
         EntityDiscussionCategoryCollection.h
         EntityMessageComment.h
-        EntityMessageCommentCollection.h
+        EntityMessageCommentCollection.h        
+        EntitySerialization.h
         DefaultAuthorization.h
         DefaultThrottling.h
         AuthorizationPrivileges.h
@@ -65,18 +66,17 @@ set(HEADER_FILES
         ThrottlingCheck.h
         SortedVector.h
         IdOrIpAddress.h
-
-        private/ResourceGuard.h
-        private/EntitySerialization.h
-        private/MemoryRepositoryCommon.h
-        private/MemoryRepositoryUser.h
-        private/MemoryRepositoryDiscussionThread.h
-        private/MemoryRepositoryStatistics.h
-        private/MemoryRepositoryDiscussionThreadMessage.h
-        private/MemoryRepositoryDiscussionTag.h
-        private/MemoryRepositoryDiscussionCategory.h
-        private/MemoryRepositoryAuthorization.h
-        private/MetricsRepository.h)
+        MemoryRepositoryCommon.h
+        MemoryRepositoryUser.h
+        MemoryRepositoryDiscussionThread.h
+        MemoryRepositoryStatistics.h
+        MemoryRepositoryDiscussionThreadMessage.h
+        MemoryRepositoryDiscussionTag.h
+        MemoryRepositoryDiscussionCategory.h
+        MemoryRepositoryAuthorization.h
+        MetricsRepository.h
+        ResourceGuard.h
+        VisitorCollection.h)
 
 include_directories(
         .

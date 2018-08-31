@@ -30,6 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unicode/ustring.h>
 #include <unicode/uchar.h>
 
+#include <boost/thread/tss.hpp>
+
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -39,11 +41,24 @@ using namespace Forum::Authorization;
 
 static constexpr size_t MaxNrOfUserNameChars16 = 65536;
 static constexpr size_t MaxNrOfUserNameChars32 = MaxNrOfUserNameChars16 / 2;
-static thread_local std::unique_ptr<UChar[]> validUserNameBuffer16(new UChar[MaxNrOfUserNameChars16]);
-static thread_local std::unique_ptr<UChar32[]> validUserNameBuffer32(new UChar32[MaxNrOfUserNameChars32]);
 
 static bool isValidUserName(StringView input)
 {
+    static boost::thread_specific_ptr<UChar> validUserNameBuffer16Ptr;
+    static boost::thread_specific_ptr<UChar32> validUserNameBuffer32Ptr;
+
+    if ( ! validUserNameBuffer16Ptr.get())
+    {
+        validUserNameBuffer16Ptr.reset(new UChar[MaxNrOfUserNameChars16]);
+    }
+    auto* validUserNameBuffer16 = validUserNameBuffer16Ptr.get();
+    
+    if ( ! validUserNameBuffer32Ptr.get())
+    {
+        validUserNameBuffer32Ptr.reset(new UChar32[MaxNrOfUserNameChars32]);
+    }
+    auto* validUserNameBuffer32 = validUserNameBuffer32Ptr.get();
+
     //"^[[:alnum:]]+[ _-]*[[:alnum:]]+$"
     if (input.empty())
     {
@@ -53,12 +68,12 @@ static bool isValidUserName(StringView input)
     int32_t written;
     UErrorCode errorCode{};
 
-    const auto u16Chars = u_strFromUTF8Lenient(validUserNameBuffer16.get(), MaxNrOfUserNameChars16, &written,
-                                               input.data(), input.size(), &errorCode);
+    const auto u16Chars = u_strFromUTF8Lenient(validUserNameBuffer16, MaxNrOfUserNameChars16, &written,
+                                               input.data(), static_cast<int32_t>(input.size()), &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
     errorCode = {};
-    const auto u32Chars = u_strToUTF32(validUserNameBuffer32.get(), MaxNrOfUserNameChars32, &written,
+    const auto u32Chars = u_strToUTF32(validUserNameBuffer32, MaxNrOfUserNameChars32, &written,
                                        u16Chars, written, &errorCode);
     if (U_FAILURE(errorCode)) return false;
 
@@ -89,6 +104,40 @@ MemoryRepositoryUser::MemoryRepositoryUser(MemoryStoreRef store, UserAuthorizati
     {
         throw std::runtime_error("Authorization implementation not provided");
     }
+}
+
+StatusCode MemoryRepositoryUser::getCurrentUser(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          status = AuthorizationStatus::OK;
+                          status.disable();
+                      
+                          Json::JsonWriter writer(output);
+                      
+                          writer.startObject();
+                      
+                          writer.newPropertyWithSafeName("authenticated") << ! Context::getCurrentUserAuth().empty();
+                      
+                          if (currentUser.id() != anonymousUserId())
+                          {
+                              const SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                                         currentUser.id(), Context::getCurrentTime());
+                              writer.newPropertyWithSafeName("user");
+                              serialize(writer, currentUser, restriction);
+                          }
+                      
+                          writer.endObject();
+                      
+                          readEvents().onGetCurrentUser(createObserverContext(currentUser));
+                      });
+    return status;
 }
 
 StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by) const
@@ -182,13 +231,17 @@ StatusCode MemoryRepositoryUser::getUsersOnline(OutStream& output) const
                               const User* userPtr = *it;
                               assert(userPtr);
 
-                              if (userPtr->lastSeen() < onlineUsersTimeLimit)
+                              const User& user = *userPtr;
+
+                              if ( ! user.showInOnlineUsers()) continue;
+
+                              if (user.lastSeen() < onlineUsersTimeLimit)
                               {
                                   break;
                               }
                               else
                               {
-                                  serialize(writer, *userPtr, restriction);
+                                  serialize(writer, user, restriction);
                               }
                           }
 
@@ -363,7 +416,7 @@ StatusCode MemoryRepositoryUser::getUserLogo(IdTypeRef id, OutStream& output) co
     return status;
 }
 
-StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& output) const
+StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -372,19 +425,10 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& out
     collection().read([&](const EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
-
-                          const auto& index = collection.users().byId();
-                          auto it = index.find(id);
-                          if (it == index.end())
+                                                    
+                          if (currentUser.id() == anonymousUserId())
                           {
                               status = StatusCode::NOT_FOUND;
-                              return;
-                          }
-
-                          auto& user = **it;
-
-                          if ( ! (status = authorization_->getUserVoteHistory(currentUser, user)))
-                          {
                               return;
                           }
 
@@ -393,18 +437,18 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& out
                           Json::JsonWriter writer(output);
                           writer.startObject();
                           writer.newPropertyWithSafeName("lastRetrievedAt")
-                                  << user.voteHistoryLastRetrieved().exchange(static_cast<int64_t>(Context::getCurrentTime()));
+                                  << currentUser.voteHistoryLastRetrieved().exchange(static_cast<int64_t>(Context::getCurrentTime()));
 
                           writer.newPropertyWithSafeName("receivedVotes");
                           writer.startArray();
 
                           const auto& messageIndex = collection.threadMessages().byId();
 
-                          for (const User::ReceivedVoteHistory& entry : user.voteHistory())
+                          for (const User::ReceivedVoteHistory& entry : currentUser.voteHistory())
                           {
                               writer.startObject();
 
-                              auto messageIt = messageIndex.find(entry.discussionThreadMessageId);
+                              const auto messageIt = messageIndex.find(entry.discussionThreadMessageId);
                               if (messageIt != messageIndex.end())
                               {
                                   auto& message = **messageIt;
@@ -421,14 +465,6 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& out
 
                                   writer.newPropertyWithSafeName("threadId") << parentThread->id();
                                   writer.newPropertyWithSafeName("threadName") << parentThread->name();
-                              }
-
-                              auto userIt = index.find(entry.voterId);
-                              if (userIt != index.end())
-                              {
-                                  auto& voter = **userIt;
-                                  writer.newPropertyWithSafeName("voterId") << voter.id();
-                                  writer.newPropertyWithSafeName("voterName") << voter.name();
                               }
 
                               writer.newPropertyWithSafeName("at") << entry.at;
@@ -454,7 +490,7 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(IdTypeRef id, OutStream& out
                           writer.endArray();
                           writer.endObject();
 
-                          readEvents().onGetUserVoteHistory(createObserverContext(currentUser), user);
+                          readEvents().onGetUserVoteHistory(createObserverContext(currentUser));
                       });
     return status;
 }
@@ -483,6 +519,13 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
     collection().write([&](EntityCollection& collection)
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
+
+                           if (currentUser->id() != anonymousUserId())
+                           {
+                               status = AuthorizationStatus::NOT_ALLOWED;
+                               return;
+                           }
+
                            if ( ! (status = authorization_->addNewUser(*currentUser, name)))
                            {
                                return;
@@ -506,7 +549,8 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                            if (1 == collection.users().count())
                            {
                                //this is the first user, so grant all privileges
-                               grantAllPrivilegesTo = user->id();
+                               authorizationRepository_->assignForumWidePrivilege(collection, user->id(), 
+                                       MaxPrivilegeValue, UnlimitedDuration);
                            }
 
                            status.writeNow([&](auto& writer)
@@ -516,13 +560,6 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                                writer << Json::propertySafeName("created", user->created());
                                            });
                        });
-    if (grantAllPrivilegesTo)
-    {
-        Json::StringBuffer nullOutput;
-
-        authorizationRepository_->assignForumWidePrivilege(*grantAllPrivilegesTo, MaxPrivilegeValue, UnlimitedDuration,
-                                                           nullOutput);
-    }
     return status;
 }
 
@@ -946,4 +983,21 @@ StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdType
     collection.deleteUser(*it);
 
     return StatusCode::OK;
+}
+
+void MemoryRepositoryUser::updateCurrentUserId()
+{
+    auto currentUserAuth = Context::getCurrentUserAuth();
+    if (currentUserAuth.empty()) return;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          const auto& indexByAuth = collection.users().byAuth();
+                          const auto it = indexByAuth.find(currentUserAuth);
+                      
+                          if (it == indexByAuth.end()) return;
+                      
+                          const User& user = **it;
+                          Context::setCurrentUserId(user.id());
+                      });
 }
