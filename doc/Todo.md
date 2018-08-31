@@ -27,12 +27,12 @@
 ## HTTP
 
 - [X] Reject zipped or chunked request bodies
-- [ ] Implement HTTP security features (e.g. [OWASP](https://www.owasp.org/index.php/Main_Page) recommendations)
+- [X] Implement HTTP security features (e.g. [OWASP](https://www.owasp.org/index.php/Main_Page) recommendations)
 
 ## Authentication 
 
-- [ ] Implement authentication as a different service with OpenID Connect
-- [ ] Add context entry for current authentication
+- [X] Implement authentication as a different service
+- [X] Add context entry for current authentication
 - [X] Link users to authentication 
 
 ## Attachments
