@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ContextProviders.h"
 #include "HttpStringHelpers.h"
 
+#include <boost/crc.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/tss.hpp>
 
@@ -172,6 +173,29 @@ static StringView getPointerToEntireRequestBody(const Http::HttpRequest& request
     return StringView(currentRequestContent.data(), currentRequestContent.size());
 }
 
+static uint32_t crc32(IpAddress value)
+{
+    boost::crc_32_type hash;
+    hash.process_bytes(value.data(), value.nrOfBytes());
+    return hash.checksum();
+}
+
+static uint32_t crc32(StringView value)
+{
+    boost::crc_32_type hash;
+    hash.process_bytes(value.data(), value.size());
+    return hash.checksum();
+}
+
+static void updateVisitorsCount(const Http::HttpRequest& request)
+{
+    const Repository::VisitorCollection::VisitorId id =
+        static_cast<uint64_t>(crc32(request.remoteAddress)) << 32
+        | static_cast<uint64_t>(crc32(request.headers[Http::Request::HttpHeader::User_Agent]));
+
+    Context::getVisitorCollection().add(id);
+}
+
 void AbstractEndpoint::handle(Http::RequestState& requestState, ExecuteFn executeCommand)
 {
     handleInternal(requestState, "application/json", executeCommand, true);
@@ -190,6 +214,8 @@ void AbstractEndpoint::handleInternal(Http::RequestState& requestState, const St
 
     auto& request = requestState.request;
     auto& response = requestState.response;
+
+    updateVisitorsCount(request);
 
     Http::HttpStatusCode validationResponseCode;
     Http::HttpStringView validationMessage;

@@ -17,23 +17,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "MemoryRepositoryStatistics.h"
-
+#include "Configuration.h"
+#include "ContextProviders.h"
 #include "EntitySerialization.h"
 #include "OutputHelpers.h"
 
 using namespace Forum;
+using namespace Forum::Configuration;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Repository;
 using namespace Forum::Authorization;
 
 MemoryRepositoryStatistics::MemoryRepositoryStatistics(MemoryStoreRef store, StatisticsAuthorizationRef authorization)
-    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization))
+    : MemoryRepositoryBase(std::move(store)), authorization_(std::move(authorization)), 
+    visitorCollection_{std::make_shared<VisitorCollection>(getGlobalConfig()->user.visitorOnlineForSeconds)}
 {
     if ( ! authorization_)
     {
         throw std::runtime_error("Authorization implementation not provided");
     }
+    Context::setVisitorCollection(visitorCollection_);
 }
 
 StatusCode MemoryRepositoryStatistics::getEntitiesCount(OutStream& output) const
@@ -42,7 +46,7 @@ StatusCode MemoryRepositoryStatistics::getEntitiesCount(OutStream& output) const
 
     PerformedByWithLastSeenUpdateGuard performedBy;
 
-    collection().read([&](const Entities::EntityCollection& collection)
+    collection().read([&](const EntityCollection& collection)
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
@@ -54,11 +58,12 @@ StatusCode MemoryRepositoryStatistics::getEntitiesCount(OutStream& output) const
                           status.disable();
 
                           EntitiesCount count;
-                          count.nrOfUsers = static_cast<uint_fast32_t>(collection.users().count());
-                          count.nrOfDiscussionThreads = static_cast<uint_fast32_t>(collection.threads().count());
-                          count.nrOfDiscussionMessages = static_cast<uint_fast32_t>(collection.threadMessages().count());
-                          count.nrOfDiscussionTags = static_cast<uint_fast32_t>(collection.tags().count());
-                          count.nrOfDiscussionCategories = static_cast<uint_fast32_t>(collection.categories().count());
+                          count.nrOfUsers = collection.users().count();
+                          count.nrOfDiscussionThreads = collection.threads().count();
+                          count.nrOfDiscussionMessages = collection.threadMessages().count();
+                          count.nrOfDiscussionTags = collection.tags().count();
+                          count.nrOfDiscussionCategories = collection.categories().count();
+                          count.nrOfVisitors = visitorCollection_->currentNumberOfVisitors();
 
                           writeSingleValueSafeName(output, "count", count);
 

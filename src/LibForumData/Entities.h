@@ -30,10 +30,11 @@ namespace Forum::Entities
 {
     struct EntitiesCount
     {
-        uint_fast32_t nrOfUsers;
-        uint_fast32_t nrOfDiscussionThreads;
-        uint_fast32_t nrOfDiscussionMessages;
-        uint_fast32_t nrOfDiscussionTags;
-        uint_fast32_t nrOfDiscussionCategories;
+        size_t nrOfUsers;
+        size_t nrOfDiscussionThreads;
+        size_t nrOfDiscussionMessages;
+        size_t nrOfDiscussionTags;
+        size_t nrOfDiscussionCategories;
+        uint64_t nrOfVisitors;
     };
 }

@@ -39,6 +39,7 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const EntitiesCount& value)
             << propertySafeName("discussionMessages", value.nrOfDiscussionMessages)
             << propertySafeName("discussionTags", value.nrOfDiscussionTags)
             << propertySafeName("discussionCategories", value.nrOfDiscussionCategories)
+            << propertySafeName("visitors", value.nrOfVisitors)
         << objEnd;
     return writer;
 }

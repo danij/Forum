@@ -22,9 +22,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "TypeHelpers.h"
 #include "IpAddress.h"
 #include "IOServiceProvider.h"
+#include "VisitorCollection.h"
 
 #include <boost/signals2/signal.hpp>
 
+#include <memory>
 #include <string>
 #include <string_view>
 
@@ -74,6 +76,16 @@ namespace Forum::Context
     * Sets the IP address of the current user executing an action (thread-local)
     */
     void setCurrentUserIpAddress(Helpers::IpAddress value);
+
+    /**
+     * Returns the current collection that tracks visitors count anonymously
+     */
+    Repository::VisitorCollection& getVisitorCollection();
+
+    /**
+     * Sets the current collection that tracks visitors count anonymously
+     */
+    void setVisitorCollection(std::shared_ptr<Repository::VisitorCollection> value);
 
     /**
      * Returns whether a batch insert is currently in progress for optimization purposes

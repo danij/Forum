@@ -33,7 +33,8 @@ set(SOURCE_FILES
         private/EntitySerialization.cpp
         private/DefaultAuthorization.cpp
         private/AuthorizationGrantedPrivilegeStore.cpp
-        private/DefaultThrottling.cpp)
+        private/DefaultThrottling.cpp
+        private/VisitorCollection.cpp)
 
 set(HEADER_FILES
         ../Version.h
@@ -74,7 +75,8 @@ set(HEADER_FILES
         MemoryRepositoryDiscussionCategory.h
         MemoryRepositoryAuthorization.h
         MetricsRepository.h
-        ResourceGuard.h)
+        ResourceGuard.h
+        VisitorCollection.h)
 
 include_directories(
         .

@@ -53,6 +53,7 @@ namespace Forum::Configuration
         uint_fast32_t maxLogoHeight = 128;
         int16_t defaultPrivilegeValueForLoggedInUser = 1;
         uint_fast32_t resetVoteExpiresInSeconds = 3600;
+        uint_fast32_t visitorOnlineForSeconds = 300;
     };
 
     struct DiscussionThreadConfig

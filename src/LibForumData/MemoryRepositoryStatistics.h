@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MemoryRepositoryCommon.h"
 #include "Authorization.h"
+#include "VisitorCollection.h"
 
 namespace Forum::Repository
 {
@@ -33,5 +34,6 @@ namespace Forum::Repository
 
     private:
         Authorization::StatisticsAuthorizationRef authorization_;
+        std::shared_ptr<VisitorCollection> visitorCollection_;
     };
 }

@@ -19,12 +19,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ContextProviders.h"
 #include "ContextProviderMocks.h"
 
+#include <cassert>
 #include <chrono>
 
 using namespace Forum::Context;
 using namespace Forum::Entities;
 using namespace Forum::Helpers;
 using namespace Forum::Network;
+using namespace Forum::Repository;
 
 Timestamp getTimeSinceEpoch()
 {
@@ -95,6 +97,20 @@ const IpAddress& Forum::Context::getCurrentUserIpAddress()
 void Forum::Context::setCurrentUserIpAddress(const IpAddress value)
 {
     currentIpAddress = value;
+}
+
+static std::shared_ptr<VisitorCollection> visitorCollection = {};
+
+VisitorCollection& Forum::Context::getVisitorCollection()
+{
+    assert(visitorCollection.get());
+    return *visitorCollection;
+}
+
+void Forum::Context::setVisitorCollection(std::shared_ptr<VisitorCollection> value)
+{
+    assert(nullptr == visitorCollection.get());
+    visitorCollection = value;
 }
 
 static bool batchInsertInProgress{ false };

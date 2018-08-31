@@ -15,7 +15,8 @@
         "maxLogoWidth": 128,
         "maxLogoHeight": 128,
         "defaultPrivilegeValueForLoggedInUser": 1,
-        "resetVoteExpiresInSeconds": 3600
+        "resetVoteExpiresInSeconds": 3600,
+        "visitorOnlineForSeconds": 300 
     },
 
     "discussionThread": {
