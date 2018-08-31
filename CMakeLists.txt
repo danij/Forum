@@ -5,7 +5,7 @@ enable_testing()
 include(TestBigEndian)
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(IS_BIG_ENDIAN)
-    message(FATAL_ERROR "Big endian is currently not supported by this project")
+    message(FATAL_ERROR "Big endian is currently not supported by this project.")
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pedantic -Wall -Werror -Wno-error=deprecated-declarations")
