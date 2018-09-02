@@ -62,6 +62,8 @@ For better security, run the service under a user with the minimum amount of pri
 
 [Node.js](https://nodejs.org/en/)
 
+[PostgreSQL](https://www.postgresql.org/) (only needed for custom accounts)
+
 ### Retrieve The Sources
 
 The sources of the authentication service are located at [https://github.com/danij/Forum.Auth](https://github.com/danij/Forum.Auth).
@@ -72,8 +74,10 @@ The configuration values are specified via environment variables.
 
     #!/bin/sh
     
+    export AUTH_COOKIE_SIZE="32"
     export AUTH_SECONDS="600"
     export AUTH_REGISTER_URL="http://127.0.0.1:18081/"
+    export DOUBLE_SUBMIT_COOKIE_SIZE="32"
     export PREFIX="while(1);"
     export TRUST_FORWARDED_IP="true"
     export EXPECTED_ORIGIN="https://host without trailing /"
@@ -82,11 +86,82 @@ The configuration values are specified via environment variables.
 
 #### Custom Authentication
 
-TODO
+Custom authentication works by storing user accounts in a local database.
+
+Create a new username & database in PostgreSQL and the following tables in that database:
+    
+    CREATE TABLE logins (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(128) UNIQUE NOT NULL,
+        email_alphanumeric VARCHAR(128) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        password_details VARCHAR(255) NOT NULL,
+        auth VARCHAR(128) UNIQUE NOT NULL,
+        min_age_at_registration INT NOT NULL,
+        created TIMESTAMPTZ DEFAULT now(),
+        last_password_change TIMESTAMPTZ DEFAULT now(),
+        enabled BOOLEAN NOT NULL DEFAULT false
+    );
+    
+    CREATE TABLE login_confirmations (
+        
+        id VARCHAR(128) PRIMARY KEY,
+        login_id INT NOT NULL REFERENCES logins(id) ON UPDATE CASCADE ON DELETE CASCADE,
+        expires TIMESTAMPTZ NOT NULL
+    );
+    
+    CREATE TABLE domain_blacklist (
+        domain VARCHAR(128) PRIMARY KEY
+    );
+    
+    CREATE TABLE reset_password_confirmations (
+        
+        id VARCHAR(128) PRIMARY KEY,
+        login_id INT NOT NULL REFERENCES logins(id) ON UPDATE CASCADE ON DELETE CASCADE,
+        expires TIMESTAMPTZ NOT NULL
+    );
+
+The following settings need also be specified to enable authentication:
+
+    export PGHOST="127.0.0.1"
+    export PGUSER="auth user"
+    export PGPASSWORD="password"
+    export PGDATABASE="auth database"
+    export ENABLE_CUSTOM_AUTH="true"
+    export PASSWORD_MIN_LENGTH="8"
+    export EMAIL_SMTP="smtp server"
+    export EMAIL_PORT="587"
+    export EMAIL_SECURE="true"
+    export EMAIL_USER="username"
+    export EMAIL_PASSWORD="password"
+    export EMAIL_FROM_NAME="Forum Account Registration"
+    export EMAIL_FROM_EMAIL="email address"
+    export REGISTER_MIN_AGE="18"
+    export REGISTER_AUTH_SIZE="32"
+    export REGISTER_CONFIRMATION_SIZE="32"
+    export REGISTER_CONFIRMATION_TITLE="Forum Registration Confirmation"
+    export REGISTER_CONFIRMATION_URL="https://host/auth/custom/confirm"
+    export REGISTER_CONFIRMATION_REDIRECT_URL="https://host"
+    export REGISTER_TIMEOUT_SECONDS="600"
+    export REGISTER_CUSTOM_AUTH_THROTTLING="30" #only allow registration calls every n seconds/IP
+    export LOGIN_CUSTOM_AUTH_THROTTLING="5" #only allow login calls every n seconds/IP
+    export CHANGE_PASSWORD_CUSTOM_AUTH_THROTTLING="5" #only allow change password calls every n seconds/IP
+    export RESET_PASSWORD_CUSTOM_AUTH_THROTTLING="5" #only allow reset password calls every n seconds/IP
+    export RESET_PASSWORD_CONFIRMATION_TITLE="Forum Reset Password Confirmation"
+    export RESET_PASSWORD_CONFIRMATION_URL="https://host/auth/custom/confirm_reset_password"
+    export RESET_PASSWORD_TIMEOUT_SECONDS="600"
+    export RESET_PASSWORD_NEW_PASSWORD_SIZE="16"
+    
+The confirmation email template can be adjusted at `register_confirmation_template.html`.
 
 #### Authentication Using External Providers
 
-TODO
+User authentication can be performed via external providers.
+
+To allow users to log in with Google accounts via OAuth 2, please register the application and configure the following:
+
+    export GOOGLE_CLIENT_ID="client id"
+    export GOOGLE_CLIENT_SECRET="client secret"
 
 ### Run
 
