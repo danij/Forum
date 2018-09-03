@@ -18,4 +18,5 @@ include_directories(
 add_executable(MessageExtractor ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(MessageExtractor
+        atomic
         ${Boost_LIBRARIES})

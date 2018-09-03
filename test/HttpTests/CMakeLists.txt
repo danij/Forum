@@ -24,6 +24,7 @@ add_executable(HttpTests
 
 target_link_libraries(HttpTests
         Http
+        atomic
         ${Boost_LIBRARIES})
 
 add_test(NAME Http_Tests COMMAND HttpTests)

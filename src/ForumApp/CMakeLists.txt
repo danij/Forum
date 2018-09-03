@@ -40,6 +40,7 @@ target_link_libraries(ForumApp
         ForumHelpers
         ForumPersistence
         dl
+        atomic
         ${Boost_LIBRARIES}
         ${ICU_LIBRARIES}
         ${ICU_I18N_LIBRARIES})
