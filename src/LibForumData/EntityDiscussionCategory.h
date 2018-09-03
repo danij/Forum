@@ -161,7 +161,7 @@ namespace Forum::Entities
         bool hasAncestor(EntityPointer<DiscussionCategory> ancestor);
 
         bool insertDiscussionThread(DiscussionThreadPtr thread);
-        bool deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages);
+        bool deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages, bool onlyThisCategory);
         void deleteDiscussionThreadIfNoOtherTagsReferenceIt(DiscussionThreadPtr thread, bool deleteMessages);
 
         bool addTag(DiscussionTagPtr tag);
