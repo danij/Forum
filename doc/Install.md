@@ -154,6 +154,8 @@ The following settings need also be specified to enable authentication:
     
 The confirmation email template can be adjusted at `register_confirmation_template.html`.
 
+The reset password email template can be adjusted at `reset_password_confirmation_template.html`.
+
 #### Authentication Using External Providers
 
 User authentication can be performed via external providers.
