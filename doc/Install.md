@@ -292,3 +292,5 @@ Edit the `nginx` sites configuration (located, e.g. under `/etc/nginx/sites-avai
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_pass http://127.0.0.1:8082;
     }
+
+The port that nginx is listening on is the only one that needs to be exposed to users, the other internal ones should only be accesible from localhost.
