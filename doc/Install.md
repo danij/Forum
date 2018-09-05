@@ -253,6 +253,13 @@ Edit `dist/dic/terms_of_service.md` and add appropriate Terms Of Service.
 
 Edit the `nginx` sites configuration (located, e.g. under `/etc/nginx/sites-available/default` or `/etc/nginx/nginx.conf`)
 
+    add_header Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Xss-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "same-origin" always;
+    add_header Feature-Policy "geolocation 'none'; midi 'none'; notifications 'none'; push 'none'; sync-xhr 'none'; microphone 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; speaker 'none'; vibrate 'none'; fullscreen 'none'; payment 'none';" always;
+
     location / {
         alias  location of dist/ folder (or copy its content to the default website root folder);
         index  index.html index.htm;
