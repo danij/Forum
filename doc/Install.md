@@ -92,7 +92,7 @@ The configuration values are specified via environment variables.
 
 Custom authentication works by storing user accounts in a local database.
 
-Create a new username & database in PostgreSQL and the following tables in that database:
+Create a new username & database in PostgreSQL and add the following tables in that database:
     
     CREATE TABLE logins (
         id SERIAL PRIMARY KEY,
@@ -182,7 +182,7 @@ Execute the above created script under a user with the minimum amount of privile
 
 [PostgreSQL](https://www.postgresql.org/)
 
-Create a new username & database in PostgreSQL and the following tables in that database:
+Create a new username & database in PostgreSQL and add the following tables in that database:
     
     CREATE TABLE threads (
         id UUID PRIMARY KEY,
