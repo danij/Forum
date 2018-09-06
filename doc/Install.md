@@ -68,6 +68,10 @@ For better security, run the service under a user with the minimum amount of pri
 
 The sources of the authentication service are located at [https://github.com/danij/Forum.Auth](https://github.com/danij/Forum.Auth).
 
+### Install NPM Dependencies
+
+    npm install
+
 ### Configure
 
 The configuration values are specified via environment variables.
@@ -195,6 +199,10 @@ Create a new username & database in PostgreSQL and the following tables in that 
 ### Retrieve The Sources
 
 The sources of the authentication service are located at [https://github.com/danij/Forum.Search](https://github.com/danij/Forum.Search).
+
+### Install NPM Dependencies
+
+    npm install
 
 ### Configure
 
