@@ -119,8 +119,8 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
                           }
 
                           auto index = collection.categories().byDisplayOrderRootPriority();
-                          auto indexBegin = index.begin();
-                          auto indexEnd = index.end();
+                          const auto indexBegin = index.begin();
+                          const auto indexEnd = index.end();
 
                           auto indexRootEnd = indexBegin;
                           while ((indexRootEnd != indexEnd) && ((*indexRootEnd)->isRootCategory()))
@@ -128,7 +128,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
                               ++indexRootEnd;
                           }
 
-                          BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
+                          IntTemporaryChanger _(serializationSettings.showDiscussionCategoryChildrenRecursionLeft, 2);
 
                           status.disable();
 
@@ -169,7 +169,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(IdTypeR
                           }
 
                           status.disable();
-                          BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, true);
+                          IntTemporaryChanger _(serializationSettings.showDiscussionCategoryChildrenRecursionLeft, 1);
                           BoolTemporaryChanger __(serializationSettings.keepDiscussionCategoryDetails, true);
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
