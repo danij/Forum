@@ -551,6 +551,8 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                //this is the first user, so grant all privileges
                                authorizationRepository_->assignForumWidePrivilege(collection, user->id(), 
                                        MaxPrivilegeValue, UnlimitedDuration);
+                               writeEvents().onAssignForumWidePrivilege(createObserverContext(*currentUser),
+                                   *user, MaxPrivilegeValue, UnlimitedDuration);
                            }
 
                            status.writeNow([&](auto& writer)
