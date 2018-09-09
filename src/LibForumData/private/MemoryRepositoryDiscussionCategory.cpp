@@ -169,7 +169,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(IdTypeR
                           }
 
                           status.disable();
-                          IntTemporaryChanger _(serializationSettings.showDiscussionCategoryChildrenRecursionLeft, 1);
+                          IntTemporaryChanger _(serializationSettings.showDiscussionCategoryChildrenRecursionLeft, 2);
                           BoolTemporaryChanger __(serializationSettings.keepDiscussionCategoryDetails, true);
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
