@@ -330,3 +330,7 @@ location /search {
 ```
 
 The port that nginx is listening on is the only one that needs to be exposed to users, the other internal ones should only be accesible from localhost.
+
+### External Images
+
+The default Content Security Policy rules do not allow loading images from external sites. If such a feature is desirable, the `img-src` rules (currently specified both in nginx and in index.html) must be updated to also allow loading images from other domains.
