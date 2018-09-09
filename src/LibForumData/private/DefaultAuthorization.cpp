@@ -47,22 +47,12 @@ AuthorizationStatus DefaultAuthorization::getUsers(const User& currentUser) cons
 
 AuthorizationStatus DefaultAuthorization::getUserById(const User& currentUser, const User& user) const
 {
-    if (currentUser.id() == user.id())
-    {
-        return AuthorizationStatus::OK;
-    }
-    PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_USER_INFO, with);
+    return AuthorizationStatus::OK;
 }
 
 AuthorizationStatus DefaultAuthorization::getUserByName(const User& currentUser, const User& user) const
 {
-    if (currentUser.id() == user.id())
-    {
-        return AuthorizationStatus::OK;
-    }
-    PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_USER_INFO, with);
+    return AuthorizationStatus::OK;
 }
 
 AuthorizationStatus DefaultAuthorization::addNewUser(const User& currentUser, StringView /*name*/) const

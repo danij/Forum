@@ -41,6 +41,7 @@ namespace Forum::Helpers
     };
 
     typedef TemporaryChanger<bool> BoolTemporaryChanger;
+    typedef TemporaryChanger<int> IntTemporaryChanger;
 
     /**
      * Changes a boost::optional and reverts it to boost::none only if it didn't have a value to start with

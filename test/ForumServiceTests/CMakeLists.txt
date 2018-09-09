@@ -45,6 +45,7 @@ target_link_libraries(ForumServiceTests
         ForumServiceEndpoints
         ForumData
         ForumHelpers
+        atomic
         ${Boost_LIBRARIES}
         ${ICU_LIBRARIES}
         ${ICU_I18N_LIBRARIES})

@@ -47,7 +47,7 @@ namespace Forum::Entities
 
         bool hideDiscussionCategoryTags = false;
         bool hideDiscussionCategoryParent = false;
-        bool showDiscussionCategoryChildren = false;
+        int showDiscussionCategoryChildrenRecursionLeft = 0;
         bool hideDiscussionCategoriesOfTags = false;
         bool keepDiscussionCategoryDetails = false;
         boost::optional<int> displayDiscussionCategoryParentRecursionDepth = boost::none;

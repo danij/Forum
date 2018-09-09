@@ -72,6 +72,8 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "users/online",            HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getOnline) },
         { "users/id",                HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserById) },
         { "users/name",              HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserByName) },
+        { "users/multiple/ids",      HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getMultipleUsersById) },
+        { "users/multiple/names",    HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getMultipleUsersByName) },
         { "users/search",            HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.searchUsersByName) },
         { "users",                   HttpVerb::POST,   ENDPOINT_DELEGATE(usersEndpoint.add) },
         { "users",                   HttpVerb::DELETE, ENDPOINT_DELEGATE(usersEndpoint.remove) },

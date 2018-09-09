@@ -19,4 +19,5 @@ include_directories(
 add_executable(SearchDataExtractor ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(SearchDataExtractor
+        atomic
         ${Boost_LIBRARIES})

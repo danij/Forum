@@ -396,11 +396,16 @@ BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name_case_and_accent_insensitive
     BOOST_REQUIRE_EQUAL("HélĹǬ", user.get<std::string>("user.name"));
 }
 
+static constexpr char schar(int value)
+{
+    return static_cast<char>(static_cast<signed char>(value));
+}
+
 BOOST_AUTO_TEST_CASE( Users_can_be_retrieved_by_name_even_if_using_a_different_normalization_form )
 {
     //"HélĹǬ" as UTF-8
-    const char nameFormC[] = { 72, -61, -87, 108, -60, -71, -57, -84, 0 };
-    const char nameFormD[] = { 72, 101, -52, -127, 108, 76, -52, -127, 79, -52, -88, -52, -124, 0 };
+    const char nameFormC[] = { 72, schar(-61), schar(-87), 108, schar(-60), schar(-71), schar(-57), schar(-84), 0 };
+    const char nameFormD[] = { 72, 101, schar(-52), schar(-127), 108, 76, schar(-52), schar(-127), 79, schar(-52), schar(-88), schar(-52), schar(-124), 0 };
 
     auto handler = createCommandHandler();
     assertStatusCodeEqual(StatusCode::OK, createUser(handler, nameFormC));

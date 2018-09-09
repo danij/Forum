@@ -49,7 +49,7 @@ static void executeOnCategoryAndAllParents(DiscussionCategory& category, std::fu
 
 bool DiscussionCategory::addChild(EntityPointer<DiscussionCategory> category)
 {
-    return std::get<1>(children_.insert(std::move(category)));
+    return std::get<1>(children_.insert(category));
 }
 
 bool DiscussionCategory::removeChild(EntityPointer<DiscussionCategory> category)
@@ -134,24 +134,28 @@ bool DiscussionCategory::insertDiscussionThreadsOfTag(DiscussionTagPtr tag)
         //this category and all parents will hold separate references to the new threads
         for (auto thread : threadsToInsert)
         {
-            category.totalThreads_.add(thread);            
+            category.totalThreads_.add(thread);
         }
     });
 
     return true;
 }
 
-bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages)
+bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread, const bool deleteMessages, 
+                                                const bool onlyThisCategory)
 {
     assert(thread);
-    if (deleteMessages) {
+    if (deleteMessages)
+    {
         changeNotifications_.onPrepareUpdateMessageCount(*this);
     }
+
     if ( ! threads_.remove(thread))
     {
         return false;
     }
-    if (deleteMessages) {
+    if (deleteMessages)
+    {
         //don't use updateMessageCount() as deleteDiscussionThreadById will take care of that for totals
         messageCount_ -= static_cast<int_fast32_t>(thread->messageCount());
     }
@@ -159,13 +163,17 @@ bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread, bool
     {
         thread->removeCategory(pointer());
     }
-    if (deleteMessages) {
+    if (deleteMessages)
+    {
         changeNotifications_.onUpdateMessageCount(*this);
     }
-    executeOnCategoryAndAllParents(*this, [&](auto& category)
+    if ( ! onlyThisCategory)
     {
-        category.totalThreads_.remove(thread);
-    });
+        executeOnCategoryAndAllParents(*this, [&](auto& category)
+        {
+            category.totalThreads_.remove(thread);
+        });
+    }
 
     return true;
 }
@@ -173,6 +181,7 @@ bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread, bool
 void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(DiscussionThreadPtr thread, bool deleteMessages)
 {
     assert(thread);
+
     //don't remove the thread just yet, perhaps it's also referenced by other tags
     bool referencedByOtherTags = false;
     for (auto tag : thread->tags())
@@ -184,9 +193,10 @@ void DiscussionCategory::deleteDiscussionThreadIfNoOtherTagsReferenceIt(Discussi
             break;
         }
     }
+
     if ( ! referencedByOtherTags)
     {
-        deleteDiscussionThread(thread, deleteMessages);
+        deleteDiscussionThread(thread, deleteMessages, true);
 
         //release separate references held by this category and parents, if reference count drops to 0
         executeOnCategoryAndAllParents(*this, [&](auto& category)
@@ -212,6 +222,7 @@ bool DiscussionCategory::addTag(DiscussionTagPtr tag)
 bool DiscussionCategory::removeTag(DiscussionTagPtr tag)
 {
     assert(tag);
+
     if (0 == tags_.erase(tag))
     {
         return false;
@@ -246,6 +257,7 @@ void DiscussionCategory::updateMessageCount(DiscussionThreadPtr thread, int_fast
         {
             return;
         }
+
         if (category.threads().contains(thread))
         {
             //stop any updates on the total or else the messages will be counted multiple times

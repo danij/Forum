@@ -79,3 +79,7 @@ from disk and replied to fill the repositories.
 ### Running Tests
 
     ctest --verbose
+
+### Installing
+
+A more detailed installation guide is available at [Installation Guide](doc/Install.md).

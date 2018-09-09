@@ -28,6 +28,7 @@ target_link_libraries(MemoryRepositoryBenchmarks
         ForumData
         ForumHelpers
         ForumPersistence
+        atomic
         ${Boost_LIBRARIES}
         ${ICU_LIBRARIES}
         ${ICU_I18N_LIBRARIES})

@@ -58,6 +58,8 @@ namespace Forum::Repository
         boost::signals2::signal<void(ObserverContext)> onGetUsersOnline;
         boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetUserById;
         boost::signals2::signal<void(ObserverContext, StringView)> onGetUserByName;
+        boost::signals2::signal<void(ObserverContext, StringView)> onGetMultipleUsersById;
+        boost::signals2::signal<void(ObserverContext, StringView)> onGetMultipleUsersByName;
         boost::signals2::signal<void(ObserverContext, StringView)> onSearchUsersByName;
         boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetUserLogo;
         boost::signals2::signal<void(ObserverContext)> onGetUserVoteHistory;

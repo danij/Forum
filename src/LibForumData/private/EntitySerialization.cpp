@@ -540,12 +540,12 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
 
         writeArraySafeName(writer, "tags", category.tags().begin(), category.tags().end(), restriction);
     }
-    if (serializationSettings.showDiscussionCategoryChildren)
+    if (serializationSettings.showDiscussionCategoryChildrenRecursionLeft > 0)
     {
-        //only show 1 level of category children
-        const auto hideDetails = ! serializationSettings.keepDiscussionCategoryDetails;
+        const auto hideDetails = serializationSettings.showDiscussionCategoryChildrenRecursionLeft <= 1;
 
-        BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
+        IntTemporaryChanger _(serializationSettings.showDiscussionCategoryChildrenRecursionLeft, 
+                              serializationSettings.showDiscussionCategoryChildrenRecursionLeft - 1);
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryParent, true);
         BoolTemporaryChanger ___(serializationSettings.hideDiscussionCategoryTags, hideDetails);
         BoolTemporaryChanger ____(serializationSettings.hideLatestMessage, hideDetails);
@@ -573,7 +573,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
             }
             else
             {
-                BoolTemporaryChanger _(serializationSettings.showDiscussionCategoryChildren, false);
+                IntTemporaryChanger _(serializationSettings.showDiscussionCategoryChildrenRecursionLeft, 0);
                 BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
 
                 depth += 1;

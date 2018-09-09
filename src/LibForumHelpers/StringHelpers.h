@@ -115,6 +115,30 @@ namespace Forum::Helpers
     }
 
     /**
+     * Parses strings separated by the specified character
+     */
+    template<typename It>
+    It splitString(std::string_view input, const char separator, It outputBegin, It outputEnd)
+    {
+        if (outputBegin == outputEnd) return outputBegin;
+
+        auto previousStart = input.data();
+        auto inputIt = input.data();
+        for (const auto inputEnd = inputIt + input.size(); inputIt != inputEnd; ++inputIt)
+        {
+            if (separator == *inputIt)
+            {
+                *outputBegin = std::string_view(previousStart, inputIt - previousStart);
+                if (++outputBegin == outputEnd) return outputBegin;
+
+                previousStart = inputIt + 1;
+            }
+        }
+        *outputBegin++ = std::string_view(previousStart, inputIt - previousStart);
+        return outputBegin;
+    }
+
+    /**
      * Stores a string in a custom location in memory
      * The string only supports changing the whole content, not individual bytes
      * Providing a string_view to it is easier than defining an std::basic_string with a custom allocator

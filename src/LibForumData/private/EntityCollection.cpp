@@ -184,7 +184,7 @@ struct EntityCollection::Impl
         for (DiscussionCategoryPtr category : thread.categories())
         {
             assert(category);
-            category->deleteDiscussionThread(threadPtr, deleteMessages);
+            category->deleteDiscussionThread(threadPtr, deleteMessages, false);
         }
 
         for (DiscussionTagPtr tag : thread.tags())

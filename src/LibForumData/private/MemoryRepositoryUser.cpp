@@ -334,6 +334,128 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
     return status;
 }
 
+StatusCode MemoryRepositoryUser::getMultipleUsersById(StringView ids, OutStream& output) const
+{
+    StatusWriter status(output);
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    constexpr size_t MaxIdBuffer = 64;
+    static boost::thread_specific_ptr<std::array<UuidString, MaxIdBuffer>> parsedIdsPtr;
+    static boost::thread_specific_ptr<std::array<const User*, MaxIdBuffer>> usersFoundPtr;
+
+    if ( ! parsedIdsPtr.get())
+    {
+        parsedIdsPtr.reset(new std::array<UuidString, MaxIdBuffer>);
+    }
+    auto& parsedIds = *parsedIdsPtr;
+    if ( ! usersFoundPtr.get())
+    {
+        usersFoundPtr.reset(new std::array<const User*, MaxIdBuffer>);
+    }
+    auto& usersFound = *usersFoundPtr;
+
+    const auto maxUsersToSearch = std::min(MaxIdBuffer, 
+                                           static_cast<size_t>(getGlobalConfig()->user.maxUsersPerPage));
+    auto lastParsedId = parseMultipleUuidStrings(ids, parsedIds.begin(), parsedIds.begin() + maxUsersToSearch);
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          const auto& users = collection.users();
+                          const auto index = users.byId();
+
+                          const auto lastUserFound = std::transform(parsedIds.begin(), lastParsedId, usersFound.begin(), 
+                              [&index](auto id)
+                              {
+                                  auto it = index.find(id);
+                                  return it == index.end() 
+                                      ? nullptr
+                                      : *it;
+                              });
+                          
+                          status = StatusCode::OK;
+                          status.disable();
+                          
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                               currentUser.id(), Context::getCurrentTime());
+
+                          writeAllEntities(usersFound.begin(), lastUserFound, "users", output, restriction);
+                          
+                          readEvents().onGetMultipleUsersById(createObserverContext(currentUser), ids);
+                      });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::getMultipleUsersByName(StringView names, OutStream& output) const
+{
+    StatusWriter status(output);
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    constexpr size_t MaxNameBuffer = 64;
+    static boost::thread_specific_ptr<std::array<StringView, MaxNameBuffer>> separatedNamesPtr;
+    static boost::thread_specific_ptr<std::array<const User*, MaxNameBuffer>> usersFoundPtr;
+
+    if ( ! separatedNamesPtr.get())
+    {
+        separatedNamesPtr.reset(new std::array<StringView, MaxNameBuffer>);
+    }
+    auto& separatedNames = *separatedNamesPtr;
+    if ( ! usersFoundPtr.get())
+    {
+        usersFoundPtr.reset(new std::array<const User*, MaxNameBuffer>);
+    }
+    auto& usersFound = *usersFoundPtr;
+
+    const auto maxUsersToSearch = std::min(MaxNameBuffer, 
+                                           static_cast<size_t>(getGlobalConfig()->user.maxUsersPerPage));
+    auto lastName = splitString(names, ',', separatedNames.begin(), separatedNames.begin() + maxUsersToSearch);
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+
+                          const auto& users = collection.users();
+                          const auto index = users.byName();
+
+                          const auto lastUserFound = std::transform(separatedNames.begin(), lastName, usersFound.begin(), 
+                              [&index](auto name)
+                              {
+                                  const auto it = index.find(User::NameType{ name });
+                                  return it == index.end() 
+                                      ? nullptr
+                                      : *it;
+                              });
+                          
+                          status = StatusCode::OK;
+                          status.disable();
+                          
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+                          writer.newPropertyWithSafeName("user_ids");
+                          writer.startArray();
+
+                          for (auto it = usersFound.begin(); it != lastUserFound; ++it)
+                          {
+                              const User* user = *it;
+                              if (nullptr == user)
+                              {
+                                  writer.null();
+                              }
+                              else
+                              {
+                                  writer << user->id();
+                              }
+                          }
+        
+                          writer.endArray();
+                          writer.endObject();
+                                                    
+                          readEvents().onGetMultipleUsersByName(createObserverContext(currentUser), names);
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryUser::searchUsersByName(StringView name, OutStream& output) const
 {
     StatusWriter status(output);
@@ -551,6 +673,8 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                                //this is the first user, so grant all privileges
                                authorizationRepository_->assignForumWidePrivilege(collection, user->id(), 
                                        MaxPrivilegeValue, UnlimitedDuration);
+                               writeEvents().onAssignForumWidePrivilege(createObserverContext(*currentUser),
+                                   *user, MaxPrivilegeValue, UnlimitedDuration);
                            }
 
                            status.writeNow([&](auto& writer)

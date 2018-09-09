@@ -382,9 +382,11 @@ void GrantedPrivilegeStore::calculatePrivilege(const PrivilegeEntryCollection& c
     const IdTuple toSearch{ userId, entityId };
     auto range = collection.get<PrivilegeEntryCollectionByUserIdEntityId>().equal_range(toSearch);
 
-    positiveValue = (userId == anonymousUserId())
-                    ? static_cast<PrivilegeValueIntType>(0)
-                    : defaultPrivilegeValueForLoggedInUser_;
+    const auto defaultPositiveValue = (userId == anonymousUserId())
+                                      ? static_cast<PrivilegeValueIntType>(0)
+                                      : defaultPrivilegeValueForLoggedInUser_;
+
+    positiveValue = maximumPrivilegeValue(positiveValue, defaultPositiveValue);
 
     for (auto& entry : boost::make_iterator_range(range))
     {

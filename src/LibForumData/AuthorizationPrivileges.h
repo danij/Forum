@@ -389,7 +389,11 @@ namespace Forum::Authorization
         COUNT
     };
 
-    const std::pair<uint16_t, time_t> ThrottlingDefaultValues[] =
+    typedef int16_t PrivilegeValueIntType;
+    typedef boost::optional<PrivilegeValueIntType> PrivilegeValueType;
+    typedef int_fast64_t PrivilegeDurationIntType;
+
+    const std::pair<uint16_t, PrivilegeDurationIntType> ThrottlingDefaultValues[] =
     {
         {10,  600}, //max 10 new content actions every 10 minuts
         {10,  300}, //max 10 edits of content every 5 minutes
@@ -397,10 +401,6 @@ namespace Forum::Authorization
         {10, 3600}, //max 10 votes every hour
         {10,  600}  //max 10 subscriptions every 10 minutes
     };
-
-    typedef int16_t PrivilegeValueIntType;
-    typedef boost::optional<PrivilegeValueIntType> PrivilegeValueType;
-    typedef time_t PrivilegeDurationIntType;
 
     struct PrivilegeDefaultLevel
     {
