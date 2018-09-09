@@ -258,6 +258,18 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->getUserByName(normalizedParam, output);
     }
 
+    COMMAND_HANDLER_METHOD( GET_MULTIPLE_USERS_BY_ID )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return userRepository->getMultipleUsersById(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_MULTIPLE_USERS_BY_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return userRepository->getMultipleUsersByName(parameters[0], output);
+    }
+
     COMMAND_HANDLER_METHOD( SEARCH_USERS_BY_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -1234,6 +1246,8 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_USERS_ONLINE);
     setViewHandler(GET_USER_BY_ID);
     setViewHandler(GET_USER_BY_NAME);
+    setViewHandler(GET_MULTIPLE_USERS_BY_ID);
+    setViewHandler(GET_MULTIPLE_USERS_BY_NAME);
     setViewHandler(SEARCH_USERS_BY_NAME);
     setViewHandler(GET_USER_LOGO);
     setViewHandler(GET_USER_VOTE_HISTORY);

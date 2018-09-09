@@ -437,6 +437,26 @@ void UsersEndpoint::getUserByName(Http::RequestState& requestState)
     });
 }
 
+void UsersEndpoint::getMultipleUsersById(Http::RequestState& requestState)
+{
+    handle(requestState,
+        [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::GET_MULTIPLE_USERS_BY_ID, parameters);
+    });
+}
+
+void UsersEndpoint::getMultipleUsersByName(Http::RequestState& requestState)
+{
+    handle(requestState,
+        [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::GET_MULTIPLE_USERS_BY_NAME, parameters);
+    });
+}
+
 void UsersEndpoint::searchUsersByName(Http::RequestState& requestState)
 {
     handle(requestState,

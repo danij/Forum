@@ -36,6 +36,8 @@ namespace Forum::Repository
 
         StatusCode getUserById(Entities::IdTypeRef id, OutStream& output) const override;
         StatusCode getUserByName(StringView name, OutStream& output) const override;
+        StatusCode getMultipleUsersById(StringView ids, OutStream& output) const override;
+        StatusCode getMultipleUsersByName(StringView names, OutStream& output) const override;
         StatusCode searchUsersByName(StringView name, OutStream& output) const override;
         StatusCode getUserLogo(Entities::IdTypeRef id, OutStream& output) const override;
         StatusCode getUserVoteHistory(OutStream& output) const override;

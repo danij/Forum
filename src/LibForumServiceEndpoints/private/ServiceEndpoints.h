@@ -81,6 +81,8 @@ namespace Forum::Commands
         void getOnline(Http::RequestState& requestState);
         void getUserById(Http::RequestState& requestState);
         void getUserByName(Http::RequestState& requestState);
+        void getMultipleUsersById(Http::RequestState& requestState);
+        void getMultipleUsersByName(Http::RequestState& requestState);
         void searchUsersByName(Http::RequestState& requestState);
         void getUserLogo(Http::RequestState& requestState);
         void getUserVoteHistory(Http::RequestState& requestState);
