@@ -94,6 +94,7 @@ export DOUBLE_SUBMIT_COOKIE_SIZE="32"
 export PREFIX="while(1);"
 export TRUST_FORWARDED_IP="true"
 export EXPECTED_ORIGIN="https://host without trailing /"
+export SECURE_COOKIES="true" #true if using HTTPS, false if using HTTP for testing
 
 node bin/www > forum-auth.log
 ```
