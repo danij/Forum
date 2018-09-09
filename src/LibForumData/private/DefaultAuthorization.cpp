@@ -1159,8 +1159,10 @@ AuthorizationStatus DefaultAuthorization::getForumWideAssignedPrivileges(const U
 }
 
 AuthorizationStatus DefaultAuthorization::getUserAssignedPrivileges(const User& currentUser, 
-                                                                    const User& /*targetUser*/) const
+                                                                    const User& targetUser) const
 {
+    if (currentUser.id() == targetUser.id()) return AuthorizationStatus::OK;
+
     PrivilegeValueType with;
     const auto status = isAllowed(currentUser.id(), ForumWidePrivilege::VIEW_USER_ASSIGNED_PRIVILEGES, with);
     return status;
