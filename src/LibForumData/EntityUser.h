@@ -77,7 +77,9 @@ namespace Forum::Entities
             if ( ! messageComments_) return emptyMessageComments_;
             return *messageComments_;
         }
-        const auto& voteHistory() const { return voteHistory_; }
+
+        const auto& voteHistory()  const { return voteHistory_; }
+        const auto& quoteHistory() const { return quoteHistory_; }
 
         enum ChangeType : uint32_t
         {
@@ -168,6 +170,8 @@ namespace Forum::Entities
         auto& voteHistory()                    { return voteHistory_; }
         auto& voteHistoryLastRetrieved() const { return voteHistoryLastRetrieved_; }
 
+        auto& quoteHistory()                   { return quoteHistory_; }
+
         auto& showInOnlineUsers()        const { return showInOnlineUsers_; }
 
         void updateAuth(std::string&& value)
@@ -240,6 +244,9 @@ namespace Forum::Entities
 
         int_fast32_t receivedUpVotes_{ 0 };
         int_fast32_t receivedDownVotes_{ 0 };
+
+        static constexpr size_t MaxQuotesInHistory = 128;
+        boost::circular_buffer_space_optimized<IdType> quoteHistory_{ MaxQuotesInHistory };
 
         mutable std::atomic_bool showInOnlineUsers_{ false };
     };

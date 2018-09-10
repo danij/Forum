@@ -165,6 +165,8 @@ namespace Forum::Repository
                                      onAddCommentToDiscussionThreadMessage;
         boost::signals2::signal<void(ObserverContext, const Entities::MessageComment&)>
                                      onSolveDiscussionThreadMessageComment;
+        boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&, 
+                                     Entities::IdTypeRef)> onQuoteUserInDiscussionThreadMessage;
 
         boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onAddNewDiscussionTag;
         boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&,

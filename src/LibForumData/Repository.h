@@ -284,6 +284,9 @@ namespace Forum::Repository
             addCommentToDiscussionThreadMessage(Entities::EntityCollection& collection, Entities::IdTypeRef commentId,
                                                 Entities::IdTypeRef messageId, StringView content) = 0;
         virtual StatusCode setMessageCommentToSolved(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
+
+        virtual StatusCode quoteUserInMessage(Entities::EntityCollection& collection,
+                                              Entities::IdTypeRef messageId, Entities::IdTypeRef userId) = 0;
     };
     typedef std::shared_ptr<IDiscussionThreadMessageDirectWriteRepository> DiscussionThreadMessageDirectWriteRepositoryRef;
 

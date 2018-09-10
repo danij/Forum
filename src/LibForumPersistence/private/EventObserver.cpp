@@ -178,6 +178,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         connections.push_back(writeEvents.   onDiscussionThreadMessageResetVote.connect([this](auto context, auto& message)                    { this->onDiscussionThreadMessageResetVote   (context, message); }));
         connections.push_back(writeEvents.onAddCommentToDiscussionThreadMessage.connect([this](auto context, auto& comment)                    { this->onAddCommentToDiscussionThreadMessage(context, comment); }));
         connections.push_back(writeEvents.onSolveDiscussionThreadMessageComment.connect([this](auto context, auto& comment)                    { this->onSolveDiscussionThreadMessageComment(context, comment); }));
+        connections.push_back(writeEvents. onQuoteUserInDiscussionThreadMessage.connect([this](auto context, auto& message, IdTypeRef userId)  { this->onQuoteUserInDiscussionThreadMessage (context, message, userId); }));
         connections.push_back(writeEvents.                onAddNewDiscussionTag.connect([this](auto context, auto& tag)                        { this->onAddNewDiscussionTag                (context, tag); }));
         connections.push_back(writeEvents.                onChangeDiscussionTag.connect([this](auto context, auto& tag, auto change)           { this->onChangeDiscussionTag                (context, tag, change); }));
         connections.push_back(writeEvents.                onDeleteDiscussionTag.connect([this](auto context, auto& tag)                        { this->onDeleteDiscussionTag                (context, tag); }));
@@ -601,6 +602,20 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         };
 
         recordBlob(EventType::SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT, 1, parts, std::size(parts));
+    }
+
+    void onQuoteUserInDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message, 
+                                              IdTypeRef userId)
+    {
+        PersistentTimestampType contextTimestamp = context.timestamp;
+        BlobPart parts[] =
+        {
+            ADD_CONTEXT_BLOB_PARTS,
+            { POINTER(&message.id().value().data), UuidSize, false },
+            { POINTER(&userId.value().data), UuidSize, false }
+        };
+
+        recordBlob(EventType::QUOTE_USER_IN_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void onAddNewDiscussionTag(ObserverContext context, const DiscussionTag& tag)

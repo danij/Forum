@@ -29,6 +29,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/thread/tss.hpp>
 
+#include <set>
+
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -278,17 +280,20 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                            }
 
                            auto& user = *currentUser;
-                           auto alreadySubscribed = user.subscribedThreads().contains(threadPtr);
+                           const auto alreadySubscribed = user.subscribedThreads().contains(threadPtr);
 
                            auto statusWithResource = addNewDiscussionMessageInThread(collection, generateUniqueId(),
                                                                                      threadId, content);
                            auto& message = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
-                           writeEvents().onAddNewDiscussionThreadMessage(createObserverContext(user), *message);
+                           const auto& write = writeEvents();
+                           const auto observerContext = createObserverContext(user);
+
+                           write.onAddNewDiscussionThreadMessage(observerContext, *message);
                            if ( ! alreadySubscribed)
                            {
-                               writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), thread);
+                               write.onSubscribeToDiscussionThread(observerContext, thread);
                            }
 
                            if (anonymousUser() != currentUser)
@@ -302,9 +307,19 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
 
                                    authorizationDirectWriteRepository_->assignDiscussionThreadMessagePrivilege(
                                            collection, message->id(), currentUser->id(), value, duration);
-                                   writeEvents().onAssignDiscussionThreadMessagePrivilege(
-                                           createObserverContext(*currentUser), *message, *currentUser, value, duration);
+                                   write.onAssignDiscussionThreadMessagePrivilege(
+                                           observerContext, *message, *currentUser, value, duration);
                                }
+                           }
+
+                           //handle quotes users
+                           std::set<IdType> quotedIds;
+                           extractUuidReferences(content, std::inserter(quotedIds, quotedIds.end()));
+
+                           for (const auto userId: quotedIds)
+                           {
+                               quoteUserInMessage(collection, message->id(), userId);
+                               write.onQuoteUserInDiscussionThreadMessage(observerContext, *message, userId);
                            }
 
                            status.writeNow([&](auto& writer)
@@ -492,8 +507,33 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
 
                            if ( ! (status = changeDiscussionThreadMessageContent(collection, id, newContent, changeReason))) return;
 
-                           writeEvents().onChangeDiscussionThreadMessage(createObserverContext(*currentUser), **it,
-                                                                         DiscussionThreadMessage::ChangeType::Content);
+                           DiscussionThreadMessagePtr messagePtr = *it;
+                           DiscussionThreadMessage& message = *messagePtr;
+
+                           const auto& write = writeEvents();
+                           const auto observerContext = createObserverContext(*currentUser);
+
+                           //handle quotes users
+                           std::set<IdType> newQuotedIds;
+                           extractUuidReferences(newContent, std::inserter(newQuotedIds, newQuotedIds.end()));
+                           if ( ! newQuotedIds.empty())
+                           {
+                               std::set<IdType> oldQuotedIds;
+                               extractUuidReferences(message.content(), std::inserter(oldQuotedIds, oldQuotedIds.end()));
+
+                               for (const auto userId : newQuotedIds)
+                               {
+                                   if (oldQuotedIds.find(userId) == oldQuotedIds.end())
+                                   {
+                                       //only quote users that were not quoted in the previous message
+                                       quoteUserInMessage(collection, message.id(), userId);
+                                       write.onQuoteUserInDiscussionThreadMessage(observerContext, message, userId);
+                                   }
+                               }
+                           }
+
+                           write.onChangeDiscussionThreadMessage(observerContext, message,
+                                                                 DiscussionThreadMessage::ChangeType::Content);
                        });
     return status;
 }
@@ -1169,6 +1209,23 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(En
 
     comment.solved() = true;
     comment.parentMessage().solvedCommentsCount() += 1;
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepositoryDiscussionThreadMessage::quoteUserInMessage(EntityCollection& collection,
+                                                                       IdTypeRef messageId, IdTypeRef userId)
+{
+    auto& indexById = collection.users().byId();
+    const auto it = indexById.find(userId);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
+        return StatusCode::NOT_FOUND;
+    }
+
+    UserPtr user = *it;
+    user->quoteHistory().push_back(messageId);
 
     return StatusCode::OK;
 }

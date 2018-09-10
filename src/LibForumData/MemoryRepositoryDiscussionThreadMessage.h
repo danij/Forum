@@ -81,6 +81,9 @@ namespace Forum::Repository
         StatusCode setMessageCommentToSolved(Entities::IdTypeRef id, OutStream& output) override;
         StatusCode setMessageCommentToSolved(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
+        StatusCode quoteUserInMessage(Entities::EntityCollection& collection,
+                                      Entities::IdTypeRef messageId, Entities::IdTypeRef userId) override;
+
     private:
         StatusWithResource<Entities::DiscussionThreadMessagePtr>
             addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,

@@ -262,7 +262,9 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_PRIVILEGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_TAG_PRIVILEGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_FORUM_WIDE_PRIVILEGE ) }
+            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_FORUM_WIDE_PRIVILEGE ) },
+
+            { {/*v0*/}, DECLARE_FORWARDER( 1, QUOTE_USER_IN_DISCUSSION_THREAD_MESSAGE ) }
         };
     }
 
@@ -464,6 +466,15 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.discussionThreadMessage->setMessageCommentToSolved(entityCollection_, id));
+
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( QUOTE_USER_IN_DISCUSSION_THREAD_MESSAGE, 1 )
+        READ_UUID(messageId, data, size);
+        READ_UUID(userId, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->quoteUserInMessage(entityCollection_, messageId, userId));
 
     END_DEFAULT_IMPORTER()
 
