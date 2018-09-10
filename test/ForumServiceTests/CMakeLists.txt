@@ -20,7 +20,8 @@ set(SOURCE_FILES
         JsonSerializationTests.cpp
         IpAddressTests.cpp
         IdTests.cpp
-        SortedVectorTests.cpp)
+        SortedVectorTests.cpp
+        StringTests.cpp)
 
 set(HEADER_FILES
         AllowAllAuthorization.h
