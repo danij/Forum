@@ -109,7 +109,6 @@ VisitorCollection& Forum::Context::getVisitorCollection()
 
 void Forum::Context::setVisitorCollection(std::shared_ptr<VisitorCollection> value)
 {
-    assert(nullptr == visitorCollection.get());
     visitorCollection = value;
 }
 
