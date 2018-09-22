@@ -486,6 +486,15 @@ void UsersEndpoint::getUserVoteHistory(Http::RequestState& requestState)
     });
 }
 
+void UsersEndpoint::getUserQuotedHistory(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::GET_USER_QUOTED_HISTORY, parameters);
+    });
+}
+
 void UsersEndpoint::getUsersSubscribedToThread(Http::RequestState& requestState)
 {
     handle(requestState,

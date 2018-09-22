@@ -605,9 +605,6 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                               {
                                   auto& message = **messageIt;
                                   serialize(writer, message, restriction);
-
-                                  auto parentThread = message.parentThread();
-                                  assert(parentThread);
                               }
                               else
                               {
@@ -621,6 +618,62 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                           writer.endObject();
 
                           readEvents().onGetUserVoteHistory(createObserverContext(currentUser));
+                      });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::getUserQuotedHistory(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+                                                    
+                          if (currentUser.id() == anonymousUserId())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          status = StatusCode::OK;
+                          status.disable();
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+
+                          writer.newPropertyWithSafeName("messages");
+                          writer.startArray();
+
+                          const auto& messageIndex = collection.threadMessages().byId();
+                          const SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                                     currentUser.id(), Context::getCurrentTime());
+                          BoolTemporaryChanger _(serializationSettings.hideLatestMessage, true);
+                          BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
+                          BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadCreatedBy, true);
+
+                          const auto& quoteHistory = currentUser.quoteHistory();
+
+                          for (auto it = quoteHistory.rbegin(); it != quoteHistory.rend(); ++it)
+                          {
+                              const auto messageIt = messageIndex.find(*it);
+                              if (messageIt != messageIndex.end())
+                              {
+                                  auto& message = **messageIt;
+                                  serialize(writer, message, restriction);
+                              }
+                              else
+                              {
+                                  writer.null();
+                              }
+                          }
+
+                          writer.endArray();
+                          writer.endObject();
+
+                          readEvents().onGetUserQuotedHistory(createObserverContext(currentUser));
                       });
     return status;
 }

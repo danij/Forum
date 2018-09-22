@@ -86,6 +86,7 @@ namespace Forum::Commands
         void searchUsersByName(Http::RequestState& requestState);
         void getUserLogo(Http::RequestState& requestState);
         void getUserVoteHistory(Http::RequestState& requestState);
+        void getUserQuotedHistory(Http::RequestState& requestState);
         void getUsersSubscribedToThread(Http::RequestState& requestState);
 
         void login(Http::RequestState& requestState);

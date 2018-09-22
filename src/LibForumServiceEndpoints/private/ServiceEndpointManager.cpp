@@ -85,6 +85,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "users/logo",              HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeLogo) },
         { "users/logo",              HttpVerb::DELETE, ENDPOINT_DELEGATE(usersEndpoint.deleteLogo) },
         { "users/votehistory",       HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserVoteHistory) },
+        { "users/quotedhistory",     HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserQuotedHistory) },
         { "users/subscribed/thread", HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUsersSubscribedToThread) },
 
         { "threads",                 HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getAll) },
