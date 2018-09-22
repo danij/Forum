@@ -554,6 +554,7 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                               return;
                           }
 
+                          status = StatusCode::OK;
                           status.disable();
 
                           Json::JsonWriter writer(output);
@@ -565,29 +566,16 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                           writer.startArray();
 
                           const auto& messageIndex = collection.threadMessages().byId();
+                          const SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                                     currentUser.id(), Context::getCurrentTime());
+                          BoolTemporaryChanger _(serializationSettings.hideLatestMessage, true);
+                          BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
+                          BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                          BoolTemporaryChanger ____(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
 
                           for (const User::ReceivedVoteHistory& entry : currentUser.voteHistory())
                           {
                               writer.startObject();
-
-                              const auto messageIt = messageIndex.find(entry.discussionThreadMessageId);
-                              if (messageIt != messageIndex.end())
-                              {
-                                  auto& message = **messageIt;
-                                  writer.newPropertyWithSafeName("messageId") << message.id();
-
-                                  auto parentThread = message.parentThread();
-                                  assert(parentThread);
-
-                                  auto messageRank = parentThread->messages().findRankByCreated(message.id());
-                                  if (messageRank)
-                                  {
-                                      writer.newPropertyWithSafeName("messageRank") << *messageRank;
-                                  }
-
-                                  writer.newPropertyWithSafeName("threadId") << parentThread->id();
-                                  writer.newPropertyWithSafeName("threadName") << parentThread->name();
-                              }
 
                               writer.newPropertyWithSafeName("at") << entry.at;
 
@@ -604,6 +592,22 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                               case User::ReceivedVoteHistoryEntryType::ResetVote:
                                   writer.writeSafeString("reset");
                                   break;
+                              }
+
+                              writer.newPropertyWithSafeName("message");
+
+                              const auto messageIt = messageIndex.find(entry.discussionThreadMessageId);
+                              if (messageIt != messageIndex.end())
+                              {
+                                  auto& message = **messageIt;
+                                  serialize(writer, message, restriction);
+
+                                  auto parentThread = message.parentThread();
+                                  assert(parentThread);
+                              }
+                              else
+                              {
+                                  writer.null();
                               }
 
                               writer.endObject();
