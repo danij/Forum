@@ -238,14 +238,14 @@ namespace Forum::Entities
 
         std::unique_ptr<MessageCommentCollectionLowMemory> messageComments_;
 
-        static constexpr size_t MaxVotesInHistory = 16;
+        static constexpr size_t MaxVotesInHistory = 64;
         boost::circular_buffer_space_optimized<ReceivedVoteHistory> voteHistory_{ MaxVotesInHistory };
         mutable std::atomic<int64_t> voteHistoryLastRetrieved_{ 0 };
 
         int_fast32_t receivedUpVotes_{ 0 };
         int_fast32_t receivedDownVotes_{ 0 };
 
-        static constexpr size_t MaxQuotesInHistory = 128;
+        static constexpr size_t MaxQuotesInHistory = 64;
         boost::circular_buffer_space_optimized<IdType> quoteHistory_{ MaxQuotesInHistory };
 
         mutable std::atomic_bool showInOnlineUsers_{ false };
