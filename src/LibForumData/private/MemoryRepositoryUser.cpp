@@ -573,8 +573,12 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                           BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadCreatedBy, true);
                           BoolTemporaryChanger ____(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
 
-                          for (const User::ReceivedVoteHistory& entry : currentUser.voteHistory())
+                          const auto& voteHistory = currentUser.voteHistory();
+
+                          for (auto it = voteHistory.rbegin(); it != voteHistory.rend(); ++it)
                           {
+                              const User::ReceivedVoteHistory& entry = *it;
+
                               writer.startObject();
 
                               writer.newPropertyWithSafeName("at") << entry.at;
