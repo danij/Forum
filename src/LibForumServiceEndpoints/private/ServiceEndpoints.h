@@ -142,6 +142,7 @@ namespace Forum::Commands
         void add(Http::RequestState& requestState);
         void remove(Http::RequestState& requestState);
         void changeContent(Http::RequestState& requestState);
+        void changeApproval(Http::RequestState& requestState);
         void move(Http::RequestState& requestState);
         void upVote(Http::RequestState& requestState);
         void downVote(Http::RequestState& requestState);

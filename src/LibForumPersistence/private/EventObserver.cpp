@@ -489,16 +489,18 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         PersistentTimestampType contextTimestamp = context.timestamp;
         assert(message.parentThread());
         auto parentThreadId = message.parentThread()->id();
+        const uint32_t approved = message.approved() ? 1 : 0;
 
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { POINTER(&message.id().value().data), UuidSize, false },
             { POINTER(&parentThreadId.value().data), UuidSize, false },
+            { POINTER(&approved), sizeof(approved), false },
             { POINTER(message.content().data()), static_cast<SizeType>(message.content().size()), true }
         };
 
-        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
+        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD_MESSAGE, 3, parts, std::size(parts));
     }
 
     void onChangeDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message,
@@ -507,14 +509,17 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         switch (change)
         {
         case DiscussionThreadMessage::Content:
-            onChangeDiscussionThreadMessageContentContent(context, message);
+            onChangeDiscussionThreadMessageContent(context, message);
+            break;
+        case DiscussionThreadMessage::Approval:
+            onChangeDiscussionThreadMessageApproval(context, message);
             break;
         default:
             break;
         }
     }
 
-    void onChangeDiscussionThreadMessageContentContent(ObserverContext context, const DiscussionThreadMessage& message)
+    void onChangeDiscussionThreadMessageContent(ObserverContext context, const DiscussionThreadMessage& message)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
@@ -526,6 +531,20 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1, parts, std::size(parts));
+    }
+
+    void onChangeDiscussionThreadMessageApproval(ObserverContext context, const DiscussionThreadMessage& message)
+    {
+        PersistentTimestampType contextTimestamp = context.timestamp;
+        const uint32_t approved = message.approved() ? 1 : 0;
+        BlobPart parts[] =
+        {
+            ADD_CONTEXT_BLOB_PARTS,
+            { POINTER(&message.id().value().data), UuidSize, false },
+            { POINTER(&approved), sizeof(approved), false }
+        };
+
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL, 1, parts, std::size(parts));
     }
 
     void onDeleteDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message)

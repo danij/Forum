@@ -36,10 +36,10 @@ namespace Forum::Repository
                                                    StringView content, OutStream& output) override;
         StatusWithResource<Entities::DiscussionThreadMessagePtr>
             addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
-                                            Entities::IdTypeRef threadId, StringView content) override;
+                                            Entities::IdTypeRef threadId, bool approved, StringView content) override;
         StatusWithResource<Entities::DiscussionThreadMessagePtr>
             addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
-                                            Entities::IdTypeRef threadId, size_t contentSize,
+                                            Entities::IdTypeRef threadId, bool approved, size_t contentSize,
                                             size_t contentOffset) override;
         StatusCode deleteDiscussionMessage(Entities::IdTypeRef id, OutStream& output) override;
         StatusCode deleteDiscussionMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
@@ -49,6 +49,10 @@ namespace Forum::Repository
         StatusCode changeDiscussionThreadMessageContent(Entities::EntityCollection& collection,
                                                         Entities::IdTypeRef id, StringView newContent,
                                                         StringView changeReason) override;
+        StatusCode changeDiscussionThreadMessageApproval(Entities::IdTypeRef id, bool newApproval,
+                                                         OutStream& output) override;
+        StatusCode changeDiscussionThreadMessageApproval(Entities::EntityCollection& collection,
+                                                         Entities::IdTypeRef id, bool newApproval) override;
         StatusCode moveDiscussionThreadMessage(Entities::IdTypeRef messageId, Entities::IdTypeRef intoThreadId,
                                                OutStream& output) override;
         StatusCode moveDiscussionThreadMessage(Entities::EntityCollection& collection,
@@ -87,7 +91,7 @@ namespace Forum::Repository
     private:
         StatusWithResource<Entities::DiscussionThreadMessagePtr>
             addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
-                                            Entities::IdTypeRef threadId, StringView content,
+                                            Entities::IdTypeRef threadId, bool approved, StringView content,
                                             size_t contentSize, size_t contentOffset);
 
         StatusCode voteDiscussionThreadMessage(Entities::IdTypeRef id, OutStream& output, bool up);

@@ -355,6 +355,13 @@ AuthorizationStatus DefaultAuthorization::addNewDiscussionMessageInThread(const 
     return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADD_MESSAGE, with);
 }
 
+AuthorizationStatus DefaultAuthorization::autoApproveDiscussionMessageInThread(const User& currentUser,
+                                                                               const DiscussionThread& thread) const
+{
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::AUTO_APPROVE_MESSAGE, with);
+}
+
 AuthorizationStatus DefaultAuthorization::deleteDiscussionMessage(const User& currentUser,
                                                                   const DiscussionThreadMessage& message) const
 {
@@ -373,6 +380,16 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionThreadMessageContent(c
 
     PrivilegeValueType with;
     return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::CHANGE_CONTENT, with);
+}
+
+AuthorizationStatus DefaultAuthorization::changeDiscussionThreadMessageApproval(const User& currentUser,
+                                                                                const DiscussionThreadMessage& message,
+                                                                                bool /*newApproval*/) const
+{
+    if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
+
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::CHANGE_APPROVAL, with);
 }
 
 AuthorizationStatus DefaultAuthorization::moveDiscussionThreadMessage(const User& currentUser,

@@ -155,12 +155,17 @@ namespace Forum::Authorization
         virtual AuthorizationStatus addNewDiscussionMessageInThread(const Entities::User& currentUser,
                                                                     const Entities::DiscussionThread& thread,
                                                                     StringView content) const = 0;
+        virtual AuthorizationStatus autoApproveDiscussionMessageInThread(const Entities::User& currentUser,
+                                                                         const Entities::DiscussionThread& thread) const = 0;
         virtual AuthorizationStatus deleteDiscussionMessage(const Entities::User& currentUser,
                                                             const Entities::DiscussionThreadMessage& message) const = 0;
         virtual AuthorizationStatus changeDiscussionThreadMessageContent(const Entities::User& currentUser,
                                                                          const Entities::DiscussionThreadMessage& message,
                                                                          StringView newContent,
                                                                          StringView changeReason) const = 0;
+        virtual AuthorizationStatus changeDiscussionThreadMessageApproval(const Entities::User& currentUser,
+                                                                          const Entities::DiscussionThreadMessage& message,
+                                                                          bool newApproval) const = 0;
         virtual AuthorizationStatus moveDiscussionThreadMessage(const Entities::User& currentUser,
                                                                 const Entities::DiscussionThreadMessage& message,
                                                                 const Entities::DiscussionThread& intoThread) const = 0;

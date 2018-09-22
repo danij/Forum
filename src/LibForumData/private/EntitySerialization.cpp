@@ -102,13 +102,25 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
     return writer;
 }
 
+static bool checkMessageAllowViewApproval(const DiscussionThreadMessage& message, 
+                                          const SerializationRestriction& restriction)
+{
+    if (message.approved())
+    {
+        return true;
+    }
+    return (message.createdBy().id() == restriction.userId()) 
+            || restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED);
+}
+
 JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessage& message,
                                 const SerializationRestriction& restriction)
 {
-    const auto allowView = serializationSettings.allowDisplayDiscussionThreadMessage
+    const auto allowView = (serializationSettings.allowDisplayDiscussionThreadMessage
             ? *serializationSettings.allowDisplayDiscussionThreadMessage
             : (restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW) 
-                && restriction.isAllowed(*message.parentThread(), DiscussionThreadPrivilege::VIEW));
+                && restriction.isAllowed(*message.parentThread(), DiscussionThreadPrivilege::VIEW)))
+        && checkMessageAllowViewApproval(message, restriction);
 
     if ( ! allowView) return writer.null();
 
@@ -131,7 +143,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     writer
         << objStart
             << propertySafeName("id", message.id())
-            << propertySafeName("created", message.created());
+            << propertySafeName("created", message.created())
+            << propertySafeName("approved", message.approved());
 
     if (allowViewCommentCount)
     {
@@ -221,7 +234,11 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage
 {
     writer.newPropertyWithSafeName("latestMessage");
 
-    if ( ! restriction.isAllowed(latestMessage, DiscussionThreadMessagePrivilege::VIEW))
+    const bool allowView = restriction.isAllowed(latestMessage, DiscussionThreadMessagePrivilege::VIEW)
+        && restriction.isAllowed(*latestMessage.parentThread(), DiscussionThreadPrivilege::VIEW)
+        && checkMessageAllowViewApproval(latestMessage, restriction);
+    
+    if ( ! allowView )
     {
         writer.null();
         return;
@@ -233,6 +250,7 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage
     writer << objStart
         << propertySafeName("id", latestMessage.id())
         << propertySafeName("created", latestMessage.created())
+        << propertySafeName("approved", latestMessage.approved())
         << propertySafeName("threadId", parentThread->id())
         << propertySafeName("threadName", parentThread->name());
 

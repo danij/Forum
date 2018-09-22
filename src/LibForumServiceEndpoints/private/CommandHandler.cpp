@@ -534,6 +534,13 @@ struct CommandHandler::CommandHandlerImpl
                                                                                        changeReason, output);
     }
 
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL )
+    {
+        if ( ! checkMinNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        return discussionThreadMessageRepository->changeDiscussionThreadMessageApproval(parameters[0], 
+                                                                                        "true" == parameters[1], output);
+    }
+
     COMMAND_HANDLER_METHOD( MOVE_DISCUSSION_THREAD_MESSAGE )
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
@@ -1183,6 +1190,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setCommandHandler(ADD_DISCUSSION_THREAD_MESSAGE);
     setCommandHandler(DELETE_DISCUSSION_THREAD_MESSAGE);
     setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT);
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL);
     setCommandHandler(MOVE_DISCUSSION_THREAD_MESSAGE);
 
     setCommandHandler(UP_VOTE_DISCUSSION_THREAD_MESSAGE);

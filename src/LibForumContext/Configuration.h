@@ -143,6 +143,7 @@ namespace Forum::Configuration
         struct
         {
             PrivilegeValueType view                   = DenyPrivilegeValue;
+            PrivilegeValueType viewUnapproved         = DenyPrivilegeValue;
             PrivilegeValueType viewRequiredPrivileges = DenyPrivilegeValue;
             PrivilegeValueType viewAssignedPrivileges = DenyPrivilegeValue;
             PrivilegeValueType viewCreatorUser        = DenyPrivilegeValue;
@@ -155,10 +156,12 @@ namespace Forum::Configuration
             PrivilegeValueType setCommentToSolved     = DenyPrivilegeValue;
             PrivilegeValueType getMessageComments     = DenyPrivilegeValue;
             PrivilegeValueType changeContent          = DenyPrivilegeValue;
+            PrivilegeValueType changeApproval         = DenyPrivilegeValue;
             PrivilegeValueType deleteThreadMessage    = DenyPrivilegeValue;
             PrivilegeValueType move                   = DenyPrivilegeValue;
             PrivilegeValueType adjustPrivilege        = DenyPrivilegeValue;
         } threadMessage;
+
         struct
         {
             PrivilegeValueType view                   = DenyPrivilegeValue;
@@ -168,6 +171,7 @@ namespace Forum::Configuration
             PrivilegeValueType subscribe              = DenyPrivilegeValue;
             PrivilegeValueType unsubscribe            = DenyPrivilegeValue;
             PrivilegeValueType addMessage             = DenyPrivilegeValue;
+            PrivilegeValueType autoApproveMessage     = DenyPrivilegeValue;
             PrivilegeValueType changeName             = DenyPrivilegeValue;
             PrivilegeValueType changePinDisplayOrder  = DenyPrivilegeValue;
             PrivilegeValueType addTag                 = DenyPrivilegeValue;

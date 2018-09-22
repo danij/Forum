@@ -1023,6 +1023,17 @@ void DiscussionThreadMessagesEndpoint::changeContent(Http::RequestState& request
     });
 }
 
+void DiscussionThreadMessagesEndpoint::changeApproval(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL, parameters);
+    });
+}
+
 void DiscussionThreadMessagesEndpoint::move(Http::RequestState& requestState)
 {
     handle(requestState,

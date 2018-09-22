@@ -119,12 +119,17 @@ namespace Forum
             AuthorizationStatus addNewDiscussionMessageInThread(const Entities::User& /*currentUser*/,
                                                                 const Entities::DiscussionThread& /*thread*/,
                                                                 StringView /*content*/) const override { return {}; }
+            AuthorizationStatus autoApproveDiscussionMessageInThread(const Entities::User& /*currentUser*/,
+                                                                     const Entities::DiscussionThread& /*thread*/) const override { return {}; }
             AuthorizationStatus deleteDiscussionMessage(const Entities::User& /*currentUser*/,
                                                         const Entities::DiscussionThreadMessage& /*message*/) const override { return {}; }
             AuthorizationStatus changeDiscussionThreadMessageContent(const Entities::User& /*currentUser*/,
                                                                      const Entities::DiscussionThreadMessage& /*message*/,
                                                                      StringView /*newContent*/,
                                                                      StringView /*changeReason*/) const override { return {}; }
+            AuthorizationStatus changeDiscussionThreadMessageApproval(const Entities::User& /*currentUser*/,
+                                                                      const Entities::DiscussionThreadMessage& /*message*/,
+                                                                      bool /*newApproval*/) const override { return {}; }
             AuthorizationStatus moveDiscussionThreadMessage(const Entities::User& /*currentUser*/,
                                                             const Entities::DiscussionThreadMessage& /*message*/,
                                                             const Entities::DiscussionThread& /*intoThread*/) const override { return {}; }

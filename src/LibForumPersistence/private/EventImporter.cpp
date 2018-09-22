@@ -216,7 +216,8 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, UNSUBSCRIBE_FROM_DISCUSSION_THREAD ) },
 
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD_MESSAGE ),
-                        DECLARE_FORWARDER( 2, ADD_NEW_DISCUSSION_THREAD_MESSAGE ) },
+                        DECLARE_FORWARDER( 2, ADD_NEW_DISCUSSION_THREAD_MESSAGE ),
+                        DECLARE_FORWARDER( 3, ADD_NEW_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, MOVE_DISCUSSION_THREAD_MESSAGE ) },
@@ -264,7 +265,8 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_FORUM_WIDE_PRIVILEGE ) },
 
-            { {/*v0*/}, DECLARE_FORWARDER( 1, QUOTE_USER_IN_DISCUSSION_THREAD_MESSAGE ) }
+            { {/*v0*/}, DECLARE_FORWARDER( 1, QUOTE_USER_IN_DISCUSSION_THREAD_MESSAGE ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL ) }
         };
     }
 
@@ -379,7 +381,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
         CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addNewDiscussionMessageInThread(entityCollection_,
                                                                                                  messageId, parentId,
-                                                                                                 message).status);
+                                                                                                 true, message).status);
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( ADD_NEW_DISCUSSION_THREAD_MESSAGE, 2 )
@@ -391,8 +393,22 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
         CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addNewDiscussionMessageInThread(entityCollection_,
                                                                                                  messageId, parentId,
+                                                                                                 true,
                                                                                                  static_cast<size_t>(messageSize),
                                                                                                  static_cast<size_t>(messageOffset)).status);
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( ADD_NEW_DISCUSSION_THREAD_MESSAGE, 3 )
+        READ_UUID(messageId, data, size);
+        READ_UUID(parentId, data, size);
+        READ_TYPE(uint32_t, approved, data, size);
+        READ_NONEMPTY_STRING(message, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addNewDiscussionMessageInThread(entityCollection_,
+                                                                                                 messageId, parentId,
+                                                                                                 0 != approved, 
+                                                                                                 message).status);
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1 )
@@ -404,6 +420,16 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         CHECK_STATUS_CODE(repositories_.discussionThreadMessage->changeDiscussionThreadMessageContent(entityCollection_,
                                                                                                       messageId, content,
                                                                                                       lastUpdatedReason));
+    END_DEFAULT_IMPORTER()
+    
+    BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL, 1 )
+        READ_UUID(messageId, data, size);
+        READ_TYPE(uint32_t, approved, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->changeDiscussionThreadMessageApproval(entityCollection_,
+                                                                                                       messageId, 
+                                                                                                       0 != approved));
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( MOVE_DISCUSSION_THREAD_MESSAGE, 1 )

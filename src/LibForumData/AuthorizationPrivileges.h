@@ -55,6 +55,9 @@ namespace Forum::Authorization
 
         ADJUST_PRIVILEGE,
 
+        VIEW_UNAPPROVED,
+        CHANGE_APPROVAL,
+
         COUNT
     };
 
@@ -75,7 +78,9 @@ namespace Forum::Authorization
         "change_content",
         "delete",
         "move",
-        "adjust_privilege"
+        "adjust_privilege",
+        "view_unapproved",
+        "change_approval"
     };
 
     const DiscussionThreadMessagePrivilege DiscussionThreadMessagePrivilegesToSerialize[] =
@@ -89,6 +94,7 @@ namespace Forum::Authorization
         DiscussionThreadMessagePrivilege::SET_COMMENT_TO_SOLVED,
         DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS,
         DiscussionThreadMessagePrivilege::CHANGE_CONTENT,
+        DiscussionThreadMessagePrivilege::CHANGE_APPROVAL,
         DiscussionThreadMessagePrivilege::DELETE,
         DiscussionThreadMessagePrivilege::MOVE,
         DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE
@@ -112,6 +118,8 @@ namespace Forum::Authorization
 
         ADJUST_PRIVILEGE,
 
+        AUTO_APPROVE_MESSAGE,
+
         COUNT
     };
 
@@ -130,7 +138,8 @@ namespace Forum::Authorization
         "remove_tag",
         "delete",
         "merge",
-        "adjust_privilege"
+        "adjust_privilege",
+        "auto_approve_message"
     };
 
     const DiscussionThreadPrivilege DiscussionThreadPrivilegesToSerialize[] =
