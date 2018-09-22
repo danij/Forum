@@ -86,6 +86,7 @@ namespace Forum::Commands
         void searchUsersByName(Http::RequestState& requestState);
         void getUserLogo(Http::RequestState& requestState);
         void getUserVoteHistory(Http::RequestState& requestState);
+        void getUserQuotedHistory(Http::RequestState& requestState);
         void getUsersSubscribedToThread(Http::RequestState& requestState);
 
         void login(Http::RequestState& requestState);
@@ -141,6 +142,7 @@ namespace Forum::Commands
         void add(Http::RequestState& requestState);
         void remove(Http::RequestState& requestState);
         void changeContent(Http::RequestState& requestState);
+        void changeApproval(Http::RequestState& requestState);
         void move(Http::RequestState& requestState);
         void upVote(Http::RequestState& requestState);
         void downVote(Http::RequestState& requestState);

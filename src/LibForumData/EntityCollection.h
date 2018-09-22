@@ -62,7 +62,7 @@ namespace Forum::Entities
         DiscussionThreadPtr        createDiscussionThread(IdType id, User& createdBy, DiscussionThread::NameType&& name,
                                                           Timestamp created, VisitDetails creationDetails);
         DiscussionThreadMessagePtr createDiscussionThreadMessage(IdType id, User& createdBy, Timestamp created,
-                                                                 VisitDetails creationDetails);
+                                                                 VisitDetails creationDetails, bool approved);
         DiscussionTagPtr           createDiscussionTag(IdType id, DiscussionTag::NameType&& name, Timestamp created,
                                                        VisitDetails creationDetails);
         DiscussionCategoryPtr      createDiscussionCategory(IdType id, DiscussionCategory::NameType&& name,

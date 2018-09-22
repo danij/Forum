@@ -289,6 +289,11 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->getUserVoteHistory(output);
     }
 
+    COMMAND_HANDLER_METHOD( GET_USER_QUOTED_HISTORY )
+    {
+        return userRepository->getUserQuotedHistory(output);
+    }
+
     COMMAND_HANDLER_METHOD( CHANGE_USER_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
@@ -527,6 +532,13 @@ struct CommandHandler::CommandHandlerImpl
         if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
         return discussionThreadMessageRepository->changeDiscussionThreadMessageContent(parameters[0], normalizedParam,
                                                                                        changeReason, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL )
+    {
+        if ( ! checkMinNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        return discussionThreadMessageRepository->changeDiscussionThreadMessageApproval(parameters[0], 
+                                                                                        "true" == parameters[1], output);
     }
 
     COMMAND_HANDLER_METHOD( MOVE_DISCUSSION_THREAD_MESSAGE )
@@ -1178,6 +1190,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setCommandHandler(ADD_DISCUSSION_THREAD_MESSAGE);
     setCommandHandler(DELETE_DISCUSSION_THREAD_MESSAGE);
     setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT);
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL);
     setCommandHandler(MOVE_DISCUSSION_THREAD_MESSAGE);
 
     setCommandHandler(UP_VOTE_DISCUSSION_THREAD_MESSAGE);
@@ -1251,6 +1264,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(SEARCH_USERS_BY_NAME);
     setViewHandler(GET_USER_LOGO);
     setViewHandler(GET_USER_VOTE_HISTORY);
+    setViewHandler(GET_USER_QUOTED_HISTORY);
 
     setViewHandler(GET_DISCUSSION_THREADS_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_BY_CREATED);

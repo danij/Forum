@@ -121,7 +121,7 @@ struct EntityCollection::Impl
             assert(comment);
             if (comment->solved())
             {
-                comment->parentMessage().solvedCommentsCount() -= 1;
+                comment->parentMessage().decrementSolvedCommentsCount();
             }
             comment->parentMessage().removeComment(comment);
         }
@@ -603,6 +603,7 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     const auto& defaultPrivileges = config->defaultPrivileges;
 
     store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::VIEW,                     defaultPrivileges.threadMessage.view);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED,          defaultPrivileges.threadMessage.viewUnapproved);
     store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::VIEW_REQUIRED_PRIVILEGES, defaultPrivileges.threadMessage.viewRequiredPrivileges);
     store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::VIEW_ASSIGNED_PRIVILEGES, defaultPrivileges.threadMessage.viewAssignedPrivileges);
     store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER,        defaultPrivileges.threadMessage.viewCreatorUser);
@@ -615,6 +616,7 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::SET_COMMENT_TO_SOLVED,    defaultPrivileges.threadMessage.setCommentToSolved);
     store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS,     defaultPrivileges.threadMessage.getMessageComments);
     store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::CHANGE_CONTENT,           defaultPrivileges.threadMessage.changeContent);
+    store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::CHANGE_APPROVAL,          defaultPrivileges.threadMessage.changeApproval);
     store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::DELETE,                   defaultPrivileges.threadMessage.deleteThreadMessage);
     store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::MOVE,                     defaultPrivileges.threadMessage.move);
     store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE,         defaultPrivileges.threadMessage.adjustPrivilege);
@@ -626,6 +628,7 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::SUBSCRIBE,                defaultPrivileges.thread.subscribe);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::UNSUBSCRIBE,              defaultPrivileges.thread.unsubscribe);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::ADD_MESSAGE,              defaultPrivileges.thread.addMessage);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::AUTO_APPROVE_MESSAGE,     defaultPrivileges.thread.autoApproveMessage);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::CHANGE_NAME,              defaultPrivileges.thread.changeName);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER, defaultPrivileges.thread.changePinDisplayOrder);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::ADD_TAG,                  defaultPrivileges.thread.addTag);
@@ -790,10 +793,12 @@ DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& cr
 }
 
 DiscussionThreadMessagePtr EntityCollection::createDiscussionThreadMessage(IdType id, User& createdBy,
-                                                                           Timestamp created, VisitDetails creationDetails)
+                                                                           const Timestamp created,
+                                                                           const VisitDetails creationDetails,
+                                                                           const bool approved)
 {
     return DiscussionThreadMessagePtr(static_cast<DiscussionThreadMessagePtr::IndexType>(
-        impl_->managedEntities.threadMessages.add(id, createdBy, created, creationDetails)));
+        impl_->managedEntities.threadMessages.add(id, createdBy, created, creationDetails, approved)));
 }
 
 DiscussionTagPtr EntityCollection::createDiscussionTag(IdType id, DiscussionTag::NameType&& name, Timestamp created,

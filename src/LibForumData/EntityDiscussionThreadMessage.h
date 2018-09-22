@@ -65,6 +65,7 @@ namespace Forum::Entities
             return comments_ ? *comments_ : emptyMessageCommentCollection;
         }
         auto solvedCommentsCount()        const { return solvedCommentsCount_; }
+        auto approved()                   const { return 0 != approved_; }
 
         auto lastUpdated() const
         {
@@ -147,13 +148,17 @@ namespace Forum::Entities
         enum ChangeType : uint32_t
         {
             None = 0,
-            Content
+            Content,
+            Approval
         };
 
-        DiscussionThreadMessage(IdType id, User& createdBy, Timestamp created, VisitDetails creationDetails)
-            : id_(std::move(id)), created_(created), creationDetails_(std::move(creationDetails)),
-              createdBy_(createdBy)
-        {}
+        DiscussionThreadMessage(const IdType id, User& createdBy, const Timestamp created, 
+                                const VisitDetails creationDetails, const bool approved)
+            : id_(id), created_(created), creationDetails_(creationDetails), createdBy_(createdBy)
+        {
+            solvedCommentsCount_ = 0;
+            approved_ = approved ? 1 : 0;
+        }
 
         auto& createdBy()           { return createdBy_; }
         auto& parentThread()        { return parentThread_; }
@@ -172,7 +177,11 @@ namespace Forum::Entities
             comments_->remove(comment);
         }
 
-        auto& solvedCommentsCount() { return solvedCommentsCount_; }
+        void incrementSolvedCommentsCount() { solvedCommentsCount_ += 1; }
+        void decrementSolvedCommentsCount() { solvedCommentsCount_ -= 1; }
+
+        void approve() { approved_ = 1; }
+        void unapprove() { approved_ = 0; }
 
         void updateLastUpdated(const Timestamp at)
         {
@@ -183,7 +192,7 @@ namespace Forum::Entities
         void updateLastUpdatedDetails(VisitDetails&& details)
         {
             if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedInfo());
-            lastUpdated_->details = std::move(details);
+            lastUpdated_->details = details;
         }
 
         void updateLastUpdatedReason(std::string&& reason)
@@ -245,7 +254,8 @@ namespace Forum::Entities
 
         User& createdBy_;
         EntityPointer<DiscussionThread> parentThread_;
-        int32_t solvedCommentsCount_{0};
+        uint16_t solvedCommentsCount_ : 15;
+        uint16_t approved_ : 1;
 
         Helpers::WholeChangeableString content_;
 

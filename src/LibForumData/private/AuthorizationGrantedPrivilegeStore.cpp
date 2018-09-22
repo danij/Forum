@@ -96,12 +96,14 @@ void GrantedPrivilegeStore::grantForumWidePrivilege(IdTypeRef userId, IdTypeRef 
     forumWideSpecificPrivileges_.insert(PrivilegeEntry(userId, entityId, value, now, expiresAt));
 }
 
-static PrivilegeValueIntType getEffectivePrivilegeValue(PrivilegeValueType positive, PrivilegeValueType negative)
+static PrivilegeValueIntType getEffectivePrivilegeValue(const PrivilegeValueType positive, 
+                                                        const PrivilegeValueType negative)
 {
-    return optionalOrZero(positive) - optionalOrZero(negative);
+    return optionalOrZero(positive) + optionalOrZero(negative);
 }
 
-static PrivilegeValueType isAllowed(PrivilegeValueType positive, PrivilegeValueType negative, PrivilegeValueType required)
+static PrivilegeValueType isAllowed(const PrivilegeValueType positive, 
+                                    const PrivilegeValueType negative, const PrivilegeValueType required)
 {
     const auto effectivePrivilegeValue = getEffectivePrivilegeValue(positive, negative);
     const auto requiredPrivilegeValue = optionalOrZero(required);

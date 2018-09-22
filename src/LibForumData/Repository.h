@@ -124,6 +124,7 @@ namespace Forum::Repository
         virtual StatusCode searchUsersByName(StringView name, OutStream& output) const = 0;
         virtual StatusCode getUserLogo(Entities::IdTypeRef id, OutStream& output) const = 0;
         virtual StatusCode getUserVoteHistory(OutStream& output) const = 0;
+        virtual StatusCode getUserQuotedHistory(OutStream& output) const = 0;
 
         virtual StatusCode addNewUser(StringView name, StringView auth, OutStream& output) = 0;
         virtual StatusCode changeUserName(Entities::IdTypeRef id, StringView newName, OutStream& output) = 0;
@@ -243,6 +244,8 @@ namespace Forum::Repository
         virtual StatusCode deleteDiscussionMessage(Entities::IdTypeRef id, OutStream& output) = 0;
         virtual StatusCode changeDiscussionThreadMessageContent(Entities::IdTypeRef id, StringView newContent,
                                                                 StringView changeReason, OutStream& output) = 0;
+        virtual StatusCode changeDiscussionThreadMessageApproval(Entities::IdTypeRef id, bool newApproval,
+                                                                 OutStream& output) = 0;
         virtual StatusCode moveDiscussionThreadMessage(Entities::IdTypeRef messageId,
                                                        Entities::IdTypeRef intoThreadId, OutStream& output) = 0;
         virtual StatusCode upVoteDiscussionThreadMessage(Entities::IdTypeRef id, OutStream& output) = 0;
@@ -262,14 +265,17 @@ namespace Forum::Repository
 
         virtual StatusWithResource<Entities::DiscussionThreadMessagePtr>
             addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
-                                            Entities::IdTypeRef threadId, StringView content) = 0;
+                                            Entities::IdTypeRef threadId, bool approved, StringView content) = 0;
         virtual StatusWithResource<Entities::DiscussionThreadMessagePtr>
             addNewDiscussionMessageInThread(Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
-                                            Entities::IdTypeRef threadId, size_t contentSize, size_t contentOffset) = 0;
+                                            Entities::IdTypeRef threadId, bool approved, size_t contentSize, 
+                                            size_t contentOffset) = 0;
         virtual StatusCode deleteDiscussionMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
         virtual StatusCode changeDiscussionThreadMessageContent(Entities::EntityCollection& collection,
                                                                 Entities::IdTypeRef id, StringView newContent,
                                                                 StringView changeReason) = 0;
+        virtual StatusCode changeDiscussionThreadMessageApproval(Entities::EntityCollection& collection,
+                                                                 Entities::IdTypeRef id, bool newApproval) = 0;
         virtual StatusCode moveDiscussionThreadMessage(Entities::EntityCollection& collection,
                                                        Entities::IdTypeRef messageId,
                                                        Entities::IdTypeRef intoThreadId) = 0;
@@ -284,6 +290,9 @@ namespace Forum::Repository
             addCommentToDiscussionThreadMessage(Entities::EntityCollection& collection, Entities::IdTypeRef commentId,
                                                 Entities::IdTypeRef messageId, StringView content) = 0;
         virtual StatusCode setMessageCommentToSolved(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
+
+        virtual StatusCode quoteUserInMessage(Entities::EntityCollection& collection,
+                                              Entities::IdTypeRef messageId, Entities::IdTypeRef userId) = 0;
     };
     typedef std::shared_ptr<IDiscussionThreadMessageDirectWriteRepository> DiscussionThreadMessageDirectWriteRepositoryRef;
 

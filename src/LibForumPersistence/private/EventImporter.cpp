@@ -153,7 +153,7 @@ struct CurrentTimeChanger final : private boost::noncopyable
     }
 
 #define CHECK_NONEMPTY_STRING(value) \
-    if (value.size() < 1) \
+    if (value.empty()) \
     { \
         FORUM_LOG_ERROR << "Unable to import event of type " << currentEventType_ << ": unexpected empty or incomplete string"; \
         return false; \
@@ -216,7 +216,8 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, UNSUBSCRIBE_FROM_DISCUSSION_THREAD ) },
 
             { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD_MESSAGE ),
-                        DECLARE_FORWARDER( 2, ADD_NEW_DISCUSSION_THREAD_MESSAGE ) },
+                        DECLARE_FORWARDER( 2, ADD_NEW_DISCUSSION_THREAD_MESSAGE ),
+                        DECLARE_FORWARDER( 3, ADD_NEW_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, MOVE_DISCUSSION_THREAD_MESSAGE ) },
@@ -262,7 +263,10 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_THREAD_PRIVILEGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_TAG_PRIVILEGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_DISCUSSION_CATEGORY_PRIVILEGE ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_FORUM_WIDE_PRIVILEGE ) }
+            { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_FORUM_WIDE_PRIVILEGE ) },
+
+            { {/*v0*/}, DECLARE_FORWARDER( 1, QUOTE_USER_IN_DISCUSSION_THREAD_MESSAGE ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL ) }
         };
     }
 
@@ -285,7 +289,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_USER_INFO, 1 )
         READ_UUID(id, data, size);
-        READ_NONEMPTY_STRING(newInfo, data, size);
+        READ_STRING(newInfo, data, size);
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.user->changeUserInfo(entityCollection_, id, newInfo));
@@ -293,7 +297,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_USER_TITLE, 1 )
         READ_UUID(id, data, size);
-        READ_NONEMPTY_STRING(newTitle, data, size);
+        READ_STRING(newTitle, data, size);
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.user->changeUserTitle(entityCollection_, id, newTitle));
@@ -301,7 +305,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_USER_SIGNATURE, 1 )
         READ_UUID(id, data, size);
-        READ_NONEMPTY_STRING(newSignature, data, size);
+        READ_STRING(newSignature, data, size);
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.user->changeUserSignature(entityCollection_, id, newSignature));
@@ -309,11 +313,12 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_USER_LOGO, 1 )
         READ_UUID(id, data, size);
-        READ_NONEMPTY_STRING(newLogo, data, size);
+        READ_STRING(newLogo, data, size);
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.user->changeUserLogo(entityCollection_, id, newLogo));
     END_DEFAULT_IMPORTER()
+
     BEGIN_DEFAULT_IMPORTER( DELETE_USER, 1 )
         READ_UUID(id, data, size);
         CHECK_READ_ALL_DATA(size);
@@ -376,7 +381,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
         CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addNewDiscussionMessageInThread(entityCollection_,
                                                                                                  messageId, parentId,
-                                                                                                 message).status);
+                                                                                                 true, message).status);
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( ADD_NEW_DISCUSSION_THREAD_MESSAGE, 2 )
@@ -388,8 +393,22 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
         CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addNewDiscussionMessageInThread(entityCollection_,
                                                                                                  messageId, parentId,
+                                                                                                 true,
                                                                                                  static_cast<size_t>(messageSize),
                                                                                                  static_cast<size_t>(messageOffset)).status);
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( ADD_NEW_DISCUSSION_THREAD_MESSAGE, 3 )
+        READ_UUID(messageId, data, size);
+        READ_UUID(parentId, data, size);
+        READ_TYPE(uint32_t, approved, data, size);
+        READ_NONEMPTY_STRING(message, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->addNewDiscussionMessageInThread(entityCollection_,
+                                                                                                 messageId, parentId,
+                                                                                                 0 != approved, 
+                                                                                                 message).status);
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1 )
@@ -401,6 +420,16 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         CHECK_STATUS_CODE(repositories_.discussionThreadMessage->changeDiscussionThreadMessageContent(entityCollection_,
                                                                                                       messageId, content,
                                                                                                       lastUpdatedReason));
+    END_DEFAULT_IMPORTER()
+    
+    BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL, 1 )
+        READ_UUID(messageId, data, size);
+        READ_TYPE(uint32_t, approved, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->changeDiscussionThreadMessageApproval(entityCollection_,
+                                                                                                       messageId, 
+                                                                                                       0 != approved));
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( MOVE_DISCUSSION_THREAD_MESSAGE, 1 )
@@ -467,6 +496,15 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
     END_DEFAULT_IMPORTER()
 
+    BEGIN_DEFAULT_IMPORTER( QUOTE_USER_IN_DISCUSSION_THREAD_MESSAGE, 1 )
+        READ_UUID(messageId, data, size);
+        READ_UUID(userId, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThreadMessage->quoteUserInMessage(entityCollection_, messageId, userId));
+
+    END_DEFAULT_IMPORTER()
+
     BEGIN_DEFAULT_IMPORTER( ADD_NEW_DISCUSSION_TAG, 1 )
         READ_UUID(id, data, size);
         READ_NONEMPTY_STRING(tagName, data, size);
@@ -487,7 +525,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_TAG_UI_BLOB, 1 )
         READ_UUID(id, data, size);
-        READ_NONEMPTY_STRING(uiBlob, data, size);
+        READ_STRING(uiBlob, data, size);
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.discussionTag->changeDiscussionTagUiBlob(entityCollection_, id, uiBlob));
@@ -550,7 +588,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_CATEGORY_DESCRIPTION, 1 )
         READ_UUID(id, data, size);
-        READ_NONEMPTY_STRING(description, data, size);
+        READ_STRING(description, data, size);
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.discussionCategory->changeDiscussionCategoryDescription(entityCollection_, id,

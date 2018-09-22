@@ -178,6 +178,7 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         connections.push_back(writeEvents.   onDiscussionThreadMessageResetVote.connect([this](auto context, auto& message)                    { this->onDiscussionThreadMessageResetVote   (context, message); }));
         connections.push_back(writeEvents.onAddCommentToDiscussionThreadMessage.connect([this](auto context, auto& comment)                    { this->onAddCommentToDiscussionThreadMessage(context, comment); }));
         connections.push_back(writeEvents.onSolveDiscussionThreadMessageComment.connect([this](auto context, auto& comment)                    { this->onSolveDiscussionThreadMessageComment(context, comment); }));
+        connections.push_back(writeEvents. onQuoteUserInDiscussionThreadMessage.connect([this](auto context, auto& message, IdTypeRef userId)  { this->onQuoteUserInDiscussionThreadMessage (context, message, userId); }));
         connections.push_back(writeEvents.                onAddNewDiscussionTag.connect([this](auto context, auto& tag)                        { this->onAddNewDiscussionTag                (context, tag); }));
         connections.push_back(writeEvents.                onChangeDiscussionTag.connect([this](auto context, auto& tag, auto change)           { this->onChangeDiscussionTag                (context, tag, change); }));
         connections.push_back(writeEvents.                onDeleteDiscussionTag.connect([this](auto context, auto& tag)                        { this->onDeleteDiscussionTag                (context, tag); }));
@@ -488,16 +489,18 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         PersistentTimestampType contextTimestamp = context.timestamp;
         assert(message.parentThread());
         auto parentThreadId = message.parentThread()->id();
+        const uint32_t approved = message.approved() ? 1 : 0;
 
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { POINTER(&message.id().value().data), UuidSize, false },
             { POINTER(&parentThreadId.value().data), UuidSize, false },
+            { POINTER(&approved), sizeof(approved), false },
             { POINTER(message.content().data()), static_cast<SizeType>(message.content().size()), true }
         };
 
-        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
+        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD_MESSAGE, 3, parts, std::size(parts));
     }
 
     void onChangeDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message,
@@ -506,14 +509,17 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         switch (change)
         {
         case DiscussionThreadMessage::Content:
-            onChangeDiscussionThreadMessageContentContent(context, message);
+            onChangeDiscussionThreadMessageContent(context, message);
+            break;
+        case DiscussionThreadMessage::Approval:
+            onChangeDiscussionThreadMessageApproval(context, message);
             break;
         default:
             break;
         }
     }
 
-    void onChangeDiscussionThreadMessageContentContent(ObserverContext context, const DiscussionThreadMessage& message)
+    void onChangeDiscussionThreadMessageContent(ObserverContext context, const DiscussionThreadMessage& message)
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
         BlobPart parts[] =
@@ -525,6 +531,20 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, 1, parts, std::size(parts));
+    }
+
+    void onChangeDiscussionThreadMessageApproval(ObserverContext context, const DiscussionThreadMessage& message)
+    {
+        PersistentTimestampType contextTimestamp = context.timestamp;
+        const uint32_t approved = message.approved() ? 1 : 0;
+        BlobPart parts[] =
+        {
+            ADD_CONTEXT_BLOB_PARTS,
+            { POINTER(&message.id().value().data), UuidSize, false },
+            { POINTER(&approved), sizeof(approved), false }
+        };
+
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL, 1, parts, std::size(parts));
     }
 
     void onDeleteDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message)
@@ -601,6 +621,20 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         };
 
         recordBlob(EventType::SOLVE_DISCUSSION_THREAD_MESSAGE_COMMENT, 1, parts, std::size(parts));
+    }
+
+    void onQuoteUserInDiscussionThreadMessage(ObserverContext context, const DiscussionThreadMessage& message, 
+                                              IdTypeRef userId)
+    {
+        PersistentTimestampType contextTimestamp = context.timestamp;
+        BlobPart parts[] =
+        {
+            ADD_CONTEXT_BLOB_PARTS,
+            { POINTER(&message.id().value().data), UuidSize, false },
+            { POINTER(&userId.value().data), UuidSize, false }
+        };
+
+        recordBlob(EventType::QUOTE_USER_IN_DISCUSSION_THREAD_MESSAGE, 1, parts, std::size(parts));
     }
 
     void onAddNewDiscussionTag(ObserverContext context, const DiscussionTag& tag)

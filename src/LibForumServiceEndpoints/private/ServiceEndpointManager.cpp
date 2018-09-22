@@ -85,6 +85,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "users/logo",              HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeLogo) },
         { "users/logo",              HttpVerb::DELETE, ENDPOINT_DELEGATE(usersEndpoint.deleteLogo) },
         { "users/votehistory",       HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserVoteHistory) },
+        { "users/quotedhistory",     HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserQuotedHistory) },
         { "users/subscribed/thread", HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUsersSubscribedToThread) },
 
         { "threads",                 HttpVerb::GET,    ENDPOINT_DELEGATE(threadsEndpoint.getAll) },
@@ -115,6 +116,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "thread_messages",                HttpVerb::POST,   ENDPOINT_DELEGATE(threadMessagesEndpoint.add) },
         { "thread_messages",                HttpVerb::DELETE, ENDPOINT_DELEGATE(threadMessagesEndpoint.remove) },
         { "thread_messages/content",        HttpVerb::PUT,    ENDPOINT_DELEGATE(threadMessagesEndpoint.changeContent) },
+        { "thread_messages/approval",       HttpVerb::PUT,    ENDPOINT_DELEGATE(threadMessagesEndpoint.changeApproval) },
         { "thread_messages/move",           HttpVerb::POST,   ENDPOINT_DELEGATE(threadMessagesEndpoint.move) },
         { "thread_messages/upvote",         HttpVerb::POST,   ENDPOINT_DELEGATE(threadMessagesEndpoint.upVote) },
         { "thread_messages/downvote",       HttpVerb::POST,   ENDPOINT_DELEGATE(threadMessagesEndpoint.downVote) },

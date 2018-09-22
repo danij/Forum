@@ -486,6 +486,15 @@ void UsersEndpoint::getUserVoteHistory(Http::RequestState& requestState)
     });
 }
 
+void UsersEndpoint::getUserQuotedHistory(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::GET_USER_QUOTED_HISTORY, parameters);
+    });
+}
+
 void UsersEndpoint::getUsersSubscribedToThread(Http::RequestState& requestState)
 {
     handle(requestState,
@@ -1011,6 +1020,17 @@ void DiscussionThreadMessagesEndpoint::changeContent(Http::RequestState& request
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
         parameters.push_back(requestState.extraPathParts[1]);
         return commandHandler.handle(Command::CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT, parameters);
+    });
+}
+
+void DiscussionThreadMessagesEndpoint::changeApproval(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL, parameters);
     });
 }
 

@@ -29,6 +29,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/thread/tss.hpp>
 
+#include <set>
+
 using namespace Forum;
 using namespace Forum::Configuration;
 using namespace Forum::Entities;
@@ -278,17 +280,24 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                            }
 
                            auto& user = *currentUser;
-                           auto alreadySubscribed = user.subscribedThreads().contains(threadPtr);
+                           const auto alreadySubscribed = user.subscribedThreads().contains(threadPtr);
+
+
+                           const bool approved = AuthorizationStatus::OK 
+                                   == authorization_->autoApproveDiscussionMessageInThread(*currentUser, thread);
 
                            auto statusWithResource = addNewDiscussionMessageInThread(collection, generateUniqueId(),
-                                                                                     threadId, content);
+                                                                                     threadId, approved, content);
                            auto& message = statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
-                           writeEvents().onAddNewDiscussionThreadMessage(createObserverContext(user), *message);
+                           const auto& write = writeEvents();
+                           const auto observerContext = createObserverContext(user);
+
+                           write.onAddNewDiscussionThreadMessage(observerContext, *message);
                            if ( ! alreadySubscribed)
                            {
-                               writeEvents().onSubscribeToDiscussionThread(createObserverContext(user), thread);
+                               write.onSubscribeToDiscussionThread(observerContext, thread);
                            }
 
                            if (anonymousUser() != currentUser)
@@ -302,9 +311,19 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
 
                                    authorizationDirectWriteRepository_->assignDiscussionThreadMessagePrivilege(
                                            collection, message->id(), currentUser->id(), value, duration);
-                                   writeEvents().onAssignDiscussionThreadMessagePrivilege(
-                                           createObserverContext(*currentUser), *message, *currentUser, value, duration);
+                                   write.onAssignDiscussionThreadMessagePrivilege(
+                                           observerContext, *message, *currentUser, value, duration);
                                }
+                           }
+
+                           //handle quotes users
+                           std::set<IdType> quotedIds;
+                           extractUuidReferences(content, std::inserter(quotedIds, quotedIds.end()));
+
+                           for (const auto userId: quotedIds)
+                           {
+                               quoteUserInMessage(collection, message->id(), userId);
+                               write.onQuoteUserInDiscussionThreadMessage(observerContext, *message, userId);
                            }
 
                            status.writeNow([&](auto& writer)
@@ -320,24 +339,29 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
 StatusWithResource<DiscussionThreadMessagePtr>
     MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection,
                                                                              IdTypeRef messageId, IdTypeRef threadId,
-                                                                             StringView content)
+                                                                             const bool approved,
+                                                                             const StringView content)
 {
-    return addNewDiscussionMessageInThread(collection, messageId, threadId, content, 0, 0);
+    return addNewDiscussionMessageInThread(collection, messageId, threadId, approved, content, 0, 0);
 }
 
 StatusWithResource<DiscussionThreadMessagePtr>
     MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection,
                                                                              IdTypeRef messageId, IdTypeRef threadId,
-                                                                             size_t contentSize, size_t contentOffset)
+                                                                             const bool approved, 
+                                                                             const size_t contentSize, 
+                                                                             const size_t contentOffset)
 {
-    return addNewDiscussionMessageInThread(collection, messageId, threadId, {}, contentSize, contentOffset);
+    return addNewDiscussionMessageInThread(collection, messageId, threadId, approved, {}, contentSize, contentOffset);
 }
 
 StatusWithResource<DiscussionThreadMessagePtr>
     MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThread(EntityCollection& collection,
                                                                              IdTypeRef messageId, IdTypeRef threadId,
-                                                                             StringView content, size_t contentSize,
-                                                                             size_t contentOffset)
+                                                                             const bool approved, 
+                                                                             const StringView content, 
+                                                                             const size_t contentSize,
+                                                                             const size_t contentOffset)
 {
     auto threadPtr = collection.threads().findById(threadId);
     if ( ! threadPtr)
@@ -349,7 +373,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
     auto currentUser = getCurrentUser(collection);
 
     auto message = collection.createDiscussionThreadMessage(messageId, *currentUser, Context::getCurrentTime(),
-                                                            { Context::getCurrentUserIpAddress() });
+                                                            { Context::getCurrentUserIpAddress() }, approved);
     message->parentThread() = threadPtr;
     if ((contentSize > 0) && (contentOffset > 0))
     {
@@ -492,8 +516,33 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
 
                            if ( ! (status = changeDiscussionThreadMessageContent(collection, id, newContent, changeReason))) return;
 
-                           writeEvents().onChangeDiscussionThreadMessage(createObserverContext(*currentUser), **it,
-                                                                         DiscussionThreadMessage::ChangeType::Content);
+                           DiscussionThreadMessagePtr messagePtr = *it;
+                           DiscussionThreadMessage& message = *messagePtr;
+
+                           const auto& write = writeEvents();
+                           const auto observerContext = createObserverContext(*currentUser);
+
+                           //handle quotes users
+                           std::set<IdType> newQuotedIds;
+                           extractUuidReferences(newContent, std::inserter(newQuotedIds, newQuotedIds.end()));
+                           if ( ! newQuotedIds.empty())
+                           {
+                               std::set<IdType> oldQuotedIds;
+                               extractUuidReferences(message.content(), std::inserter(oldQuotedIds, oldQuotedIds.end()));
+
+                               for (const auto userId : newQuotedIds)
+                               {
+                                   if (oldQuotedIds.find(userId) == oldQuotedIds.end())
+                                   {
+                                       //only quote users that were not quoted in the previous message
+                                       quoteUserInMessage(collection, message.id(), userId);
+                                       write.onQuoteUserInDiscussionThreadMessage(observerContext, message, userId);
+                                   }
+                               }
+                           }
+
+                           write.onChangeDiscussionThreadMessage(observerContext, message,
+                                                                 DiscussionThreadMessage::ChangeType::Content);
                        });
     return status;
 }
@@ -529,6 +578,81 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
 
     parentThread.resetVisitorsSinceLastEdit();
     parentThread.latestVisibleChange() = message.lastUpdated();
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageApproval(IdTypeRef id,
+                                                                                          const bool newApproval,
+                                                                                          OutStream& output)
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto& indexById = collection.threadMessages().byId();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+
+                           if ( ! (status = authorization_->changeDiscussionThreadMessageApproval(*currentUser, **it, newApproval)))
+                           {
+                               return;
+                           }
+
+                           if ( ! (status = changeDiscussionThreadMessageApproval(collection, id, newApproval))) return;
+
+                           DiscussionThreadMessagePtr messagePtr = *it;
+                           DiscussionThreadMessage& message = *messagePtr;
+
+                           const auto& write = writeEvents();
+                           const auto observerContext = createObserverContext(*currentUser);
+
+                           write.onChangeDiscussionThreadMessage(observerContext, message,
+                                                                 DiscussionThreadMessage::ChangeType::Approval);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessageApproval(EntityCollection& collection,
+                                                                                          IdTypeRef id, 
+                                                                                          const bool newApproval)
+{
+    auto& indexById = collection.threadMessages().byId();
+    const auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    DiscussionThreadMessagePtr messagePtr = *it;
+    DiscussionThreadMessage& message = *messagePtr;
+
+    if (message.approved() == newApproval)
+    {
+        return StatusCode::NO_EFFECT;
+    }
+
+    if (newApproval)
+    {
+        message.approve();
+    }
+    else
+    {
+        message.unapprove();
+    }
+
+    DiscussionThread& parentThread = *(message.parentThread());
+
+    parentThread.resetVisitorsSinceLastEdit();
 
     return StatusCode::OK;
 }
@@ -1168,7 +1292,24 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(En
     }
 
     comment.solved() = true;
-    comment.parentMessage().solvedCommentsCount() += 1;
+    comment.parentMessage().incrementSolvedCommentsCount();
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepositoryDiscussionThreadMessage::quoteUserInMessage(EntityCollection& collection,
+                                                                       IdTypeRef messageId, IdTypeRef userId)
+{
+    auto& indexById = collection.users().byId();
+    const auto it = indexById.find(userId);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
+        return StatusCode::NOT_FOUND;
+    }
+
+    UserPtr user = *it;
+    user->quoteHistory().push_back(messageId);
 
     return StatusCode::OK;
 }

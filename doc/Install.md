@@ -94,6 +94,7 @@ export DOUBLE_SUBMIT_COOKIE_SIZE="32"
 export PREFIX="while(1);"
 export TRUST_FORWARDED_IP="true"
 export EXPECTED_ORIGIN="https://host without trailing /"
+export SECURE_COOKIES="true" #true if using HTTPS, false if using HTTP for testing
 
 node bin/www > forum-auth.log
 ```
@@ -290,7 +291,7 @@ Edit `dist/dic/terms_of_service.md` and add appropriate Terms Of Service.
 Edit the `nginx` sites configuration (located, e.g. under `/etc/nginx/sites-available/default` or `/etc/nginx/nginx.conf`)
 
 ```
-add_header Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/" always;
+add_header Content-Security-Policy "default-src 'none'; script-src 'self'; connect-src 'self'; font-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/; base-uri 'self'; form-action 'none'; frame-ancestors 'self'" always;
 add_header X-Frame-Options "SAMEORIGIN" always;
 add_header X-Xss-Protection "1; mode=block" always;
 add_header X-Content-Type-Options "nosniff" always;

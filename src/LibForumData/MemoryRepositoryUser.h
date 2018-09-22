@@ -41,6 +41,7 @@ namespace Forum::Repository
         StatusCode searchUsersByName(StringView name, OutStream& output) const override;
         StatusCode getUserLogo(Entities::IdTypeRef id, OutStream& output) const override;
         StatusCode getUserVoteHistory(OutStream& output) const override;
+        StatusCode getUserQuotedHistory(OutStream& output) const override;
 
         StatusCode addNewUser(StringView name, StringView auth, OutStream& output) override;
         StatusWithResource<Entities::UserPtr> addNewUser(Entities::EntityCollection& collection,

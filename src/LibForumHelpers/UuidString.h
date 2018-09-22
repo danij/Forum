@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <string>
 #include <string_view>
@@ -161,6 +162,41 @@ namespace Forum::Helpers
             *outputBegin++ = UuidString(std::string_view(previousStart, UuidString::StringRepresentationSize));
         }
         return outputBegin;
+    }
+    
+    /**
+    * Extract user ids in the form of @00000000-0000-0000-0000-000000000000@
+    */
+    template<typename It>
+    void extractUuidReferences(std::string_view input, It output)
+    {
+        constexpr size_t referenceSize = UuidString::StringRepresentationSize + 2u;
+        constexpr char wrapper = '@';
+        constexpr size_t hexIndexes[] =
+        {
+            1, 2, 3, 4, 5, 6, 7, 8,
+            10, 11, 12, 13,
+            15, 16, 17, 18,
+            20, 21, 22, 23,
+            25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36
+        };
+
+        for (int i = 0, n = static_cast<int>(input.size()) - referenceSize; i <= n; ++i)
+        {
+            const bool possibleReferenceFound =
+                (wrapper == input[i]) && (wrapper == input[i + UuidString::StringRepresentationSize + 1])
+                && ('-' == input[i + 9]) && ('-' == input[i + 14]) && ('-' == input[i + 19]) && ('-' == input[i + 24]);
+            if (possibleReferenceFound)
+            {
+                if (std::all_of(std::begin(hexIndexes), std::end(hexIndexes), [input, i](const size_t index)
+                {
+                    return 1 == OccursInUuids[static_cast<int>(input[i + index])];
+                }))
+                {
+                    *output++ = UuidString(std::string_view(input.data() + i + 1, UuidString::StringRepresentationSize));
+                }
+            }
+        }
     }
 }
 

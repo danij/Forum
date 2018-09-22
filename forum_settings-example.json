@@ -91,6 +91,7 @@
     "defaultPrivileges": {
         "threadMessage": {
             "view": 0,
+            "viewUnapproved": 100,
             "viewRequiredPrivileges": 1,
             "viewAssignedPrivileges": 1,
             "viewCreatorUser": 0,
@@ -103,6 +104,7 @@
             "setCommentToSolved": 5000,
             "getMessageComments": 5000,
             "changeContent": 1000,
+            "changeApproval": 1000,
             "deleteThreadMessage": 1000,
             "move": 2000,
             "adjustPrivilege": 10000
@@ -115,6 +117,7 @@
             "subscribe": 0,
             "unsubscribe": 0,
             "addMessage": 0,
+            "autoApproveMessage": 0,
             "changeName": 1000,
             "changePinDisplayOrder": 5000,
             "addTag": 1000,

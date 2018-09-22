@@ -125,6 +125,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(persistence.persistIPAddresses);
 
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.view);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewUnapproved);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewRequiredPrivileges);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewAssignedPrivileges);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewCreatorUser);
@@ -137,6 +138,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.setCommentToSolved);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.getMessageComments);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.changeContent);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.changeApproval);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.deleteThreadMessage);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.move);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.adjustPrivilege);
@@ -148,6 +150,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.subscribe);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.unsubscribe);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.addMessage);
+    LOAD_CONFIG_VALUE(defaultPrivileges.thread.autoApproveMessage);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.changeName);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.changePinDisplayOrder);
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.addTag);

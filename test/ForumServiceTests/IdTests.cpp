@@ -84,3 +84,96 @@ BOOST_AUTO_TEST_CASE( Multiple_UuidStrings_can_be_parsed_from_a_string_view_with
     BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22A1-4C79-8284-7c78dd065048")), output[1]);
     BOOST_REQUIRE_EQUAL(output[0], output[1]);
 }
+
+BOOST_AUTO_TEST_CASE( Uuid_reference_extraction_extracts_nothing_from_empty_string )
+{
+    std::vector<UuidString> output;
+
+    extractUuidReferences("", std::back_inserter(output));
+
+    BOOST_REQUIRE_EQUAL(0u, output.size());
+}
+
+BOOST_AUTO_TEST_CASE( Uuid_reference_extraction_extracts_nothing_when_no_references_are_found )
+{
+    std::vector<UuidString> output;
+
+    extractUuidReferences("abcd", std::back_inserter(output));
+
+    BOOST_REQUIRE_EQUAL(0u, output.size());
+}
+
+BOOST_AUTO_TEST_CASE( Uuid_reference_extraction_extracts_single_reference_from_start_of_input )
+{
+    std::vector<UuidString> output;
+
+    extractUuidReferences("@084904c2-22a1-4c79-8284-7c78dd065048@ abcd", std::back_inserter(output));
+
+    BOOST_REQUIRE_EQUAL(1u, output.size());
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
+}
+
+BOOST_AUTO_TEST_CASE( Uuid_reference_extraction_extracts_single_reference_from_middle_of_input )
+{
+    std::vector<UuidString> output;
+
+    extractUuidReferences("abcd@084904c2-22a1-4c79-8284-7c78dd065048@efg", std::back_inserter(output));
+
+    BOOST_REQUIRE_EQUAL(1u, output.size());
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
+}
+
+BOOST_AUTO_TEST_CASE( Uuid_reference_extraction_extracts_single_reference_from_end_of_input )
+{
+    std::vector<UuidString> output;
+
+    extractUuidReferences("abcd@084904c2-22a1-4c79-8284-7c78dd065048@", std::back_inserter(output));
+
+    BOOST_REQUIRE_EQUAL(1u, output.size());
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
+}
+
+BOOST_AUTO_TEST_CASE( Uuid_reference_extraction_extracts_multiple_same_references_from_input )
+{
+    std::vector<UuidString> output;
+
+    extractUuidReferences("abcd@084904c2-22a1-4c79-8284-7c78dd065048@ ef @084904c2-22a1-4c79-8284-7c78dd065048@", std::back_inserter(output));
+
+    BOOST_REQUIRE_EQUAL(2u, output.size());
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[1]);
+}
+
+BOOST_AUTO_TEST_CASE( Uuid_reference_extraction_extracts_references_from_input )
+{
+    std::vector<UuidString> output;
+
+    extractUuidReferences("abcd@084904c2-22a1-4c79-8284-7c78dd065048@ ef @0A294EA1-63C9-4980-946F-C4D468294C59@", 
+            std::back_inserter(output));
+
+    BOOST_REQUIRE_EQUAL(2u, output.size());
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("0A294EA1-63C9-4980-946F-C4D468294C59")), output[1]);
+}
+
+BOOST_AUTO_TEST_CASE( Uuid_reference_extraction_skips_uuids_with_no_wrapper )
+{
+    std::vector<UuidString> output;
+
+    extractUuidReferences("abcd@084904c2-22a1-4c79-8284-7c78dd065048@ ef 0A294EA1-63C9-4980-946F-C4D468294C59", 
+            std::back_inserter(output));
+
+    BOOST_REQUIRE_EQUAL(1u, output.size());
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
+}
+
+BOOST_AUTO_TEST_CASE( Uuid_reference_extraction_skips_partial_values )
+{
+    std::vector<UuidString> output;
+
+    extractUuidReferences("@084904c2-22a1 22a1-4c79-8284-7c78dd065048@ abcd@084904C2-22A1-4C79-8284-7C78DD065048@ ef @0A294EA1-63C9-4980-946F-C4D468294C59", 
+            std::back_inserter(output));
+
+    BOOST_REQUIRE_EQUAL(1u, output.size());
+    BOOST_REQUIRE_EQUAL(UuidString(std::string_view("084904c2-22a1-4c79-8284-7c78dd065048")), output[0]);
+}

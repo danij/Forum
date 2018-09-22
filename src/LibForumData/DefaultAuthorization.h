@@ -129,12 +129,17 @@ namespace Forum::Authorization
         AuthorizationStatus addNewDiscussionMessageInThread(const Entities::User& currentUser,
                                                             const Entities::DiscussionThread& thread,
                                                             StringView content) const override;
+        AuthorizationStatus autoApproveDiscussionMessageInThread(const Entities::User& currentUser,
+                                                                 const Entities::DiscussionThread& thread) const override;
         AuthorizationStatus deleteDiscussionMessage(const Entities::User& currentUser,
                                                     const Entities::DiscussionThreadMessage& message) const override;
         AuthorizationStatus changeDiscussionThreadMessageContent(const Entities::User& currentUser,
                                                                  const Entities::DiscussionThreadMessage& message,
                                                                  StringView newContent,
                                                                  StringView changeReason) const override;
+        AuthorizationStatus changeDiscussionThreadMessageApproval(const Entities::User& currentUser,
+                                                                  const Entities::DiscussionThreadMessage& message,
+                                                                  bool newApproval) const override;
         AuthorizationStatus moveDiscussionThreadMessage(const Entities::User& currentUser,
                                                         const Entities::DiscussionThreadMessage& message,
                                                         const Entities::DiscussionThread& intoThread) const override;
@@ -336,6 +341,8 @@ namespace Forum::Authorization
                                       PrivilegeValueType& with) const;
         AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege,
                                       PrivilegeValueType& with) const;
+        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege,
+                                      PrivilegeValueType& with, Entities::IdTypeRef targetUserId) const;
 
         bool isThrottled(UserActionThrottling action, const Entities::User& currentUser) const;
 

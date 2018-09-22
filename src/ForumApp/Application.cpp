@@ -458,4 +458,6 @@ void Application::prepareToStop()
     }
 
     getApplicationEvents().beforeApplicationStop();
+
+    persistenceObserver_.reset();
 }

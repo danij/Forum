@@ -554,6 +554,7 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                               return;
                           }
 
+                          status = StatusCode::OK;
                           status.disable();
 
                           Json::JsonWriter writer(output);
@@ -565,45 +566,49 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                           writer.startArray();
 
                           const auto& messageIndex = collection.threadMessages().byId();
+                          const SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                                     currentUser.id(), Context::getCurrentTime());
+                          BoolTemporaryChanger _(serializationSettings.hideLatestMessage, true);
+                          BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
+                          BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadCreatedBy, true);
+                          BoolTemporaryChanger ____(serializationSettings.hideDiscussionThreadMessageCreatedBy, true);
 
-                          for (const User::ReceivedVoteHistory& entry : currentUser.voteHistory())
+                          const auto& voteHistory = currentUser.voteHistory();
+
+                          for (auto it = voteHistory.rbegin(); it != voteHistory.rend(); ++it)
                           {
+                              const User::ReceivedVoteHistory& entry = *it;
+
                               writer.startObject();
+
+                              writer.newPropertyWithSafeName("at") << entry.at;
+
+                              writer.newPropertyWithSafeName("score");
+
+                              switch (entry.type)
+                              {
+                              case User::ReceivedVoteHistoryEntryType::UpVote:
+                                  writer << 1;
+                                  break;
+                              case User::ReceivedVoteHistoryEntryType::DownVote:
+                                  writer << -1;
+                                  break;
+                              case User::ReceivedVoteHistoryEntryType::ResetVote:
+                                  writer << 0;
+                                  break;
+                              }
+
+                              writer.newPropertyWithSafeName("message");
 
                               const auto messageIt = messageIndex.find(entry.discussionThreadMessageId);
                               if (messageIt != messageIndex.end())
                               {
                                   auto& message = **messageIt;
-                                  writer.newPropertyWithSafeName("messageId") << message.id();
-
-                                  auto parentThread = message.parentThread();
-                                  assert(parentThread);
-
-                                  auto messageRank = parentThread->messages().findRankByCreated(message.id());
-                                  if (messageRank)
-                                  {
-                                      writer.newPropertyWithSafeName("messageRank") << *messageRank;
-                                  }
-
-                                  writer.newPropertyWithSafeName("threadId") << parentThread->id();
-                                  writer.newPropertyWithSafeName("threadName") << parentThread->name();
+                                  serialize(writer, message, restriction);
                               }
-
-                              writer.newPropertyWithSafeName("at") << entry.at;
-
-                              writer.newPropertyWithSafeName("type");
-
-                              switch (entry.type)
+                              else
                               {
-                              case User::ReceivedVoteHistoryEntryType::UpVote:
-                                  writer.writeSafeString("up");
-                                  break;
-                              case User::ReceivedVoteHistoryEntryType::DownVote:
-                                  writer.writeSafeString("down");
-                                  break;
-                              case User::ReceivedVoteHistoryEntryType::ResetVote:
-                                  writer.writeSafeString("reset");
-                                  break;
+                                  writer.null();
                               }
 
                               writer.endObject();
@@ -613,6 +618,62 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                           writer.endObject();
 
                           readEvents().onGetUserVoteHistory(createObserverContext(currentUser));
+                      });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::getUserQuotedHistory(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+                                                    
+                          if (currentUser.id() == anonymousUserId())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+
+                          status = StatusCode::OK;
+                          status.disable();
+
+                          Json::JsonWriter writer(output);
+                          writer.startObject();
+
+                          writer.newPropertyWithSafeName("messages");
+                          writer.startArray();
+
+                          const auto& messageIndex = collection.threadMessages().byId();
+                          const SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                                     currentUser.id(), Context::getCurrentTime());
+                          BoolTemporaryChanger _(serializationSettings.hideLatestMessage, true);
+                          BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
+                          BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadCreatedBy, true);
+
+                          const auto& quoteHistory = currentUser.quoteHistory();
+
+                          for (auto it = quoteHistory.rbegin(); it != quoteHistory.rend(); ++it)
+                          {
+                              const auto messageIt = messageIndex.find(*it);
+                              if (messageIt != messageIndex.end())
+                              {
+                                  auto& message = **messageIt;
+                                  serialize(writer, message, restriction);
+                              }
+                              else
+                              {
+                                  writer.null();
+                              }
+                          }
+
+                          writer.endArray();
+                          writer.endObject();
+
+                          readEvents().onGetUserQuotedHistory(createObserverContext(currentUser));
                       });
     return status;
 }

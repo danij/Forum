@@ -63,6 +63,7 @@ namespace Forum::Repository
         boost::signals2::signal<void(ObserverContext, StringView)> onSearchUsersByName;
         boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetUserLogo;
         boost::signals2::signal<void(ObserverContext)> onGetUserVoteHistory;
+        boost::signals2::signal<void(ObserverContext)> onGetUserQuotedHistory;
 
         boost::signals2::signal<void(ObserverContext)> onGetDiscussionThreads;
         boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onGetDiscussionThreadById;
@@ -165,6 +166,8 @@ namespace Forum::Repository
                                      onAddCommentToDiscussionThreadMessage;
         boost::signals2::signal<void(ObserverContext, const Entities::MessageComment&)>
                                      onSolveDiscussionThreadMessageComment;
+        boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&, 
+                                     Entities::IdTypeRef)> onQuoteUserInDiscussionThreadMessage;
 
         boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&)> onAddNewDiscussionTag;
         boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag&,
