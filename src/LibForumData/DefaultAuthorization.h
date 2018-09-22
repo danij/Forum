@@ -336,6 +336,8 @@ namespace Forum::Authorization
                                       PrivilegeValueType& with) const;
         AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege,
                                       PrivilegeValueType& with) const;
+        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege,
+                                      PrivilegeValueType& with, Entities::IdTypeRef targetUserId) const;
 
         bool isThrottled(UserActionThrottling action, const Entities::User& currentUser) const;
 
