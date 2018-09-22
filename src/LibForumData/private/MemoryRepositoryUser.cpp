@@ -579,18 +579,18 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
 
                               writer.newPropertyWithSafeName("at") << entry.at;
 
-                              writer.newPropertyWithSafeName("type");
+                              writer.newPropertyWithSafeName("score");
 
                               switch (entry.type)
                               {
                               case User::ReceivedVoteHistoryEntryType::UpVote:
-                                  writer.writeSafeString("up");
+                                  writer << 1;
                                   break;
                               case User::ReceivedVoteHistoryEntryType::DownVote:
-                                  writer.writeSafeString("down");
+                                  writer << -1;
                                   break;
                               case User::ReceivedVoteHistoryEntryType::ResetVote:
-                                  writer.writeSafeString("reset");
+                                  writer << 0;
                                   break;
                               }
 
