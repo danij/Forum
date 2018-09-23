@@ -16,8 +16,10 @@ include_directories(
         .
         ../../src
         ../../src/LibFastJsonWriter
+        ../../src/LibForumContext
         ../../src/LibForumData
         ../../src/LibForumHelpers
+        ../../src/Logging
         ${Boost_INCLUDE_DIRS})
 
 add_library(ForumSearchUpdatePlugin SHARED
@@ -28,5 +30,4 @@ target_link_libraries(ForumSearchUpdatePlugin
         ForumData
         ForumHelpers
         dl
-        atomic
         ${Boost_LIBRARIES})

@@ -44,7 +44,7 @@ add_subdirectory(src/LibForumPersistence)
 
 add_subdirectory(src/ForumApp)
 
-add_subdirectory(src/plugins/ForumSearchUpdatePlugin)
+add_subdirectory(plugins/ForumSearchUpdatePlugin)
 
 add_subdirectory(test/ForumServiceTests)
 add_subdirectory(test/HttpTests)
