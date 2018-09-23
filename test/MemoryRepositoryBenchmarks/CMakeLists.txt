@@ -6,6 +6,11 @@ set(Boost_USE_MULTITHREADED  ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost REQUIRED COMPONENTS system program_options)
 
+find_library(LIB_ATOMIC atomic)
+if (LIB_ATOMIC)
+    set(ATOMIC_LIBRARIES atomic)
+endif()
+
 set(SOURCE_FILES
         benchmarks.cpp)
 
@@ -28,7 +33,7 @@ target_link_libraries(MemoryRepositoryBenchmarks
         ForumData
         ForumHelpers
         ForumPersistence
-        atomic
+        ${ATOMIC_LIBRARIES}
         ${Boost_LIBRARIES}
         ${ICU_LIBRARIES}
         ${ICU_I18N_LIBRARIES})

@@ -7,6 +7,11 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost REQUIRED COMPONENTS unit_test_framework system)
 find_package(ICU)
 
+find_library(LIB_ATOMIC atomic)
+if (LIB_ATOMIC)
+    set(ATOMIC_LIBRARIES atomic)
+endif()
+
 set(SOURCE_FILES
         main.cpp
         SimpleCommandTests.cpp
@@ -46,7 +51,7 @@ target_link_libraries(ForumServiceTests
         ForumServiceEndpoints
         ForumData
         ForumHelpers
-        atomic
+        ${ATOMIC_LIBRARIES}
         ${Boost_LIBRARIES}
         ${ICU_LIBRARIES}
         ${ICU_I18N_LIBRARIES})

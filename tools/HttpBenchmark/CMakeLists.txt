@@ -6,6 +6,11 @@ set(Boost_USE_MULTITHREADED  ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost REQUIRED COMPONENTS system program_options)
 
+find_library(LIB_ATOMIC atomic)
+if (LIB_ATOMIC)
+    set(ATOMIC_LIBRARIES atomic)
+endif()
+
 set(SOURCE_FILES
         main.cpp)
 
@@ -22,5 +27,5 @@ add_executable(HttpBenchmark ${SOURCE_FILES} ${HEADER_FILES})
 target_link_libraries(HttpBenchmark
         ForumContext
         Http
-        atomic
+        ${ATOMIC_LIBRARIES}
         ${Boost_LIBRARIES})

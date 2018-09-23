@@ -8,6 +8,11 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost REQUIRED COMPONENTS log log_setup program_options system)
 find_package(ICU)
 
+find_library(LIB_ATOMIC atomic)
+if (LIB_ATOMIC)
+    set(ATOMIC_LIBRARIES atomic)
+endif()
+
 set(SOURCE_FILES
         app.cpp
         Application.cpp)
@@ -40,7 +45,7 @@ target_link_libraries(ForumApp
         ForumHelpers
         ForumPersistence
         dl
-        atomic
+        ${ATOMIC_LIBRARIES}
         ${Boost_LIBRARIES}
         ${ICU_LIBRARIES}
         ${ICU_I18N_LIBRARIES})
