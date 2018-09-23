@@ -41,7 +41,8 @@ namespace Forum
         int run(int argc, const char* argv[]);
 
     private:
-        void cleanup();
+        static void cleanup();
+
         bool initialize();
         bool loadConfiguration(const std::string& fileName);
         void validateConfiguration();
@@ -52,9 +53,11 @@ namespace Forum
         bool loadPlugins();
         void prepareToStop();
 
+        std::vector<Extensibility::LoadedPlugin> plugins_;
+
         std::unique_ptr<Http::TcpListener> tcpListener_;
         std::unique_ptr<Http::TcpListener> tcpListenerAuth_;
-
+        
         std::unique_ptr<Commands::CommandHandler> commandHandler_;
         std::unique_ptr<Commands::ServiceEndpointManager> endpointManager_;
         std::unique_ptr<Persistence::EventObserver> persistenceObserver_;
@@ -62,7 +65,5 @@ namespace Forum
         Repository::MemoryStoreRef memoryStore_;
         Entities::EntityCollectionRef entityCollection_;
         Repository::DirectWriteRepositoryCollection directWriteRepositories_;
-
-        std::vector<Extensibility::LoadedPlugin> plugins_;
     };
 }

@@ -40,14 +40,14 @@ void ForumSearchUpdatePlugin::stop()
 {
     stopConsumer();
 
-    writeEvents_.onAddNewDiscussionThread.disconnect(onAddNewDiscussionThreadConnection_);
-    writeEvents_.onChangeDiscussionThread.disconnect(onChangeDiscussionThreadConnection_);
-    writeEvents_.onDeleteDiscussionThread.disconnect(onDeleteDiscussionThreadConnection_);
-    writeEvents_.onMergeDiscussionThreads.disconnect(onMergeDiscussionThreadsConnection_);
+    onAddNewDiscussionThreadConnection_.disconnect();
+    onChangeDiscussionThreadConnection_.disconnect();
+    onDeleteDiscussionThreadConnection_.disconnect();
+    onMergeDiscussionThreadsConnection_.disconnect();
 
-    writeEvents_.onAddNewDiscussionThreadMessage.disconnect(onAddNewDiscussionThreadMessageConnection_);
-    writeEvents_.onChangeDiscussionThreadMessage.disconnect(onChangeDiscussionThreadMessageConnection_);
-    writeEvents_.onDeleteDiscussionThreadMessage.disconnect(onDeleteDiscussionThreadMessageConnection_);
+    onAddNewDiscussionThreadMessageConnection_.disconnect();
+    onChangeDiscussionThreadMessageConnection_.disconnect();
+    onDeleteDiscussionThreadMessageConnection_.disconnect();
 }
 
 void ForumSearchUpdatePlugin::onThreadWaitNoValues()
