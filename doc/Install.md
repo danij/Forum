@@ -169,11 +169,14 @@ export RESET_PASSWORD_CONFIRMATION_TITLE="Forum Reset Password Confirmation"
 export RESET_PASSWORD_CONFIRMATION_URL="https://host/auth/custom/confirm_reset_password"
 export RESET_PASSWORD_TIMEOUT_SECONDS="600"
 export RESET_PASSWORD_NEW_PASSWORD_SIZE="16"
+export PASSWORD_CHANGE_NOTIFICATION_TITLE="Forum Password Change Notification"
 ```
     
 The confirmation email template can be adjusted at `register_confirmation_template.html`.
 
 The reset password email template can be adjusted at `reset_password_confirmation_template.html`.
+
+The password change notification email template can be adjusted at `change_password_notification.html`.
 
 #### Authentication Using External Providers
 
