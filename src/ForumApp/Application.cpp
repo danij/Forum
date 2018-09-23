@@ -187,8 +187,6 @@ int Application::run(int argc, const char* argv[])
 
 void Application::cleanup()
 {
-    plugins_.clear();
-
     Helpers::cleanupStringHelpers();
 
     //clean up resources cached by ICU so that they don't show up as memory leaks
