@@ -106,5 +106,9 @@ namespace Forum::Extensibility
         enqueue(Helpers::SeparateThreadConsumerBlob::allocateCopy(outputBuffer.view()));
     }
 
+#ifdef _MSC_VER
     extern "C" BOOST_SYMBOL_EXPORT void __cdecl loadPlugin(PluginInput* input, PluginPtr* output);
+#else
+    extern "C" BOOST_SYMBOL_EXPORT void loadPlugin(PluginInput* input, PluginPtr* output);
+#endif
 }
