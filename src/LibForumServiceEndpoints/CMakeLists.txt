@@ -35,4 +35,5 @@ target_link_libraries(ForumServiceEndpoints
         Http
         ForumContext
         ForumHelpers
+        ForumData
         ${Boost_LIBRARIES})
