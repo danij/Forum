@@ -999,6 +999,12 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         const auto version = readAndIncrementBuffer<EventVersionType>(data, size);
         const auto contextVersion = readAndIncrementBuffer<EventContextVersionType>(data, size);
 
+        if (EventType::UNKNOWN == currentEventType_)
+        {
+            //skip this event
+            return true;
+        }
+
         if (currentEventType_ >= importFunctions_.size())
         {
             FORUM_LOG_WARNING << "Import for unknown type " << currentEventType_;
