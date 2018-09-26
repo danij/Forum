@@ -174,6 +174,9 @@ namespace Forum::Entities
 
         auto& showInOnlineUsers()        const { return showInOnlineUsers_; }
 
+        auto& voteHistoryNotRead()       const { return voteHistoryNotRead_; }
+        auto& quotesHistoryNotRead()     const { return quotesHistoryNotRead_; }
+
         void updateAuth(std::string&& value)
         {
             changeNotifications_.onPrepareUpdateAuth(*this);
@@ -244,6 +247,9 @@ namespace Forum::Entities
 
         int_fast32_t receivedUpVotes_{ 0 };
         int_fast32_t receivedDownVotes_{ 0 };
+
+        mutable std::atomic<uint16_t> voteHistoryNotRead_{ 0 };
+        mutable std::atomic<uint16_t> quotesHistoryNotRead_{ 0 };
 
         static constexpr size_t MaxQuotesInHistory = 64;
         boost::circular_buffer_space_optimized<IdType> quoteHistory_{ MaxQuotesInHistory };

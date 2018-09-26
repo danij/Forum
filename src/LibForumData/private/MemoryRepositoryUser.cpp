@@ -131,6 +131,9 @@ StatusCode MemoryRepositoryUser::getCurrentUser(OutStream& output) const
                                                                          currentUser.id(), Context::getCurrentTime());
                               writer.newPropertyWithSafeName("user");
                               serialize(writer, currentUser, restriction);
+
+                              writer.newPropertyWithSafeName("newReceivedVotesNr") << currentUser.voteHistoryNotRead();
+                              writer.newPropertyWithSafeName("newReceivedQuotesNr") << currentUser.quotesHistoryNotRead();
                           }
                       
                           writer.endObject();
@@ -618,6 +621,8 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                           writer.endObject();
 
                           readEvents().onGetUserVoteHistory(createObserverContext(currentUser));
+
+                          currentUser.voteHistoryNotRead() = 0;
                       });
     return status;
 }
@@ -674,6 +679,8 @@ StatusCode MemoryRepositoryUser::getUserQuotedHistory(OutStream& output) const
                           writer.endObject();
 
                           readEvents().onGetUserQuotedHistory(createObserverContext(currentUser));
+
+                          currentUser.quotesHistoryNotRead() = 0;
                       });
     return status;
 }

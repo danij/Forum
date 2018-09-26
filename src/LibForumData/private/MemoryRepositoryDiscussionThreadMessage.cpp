@@ -901,6 +901,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
         timestamp,
         up ? User::ReceivedVoteHistoryEntryType::UpVote : User::ReceivedVoteHistoryEntryType::DownVote
     });
+    targetUser.voteHistoryNotRead() += 1;
 
     return StatusCode::OK;
 }
@@ -1009,6 +1010,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
         Context::getCurrentTime(),
         User::ReceivedVoteHistoryEntryType::ResetVote
     });
+    targetUser.voteHistoryNotRead() += 1;
 
     return StatusCode::OK;
 }
@@ -1310,6 +1312,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::quoteUserInMessage(EntityCol
 
     UserPtr user = *it;
     user->quoteHistory().push_back(messageId);
+    user->quotesHistoryNotRead() += 1;
 
     return StatusCode::OK;
 }
