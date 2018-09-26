@@ -322,8 +322,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
 
                            for (const auto userId: quotedIds)
                            {
-                               quoteUserInMessage(collection, message->id(), userId);
-                               write.onQuoteUserInDiscussionThreadMessage(observerContext, *message, userId);
+                               if (StatusCode::OK == quoteUserInMessage(collection, message->id(), userId))
+                               {
+                                   write.onQuoteUserInDiscussionThreadMessage(observerContext, *message, userId);                                   
+                               }
                            }
 
                            status.writeNow([&](auto& writer)
@@ -535,8 +537,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
                                    if (oldQuotedIds.find(userId) == oldQuotedIds.end())
                                    {
                                        //only quote users that were not quoted in the previous message
-                                       quoteUserInMessage(collection, message.id(), userId);
-                                       write.onQuoteUserInDiscussionThreadMessage(observerContext, message, userId);
+                                       if (StatusCode::OK == quoteUserInMessage(collection, message.id(), userId))
+                                       {
+                                           write.onQuoteUserInDiscussionThreadMessage(observerContext, message, userId);                                               
+                                       }
                                    }
                                }
                            }
@@ -1306,7 +1310,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::quoteUserInMessage(EntityCol
     const auto it = indexById.find(userId);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
+        //FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
         return StatusCode::NOT_FOUND;
     }
 
