@@ -160,38 +160,38 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void bindObservers()
     {
-        connections.push_back(writeEvents.                         onAddNewUser.connect([this](auto context, auto& user)                       { this->onAddNewUser                         (context, user); }));
-        connections.push_back(writeEvents.                         onChangeUser.connect([this](auto context, auto& user, auto change)          { this->onChangeUser                         (context, user, change); }));
-        connections.push_back(writeEvents.                         onDeleteUser.connect([this](auto context, auto& user)                       { this->onDeleteUser                         (context, user); }));
-        connections.push_back(writeEvents.             onAddNewDiscussionThread.connect([this](auto context, auto& thread)                     { this->onAddNewDiscussionThread             (context, thread); }));
-        connections.push_back(writeEvents.             onChangeDiscussionThread.connect([this](auto context, auto& thread, auto change)        { this->onChangeDiscussionThread             (context, thread, change); }));
-        connections.push_back(writeEvents.             onDeleteDiscussionThread.connect([this](auto context, auto& thread)                     { this->onDeleteDiscussionThread             (context, thread); }));
-        connections.push_back(writeEvents.             onMergeDiscussionThreads.connect([this](auto context, auto& fromThread, auto& toThread) { this->onMergeDiscussionThreads             (context, fromThread, toThread); }));
-        connections.push_back(writeEvents.        onMoveDiscussionThreadMessage.connect([this](auto context, auto& message, auto& intoThread)  { this->onMoveDiscussionThreadMessage        (context, message, intoThread); }));
-        connections.push_back(writeEvents.        onSubscribeToDiscussionThread.connect([this](auto context, auto& thread)                     { this->onSubscribeToDiscussionThread        (context, thread); }));
-        connections.push_back(writeEvents.    onUnsubscribeFromDiscussionThread.connect([this](auto context, auto& thread)                     { this->onUnsubscribeFromDiscussionThread    (context, thread); }));
-        connections.push_back(writeEvents.      onAddNewDiscussionThreadMessage.connect([this](auto context, auto& message)                    { this->onAddNewDiscussionThreadMessage      (context, message); }));
-        connections.push_back(writeEvents.      onChangeDiscussionThreadMessage.connect([this](auto context, auto& message, auto change)       { this->onChangeDiscussionThreadMessage      (context, message, change); }));
-        connections.push_back(writeEvents.      onDeleteDiscussionThreadMessage.connect([this](auto context, auto& message)                    { this->onDeleteDiscussionThreadMessage      (context, message); }));
-        connections.push_back(writeEvents.      onDiscussionThreadMessageUpVote.connect([this](auto context, auto& message)                    { this->onDiscussionThreadMessageUpVote      (context, message); }));
-        connections.push_back(writeEvents.    onDiscussionThreadMessageDownVote.connect([this](auto context, auto& message)                    { this->onDiscussionThreadMessageDownVote    (context, message); }));
-        connections.push_back(writeEvents.   onDiscussionThreadMessageResetVote.connect([this](auto context, auto& message)                    { this->onDiscussionThreadMessageResetVote   (context, message); }));
-        connections.push_back(writeEvents.onAddCommentToDiscussionThreadMessage.connect([this](auto context, auto& comment)                    { this->onAddCommentToDiscussionThreadMessage(context, comment); }));
-        connections.push_back(writeEvents.onSolveDiscussionThreadMessageComment.connect([this](auto context, auto& comment)                    { this->onSolveDiscussionThreadMessageComment(context, comment); }));
-        connections.push_back(writeEvents. onQuoteUserInDiscussionThreadMessage.connect([this](auto context, auto& message, IdTypeRef userId)  { this->onQuoteUserInDiscussionThreadMessage (context, message, userId); }));
-        connections.push_back(writeEvents.                onAddNewDiscussionTag.connect([this](auto context, auto& tag)                        { this->onAddNewDiscussionTag                (context, tag); }));
-        connections.push_back(writeEvents.                onChangeDiscussionTag.connect([this](auto context, auto& tag, auto change)           { this->onChangeDiscussionTag                (context, tag, change); }));
-        connections.push_back(writeEvents.                onDeleteDiscussionTag.connect([this](auto context, auto& tag)                        { this->onDeleteDiscussionTag                (context, tag); }));
-        connections.push_back(writeEvents.           onAddDiscussionTagToThread.connect([this](auto context, auto& tag, auto& thread)          { this->onAddDiscussionTagToThread           (context, tag, thread); }));
-        connections.push_back(writeEvents.      onRemoveDiscussionTagFromThread.connect([this](auto context, auto& tag, auto& thread)          { this->onRemoveDiscussionTagFromThread      (context, tag, thread); }));
-        connections.push_back(writeEvents.                onMergeDiscussionTags.connect([this](auto context, auto& fromTag, auto& toTag)       { this->onMergeDiscussionTags                (context, fromTag, toTag); }));
-        connections.push_back(writeEvents.           onAddNewDiscussionCategory.connect([this](auto context, auto& category)                   { this->onAddNewDiscussionCategory           (context, category); }));
-        connections.push_back(writeEvents.           onChangeDiscussionCategory.connect([this](auto context, auto& category, auto change)      { this->onChangeDiscussionCategory           (context, category, change); }));
-        connections.push_back(writeEvents.           onDeleteDiscussionCategory.connect([this](auto context, auto& category)                   { this->onDeleteDiscussionCategory           (context, category); }));
-        connections.push_back(writeEvents.         onAddDiscussionTagToCategory.connect([this](auto context, auto& tag, auto& category)        { this->onAddDiscussionTagToCategory         (context, tag, category); }));
-        connections.push_back(writeEvents.    onRemoveDiscussionTagFromCategory.connect([this](auto context, auto& tag, auto& category)        { this->onRemoveDiscussionTagFromCategory    (context, tag, category); }));
+        connections.push_back(writeEvents.                         onAddNewUser.connect([this](auto context, auto& user)                           { this->onAddNewUser                         (context, user); }));
+        connections.push_back(writeEvents.                         onChangeUser.connect([this](auto context, auto& user, auto change)              { this->onChangeUser                         (context, user, change); }));
+        connections.push_back(writeEvents.                         onDeleteUser.connect([this](auto context, auto& user)                           { this->onDeleteUser                         (context, user); }));
+        connections.push_back(writeEvents.             onAddNewDiscussionThread.connect([this](auto context, auto& thread)                         { this->onAddNewDiscussionThread             (context, thread); }));
+        connections.push_back(writeEvents.             onChangeDiscussionThread.connect([this](auto context, auto& thread, auto change)            { this->onChangeDiscussionThread             (context, thread, change); }));
+        connections.push_back(writeEvents.             onDeleteDiscussionThread.connect([this](auto context, auto& thread)                         { this->onDeleteDiscussionThread             (context, thread); }));
+        connections.push_back(writeEvents.             onMergeDiscussionThreads.connect([this](auto context, auto& fromThread, auto& toThread)     { this->onMergeDiscussionThreads             (context, fromThread, toThread); }));
+        connections.push_back(writeEvents.        onMoveDiscussionThreadMessage.connect([this](auto context, auto& message, auto& intoThread)      { this->onMoveDiscussionThreadMessage        (context, message, intoThread); }));
+        connections.push_back(writeEvents.        onSubscribeToDiscussionThread.connect([this](auto context, auto& thread)                         { this->onSubscribeToDiscussionThread        (context, thread); }));
+        connections.push_back(writeEvents.    onUnsubscribeFromDiscussionThread.connect([this](auto context, auto& thread)                         { this->onUnsubscribeFromDiscussionThread    (context, thread); }));
+        connections.push_back(writeEvents.      onAddNewDiscussionThreadMessage.connect([this](auto context, auto& message)                        { this->onAddNewDiscussionThreadMessage      (context, message); }));
+        connections.push_back(writeEvents.      onChangeDiscussionThreadMessage.connect([this](auto context, auto& message, auto change)           { this->onChangeDiscussionThreadMessage      (context, message, change); }));
+        connections.push_back(writeEvents.      onDeleteDiscussionThreadMessage.connect([this](auto context, auto& message)                        { this->onDeleteDiscussionThreadMessage      (context, message); }));
+        connections.push_back(writeEvents.      onDiscussionThreadMessageUpVote.connect([this](auto context, auto& message)                        { this->onDiscussionThreadMessageUpVote      (context, message); }));
+        connections.push_back(writeEvents.    onDiscussionThreadMessageDownVote.connect([this](auto context, auto& message)                        { this->onDiscussionThreadMessageDownVote    (context, message); }));
+        connections.push_back(writeEvents.   onDiscussionThreadMessageResetVote.connect([this](auto context, auto& message)                        { this->onDiscussionThreadMessageResetVote   (context, message); }));
+        connections.push_back(writeEvents.onAddCommentToDiscussionThreadMessage.connect([this](auto context, auto& comment)                        { this->onAddCommentToDiscussionThreadMessage(context, comment); }));
+        connections.push_back(writeEvents.onSolveDiscussionThreadMessageComment.connect([this](auto context, auto& comment)                        { this->onSolveDiscussionThreadMessageComment(context, comment); }));
+        connections.push_back(writeEvents. onQuoteUserInDiscussionThreadMessage.connect([this](auto context, auto& message, IdTypeRef userId)      { this->onQuoteUserInDiscussionThreadMessage (context, message, userId); }));
+        connections.push_back(writeEvents.                onAddNewDiscussionTag.connect([this](auto context, auto& tag)                            { this->onAddNewDiscussionTag                (context, tag); }));
+        connections.push_back(writeEvents.                onChangeDiscussionTag.connect([this](auto context, auto& tag, auto change)               { this->onChangeDiscussionTag                (context, tag, change); }));
+        connections.push_back(writeEvents.                onDeleteDiscussionTag.connect([this](auto context, auto& tag)                            { this->onDeleteDiscussionTag                (context, tag); }));
+        connections.push_back(writeEvents.           onAddDiscussionTagToThread.connect([this](auto context, auto& tag, auto& thread)              { this->onAddDiscussionTagToThread           (context, tag, thread); }));
+        connections.push_back(writeEvents.      onRemoveDiscussionTagFromThread.connect([this](auto context, auto& tag, auto& thread)              { this->onRemoveDiscussionTagFromThread      (context, tag, thread); }));
+        connections.push_back(writeEvents.                onMergeDiscussionTags.connect([this](auto context, auto& fromTag, auto& toTag)           { this->onMergeDiscussionTags                (context, fromTag, toTag); }));
+        connections.push_back(writeEvents.           onAddNewDiscussionCategory.connect([this](auto context, auto& category)                       { this->onAddNewDiscussionCategory           (context, category); }));
+        connections.push_back(writeEvents.           onChangeDiscussionCategory.connect([this](auto context, auto& category, auto change)          { this->onChangeDiscussionCategory           (context, category, change); }));
+        connections.push_back(writeEvents.           onDeleteDiscussionCategory.connect([this](auto context, auto& category)                       { this->onDeleteDiscussionCategory           (context, category); }));
+        connections.push_back(writeEvents.         onAddDiscussionTagToCategory.connect([this](auto context, auto& tag, auto& category)            { this->onAddDiscussionTagToCategory         (context, tag, category); }));
+        connections.push_back(writeEvents.    onRemoveDiscussionTagFromCategory.connect([this](auto context, auto& tag, auto& category)            { this->onRemoveDiscussionTagFromCategory    (context, tag, category); }));
 
-        connections.push_back(readEvents.             onGetDiscussionThreadById.connect([this](auto context, auto& thread)                     { this->onGetDiscussionThreadById            (context, thread); }));
+        connections.push_back(readEvents.             onGetDiscussionThreadById.connect([this](auto context, auto& thread, auto latestVisitedPage) { this->onGetDiscussionThreadById            (context, thread, latestVisitedPage); }));
 
         //authorization
         connections.push_back(writeEvents.onChangeDiscussionThreadMessageRequiredPrivilegeForThreadMessage.connect([this](auto context, auto& message, auto privilege, auto value)             { this->changeDiscussionThreadMessageRequiredPrivilegeForThreadMessage(context, message, privilege, value); }));
@@ -889,19 +889,26 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         recordBlob(EventType::REMOVE_DISCUSSION_TAG_FROM_CATEGORY, 1, parts, std::size(parts));
     }
 
-    void onGetDiscussionThreadById(ObserverContext /*context*/, const DiscussionThread& thread)
+    void onGetDiscussionThreadById(ObserverContext context, const DiscussionThread& thread, 
+                                   const uint32_t latestVisitedPage)
     {
-        std::lock_guard<decltype(threadVisitedMutex)> lock(threadVisitedMutex);
+        std::lock_guard<decltype(threadCachedUpdatesMutex)> lock(threadCachedUpdatesMutex);
 
-        auto& id = thread.id();
-        auto it = cachedNrOfThreadVisits.find(id);
-        if (it != cachedNrOfThreadVisits.end())
+        auto& threadId = thread.id();
         {
-            ++it->second;
+            auto it = cachedNrOfThreadVisits.find(threadId);
+            if (it != cachedNrOfThreadVisits.end())
+            {
+                ++it->second;
+            }
+            else
+            {
+                cachedNrOfThreadVisits.insert(std::make_pair(threadId, 1));
+            }
         }
-        else
+        if (latestVisitedPage > 0)
         {
-            cachedNrOfThreadVisits.insert(std::make_pair(id, 1));
+            cachedLatestVisitedPage[std::make_pair(context.performedBy.id(), threadId)] = latestVisitedPage;
         }
     }
 
@@ -1254,9 +1261,9 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
 
     void updateThreadVisited()
     {
-        std::lock_guard<decltype(threadVisitedMutex)> lock(threadVisitedMutex);
+        std::lock_guard<decltype(threadCachedUpdatesMutex)> lock(threadCachedUpdatesMutex);
 
-        for (auto& pair : cachedNrOfThreadVisits)
+        for (const auto& pair : cachedNrOfThreadVisits)
         {
             BlobPart parts[] =
             {
@@ -1268,6 +1275,23 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             recordBlob(EventType::INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS, 1, parts, std::size(parts));
         }
         cachedNrOfThreadVisits.clear();
+
+        for (const auto& pair : cachedLatestVisitedPage)
+        {
+            const auto&[userId, threadId] = pair.first;
+            const auto latestVisitedPage = pair.second;
+
+            BlobPart parts[] =
+            {
+                ADD_EMPTY_CONTEXT_BLOB_PARTS,
+                { POINTER(&userId.value().data), UuidSize, false },
+                { POINTER(&threadId.value().data), UuidSize, false },
+                { POINTER(&latestVisitedPage), sizeof(latestVisitedPage), false },
+            };
+
+            recordBlob(EventType::INCREMENT_USER_LATEST_VISITED_PAGE, 1, parts, std::size(parts));
+        }
+        cachedLatestVisitedPage.clear();
     }
 
     ReadEvents& readEvents;
@@ -1279,8 +1303,10 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     static const std::chrono::seconds timerThreadCheckEverySeconds;
     static constexpr uint32_t updateThreadVisitedEveryIncrement = 30;
     uint32_t timerThreadCurrentIncrement = 0;
-    std::mutex threadVisitedMutex;
+
+    std::mutex threadCachedUpdatesMutex;
     std::map<IdType, uint32_t> cachedNrOfThreadVisits;
+    std::map<std::pair<IdType, IdType>, uint32_t> cachedLatestVisitedPage;
 };
 
 const PersistentTimestampType EventObserver::EventObserverImpl::ZeroTimestamp{ 0 };

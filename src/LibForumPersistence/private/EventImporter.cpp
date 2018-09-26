@@ -266,7 +266,8 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, ASSIGN_FORUM_WIDE_PRIVILEGE ) },
 
             { {/*v0*/}, DECLARE_FORWARDER( 1, QUOTE_USER_IN_DISCUSSION_THREAD_MESSAGE ) },
-            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL ) }
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, INCREMENT_USER_LATEST_VISITED_PAGE ) },
         };
     }
 
@@ -653,6 +654,15 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         {
             cachedNrOfThreadVisits_.insert(std::make_pair(threadId, nrOfVisits));
         }
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( INCREMENT_USER_LATEST_VISITED_PAGE, 1 )
+        READ_UUID(userId, data, size);
+        READ_UUID(threadId, data, size);
+        READ_TYPE(uint32_t, latestVisitedPage, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        latestThreadVisitedPage_[userId][threadId] = latestVisitedPage;
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER, 1 )
@@ -1068,6 +1078,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
 
         updateDiscussionThreadVisitCount();
+        updateDiscussionThreadLatestVisitedPage();
         updateUsersLastSeen();
 
         return result;
@@ -1084,6 +1095,22 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             if (threadPtr)
             {
                 threadPtr->visited() += nrOfVisits;
+            }
+        }
+    }
+    
+    void updateDiscussionThreadLatestVisitedPage()
+    {
+        auto& users = entityCollection_.users().byId();
+        for (auto&[userId, threadCollection] : latestThreadVisitedPage_)
+        {
+            for (auto&[threadId, latestVisitedPage] : threadCollection)
+            {
+                auto it = users.find(userId);
+                if (it != users.end())
+                {
+                    (*it)->updateLatestPageVisited(threadId, latestVisitedPage);
+                }
             }
         }
     }
@@ -1119,6 +1146,7 @@ private:
     Timestamp firstTimestamp_ = TimestampMax;
     EventType currentEventType_{};
     std::unordered_map<UuidString, uint32_t> cachedNrOfThreadVisits_;
+    std::unordered_map<UuidString, std::unordered_map<UuidString, uint32_t>> latestThreadVisitedPage_;
     std::unordered_map<UuidString, Timestamp> usersLastSeen_;
 };
 

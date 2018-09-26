@@ -22,10 +22,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityDiscussionThreadCollection.h"
 #include "EntityDiscussionThreadMessageCollection.h"
 #include "EntityMessageCommentCollection.h"
+#include "SpinLock.h"
 
 #include <atomic>
 #include <cstdint>
+#include <mutex>
 #include <string>
+#include <unordered_map>
 
 #include <boost/noncopyable.hpp>
 #include <boost/circular_buffer.hpp>
@@ -215,6 +218,36 @@ namespace Forum::Entities
             }
         }
 
+        auto latestPageVisited(IdTypeRef threadId) const
+        {
+            std::lock_guard<decltype(latestThreadPageVisitedLock_)> _(latestThreadPageVisitedLock_);
+
+            const auto it = latestThreadPageVisited_.find(threadId);
+            if (it != latestThreadPageVisited_.end())
+            {
+                return it->second;
+            }
+            return decltype(it->second){};
+        }
+
+        bool updateLatestPageVisited(IdTypeRef threadId, uint32_t pageNumber) const
+        {
+            std::lock_guard<decltype(latestThreadPageVisitedLock_)> _(latestThreadPageVisitedLock_);
+
+            auto it = latestThreadPageVisited_.find(threadId);
+            if (it == latestThreadPageVisited_.end())
+            {
+                latestThreadPageVisited_.insert(std::make_pair(threadId, pageNumber));
+                return true;
+            }
+            if (it->second < pageNumber)
+            {
+                it->second = pageNumber;
+                return true;
+            }
+            return false;
+        }
+
     private:
         static ChangeNotification changeNotifications_;
         static const VotedMessagesType emptyVotedMessages_;
@@ -255,6 +288,9 @@ namespace Forum::Entities
         boost::circular_buffer_space_optimized<IdType> quoteHistory_{ MaxQuotesInHistory };
 
         mutable std::atomic_bool showInOnlineUsers_{ false };
+
+        mutable std::unordered_map<IdType, uint32_t> latestThreadPageVisited_;
+        mutable Helpers::SpinLock latestThreadPageVisitedLock_;
     };
 
     typedef EntityPointer<User> UserPtr;

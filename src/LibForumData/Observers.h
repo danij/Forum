@@ -66,7 +66,7 @@ namespace Forum::Repository
         boost::signals2::signal<void(ObserverContext)> onGetUserQuotedHistory;
 
         boost::signals2::signal<void(ObserverContext)> onGetDiscussionThreads;
-        boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onGetDiscussionThreadById;
+        boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&, uint32_t)> onGetDiscussionThreadById;
         boost::signals2::signal<void(ObserverContext, StringView)> onGetMultipleDiscussionThreadsById;
         boost::signals2::signal<void(ObserverContext, StringView)> onSearchDiscussionThreadsByName;
         boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetDiscussionThreadsOfUser;

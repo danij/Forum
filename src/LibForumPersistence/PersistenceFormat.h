@@ -110,6 +110,7 @@ namespace Forum::Persistence
 
         QUOTE_USER_IN_DISCUSSION_THREAD_MESSAGE,
         CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL,
+        INCREMENT_USER_LATEST_VISITED_PAGE
     };
 
     static constexpr MagicPrefixType MagicPrefix = 0xFFFFFFFFFFFFFFFF;

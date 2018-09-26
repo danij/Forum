@@ -58,7 +58,7 @@ namespace Forum::Entities
         boost::optional<bool> allowDisplayDiscussionThreadMessageIpAddress = boost::none;
         boost::optional<bool> allowDisplayDiscussionThreadMessageComments = boost::none;
 
-        UserPtr userToCheckVotesOf{};
+        UserPtr currentUser{};
 
         bool hideLatestMessage = false;
         bool hidePrivileges = false;

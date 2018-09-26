@@ -209,11 +209,11 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         writer << propertySafeName("nrOfDownVotes", downVotes.size());
     }
     auto voteStatus = 0;
-    if (downVotes.find(serializationSettings.userToCheckVotesOf) != downVotes.end())
+    if (serializationSettings.currentUser && (downVotes.find(serializationSettings.currentUser) != downVotes.end()))
     {
         voteStatus = -1;
     }
-    else if (upVotes.find(serializationSettings.userToCheckVotesOf) != upVotes.end())
+    else if (serializationSettings.currentUser && (upVotes.find(serializationSettings.currentUser) != upVotes.end()))
     {
         voteStatus = 1;
     }
@@ -405,9 +405,19 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
             << propertySafeName("pinDisplayOrder", thread.pinDisplayOrder())
             << propertySafeName("subscribedUsersCount", thread.subscribedUsersCount());
 
-    IdTypeRef currentUserId = Context::getCurrentUserId();
-    writer << propertySafeName("subscribedToThread",
-        currentUserId && (thread.subscribedUsers().find(currentUserId) != thread.subscribedUsers().end()));
+    auto currentUser = serializationSettings.currentUser;
+
+    if (currentUser)
+    {
+        writer << propertySafeName("subscribedToThread",
+            thread.subscribedUsers().find(currentUser->id()) != thread.subscribedUsers().end());
+        
+        const auto latestVisitedPage = currentUser->latestPageVisited(thread.id());
+        if (latestVisitedPage > 0)
+        {
+            writer << propertySafeName("latestVisitedPage", latestVisitedPage);
+        }
+    }
 
     if ( ! serializationSettings.hideDiscussionThreadCreatedBy)
     {
