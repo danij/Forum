@@ -102,25 +102,13 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
     return writer;
 }
 
-static bool checkMessageAllowViewApproval(const DiscussionThreadMessage& message, 
-                                          const SerializationRestriction& restriction)
-{
-    if (message.approved())
-    {
-        return true;
-    }
-    return (message.createdBy().id() == restriction.userId()) 
-            || restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED);
-}
-
 JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessage& message,
                                 const SerializationRestriction& restriction)
 {
-    const auto allowView = (serializationSettings.allowDisplayDiscussionThreadMessage
-            ? *serializationSettings.allowDisplayDiscussionThreadMessage
-            : (restriction.isAllowed(message, DiscussionThreadMessagePrivilege::VIEW) 
-                && restriction.isAllowed(*message.parentThread(), DiscussionThreadPrivilege::VIEW)))
-        && checkMessageAllowViewApproval(message, restriction);
+    const auto allowView = serializationSettings.allowDisplayDiscussionThreadMessage
+            ? (*serializationSettings.allowDisplayDiscussionThreadMessage 
+                && restriction.checkMessageAllowViewApproval(message))
+            : restriction.isAllowedToViewMessage(message);
 
     if ( ! allowView) return writer.null();
 
@@ -233,12 +221,8 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage
                                const SerializationRestriction& restriction)
 {
     writer.newPropertyWithSafeName("latestMessage");
-
-    const bool allowView = restriction.isAllowed(latestMessage, DiscussionThreadMessagePrivilege::VIEW)
-        && restriction.isAllowed(*latestMessage.parentThread(), DiscussionThreadPrivilege::VIEW)
-        && checkMessageAllowViewApproval(latestMessage, restriction);
     
-    if ( ! allowView )
+    if ( ! restriction.isAllowedToViewMessage(latestMessage))
     {
         writer.null();
         return;

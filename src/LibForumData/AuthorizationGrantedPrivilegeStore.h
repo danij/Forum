@@ -276,6 +276,23 @@ namespace Forum::Authorization
             return isAllowed(forumWidePrivilegeStore_, privilege);
         }
 
+        bool checkMessageAllowViewApproval(const Entities::DiscussionThreadMessage& message) const
+        {
+            if (message.approved())
+            {
+                return true;
+            }
+            return (message.createdBy().id() == userId())
+                || isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED);
+        }
+
+        bool isAllowedToViewMessage(const Entities::DiscussionThreadMessage& message) const
+        {
+            return isAllowed(message, DiscussionThreadMessagePrivilege::VIEW)
+                && isAllowed(*message.parentThread(), DiscussionThreadPrivilege::VIEW)
+                && checkMessageAllowViewApproval(message);
+        }
+
     private:
         const GrantedPrivilegeStore& privilegeStore_;
         const ForumWidePrivilegeStore& forumWidePrivilegeStore_;
