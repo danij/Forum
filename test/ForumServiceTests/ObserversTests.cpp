@@ -263,7 +263,10 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_by_id_invokes_observer )
     auto handler = createCommandHandler();
 
     auto disconnector = addHandler(handler->readEvents().onGetDiscussionThreadById,
-                                   [&](auto&, auto& thread) { idOfThread = static_cast<std::string>(thread.id()); });
+                                   [&](auto&, auto& thread, uint32_t)
+                                   {
+                                       idOfThread = static_cast<std::string>(thread.id());
+                                   });
     (void)disconnector;
 
     const auto threadId = createDiscussionThreadAndGetId(handler, "Thread");
