@@ -100,6 +100,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "threads",                 HttpVerb::DELETE, ENDPOINT_DELEGATE(threadsEndpoint.remove) },
         { "threads/name",            HttpVerb::PUT,    ENDPOINT_DELEGATE(threadsEndpoint.changeName) },
         { "threads/pindisplayorder", HttpVerb::PUT,    ENDPOINT_DELEGATE(threadsEndpoint.changePinDisplayOrder) },
+        { "threads/approval",        HttpVerb::PUT,    ENDPOINT_DELEGATE(threadsEndpoint.changeApproval) },
         { "threads/merge",           HttpVerb::POST,   ENDPOINT_DELEGATE(threadsEndpoint.merge) },
         { "threads/subscribe",       HttpVerb::POST,   ENDPOINT_DELEGATE(threadsEndpoint.subscribe) },
         { "threads/unsubscribe",     HttpVerb::POST,   ENDPOINT_DELEGATE(threadsEndpoint.unsubscribe) },

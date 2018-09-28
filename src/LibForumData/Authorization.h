@@ -100,6 +100,10 @@ namespace Forum::Authorization
         virtual AuthorizationStatus changeDiscussionThreadPinDisplayOrder(const Entities::User& currentUser,
                                                                           const Entities::DiscussionThread& thread,
                                                                           uint16_t newValue) const = 0;
+        virtual AuthorizationStatus changeDiscussionThreadApproval(const Entities::User& currentUser,
+                                                                   const Entities::DiscussionThread& thread,
+                                                                   bool newApproval) const = 0;
+        virtual AuthorizationStatus autoApproveDiscussionThread(const Entities::User& currentUser) const = 0;
         virtual AuthorizationStatus deleteDiscussionThread(const Entities::User& currentUser,
                                                            const Entities::DiscussionThread& thread) const = 0;
         virtual AuthorizationStatus mergeDiscussionThreads(const Entities::User& currentUser,

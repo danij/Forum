@@ -622,6 +622,7 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE,         defaultPrivileges.threadMessage.adjustPrivilege);
 
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::VIEW,                     defaultPrivileges.thread.view);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::VIEW_UNAPPROVED,          defaultPrivileges.thread.viewUnapproved);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::VIEW_REQUIRED_PRIVILEGES, defaultPrivileges.thread.viewRequiredPrivileges);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::VIEW_ASSIGNED_PRIVILEGES, defaultPrivileges.thread.viewAssignedPrivileges);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::GET_SUBSCRIBED_USERS,     defaultPrivileges.thread.getSubscribedUsers);
@@ -631,6 +632,7 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::AUTO_APPROVE_MESSAGE,     defaultPrivileges.thread.autoApproveMessage);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::CHANGE_NAME,              defaultPrivileges.thread.changeName);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER, defaultPrivileges.thread.changePinDisplayOrder);
+    store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::CHANGE_APPROVAL,          defaultPrivileges.thread.changeApproval);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::ADD_TAG,                  defaultPrivileges.thread.addTag);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::REMOVE_TAG,               defaultPrivileges.thread.removeTag);
     store.setDiscussionThreadPrivilege(DiscussionThreadPrivilege::DELETE,                   defaultPrivileges.thread.deleteThread);
@@ -677,6 +679,7 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setForumWidePrivilege(ForumWidePrivilege::ADD_DISCUSSION_CATEGORY,                   defaultPrivileges.forumWide.addDiscussionCategory);
     store.setForumWidePrivilege(ForumWidePrivilege::ADD_DISCUSSION_TAG,                        defaultPrivileges.forumWide.addDiscussionTag);
     store.setForumWidePrivilege(ForumWidePrivilege::ADD_DISCUSSION_THREAD,                     defaultPrivileges.forumWide.addDiscussionThread);
+    store.setForumWidePrivilege(ForumWidePrivilege::AUTO_APPROVE_DISCUSSION_THREAD,            defaultPrivileges.forumWide.autoApproveDiscussionThread);
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_OWN_USER_NAME,                      defaultPrivileges.forumWide.changeOwnUserName);
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_OWN_USER_INFO,                      defaultPrivileges.forumWide.changeOwnUserInfo);
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_USER_NAME,                      defaultPrivileges.forumWide.changeAnyUserName);
@@ -784,10 +787,11 @@ UserPtr EntityCollection::createUser(IdType id, User::NameType&& name, Timestamp
 }
 
 DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& createdBy, DiscussionThread::NameType&& name,
-                                                             Timestamp created, VisitDetails creationDetails)
+                                                             Timestamp created, VisitDetails creationDetails,
+                                                             const bool approved)
 {
     auto result = DiscussionThreadPtr(static_cast<DiscussionThreadPtr::IndexType>(impl_->managedEntities.threads.add(
-        id, createdBy, std::move(name), created, creationDetails, *this)));
+        id, createdBy, std::move(name), created, creationDetails, *this, approved)));
     result->pointer_ = result;
     return result;
 }

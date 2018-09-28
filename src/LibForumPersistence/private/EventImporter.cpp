@@ -207,7 +207,8 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_USER_LOGO ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_USER ) },
 
-            { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_DISCUSSION_THREAD ),
+                        DECLARE_FORWARDER( 2, ADD_NEW_DISCUSSION_THREAD ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_NAME ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_DISCUSSION_THREAD ) },
@@ -268,6 +269,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, QUOTE_USER_IN_DISCUSSION_THREAD_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, INCREMENT_USER_LATEST_VISITED_PAGE ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_APPROVAL ) },
         };
     }
 
@@ -332,7 +334,18 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         READ_NONEMPTY_STRING(threadName, data, size);
         CHECK_READ_ALL_DATA(size);
 
-        CHECK_STATUS_CODE(repositories_.discussionThread->addNewDiscussionThread(entityCollection_, id, threadName).status);
+        CHECK_STATUS_CODE(repositories_.discussionThread->addNewDiscussionThread(entityCollection_, id, threadName, 
+                                                                                 true).status);
+    END_DEFAULT_IMPORTER()
+        
+    BEGIN_DEFAULT_IMPORTER( ADD_NEW_DISCUSSION_THREAD, 2 )
+        READ_UUID(id, data, size);
+        READ_NONEMPTY_STRING(threadName, data, size);
+        READ_TYPE(uint32_t, approved, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThread->addNewDiscussionThread(entityCollection_, id, threadName,
+                                                                                 0 != approved).status);
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_NAME, 1 )
@@ -671,6 +684,15 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.discussionThread->changeDiscussionThreadPinDisplayOrder(entityCollection_, id, pinDisplayOrder));
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_APPROVAL, 1 )
+        READ_UUID(threadId, data, size);
+        READ_TYPE(uint32_t, approved, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.discussionThread->changeDiscussionThreadApproval(entityCollection_,
+                                                                                         threadId, 0 != approved));
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD_MESSAGE, 1 )

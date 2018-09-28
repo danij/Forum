@@ -575,7 +575,10 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
                                return;
                            }
 
-                           auto statusWithResource = addNewDiscussionThread(collection, generateUniqueId(), name);
+                           const bool approved = AuthorizationStatus::OK
+                               == authorization_->autoApproveDiscussionThread(*currentUser);
+
+                           auto statusWithResource = addNewDiscussionThread(collection, generateUniqueId(), name, approved);
                            auto& thread = *statusWithResource.resource;
                            if ( ! (status = statusWithResource.status)) return;
 
@@ -608,12 +611,14 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
 
 StatusWithResource<DiscussionThreadPtr> MemoryRepositoryDiscussionThread::addNewDiscussionThread(EntityCollection& collection,
                                                                                                  IdTypeRef id,
-                                                                                                 StringView name)
+                                                                                                 const StringView name,
+                                                                                                 const bool approved)
 {
     auto currentUser = getCurrentUser(collection);
 
     auto thread = collection.createDiscussionThread(id, *currentUser, DiscussionThread::NameType(name),
-                                                    Context::getCurrentTime(), { Context::getCurrentUserIpAddress() });
+                                                    Context::getCurrentTime(), { Context::getCurrentUserIpAddress() },
+                                                    approved);
     thread->updateLastUpdated(thread->latestVisibleChange() = thread->created());
 
     collection.insertDiscussionThread(thread);
@@ -725,6 +730,58 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
     const auto currentUser = getCurrentUser(collection);
 
     threadPtr->updatePinDisplayOrder(newValue);
+    updateThreadLastUpdated(*threadPtr, currentUser);
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadApproval(IdTypeRef id, const bool newApproval,
+                                                                            OutStream& output)
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto threadPtr = collection.threads().findById(id);
+                           if ( ! threadPtr)
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+
+                           if ( ! (status = authorization_->changeDiscussionThreadApproval(*currentUser, *threadPtr, newApproval)))
+                           {
+                               return;
+                           }
+
+                           if ( ! (status = changeDiscussionThreadApproval(collection, id, newApproval))) return;
+
+                           const auto& write = writeEvents();
+                           const auto observerContext = createObserverContext(*currentUser);
+
+                           write.onChangeDiscussionThread(observerContext, *threadPtr, 
+                                                          DiscussionThread::ChangeType::Approval);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadApproval(EntityCollection& collection,
+                                                                            IdTypeRef id, const bool newApproval)
+{
+    DiscussionThreadPtr threadPtr = collection.threads().findById(id);
+    if ( ! threadPtr)
+    {
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    const auto currentUser = getCurrentUser(collection);
+
+    threadPtr->approved() = newApproval;
     updateThreadLastUpdated(*threadPtr, currentUser);
 
     return StatusCode::OK;

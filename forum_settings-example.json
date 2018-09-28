@@ -111,6 +111,7 @@
         },
         "thread": {
             "view": 0,
+            "viewUnapproved": 100,
             "viewRequiredPrivileges": 1,
             "viewAssignedPrivileges": 1,
             "getSubscribedUsers": 30000,
@@ -120,6 +121,7 @@
             "autoApproveMessage": 0,
             "changeName": 1000,
             "changePinDisplayOrder": 5000,
+            "changeApproval": 1000,
             "addTag": 1000,
             "removeTag": 1000,
             "deleteThread": 2000,
@@ -169,6 +171,7 @@
             "addDiscussionCategory": 10000,
             "addDiscussionTag": 10000,
             "addDiscussionThread": 1,
+            "autoApproveDiscussionThread": 0,
             "changeOwnUserName": 10000,
             "changeOwnUserInfo": 1,
             "changeAnyUserName": 30000,

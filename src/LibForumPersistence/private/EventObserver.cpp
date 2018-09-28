@@ -363,15 +363,17 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
     {
         PersistentTimestampType contextTimestamp = context.timestamp;
         auto threadName = thread.name().string();
-
+        const uint32_t approved = thread.approved() ? 1 : 0;
+        
         BlobPart parts[] =
         {
             ADD_CONTEXT_BLOB_PARTS,
             { POINTER(&thread.id().value().data), UuidSize, false },
-            { POINTER(threadName.data()), static_cast<SizeType>(threadName.size()), true }
+            { POINTER(threadName.data()), static_cast<SizeType>(threadName.size()), true },
+            { POINTER(&approved), sizeof(approved), false }
         };
 
-        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD, 1, parts, std::size(parts));
+        recordBlob(EventType::ADD_NEW_DISCUSSION_THREAD, 2, parts, std::size(parts));
     }
 
     void onChangeDiscussionThread(ObserverContext context, const DiscussionThread& thread,
@@ -384,6 +386,9 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
             break;
         case DiscussionThread::PinDisplayOrder:
             onChangeDiscussionThreadPinDisplayOrder(context, thread);
+            break;
+        case DiscussionThread::Approval:
+            onChangeDiscussionThreadApproval(context, thread);
             break;
         default:
             break;
@@ -418,6 +423,20 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         };
 
         recordBlob(EventType::CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER, 1, parts, std::size(parts));
+    }
+        
+    void onChangeDiscussionThreadApproval(ObserverContext context, const DiscussionThread& thread)
+    {
+        PersistentTimestampType contextTimestamp = context.timestamp;
+        const uint32_t approved = thread.approved() ? 1 : 0;
+        BlobPart parts[] =
+        {
+            ADD_CONTEXT_BLOB_PARTS,
+            { POINTER(&thread.id().value().data), UuidSize, false },
+            { POINTER(&approved), sizeof(approved), false }
+        };
+
+        recordBlob(EventType::CHANGE_DISCUSSION_THREAD_APPROVAL, 1, parts, std::size(parts));
     }
 
     void onDeleteDiscussionThread(ObserverContext context, const DiscussionThread& thread)

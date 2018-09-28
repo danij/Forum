@@ -246,6 +246,22 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionThreadPinDisplayOrder(
     return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER, with);
 }
 
+AuthorizationStatus DefaultAuthorization::changeDiscussionThreadApproval(const User& currentUser,
+                                                                         const DiscussionThread& thread,
+                                                                         bool /*newApproval*/) const
+{
+    if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
+
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::CHANGE_APPROVAL, with);
+}
+
+AuthorizationStatus DefaultAuthorization::autoApproveDiscussionThread(const User& currentUser) const
+{
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::AUTO_APPROVE_DISCUSSION_THREAD, with);
+}
+
 AuthorizationStatus DefaultAuthorization::deleteDiscussionThread(const User& currentUser, const DiscussionThread& thread) const
 {
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;

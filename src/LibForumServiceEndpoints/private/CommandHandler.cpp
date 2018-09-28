@@ -410,6 +410,13 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadRepository->changeDiscussionThreadPinDisplayOrder(parameters[0], newDisplayOrder, output);
     }
 
+    COMMAND_HANDLER_METHOD( CHANGE_DISCUSSION_THREAD_APPROVAL )
+    {
+        if ( ! checkMinNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        return discussionThreadRepository->changeDiscussionThreadApproval(parameters[0],
+                                                                          "true" == parameters[1], output);
+    }
+
     COMMAND_HANDLER_METHOD( DELETE_DISCUSSION_THREAD )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
@@ -1184,6 +1191,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setCommandHandler(ADD_DISCUSSION_THREAD);
     setCommandHandler(CHANGE_DISCUSSION_THREAD_NAME);
     setCommandHandler(CHANGE_DISCUSSION_THREAD_PIN_DISPLAY_ORDER);
+    setCommandHandler(CHANGE_DISCUSSION_THREAD_APPROVAL);
     setCommandHandler(DELETE_DISCUSSION_THREAD);
     setCommandHandler(MERGE_DISCUSSION_THREADS);
 

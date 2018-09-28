@@ -106,8 +106,9 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
                                 const SerializationRestriction& restriction)
 {
     const auto allowView = serializationSettings.allowDisplayDiscussionThreadMessage
-            ? (*serializationSettings.allowDisplayDiscussionThreadMessage 
-                && restriction.checkMessageAllowViewApproval(message))
+            ? (*serializationSettings.allowDisplayDiscussionThreadMessage
+                && restriction.checkMessageAllowViewApproval(message)
+                && restriction.checkMessageAllowViewApproval(*message.parentThread()))
             : restriction.isAllowedToViewMessage(message);
 
     if ( ! allowView) return writer.null();
@@ -377,13 +378,14 @@ void writeDiscussionThreadMessages(const Collection& collection, const int_fast3
 JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thread,
                                 const SerializationRestriction& restriction)
 {
-    if ( ! restriction.isAllowed(thread)) return writer.null();
+    if ( ! restriction.isAllowedToViewThread(thread)) return writer.null();
 
     writer
         << objStart
             << propertySafeName("id", thread.id())
             << propertySafeName("name", thread.name())
             << propertySafeName("created", thread.created())
+            << propertySafeName("approved", thread.approved())
             << propertySafeName("latestVisibleChangeAt", thread.latestVisibleChange())
             << propertySafeName("pinned", thread.pinDisplayOrder() > 0)
             << propertySafeName("pinDisplayOrder", thread.pinDisplayOrder())

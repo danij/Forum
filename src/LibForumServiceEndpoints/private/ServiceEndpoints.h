@@ -119,6 +119,7 @@ namespace Forum::Commands
         void remove(Http::RequestState& requestState);
         void changeName(Http::RequestState& requestState);
         void changePinDisplayOrder(Http::RequestState& requestState);
+        void changeApproval(Http::RequestState& requestState);
         void merge(Http::RequestState& requestState);
         void subscribe(Http::RequestState& requestState);
         void unsubscribe(Http::RequestState& requestState);

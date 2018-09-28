@@ -119,6 +119,8 @@ namespace Forum::Authorization
         ADJUST_PRIVILEGE,
 
         AUTO_APPROVE_MESSAGE,
+        VIEW_UNAPPROVED,
+        CHANGE_APPROVAL,
 
         COUNT
     };
@@ -139,7 +141,9 @@ namespace Forum::Authorization
         "delete",
         "merge",
         "adjust_privilege",
-        "auto_approve_message"
+        "auto_approve_message",
+        "view_unapproved",
+        "change_approval"
     };
 
     const DiscussionThreadPrivilege DiscussionThreadPrivilegesToSerialize[] =
@@ -152,6 +156,7 @@ namespace Forum::Authorization
         DiscussionThreadPrivilege::ADD_MESSAGE,
         DiscussionThreadPrivilege::CHANGE_NAME,
         DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER,
+        DiscussionThreadPrivilege::CHANGE_APPROVAL,
         DiscussionThreadPrivilege::ADD_TAG,
         DiscussionThreadPrivilege::REMOVE_TAG,
         DiscussionThreadPrivilege::DELETE,
@@ -290,6 +295,8 @@ namespace Forum::Authorization
         
         NO_THROTTLING,
 
+        AUTO_APPROVE_DISCUSSION_THREAD,
+
         COUNT
     };
 
@@ -333,6 +340,7 @@ namespace Forum::Authorization
         "delete_any_user_logo",
 
         "no_throttling",
+        "auto_approve_discussion_thread"
     };
 
     const ForumWidePrivilege ForumWidePrivilegesToSerialize[] =
@@ -353,6 +361,7 @@ namespace Forum::Authorization
         ForumWidePrivilege::ADD_DISCUSSION_CATEGORY,
         ForumWidePrivilege::ADD_DISCUSSION_TAG,
         ForumWidePrivilege::ADD_DISCUSSION_THREAD,
+        ForumWidePrivilege::AUTO_APPROVE_DISCUSSION_THREAD,
         ForumWidePrivilege::CHANGE_OWN_USER_NAME,
         ForumWidePrivilege::CHANGE_OWN_USER_INFO,
         ForumWidePrivilege::CHANGE_ANY_USER_NAME,

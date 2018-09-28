@@ -58,7 +58,7 @@ namespace Forum::Repository
         StatusCode addNewDiscussionThread(StringView name, OutStream& output) override;
         StatusWithResource<Entities::DiscussionThreadPtr>
                    addNewDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id,
-                                          StringView name) override;
+                                          StringView name, bool approved) override;
 
         StatusCode changeDiscussionThreadName(Entities::IdTypeRef id, StringView newName,
                                               OutStream& output) override;
@@ -68,6 +68,9 @@ namespace Forum::Repository
                                                          OutStream& output) override;
         StatusCode changeDiscussionThreadPinDisplayOrder(Entities::EntityCollection& collection,
                                                          Entities::IdTypeRef id, uint16_t newValue) override;
+        StatusCode changeDiscussionThreadApproval(Entities::IdTypeRef id, bool newApproval, OutStream& output) override;
+        StatusCode changeDiscussionThreadApproval(Entities::EntityCollection& collection,
+                                                  Entities::IdTypeRef id, bool newApproval) override;
         StatusCode deleteDiscussionThread(Entities::IdTypeRef id, OutStream& output) override;
         StatusCode deleteDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
         StatusCode mergeDiscussionThreads(Entities::IdTypeRef fromId, Entities::IdTypeRef intoId,

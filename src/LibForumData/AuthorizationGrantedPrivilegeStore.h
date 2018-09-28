@@ -289,8 +289,24 @@ namespace Forum::Authorization
         bool isAllowedToViewMessage(const Entities::DiscussionThreadMessage& message) const
         {
             return isAllowed(message, DiscussionThreadMessagePrivilege::VIEW)
-                && isAllowed(*message.parentThread(), DiscussionThreadPrivilege::VIEW)
-                && checkMessageAllowViewApproval(message);
+                && checkMessageAllowViewApproval(message)
+                && isAllowedToViewThread(*message.parentThread());
+        }
+
+        bool checkMessageAllowViewApproval(const Entities::DiscussionThread& thread) const
+        {
+            if (thread.approved())
+            {
+                return true;
+            }
+            return (thread.createdBy().id() == userId())
+                || isAllowed(thread, DiscussionThreadPrivilege::VIEW_UNAPPROVED);
+        }
+
+        bool isAllowedToViewThread(const Entities::DiscussionThread& thread) const
+        {
+            return isAllowed(thread, DiscussionThreadPrivilege::VIEW)
+                && checkMessageAllowViewApproval(thread);
         }
 
     private:

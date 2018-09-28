@@ -87,6 +87,10 @@ namespace Forum
             AuthorizationStatus changeDiscussionThreadPinDisplayOrder(const Entities::User& /*currentUser*/,
                                                                       const Entities::DiscussionThread& /*thread*/,
                                                                       uint16_t /*newValue*/) const override { return {}; }
+            AuthorizationStatus changeDiscussionThreadApproval(const Entities::User& /*currentUser*/,
+                                                               const Entities::DiscussionThread& /*thread*/,
+                                                               bool /*newApproval*/) const override { return {}; }
+            AuthorizationStatus autoApproveDiscussionThread(const Entities::User& /*currentUser*/) const override { return {}; }
             AuthorizationStatus deleteDiscussionThread(const Entities::User& /*currentUser*/,
                                                        const Entities::DiscussionThread& /*thread*/) const override { return {}; }
             AuthorizationStatus mergeDiscussionThreads(const Entities::User& /*currentUser*/,

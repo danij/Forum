@@ -96,6 +96,10 @@ namespace Forum::Authorization
         AuthorizationStatus changeDiscussionThreadPinDisplayOrder(const Entities::User& currentUser,
                                                                   const Entities::DiscussionThread& thread,
                                                                   uint16_t newValue) const override;
+        AuthorizationStatus changeDiscussionThreadApproval(const Entities::User& currentUser,
+                                                           const Entities::DiscussionThread& thread,
+                                                           bool newApproval) const override;
+        AuthorizationStatus autoApproveDiscussionThread(const Entities::User& currentUser) const override;
         AuthorizationStatus deleteDiscussionThread(const Entities::User& currentUser,
                                                    const Entities::DiscussionThread& thread) const override;
         AuthorizationStatus mergeDiscussionThreads(const Entities::User& currentUser,

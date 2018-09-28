@@ -191,6 +191,8 @@ namespace Forum::Repository
                                                       OutStream& output) = 0;
         virtual StatusCode changeDiscussionThreadPinDisplayOrder(Entities::IdTypeRef id, uint16_t newValue,
                                                                  OutStream& output) = 0;
+        virtual StatusCode changeDiscussionThreadApproval(Entities::IdTypeRef id, bool newApproval,
+                                                          OutStream& output) = 0;
         virtual StatusCode deleteDiscussionThread(Entities::IdTypeRef id, OutStream& output) = 0;
         virtual StatusCode mergeDiscussionThreads(Entities::IdTypeRef fromId, Entities::IdTypeRef intoId,
                                                   OutStream& output) = 0;
@@ -206,11 +208,13 @@ namespace Forum::Repository
 
         virtual StatusWithResource<Entities::DiscussionThreadPtr>
                 addNewDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id,
-                                       StringView name) = 0;
+                                       StringView name, bool approved) = 0;
         virtual StatusCode changeDiscussionThreadName(Entities::EntityCollection& collection,
                                                       Entities::IdTypeRef id, StringView newName) = 0;
         virtual StatusCode changeDiscussionThreadPinDisplayOrder(Entities::EntityCollection& collection,
                                                                  Entities::IdTypeRef id, uint16_t newValue) = 0;
+        virtual StatusCode changeDiscussionThreadApproval(Entities::EntityCollection& collection,
+                                                          Entities::IdTypeRef id, bool newApproval) = 0;
         virtual StatusCode deleteDiscussionThread(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
         virtual StatusCode mergeDiscussionThreads(Entities::EntityCollection& collection,
                                                   Entities::IdTypeRef fromId, Entities::IdTypeRef intoId) = 0;

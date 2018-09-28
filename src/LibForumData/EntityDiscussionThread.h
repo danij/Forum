@@ -58,7 +58,8 @@ namespace Forum::Entities
                auto messageCount()              const { return messages_.count(); }
 
                auto empty()                     const { return messages_.empty(); }
-
+               auto approved()                  const { return approved_; }
+               
         auto lastUpdated() const
         {
             return lastUpdated_ ? lastUpdated_->at : Timestamp{ 0 };
@@ -105,7 +106,8 @@ namespace Forum::Entities
         {
             None = 0,
             Name,
-            PinDisplayOrder
+            PinDisplayOrder,
+            Approval
         };
 
         typedef Helpers::JsonReadyStringWithSortKey<1> NameType;
@@ -131,12 +133,14 @@ namespace Forum::Entities
         static auto& changeNotifications() { return changeNotifications_; }
 
         DiscussionThread(IdType id, User& createdBy, NameType&& name, Timestamp created, VisitDetails creationDetails,
-                         Authorization::ForumWidePrivilegeStore& forumWidePrivileges)
+                         Authorization::ForumWidePrivilegeStore& forumWidePrivileges, const bool approved)
             : id_(id), created_(created), creationDetails_(creationDetails),
               createdBy_(createdBy), name_(std::move(name)), forumWidePrivileges_(forumWidePrivileges)
         {
             messages_.onPrepareCountChange() = [this]() { changeNotifications_.onPrepareUpdateMessageCount(*this); };
             messages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
+
+            approved_ = approved;
         }
 
         void updateName(NameType&& name)
@@ -183,6 +187,7 @@ namespace Forum::Entities
         */
         auto& visited()    const { return visited_; }
 
+        auto& approved()         { return approved_; }
         auto& createdBy()        { return createdBy_; }
         auto& messages()         { return messages_; }
         auto& tags()             { return tags_; }
@@ -247,7 +252,8 @@ namespace Forum::Entities
         uint16_t pinDisplayOrder_{0};
         mutable std::atomic_int_fast64_t visited_{0};
         bool aboutToBeDeleted_ = false;
-
+        bool approved_ = false;
+        
         boost::container::flat_set<boost::uuids::uuid> visitorsSinceLastEdit_;
 
         boost::container::flat_set<EntityPointer<DiscussionTag>> tags_;
