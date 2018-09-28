@@ -220,7 +220,8 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
 
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageParentThread, true);
                           BoolTemporaryChanger __(serializationSettings.hideVisitedThreadSinceLastChange, true);
-                          TemporaryChanger<UserPtr> ___(serializationSettings.currentUser, currentUser.pointer());
+                          BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
+                          TemporaryChanger<UserPtr> ____(serializationSettings.currentUser, currentUser.pointer());
 
                           status.disable();
 
