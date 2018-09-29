@@ -163,6 +163,8 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         connections.push_back(writeEvents.                         onAddNewUser.connect([this](auto context, auto& user)                           { this->onAddNewUser                         (context, user); }));
         connections.push_back(writeEvents.                         onChangeUser.connect([this](auto context, auto& user, auto change)              { this->onChangeUser                         (context, user, change); }));
         connections.push_back(writeEvents.                         onDeleteUser.connect([this](auto context, auto& user)                           { this->onDeleteUser                         (context, user); }));
+        connections.push_back(writeEvents.                 onSendPrivateMessage.connect([this](auto context, auto& message)                        { this->onSendPrivateMessage                 (context, message); }));
+        connections.push_back(writeEvents.               onDeletePrivateMessage.connect([this](auto context, auto& message)                        { this->onDeletePrivateMessage               (context, message); }));
         connections.push_back(writeEvents.             onAddNewDiscussionThread.connect([this](auto context, auto& thread)                         { this->onAddNewDiscussionThread             (context, thread); }));
         connections.push_back(writeEvents.             onChangeDiscussionThread.connect([this](auto context, auto& thread, auto change)            { this->onChangeDiscussionThread             (context, thread, change); }));
         connections.push_back(writeEvents.             onDeleteDiscussionThread.connect([this](auto context, auto& thread)                         { this->onDeleteDiscussionThread             (context, thread); }));
@@ -357,6 +359,34 @@ struct EventObserver::EventObserverImpl final : private boost::noncopyable
         };
 
         recordBlob(EventType::DELETE_USER, 1, parts, std::size(parts));
+    }
+    
+    void onSendPrivateMessage(ObserverContext context, const PrivateMessage& message)
+    {
+        PersistentTimestampType contextTimestamp = context.timestamp;
+        auto content = message.content().string();
+
+        BlobPart parts[] =
+        {
+            ADD_CONTEXT_BLOB_PARTS,
+            { POINTER(&message.id().value().data), UuidSize, false },
+            { POINTER(&message.destination().id().value().data), UuidSize, false },
+            { POINTER(content.data()), static_cast<SizeType>(content.size()), true },
+        };
+
+        recordBlob(EventType::SEND_PRIVATE_MESSAGE, 1, parts, std::size(parts));
+    }
+    
+    void onDeletePrivateMessage(ObserverContext context, const PrivateMessage& message)
+    {
+        PersistentTimestampType contextTimestamp = context.timestamp;
+        BlobPart parts[] =
+        {
+            ADD_CONTEXT_BLOB_PARTS,
+            { POINTER(&message.id().value().data), UuidSize, false }
+        };
+
+        recordBlob(EventType::DELETE_PRIVATE_MESSAGE, 1, parts, std::size(parts));
     }
 
     void onAddNewDiscussionThread(ObserverContext context, const DiscussionThread& thread)

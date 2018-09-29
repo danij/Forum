@@ -60,6 +60,11 @@ namespace Forum::Authorization
                                                    const Entities::User& user) const = 0;
         virtual AuthorizationStatus deleteUser(const Entities::User& currentUser,
                                                const Entities::User& user) const = 0;
+        virtual AuthorizationStatus sendPrivateMessage(const Entities::User& currentUser,
+                                                       const Entities::User& destinationUser,
+                                                       StringView content) const = 0;
+        virtual AuthorizationStatus deletePrivateMessage(const Entities::User& currentUser,
+                                                         const Entities::PrivateMessage& message) const = 0;
     };
     typedef std::shared_ptr<IUserAuthorization> UserAuthorizationRef;
 

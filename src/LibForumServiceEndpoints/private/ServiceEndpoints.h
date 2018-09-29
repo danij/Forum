@@ -99,6 +99,11 @@ namespace Forum::Commands
         void changeSignature(Http::RequestState& requestState);
         void changeLogo(Http::RequestState& requestState);
         void deleteLogo(Http::RequestState& requestState);
+
+        void getReceivedPrivateMessages(Http::RequestState& requestState);
+        void getSentPrivateMessages(Http::RequestState& requestState);
+        void sendPrivateMessage(Http::RequestState& requestState);
+        void deletePrivateMessage(Http::RequestState& requestState);
     };
 
     class DiscussionThreadsEndpoint : AbstractEndpoint

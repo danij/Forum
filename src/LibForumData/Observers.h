@@ -64,6 +64,8 @@ namespace Forum::Repository
         boost::signals2::signal<void(ObserverContext, const Entities::User&)> onGetUserLogo;
         boost::signals2::signal<void(ObserverContext)> onGetUserVoteHistory;
         boost::signals2::signal<void(ObserverContext)> onGetUserQuotedHistory;
+        boost::signals2::signal<void(ObserverContext)> onGetUserReceivedPrivateMessages;
+        boost::signals2::signal<void(ObserverContext)> onGetUserSentPrivateMessages;
 
         boost::signals2::signal<void(ObserverContext)> onGetDiscussionThreads;
         boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&, uint32_t)> onGetDiscussionThreadById;
@@ -137,6 +139,8 @@ namespace Forum::Repository
         boost::signals2::signal<void(ObserverContext, const Entities::User&)> onAddNewUser;
         boost::signals2::signal<void(ObserverContext, const Entities::User&, Entities::User::ChangeType)> onChangeUser;
         boost::signals2::signal<void(ObserverContext, const Entities::User&)> onDeleteUser;
+        boost::signals2::signal<void(ObserverContext, const Entities::PrivateMessage&)> onSendPrivateMessage;
+        boost::signals2::signal<void(ObserverContext, const Entities::PrivateMessage&)> onDeletePrivateMessage;
 
         boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&)> onAddNewDiscussionThread;
         boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThread&,

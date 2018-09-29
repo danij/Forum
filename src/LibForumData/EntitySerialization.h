@@ -63,11 +63,17 @@ namespace Forum::Entities
         bool hideLatestMessage = false;
         bool hidePrivileges = false;
         bool onlySendCategoryParentId = false;
+        bool allowDisplayPrivateMessageIpAddress = false;
+        bool hidePrivateMessageSource = false;
+        bool hidePrivateMessageDestination = false;
     };
 
     extern thread_local SerializationSettings serializationSettings;
 
     Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThreadMessage& message,
+                                const Authorization::SerializationRestriction& restriction);
+
+    Json::JsonWriter& serialize(Json::JsonWriter& writer, const PrivateMessage& message,
                                 const Authorization::SerializationRestriction& restriction);
 
     Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionThread& thread,

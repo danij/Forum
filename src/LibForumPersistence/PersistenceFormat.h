@@ -112,6 +112,8 @@ namespace Forum::Persistence
         CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL,
         INCREMENT_USER_LATEST_VISITED_PAGE,
         CHANGE_DISCUSSION_THREAD_APPROVAL,
+        SEND_PRIVATE_MESSAGE,
+        DELETE_PRIVATE_MESSAGE,
     };
 
     static constexpr MagicPrefixType MagicPrefix = 0xFFFFFFFFFFFFFFFF;

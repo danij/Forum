@@ -43,6 +43,9 @@ namespace Forum::Repository
         StatusCode getUserVoteHistory(OutStream& output) const override;
         StatusCode getUserQuotedHistory(OutStream& output) const override;
 
+        StatusCode getReceivedPrivateMessages(OutStream& output) const override;
+        StatusCode getSentPrivateMessages(OutStream& output) const override;
+
         StatusCode addNewUser(StringView name, StringView auth, OutStream& output) override;
         StatusWithResource<Entities::UserPtr> addNewUser(Entities::EntityCollection& collection,
                                                          Entities::IdTypeRef id, StringView name, StringView auth) override;
@@ -62,6 +65,13 @@ namespace Forum::Repository
         StatusCode deleteUserLogo(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
         StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) override;
         StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
+
+        StatusCode sendPrivateMessage(Entities::IdTypeRef destinationId, StringView content, OutStream& output) override;
+        StatusWithResource<Entities::PrivateMessagePtr> sendPrivateMessage(
+                Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
+                Entities::IdTypeRef destinationId, StringView content) override;
+        StatusCode deletePrivateMessage(Entities::IdTypeRef id, OutStream& output) override;
+        StatusCode deletePrivateMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) override;
 
         void updateCurrentUserId() override;
 

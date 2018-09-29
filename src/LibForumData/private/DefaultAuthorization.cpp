@@ -145,6 +145,26 @@ AuthorizationStatus DefaultAuthorization::deleteUser(const User& currentUser, co
     return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ANY_USER, with, user.id());
 }
 
+AuthorizationStatus DefaultAuthorization::sendPrivateMessage(const User& currentUser, 
+                                                             const User& destinationUser,
+                                                             StringView /*content*/) const
+{
+    if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
+
+    if (currentUser.id() == destinationUser.id()) return AuthorizationStatus::NOT_ALLOWED;
+
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::SEND_PRIVATE_MESSAGE, with);
+}
+
+AuthorizationStatus DefaultAuthorization::deletePrivateMessage(const User& currentUser, 
+                                                               const PrivateMessage& message) const
+{
+    return (currentUser.id() == message.source().id()) || (currentUser.id() == message.destination().id())
+        ? AuthorizationStatus::OK
+        : AuthorizationStatus::THROTTLED;
+}
+
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadRequiredPrivileges(const User& currentUser,
                                                                                 const DiscussionThread& thread) const
 {

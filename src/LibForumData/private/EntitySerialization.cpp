@@ -218,6 +218,40 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     return writer;
 }
 
+JsonWriter& Entities::serialize(JsonWriter& writer, const PrivateMessage& message,
+                                const SerializationRestriction& restriction)
+{
+    writer
+        << objStart
+            << propertySafeName("id", message.id())
+            << propertySafeName("created", message.created())
+            << propertySafeName("content", message.content());
+
+    if (serializationSettings.allowDisplayPrivateMessageIpAddress)
+    {
+        writeVisitDetails(writer, message.creationDetails());
+    }
+
+    if ( ! serializationSettings.hidePrivateMessageSource)
+    {
+        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
+
+        writer.newPropertyWithSafeName("source");
+        serialize(writer, message.source(), restriction);
+    }
+
+    if ( ! serializationSettings.hidePrivateMessageDestination)
+    {
+        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
+
+        writer.newPropertyWithSafeName("destination");
+        serialize(writer, message.destination(), restriction);
+    }
+
+    writer << objEnd;
+    return writer;
+}
+
 static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage& latestMessage,
                                const SerializationRestriction& restriction)
 {

@@ -296,6 +296,8 @@ namespace Forum::Authorization
         NO_THROTTLING,
 
         AUTO_APPROVE_DISCUSSION_THREAD,
+        SEND_PRIVATE_MESSAGE,
+        VIEW_PRIVATE_MESSAGE_IP_ADDRESS,
 
         COUNT
     };
@@ -340,7 +342,9 @@ namespace Forum::Authorization
         "delete_any_user_logo",
 
         "no_throttling",
-        "auto_approve_discussion_thread"
+        "auto_approve_discussion_thread",
+        "send_private_message",
+        "view_private_message_ip_address",
     };
 
     const ForumWidePrivilege ForumWidePrivilegesToSerialize[] =
@@ -379,6 +383,8 @@ namespace Forum::Authorization
         ForumWidePrivilege::CHANGE_ANY_USER_LOGO,
         ForumWidePrivilege::DELETE_OWN_USER_LOGO,
         ForumWidePrivilege::DELETE_ANY_USER_LOGO,
+        ForumWidePrivilege::SEND_PRIVATE_MESSAGE,
+        ForumWidePrivilege::VIEW_PRIVATE_MESSAGE_IP_ADDRESS,
         ForumWidePrivilege::NO_THROTTLING
     };
 

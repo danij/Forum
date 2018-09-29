@@ -79,6 +79,13 @@ namespace Forum::Configuration
         int_fast32_t maxMessagesCommentsPerPage = 20;
     };
 
+    struct PrivateMessageConfig
+    {
+        int_fast32_t minContentLength = 5;
+        int_fast32_t maxContentLength = 65535;
+        int_fast32_t maxMessagesPerPage = 20;
+    };
+
     struct DiscussionTagConfig
     {
         int_fast16_t minNameLength = 2;
@@ -232,6 +239,8 @@ namespace Forum::Configuration
             PrivilegeValueType addDiscussionTag                     = DenyPrivilegeValue;
             PrivilegeValueType addDiscussionThread                  = DenyPrivilegeValue;
             PrivilegeValueType autoApproveDiscussionThread          = DenyPrivilegeValue;
+            PrivilegeValueType sendPrivateMessage                   = DenyPrivilegeValue;
+            PrivilegeValueType viewPrivateMessageIpAddress          = DenyPrivilegeValue;
             PrivilegeValueType changeOwnUserName                    = DenyPrivilegeValue;
             PrivilegeValueType changeOwnUserInfo                    = DenyPrivilegeValue;
             PrivilegeValueType changeAnyUserName                    = DenyPrivilegeValue;
@@ -278,6 +287,7 @@ namespace Forum::Configuration
         UserConfig user;
         DiscussionThreadConfig discussionThread;
         DiscussionThreadMessageConfig discussionThreadMessage;
+        PrivateMessageConfig privateMessage;
         DiscussionTagConfig discussionTag;
         DiscussionCategoryConfig discussionCategory;
         ServiceConfig service;

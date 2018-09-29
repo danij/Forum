@@ -125,6 +125,9 @@ namespace Forum::Repository
         virtual StatusCode getUserLogo(Entities::IdTypeRef id, OutStream& output) const = 0;
         virtual StatusCode getUserVoteHistory(OutStream& output) const = 0;
         virtual StatusCode getUserQuotedHistory(OutStream& output) const = 0;
+        
+        virtual StatusCode getReceivedPrivateMessages(OutStream& output) const = 0;
+        virtual StatusCode getSentPrivateMessages(OutStream& output) const = 0;
 
         virtual StatusCode addNewUser(StringView name, StringView auth, OutStream& output) = 0;
         virtual StatusCode changeUserName(Entities::IdTypeRef id, StringView newName, OutStream& output) = 0;
@@ -135,6 +138,9 @@ namespace Forum::Repository
         virtual StatusCode deleteUserLogo(Entities::IdTypeRef id, OutStream& output) = 0;
 
         virtual StatusCode deleteUser(Entities::IdTypeRef id, OutStream& output) = 0;
+
+        virtual StatusCode sendPrivateMessage(Entities::IdTypeRef destinationId, StringView content, OutStream& output) = 0;
+        virtual StatusCode deletePrivateMessage(Entities::IdTypeRef id, OutStream& output) = 0;
 
         virtual void updateCurrentUserId() = 0;
     };
@@ -160,6 +166,11 @@ namespace Forum::Repository
                                           StringView newLogo) = 0;
         virtual StatusCode deleteUserLogo(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
         virtual StatusCode deleteUser(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
+
+        virtual StatusWithResource<Entities::PrivateMessagePtr> sendPrivateMessage(
+                Entities::EntityCollection& collection, Entities::IdTypeRef messageId,
+                Entities::IdTypeRef destinationId, StringView content) = 0;
+        virtual StatusCode deletePrivateMessage(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
     };
     typedef std::shared_ptr<IUserDirectWriteRepository> UserDirectWriteRepositoryRef;
 

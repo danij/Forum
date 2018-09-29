@@ -600,6 +600,45 @@ void UsersEndpoint::deleteLogo(Http::RequestState& requestState)
     });
 }
 
+void UsersEndpoint::getReceivedPrivateMessages(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::GET_USER_RECEIVED_PRIVATE_MESSAGES, parameters);
+    });
+}
+
+void UsersEndpoint::getSentPrivateMessages(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::GET_USER_SENT_PRIVATE_MESSAGES, parameters);
+    });
+}
+
+void UsersEndpoint::sendPrivateMessage(Http::RequestState& requestState)
+{
+    handle(requestState,
+        [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(getPointerToEntireRequestBody(requestState.request));
+        return commandHandler.handle(Command::SEND_PRIVATE_MESSAGE, parameters);
+    });
+}
+
+void UsersEndpoint::deletePrivateMessage(Http::RequestState& requestState)
+{
+    handle(requestState,
+        [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::DELETE_PRIVATE_MESSAGE, parameters);
+    });
+}
+
 
 DiscussionThreadsEndpoint::DiscussionThreadsEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
 {

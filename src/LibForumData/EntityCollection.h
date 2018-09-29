@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityDiscussionTagCollection.h"
 #include "EntityDiscussionCategoryCollection.h"
 #include "EntityMessageCommentCollection.h"
+#include "EntityPrivateMessageCollection.h"
 
 #include <memory>
 
@@ -54,6 +55,7 @@ namespace Forum::Entities
         std::unique_ptr<DiscussionTag>*           getDiscussionTagPoolRoot();
         std::unique_ptr<DiscussionCategory>*      getDiscussionCategoryPoolRoot();
         std::unique_ptr<MessageComment>*          getMessageCommentPoolRoot();
+        std::unique_ptr<PrivateMessage>*          getPrivateMessagePoolRoot();
 
         StringView getMessageContentPointer(size_t offset, size_t size);
 
@@ -68,7 +70,9 @@ namespace Forum::Entities
         DiscussionCategoryPtr      createDiscussionCategory(IdType id, DiscussionCategory::NameType&& name,
                                                             Timestamp created, VisitDetails creationDetails);
         MessageCommentPtr          createMessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy,
-                                                       Timestamp created, VisitDetails creationDetails);
+                                                        Timestamp created, VisitDetails creationDetails);
+        PrivateMessagePtr          createPrivateMessage(IdType id, User& source, User& destination, Timestamp created,
+                                                        VisitDetails creationDetails, PrivateMessage::ContentType&& content);
 
         const UserCollection&                         users() const;
               UserCollection&                         users();
@@ -82,6 +86,8 @@ namespace Forum::Entities
               DiscussionCategoryCollection&           categories();
         const MessageCommentCollection&               messageComments() const;
               MessageCommentCollection&               messageComments();
+        const PrivateMessageGlobalCollection&         privateMessages() const;
+              PrivateMessageGlobalCollection&         privateMessages();
 
         void insertUser(UserPtr user);
         void deleteUser(UserPtr user);
@@ -100,6 +106,9 @@ namespace Forum::Entities
 
         void insertMessageComment(MessageCommentPtr comment);
         void deleteMessageComment(MessageCommentPtr comment);
+
+        void insertPrivateMessage(PrivateMessagePtr comment);
+        void deletePrivateMessage(PrivateMessagePtr comment);
 
         void startBatchInsert();
         void stopBatchInsert();

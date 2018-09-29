@@ -32,6 +32,7 @@ namespace Forum::Entities
     class User;
     class DiscussionThread;
     class DiscussionThreadMessage;
+    class PrivateMessage;
     class DiscussionTag;
     class DiscussionCategory;
     class MessageComment;
@@ -55,6 +56,9 @@ namespace Forum::Entities
 
         template<>
         DiscussionThreadMessage* getEntityFromGlobalCollection<DiscussionThreadMessage>(size_t index);
+
+        template<>
+        PrivateMessage* getEntityFromGlobalCollection<PrivateMessage>(size_t index);
 
         template<>
         DiscussionTag* getEntityFromGlobalCollection<DiscussionTag>(size_t index);

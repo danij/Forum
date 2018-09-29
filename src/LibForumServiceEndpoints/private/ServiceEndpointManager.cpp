@@ -125,6 +125,11 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "thread_messages/comment",        HttpVerb::POST,   ENDPOINT_DELEGATE(threadMessagesEndpoint.addComment) },
         { "thread_messages/comment/solved", HttpVerb::PUT,    ENDPOINT_DELEGATE(threadMessagesEndpoint.setCommentSolved) },
 
+        { "private_messages/received",      HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getReceivedPrivateMessages) },
+        { "private_messages/sent",          HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getSentPrivateMessages) },
+        { "private_messages",               HttpVerb::POST,   ENDPOINT_DELEGATE(usersEndpoint.sendPrivateMessage) },
+        { "private_messages",               HttpVerb::DELETE, ENDPOINT_DELEGATE(usersEndpoint.deletePrivateMessage) },
+        
         { "tags",        HttpVerb::GET,    ENDPOINT_DELEGATE(tagsEndpoint.getAll) },
         { "tags",        HttpVerb::POST,   ENDPOINT_DELEGATE(tagsEndpoint.add) },
         { "tags",        HttpVerb::DELETE, ENDPOINT_DELEGATE(tagsEndpoint.remove) },

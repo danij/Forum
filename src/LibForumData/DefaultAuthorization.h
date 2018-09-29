@@ -64,6 +64,10 @@ namespace Forum::Authorization
                                            const Entities::User& user) const override;
         AuthorizationStatus deleteUser(const Entities::User& currentUser,
                                        const Entities::User& user) const override;
+        AuthorizationStatus sendPrivateMessage(const Entities::User& currentUser, const Entities::User& destinationUser, 
+                                               StringView content) const override;
+        AuthorizationStatus deletePrivateMessage(const Entities::User& currentUser,
+                                                 const Entities::PrivateMessage& message) const override;
 
         AuthorizationStatus getDiscussionThreadRequiredPrivileges(const Entities::User& currentUser,
                                                                   const Entities::DiscussionThread& thread) const override;

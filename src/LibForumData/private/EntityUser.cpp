@@ -23,3 +23,4 @@ using namespace Forum::Entities;
 User::ChangeNotification User::changeNotifications_;
 const User::VotedMessagesType User::emptyVotedMessages_;
 const MessageCommentCollectionLowMemory User::emptyMessageComments_;
+const PrivateMessageCollection User::emptyPrivateMessages_;

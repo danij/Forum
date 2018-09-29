@@ -270,6 +270,9 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_MESSAGE_APPROVAL ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, INCREMENT_USER_LATEST_VISITED_PAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_DISCUSSION_THREAD_APPROVAL ) },
+
+            { {/*v0*/}, DECLARE_FORWARDER( 1, SEND_PRIVATE_MESSAGE ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_PRIVATE_MESSAGE ) },
         };
     }
 
@@ -327,6 +330,22 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.user->deleteUser(entityCollection_, id));
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( SEND_PRIVATE_MESSAGE, 1 )
+        READ_UUID(id, data, size);
+        READ_UUID(destinationId, data, size);
+        READ_NONEMPTY_STRING(content, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.user->sendPrivateMessage(entityCollection_, id, destinationId, content).status);
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( DELETE_PRIVATE_MESSAGE, 1 )
+        READ_UUID(id, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.user->deletePrivateMessage(entityCollection_, id));
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( ADD_NEW_DISCUSSION_THREAD, 1 )

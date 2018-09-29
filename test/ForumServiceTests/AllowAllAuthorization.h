@@ -55,6 +55,11 @@ namespace Forum
                                                const Entities::User& /*user*/) const override { return {}; }
             AuthorizationStatus deleteUser(const Entities::User& /*currentUser*/,
                                            const Entities::User& /*user*/) const override { return {}; }
+            AuthorizationStatus sendPrivateMessage(const Entities::User& /*currentUser*/,
+                                                   const Entities::User& /*destinationUser*/,
+                                                   StringView /*content*/) const override { return {}; }
+            AuthorizationStatus deletePrivateMessage(const Entities::User& /*currentUser*/,
+                                                     const Entities::PrivateMessage& /*message*/) const override { return {}; }
 
             AuthorizationStatus getDiscussionThreadRequiredPrivileges(const Entities::User& /*currentUser*/,
                                                                       const Entities::DiscussionThread& /*thread*/) const override { return {}; }

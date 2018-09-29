@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityDiscussionThreadCollection.h"
 #include "EntityDiscussionThreadMessageCollection.h"
 #include "EntityMessageCommentCollection.h"
+#include "EntityPrivateMessageCollection.h"
 #include "SpinLock.h"
 
 #include <atomic>
@@ -79,6 +80,16 @@ namespace Forum::Entities
         {
             if ( ! messageComments_) return emptyMessageComments_;
             return *messageComments_;
+        }
+        const auto& receivedPrivateMessages() const
+        {
+            if ( ! receivedPrivateMessages_) return emptyPrivateMessages_;
+            return *receivedPrivateMessages_;
+        }
+        const auto& sentPrivateMessages() const
+        {
+            if ( ! sentPrivateMessages_) return emptyPrivateMessages_;
+            return *sentPrivateMessages_;
         }
 
         const auto& voteHistory()  const { return voteHistory_; }
@@ -170,6 +181,17 @@ namespace Forum::Entities
             if ( ! messageComments_) messageComments_.reset(new MessageCommentCollectionLowMemory);
             return *messageComments_;
         }
+        auto& receivedPrivateMessages()
+        {
+            if ( ! receivedPrivateMessages_) receivedPrivateMessages_.reset(new PrivateMessageCollection);
+            return *receivedPrivateMessages_;
+        }
+        auto& sentPrivateMessages()
+        {
+            if ( ! sentPrivateMessages_) sentPrivateMessages_.reset(new PrivateMessageCollection);
+            return *sentPrivateMessages_;
+        }
+
         auto& voteHistory()                    { return voteHistory_; }
         auto& voteHistoryLastRetrieved() const { return voteHistoryLastRetrieved_; }
 
@@ -179,6 +201,7 @@ namespace Forum::Entities
 
         auto& voteHistoryNotRead()       const { return voteHistoryNotRead_; }
         auto& quotesHistoryNotRead()     const { return quotesHistoryNotRead_; }
+        auto& privateMessagesNotRead()   const { return privateMessagesNotRead_; }
 
         void updateAuth(std::string&& value)
         {
@@ -252,6 +275,7 @@ namespace Forum::Entities
         static ChangeNotification changeNotifications_;
         static const VotedMessagesType emptyVotedMessages_;
         static const MessageCommentCollectionLowMemory emptyMessageComments_;
+        static const PrivateMessageCollection emptyPrivateMessages_;
 
         IdType id_;
         Timestamp created_{0};
@@ -283,6 +307,7 @@ namespace Forum::Entities
 
         mutable std::atomic<uint16_t> voteHistoryNotRead_{ 0 };
         mutable std::atomic<uint16_t> quotesHistoryNotRead_{ 0 };
+        mutable std::atomic<uint16_t> privateMessagesNotRead_{ 0 };
 
         static constexpr size_t MaxQuotesInHistory = 64;
         boost::circular_buffer_space_optimized<IdType> quoteHistory_{ MaxQuotesInHistory };
@@ -291,6 +316,9 @@ namespace Forum::Entities
 
         mutable std::unordered_map<IdType, uint32_t> latestThreadPageVisited_;
         mutable Helpers::SpinLock latestThreadPageVisitedLock_;
+
+        std::unique_ptr<PrivateMessageCollection> receivedPrivateMessages_;
+        std::unique_ptr<PrivateMessageCollection> sentPrivateMessages_;
     };
 
     typedef EntityPointer<User> UserPtr;

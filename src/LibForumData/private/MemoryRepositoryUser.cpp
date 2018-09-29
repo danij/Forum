@@ -134,6 +134,8 @@ StatusCode MemoryRepositoryUser::getCurrentUser(OutStream& output) const
 
                               writer.newPropertyWithSafeName("newReceivedVotesNr") << currentUser.voteHistoryNotRead();
                               writer.newPropertyWithSafeName("newReceivedQuotesNr") << currentUser.quotesHistoryNotRead();
+                              writer.newPropertyWithSafeName("newReceivedPrivateMessagesNr") 
+                                      << currentUser.privateMessagesNotRead();
                           }
                       
                           writer.endObject();
@@ -685,6 +687,80 @@ StatusCode MemoryRepositoryUser::getUserQuotedHistory(OutStream& output) const
     return status;
 }
 
+StatusCode MemoryRepositoryUser::getReceivedPrivateMessages(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+                                                    
+                          if (currentUser.id() == anonymousUserId())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          
+                          status = StatusCode::OK;
+                          status.disable();
+                          
+                          const auto pageSize = getGlobalConfig()->privateMessage.maxMessagesPerPage;
+                          const auto& displayContext = Context::getDisplayContext();
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                               currentUser.id(), Context::getCurrentTime());
+                          BoolTemporaryChanger _(serializationSettings.hidePrivateMessageDestination, true);
+                          BoolTemporaryChanger __(serializationSettings.allowDisplayPrivateMessageIpAddress, 
+                                  restriction.isAllowed(ForumWidePrivilege::VIEW_PRIVATE_MESSAGE_IP_ADDRESS));
+
+                          writeEntitiesWithPagination(currentUser.receivedPrivateMessages().byCreated(), "messages",
+                                                      output, displayContext.pageNumber, pageSize, false, restriction);
+                          
+                          readEvents().onGetUserReceivedPrivateMessages(createObserverContext(currentUser));
+
+                          currentUser.privateMessagesNotRead() = 0;
+                      });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::getSentPrivateMessages(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+                                                    
+                          if (currentUser.id() == anonymousUserId())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          
+                          status = StatusCode::OK;
+                          status.disable();
+                          
+                          const auto pageSize = getGlobalConfig()->privateMessage.maxMessagesPerPage;
+                          const auto& displayContext = Context::getDisplayContext();
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                                               currentUser.id(), Context::getCurrentTime());
+                          BoolTemporaryChanger _(serializationSettings.hidePrivateMessageSource, true);
+                          BoolTemporaryChanger __(serializationSettings.allowDisplayPrivateMessageIpAddress,
+                                  restriction.isAllowed(ForumWidePrivilege::VIEW_PRIVATE_MESSAGE_IP_ADDRESS));
+
+                          writeEntitiesWithPagination(currentUser.sentPrivateMessages().byCreated(), "messages",
+                                                      output, displayContext.pageNumber, pageSize, false, restriction);
+
+                          readEvents().onGetUserSentPrivateMessages(createObserverContext(currentUser));
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, OutStream& output)
 {
     StatusWriter status(output);
@@ -1173,6 +1249,136 @@ StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdType
     }
 
     collection.deleteUser(*it);
+
+    return StatusCode::OK;
+}
+
+StatusCode MemoryRepositoryUser::sendPrivateMessage(IdTypeRef destinationId, StringView content, OutStream& output)
+{
+    StatusWriter status(output);
+    if ( ! destinationId)
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+
+    const auto config = getGlobalConfig();
+    const auto validationCode = validateString(content, INVALID_PARAMETERS_FOR_EMPTY_STRING,
+                                               config->privateMessage.minContentLength,
+                                               config->privateMessage.maxContentLength,
+                                               &MemoryRepositoryBase::doesNotContainLeadingOrTrailingWhitespace);
+    if (validationCode != StatusCode::OK)
+    {
+        return status = validationCode;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+
+                           auto& usersIndex = collection.users().byId();
+                           auto usersIt = usersIndex.find(destinationId);
+                           if (usersIt == usersIndex.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+
+                           if ( ! (status = authorization_->sendPrivateMessage(*currentUser, **usersIt, content)))
+                           {
+                               return;
+                           }
+
+                           auto statusWithResource = sendPrivateMessage(collection, generateUniqueId(),
+                                                                        destinationId, content);
+                           if ( ! (status = statusWithResource.status)) return;
+
+                           auto& messagePtr = statusWithResource.resource;
+                           writeEvents().onSendPrivateMessage(createObserverContext(*currentUser), *messagePtr);
+                       });
+    return status;
+}
+
+StatusWithResource<PrivateMessagePtr> MemoryRepositoryUser::sendPrivateMessage(EntityCollection& collection, 
+                                                                               IdTypeRef messageId,
+                                                                               IdTypeRef destinationId, 
+                                                                               const StringView content)
+{
+    User& sourceUser = *Repository::getCurrentUser(collection);
+
+    auto& messageIndexById = collection.privateMessages().byId();
+    if (messageIndexById.find(messageId) != messageIndexById.end())
+    {
+        FORUM_LOG_ERROR << "A private message with this id already exists: " << static_cast<std::string>(messageId);
+        return StatusCode::ALREADY_EXISTS;
+    }
+
+    auto& userIndexById = collection.users().byId();
+    const auto it = userIndexById.find(destinationId);
+    if (it == userIndexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(destinationId);
+        return StatusCode::NOT_FOUND;
+    }
+    UserPtr destinationUserPtr = *it;
+    User& destinationUser = *destinationUserPtr;
+
+    const auto messagePtr = collection.createPrivateMessage(messageId, sourceUser, destinationUser, 
+                                                            Context::getCurrentTime(),
+                                                            { Context::getCurrentUserIpAddress() }, 
+                                                            PrivateMessage::ContentType(content));
+    collection.insertPrivateMessage(messagePtr);
+
+    sourceUser.sentPrivateMessages().add(messagePtr);
+    destinationUser.receivedPrivateMessages().add(messagePtr);
+    destinationUser.privateMessagesNotRead() += 1;
+
+    return messagePtr;
+}
+
+StatusCode MemoryRepositoryUser::deletePrivateMessage(IdTypeRef id, OutStream& output)
+{
+    StatusWriter status(output);
+    if ( ! id)
+    {
+        return status = StatusCode::INVALID_PARAMETERS;
+    }
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+                           auto& indexById = collection.privateMessages().byId();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           if ( ! (status = authorization_->deletePrivateMessage(*currentUser, **it)))
+                           {
+                               return;
+                           }
+
+                           //make sure the message is not deleted before being passed to the observers
+                           writeEvents().onDeletePrivateMessage(createObserverContext(*currentUser), **it);
+
+                           status = deletePrivateMessage(collection, id);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::deletePrivateMessage(EntityCollection& collection, IdTypeRef id)
+{
+    auto& indexById = collection.privateMessages().byId();
+    const auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find private message: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    collection.deletePrivateMessage(*it);
 
     return StatusCode::OK;
 }

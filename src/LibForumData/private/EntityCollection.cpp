@@ -42,6 +42,16 @@ static thread_local bool alsoDeleteThreadsFromUser = true;
  * Used to prevent the individual removal of message from a user's created messages collection when deleting a user
  */
 static thread_local bool alsoDeleteMessagesFromUser = true;
+/**
+ * Used to prevent the individual removal of private message from a user's sent private messages collection
+ * when deleting a user
+ */
+static thread_local bool deletePrivateMessageFromSource = true;
+/**
+* Used to prevent the individual removal of private message from a user's received private messages collection
+* when deleting a user
+*/
+static thread_local bool deletePrivateMessageFromDestination = true;
 
 struct EntityCollection::Impl
 {
@@ -53,6 +63,7 @@ struct EntityCollection::Impl
         VectorWithFreeQueue<DiscussionTag> tags;
         VectorWithFreeQueue<DiscussionCategory> categories;
         VectorWithFreeQueue<MessageComment> messageComments;
+        VectorWithFreeQueue<PrivateMessage> privateMessages;
 
     } managedEntities;
 
@@ -62,6 +73,7 @@ struct EntityCollection::Impl
     DiscussionTagCollection tags_;
     DiscussionCategoryCollection categories_;
     MessageCommentCollection messageComments_;
+    PrivateMessageGlobalCollection privateMessages_;
 
     GrantedPrivilegeStore grantedPrivileges_;
 
@@ -152,6 +164,26 @@ struct EntityCollection::Impl
                 //Each discussion thread holds a reference to the user that created it
                 //As such, delete the discussion thread before deleting the user
                 deleteDiscussionThread(thread, true);
+            }
+        }
+        {
+            //no need to delete the private message from the user's received collection
+            //as we're deleting the whole user anyway
+            BoolTemporaryChanger changer(deletePrivateMessageFromDestination, false);
+            for (const auto messagePtr : user.receivedPrivateMessages().byId())
+            {
+                assert(messagePtr);
+                deletePrivateMessage(messagePtr);
+            }
+        }
+        {
+            //no need to delete the private message from the user's sent collection
+            //as we're deleting the whole user anyway
+            BoolTemporaryChanger changer(deletePrivateMessageFromSource, false);
+            for (const auto messagePtr : user.sentPrivateMessages().byId())
+            {
+                assert(messagePtr);
+                deletePrivateMessage(messagePtr);
             }
         }
 
@@ -375,6 +407,34 @@ struct EntityCollection::Impl
         user.messageComments().remove(commentPtr);
 
         managedEntities.messageComments.remove(commentPtr.index());
+    }
+
+    void insertPrivateMessage(const PrivateMessagePtr messagePtr)
+    {
+        assert(messagePtr);
+        privateMessages_.add(messagePtr);
+    }
+
+    void deletePrivateMessage(PrivateMessagePtr messagePtr)
+    {
+        assert(messagePtr);
+        if ( ! privateMessages_.remove(messagePtr))
+        {
+            return;
+        }
+        PrivateMessage& message = *messagePtr;
+
+        if (deletePrivateMessageFromSource)
+        {
+            User& sourceUser = message.source();
+            sourceUser.sentPrivateMessages().remove(messagePtr);
+        }
+        if (deletePrivateMessageFromDestination)
+        {
+            User& destinationUser = message.destination();
+            destinationUser.receivedPrivateMessages().remove(messagePtr);
+        }
+        managedEntities.privateMessages.remove(messagePtr.index());
     }
 
     void setEventListeners()
@@ -680,6 +740,8 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setForumWidePrivilege(ForumWidePrivilege::ADD_DISCUSSION_TAG,                        defaultPrivileges.forumWide.addDiscussionTag);
     store.setForumWidePrivilege(ForumWidePrivilege::ADD_DISCUSSION_THREAD,                     defaultPrivileges.forumWide.addDiscussionThread);
     store.setForumWidePrivilege(ForumWidePrivilege::AUTO_APPROVE_DISCUSSION_THREAD,            defaultPrivileges.forumWide.autoApproveDiscussionThread);
+    store.setForumWidePrivilege(ForumWidePrivilege::SEND_PRIVATE_MESSAGE,                      defaultPrivileges.forumWide.sendPrivateMessage);
+    store.setForumWidePrivilege(ForumWidePrivilege::VIEW_PRIVATE_MESSAGE_IP_ADDRESS,           defaultPrivileges.forumWide.viewPrivateMessageIpAddress);
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_OWN_USER_NAME,                      defaultPrivileges.forumWide.changeOwnUserName);
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_OWN_USER_INFO,                      defaultPrivileges.forumWide.changeOwnUserInfo);
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_USER_NAME,                      defaultPrivileges.forumWide.changeAnyUserName);
@@ -773,6 +835,11 @@ std::unique_ptr<MessageComment>* EntityCollection::getMessageCommentPoolRoot()
     return impl_->managedEntities.messageComments.data();
 }
 
+std::unique_ptr<PrivateMessage>* EntityCollection::getPrivateMessagePoolRoot()
+{
+    return impl_->managedEntities.privateMessages.data();
+}
+
 StringView EntityCollection::getMessageContentPointer(size_t offset, size_t size)
 {
     return impl_->getMessageContentPointer(offset, size);
@@ -828,6 +895,13 @@ MessageCommentPtr EntityCollection::createMessageComment(IdType id, DiscussionTh
 {
     return MessageCommentPtr(static_cast<MessageCommentPtr::IndexType>(impl_->managedEntities.messageComments.add(
         id, message, createdBy, created, creationDetails)));
+}
+
+PrivateMessagePtr EntityCollection::createPrivateMessage(IdType id, User& source, User& destination, Timestamp created,
+                                                         VisitDetails creationDetails, PrivateMessage::ContentType&& content)
+{
+    return PrivateMessagePtr(static_cast<PrivateMessagePtr::IndexType>(impl_->managedEntities.privateMessages.add(
+        id, source, destination, created, creationDetails, std::move(content))));
 }
 
 
@@ -891,6 +965,16 @@ MessageCommentCollection& EntityCollection::messageComments()
     return impl_->messageComments_;
 }
 
+const PrivateMessageGlobalCollection& EntityCollection::privateMessages() const
+{
+    return impl_->privateMessages_;
+}
+
+PrivateMessageGlobalCollection& EntityCollection::privateMessages()
+{
+    return impl_->privateMessages_;
+}
+
 void EntityCollection::insertUser(UserPtr user)
 {
     impl_->insertUser(user);
@@ -949,6 +1033,16 @@ void EntityCollection::insertMessageComment(MessageCommentPtr comment)
 void EntityCollection::deleteMessageComment(MessageCommentPtr comment)
 {
     impl_->deleteMessageComment(comment);
+}
+
+void EntityCollection::insertPrivateMessage(PrivateMessagePtr message)
+{
+    impl_->insertPrivateMessage(message);
+}
+
+void EntityCollection::deletePrivateMessage(PrivateMessagePtr message)
+{
+    impl_->deletePrivateMessage(message);
 }
 
 void EntityCollection::startBatchInsert()

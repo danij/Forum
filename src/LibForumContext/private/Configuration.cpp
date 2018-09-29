@@ -91,6 +91,10 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(discussionThreadMessage.maxCommentLength);
     LOAD_CONFIG_VALUE(discussionThreadMessage.maxMessagesCommentsPerPage);
 
+    LOAD_CONFIG_VALUE(privateMessage.minContentLength);
+    LOAD_CONFIG_VALUE(privateMessage.maxContentLength);
+    LOAD_CONFIG_VALUE(privateMessage.maxMessagesPerPage);
+
     LOAD_CONFIG_VALUE(discussionTag.minNameLength);
     LOAD_CONFIG_VALUE(discussionTag.maxNameLength);
     LOAD_CONFIG_VALUE(discussionTag.maxUiBlobSize);
@@ -202,6 +206,8 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.addDiscussionTag);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.addDiscussionThread);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.autoApproveDiscussionThread);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.sendPrivateMessage);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.viewPrivateMessageIpAddress);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeOwnUserName);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeOwnUserInfo);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserName);

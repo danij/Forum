@@ -294,6 +294,16 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->getUserQuotedHistory(output);
     }
 
+    COMMAND_HANDLER_METHOD( GET_USER_RECEIVED_PRIVATE_MESSAGES )
+    {
+        return userRepository->getReceivedPrivateMessages(output);
+    }
+    
+    COMMAND_HANDLER_METHOD( GET_USER_SENT_PRIVATE_MESSAGES )
+    {
+        return userRepository->getSentPrivateMessages(output);
+    }
+
     COMMAND_HANDLER_METHOD( CHANGE_USER_NAME )
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
@@ -334,11 +344,27 @@ struct CommandHandler::CommandHandlerImpl
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return userRepository->deleteUserLogo(parameters[0], output);
     }
-
+    
     COMMAND_HANDLER_METHOD( DELETE_USER )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return userRepository->deleteUser(parameters[0], output);
+    }
+    
+    COMMAND_HANDLER_METHOD( SEND_PRIVATE_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
+
+        return userRepository->sendPrivateMessage(parameters[0], normalizedParam, output);
+    }
+    
+    COMMAND_HANDLER_METHOD( DELETE_PRIVATE_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return userRepository->deletePrivateMessage(parameters[0], output);
     }
 
     COMMAND_HANDLER_METHOD_SIMPLE( GET_DISCUSSION_THREADS_BY_NAME )
@@ -1187,6 +1213,8 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setCommandHandler(CHANGE_USER_LOGO);
     setCommandHandler(DELETE_USER_LOGO);
     setCommandHandler(DELETE_USER);
+    setCommandHandler(SEND_PRIVATE_MESSAGE);
+    setCommandHandler(DELETE_PRIVATE_MESSAGE);
 
     setCommandHandler(ADD_DISCUSSION_THREAD);
     setCommandHandler(CHANGE_DISCUSSION_THREAD_NAME);
@@ -1273,6 +1301,8 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_USER_LOGO);
     setViewHandler(GET_USER_VOTE_HISTORY);
     setViewHandler(GET_USER_QUOTED_HISTORY);
+    setViewHandler(GET_USER_RECEIVED_PRIVATE_MESSAGES);
+    setViewHandler(GET_USER_SENT_PRIVATE_MESSAGES);
 
     setViewHandler(GET_DISCUSSION_THREADS_BY_NAME);
     setViewHandler(GET_DISCUSSION_THREADS_BY_CREATED);

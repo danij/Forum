@@ -36,6 +36,12 @@
         "maxCommentLength": 1024,
         "maxMessagesCommentsPerPage": 20
     },
+    
+    "privateMessage": {
+        "minContentLength": 5,
+        "maxContentLength": 65535,
+        "maxMessagesPerPage": 20
+    },
 
     "discussionTag": {
         "minNameLength": 2,
@@ -172,6 +178,8 @@
             "addDiscussionTag": 10000,
             "addDiscussionThread": 1,
             "autoApproveDiscussionThread": 0,
+            "sendPrivateMessage": 1,
+            "viewPrivateMessageIpAddress": 10000,
             "changeOwnUserName": 10000,
             "changeOwnUserInfo": 1,
             "changeAnyUserName": 30000,

@@ -65,6 +65,12 @@ DiscussionThreadMessage* Private::getEntityFromGlobalCollection<DiscussionThread
 }
 
 template<>
+PrivateMessage* Private::getEntityFromGlobalCollection<PrivateMessage>(const size_t index)
+{
+    return getGlobalEntityCollectionInline().getPrivateMessagePoolRoot()[index].get();
+}
+
+template<>
 DiscussionTag* Private::getEntityFromGlobalCollection<DiscussionTag>(const size_t index)
 {
     return getGlobalEntityCollectionInline().getDiscussionTagPoolRoot()[index].get();
