@@ -30,6 +30,17 @@ namespace Forum::Entities
     public:
         typedef typename std::vector<T>::size_type IndexType;
 
+        VectorWithFreeQueue()
+        {
+            vector_.reserve(InitialNumberOfItems);
+        }
+
+        ~VectorWithFreeQueue() = default;
+        VectorWithFreeQueue(const VectorWithFreeQueue&) = default;
+        VectorWithFreeQueue(VectorWithFreeQueue&&) = default;
+        VectorWithFreeQueue& operator=(const VectorWithFreeQueue&) = default;
+        VectorWithFreeQueue& operator=(VectorWithFreeQueue&&) = default;
+
         template<class... Args>
         IndexType add(Args&&... args)
         {
@@ -61,7 +72,7 @@ namespace Forum::Entities
     private:
 
         static constexpr size_t InitialNumberOfItems = 131072;
-        std::vector<std::unique_ptr<T>> vector_{ InitialNumberOfItems };
+        std::vector<std::unique_ptr<T>> vector_;
 
         std::queue<IndexType> freeIndexes_;
     };
