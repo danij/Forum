@@ -170,6 +170,7 @@ export RESET_PASSWORD_CONFIRMATION_URL="https://host/auth/custom/confirm_reset_p
 export RESET_PASSWORD_TIMEOUT_SECONDS="600"
 export RESET_PASSWORD_NEW_PASSWORD_SIZE="16"
 export PASSWORD_CHANGE_NOTIFICATION_TITLE="Forum Password Change Notification"
+export RECAPTCHA_SECRET_KEY="from the reCAPTCHA admin page" #to prevent robots from registering accounts
 ```
     
 The confirmation email template can be adjusted at `register_confirmation_template.html`.
@@ -294,7 +295,7 @@ Edit `dist/dic/terms_of_service.md` and add appropriate Terms Of Service.
 Edit the `nginx` sites configuration (located, e.g. under `/etc/nginx/sites-available/default` or `/etc/nginx/nginx.conf`)
 
 ```
-add_header Content-Security-Policy "default-src 'none'; script-src 'self'; connect-src 'self'; font-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/; base-uri 'self'; form-action 'self'; frame-ancestors 'self'" always;
+add_header Content-Security-Policy "default-src 'none'; script-src 'self' https://www.google.com/ https://www.gstatic.com/; connect-src 'self'; font-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-src https://www.youtube.com/ https://www.google.com/; base-uri 'self'; form-action 'self'; frame-ancestors 'self'" always;
 add_header X-Frame-Options "SAMEORIGIN" always;
 add_header X-Xss-Protection "1; mode=block" always;
 add_header X-Content-Type-Options "nosniff" always;
