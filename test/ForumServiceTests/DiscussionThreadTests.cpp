@@ -1541,7 +1541,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_messages_created_by_that_user 
     BOOST_REQUIRE_EQUAL("User1", thread.messages[1].createdBy.name);
 }
 
-BOOST_AUTO_TEST_CASE( Discussion_threads_include_info_about_latest_message )
+BOOST_AUTO_TEST_CASE( Discussion_threads_include_info_about_latest_message_only_when_requesting_multiple_threads )
 {
     auto handler = createCommandHandler();
 
@@ -1602,32 +1602,6 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_include_info_about_latest_message )
     BOOST_REQUIRE_EQUAL(2000, threads[1].latestMessage.createdBy.lastSeen);
     BOOST_REQUIRE_EQUAL(0, threads[1].latestMessage.createdBy.threadCount);
     BOOST_REQUIRE_EQUAL(1, threads[1].latestMessage.createdBy.messageCount);
-
-    auto thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread1Id })
-                                      .get_child("thread"));
-
-    BOOST_REQUIRE_EQUAL("Abc", thread.name);
-    BOOST_REQUIRE_EQUAL(1000, thread.created);
-    BOOST_REQUIRE_EQUAL(3000, thread.latestMessage.created);
-    BOOST_REQUIRE_EQUAL(user1, thread.latestMessage.createdBy.id);
-    BOOST_REQUIRE_EQUAL("User1", thread.latestMessage.createdBy.name);
-    BOOST_REQUIRE_EQUAL(500, thread.latestMessage.createdBy.created);
-    BOOST_REQUIRE_EQUAL(3000, thread.latestMessage.createdBy.lastSeen);
-    BOOST_REQUIRE_EQUAL(2, thread.latestMessage.createdBy.threadCount);
-    BOOST_REQUIRE_EQUAL(2, thread.latestMessage.createdBy.messageCount);
-
-    thread = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
-                                      .get_child("thread"));
-
-    BOOST_REQUIRE_EQUAL("Def", thread.name);
-    BOOST_REQUIRE_EQUAL(1000, thread.created);
-    BOOST_REQUIRE_EQUAL(2000, thread.latestMessage.created);
-    BOOST_REQUIRE_EQUAL(user2, thread.latestMessage.createdBy.id);
-    BOOST_REQUIRE_EQUAL("User2", thread.latestMessage.createdBy.name);
-    BOOST_REQUIRE_EQUAL(500, thread.latestMessage.createdBy.created);
-    BOOST_REQUIRE_EQUAL(2000, thread.latestMessage.createdBy.lastSeen);
-    BOOST_REQUIRE_EQUAL(0, thread.latestMessage.createdBy.threadCount);
-    BOOST_REQUIRE_EQUAL(1, thread.latestMessage.createdBy.messageCount);
 }
 
 BOOST_AUTO_TEST_CASE( Latest_discussion_message_of_thread_includes_message_content )
