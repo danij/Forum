@@ -67,5 +67,5 @@ namespace Forum::Entities
     };
 
     typedef EntityPointer<PrivateMessage> PrivateMessagePtr;
-    typedef EntityPointer<const PrivateMessage> PrivateConstPtr;
+    typedef EntityPointer<const PrivateMessage> PrivateMessageConstPtr;
 }
