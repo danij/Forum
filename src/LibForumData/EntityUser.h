@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityDiscussionThreadMessageCollection.h"
 #include "EntityMessageCommentCollection.h"
 #include "EntityPrivateMessageCollection.h"
+#include "EntityAttachmentCollection.h"
 #include "SpinLock.h"
 
 #include <atomic>
@@ -91,9 +92,16 @@ namespace Forum::Entities
             if ( ! sentPrivateMessages_) return emptyPrivateMessages_;
             return *sentPrivateMessages_;
         }
+        const auto& attachments() const
+        {
+            if ( ! attachments_) return emptyAttachments_;
+            return *attachments_;
+        }
 
-        const auto& voteHistory()  const { return voteHistory_; }
-        const auto& quoteHistory() const { return quoteHistory_; }
+        const auto& voteHistory()     const { return voteHistory_; }
+        const auto& quoteHistory()    const { return quoteHistory_; }
+
+              auto  attachmentQuota() const { return attachmentQuota_; }
 
         enum ChangeType : uint32_t
         {
@@ -191,6 +199,11 @@ namespace Forum::Entities
             if ( ! sentPrivateMessages_) sentPrivateMessages_.reset(new PrivateMessageCollection);
             return *sentPrivateMessages_;
         }
+        auto& attachments()
+        {
+            if ( ! attachments_) attachments_.reset(new AttachmentCollection);
+            return *attachments_;
+        }
 
         auto& voteHistory()                    { return voteHistory_; }
         auto& voteHistoryLastRetrieved() const { return voteHistoryLastRetrieved_; }
@@ -202,6 +215,8 @@ namespace Forum::Entities
         auto& voteHistoryNotRead()       const { return voteHistoryNotRead_; }
         auto& quotesHistoryNotRead()     const { return quotesHistoryNotRead_; }
         auto& privateMessagesNotRead()   const { return privateMessagesNotRead_; }
+
+        auto& attachmentQuota()                { return attachmentQuota_; }
 
         void updateAuth(std::string&& value)
         {
@@ -276,6 +291,7 @@ namespace Forum::Entities
         static const VotedMessagesType emptyVotedMessages_;
         static const MessageCommentCollectionLowMemory emptyMessageComments_;
         static const PrivateMessageCollection emptyPrivateMessages_;
+        static const AttachmentCollection emptyAttachments_;
 
         IdType id_;
         Timestamp created_{0};
@@ -289,6 +305,7 @@ namespace Forum::Entities
         std::string logo_;
 
         Timestamp lastSeen_{0};
+        boost::optional<uint64_t> attachmentQuota_{};
 
         DiscussionThreadCollectionLowMemory threads_;
         DiscussionThreadCollectionLowMemory subscribedThreads_;
@@ -319,6 +336,8 @@ namespace Forum::Entities
 
         std::unique_ptr<PrivateMessageCollection> receivedPrivateMessages_;
         std::unique_ptr<PrivateMessageCollection> sentPrivateMessages_;
+
+        std::unique_ptr<AttachmentCollection> attachments_;
     };
 
     typedef EntityPointer<User> UserPtr;

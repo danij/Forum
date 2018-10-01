@@ -21,11 +21,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "AuthorizationPrivileges.h"
 #include "EntityCommonTypes.h"
 #include "EntityMessageCommentCollection.h"
+#include "EntityAttachment.h"
 #include "StringHelpers.h"
 
 #include <string>
 
 #include <boost/container/flat_map.hpp>
+#include <boost/container/flat_set.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
@@ -44,9 +46,11 @@ namespace Forum::Entities
     {
     public:
         typedef int_fast32_t VoteScoreType;
-        //using flat maps as they use less memory than tree/hash based maps
+        //using flat maps/sets as they use less memory than tree/hash based maps/sets
         //number of votes/message will usually be small
         typedef boost::container::flat_map<EntityPointer<User>, Timestamp> VoteCollection;
+        //number of attachments will usually be small
+        typedef boost::container::flat_set<AttachmentPtr> AttachmentCollection;
 
         const auto& id()                  const { return id_; }
 
@@ -63,6 +67,12 @@ namespace Forum::Entities
             static const MessageCommentCollectionLowMemory emptyMessageCommentCollection;
 
             return comments_ ? *comments_ : emptyMessageCommentCollection;
+        }
+        auto attachments() const
+        {
+            static const AttachmentCollection emptyAttachmentCollection;
+
+            return Helpers::toConst(attachments_ ? *attachments_ : emptyAttachmentCollection);
         }
         auto solvedCommentsCount()        const { return solvedCommentsCount_; }
         auto approved()                   const { return 0 != approved_; }
@@ -176,6 +186,22 @@ namespace Forum::Entities
             if ( ! comments_) return;
             comments_->remove(comment);
         }
+        auto& attachments()
+        {
+            static const AttachmentCollection emptyAttachmentCollection;
+
+            return attachments_ ? *attachments_ : emptyAttachmentCollection;
+        }
+        void  addAttachment(const AttachmentPtr attachmentPtr)
+        {
+            if ( ! attachments_) attachments_.reset(new AttachmentCollection);
+            attachments_->insert(attachmentPtr);
+        }
+        void  removeAttachment(const AttachmentPtr attachmentPtr)
+        {
+            if ( ! attachments_) return;
+            attachments_->erase(attachmentPtr);
+        }
 
         void incrementSolvedCommentsCount() { solvedCommentsCount_ += 1; }
         void decrementSolvedCommentsCount() { solvedCommentsCount_ -= 1; }
@@ -265,6 +291,8 @@ namespace Forum::Entities
 
         std::unique_ptr<VoteCollection> upVotes_;
         std::unique_ptr<VoteCollection> downVotes_;
+
+        std::unique_ptr<AttachmentCollection> attachments_;
     };
 
     typedef EntityPointer<DiscussionThreadMessage> DiscussionThreadMessagePtr;

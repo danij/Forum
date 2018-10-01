@@ -52,6 +52,10 @@ static thread_local bool deletePrivateMessageFromSource = true;
 * when deleting a user
 */
 static thread_local bool deletePrivateMessageFromDestination = true;
+/**
+ * Used to prevent the individual removal of attachments from a user's attachment collection when deleting a user
+ */
+static thread_local bool deleteAttachmentFromUser = true;
 
 struct EntityCollection::Impl
 {
@@ -64,6 +68,7 @@ struct EntityCollection::Impl
         VectorWithFreeQueue<DiscussionCategory> categories;
         VectorWithFreeQueue<MessageComment> messageComments;
         VectorWithFreeQueue<PrivateMessage> privateMessages;
+        VectorWithFreeQueue<Attachment> attachments;
 
     } managedEntities;
 
@@ -74,6 +79,7 @@ struct EntityCollection::Impl
     DiscussionCategoryCollection categories_;
     MessageCommentCollection messageComments_;
     PrivateMessageGlobalCollection privateMessages_;
+    AttachmentCollection attachments_;
 
     GrantedPrivilegeStore grantedPrivileges_;
 
@@ -186,6 +192,16 @@ struct EntityCollection::Impl
                 deletePrivateMessage(messagePtr);
             }
         }
+        {
+            //no need to delete the attachment from the user's attachment collection
+            //as we're deleting the whole user anyway
+            BoolTemporaryChanger changer(deleteAttachmentFromUser, false);
+            for (const auto attachmentPtr : user.attachments().byId())
+            {
+                assert(attachmentPtr);
+                deleteAttachment(attachmentPtr);
+            }
+        }
 
         managedEntities.users.remove(userPtr.index());
     }
@@ -294,6 +310,11 @@ struct EntityCollection::Impl
                 assert(user);
                 user->removeVote(messagePtr);
             }
+        }
+
+        for (const AttachmentPtr attachment : message.attachments())
+        {
+            deleteAttachment(attachment);
         }
 
         DiscussionThread& parentThread = *(message.parentThread());
@@ -435,6 +456,35 @@ struct EntityCollection::Impl
             destinationUser.receivedPrivateMessages().remove(messagePtr);
         }
         managedEntities.privateMessages.remove(messagePtr.index());
+    }
+
+    void insertAttachment(const AttachmentPtr attachmentPtr)
+    {
+        assert(attachmentPtr);
+        attachments_.add(attachmentPtr);
+    }
+
+    void deleteAttachment(AttachmentPtr attachmentPtr)
+    {
+        assert(attachmentPtr);
+        if ( ! attachments_.remove(attachmentPtr))
+        {
+            return;
+        }
+        Attachment& attachment = *attachmentPtr;
+
+        if (deleteAttachmentFromUser)
+        {
+            User& user = attachment.createdBy();
+            user.attachments().remove(attachmentPtr);
+        }
+        for (DiscussionThreadMessagePtr messagePtr : attachment.messages())
+        {
+            assert(messagePtr);
+            messagePtr->removeAttachment(attachmentPtr);
+
+        }
+        managedEntities.attachments.remove(attachmentPtr.index());
     }
 
     void setEventListeners()
@@ -840,6 +890,11 @@ std::unique_ptr<PrivateMessage>* EntityCollection::getPrivateMessagePoolRoot()
     return impl_->managedEntities.privateMessages.data();
 }
 
+std::unique_ptr<Attachment>* EntityCollection::getAttachmentPoolRoot()
+{
+    return impl_->managedEntities.attachments.data();
+}
+
 StringView EntityCollection::getMessageContentPointer(size_t offset, size_t size)
 {
     return impl_->getMessageContentPointer(offset, size);
@@ -902,6 +957,14 @@ PrivateMessagePtr EntityCollection::createPrivateMessage(IdType id, User& source
 {
     return PrivateMessagePtr(static_cast<PrivateMessagePtr::IndexType>(impl_->managedEntities.privateMessages.add(
         id, source, destination, created, creationDetails, std::move(content))));
+}
+
+AttachmentPtr EntityCollection::createAttachment(const IdType id, const Timestamp created, const VisitDetails creationDetails,
+                                                 User& createdBy, Attachment::NameType&& name, const uint64_t size, 
+                                                 const bool approved)
+{
+    return AttachmentPtr(static_cast<AttachmentPtr::IndexType>(impl_->managedEntities.attachments.add(
+        id, created, creationDetails, createdBy, std::move(name), size, approved)));
 }
 
 
@@ -975,6 +1038,16 @@ PrivateMessageGlobalCollection& EntityCollection::privateMessages()
     return impl_->privateMessages_;
 }
 
+const AttachmentCollection& EntityCollection::attachments() const
+{
+    return impl_->attachments_;
+}
+
+AttachmentCollection& EntityCollection::attachments()
+{
+    return impl_->attachments_;
+}
+
 void EntityCollection::insertUser(UserPtr user)
 {
     impl_->insertUser(user);
@@ -1043,6 +1116,16 @@ void EntityCollection::insertPrivateMessage(PrivateMessagePtr message)
 void EntityCollection::deletePrivateMessage(PrivateMessagePtr message)
 {
     impl_->deletePrivateMessage(message);
+}
+
+void EntityCollection::insertAttachment(AttachmentPtr attachment)
+{
+    impl_->insertAttachment(attachment);
+}
+
+void EntityCollection::deleteAttachment(AttachmentPtr attachment)
+{
+    impl_->deleteAttachment(attachment);
 }
 
 void EntityCollection::startBatchInsert()

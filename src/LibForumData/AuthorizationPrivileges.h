@@ -58,6 +58,11 @@ namespace Forum::Authorization
         VIEW_UNAPPROVED,
         CHANGE_APPROVAL,
 
+        VIEW_ATTACHMENT,
+        VIEW_UNAPPROVED_ATTACHMENT,
+        ADD_ATTACHMENT,
+        REMOVE_ATTACHMENT,
+
         COUNT
     };
 
@@ -80,7 +85,11 @@ namespace Forum::Authorization
         "move",
         "adjust_privilege",
         "view_unapproved",
-        "change_approval"
+        "change_approval",
+        "view_attachment",
+        "view_unapproved_attachment",
+        "add_attachment",
+        "remove_attachment",
     };
 
     const DiscussionThreadMessagePrivilege DiscussionThreadMessagePrivilegesToSerialize[] =
@@ -97,6 +106,10 @@ namespace Forum::Authorization
         DiscussionThreadMessagePrivilege::CHANGE_APPROVAL,
         DiscussionThreadMessagePrivilege::DELETE,
         DiscussionThreadMessagePrivilege::MOVE,
+        DiscussionThreadMessagePrivilege::VIEW_ATTACHMENT,
+        DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED_ATTACHMENT,
+        DiscussionThreadMessagePrivilege::ADD_ATTACHMENT,
+        DiscussionThreadMessagePrivilege::REMOVE_ATTACHMENT,
         DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE
     };
 
@@ -299,6 +312,12 @@ namespace Forum::Authorization
         SEND_PRIVATE_MESSAGE,
         VIEW_PRIVATE_MESSAGE_IP_ADDRESS,
 
+        CREATE_ATTACHMENT,
+        DELETE_ATTACHMENT,
+        VIEW_ALL_ATTACHMENTS,
+        AUTO_APPROVE_ATTACHMENT,
+        CHANGE_USER_ATTACHMENT_QUOTA,
+
         COUNT
     };
 
@@ -345,6 +364,12 @@ namespace Forum::Authorization
         "auto_approve_discussion_thread",
         "send_private_message",
         "view_private_message_ip_address",
+
+        "create_attachment",
+        "delete_attachment",
+        "view_all_attachments",
+        "auto_approve_attachment",
+        "change_user_attachment_quota",
     };
 
     const ForumWidePrivilege ForumWidePrivilegesToSerialize[] =
@@ -385,6 +410,11 @@ namespace Forum::Authorization
         ForumWidePrivilege::DELETE_ANY_USER_LOGO,
         ForumWidePrivilege::SEND_PRIVATE_MESSAGE,
         ForumWidePrivilege::VIEW_PRIVATE_MESSAGE_IP_ADDRESS,
+        ForumWidePrivilege::CREATE_ATTACHMENT,
+        ForumWidePrivilege::DELETE_ATTACHMENT,
+        ForumWidePrivilege::VIEW_ALL_ATTACHMENTS,
+        ForumWidePrivilege::AUTO_APPROVE_ATTACHMENT,
+        ForumWidePrivilege::CHANGE_USER_ATTACHMENT_QUOTA,
         ForumWidePrivilege::NO_THROTTLING
     };
 

@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityDiscussionCategoryCollection.h"
 #include "EntityMessageCommentCollection.h"
 #include "EntityPrivateMessageCollection.h"
+#include "EntityAttachmentCollection.h"
 
 #include <memory>
 
@@ -56,6 +57,7 @@ namespace Forum::Entities
         std::unique_ptr<DiscussionCategory>*      getDiscussionCategoryPoolRoot();
         std::unique_ptr<MessageComment>*          getMessageCommentPoolRoot();
         std::unique_ptr<PrivateMessage>*          getPrivateMessagePoolRoot();
+        std::unique_ptr<Attachment>*              getAttachmentPoolRoot();
 
         StringView getMessageContentPointer(size_t offset, size_t size);
 
@@ -73,6 +75,9 @@ namespace Forum::Entities
                                                         Timestamp created, VisitDetails creationDetails);
         PrivateMessagePtr          createPrivateMessage(IdType id, User& source, User& destination, Timestamp created,
                                                         VisitDetails creationDetails, PrivateMessage::ContentType&& content);
+        AttachmentPtr              createAttachment(IdType id, Timestamp created, VisitDetails creationDetails,
+                                                    User& createdBy, Attachment::NameType&& name, uint64_t size,
+                                                    bool approved);
 
         const UserCollection&                         users() const;
               UserCollection&                         users();
@@ -88,6 +93,8 @@ namespace Forum::Entities
               MessageCommentCollection&               messageComments();
         const PrivateMessageGlobalCollection&         privateMessages() const;
               PrivateMessageGlobalCollection&         privateMessages();
+        const AttachmentCollection&                   attachments() const;
+              AttachmentCollection&                   attachments();
 
         void insertUser(UserPtr user);
         void deleteUser(UserPtr user);
@@ -109,6 +116,9 @@ namespace Forum::Entities
 
         void insertPrivateMessage(PrivateMessagePtr comment);
         void deletePrivateMessage(PrivateMessagePtr comment);
+
+        void insertAttachment(AttachmentPtr attachment);
+        void deleteAttachment(AttachmentPtr attachment);
 
         void startBatchInsert();
         void stopBatchInsert();

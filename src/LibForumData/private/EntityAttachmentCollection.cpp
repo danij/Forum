@@ -16,12 +16,31 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "EntityUser.h"
+#include "EntityAttachmentCollection.h"
 
 using namespace Forum::Entities;
 
-User::ChangeNotification User::changeNotifications_;
-const User::VotedMessagesType User::emptyVotedMessages_;
-const MessageCommentCollectionLowMemory User::emptyMessageComments_;
-const PrivateMessageCollection User::emptyPrivateMessages_;
-const AttachmentCollection User::emptyAttachments_;
+bool AttachmentCollection::add(const AttachmentPtr attachmentPtr)
+{
+    if ( ! std::get<1>(byId_.insert(attachmentPtr))) return false;
+    byCreated_.insert(attachmentPtr);
+
+    totalSize_ += attachmentPtr->size();
+
+    return true;
+}
+
+bool AttachmentCollection::remove(const AttachmentPtr attachmentPtr)
+{
+    {
+        const auto itById = byId_.find(attachmentPtr->id());
+        if (itById == byId_.end()) return false;
+
+        byId_.erase(itById);
+    }
+    eraseFromNonUniqueCollection(byCreated_, attachmentPtr, attachmentPtr->created());
+
+    totalSize_ += attachmentPtr->size();
+
+    return true;
+}

@@ -22,6 +22,7 @@ set(SOURCE_FILES
         private/EntityDiscussionCategoryCollection.cpp
         private/EntityMessageCommentCollection.cpp
         private/EntityPrivateMessageCollection.cpp
+        private/EntityAttachmentCollection.cpp
         private/MemoryRepositoryCommon.cpp
         private/MemoryRepositoryUser.cpp
         private/MemoryRepositoryDiscussionThread.cpp
@@ -61,6 +62,8 @@ set(HEADER_FILES
         EntityMessageCommentCollection.h        
         EntityPrivateMessage.h
         EntityPrivateMessageCollection.h
+        EntityAttachment.h
+        EntityAttachmentCollection.h
         EntitySerialization.h
         DefaultAuthorization.h
         DefaultThrottling.h
