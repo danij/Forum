@@ -55,6 +55,13 @@
         "maxDescriptionLength": 1024
     },
 
+    "attachment": {
+        "minNameLength": 2,
+        "maxNameLength": 128,
+        "maxAttachmentsPerPage": 50,
+        "defaultUserQuota": 1048576
+    },
+
     "service": {
         "numberOfIOServiceThreads": 4,
         "numberOfReadBuffers": 512,

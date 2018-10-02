@@ -33,6 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "MemoryRepositoryDiscussionThreadMessage.h"
 #include "MemoryRepositoryDiscussionTag.h"
 #include "MemoryRepositoryDiscussionCategory.h"
+#include "MemoryRepositoryAttachment.h"
 #include "MemoryRepositoryAuthorization.h"
 #include "MemoryRepositoryStatistics.h"
 #include "MetricsRepository.h"
@@ -164,6 +165,7 @@ BenchmarkContext createContext(int argc, const char* argv[])
                                                                                                        authorizationRepository);
     auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
     auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store, authorization);
+    auto attachmentRepository = std::make_shared<MemoryRepositoryAttachment>(store, authorization);
     auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store, authorization);
     auto metricsRepository = std::make_shared<MetricsRepository>(store, authorization);
 
@@ -173,13 +175,15 @@ BenchmarkContext createContext(int argc, const char* argv[])
 
     context.handler = std::make_shared<CommandHandler>(context.observableRepository, userRepository,
         discussionThreadRepository, discussionThreadMessageRepository, discussionTagRepository,
-        discussionCategoryRepository, authorizationRepository, statisticsRepository, metricsRepository);
+        discussionCategoryRepository, attachmentRepository, authorizationRepository, statisticsRepository, 
+        metricsRepository);
 
     context.writeRepositories.user = userRepository;
     context.writeRepositories.discussionThread = discussionThreadRepository;
     context.writeRepositories.discussionThreadMessage = discussionThreadMessageRepository;
     context.writeRepositories.discussionTag = discussionTagRepository;
     context.writeRepositories.discussionCategory = discussionCategoryRepository;
+    context.writeRepositories.attachment = attachmentRepository;
     context.writeRepositories.authorization = authorizationRepository;
 
     if (context.exportToFolder.size() > 0)

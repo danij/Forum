@@ -313,6 +313,13 @@ namespace Forum::Authorization
                                                                       PrivilegeValueIntType newValue) const = 0;
     };
     typedef std::shared_ptr<IDiscussionCategoryAuthorization> DiscussionCategoryAuthorizationRef;
+        
+    class IAttachmentAuthorization
+    {
+    public:
+        DECLARE_INTERFACE_MANDATORY(IAttachmentAuthorization)
+    };
+    typedef std::shared_ptr<IAttachmentAuthorization> AttachmentAuthorizationRef;
 
     class IForumWideAuthorization
     {

@@ -31,6 +31,7 @@ set(SOURCE_FILES
         private/MemoryRepositoryDiscussionTag.cpp
         private/MemoryRepositoryDiscussionCategory.cpp
         private/MemoryRepositoryAuthorization.cpp
+        private/MemoryRepositoryAttachment.cpp
         private/MetricsRepository.cpp
         private/EntitySerialization.cpp
         private/DefaultAuthorization.cpp
@@ -80,6 +81,7 @@ set(HEADER_FILES
         MemoryRepositoryDiscussionTag.h
         MemoryRepositoryDiscussionCategory.h
         MemoryRepositoryAuthorization.h
+        MemoryRepositoryAttachment.h
         MetricsRepository.h
         ResourceGuard.h
         VisitorCollection.h)

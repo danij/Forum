@@ -29,6 +29,7 @@ namespace Forum
                                       public IDiscussionThreadMessageAuthorization,
                                       public IDiscussionTagAuthorization,
                                       public IDiscussionCategoryAuthorization,
+                                      public IAttachmentAuthorization,
                                       public IForumWideAuthorization,
                                       public IStatisticsAuthorization,
                                       public IMetricsAuthorization

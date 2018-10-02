@@ -312,9 +312,9 @@ struct EntityCollection::Impl
             }
         }
 
-        for (const AttachmentPtr attachment : message.attachments())
+        for (AttachmentPtr attachment : message.attachments())
         {
-            deleteAttachment(attachment);
+            attachment->messages().erase(messagePtr);
         }
 
         DiscussionThread& parentThread = *(message.parentThread());

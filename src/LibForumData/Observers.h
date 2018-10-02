@@ -94,6 +94,9 @@ namespace Forum::Repository
         boost::signals2::signal<void(ObserverContext,
                                      const Entities::DiscussionCategory&)> onGetDiscussionThreadsOfCategory;
 
+        boost::signals2::signal<void(ObserverContext)> onGetAttachments;
+        boost::signals2::signal<void(ObserverContext, const Entities::Attachment&)> onGetAttachment;
+
         boost::signals2::signal<void(ObserverContext)> onGetForumWideCurrentUserPrivileges;
         boost::signals2::signal<void(ObserverContext)> onGetForumWideRequiredPrivileges;
         boost::signals2::signal<void(ObserverContext,
@@ -192,6 +195,15 @@ namespace Forum::Repository
                                      const Entities::DiscussionCategory& category)> onAddDiscussionTagToCategory;
         boost::signals2::signal<void(ObserverContext, const Entities::DiscussionTag& tag,
                                      const Entities::DiscussionCategory& category)> onRemoveDiscussionTagFromCategory;
+
+        boost::signals2::signal<void(ObserverContext, const Entities::Attachment&)> onAddNewAttachment;
+        boost::signals2::signal<void(ObserverContext, const Entities::Attachment&, 
+                                     Entities::Attachment::ChangeType)> onChangeAttachment;
+        boost::signals2::signal<void(ObserverContext, const Entities::Attachment&)> onDeleteAttachment;
+        boost::signals2::signal<void(ObserverContext, const Entities::Attachment&, 
+                                     const Entities::DiscussionThread&)> onAddAttachmentToDiscussionThreadMessage;
+        boost::signals2::signal<void(ObserverContext, const Entities::Attachment&, 
+                                     const Entities::DiscussionThread&)> onRemoveAttachmentFromDiscussionThreadMessage;
 
         boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&,
                                      Authorization::DiscussionThreadMessagePrivilege,

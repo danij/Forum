@@ -32,6 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "MemoryRepositoryDiscussionThreadMessage.h"
 #include "MemoryRepositoryDiscussionTag.h"
 #include "MemoryRepositoryDiscussionCategory.h"
+#include "MemoryRepositoryAttachment.h"
 #include "MemoryRepositoryAuthorization.h"
 #include "MemoryRepositoryStatistics.h"
 #include "MetricsRepository.h"
@@ -245,6 +246,7 @@ bool Application::createCommandHandler()
             std::make_shared<MemoryRepositoryDiscussionThreadMessage>(store, authorization, authorizationRepository);
     auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
     auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store, authorization);
+    auto attachmentRepository = std::make_shared<MemoryRepositoryAttachment>(store, authorization);
     auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store, authorization);
     auto metricsRepository = std::make_shared<MetricsRepository>(store, authorization);
 
@@ -255,7 +257,8 @@ bool Application::createCommandHandler()
                                                        discussionThreadRepository,
                                                        discussionThreadMessageRepository,
                                                        discussionTagRepository,
-                                                       discussionCategoryRepository,
+                                                       discussionCategoryRepository,                                    
+                                                       attachmentRepository,                                    
                                                        authorizationRepository,
                                                        statisticsRepository,
                                                        metricsRepository);
@@ -265,6 +268,7 @@ bool Application::createCommandHandler()
     directWriteRepositories_.discussionThreadMessage = discussionThreadMessageRepository;
     directWriteRepositories_.discussionTag = discussionTagRepository;
     directWriteRepositories_.discussionCategory = discussionCategoryRepository;
+    directWriteRepositories_.attachment = attachmentRepository;
     directWriteRepositories_.authorization = authorizationRepository;
 
     const auto forumConfig = Configuration::getGlobalConfig();

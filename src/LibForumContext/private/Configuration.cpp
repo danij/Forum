@@ -103,6 +103,11 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(discussionCategory.maxNameLength);
     LOAD_CONFIG_VALUE(discussionCategory.maxDescriptionLength);
 
+    LOAD_CONFIG_VALUE(attachment.minNameLength);
+    LOAD_CONFIG_VALUE(attachment.maxNameLength);
+    LOAD_CONFIG_VALUE(attachment.maxAttachmentsPerPage);
+    LOAD_CONFIG_VALUE(attachment.defaultUserQuota);
+
     LOAD_CONFIG_VALUE(service.numberOfIOServiceThreads);
     LOAD_CONFIG_VALUE(service.numberOfReadBuffers);
     LOAD_CONFIG_VALUE(service.numberOfWriteBuffers);

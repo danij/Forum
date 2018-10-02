@@ -25,6 +25,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/noncopyable.hpp>
 #include <boost/container/flat_set.hpp>
 
+#include <atomic>
+
 namespace Forum::Entities
 {
     class User;
@@ -47,6 +49,13 @@ namespace Forum::Entities
 
         typedef Json::JsonReadyString<16> NameType;
 
+        enum ChangeType : uint32_t
+        {
+            None = 0,
+            Name,
+            Approval
+        };
+
         Attachment(const IdType id, const Timestamp created, const VisitDetails creationDetails, 
                    User& createdBy, NameType&& name, const uint64_t size, const bool approved)
             : id_(id), created_(created), creationDetails_(creationDetails), createdBy_(createdBy), 
@@ -54,8 +63,11 @@ namespace Forum::Entities
         {}
 
         auto& createdBy() { return createdBy_; }
+        auto& name()      { return name_; }
         auto& approved()  { return approved_; }
-        auto  messages()  { return messages_; }
+        auto& messages()  { return messages_; }
+
+        auto& nrOfGetRequests() const { return nrOfGetRequests_; }
 
         void addMessage(const EntityPointer<DiscussionThreadMessage> messagePtr)
         {
@@ -76,6 +88,7 @@ namespace Forum::Entities
         NameType name_;
         uint64_t size_;
         bool approved_;
+        mutable std::atomic<uint32_t> nrOfGetRequests_{ 0 };
 
         boost::container::flat_set<EntityPointer<DiscussionThreadMessage>> messages_;
     };

@@ -150,6 +150,7 @@ struct CommandHandler::CommandHandlerImpl
     DiscussionThreadMessageRepositoryRef discussionThreadMessageRepository;
     DiscussionTagRepositoryRef discussionTagRepository;
     DiscussionCategoryRepositoryRef discussionCategoryRepository;
+    AttachmentRepositoryRef attachmentRepository;
     AuthorizationRepositoryRef authorizationRepository;
     StatisticsRepositoryRef statisticsRepository;
     MetricsRepositoryRef metricsRepository;
@@ -1191,6 +1192,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     DiscussionThreadMessageRepositoryRef discussionThreadMessageRepository,
     DiscussionTagRepositoryRef discussionTagRepository,
     DiscussionCategoryRepositoryRef discussionCategoryRepository,
+    AttachmentRepositoryRef attachmentRepository,
     AuthorizationRepositoryRef authorizationRepository,
     StatisticsRepositoryRef statisticsRepository,
     MetricsRepositoryRef metricsRepository) : impl_(new CommandHandlerImpl)
@@ -1201,6 +1203,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     impl_->discussionThreadMessageRepository = discussionThreadMessageRepository;
     impl_->discussionTagRepository = discussionTagRepository;
     impl_->discussionCategoryRepository = discussionCategoryRepository;
+    impl_->attachmentRepository = attachmentRepository;
     impl_->authorizationRepository = authorizationRepository;
     impl_->statisticsRepository = statisticsRepository;
     impl_->metricsRepository = metricsRepository;

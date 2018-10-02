@@ -42,7 +42,8 @@ namespace Forum::Repository
         NOT_UPDATED_SINCE_LAST_CHECK,
         UNAUTHORIZED,
         THROTTLED,
-        USER_WITH_SAME_AUTH_ALREADY_EXISTS
+        USER_WITH_SAME_AUTH_ALREADY_EXISTS,
+        QUOTA_EXCEEDED
     };
 
     enum class RetrieveUsersBy
@@ -74,6 +75,11 @@ namespace Forum::Repository
     {
         Name,
         MessageCount
+    };
+
+    enum class RetrieveAttachmentsBy
+    {
+        Created,
     };
 
     typedef Json::StringBuffer OutStream;
@@ -411,6 +417,50 @@ namespace Forum::Repository
                                                            Entities::IdTypeRef tagId, Entities::IdTypeRef categoryId) = 0;
     };
     typedef std::shared_ptr<IDiscussionCategoryDirectWriteRepository> DiscussionCategoryDirectWriteRepositoryRef;
+    
+    
+    class IAttachmentRepository
+    {
+    public:
+        DECLARE_INTERFACE_MANDATORY(IAttachmentRepository)
+
+        virtual StatusCode getAttachments(OutStream& output, RetrieveAttachmentsBy by) const = 0;
+        virtual StatusCode canGetAttachment(Entities::IdTypeRef id, OutStream& output) const = 0;
+
+        virtual StatusCode addNewAttachment(StringView name, uint64_t size, OutStream& output) = 0;
+        virtual StatusCode changeAttachmentName(Entities::IdTypeRef id, StringView newName,  OutStream& output) = 0;
+        virtual StatusCode changeAttachmentApproval(Entities::IdTypeRef id, bool newApproval, OutStream& output) = 0;
+        virtual StatusCode deleteAttachment(Entities::IdTypeRef id, OutStream& output) = 0;
+
+        virtual StatusCode addAttachmentToDiscussionThreadMessage(Entities::IdTypeRef attachmentId, 
+                                                          Entities::IdTypeRef messageId, OutStream& output) = 0;
+        virtual StatusCode removeAttachmentFromDiscussionThreadMessage(Entities::IdTypeRef attachmentId, 
+                                                                       Entities::IdTypeRef messageId, 
+                                                                       OutStream& output) = 0;
+    };
+    typedef std::shared_ptr<IAttachmentRepository> AttachmentRepositoryRef;
+
+    class IAttachmentDirectWriteRepository
+    {
+    public:
+        DECLARE_INTERFACE_MANDATORY(IAttachmentDirectWriteRepository)
+
+        virtual StatusWithResource<Entities::AttachmentPtr> addNewAttachment(Entities::EntityCollection& collection,
+                                                                             Entities::IdTypeRef id, StringView name, 
+                                                                             uint64_t size, bool approved) = 0;
+        virtual StatusCode changeAttachmentName(Entities::EntityCollection& collection, Entities::IdTypeRef id, 
+                                                StringView newName) = 0;
+        virtual StatusCode changeAttachmentApproval(Entities::EntityCollection& collection, Entities::IdTypeRef id, 
+                                                    bool newApproval) = 0;
+        virtual StatusCode deleteAttachment(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
+        virtual StatusCode addAttachmentToDiscussionThreadMessage(Entities::EntityCollection& collection,
+                                                                  Entities::IdTypeRef attachmentId, 
+                                                                  Entities::IdTypeRef messageId) = 0;
+        virtual StatusCode removeAttachmentFromDiscussionThreadMessage(Entities::EntityCollection& collection,
+                                                                       Entities::IdTypeRef attachmentId, 
+                                                                       Entities::IdTypeRef messageId) = 0;
+    };
+    typedef std::shared_ptr<IAttachmentDirectWriteRepository> AttachmentDirectWriteRepositoryRef;
 
 
     class IAuthorizationRepository
@@ -650,6 +700,7 @@ namespace Forum::Repository
     };
     typedef std::shared_ptr<IMetricsRepository> MetricsRepositoryRef;
 
+
     struct DirectWriteRepositoryCollection final
     {
         UserDirectWriteRepositoryRef user;
@@ -657,6 +708,7 @@ namespace Forum::Repository
         DiscussionThreadMessageDirectWriteRepositoryRef discussionThreadMessage;
         DiscussionTagDirectWriteRepositoryRef discussionTag;
         DiscussionCategoryDirectWriteRepositoryRef discussionCategory;
+        AttachmentDirectWriteRepositoryRef attachment;
         AuthorizationDirectWriteRepositoryRef authorization;
     };
 }

@@ -99,6 +99,14 @@ namespace Forum::Configuration
         int_fast16_t maxNameLength = 128;
         int_fast16_t maxDescriptionLength = 1024;
     };
+    
+    struct AttachmentConfig
+    {
+        int_fast16_t minNameLength = 2;
+        int_fast16_t maxNameLength = 128;
+        int_fast32_t maxAttachmentsPerPage = 50;
+        int_fast64_t defaultUserQuota = 104857600;
+    };
 
     struct ServiceConfig
     {
@@ -290,6 +298,7 @@ namespace Forum::Configuration
         PrivateMessageConfig privateMessage;
         DiscussionTagConfig discussionTag;
         DiscussionCategoryConfig discussionCategory;
+        AttachmentConfig attachment;
         ServiceConfig service;
         LoggingConfig logging;
         PersistenceConfig persistence;

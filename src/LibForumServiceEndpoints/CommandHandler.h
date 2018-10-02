@@ -213,6 +213,7 @@ namespace Forum::Commands
                        Repository::DiscussionThreadMessageRepositoryRef discussionThreadMessageRepository,
                        Repository::DiscussionTagRepositoryRef discussionTagRepository,
                        Repository::DiscussionCategoryRepositoryRef discussionCategoryRepository,
+                       Repository::AttachmentRepositoryRef attachmentRepository,
                        Repository::AuthorizationRepositoryRef authorizationRepository,
                        Repository::StatisticsRepositoryRef statisticsRepository,
                        Repository::MetricsRepositoryRef metricsRepository);

@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "MemoryRepositoryDiscussionThreadMessage.h"
 #include "MemoryRepositoryDiscussionTag.h"
 #include "MemoryRepositoryDiscussionCategory.h"
+#include "MemoryRepositoryAttachment.h"
 #include "MemoryRepositoryAuthorization.h"
 #include "MemoryRepositoryStatistics.h"
 #include "MetricsRepository.h"
@@ -59,14 +60,15 @@ std::shared_ptr<CommandHandler> Forum::Helpers::createCommandHandler()
                                                                                                        authorizationRepository);
     auto discussionTagRepository = std::make_shared<MemoryRepositoryDiscussionTag>(store, authorization);
     auto discussionCategoryRepository = std::make_shared<MemoryRepositoryDiscussionCategory>(store, authorization);
+    auto attachmentRepository = std::make_shared<MemoryRepositoryAttachment>(store, authorization);
     auto statisticsRepository = std::make_shared<MemoryRepositoryStatistics>(store, authorization);
     auto metricsRepository = std::make_shared<MetricsRepository>(store, authorization);
 
     ObservableRepositoryRef observableRepository = userRepository;
 
     return std::make_shared<CommandHandler>(observableRepository, userRepository, discussionThreadRepository,
-        discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository, authorizationRepository,
-        statisticsRepository, metricsRepository);
+        discussionThreadMessageRepository, discussionTagRepository, discussionCategoryRepository, attachmentRepository,
+        authorizationRepository, statisticsRepository, metricsRepository);
 }
 
 TreeType Forum::Helpers::handlerToObj(CommandHandlerRef& handler, Command command,
