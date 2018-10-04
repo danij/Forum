@@ -361,6 +361,9 @@ static const char OrderByLastUpdated[] = "lastupdatedLASTUPDATED";
 static const char OrderByLatestMessageCreated[] = "latestmessagecreatedLATESTMESSAGECREATED";
 static const char OrderByThreadCount[] = "threadcountTHREADCOUNT";
 static const char OrderByMessageCount[] = "messagecountMESSAGECOUNT";
+static const char OrderByName[] = "nameNAME";
+static const char OrderBySize[] = "sizeSIZE";
+static const char OrderByApproval[] = "approvalAPPROVAL";
 
 void UsersEndpoint::getAll(Http::RequestState& requestState)
 {
@@ -576,6 +579,16 @@ void UsersEndpoint::changeSignature(Http::RequestState& requestState)
         parameters.push_back(requestState.extraPathParts[0]);
         parameters.push_back(getPointerToEntireRequestBody(requestState.request));
         return commandHandler.handle(Command::CHANGE_USER_SIGNATURE, parameters);
+    });
+}
+
+void UsersEndpoint::changeAttachmentQuota(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::CHANGE_USER_ATTACHMENT_QUOTA, parameters);
     });
 }
 
@@ -1367,6 +1380,152 @@ void DiscussionCategoriesEndpoint::removeTag(Http::RequestState& requestState)
     });
 }
 
+AttachmentsEndpoint::AttachmentsEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
+{
+}
+
+void AttachmentsEndpoint::getAll(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        auto view = View::GET_ATTACHMENTS_BY_CREATED;
+        auto& request = requestState.request;
+
+        for (size_t i = 0; i < request.nrOfQueryPairs; ++i)
+        {
+            auto& name = request.queryPairs[i].first;
+            auto& value = request.queryPairs[i].second;
+
+            if (Http::matchStringUpperOrLower(name, OrderBy))
+            {
+                if (Http::matchStringUpperOrLower(value, OrderByName))
+                {
+                    view = View::GET_ATTACHMENTS_BY_NAME;
+                }
+                else if (Http::matchStringUpperOrLower(value, OrderBySize))
+                {
+                    view = View::GET_ATTACHMENTS_BY_SIZE;
+                }
+                else if (Http::matchStringUpperOrLower(value, OrderByApproval))
+                {
+                    view = View::GET_ATTACHMENTS_BY_APPROVAL;
+                }
+            }
+        }
+        return commandHandler.handle(view, parameters);
+    });
+}
+
+void AttachmentsEndpoint::getOfUser(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+
+        auto view = View::GET_ATTACHMENTS_OF_USER_BY_CREATED;
+        auto& request = requestState.request;
+
+        for (size_t i = 0; i < request.nrOfQueryPairs; ++i)
+        {
+            auto& name = request.queryPairs[i].first;
+            auto& value = request.queryPairs[i].second;
+
+            if (Http::matchStringUpperOrLower(name, OrderBy))
+            {
+                if (Http::matchStringUpperOrLower(value, OrderByName))
+                {
+                    view = View::GET_ATTACHMENTS_OF_USER_BY_NAME;
+                }
+                else if (Http::matchStringUpperOrLower(value, OrderBySize))
+                {
+                    view = View::GET_ATTACHMENTS_OF_USER_BY_SIZE;
+                }
+                else if (Http::matchStringUpperOrLower(value, OrderByApproval))
+                {
+                    view = View::GET_ATTACHMENTS_OF_USER_BY_APPROVAL;
+                }
+            }
+        }
+        return commandHandler.handle(view, parameters);
+    });
+}
+
+void AttachmentsEndpoint::get(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(View::GET_ATTACHMENT, parameters);
+    });
+}
+
+void AttachmentsEndpoint::add(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::ADD_ATTACHMENT, parameters);
+    });
+}
+
+void AttachmentsEndpoint::remove(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        return commandHandler.handle(Command::DELETE_ATTACHMENT, parameters);
+    });
+}
+
+void AttachmentsEndpoint::changeName(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::CHANGE_ATTACHMENT_NAME, parameters);
+    });
+}
+
+void AttachmentsEndpoint::changeApproval(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::CHANGE_ATTACHMENT_APPROVAL, parameters);
+    });
+}
+
+void AttachmentsEndpoint::addToMessage(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::ADD_ATTACHMENT_TO_DISCUSSION_THREAD_MESSAGE, parameters);
+    });
+}
+
+void AttachmentsEndpoint::removeFromMessage(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
+        return commandHandler.handle(Command::REMOVE_ATTACHMENT_FROM_DISCUSSION_THREAD_MESSAGE, parameters);
+    });
+}
 
 AuthorizationEndpoint::AuthorizationEndpoint(CommandHandler& handler) : AbstractEndpoint(handler)
 {

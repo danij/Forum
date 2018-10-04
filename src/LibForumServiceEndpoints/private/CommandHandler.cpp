@@ -334,6 +334,14 @@ struct CommandHandler::CommandHandlerImpl
         return userRepository->changeUserSignature(parameters[0], normalizedParam, output);
     }
 
+    COMMAND_HANDLER_METHOD( CHANGE_USER_ATTACHMENT_QUOTA )
+    {
+        if ( ! checkNumberOfParametersAtLeast(parameters, 1)) return INVALID_PARAMETERS;
+        uint64_t newQuota{ 0 };
+        if ( ! convertTo(parameters[1], newQuota)) return INVALID_PARAMETERS;
+        return userRepository->changeUserAttachmentQuota(parameters[0], newQuota, output);
+    }
+
     COMMAND_HANDLER_METHOD( CHANGE_USER_LOGO )
     {
         if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
@@ -854,7 +862,98 @@ struct CommandHandler::CommandHandlerImpl
         return discussionThreadRepository->getDiscussionThreadsOfCategory(parameters[0], output,
                                                                           RetrieveDiscussionThreadsBy::MessageCount);
     }
+    
+    COMMAND_HANDLER_METHOD( GET_ATTACHMENTS_BY_CREATED )
+    {
+        return attachmentRepository->getAttachments(RetrieveAttachmentsBy::Created, output);
+    }
 
+    COMMAND_HANDLER_METHOD( GET_ATTACHMENTS_BY_NAME )
+    {
+        return attachmentRepository->getAttachments(RetrieveAttachmentsBy::Name, output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ATTACHMENTS_BY_SIZE )
+    {
+        return attachmentRepository->getAttachments(RetrieveAttachmentsBy::Size, output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ATTACHMENTS_BY_APPROVAL )
+    {
+        return attachmentRepository->getAttachments(RetrieveAttachmentsBy::Approval, output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ATTACHMENTS_OF_USER_BY_CREATED )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return attachmentRepository->getAttachmentsOfUser(parameters[0], RetrieveAttachmentsBy::Created, output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ATTACHMENTS_OF_USER_BY_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return attachmentRepository->getAttachmentsOfUser(parameters[0], RetrieveAttachmentsBy::Name, output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ATTACHMENTS_OF_USER_BY_SIZE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return attachmentRepository->getAttachmentsOfUser(parameters[0], RetrieveAttachmentsBy::Size, output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ATTACHMENTS_OF_USER_BY_APPROVAL )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return attachmentRepository->getAttachmentsOfUser(parameters[0], RetrieveAttachmentsBy::Approval, output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ATTACHMENT )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return attachmentRepository->canGetAttachment(parameters[0], output);
+    }
+    
+    COMMAND_HANDLER_METHOD( ADD_ATTACHMENT )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[0])).empty()) return INVALID_PARAMETERS;
+        uint64_t size{ 0 };
+        if ( ! convertTo(parameters[1], size)) return INVALID_PARAMETERS;
+        return attachmentRepository->addNewAttachment(normalizedParam, size, output);
+    }
+
+    COMMAND_HANDLER_METHOD( DELETE_ATTACHMENT )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return attachmentRepository->deleteAttachment(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_ATTACHMENT_NAME )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        StringView normalizedParam;
+        if ((normalizedParam = normalize(parameters[1])).empty()) return INVALID_PARAMETERS;
+        return attachmentRepository->changeAttachmentName(parameters[0], normalizedParam, output);
+    }
+
+    COMMAND_HANDLER_METHOD( CHANGE_ATTACHMENT_APPROVAL )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        return attachmentRepository->changeAttachmentApproval(parameters[0], "true" == parameters[1], output);
+    }
+    
+    COMMAND_HANDLER_METHOD( ADD_ATTACHMENT_TO_DISCUSSION_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        return attachmentRepository->addAttachmentToDiscussionThreadMessage(parameters[0], parameters[1], output);
+    }
+    
+    COMMAND_HANDLER_METHOD( REMOVE_ATTACHMENT_FROM_DISCUSSION_THREAD_MESSAGE )
+    {
+        if ( ! checkNumberOfParameters(parameters, 2)) return INVALID_PARAMETERS;
+        return attachmentRepository->removeAttachmentFromDiscussionThreadMessage(parameters[0], parameters[1], output);
+    }
 
     COMMAND_HANDLER_METHOD( GET_REQUIRED_PRIVILEGES_FOR_THREAD_MESSAGE )
     {
@@ -1213,6 +1312,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setCommandHandler(CHANGE_USER_INFO);
     setCommandHandler(CHANGE_USER_TITLE);
     setCommandHandler(CHANGE_USER_SIGNATURE);
+    setCommandHandler(CHANGE_USER_ATTACHMENT_QUOTA);
     setCommandHandler(CHANGE_USER_LOGO);
     setCommandHandler(DELETE_USER_LOGO);
     setCommandHandler(DELETE_USER);
@@ -1258,6 +1358,13 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setCommandHandler(DELETE_DISCUSSION_CATEGORY);
     setCommandHandler(ADD_DISCUSSION_TAG_TO_CATEGORY);
     setCommandHandler(REMOVE_DISCUSSION_TAG_FROM_CATEGORY);
+    
+    setCommandHandler(ADD_ATTACHMENT);
+    setCommandHandler(DELETE_ATTACHMENT);
+    setCommandHandler(CHANGE_ATTACHMENT_NAME);
+    setCommandHandler(CHANGE_ATTACHMENT_APPROVAL);
+    setCommandHandler(ADD_ATTACHMENT_TO_DISCUSSION_THREAD_MESSAGE);
+    setCommandHandler(REMOVE_ATTACHMENT_FROM_DISCUSSION_THREAD_MESSAGE);
 
     setCommandHandler(CHANGE_DISCUSSION_THREAD_MESSAGE_REQUIRED_PRIVILEGE_FOR_THREAD_MESSAGE);
 
@@ -1358,6 +1465,16 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LAST_UPDATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_LATEST_MESSAGE_CREATED);
     setViewHandler(GET_DISCUSSION_THREADS_OF_CATEGORY_BY_MESSAGE_COUNT);
+
+    setViewHandler(GET_ATTACHMENTS_BY_CREATED);
+    setViewHandler(GET_ATTACHMENTS_BY_NAME);
+    setViewHandler(GET_ATTACHMENTS_BY_SIZE);
+    setViewHandler(GET_ATTACHMENTS_BY_APPROVAL);
+    setViewHandler(GET_ATTACHMENTS_OF_USER_BY_CREATED);
+    setViewHandler(GET_ATTACHMENTS_OF_USER_BY_NAME);
+    setViewHandler(GET_ATTACHMENTS_OF_USER_BY_SIZE);
+    setViewHandler(GET_ATTACHMENTS_OF_USER_BY_APPROVAL);
+    setViewHandler(GET_ATTACHMENT);
 
     setViewHandler(GET_REQUIRED_PRIVILEGES_FOR_THREAD_MESSAGE);
     setViewHandler(GET_ASSIGNED_PRIVILEGES_FOR_THREAD_MESSAGE);

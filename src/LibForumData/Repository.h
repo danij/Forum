@@ -80,6 +80,9 @@ namespace Forum::Repository
     enum class RetrieveAttachmentsBy
     {
         Created,
+        Name,
+        Size,
+        Approval
     };
 
     typedef Json::StringBuffer OutStream;

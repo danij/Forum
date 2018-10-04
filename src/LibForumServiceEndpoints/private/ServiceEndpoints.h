@@ -97,6 +97,7 @@ namespace Forum::Commands
         void changeInfo(Http::RequestState& requestState);
         void changeTitle(Http::RequestState& requestState);
         void changeSignature(Http::RequestState& requestState);
+        void changeAttachmentQuota(Http::RequestState& requestState);
         void changeLogo(Http::RequestState& requestState);
         void deleteLogo(Http::RequestState& requestState);
 
@@ -188,6 +189,23 @@ namespace Forum::Commands
         void changeDisplayOrder(Http::RequestState& requestState);
         void addTag(Http::RequestState& requestState);
         void removeTag(Http::RequestState& requestState);
+    };
+
+    class AttachmentsEndpoint : AbstractEndpoint
+    {
+    public:
+        explicit AttachmentsEndpoint(CommandHandler& handler);
+
+        void getAll(Http::RequestState& requestState);
+        void getOfUser(Http::RequestState& requestState);
+        void get(Http::RequestState& requestState);
+
+        void add(Http::RequestState& requestState);
+        void remove(Http::RequestState& requestState);
+        void changeName(Http::RequestState& requestState);
+        void changeApproval(Http::RequestState& requestState);
+        void addToMessage(Http::RequestState& requestState);
+        void removeFromMessage(Http::RequestState& requestState);
     };
 
     class AuthorizationEndpoint : AbstractEndpoint

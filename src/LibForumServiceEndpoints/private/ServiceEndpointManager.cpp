@@ -30,7 +30,8 @@ struct ServiceEndpointManager::ServiceEndpointManagerImpl
     explicit ServiceEndpointManagerImpl(CommandHandler& handler)
         : commandHandler(handler), metricsEndpoint(handler), statisticsEndpoint(handler),
           usersEndpoint(handler), threadsEndpoint(handler), threadMessagesEndpoint(handler),
-          tagsEndpoint(handler), categoriesEndpoint(handler), authorizationEndpoint(handler)
+          tagsEndpoint(handler), categoriesEndpoint(handler), attachmentsEndpoint(handler),
+          authorizationEndpoint(handler)
     {
     }
 
@@ -42,6 +43,7 @@ struct ServiceEndpointManager::ServiceEndpointManagerImpl
     DiscussionThreadMessagesEndpoint threadMessagesEndpoint;
     DiscussionTagsEndpoint tagsEndpoint;
     DiscussionCategoriesEndpoint categoriesEndpoint;
+    AttachmentsEndpoint attachmentsEndpoint;
     AuthorizationEndpoint authorizationEndpoint;
 };
 
@@ -81,6 +83,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "users/info",              HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeInfo) },
         { "users/title",             HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeTitle) },
         { "users/signature",         HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeSignature) },
+        { "users/attachmentQuota",   HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeAttachmentQuota) },
         { "users/logo",              HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserLogo) },
         { "users/logo",              HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeLogo) },
         { "users/logo",              HttpVerb::DELETE, ENDPOINT_DELEGATE(usersEndpoint.deleteLogo) },
@@ -148,6 +151,15 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "categories/displayorder", HttpVerb::PUT,    ENDPOINT_DELEGATE(categoriesEndpoint.changeDisplayOrder) },
         { "categories/tag",          HttpVerb::POST,   ENDPOINT_DELEGATE(categoriesEndpoint.addTag) },
         { "categories/tag",          HttpVerb::DELETE, ENDPOINT_DELEGATE(categoriesEndpoint.removeTag) },
+
+        { "attachments",         HttpVerb::GET,    ENDPOINT_DELEGATE(attachmentsEndpoint.getAll) },
+        { "attachments/user",    HttpVerb::GET,    ENDPOINT_DELEGATE(attachmentsEndpoint.getOfUser) },
+        { "attachments",         HttpVerb::POST,   ENDPOINT_DELEGATE(attachmentsEndpoint.add) },
+        { "attachments",         HttpVerb::DELETE, ENDPOINT_DELEGATE(attachmentsEndpoint.remove) },
+        { "attachments",         HttpVerb::PUT,    ENDPOINT_DELEGATE(attachmentsEndpoint.changeName) },
+        { "attachments",         HttpVerb::PUT,    ENDPOINT_DELEGATE(attachmentsEndpoint.changeApproval) },
+        { "attachments/message", HttpVerb::POST,   ENDPOINT_DELEGATE(attachmentsEndpoint.addToMessage) },
+        { "attachments/message", HttpVerb::DELETE, ENDPOINT_DELEGATE(attachmentsEndpoint.removeFromMessage) },
 
         { "privileges/required/thread_message",  HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getRequiredPrivilegesForThreadMessage) },
         { "privileges/assigned/thread_message",  HttpVerb::GET, ENDPOINT_DELEGATE(authorizationEndpoint.getAssignedPrivilegesForThreadMessage) },
