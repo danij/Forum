@@ -201,9 +201,9 @@ namespace Forum::Repository
                                      Entities::Attachment::ChangeType)> onChangeAttachment;
         boost::signals2::signal<void(ObserverContext, const Entities::Attachment&)> onDeleteAttachment;
         boost::signals2::signal<void(ObserverContext, const Entities::Attachment&, 
-                                     const Entities::DiscussionThread&)> onAddAttachmentToDiscussionThreadMessage;
+                                     const Entities::DiscussionThreadMessage&)> onAddAttachmentToDiscussionThreadMessage;
         boost::signals2::signal<void(ObserverContext, const Entities::Attachment&, 
-                                     const Entities::DiscussionThread&)> onRemoveAttachmentFromDiscussionThreadMessage;
+                                     const Entities::DiscussionThreadMessage&)> onRemoveAttachmentFromDiscussionThreadMessage;
 
         boost::signals2::signal<void(ObserverContext, const Entities::DiscussionThreadMessage&,
                                      Authorization::DiscussionThreadMessagePrivilege,

@@ -58,6 +58,9 @@ namespace Forum::Repository
         StatusCode changeUserSignature(Entities::IdTypeRef id, StringView newSignature, OutStream& output) override;
         StatusCode changeUserSignature(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                        StringView newSignature) override;
+        StatusCode changeUserAttachmentQuota(Entities::IdTypeRef id, uint64_t newQuota, OutStream& output) override;
+        StatusCode changeUserAttachmentQuota(Entities::EntityCollection& collection, Entities::IdTypeRef id,
+                                             uint64_t newQuota) override;
         StatusCode changeUserLogo(Entities::IdTypeRef id, StringView newLogo, OutStream& output) override;
         StatusCode changeUserLogo(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                   StringView newLogo) override;

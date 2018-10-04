@@ -140,6 +140,7 @@ namespace Forum::Repository
         virtual StatusCode changeUserInfo(Entities::IdTypeRef id, StringView newInfo, OutStream& output) = 0;
         virtual StatusCode changeUserTitle(Entities::IdTypeRef id, StringView newTitle, OutStream& output) = 0;
         virtual StatusCode changeUserSignature(Entities::IdTypeRef id, StringView newSignature, OutStream& output) = 0;
+        virtual StatusCode changeUserAttachmentQuota(Entities::IdTypeRef id, uint64_t newQuota, OutStream& output) = 0;
         virtual StatusCode changeUserLogo(Entities::IdTypeRef id, StringView newLogo, OutStream& output) = 0;
         virtual StatusCode deleteUserLogo(Entities::IdTypeRef id, OutStream& output) = 0;
 
@@ -168,6 +169,8 @@ namespace Forum::Repository
                                            StringView newTitle) = 0;
         virtual StatusCode changeUserSignature(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                                StringView newSignature) = 0;
+        virtual StatusCode changeUserAttachmentQuota(Entities::EntityCollection& collection, 
+                                                     Entities::IdTypeRef id, uint64_t newQuota) = 0;
         virtual StatusCode changeUserLogo(Entities::EntityCollection& collection, Entities::IdTypeRef id,
                                           StringView newLogo) = 0;
         virtual StatusCode deleteUserLogo(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
@@ -424,7 +427,9 @@ namespace Forum::Repository
     public:
         DECLARE_INTERFACE_MANDATORY(IAttachmentRepository)
 
-        virtual StatusCode getAttachments(OutStream& output, RetrieveAttachmentsBy by) const = 0;
+        virtual StatusCode getAttachments(RetrieveAttachmentsBy by, OutStream& output) const = 0;
+        virtual StatusCode getAttachmentsOfUser(Entities::IdTypeRef id, RetrieveAttachmentsBy by, 
+                                                OutStream& output) const = 0;
         virtual StatusCode canGetAttachment(Entities::IdTypeRef id, OutStream& output) const = 0;
 
         virtual StatusCode addNewAttachment(StringView name, uint64_t size, OutStream& output) = 0;

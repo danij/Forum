@@ -30,7 +30,9 @@ namespace Forum::Repository
         explicit MemoryRepositoryAttachment(MemoryStoreRef store, 
                                             Authorization::AttachmentAuthorizationRef authorization);
 
-        StatusCode getAttachments(OutStream& output, RetrieveAttachmentsBy by) const override;
+        StatusCode getAttachments(RetrieveAttachmentsBy by, OutStream& output) const override;
+        StatusCode getAttachmentsOfUser(Entities::IdTypeRef id, RetrieveAttachmentsBy by, 
+                                        OutStream& output) const override;
         StatusCode canGetAttachment(Entities::IdTypeRef id, OutStream& output) const override;
 
         StatusCode addNewAttachment(StringView name, uint64_t size, OutStream& output) override;

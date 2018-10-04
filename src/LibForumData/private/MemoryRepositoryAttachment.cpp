@@ -57,7 +57,7 @@ MemoryRepositoryAttachment::MemoryRepositoryAttachment(MemoryStoreRef store, Att
     }
 }
 
-StatusCode MemoryRepositoryAttachment::getAttachments(OutStream& output, RetrieveAttachmentsBy by) const
+StatusCode MemoryRepositoryAttachment::getAttachments(RetrieveAttachmentsBy by, OutStream& output) const
 {
     StatusWriter status(output);
 
@@ -95,6 +95,58 @@ StatusCode MemoryRepositoryAttachment::getAttachments(OutStream& output, Retriev
     return status;
 }
 
+StatusCode MemoryRepositoryAttachment::getAttachmentsOfUser(IdTypeRef id, RetrieveAttachmentsBy by, 
+                                                            OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+    {
+        auto& currentUser = performedBy.get(collection, *store_);
+
+        const auto& index = collection.users().byId();
+        auto it = index.find(id);
+        if (it == index.end())
+        {
+            status = StatusCode::NOT_FOUND;
+            return;
+        }
+  
+        auto& user = **it;
+
+        if ( ! (status = authorization_->getAttachmentOfUser(currentUser, user)))
+        {
+            return;
+        }
+
+        status.disable();
+
+        const auto pageSize = getGlobalConfig()->attachment.maxAttachmentsPerPage;
+        const auto& displayContext = Context::getDisplayContext();
+
+        const SerializationRestriction restriction(collection.grantedPrivileges(), collection, currentUser.id(), 
+                                                   Context::getCurrentTime());
+        BoolTemporaryChanger _(serializationSettings.hideAttachmentCreatedBy, true);
+        BoolTemporaryChanger __(serializationSettings.allowDisplayAttachmentIpAddress, 
+                restriction.isAllowed(ForumWidePrivilege::GET_ALL_ATTACHMENTS));
+
+        const auto ascending = displayContext.sortOrder == Context::SortOrder::Ascending;
+
+        switch (by)
+        {
+        case RetrieveAttachmentsBy::Created:
+            writeEntitiesWithPagination(user.attachments().byCreated(), "attachments", output, 
+                displayContext.pageNumber, pageSize, ascending, restriction);
+            break;
+        }
+
+        readEvents().onGetAttachments(createObserverContext(currentUser));
+    });
+    return status;
+}
+
 StatusCode MemoryRepositoryAttachment::canGetAttachment(IdTypeRef id, OutStream& output) const
 {
     StatusWriter status(output);
@@ -120,7 +172,7 @@ StatusCode MemoryRepositoryAttachment::canGetAttachment(IdTypeRef id, OutStream&
                           }
                       
                           attachment.nrOfGetRequests() += 1;
-                          readEvents().onGetAttachment(createObserverContext(currentUser, attachment));
+                          readEvents().onGetAttachment(createObserverContext(currentUser), attachment);
                       });
     return status;
 }

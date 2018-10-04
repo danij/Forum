@@ -111,6 +111,7 @@ namespace Forum::Entities
             Title,
             Signature,
             Logo,
+            AttachmentQuota
         };
 
         typedef Helpers::JsonReadyStringWithSortKey<64> NameType;

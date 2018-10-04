@@ -1105,6 +1105,54 @@ StatusCode MemoryRepositoryUser::changeUserSignature(EntityCollection& collectio
     return StatusCode::OK;
 }
 
+StatusCode MemoryRepositoryUser::changeUserAttachmentQuota(IdTypeRef id, const uint64_t newQuota, OutStream& output)
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+                           auto& indexById = collection.users().byId();
+                           auto it = indexById.find(id);
+                           if (it == indexById.end())
+                           {
+                               status = StatusCode::NOT_FOUND;
+                               return;
+                           }
+                           auto& user = **it;
+
+                           if ( ! (status = authorization_->changeUserAttachmentQuota(*currentUser, user, newQuota)))
+                           {
+                               return;
+                           }
+
+                           if ( ! (status = changeUserAttachmentQuota(collection, id, newQuota))) return;
+
+                           writeEvents().onChangeUser(createObserverContext(*currentUser), user, 
+                                                      User::ChangeType::AttachmentQuota);
+                       });
+    return status;
+}
+
+StatusCode MemoryRepositoryUser::changeUserAttachmentQuota(EntityCollection& collection, IdTypeRef id, 
+                                                           const uint64_t newQuota)
+{
+    auto& indexById = collection.users().byId();
+    const auto it = indexById.find(id);
+    if (it == indexById.end())
+    {
+        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        return StatusCode::NOT_FOUND;
+    }
+
+    UserPtr user = *it;
+    user->attachmentQuota() = newQuota;
+    
+    return StatusCode::OK;
+}
+
 StatusCode MemoryRepositoryUser::changeUserLogo(IdTypeRef id, StringView newLogo, OutStream& output)
 {
     StatusWriter status(output);

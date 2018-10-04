@@ -66,6 +66,8 @@ namespace Forum::Entities
         bool allowDisplayPrivateMessageIpAddress = false;
         bool hidePrivateMessageSource = false;
         bool hidePrivateMessageDestination = false;
+        bool hideAttachmentCreatedBy = false;
+        bool allowDisplayAttachmentIpAddress = false;
     };
 
     extern thread_local SerializationSettings serializationSettings;
@@ -83,6 +85,9 @@ namespace Forum::Entities
                                 const Authorization::SerializationRestriction& restriction);
 
     Json::JsonWriter& serialize(Json::JsonWriter& writer, const DiscussionCategory& category,
+                                const Authorization::SerializationRestriction& restriction);
+
+    Json::JsonWriter& serialize(Json::JsonWriter& writer, const Attachment& attachment,
                                 const Authorization::SerializationRestriction& restriction);
 
     /**

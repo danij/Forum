@@ -273,6 +273,16 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
             { {/*v0*/}, DECLARE_FORWARDER( 1, SEND_PRIVATE_MESSAGE ) },
             { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_PRIVATE_MESSAGE ) },
+
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_USER_ATTACHMENT_QUOTA ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_NEW_ATTACHMENT ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_ATTACHMENT_NAME ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, CHANGE_ATTACHMENT_APPROVAL ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, ADD_ATTACHMENT_TO_DISCUSSION_THREAD_MESSAGE ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, REMOVE_ATTACHMENT_FROM_DISCUSSION_THREAD_MESSAGE ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, DELETE_ATTACHMENT ) },
+            { {/*v0*/}, DECLARE_FORWARDER( 1, INCREMENT_ATTACHMENT_NUMBER_OF_GETS ) },
+
         };
     }
 
@@ -323,6 +333,14 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         CHECK_READ_ALL_DATA(size);
 
         CHECK_STATUS_CODE(repositories_.user->changeUserLogo(entityCollection_, id, newLogo));
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( CHANGE_USER_ATTACHMENT_QUOTA, 1 )
+        READ_UUID(id, data, size);
+        READ_TYPE(uint64_t, newQuota, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.user->changeUserAttachmentQuota(entityCollection_, id, newQuota));
     END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( DELETE_USER, 1 )
@@ -671,6 +689,61 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         CHECK_STATUS_CODE(repositories_.discussionCategory->removeDiscussionTagFromCategory(entityCollection_, tagId,
                                                                                             categoryId));
     END_DEFAULT_IMPORTER()
+    
+    BEGIN_DEFAULT_IMPORTER( ADD_NEW_ATTACHMENT, 1 )
+        READ_UUID(attachmentId, data, size);
+        READ_NONEMPTY_STRING(attachmentName, data, size);
+        READ_TYPE(uint64_t, attachmentSize, data, size);
+        READ_TYPE(uint32_t, attachmentApproved, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.attachment->addNewAttachment(entityCollection_, attachmentId, attachmentName, 
+                                                                     attachmentSize, 1 == attachmentApproved).status);
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( CHANGE_ATTACHMENT_NAME, 1 )
+        READ_UUID(attachmentId, data, size);
+        READ_NONEMPTY_STRING(name, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.attachment->changeAttachmentName(entityCollection_, attachmentId, name));
+    END_DEFAULT_IMPORTER()
+    
+    BEGIN_DEFAULT_IMPORTER( CHANGE_ATTACHMENT_APPROVAL, 1 )
+        READ_UUID(attachmentId, data, size);
+        READ_TYPE(uint32_t, approved, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.attachment->changeAttachmentApproval(entityCollection_, attachmentId, 
+                                                                             0 != approved));
+    END_DEFAULT_IMPORTER()
+    
+    BEGIN_DEFAULT_IMPORTER( ADD_ATTACHMENT_TO_DISCUSSION_THREAD_MESSAGE, 1 )
+        READ_UUID(attachmentId, data, size);
+        READ_UUID(messageId, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.attachment->addAttachmentToDiscussionThreadMessage(entityCollection_, 
+                                                                                           attachmentId,
+                                                                                           messageId));
+    END_DEFAULT_IMPORTER()
+    
+    BEGIN_DEFAULT_IMPORTER( REMOVE_ATTACHMENT_FROM_DISCUSSION_THREAD_MESSAGE, 1 )
+        READ_UUID(attachmentId, data, size);
+        READ_UUID(messageId, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.attachment->removeAttachmentFromDiscussionThreadMessage(entityCollection_, 
+                                                                                                attachmentId,
+                                                                                                messageId));
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( DELETE_ATTACHMENT, 1 )
+        READ_UUID(attachmentId, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        CHECK_STATUS_CODE(repositories_.attachment->deleteAttachment(entityCollection_, attachmentId));
+    END_DEFAULT_IMPORTER()
 
     BEGIN_DEFAULT_IMPORTER( INCREMENT_DISCUSSION_THREAD_NUMBER_OF_VISITS, 1 )
         READ_UUID(threadId, data, size);
@@ -685,6 +758,22 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         else
         {
             cachedNrOfThreadVisits_.insert(std::make_pair(threadId, nrOfVisits));
+        }
+    END_DEFAULT_IMPORTER()
+
+    BEGIN_DEFAULT_IMPORTER( INCREMENT_ATTACHMENT_NUMBER_OF_GETS, 1 )
+        READ_UUID(attachmentId, data, size);
+        READ_TYPE(uint32_t, nrOfVisits, data, size);
+        CHECK_READ_ALL_DATA(size);
+
+        auto it = cachedNrOfAttachmentGets_.find(attachmentId);
+        if (it != cachedNrOfAttachmentGets_.end())
+        {
+            it->second += nrOfVisits;
+        }
+        else
+        {
+            cachedNrOfAttachmentGets_.insert(std::make_pair(attachmentId, nrOfVisits));
         }
     END_DEFAULT_IMPORTER()
 
@@ -1156,6 +1245,22 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
     }
 
+    void updateAttachmentGetCount()
+    {
+        for (auto& pair : cachedNrOfAttachmentGets_)
+        {
+            auto& id = pair.first;
+            const auto nrOfVisits = pair.second;
+
+            auto& collection = entityCollection_.attachments().byId();
+            auto it = collection.find(id);
+            if (it != collection.end())
+            {
+                (*it)->nrOfGetRequests() += nrOfVisits;
+            }
+        }
+    }
+
     void updateUsersLastSeen()
     {
         auto& users = entityCollection_.users().byId();
@@ -1188,6 +1293,7 @@ private:
     EventType currentEventType_{};
     std::unordered_map<UuidString, uint32_t> cachedNrOfThreadVisits_;
     std::unordered_map<UuidString, std::unordered_map<UuidString, uint32_t>> latestThreadVisitedPage_;
+    std::unordered_map<UuidString, uint32_t> cachedNrOfAttachmentGets_;
     std::unordered_map<UuidString, Timestamp> usersLastSeen_;
 };
 

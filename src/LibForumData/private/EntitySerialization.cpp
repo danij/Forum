@@ -641,3 +641,32 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
         << objEnd;
     return writer;
 }
+
+JsonWriter& Entities::serialize(JsonWriter& writer, const Attachment& attachment,
+                                const SerializationRestriction& restriction)
+{
+    writer << objStart
+        << propertySafeName("id", attachment.id())
+        << propertySafeName("created", attachment.created())
+        << propertySafeName("name", attachment.name())
+        << propertySafeName("size", attachment.size())
+        << propertySafeName("approved", attachment.approved())
+        << propertySafeName("nrOfGetRequests", attachment.nrOfGetRequests());
+
+    if (serializationSettings.allowDisplayAttachmentIpAddress)
+    {
+        writeVisitDetails(writer, attachment.creationDetails());        
+    }
+
+    if ( ! serializationSettings.hideAttachmentCreatedBy)
+    {
+        BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
+
+        writer.newPropertyWithSafeName("createdBy");
+        serialize(writer, attachment.createdBy(), restriction);
+    }
+
+    writer
+        << objEnd;
+    return writer;
+}

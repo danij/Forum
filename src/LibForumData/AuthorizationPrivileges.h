@@ -314,7 +314,7 @@ namespace Forum::Authorization
 
         CREATE_ATTACHMENT,
         DELETE_ATTACHMENT,
-        VIEW_ALL_ATTACHMENTS,
+        GET_ALL_ATTACHMENTS,
         GET_ATTACHMENTS_OF_USER,
         CHANGE_ANY_ATTACHMENT_NAME,
         AUTO_APPROVE_ATTACHMENT,
@@ -369,7 +369,7 @@ namespace Forum::Authorization
 
         "create_attachment",
         "delete_attachment",
-        "view_all_attachments",
+        "get_all_attachments",
         "get_attachments_of_user",
         "change_any_attachment_name",
         "auto_approve_attachment",
@@ -417,7 +417,7 @@ namespace Forum::Authorization
         ForumWidePrivilege::VIEW_PRIVATE_MESSAGE_IP_ADDRESS,
         ForumWidePrivilege::CREATE_ATTACHMENT,
         ForumWidePrivilege::DELETE_ATTACHMENT,
-        ForumWidePrivilege::VIEW_ALL_ATTACHMENTS,
+        ForumWidePrivilege::GET_ALL_ATTACHMENTS,
         ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_NAME,
         ForumWidePrivilege::AUTO_APPROVE_ATTACHMENT,
         ForumWidePrivilege::CHANGE_USER_ATTACHMENT_QUOTA,
