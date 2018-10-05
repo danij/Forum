@@ -69,14 +69,14 @@ namespace Forum::Entities
 
         auto& nrOfGetRequests() const { return nrOfGetRequests_; }
 
-        void addMessage(const EntityPointer<DiscussionThreadMessage> messagePtr)
+        bool addMessage(const EntityPointer<DiscussionThreadMessage> messagePtr)
         {
-            messages_.insert(messagePtr);
+            return messages_.insert(messagePtr).second;
         }
 
-        void removeMessage(const EntityPointer<DiscussionThreadMessage> messagePtr)
+        bool removeMessage(const EntityPointer<DiscussionThreadMessage> messagePtr)
         {
-            messages_.erase(messagePtr);
+            return messages_.erase(messagePtr) > 0;
         }
         
     private:

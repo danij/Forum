@@ -482,7 +482,10 @@ StatusCode MemoryRepositoryAttachment::addAttachmentToDiscussionThreadMessage(En
     AttachmentPtr attachmentPtr = *attachmentIt;
     DiscussionThreadMessagePtr messagePtr = *messageIt;
 
-    attachmentPtr->addMessage(messagePtr);
+    if ( ! attachmentPtr->addMessage(messagePtr))
+    {
+        return StatusCode::ALREADY_EXISTS;
+    }
     messagePtr->addAttachment(attachmentPtr);
 
     DiscussionThreadMessage& message = *messagePtr;
@@ -571,7 +574,10 @@ StatusCode MemoryRepositoryAttachment::removeAttachmentFromDiscussionThreadMessa
     AttachmentPtr attachmentPtr = *attachmentIt;
     DiscussionThreadMessagePtr messagePtr = *messageIt;
 
-    attachmentPtr->removeMessage(messagePtr);
+    if ( ! attachmentPtr->removeMessage(messagePtr))
+    {
+        return StatusCode::NO_EFFECT;
+    }
     messagePtr->removeAttachment(attachmentPtr);
 
     DiscussionThreadMessage& message = *messagePtr;
