@@ -317,6 +317,7 @@ namespace Forum::Authorization
         GET_ALL_ATTACHMENTS,
         GET_ATTACHMENTS_OF_USER,
         CHANGE_ANY_ATTACHMENT_NAME,
+        CHANGE_ANY_ATTACHMENT_APPROVAL,
         AUTO_APPROVE_ATTACHMENT,
         CHANGE_USER_ATTACHMENT_QUOTA,
 
@@ -372,6 +373,7 @@ namespace Forum::Authorization
         "get_all_attachments",
         "get_attachments_of_user",
         "change_any_attachment_name",
+        "change_any_attachment_approval",
         "auto_approve_attachment",
         "change_user_attachment_quota",
     };
@@ -419,6 +421,7 @@ namespace Forum::Authorization
         ForumWidePrivilege::DELETE_ATTACHMENT,
         ForumWidePrivilege::GET_ALL_ATTACHMENTS,
         ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_NAME,
+        ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_APPROVAL,
         ForumWidePrivilege::AUTO_APPROVE_ATTACHMENT,
         ForumWidePrivilege::CHANGE_USER_ATTACHMENT_QUOTA,
         ForumWidePrivilege::NO_THROTTLING

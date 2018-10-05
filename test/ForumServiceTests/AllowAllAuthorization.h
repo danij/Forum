@@ -50,6 +50,8 @@ namespace Forum
                                                 const Entities::User& /*user*/, StringView /*newTitle*/) const override { return {}; }
             AuthorizationStatus changeUserSignature(const Entities::User& /*currentUser*/,
                                                     const Entities::User& /*user*/, StringView /*newSignature*/) const override { return {}; }
+            AuthorizationStatus changeUserAttachmentQuota(const Entities::User& /*currentUser*/,
+                                                          const Entities::User& /*user*/, uint64_t /*newQuota*/) const override { return {}; }
             AuthorizationStatus changeUserLogo(const Entities::User& /*currentUser*/,
                                                const Entities::User& /*user*/, StringView /*newLogo*/) const override { return {}; }
             AuthorizationStatus deleteUserLogo(const Entities::User& /*currentUser*/,
@@ -221,6 +223,29 @@ namespace Forum
             AuthorizationStatus removeDiscussionTagFromCategory(const Entities::User& /*currentUser*/,
                                                                 const Entities::DiscussionTag& /*tag*/,
                                                                 const Entities::DiscussionCategory& /*category*/) const override { return {}; }
+
+            AuthorizationStatus getAttachments(const Entities::User& /*currentUser*/) const override { return {}; }
+            AuthorizationStatus getAttachmentsOfUser(const Entities::User& /*currentUser*/,
+                                                     const Entities::User& /*user*/) const override { return {}; }
+            AuthorizationStatus canGetAttachment(const Entities::User& /*currentUser*/,
+                                                 const Entities::Attachment& /*attachment*/) const override { return {}; }
+            AuthorizationStatus addNewAttachment(const Entities::User& /*currentUser*/, 
+                                                 StringView /*name*/, uint64_t /*size*/) const override { return {}; }
+            AuthorizationStatus autoApproveAttachment(const Entities::User& /*currentUser*/) const override { return {}; }
+            AuthorizationStatus changeAttachmentName(const Entities::User& /*currentUser*/,
+                                                     const Entities::Attachment& /*attachment*/,
+                                                     StringView /*newName*/) const override { return {}; }
+            AuthorizationStatus changeAttachmentApproval(const Entities::User& /*currentUser*/,
+                                                         const Entities::Attachment& /*attachment*/,
+                                                         bool /*newApproval*/) const override { return {}; }
+            AuthorizationStatus deleteAttachment(const Entities::User& /*currentUser*/,
+                                                 const Entities::Attachment& /*attachment*/) const { return {}; }
+            AuthorizationStatus addAttachmentToDiscussionThreadMessage(const Entities::User& /*currentUser*/,
+                                                                       const Entities::Attachment& /*attachment*/,
+                                                                       const Entities::DiscussionThreadMessage& /*message*/) const { return {}; }
+            AuthorizationStatus removeAttachmentFromDiscussionThreadMessage(const Entities::User& /*currentUser*/,
+                                                                            const Entities::Attachment& /*attachment*/,
+                                                                            const Entities::DiscussionThreadMessage& /*message*/) const { return {}; }
 
             AuthorizationStatus getEntitiesCount(const Entities::User& /*currentUser*/) const override { return {}; }
 

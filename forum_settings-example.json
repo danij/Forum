@@ -110,6 +110,8 @@
             "viewCreatorUser": 0,
             "viewIpAddress": 10000,
             "viewVotes": 0,
+            "viewAttachment": 0,
+            "viewUnapprovedAttachment": 1000,
             "upVote": 0,
             "downVote": 0,
             "resetVote": 0,
@@ -120,6 +122,8 @@
             "changeApproval": 1000,
             "deleteThreadMessage": 1000,
             "move": 2000,
+            "addAttachment": 1,
+            "removeAttachment": 1,
             "adjustPrivilege": 10000
         },
         "thread": {
@@ -191,6 +195,7 @@
             "changeOwnUserInfo": 1,
             "changeAnyUserName": 30000,
             "changeAnyUserInfo": 30000,
+            "changeAnyUserAttachmentQuota": 20000,
             "deleteAnyUser": 30000,
             "viewForumWideRequiredPrivileges": 1000,
             "viewForumWideAssignedPrivileges": 1000,
@@ -205,6 +210,13 @@
             "deleteOwnUserLogo": 1,
             "deleteAnyUserLogo": 1000,
             "getUserVoteHistory": 0,
+            "getAllAttachments": 10000,
+            "getAttachmentsOfUser": 10000,
+            "createAttachment": 1,
+            "autoApproveAttachment": 1,
+            "changeAnyAttachmentName": 10000,
+            "changeAnyAttachmentApproval": 10000,
+            "deleteAttachment": 10000,
             "noThrottling": 10000
         }
     },

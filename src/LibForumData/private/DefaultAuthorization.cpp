@@ -112,6 +112,15 @@ AuthorizationStatus DefaultAuthorization::changeUserSignature(const User& curren
     return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_SIGNATURE, with, user.id());
 }
 
+AuthorizationStatus DefaultAuthorization::changeUserAttachmentQuota(const User& currentUser, const User& user,
+                                                                    uint64_t /*newQuota*/) const
+{
+    if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
+
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_USER_ATTACHMENT_QUOTA, with, user.id());
+}
+
 AuthorizationStatus DefaultAuthorization::changeUserLogo(const User& currentUser, const User& user,
                                                          StringView /*newLogo*/) const
 {
@@ -721,6 +730,175 @@ AuthorizationStatus DefaultAuthorization::removeDiscussionTagFromCategory(const 
 
 
     return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::REMOVE_TAG, with);
+}
+
+AuthorizationStatus DefaultAuthorization::getAttachments(const User& currentUser) const
+{
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_ALL_ATTACHMENTS, with);
+}
+
+AuthorizationStatus DefaultAuthorization::getAttachmentsOfUser(const User& currentUser, const User& user) const
+{
+    if (currentUser.id() == user.id())
+    {
+        return AuthorizationStatus::OK;
+    }
+    
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_ATTACHMENTS_OF_USER, with);
+}
+
+bool DefaultAuthorization::checkMessageAllowViewApproval(const User& currentUser,
+                                                         const DiscussionThreadMessage& message) const
+{
+    if (message.approved())
+    {
+        return true;
+    }
+    PrivilegeValueType with;
+    return (message.createdBy().id() == currentUser.id())
+        || (AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED, with));
+}
+
+bool DefaultAuthorization::isAllowedToViewMessage(const User& currentUser, const DiscussionThreadMessage& message) const
+{
+    PrivilegeValueType with;
+    return (AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW, with))
+        && checkMessageAllowViewApproval(currentUser, message)
+        && isAllowedToViewThread(currentUser, *message.parentThread());
+}
+
+bool DefaultAuthorization::checkThreadAllowViewApproval(const User& currentUser, const DiscussionThread& thread) const
+{
+    if (thread.approved())
+    {
+        return true;
+    }
+    PrivilegeValueType with;
+    return (thread.createdBy().id() == currentUser.id())
+        || (AuthorizationStatus::OK == isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::VIEW_UNAPPROVED, with));
+}
+
+bool DefaultAuthorization::isAllowedToViewThread(const User& currentUser, const DiscussionThread& thread) const
+{
+    PrivilegeValueType with;
+    return (AuthorizationStatus::OK == isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::VIEW, with))
+        && checkThreadAllowViewApproval(currentUser, thread);
+}
+
+AuthorizationStatus DefaultAuthorization::canGetAttachment(const User& currentUser,
+                                                           const Attachment& attachment) const
+{
+    if (currentUser.id() == attachment.createdBy().id())
+    {
+        return AuthorizationStatus::OK;
+    }
+    
+    PrivilegeValueType with;
+    if (AuthorizationStatus::OK == isAllowed(currentUser.id(), ForumWidePrivilege::GET_ALL_ATTACHMENTS, with))
+    {
+        return AuthorizationStatus::OK;
+    }
+    if (AuthorizationStatus::OK == isAllowed(currentUser.id(), ForumWidePrivilege::GET_ATTACHMENTS_OF_USER, with))
+    {
+        return AuthorizationStatus::OK;
+    }
+
+    for (const DiscussionThreadMessage* messagePtr : attachment.messages())
+    {
+        const DiscussionThreadMessage& message = *messagePtr;
+
+        if (currentUser.id() == message.createdBy().id())
+        {
+            return AuthorizationStatus::OK;
+        }
+        if ((AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW_ATTACHMENT, with))
+            && (attachment.approved()
+                || (AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED_ATTACHMENT, with)))
+            && isAllowedToViewMessage(currentUser, message))
+        {
+            return AuthorizationStatus::OK;
+        }
+    }
+    return AuthorizationStatus::NOT_ALLOWED;
+}
+
+AuthorizationStatus DefaultAuthorization::addNewAttachment(const User& currentUser,
+                                                           StringView /*name*/, uint64_t /*size*/) const
+{
+    if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
+
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::CREATE_ATTACHMENT, with);
+}
+
+AuthorizationStatus DefaultAuthorization::autoApproveAttachment(const User& currentUser) const
+{
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::AUTO_APPROVE_ATTACHMENT, with);
+}
+
+AuthorizationStatus DefaultAuthorization::changeAttachmentName(const User& currentUser, const Attachment& attachment,
+                                                               StringView /*newName*/) const
+{
+    if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
+
+    if (currentUser.id() == attachment.createdBy().id())
+    {
+        return AuthorizationStatus::OK;
+    }
+
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_NAME, with);
+}
+
+AuthorizationStatus DefaultAuthorization::changeAttachmentApproval(const User& currentUser, const Attachment& attachment,
+                                                                   bool /*newApproval*/) const
+{
+    if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
+
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_APPROVAL, with);
+}
+
+AuthorizationStatus DefaultAuthorization::deleteAttachment(const User& currentUser, const Attachment& attachment) const
+{
+    if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
+
+    if (currentUser.id() == attachment.createdBy().id())
+    {
+        return AuthorizationStatus::OK;
+    }
+
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ATTACHMENT, with);
+}
+
+AuthorizationStatus DefaultAuthorization::addAttachmentToDiscussionThreadMessage(const User& currentUser,
+                                                                                 const Attachment& attachment,
+                                                                                 const DiscussionThreadMessage& message) const
+{
+    if (currentUser.id() != attachment.createdBy().id())
+    {
+        return AuthorizationStatus::NOT_ALLOWED;
+    }
+
+    PrivilegeValueType with;
+    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::ADD_ATTACHMENT, with);
+}
+
+AuthorizationStatus DefaultAuthorization::removeAttachmentFromDiscussionThreadMessage(const User& currentUser,
+                                                                                      const Attachment& /*attachment*/,
+                                                                                      const DiscussionThreadMessage& message) const
+{
+    if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
+    
+    PrivilegeValueType with;
+    return (AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::REMOVE_ATTACHMENT, with))
+        || (AuthorizationStatus::OK == isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ATTACHMENT, with))
+        ? AuthorizationStatus::OK
+        : AuthorizationStatus::NOT_ALLOWED;
 }
 
 AuthorizationStatus DefaultAuthorization::getEntitiesCount(const User& currentUser) const

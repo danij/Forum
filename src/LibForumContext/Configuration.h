@@ -157,24 +157,28 @@ namespace Forum::Configuration
     {
         struct
         {
-            PrivilegeValueType view                   = DenyPrivilegeValue;
-            PrivilegeValueType viewUnapproved         = DenyPrivilegeValue;
-            PrivilegeValueType viewRequiredPrivileges = DenyPrivilegeValue;
-            PrivilegeValueType viewAssignedPrivileges = DenyPrivilegeValue;
-            PrivilegeValueType viewCreatorUser        = DenyPrivilegeValue;
-            PrivilegeValueType viewIpAddress          = DenyPrivilegeValue;
-            PrivilegeValueType viewVotes              = DenyPrivilegeValue;
-            PrivilegeValueType upVote                 = DenyPrivilegeValue;
-            PrivilegeValueType downVote               = DenyPrivilegeValue;
-            PrivilegeValueType resetVote              = DenyPrivilegeValue;
-            PrivilegeValueType addComment             = DenyPrivilegeValue;
-            PrivilegeValueType setCommentToSolved     = DenyPrivilegeValue;
-            PrivilegeValueType getMessageComments     = DenyPrivilegeValue;
-            PrivilegeValueType changeContent          = DenyPrivilegeValue;
-            PrivilegeValueType changeApproval         = DenyPrivilegeValue;
-            PrivilegeValueType deleteThreadMessage    = DenyPrivilegeValue;
-            PrivilegeValueType move                   = DenyPrivilegeValue;
-            PrivilegeValueType adjustPrivilege        = DenyPrivilegeValue;
+            PrivilegeValueType view                     = DenyPrivilegeValue;
+            PrivilegeValueType viewUnapproved           = DenyPrivilegeValue;
+            PrivilegeValueType viewRequiredPrivileges   = DenyPrivilegeValue;
+            PrivilegeValueType viewAssignedPrivileges   = DenyPrivilegeValue;
+            PrivilegeValueType viewCreatorUser          = DenyPrivilegeValue;
+            PrivilegeValueType viewIpAddress            = DenyPrivilegeValue;
+            PrivilegeValueType viewVotes                = DenyPrivilegeValue;
+            PrivilegeValueType viewAttachment           = DenyPrivilegeValue;
+            PrivilegeValueType viewUnapprovedAttachment = DenyPrivilegeValue;
+            PrivilegeValueType upVote                   = DenyPrivilegeValue;
+            PrivilegeValueType downVote                 = DenyPrivilegeValue;
+            PrivilegeValueType resetVote                = DenyPrivilegeValue;
+            PrivilegeValueType addComment               = DenyPrivilegeValue;
+            PrivilegeValueType setCommentToSolved       = DenyPrivilegeValue;
+            PrivilegeValueType getMessageComments       = DenyPrivilegeValue;
+            PrivilegeValueType changeContent            = DenyPrivilegeValue;
+            PrivilegeValueType changeApproval           = DenyPrivilegeValue;
+            PrivilegeValueType deleteThreadMessage      = DenyPrivilegeValue;
+            PrivilegeValueType move                     = DenyPrivilegeValue;
+            PrivilegeValueType addAttachment            = DenyPrivilegeValue;
+            PrivilegeValueType removeAttachment         = DenyPrivilegeValue;
+            PrivilegeValueType adjustPrivilege          = DenyPrivilegeValue;
         } threadMessage;
 
         struct
@@ -266,6 +270,14 @@ namespace Forum::Configuration
             PrivilegeValueType changeAnyUserLogo                    = DenyPrivilegeValue;
             PrivilegeValueType deleteOwnUserLogo                    = DenyPrivilegeValue;
             PrivilegeValueType deleteAnyUserLogo                    = DenyPrivilegeValue;
+            PrivilegeValueType changeAnyUserAttachmentQuota         = DenyPrivilegeValue;
+            PrivilegeValueType getAllAttachments                    = DenyPrivilegeValue;
+            PrivilegeValueType getAttachmentsOfUser                 = DenyPrivilegeValue;
+            PrivilegeValueType createAttachment                     = DenyPrivilegeValue;
+            PrivilegeValueType autoApproveAttachment                = DenyPrivilegeValue;
+            PrivilegeValueType changeAnyAttachmentName              = DenyPrivilegeValue;
+            PrivilegeValueType changeAnyAttachmentApproval          = DenyPrivilegeValue;
+            PrivilegeValueType deleteAttachment                     = DenyPrivilegeValue;
             PrivilegeValueType noThrottling                         = DenyPrivilegeValue;
         } forumWide;
     };

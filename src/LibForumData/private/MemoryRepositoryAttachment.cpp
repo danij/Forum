@@ -116,7 +116,7 @@ StatusCode MemoryRepositoryAttachment::getAttachmentsOfUser(IdTypeRef id, Retrie
   
         auto& user = **it;
 
-        if ( ! (status = authorization_->getAttachmentOfUser(currentUser, user)))
+        if ( ! (status = authorization_->getAttachmentsOfUser(currentUser, user)))
         {
             return;
         }
@@ -305,7 +305,7 @@ StatusCode MemoryRepositoryAttachment::changeAttachmentName(EntityCollection& co
     }
 
     AttachmentPtr attachment = *it;
-    attachment->name = Attachment::NameType(newName);
+    attachment->name() = Attachment::NameType(newName);
 
     return StatusCode::OK;
 }

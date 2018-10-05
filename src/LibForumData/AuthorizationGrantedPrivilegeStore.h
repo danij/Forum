@@ -276,6 +276,26 @@ namespace Forum::Authorization
             return isAllowed(forumWidePrivilegeStore_, privilege);
         }
 
+        bool isAllowedToViewAnyAttachment() const
+        {
+            return isAllowed(ForumWidePrivilege::GET_ALL_ATTACHMENTS)
+                || isAllowed(ForumWidePrivilege::GET_ATTACHMENTS_OF_USER);
+        }
+
+        bool isAllowedToViewAttachment(const Entities::Attachment& attachment, 
+                                       const Entities::DiscussionThreadMessage& message) const
+        {
+            return (message.createdBy().id() == userId())
+                || (attachment.createdBy().id() == userId())
+                || attachment.approved()
+                || isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED_ATTACHMENT);
+        }
+
+        bool isAllowedToViewMessageAttachments(const Entities::DiscussionThreadMessage& message) const
+        {
+            return isAllowed(message, DiscussionThreadMessagePrivilege::VIEW_ATTACHMENT);
+        }
+
         bool checkMessageAllowViewApproval(const Entities::DiscussionThreadMessage& message) const
         {
             if (message.approved())
@@ -293,7 +313,7 @@ namespace Forum::Authorization
                 && isAllowedToViewThread(*message.parentThread());
         }
 
-        bool checkMessageAllowViewApproval(const Entities::DiscussionThread& thread) const
+        bool checkThreadAllowViewApproval(const Entities::DiscussionThread& thread) const
         {
             if (thread.approved())
             {
@@ -306,7 +326,7 @@ namespace Forum::Authorization
         bool isAllowedToViewThread(const Entities::DiscussionThread& thread) const
         {
             return isAllowed(thread, DiscussionThreadPrivilege::VIEW)
-                && checkMessageAllowViewApproval(thread);
+                && checkThreadAllowViewApproval(thread);
         }
 
     private:

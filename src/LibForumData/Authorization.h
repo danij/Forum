@@ -54,6 +54,8 @@ namespace Forum::Authorization
                                                     const Entities::User& user, StringView newTitle) const = 0;
         virtual AuthorizationStatus changeUserSignature(const Entities::User& currentUser,
                                                         const Entities::User& user, StringView newSignature) const = 0;
+        virtual AuthorizationStatus changeUserAttachmentQuota(const Entities::User& currentUser,
+                                                              const Entities::User& user, uint64_t newQuota) const = 0;
         virtual AuthorizationStatus changeUserLogo(const Entities::User& currentUser,
                                                    const Entities::User& user, StringView newLogo) const = 0;
         virtual AuthorizationStatus deleteUserLogo(const Entities::User& currentUser,
@@ -318,6 +320,29 @@ namespace Forum::Authorization
     {
     public:
         DECLARE_INTERFACE_MANDATORY(IAttachmentAuthorization)
+
+        virtual AuthorizationStatus getAttachments(const Entities::User& currentUser) const = 0;
+        virtual AuthorizationStatus getAttachmentsOfUser(const Entities::User& currentUser,
+                                                         const Entities::User& user) const = 0;
+        virtual AuthorizationStatus canGetAttachment(const Entities::User& currentUser,
+                                                     const Entities::Attachment& attachment) const = 0;
+        virtual AuthorizationStatus addNewAttachment(const Entities::User& currentUser,
+                                                     StringView name, uint64_t size) const = 0;
+        virtual AuthorizationStatus autoApproveAttachment(const Entities::User& currentUser) const = 0;
+        virtual AuthorizationStatus changeAttachmentName(const Entities::User& currentUser,
+                                                         const Entities::Attachment& attachment,
+                                                         StringView newName) const = 0;
+        virtual AuthorizationStatus changeAttachmentApproval(const Entities::User& currentUser,
+                                                            const Entities::Attachment& attachment,
+                                                            bool newApproval) const = 0;
+        virtual AuthorizationStatus deleteAttachment(const Entities::User& currentUser,
+                                                     const Entities::Attachment& attachment) const = 0;
+        virtual AuthorizationStatus addAttachmentToDiscussionThreadMessage(const Entities::User& currentUser,
+                                                                           const Entities::Attachment& attachment,
+                                                                           const Entities::DiscussionThreadMessage& message) const = 0;
+        virtual AuthorizationStatus removeAttachmentFromDiscussionThreadMessage(const Entities::User& currentUser,
+                                                                                const Entities::Attachment& attachment,
+                                                                                const Entities::DiscussionThreadMessage& message) const = 0;
     };
     typedef std::shared_ptr<IAttachmentAuthorization> AttachmentAuthorizationRef;
 

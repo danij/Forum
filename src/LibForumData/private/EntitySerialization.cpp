@@ -108,7 +108,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     const auto allowView = serializationSettings.allowDisplayDiscussionThreadMessage
             ? (*serializationSettings.allowDisplayDiscussionThreadMessage
                 && restriction.checkMessageAllowViewApproval(message)
-                && restriction.checkMessageAllowViewApproval(*message.parentThread()))
+                && restriction.checkThreadAllowViewApproval(*message.parentThread()))
             : restriction.isAllowedToViewMessage(message);
 
     if ( ! allowView) return writer.null();
@@ -207,6 +207,25 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         voteStatus = 1;
     }
     writer << propertySafeName("voteStatus", voteStatus);
+
+    if (( ! message.attachments().empty()) && restriction.isAllowedToViewMessageAttachments(message))
+    {
+        writer.newPropertyWithSafeName("attachments");
+        writer.startArray();
+
+        const auto allowViewAllAttachments = restriction.isAllowedToViewAnyAttachment();
+        for (const auto attachmentPtr: message.attachments())
+        {
+            const Attachment& attachment = *attachmentPtr;
+
+            if (allowViewAllAttachments || restriction.isAllowedToViewAttachment(attachment, message))
+            {
+                serialize(writer, attachment, restriction);
+            }
+        }
+
+        writer.endArray();
+    }
 
     if ( ! serializationSettings.hidePrivileges)
     {
@@ -651,6 +670,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const Attachment& attachment
         << propertySafeName("name", attachment.name())
         << propertySafeName("size", attachment.size())
         << propertySafeName("approved", attachment.approved())
+        << propertySafeName("nrOfMessagesAttached", attachment.messages().size())
         << propertySafeName("nrOfGetRequests", attachment.nrOfGetRequests());
 
     if (serializationSettings.allowDisplayAttachmentIpAddress)

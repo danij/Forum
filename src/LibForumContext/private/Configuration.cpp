@@ -140,6 +140,8 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewCreatorUser);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewIpAddress);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewVotes);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewAttachment);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.viewUnapprovedAttachment);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.upVote);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.downVote);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.resetVote);
@@ -150,6 +152,8 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.changeApproval);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.deleteThreadMessage);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.move);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.addAttachment);
+    LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.removeAttachment);
     LOAD_CONFIG_VALUE(defaultPrivileges.threadMessage.adjustPrivilege);
 
     LOAD_CONFIG_VALUE(defaultPrivileges.thread.view);
@@ -230,6 +234,14 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserLogo);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteOwnUserLogo);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteAnyUserLogo);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserAttachmentQuota);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getAllAttachments);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getAttachmentsOfUser);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.createAttachment);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.autoApproveAttachment);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyAttachmentName);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyAttachmentApproval);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteAttachment);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.noThrottling);
     
     LOAD_CONFIG_VALUE(defaultPrivilegeGrants.thread.create.value);

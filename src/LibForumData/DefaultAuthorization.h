@@ -59,6 +59,8 @@ namespace Forum::Authorization
                                             const Entities::User& user, StringView newTitle) const override;
         AuthorizationStatus changeUserSignature(const Entities::User& currentUser,
                                                 const Entities::User& user, StringView newSignature) const override;
+        AuthorizationStatus changeUserAttachmentQuota(const Entities::User& currentUser,
+                                                      const Entities::User& user, uint64_t newQuota) const override;
         AuthorizationStatus changeUserLogo(const Entities::User& currentUser,
                                            const Entities::User& user, StringView newLogo) const override;
         AuthorizationStatus deleteUserLogo(const Entities::User& currentUser,
@@ -229,6 +231,29 @@ namespace Forum::Authorization
                                                             const Entities::DiscussionTag& tag,
                                                             const Entities::DiscussionCategory& category) const override;
 
+        AuthorizationStatus getAttachments(const Entities::User& currentUser) const override;
+        AuthorizationStatus getAttachmentsOfUser(const Entities::User& currentUser, 
+                                                 const Entities::User& user) const override;
+        AuthorizationStatus canGetAttachment(const Entities::User& currentUser,
+                                             const Entities::Attachment& attachment) const override;
+        AuthorizationStatus addNewAttachment(const Entities::User& currentUser,
+                                             StringView name, uint64_t size) const override;
+        AuthorizationStatus autoApproveAttachment(const Entities::User& currentUser) const override;
+        AuthorizationStatus changeAttachmentName(const Entities::User& currentUser,
+                                                 const Entities::Attachment& attachment,
+                                                 StringView newName) const override;
+        AuthorizationStatus changeAttachmentApproval(const Entities::User& currentUser,
+                                                     const Entities::Attachment& attachment,
+                                                     bool newApproval) const override;
+        AuthorizationStatus deleteAttachment(const Entities::User& currentUser,
+                                             const Entities::Attachment& attachment) const override;
+        AuthorizationStatus addAttachmentToDiscussionThreadMessage(const Entities::User& currentUser,
+                                                                   const Entities::Attachment& attachment,
+                                                                   const Entities::DiscussionThreadMessage& message) const override;
+        AuthorizationStatus removeAttachmentFromDiscussionThreadMessage(const Entities::User& currentUser,
+                                                                        const Entities::Attachment& attachment,
+                                                                        const Entities::DiscussionThreadMessage& message) const override;
+
         AuthorizationStatus getEntitiesCount(const Entities::User& currentUser) const override;
 
         AuthorizationStatus getVersion(const Entities::User& currentUser) const override;
@@ -339,7 +364,7 @@ namespace Forum::Authorization
 
         AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionCategory& category,
                                       DiscussionCategoryPrivilege privilege, PrivilegeValueType& with) const;
-
+        
         AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
                                       PrivilegeValueType& with) const;
         AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionThreadPrivilege privilege,
@@ -352,6 +377,14 @@ namespace Forum::Authorization
                                       PrivilegeValueType& with) const;
         AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege,
                                       PrivilegeValueType& with, Entities::IdTypeRef targetUserId) const;
+
+        bool checkMessageAllowViewApproval(const Entities::User& currentUser, 
+                                           const Entities::DiscussionThreadMessage& message) const;
+        bool isAllowedToViewMessage(const Entities::User& currentUser, 
+                                    const Entities::DiscussionThreadMessage& message) const;
+        bool checkThreadAllowViewApproval(const Entities::User& currentUser, 
+                                          const Entities::DiscussionThread& thread) const;
+        bool isAllowedToViewThread(const Entities::User& currentUser, const Entities::DiscussionThread& thread) const;
 
         bool isThrottled(UserActionThrottling action, const Entities::User& currentUser) const;
 
