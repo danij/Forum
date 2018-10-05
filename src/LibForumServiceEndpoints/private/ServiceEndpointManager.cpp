@@ -154,6 +154,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
 
         { "attachments",         HttpVerb::GET,    ENDPOINT_DELEGATE(attachmentsEndpoint.getAll) },
         { "attachments/user",    HttpVerb::GET,    ENDPOINT_DELEGATE(attachmentsEndpoint.getOfUser) },
+        { "attachments/try",     HttpVerb::GET,    ENDPOINT_DELEGATE(attachmentsEndpoint.get) },
         { "attachments",         HttpVerb::POST,   ENDPOINT_DELEGATE(attachmentsEndpoint.add) },
         { "attachments",         HttpVerb::DELETE, ENDPOINT_DELEGATE(attachmentsEndpoint.remove) },
         { "attachments",         HttpVerb::PUT,    ENDPOINT_DELEGATE(attachmentsEndpoint.changeName) },
