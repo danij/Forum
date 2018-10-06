@@ -83,6 +83,12 @@ DiscussionCategory* Private::getEntityFromGlobalCollection<DiscussionCategory>(c
 }
 
 template<>
+Attachment* Private::getEntityFromGlobalCollection<Attachment>(const size_t index)
+{
+    return getGlobalEntityCollectionInline().getAttachmentPoolRoot()[index].get();
+}
+
+template<>
 MessageComment* Private::getEntityFromGlobalCollection<MessageComment>(const size_t index)
 {
     return getGlobalEntityCollectionInline().getMessageCommentPoolRoot()[index].get();

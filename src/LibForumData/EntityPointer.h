@@ -36,6 +36,7 @@ namespace Forum::Entities
     class DiscussionTag;
     class DiscussionCategory;
     class MessageComment;
+    class Attachment;
 
     namespace Private
     {
@@ -65,6 +66,9 @@ namespace Forum::Entities
 
         template<>
         DiscussionCategory* getEntityFromGlobalCollection<DiscussionCategory>(size_t index);
+
+        template<>
+        Attachment* getEntityFromGlobalCollection<Attachment>(size_t index);
 
         template<>
         MessageComment* getEntityFromGlobalCollection<MessageComment>(size_t index);
