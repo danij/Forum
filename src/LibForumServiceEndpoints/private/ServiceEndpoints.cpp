@@ -588,6 +588,7 @@ void UsersEndpoint::changeAttachmentQuota(Http::RequestState& requestState)
            [](const Http::RequestState& requestState, CommandHandler& commandHandler, std::vector<StringView>& parameters)
     {
         parameters.push_back(requestState.extraPathParts[0]);
+        parameters.push_back(requestState.extraPathParts[1]);
         return commandHandler.handle(Command::CHANGE_USER_ATTACHMENT_QUOTA, parameters);
     });
 }

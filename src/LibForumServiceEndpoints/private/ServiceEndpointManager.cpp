@@ -83,7 +83,7 @@ void ServiceEndpointManager::registerRoutes(HttpRouter& router)
         { "users/info",              HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeInfo) },
         { "users/title",             HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeTitle) },
         { "users/signature",         HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeSignature) },
-        { "users/attachmentQuota",   HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeAttachmentQuota) },
+        { "users/attachment_quota",  HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeAttachmentQuota) },
         { "users/logo",              HttpVerb::GET,    ENDPOINT_DELEGATE(usersEndpoint.getUserLogo) },
         { "users/logo",              HttpVerb::PUT,    ENDPOINT_DELEGATE(usersEndpoint.changeLogo) },
         { "users/logo",              HttpVerb::DELETE, ENDPOINT_DELEGATE(usersEndpoint.deleteLogo) },
