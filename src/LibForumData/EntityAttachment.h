@@ -45,6 +45,7 @@ namespace Forum::Entities
         const auto& name()                const { return name_; }
               auto  size()                const { return size_; }
               auto  approved()            const { return approved_; }
+              auto  approvedAndCreated()  const { return approved_ ? int64_t(-created_) : int64_t(created_); }
 
               auto  messages()            const { return Helpers::toConst(messages_); }
 

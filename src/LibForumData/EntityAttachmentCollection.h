@@ -72,7 +72,7 @@ namespace Forum::Entities
 
         RANKED_COLLECTION(Attachment, size) bySize_;
 
-        RANKED_COLLECTION(Attachment, approved) byApproval_;
+        RANKED_COLLECTION(Attachment, approvedAndCreated) byApproval_;
         RANKED_COLLECTION_ITERATOR(byApproval_) byApprovalUpdateIt_;
 
         uint64_t totalSize_{ 0 };

@@ -94,7 +94,7 @@ void AttachmentCollection::prepareUpdateApproval(AttachmentPtr attachmentPtr)
 {
     if (Context::isBatchInsertInProgress()) return;
 
-    byApprovalUpdateIt_ = findInNonUniqueCollection(byApproval_, attachmentPtr, attachmentPtr->approved());
+    byApprovalUpdateIt_ = findInNonUniqueCollection(byApproval_, attachmentPtr, attachmentPtr->approvedAndCreated());
 }
 
 void AttachmentCollection::updateApproval(AttachmentPtr attachmentPtr)
