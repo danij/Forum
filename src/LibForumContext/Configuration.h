@@ -273,6 +273,7 @@ namespace Forum::Configuration
             PrivilegeValueType changeAnyUserAttachmentQuota         = DenyPrivilegeValue;
             PrivilegeValueType getAllAttachments                    = DenyPrivilegeValue;
             PrivilegeValueType getAttachmentsOfUser                 = DenyPrivilegeValue;
+            PrivilegeValueType viewAttachmentIpAddress              = DenyPrivilegeValue;
             PrivilegeValueType createAttachment                     = DenyPrivilegeValue;
             PrivilegeValueType autoApproveAttachment                = DenyPrivilegeValue;
             PrivilegeValueType changeAnyAttachmentName              = DenyPrivilegeValue;

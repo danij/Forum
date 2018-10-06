@@ -840,6 +840,7 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_USER_ATTACHMENT_QUOTA,              defaultPrivileges.forumWide.changeAnyUserAttachmentQuota);
     store.setForumWidePrivilege(ForumWidePrivilege::GET_ALL_ATTACHMENTS,                       defaultPrivileges.forumWide.getAllAttachments);
     store.setForumWidePrivilege(ForumWidePrivilege::GET_ATTACHMENTS_OF_USER,                   defaultPrivileges.forumWide.getAttachmentsOfUser);
+    store.setForumWidePrivilege(ForumWidePrivilege::VIEW_ATTACHMENT_IP_ADDRESS,                defaultPrivileges.forumWide.viewAttachmentIpAddress);
     store.setForumWidePrivilege(ForumWidePrivilege::CREATE_ATTACHMENT,                         defaultPrivileges.forumWide.createAttachment);
     store.setForumWidePrivilege(ForumWidePrivilege::AUTO_APPROVE_ATTACHMENT,                   defaultPrivileges.forumWide.autoApproveAttachment);
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_NAME,                defaultPrivileges.forumWide.changeAnyAttachmentName);

@@ -237,6 +237,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyUserAttachmentQuota);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getAllAttachments);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.getAttachmentsOfUser);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.viewAttachmentIpAddress);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.createAttachment);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.autoApproveAttachment);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyAttachmentName);

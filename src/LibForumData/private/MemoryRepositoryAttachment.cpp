@@ -142,7 +142,7 @@ StatusCode MemoryRepositoryAttachment::getAttachmentsOfUser(IdTypeRef id, Retrie
                                                    Context::getCurrentTime());
         BoolTemporaryChanger _(serializationSettings.hideAttachmentCreatedBy, true);
         BoolTemporaryChanger __(serializationSettings.allowDisplayAttachmentIpAddress, 
-                restriction.isAllowed(ForumWidePrivilege::GET_ALL_ATTACHMENTS));
+                restriction.isAllowed(ForumWidePrivilege::VIEW_ATTACHMENT_IP_ADDRESS));
 
         const auto ascending = displayContext.sortOrder == Context::SortOrder::Ascending;
 

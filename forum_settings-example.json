@@ -212,6 +212,7 @@
             "getUserVoteHistory": 0,
             "getAllAttachments": 10000,
             "getAttachmentsOfUser": 10000,
+            "viewAttachmentIpAddress": 30000,
             "createAttachment": 1,
             "autoApproveAttachment": 1,
             "changeAnyAttachmentName": 10000,
