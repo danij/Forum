@@ -45,7 +45,7 @@ namespace Forum::Entities
         void updateApproval(AttachmentPtr attachmentPtr);
 
         auto count()       const { return byId_.size(); }
-        auto totalsize()   const { return totalSize_; }
+        auto totalSize()   const { return totalSize_; }
 
         auto  byId()       const { return Helpers::toConst(byId_); }
         auto& byId()             { return byId_; }

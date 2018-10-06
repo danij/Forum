@@ -72,6 +72,17 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const Seri
         writer << propertySafeName("subscribedThreadCount", user.subscribedThreads().count());
     }
 
+    if (sameUser || restriction.isAllowed(ForumWidePrivilege::GET_ATTACHMENTS_OF_USER))
+    {
+        writer << propertySafeName("attachmentCount", user.attachments().count());
+        writer << propertySafeName("attachmentTotalSize", user.attachments().totalSize());
+    }
+
+    if (user.attachmentQuota() && (sameUser || restriction.isAllowed(ForumWidePrivilege::CHANGE_USER_ATTACHMENT_QUOTA)))
+    {
+        writer << propertySafeName("attachmentQuota", *user.attachmentQuota());
+    }
+
     if ((0 == user.lastSeen()) || user.showInOnlineUsers())
     {
         writer << propertySafeName("lastSeen", user.lastSeen());

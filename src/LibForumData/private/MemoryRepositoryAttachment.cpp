@@ -235,7 +235,7 @@ StatusCode MemoryRepositoryAttachment::addNewAttachment(StringView name, uint64_
                                ? currentUser->attachmentQuota()
                                : static_cast<uint64_t>(config->attachment.defaultUserQuota);
 
-                           if ((currentUser->attachments().totalsize() + size) > userQuota)
+                           if ((currentUser->attachments().totalSize() + size) > userQuota)
                            {
                                status = StatusCode::QUOTA_EXCEEDED;
                                return;
