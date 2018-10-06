@@ -22,6 +22,7 @@ set(SOURCE_FILES
         private/EntityDiscussionCategoryCollection.cpp
         private/EntityMessageCommentCollection.cpp
         private/EntityPrivateMessageCollection.cpp
+        private/EntityAttachment.cpp
         private/EntityAttachmentCollection.cpp
         private/MemoryRepositoryCommon.cpp
         private/MemoryRepositoryUser.cpp

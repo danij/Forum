@@ -36,19 +36,44 @@ namespace Forum::Entities
         bool add(AttachmentPtr attachmentPtr);
         bool remove(AttachmentPtr attachmentPtr);
 
-        auto count()      const { return byId_.size(); }
-        auto totalsize()  const { return totalSize_; }
+        void stopBatchInsert();
 
-        auto byId()       const { return Helpers::toConst(byId_); }
-        auto& byId()            { return byId_; }
+        void prepareUpdateName(AttachmentPtr attachmentPtr);
+        void updateName(AttachmentPtr attachmentPtr);
 
-        auto byCreated()  const { return Helpers::toConst(byCreated_); }
-        auto& byCreated()       { return byCreated_; }
+        void prepareUpdateApproval(AttachmentPtr attachmentPtr);
+        void updateApproval(AttachmentPtr attachmentPtr);
+
+        auto count()       const { return byId_.size(); }
+        auto totalsize()   const { return totalSize_; }
+
+        auto  byId()       const { return Helpers::toConst(byId_); }
+        auto& byId()             { return byId_; }
+
+        auto  byCreated()  const { return Helpers::toConst(byCreated_); }
+        auto& byCreated()        { return byCreated_; }
+
+        auto  byName()     const { return Helpers::toConst(byName_); }
+        auto& byName()           { return byName_; }
+
+        auto  bySize()     const { return Helpers::toConst(bySize_); }
+        auto& bySize()           { return bySize_; }
+
+        auto  byApproval() const { return Helpers::toConst(byApproval_); }
+        auto& byApproval()       { return byApproval_; }
 
     private:
         HASHED_UNIQUE_COLLECTION(Attachment, id) byId_;
 
         RANKED_COLLECTION(Attachment, created) byCreated_;
+
+        RANKED_COLLECTION(Attachment, name) byName_;
+        RANKED_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
+
+        RANKED_COLLECTION(Attachment, size) bySize_;
+
+        RANKED_COLLECTION(Attachment, approved) byApproval_;
+        RANKED_COLLECTION_ITERATOR(byApproval_) byApprovalUpdateIt_;
 
         uint64_t totalSize_{ 0 };
     };

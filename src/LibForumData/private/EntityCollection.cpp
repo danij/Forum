@@ -530,6 +530,9 @@ struct EntityCollection::Impl
         DiscussionCategory::changeNotifications().onUpdateName         = [this](auto& category) { this->onUpdateDiscussionCategoryName(category); };
         DiscussionCategory::changeNotifications().onUpdateMessageCount = [this](auto& category) { this->onUpdateDiscussionCategoryMessageCount(category); };
         DiscussionCategory::changeNotifications().onUpdateDisplayOrder = [this](auto& category) { this->onUpdateDiscussionCategoryDisplayOrder(category); };
+
+        Attachment::changeNotifications().onPrepareUpdateName     = [this](auto& attachment) { this->onPrepareUpdateAttachmentName(attachment); };
+        Attachment::changeNotifications().onPrepareUpdateApproval = [this](auto& attachment) { this->onPrepareUpdateAttachmentApproval(attachment); };
     }
 
     void onPrepareUpdateUserAuth        (const User& user) { users_.prepareUpdateAuth(user.pointer()); }
@@ -573,6 +576,15 @@ struct EntityCollection::Impl
         }
     }
 
+    void attachmentAction(const Attachment& constAttachment, void (AttachmentCollection::*fn)(AttachmentPtr))
+    {
+        auto& attachment = const_cast<Attachment&>(constAttachment);
+        const AttachmentPtr attachmentPtr = attachment.pointer();
+
+        (attachments_.*fn)(attachmentPtr);
+        (attachment.createdBy().attachments().*fn)(attachmentPtr);
+    }
+
     void onPrepareUpdateDiscussionThreadName(const DiscussionThread& thread)                 { discussionThreadAction(thread, &IDiscussionThreadCollection::prepareUpdateName); }
     void onPrepareUpdateDiscussionThreadLastUpdated(const DiscussionThread& thread)          { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::prepareUpdateLastUpdated); }
     void onPrepareUpdateDiscussionThreadLatestMessageCreated(const DiscussionThread& thread) { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::prepareUpdateLatestMessageCreated); }
@@ -601,7 +613,10 @@ struct EntityCollection::Impl
     void onUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.updateMessageCount(category.pointer()); }
     void onUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.updateDisplayOrderRootPriority(category.pointer()); }
 
-    void toggleBatchInsert(bool activate)
+    void onPrepareUpdateAttachmentName    (const Attachment& attachment) { if ( ! batchInsertInProgress_) attachmentAction(attachment, &AttachmentCollection::prepareUpdateName); }
+    void onPrepareUpdateAttachmentApproval(const Attachment& attachment) { if ( ! batchInsertInProgress_) attachmentAction(attachment, &AttachmentCollection::prepareUpdateApproval); }
+
+    void toggleBatchInsert(const bool activate)
     {
         if ( ! activate) assert(batchInsertInProgress_);
 
@@ -649,6 +664,14 @@ struct EntityCollection::Impl
 
             std::async(std::launch::async, [this]()
             {
+                for (UserPtr user : this->users_.byId())
+                {
+                    user->attachments().stopBatchInsert();
+                }
+            }),
+
+            std::async(std::launch::async, [this]()
+            {
                 for (DiscussionTagPtr tag : this->tags_.byId())
                 {
                     tag->threads().stopBatchInsert();
@@ -673,6 +696,7 @@ struct EntityCollection::Impl
         this->threadMessages_.stopBatchInsert();
         this->tags_.stopBatchInsert();
         this->categories_.stopBatchInsert();
+        this->attachments_.stopBatchInsert();
 
         Context::setBatchInsertInProgres(batchInsertInProgress_ = activate);
     }

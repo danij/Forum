@@ -32,7 +32,8 @@ namespace Forum::Entities
     class User;
     class DiscussionThreadMessage;
 
-    class Attachment final : boost::noncopyable
+    class Attachment final : public StoresEntityPointer<Attachment>,
+                             boost::noncopyable
     {
     public:
         const auto& id()                  const { return id_; }
@@ -47,7 +48,7 @@ namespace Forum::Entities
 
               auto  messages()            const { return Helpers::toConst(messages_); }
 
-        typedef Json::JsonReadyString<16> NameType;
+        typedef Helpers::JsonReadyStringWithSortKey<32> NameType;
 
         enum ChangeType : uint32_t
         {
@@ -56,6 +57,17 @@ namespace Forum::Entities
             Approval
         };
 
+        struct ChangeNotification final
+        {
+            std::function<void(const Attachment&)> onPrepareUpdateName;
+            std::function<void(const Attachment&)> onUpdateName;
+
+            std::function<void(const Attachment&)> onPrepareUpdateApproval;
+            std::function<void(const Attachment&)> onUpdateApproval;
+        };
+
+        static auto& changeNotifications() { return changeNotifications_; }
+        
         Attachment(const IdType id, const Timestamp created, const VisitDetails creationDetails, 
                    User& createdBy, NameType&& name, const uint64_t size, const bool approved)
             : id_(id), created_(created), creationDetails_(creationDetails), createdBy_(createdBy), 
@@ -63,8 +75,21 @@ namespace Forum::Entities
         {}
 
         auto& createdBy() { return createdBy_; }
-        auto& name()      { return name_; }
-        auto& approved()  { return approved_; }
+
+        void updateName(NameType&& name)
+        {
+            changeNotifications_.onPrepareUpdateName(*this);
+            name_ = std::move(name);
+            changeNotifications_.onUpdateName(*this);
+        }
+
+        void updateApproval(const bool approved)
+        {
+            changeNotifications_.onPrepareUpdateApproval(*this);
+            approved_ = approved;
+            changeNotifications_.onUpdateApproval(*this);
+        }
+
         auto& messages()  { return messages_; }
 
         auto& nrOfGetRequests() const { return nrOfGetRequests_; }
@@ -79,7 +104,9 @@ namespace Forum::Entities
             return messages_.erase(messagePtr) > 0;
         }
         
-    private:
+    private:        
+        static ChangeNotification changeNotifications_;
+
         IdType id_;
         Timestamp created_;
         VisitDetails creationDetails_;

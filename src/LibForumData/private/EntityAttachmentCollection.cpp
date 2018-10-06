@@ -17,13 +17,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "EntityAttachmentCollection.h"
+#include "ContextProviders.h"
 
 using namespace Forum::Entities;
 
 bool AttachmentCollection::add(const AttachmentPtr attachmentPtr)
 {
     if ( ! std::get<1>(byId_.insert(attachmentPtr))) return false;
-    byCreated_.insert(attachmentPtr);
+
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        byCreated_.insert(attachmentPtr);
+        byName_.insert(attachmentPtr);
+        bySize_.insert(attachmentPtr);
+        byApproval_.insert(attachmentPtr);
+    }
 
     totalSize_ += attachmentPtr->size();
 
@@ -39,8 +47,62 @@ bool AttachmentCollection::remove(const AttachmentPtr attachmentPtr)
         byId_.erase(itById);
     }
     eraseFromNonUniqueCollection(byCreated_, attachmentPtr, attachmentPtr->created());
+    eraseFromNonUniqueCollection(byName_, attachmentPtr, attachmentPtr->name());
+    eraseFromNonUniqueCollection(bySize_, attachmentPtr, attachmentPtr->size());
+    eraseFromNonUniqueCollection(byApproval_, attachmentPtr, attachmentPtr->approved());
 
-    totalSize_ += attachmentPtr->size();
+    totalSize_ -= attachmentPtr->size();
 
     return true;
+}
+
+void AttachmentCollection::stopBatchInsert()
+{
+    if ( ! Context::isBatchInsertInProgress()) return;
+
+    byCreated_.clear();
+    byCreated_.insert(byId_.begin(), byId_.end());
+    
+    byName_.clear();
+    byName_.insert(byId_.begin(), byId_.end());
+    
+    bySize_.clear();
+    bySize_.insert(byId_.begin(), byId_.end());
+
+    byApproval_.clear();
+    byApproval_.insert(byId_.begin(), byId_.end());
+}
+
+void AttachmentCollection::prepareUpdateName(AttachmentPtr attachmentPtr)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    byNameUpdateIt_ = findInNonUniqueCollection(byName_, attachmentPtr, attachmentPtr->name());
+}
+
+void AttachmentCollection::updateName(AttachmentPtr attachmentPtr)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    if (byNameUpdateIt_ != byName_.end())
+    {
+        replaceItemInContainer(byName_, byNameUpdateIt_, attachmentPtr);
+    }
+}
+
+void AttachmentCollection::prepareUpdateApproval(AttachmentPtr attachmentPtr)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    byApprovalUpdateIt_ = findInNonUniqueCollection(byApproval_, attachmentPtr, attachmentPtr->approved());
+}
+
+void AttachmentCollection::updateApproval(AttachmentPtr attachmentPtr)
+{
+    if (Context::isBatchInsertInProgress()) return;
+
+    if (byApprovalUpdateIt_ != byApproval_.end())
+    {
+        replaceItemInContainer(byApproval_, byApprovalUpdateIt_, attachmentPtr);
+    }
 }

@@ -88,6 +88,18 @@ StatusCode MemoryRepositoryAttachment::getAttachments(RetrieveAttachmentsBy by, 
             writeEntitiesWithPagination(collection.attachments().byCreated(), "attachments", output, 
                 displayContext.pageNumber, pageSize, ascending, restriction);
             break;
+        case RetrieveAttachmentsBy::Name:
+            writeEntitiesWithPagination(collection.attachments().byName(), "attachments", output, 
+                displayContext.pageNumber, pageSize, ascending, restriction);
+            break;
+        case RetrieveAttachmentsBy::Size:
+            writeEntitiesWithPagination(collection.attachments().bySize(), "attachments", output, 
+                displayContext.pageNumber, pageSize, ascending, restriction);
+            break;
+        case RetrieveAttachmentsBy::Approval:
+            writeEntitiesWithPagination(collection.attachments().byApproval(), "attachments", output, 
+                displayContext.pageNumber, pageSize, ascending, restriction);
+            break;
         }
 
         readEvents().onGetAttachments(createObserverContext(currentUser));
@@ -138,6 +150,18 @@ StatusCode MemoryRepositoryAttachment::getAttachmentsOfUser(IdTypeRef id, Retrie
         {
         case RetrieveAttachmentsBy::Created:
             writeEntitiesWithPagination(user.attachments().byCreated(), "attachments", output, 
+                displayContext.pageNumber, pageSize, ascending, restriction);
+            break;
+        case RetrieveAttachmentsBy::Name:
+            writeEntitiesWithPagination(user.attachments().byName(), "attachments", output, 
+                displayContext.pageNumber, pageSize, ascending, restriction);
+            break;
+        case RetrieveAttachmentsBy::Size:
+            writeEntitiesWithPagination(user.attachments().bySize(), "attachments", output, 
+                displayContext.pageNumber, pageSize, ascending, restriction);
+            break;
+        case RetrieveAttachmentsBy::Approval:
+            writeEntitiesWithPagination(user.attachments().byApproval(), "attachments", output, 
                 displayContext.pageNumber, pageSize, ascending, restriction);
             break;
         }
@@ -305,7 +329,7 @@ StatusCode MemoryRepositoryAttachment::changeAttachmentName(EntityCollection& co
     }
 
     AttachmentPtr attachment = *it;
-    attachment->name() = Attachment::NameType(newName);
+    attachment->updateName(Attachment::NameType(newName));
 
     return StatusCode::OK;
 }
@@ -365,7 +389,7 @@ StatusCode MemoryRepositoryAttachment::changeAttachmentApproval(EntityCollection
         return StatusCode::NO_EFFECT;
     }
 
-    attachment.approved() = newApproval;
+    attachment.updateApproval(newApproval);
 
     return StatusCode::OK;
 }
