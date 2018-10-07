@@ -84,6 +84,8 @@ StatusCode MemoryRepositoryAttachment::getAttachments(RetrieveAttachmentsBy by, 
 
         const SerializationRestriction restriction(collection.grantedPrivileges(), collection, currentUser.id(), 
                                                    Context::getCurrentTime());
+        BoolTemporaryChanger _(serializationSettings.allowDisplayAttachmentIpAddress,
+                restriction.isAllowed(ForumWidePrivilege::VIEW_ATTACHMENT_IP_ADDRESS));
 
         const auto ascending = displayContext.sortOrder == Context::SortOrder::Ascending;
 
