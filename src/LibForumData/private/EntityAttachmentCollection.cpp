@@ -46,11 +46,13 @@ bool AttachmentCollection::remove(const AttachmentPtr attachmentPtr)
 
         byId_.erase(itById);
     }
-    eraseFromNonUniqueCollection(byCreated_, attachmentPtr, attachmentPtr->created());
-    eraseFromNonUniqueCollection(byName_, attachmentPtr, attachmentPtr->name());
-    eraseFromNonUniqueCollection(bySize_, attachmentPtr, attachmentPtr->size());
-    eraseFromNonUniqueCollection(byApproval_, attachmentPtr, attachmentPtr->approved());
-
+    if ( ! Context::isBatchInsertInProgress())
+    {
+        eraseFromNonUniqueCollection(byCreated_, attachmentPtr, attachmentPtr->created());
+        eraseFromNonUniqueCollection(byName_, attachmentPtr, attachmentPtr->name());
+        eraseFromNonUniqueCollection(bySize_, attachmentPtr, attachmentPtr->size());
+        eraseFromNonUniqueCollection(byApproval_, attachmentPtr, attachmentPtr->approvedAndCreated());
+    }
     totalSize_ -= attachmentPtr->size();
 
     return true;
