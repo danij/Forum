@@ -1002,8 +1002,10 @@ AttachmentPtr EntityCollection::createAttachment(const IdType id, const Timestam
                                                  User& createdBy, Attachment::NameType&& name, const uint64_t size, 
                                                  const bool approved)
 {
-    return AttachmentPtr(static_cast<AttachmentPtr::IndexType>(impl_->managedEntities.attachments.add(
+    auto result = AttachmentPtr(static_cast<AttachmentPtr::IndexType>(impl_->managedEntities.attachments.add(
         id, created, creationDetails, createdBy, std::move(name), size, approved)));
+    result->pointer_ = result;
+    return result;
 }
 
 
