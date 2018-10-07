@@ -240,9 +240,11 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.viewAttachmentIpAddress);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.createAttachment);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.autoApproveAttachment);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeOwnAttachmentName);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyAttachmentName);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.changeAnyAttachmentApproval);
-    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteAttachment);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteOwnAttachment);
+    LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.deleteAnyAttachment);
     LOAD_CONFIG_VALUE(defaultPrivileges.forumWide.noThrottling);
     
     LOAD_CONFIG_VALUE(defaultPrivilegeGrants.thread.create.value);

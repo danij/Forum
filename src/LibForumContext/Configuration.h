@@ -276,9 +276,11 @@ namespace Forum::Configuration
             PrivilegeValueType viewAttachmentIpAddress              = DenyPrivilegeValue;
             PrivilegeValueType createAttachment                     = DenyPrivilegeValue;
             PrivilegeValueType autoApproveAttachment                = DenyPrivilegeValue;
+            PrivilegeValueType changeOwnAttachmentName              = DenyPrivilegeValue;
             PrivilegeValueType changeAnyAttachmentName              = DenyPrivilegeValue;
             PrivilegeValueType changeAnyAttachmentApproval          = DenyPrivilegeValue;
-            PrivilegeValueType deleteAttachment                     = DenyPrivilegeValue;
+            PrivilegeValueType deleteOwnAttachment                  = DenyPrivilegeValue;
+            PrivilegeValueType deleteAnyAttachment                  = DenyPrivilegeValue;
             PrivilegeValueType noThrottling                         = DenyPrivilegeValue;
         } forumWide;
     };

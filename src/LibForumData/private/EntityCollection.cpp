@@ -843,9 +843,11 @@ static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
     store.setForumWidePrivilege(ForumWidePrivilege::VIEW_ATTACHMENT_IP_ADDRESS,                defaultPrivileges.forumWide.viewAttachmentIpAddress);
     store.setForumWidePrivilege(ForumWidePrivilege::CREATE_ATTACHMENT,                         defaultPrivileges.forumWide.createAttachment);
     store.setForumWidePrivilege(ForumWidePrivilege::AUTO_APPROVE_ATTACHMENT,                   defaultPrivileges.forumWide.autoApproveAttachment);
+    store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_OWN_ATTACHMENT_NAME,                defaultPrivileges.forumWide.changeOwnAttachmentName);
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_NAME,                defaultPrivileges.forumWide.changeAnyAttachmentName);
     store.setForumWidePrivilege(ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_APPROVAL,            defaultPrivileges.forumWide.changeAnyAttachmentApproval);
-    store.setForumWidePrivilege(ForumWidePrivilege::DELETE_ATTACHMENT,                         defaultPrivileges.forumWide.deleteAttachment);
+    store.setForumWidePrivilege(ForumWidePrivilege::DELETE_OWN_ATTACHMENT,                     defaultPrivileges.forumWide.deleteOwnAttachment);
+    store.setForumWidePrivilege(ForumWidePrivilege::DELETE_ANY_ATTACHMENT,                     defaultPrivileges.forumWide.deleteAnyAttachment);
     store.setForumWidePrivilege(ForumWidePrivilege::NO_THROTTLING,                             defaultPrivileges.forumWide.noThrottling);
 
     const auto& defaultPrivilegeGrants = config->defaultPrivilegeGrants;

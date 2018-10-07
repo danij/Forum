@@ -215,9 +215,11 @@
             "viewAttachmentIpAddress": 30000,
             "createAttachment": 1,
             "autoApproveAttachment": 1,
+            "changeOwnAttachmentName": 10000,
             "changeAnyAttachmentName": 10000,
             "changeAnyAttachmentApproval": 10000,
-            "deleteAttachment": 10000,
+            "deleteOwnAttachment": 10000,
+            "deleteAnyAttachment": 10000,
             "noThrottling": 10000
         }
     },

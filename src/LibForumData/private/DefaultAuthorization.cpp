@@ -844,12 +844,11 @@ AuthorizationStatus DefaultAuthorization::changeAttachmentName(const User& curre
 {
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
+    PrivilegeValueType with;
     if (currentUser.id() == attachment.createdBy().id())
     {
-        return AuthorizationStatus::OK;
+        return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_OWN_ATTACHMENT_NAME, with);
     }
-
-    PrivilegeValueType with;
     return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_NAME, with);
 }
 
@@ -866,13 +865,12 @@ AuthorizationStatus DefaultAuthorization::deleteAttachment(const User& currentUs
 {
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
+    PrivilegeValueType with;
     if (currentUser.id() == attachment.createdBy().id())
     {
-        return AuthorizationStatus::OK;
+        return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_OWN_ATTACHMENT, with);
     }
-
-    PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ATTACHMENT, with);
+    return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ANY_ATTACHMENT, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addAttachmentToDiscussionThreadMessage(const User& currentUser,
@@ -889,14 +887,16 @@ AuthorizationStatus DefaultAuthorization::addAttachmentToDiscussionThreadMessage
 }
 
 AuthorizationStatus DefaultAuthorization::removeAttachmentFromDiscussionThreadMessage(const User& currentUser,
-                                                                                      const Attachment& /*attachment*/,
+                                                                                      const Attachment& attachment,
                                                                                       const DiscussionThreadMessage& message) const
 {
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
     
     PrivilegeValueType with;
-    return (AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::REMOVE_ATTACHMENT, with))
-        || (AuthorizationStatus::OK == isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ATTACHMENT, with))
+    return ((AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::REMOVE_ATTACHMENT, with))
+        || (AuthorizationStatus::OK == isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ANY_ATTACHMENT, with))
+        || ((currentUser.id() == attachment.createdBy().id())
+            && (AuthorizationStatus::OK == isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_OWN_ATTACHMENT, with))))
         ? AuthorizationStatus::OK
         : AuthorizationStatus::NOT_ALLOWED;
 }
