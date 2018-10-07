@@ -533,6 +533,9 @@ struct EntityCollection::Impl
 
         Attachment::changeNotifications().onPrepareUpdateName     = [this](auto& attachment) { this->onPrepareUpdateAttachmentName(attachment); };
         Attachment::changeNotifications().onPrepareUpdateApproval = [this](auto& attachment) { this->onPrepareUpdateAttachmentApproval(attachment); };
+
+        Attachment::changeNotifications().onUpdateName     = [this](auto& attachment) { this->onUpdateAttachmentName(attachment); };
+        Attachment::changeNotifications().onUpdateApproval = [this](auto& attachment) { this->onUpdateAttachmentApproval(attachment); };
     }
 
     void onPrepareUpdateUserAuth        (const User& user) { users_.prepareUpdateAuth(user.pointer()); }
@@ -615,6 +618,9 @@ struct EntityCollection::Impl
 
     void onPrepareUpdateAttachmentName    (const Attachment& attachment) { if ( ! batchInsertInProgress_) attachmentAction(attachment, &AttachmentCollection::prepareUpdateName); }
     void onPrepareUpdateAttachmentApproval(const Attachment& attachment) { if ( ! batchInsertInProgress_) attachmentAction(attachment, &AttachmentCollection::prepareUpdateApproval); }
+
+    void onUpdateAttachmentName    (const Attachment& attachment) { if ( ! batchInsertInProgress_) attachmentAction(attachment, &AttachmentCollection::updateName); }
+    void onUpdateAttachmentApproval(const Attachment& attachment) { if ( ! batchInsertInProgress_) attachmentAction(attachment, &AttachmentCollection::updateApproval); }
 
     void toggleBatchInsert(const bool activate)
     {
