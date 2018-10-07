@@ -42,9 +42,14 @@ static bool isValidAttachmentName(StringView input)
         return false;
     }
 
+    if ((*input.begin() == ' ') || (*input.rbegin() == ' '))
+    {
+        return false; //do not allow leading of trailing white space
+    }
+
     return std::all_of(input.begin(), input.end(), [](const char c)
     {
-        return ('/' != c) && ('\\' != c);
+        return (c >= ' ') && (127 != c) && ('/' != c) && ('\\' != c);
     });
 }
 
