@@ -198,6 +198,7 @@ namespace Forum::Commands
 
         void getAll(Http::RequestState& requestState);
         void getOfUser(Http::RequestState& requestState);
+        void canGet(Http::RequestState& requestState);
         void get(Http::RequestState& requestState);
 
         void add(Http::RequestState& requestState);

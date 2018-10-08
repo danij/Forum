@@ -907,10 +907,16 @@ struct CommandHandler::CommandHandlerImpl
         return attachmentRepository->getAttachmentsOfUser(parameters[0], RetrieveAttachmentsBy::Approval, output);
     }
 
-    COMMAND_HANDLER_METHOD( GET_ATTACHMENT )
+    COMMAND_HANDLER_METHOD( CAN_GET_ATTACHMENT )
     {
         if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
         return attachmentRepository->canGetAttachment(parameters[0], output);
+    }
+
+    COMMAND_HANDLER_METHOD( GET_ATTACHMENT )
+    {
+        if ( ! checkNumberOfParameters(parameters, 1)) return INVALID_PARAMETERS;
+        return attachmentRepository->getAttachment(parameters[0], output);
     }
     
     COMMAND_HANDLER_METHOD( ADD_ATTACHMENT )
@@ -1474,6 +1480,7 @@ CommandHandler::CommandHandler(ObservableRepositoryRef observerRepository,
     setViewHandler(GET_ATTACHMENTS_OF_USER_BY_NAME);
     setViewHandler(GET_ATTACHMENTS_OF_USER_BY_SIZE);
     setViewHandler(GET_ATTACHMENTS_OF_USER_BY_APPROVAL);
+    setViewHandler(CAN_GET_ATTACHMENT);
     setViewHandler(GET_ATTACHMENT);
 
     setViewHandler(GET_REQUIRED_PRIVILEGES_FOR_THREAD_MESSAGE);

@@ -34,6 +34,7 @@ namespace Forum::Repository
         StatusCode getAttachmentsOfUser(Entities::IdTypeRef id, RetrieveAttachmentsBy by, 
                                         OutStream& output) const override;
         StatusCode canGetAttachment(Entities::IdTypeRef id, OutStream& output) const override;
+        StatusCode getAttachment(Entities::IdTypeRef id, OutStream& output) const override;
 
         StatusCode addNewAttachment(StringView name, uint64_t size, OutStream& output) override;
         StatusWithResource<Entities::AttachmentPtr> addNewAttachment(Entities::EntityCollection& collection,

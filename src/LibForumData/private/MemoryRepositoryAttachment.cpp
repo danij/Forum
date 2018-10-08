@@ -208,6 +208,42 @@ StatusCode MemoryRepositoryAttachment::canGetAttachment(IdTypeRef id, OutStream&
     return status;
 }
 
+StatusCode MemoryRepositoryAttachment::getAttachment(IdTypeRef id, OutStream& output) const
+{
+    StatusWriter status(output);
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().read([&](const EntityCollection& collection)
+                      {
+                          auto& currentUser = performedBy.get(collection, *store_);
+                      
+                          const auto& indexById = collection.attachments().byId();
+                          auto it = indexById.find(id);
+                          if (it == indexById.end())
+                          {
+                              status = StatusCode::NOT_FOUND;
+                              return;
+                          }
+                          auto& attachment = **it;
+                      
+                          if ( ! (status = authorization_->canGetAttachment(currentUser, attachment)))
+                          {
+                              return;
+                          }
+
+                          status.disable();
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                                  currentUser.id(), Context::getCurrentTime());
+
+                          writeSingleValueSafeName(output, "attachment", attachment, restriction);
+
+                          readEvents().onGetAttachment(createObserverContext(currentUser), attachment);
+                      });
+    return status;
+}
+
 StatusCode MemoryRepositoryAttachment::addNewAttachment(StringView name, uint64_t size, OutStream& output)
 {
     StatusWriter status(output);
@@ -496,13 +532,7 @@ StatusCode MemoryRepositoryAttachment::addAttachmentToDiscussionThreadMessage(Id
                            const SerializationRestriction restriction(collection.grantedPrivileges(), collection, 
                                    currentUser->id(), Context::getCurrentTime());
 
-                           Json::JsonWriter writer(output);
-                           writer.startObject();
-
-                           writer.newPropertyWithSafeName("attachment");
-                           serialize(writer, *statusWithResource.resource, restriction);
-                            
-                           writer.endObject();
+                           writeSingleValueSafeName(output, "attachment", *statusWithResource.resource, restriction);
                        });
     return status;    
 }
