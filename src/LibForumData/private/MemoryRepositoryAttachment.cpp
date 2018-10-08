@@ -519,23 +519,6 @@ StatusCode MemoryRepositoryAttachment::addAttachmentToDiscussionThreadMessage(En
     }
     messagePtr->addAttachment(attachmentPtr);
 
-    DiscussionThreadMessage& message = *messagePtr;
-    auto currentUser = getCurrentUser(collection);
-    
-    message.updateLastUpdated(Context::getCurrentTime());
-    message.updateLastUpdatedDetails({ Context::getCurrentUserIpAddress() });
-    message.updateLastUpdatedReason({});
-
-    if (&message.createdBy() != currentUser.ptr())
-    {
-        message.updateLastUpdatedBy(currentUser);
-    }
-
-    DiscussionThread& parentThread = *(message.parentThread());
-
-    parentThread.resetVisitorsSinceLastEdit();
-    parentThread.latestVisibleChange() = message.lastUpdated();
-
     return StatusCode::OK;
 }
 
@@ -610,23 +593,6 @@ StatusCode MemoryRepositoryAttachment::removeAttachmentFromDiscussionThreadMessa
         return StatusCode::NO_EFFECT;
     }
     messagePtr->removeAttachment(attachmentPtr);
-
-    DiscussionThreadMessage& message = *messagePtr;
-    auto currentUser = getCurrentUser(collection);
     
-    message.updateLastUpdated(Context::getCurrentTime());
-    message.updateLastUpdatedDetails({ Context::getCurrentUserIpAddress() });
-    message.updateLastUpdatedReason({});
-
-    if (&message.createdBy() != currentUser.ptr())
-    {
-        message.updateLastUpdatedBy(currentUser);
-    }
-
-    DiscussionThread& parentThread = *(message.parentThread());
-
-    parentThread.resetVisitorsSinceLastEdit();
-    parentThread.latestVisibleChange() = message.lastUpdated();
-
     return StatusCode::OK;
 }
