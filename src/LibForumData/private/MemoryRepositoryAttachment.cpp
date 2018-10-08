@@ -485,14 +485,30 @@ StatusCode MemoryRepositoryAttachment::addAttachmentToDiscussionThreadMessage(Id
                            writeEvents().onAddAttachmentToDiscussionThreadMessage(createObserverContext(*currentUser), 
                                                                                   **attachmentIt, **messageIt);
 
-                           status = addAttachmentToDiscussionThreadMessage(collection, attachmentId, messageId);
+                           auto statusWithResource = addAttachmentToDiscussionThreadMessage(collection, 
+                                                                                            attachmentId, messageId);
+                           if ( ! (status = statusWithResource.status))
+                           {
+                               return;
+                           }
+                           status.disable();
+
+                           const SerializationRestriction restriction(collection.grantedPrivileges(), collection, 
+                                   currentUser->id(), Context::getCurrentTime());
+
+                           Json::JsonWriter writer(output);
+                           writer.startObject();
+
+                           writer.newPropertyWithSafeName("attachment");
+                           serialize(writer, *statusWithResource.resource, restriction);
+                            
+                           writer.endObject();
                        });
     return status;    
 }
 
-StatusCode MemoryRepositoryAttachment::addAttachmentToDiscussionThreadMessage(EntityCollection& collection,
-                                                                              IdTypeRef attachmentId, 
-                                                                              IdTypeRef messageId)
+StatusWithResource<AttachmentPtr> MemoryRepositoryAttachment::addAttachmentToDiscussionThreadMessage(
+        EntityCollection& collection, IdTypeRef attachmentId, IdTypeRef messageId)
 {
     auto& attachmentIndexById = collection.attachments().byId();
     const auto attachmentIt = attachmentIndexById.find(attachmentId);
@@ -519,7 +535,7 @@ StatusCode MemoryRepositoryAttachment::addAttachmentToDiscussionThreadMessage(En
     }
     messagePtr->addAttachment(attachmentPtr);
 
-    return StatusCode::OK;
+    return attachmentPtr;
 }
 
 StatusCode MemoryRepositoryAttachment::removeAttachmentFromDiscussionThreadMessage(IdTypeRef attachmentId, 

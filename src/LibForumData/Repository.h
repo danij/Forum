@@ -441,7 +441,7 @@ namespace Forum::Repository
         virtual StatusCode deleteAttachment(Entities::IdTypeRef id, OutStream& output) = 0;
 
         virtual StatusCode addAttachmentToDiscussionThreadMessage(Entities::IdTypeRef attachmentId, 
-                                                          Entities::IdTypeRef messageId, OutStream& output) = 0;
+                                                                  Entities::IdTypeRef messageId, OutStream& output) = 0;
         virtual StatusCode removeAttachmentFromDiscussionThreadMessage(Entities::IdTypeRef attachmentId, 
                                                                        Entities::IdTypeRef messageId, 
                                                                        OutStream& output) = 0;
@@ -461,9 +461,9 @@ namespace Forum::Repository
         virtual StatusCode changeAttachmentApproval(Entities::EntityCollection& collection, Entities::IdTypeRef id, 
                                                     bool newApproval) = 0;
         virtual StatusCode deleteAttachment(Entities::EntityCollection& collection, Entities::IdTypeRef id) = 0;
-        virtual StatusCode addAttachmentToDiscussionThreadMessage(Entities::EntityCollection& collection,
-                                                                  Entities::IdTypeRef attachmentId, 
-                                                                  Entities::IdTypeRef messageId) = 0;
+        virtual StatusWithResource<Entities::AttachmentPtr> addAttachmentToDiscussionThreadMessage(
+                Entities::EntityCollection& collection, Entities::IdTypeRef attachmentId, 
+                Entities::IdTypeRef messageId) = 0;
         virtual StatusCode removeAttachmentFromDiscussionThreadMessage(Entities::EntityCollection& collection,
                                                                        Entities::IdTypeRef attachmentId, 
                                                                        Entities::IdTypeRef messageId) = 0;

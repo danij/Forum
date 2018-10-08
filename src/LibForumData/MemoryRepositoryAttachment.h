@@ -50,9 +50,9 @@ namespace Forum::Repository
 
         StatusCode addAttachmentToDiscussionThreadMessage(Entities::IdTypeRef attachmentId, 
                                                           Entities::IdTypeRef messageId, OutStream& output) override;
-        StatusCode addAttachmentToDiscussionThreadMessage(Entities::EntityCollection& collection,
-                                                          Entities::IdTypeRef attachmentId, 
-                                                          Entities::IdTypeRef messageId) override;
+        StatusWithResource<Entities::AttachmentPtr> addAttachmentToDiscussionThreadMessage(
+                Entities::EntityCollection& collection, Entities::IdTypeRef attachmentId, 
+                Entities::IdTypeRef messageId) override;
         StatusCode removeAttachmentFromDiscussionThreadMessage(Entities::IdTypeRef attachmentId, 
                                                                Entities::IdTypeRef messageId, OutStream& output) override;
         StatusCode removeAttachmentFromDiscussionThreadMessage(Entities::EntityCollection& collection,

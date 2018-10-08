@@ -725,7 +725,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
 
         CHECK_STATUS_CODE(repositories_.attachment->addAttachmentToDiscussionThreadMessage(entityCollection_, 
                                                                                            attachmentId,
-                                                                                           messageId));
+                                                                                           messageId).status);
     END_DEFAULT_IMPORTER()
     
     BEGIN_DEFAULT_IMPORTER( REMOVE_ATTACHMENT_FROM_DISCUSSION_THREAD_MESSAGE, 1 )
