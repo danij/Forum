@@ -518,9 +518,6 @@ StatusCode MemoryRepositoryAttachment::addAttachmentToDiscussionThreadMessage(Id
                                return;
                            }
 
-                           writeEvents().onAddAttachmentToDiscussionThreadMessage(createObserverContext(*currentUser), 
-                                                                                  **attachmentIt, **messageIt);
-
                            auto statusWithResource = addAttachmentToDiscussionThreadMessage(collection, 
                                                                                             attachmentId, messageId);
                            if ( ! (status = statusWithResource.status))
@@ -533,6 +530,9 @@ StatusCode MemoryRepositoryAttachment::addAttachmentToDiscussionThreadMessage(Id
                                    currentUser->id(), Context::getCurrentTime());
 
                            writeSingleValueSafeName(output, "attachment", *statusWithResource.resource, restriction);
+
+                           writeEvents().onAddAttachmentToDiscussionThreadMessage(createObserverContext(*currentUser), 
+                                                                                  **attachmentIt, **messageIt);
                        });
     return status;    
 }
@@ -603,10 +603,13 @@ StatusCode MemoryRepositoryAttachment::removeAttachmentFromDiscussionThreadMessa
                                return;
                            }
 
+                           if ( ! (status = removeAttachmentFromDiscussionThreadMessage(collection, attachmentId, messageId)))
+                           {
+                               return;
+                           }
+
                            writeEvents().onRemoveAttachmentFromDiscussionThreadMessage(
                                    createObserverContext(*currentUser), **attachmentIt, **messageIt);
-
-                           status = removeAttachmentFromDiscussionThreadMessage(collection, attachmentId, messageId);
                        });
     return status;    
 }
