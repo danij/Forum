@@ -92,7 +92,7 @@ export AUTH_SECONDS="600"
 export AUTH_REGISTER_URL="http://127.0.0.1:18081/"
 export DOUBLE_SUBMIT_COOKIE_SIZE="32"
 export PREFIX="while(1);"
-export TRUST_FORWARDED_IP="true"
+export TRUST_FORWARDED_IP="true" #only when the service is only exposed behind a reverse proxy
 export EXPECTED_ORIGIN="https://host without trailing /"
 export SECURE_COOKIES="true" #true if using HTTPS, false if using HTTP for testing
 
@@ -221,7 +221,7 @@ CREATE INDEX idx_fts_thread_messages ON thread_messages USING gin(content);
 
 ### Retrieve The Sources
 
-The sources of the authentication service are located at [https://github.com/danij/Forum.Search](https://github.com/danij/Forum.Search).
+The sources of the search service are located at [https://github.com/danij/Forum.Search](https://github.com/danij/Forum.Search).
 
 ### Install NPM Dependencies
 
@@ -237,6 +237,7 @@ The configuration values are specified via environment variables.
 #!/bin/sh
 
 export PORT="8082"
+export TRUST_FORWARDED_IP="true" #only when the service is only exposed behind a reverse proxy
 export PGHOST="127.0.0.1"
 export PGUSER="search user"
 export PGPASSWORD="password"
@@ -250,7 +251,44 @@ node bin/www > forum-search.log
 Execute the above created script under a user with the minimum amount of privileges 
 (a different user than the one running other services).
 
-## 4. Web Front End
+## 4. Attachments Service
+
+### Install Dependencies
+
+[Node.js](https://nodejs.org/en/)
+
+### Retrieve The Sources
+
+The sources of the attachments service are located at [https://github.com/danij/Forum.Attachments](https://github.com/danij/Forum.Attachments).
+
+### Install NPM Dependencies
+
+```shell
+npm install
+```
+
+### Configure
+
+The configuration values are specified via environment variables.
+
+```shell
+#!/bin/sh
+
+export PORT="8083"
+export TRUST_FORWARDED_IP="true" #only when the service is only exposed behind a reverse proxy
+export FORUM_BACKEND_URI="http://127.0.0.1:8081"
+export FORUM_BACKEND_ORIGIN="external url of the forum"
+export FILE_LOCATION="folder where attachments are stored"
+
+node bin/www > forum-attachments.log
+```
+
+### Run
+
+Execute the above created script under a user with the minimum amount of privileges 
+(a different user than the one running other services).
+
+## 5. Web Front End
 
 ### Install Dependencies
 
@@ -284,7 +322,7 @@ Edit `dist/dic/terms_of_service.md` and add appropriate Terms Of Service.
 
 > Please make a backup of your configuration as running webpack again will override it with the defaults.
 
-## 5. Putting it all together
+## 6. Putting it all together
 
 ### Install Dependencies
 
@@ -313,12 +351,19 @@ location / {
     rewrite ^/thread_message.*$ /index.html last;
     rewrite ^/user.*$ /index.html last;
     rewrite ^/documentation.*$ /index.html last;
+    rewrite ^/view_attachments.*$ /index.html last;
 }
 
 location /api {
     rewrite /api(.*) /$1  break;
     proxy_set_header X-Forwarded-For $remote_addr;
     proxy_pass http://127.0.0.1:8081;
+}
+
+location /attachment {
+    rewrite /attachment(.*) $1  break;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_pass http://127.0.0.1:8083;
 }
 
 location /auth {
