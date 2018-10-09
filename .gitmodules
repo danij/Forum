@@ -9,3 +9,6 @@
 [submodule "subprojects/Forum.Search"]
 	path = subprojects/Forum.Search
 	url = git@github.com:danij/Forum.Search.git
+[submodule "subprojects/Forum.Attachments"]
+	path = subprojects/Forum.Attachments
+	url = git@github.com:danij/Forum.Attachments.git
