@@ -203,6 +203,14 @@ StatusCode MemoryRepositoryAttachment::canGetAttachment(IdTypeRef id, OutStream&
                           }
                       
                           attachment.nrOfGetRequests() += 1;
+
+                          status.disable();
+
+                          SerializationRestriction restriction(collection.grantedPrivileges(), collection,
+                              currentUser.id(), Context::getCurrentTime());
+
+                          writeSingleValueSafeName(output, "attachment", attachment, restriction);
+
                           readEvents().onGetAttachment(createObserverContext(currentUser), attachment);
                       });
     return status;
