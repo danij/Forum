@@ -1484,6 +1484,15 @@ void AttachmentsEndpoint::add(Http::RequestState& requestState)
     });
 }
 
+void AttachmentsEndpoint::canAdd(Http::RequestState& requestState)
+{
+    handle(requestState,
+           [](const Http::RequestState& /*requestState*/, CommandHandler& commandHandler, std::vector<StringView>& parameters)
+    {
+        return commandHandler.handle(View::CAN_ADD_ATTACHMENT, parameters);
+    });
+}
+
 void AttachmentsEndpoint::remove(Http::RequestState& requestState)
 {
     handle(requestState,

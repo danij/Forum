@@ -435,6 +435,7 @@ namespace Forum::Repository
                                                 OutStream& output) const = 0;
         virtual StatusCode canGetAttachment(Entities::IdTypeRef id, OutStream& output) const = 0;
         virtual StatusCode getAttachment(Entities::IdTypeRef id, OutStream& output) const = 0;
+        virtual StatusCode canAddAttachment(OutStream& output) const = 0;
 
         virtual StatusCode addNewAttachment(StringView name, uint64_t size, OutStream& output) = 0;
         virtual StatusCode changeAttachmentName(Entities::IdTypeRef id, StringView newName,  OutStream& output) = 0;

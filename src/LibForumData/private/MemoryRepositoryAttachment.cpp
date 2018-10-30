@@ -252,6 +252,47 @@ StatusCode MemoryRepositoryAttachment::getAttachment(IdTypeRef id, OutStream& ou
     return status;
 }
 
+StatusCode MemoryRepositoryAttachment::canAddAttachment(OutStream& output) const
+{
+    StatusWriter status(output);
+
+    const auto config = getGlobalConfig();
+
+    PerformedByWithLastSeenUpdateGuard performedBy;
+
+    collection().write([&](EntityCollection& collection)
+                       {
+                           auto currentUser = performedBy.getAndUpdate(collection);
+                       
+                           if (currentUser->id() == anonymousUserId())
+                           {
+                               status = AuthorizationStatus::NOT_ALLOWED;
+                               return;
+                           }
+                       
+                           if ( ! (status = authorization_->canAddAttachment(*currentUser)))
+                           {
+                               return;
+                           }
+                       
+                           const auto userQuota = currentUser->attachmentQuota()
+                               ? *currentUser->attachmentQuota()
+                               : static_cast<uint64_t>(config->attachment.defaultUserQuota);
+
+                           const auto totalSize = currentUser->attachments().totalSize();
+
+                           const auto availableBytes = totalSize >= userQuota ? 0u : (userQuota - totalSize);
+                       
+                           readEvents().onCanAddAttachment(createObserverContext(*currentUser));
+                       
+                           status.writeNow([&](auto& writer)
+                                           {
+                                               writer << Json::propertySafeName("availableBytes", availableBytes);
+                                           });
+                       });
+    return status;
+}
+
 StatusCode MemoryRepositoryAttachment::addNewAttachment(StringView name, uint64_t size, OutStream& output)
 {
     StatusWriter status(output);
@@ -283,7 +324,7 @@ StatusCode MemoryRepositoryAttachment::addNewAttachment(StringView name, uint64_
                            }
 
                            const auto userQuota = currentUser->attachmentQuota()
-                               ? currentUser->attachmentQuota()
+                               ? *currentUser->attachmentQuota()
                                : static_cast<uint64_t>(config->attachment.defaultUserQuota);
 
                            if ((currentUser->attachments().totalSize() + size) > userQuota)

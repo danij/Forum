@@ -326,6 +326,7 @@ namespace Forum::Authorization
                                                          const Entities::User& user) const = 0;
         virtual AuthorizationStatus canGetAttachment(const Entities::User& currentUser,
                                                      const Entities::Attachment& attachment) const = 0;
+        virtual AuthorizationStatus canAddAttachment(const Entities::User& currentUser) const = 0;
         virtual AuthorizationStatus addNewAttachment(const Entities::User& currentUser,
                                                      StringView name, uint64_t size) const = 0;
         virtual AuthorizationStatus autoApproveAttachment(const Entities::User& currentUser) const = 0;

@@ -201,6 +201,7 @@ namespace Forum::Commands
         void canGet(Http::RequestState& requestState);
         void get(Http::RequestState& requestState);
 
+        void canAdd(Http::RequestState& requestState);
         void add(Http::RequestState& requestState);
         void remove(Http::RequestState& requestState);
         void changeName(Http::RequestState& requestState);

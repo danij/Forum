@@ -96,6 +96,7 @@ namespace Forum::Repository
 
         boost::signals2::signal<void(ObserverContext)> onGetAttachments;
         boost::signals2::signal<void(ObserverContext, const Entities::Attachment&)> onGetAttachment;
+        boost::signals2::signal<void(ObserverContext)> onCanAddAttachment;
 
         boost::signals2::signal<void(ObserverContext)> onGetForumWideCurrentUserPrivileges;
         boost::signals2::signal<void(ObserverContext)> onGetForumWideRequiredPrivileges;

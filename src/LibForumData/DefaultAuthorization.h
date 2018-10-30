@@ -236,6 +236,7 @@ namespace Forum::Authorization
                                                  const Entities::User& user) const override;
         AuthorizationStatus canGetAttachment(const Entities::User& currentUser,
                                              const Entities::Attachment& attachment) const override;
+        AuthorizationStatus canAddAttachment(const Entities::User& currentUser) const override;
         AuthorizationStatus addNewAttachment(const Entities::User& currentUser,
                                              StringView name, uint64_t size) const override;
         AuthorizationStatus autoApproveAttachment(const Entities::User& currentUser) const override;

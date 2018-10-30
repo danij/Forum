@@ -824,13 +824,18 @@ AuthorizationStatus DefaultAuthorization::canGetAttachment(const User& currentUs
     return AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::addNewAttachment(const User& currentUser,
-                                                           StringView /*name*/, uint64_t /*size*/) const
+AuthorizationStatus DefaultAuthorization::canAddAttachment(const User& currentUser) const
 {
     if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
     return isAllowed(currentUser.id(), ForumWidePrivilege::CREATE_ATTACHMENT, with);
+}
+
+AuthorizationStatus DefaultAuthorization::addNewAttachment(const User& currentUser,
+                                                           StringView /*name*/, uint64_t /*size*/) const
+{
+    return canAddAttachment(currentUser);
 }
 
 AuthorizationStatus DefaultAuthorization::autoApproveAttachment(const User& currentUser) const
