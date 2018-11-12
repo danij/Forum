@@ -279,6 +279,7 @@ export TRUST_FORWARDED_IP="true" #only when the service is only exposed behind a
 export FORUM_BACKEND_URI="http://127.0.0.1:8081"
 export FORUM_BACKEND_ORIGIN="external url of the forum"
 export FILE_LOCATION="folder where attachments are stored"
+export TEMP_FILE_LOCATION="folder where attachments are stored while uploading"
 
 node bin/www > forum-attachments.log
 ```
@@ -364,6 +365,8 @@ location /attachment {
     rewrite /attachment(.*) $1  break;
     proxy_set_header X-Forwarded-For $remote_addr;
     proxy_pass http://127.0.0.1:8083;
+    #adjust maximum attachment size
+    client_max_body_size 2M;
 }
 
 location /auth {
