@@ -348,6 +348,10 @@ StatusCode MemoryRepositoryAttachment::addNewAttachment(StringView name, uint64_
                                                writer << Json::propertySafeName("id", attachment->id());
                                                writer << Json::propertySafeName("name", attachment->name().string());
                                                writer << Json::propertySafeName("created", attachment->created());
+                                               writer << Json::propertySafeName("size", attachment->size());
+                                               writer << Json::propertySafeName("approved", attachment->approved());
+                                               writer << Json::propertySafeName("nrOfMessagesAttached", attachment->messages().size());
+                                               writer << Json::propertySafeName("nrOfGetRequests", attachment->nrOfGetRequests());
                                            });
                        });
     return status;
