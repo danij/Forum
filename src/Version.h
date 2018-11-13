@@ -20,5 +20,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Forum
 {
-    static constexpr const char* VERSION = "1.0.0 RC 2";
+    static constexpr const char* VERSION = "1.0.0 RC 3";
 }
