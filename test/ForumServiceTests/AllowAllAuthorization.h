@@ -240,13 +240,13 @@ namespace Forum
                                                          const Entities::Attachment& /*attachment*/,
                                                          bool /*newApproval*/) const override { return {}; }
             AuthorizationStatus deleteAttachment(const Entities::User& /*currentUser*/,
-                                                 const Entities::Attachment& /*attachment*/) const { return {}; }
+                                                 const Entities::Attachment& /*attachment*/) const override { return {}; }
             AuthorizationStatus addAttachmentToDiscussionThreadMessage(const Entities::User& /*currentUser*/,
                                                                        const Entities::Attachment& /*attachment*/,
-                                                                       const Entities::DiscussionThreadMessage& /*message*/) const { return {}; }
+                                                                       const Entities::DiscussionThreadMessage& /*message*/) const override { return {}; }
             AuthorizationStatus removeAttachmentFromDiscussionThreadMessage(const Entities::User& /*currentUser*/,
                                                                             const Entities::Attachment& /*attachment*/,
-                                                                            const Entities::DiscussionThreadMessage& /*message*/) const { return {}; }
+                                                                            const Entities::DiscussionThreadMessage& /*message*/) const override { return {}; }
 
             AuthorizationStatus getEntitiesCount(const Entities::User& /*currentUser*/) const override { return {}; }
 
