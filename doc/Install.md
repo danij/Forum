@@ -8,6 +8,8 @@ The forum backend is composed of multiple services that run behind a reverse pro
 
 A C++17 toolchain.
 
+[CMake](https://cmake.org/) version 3.2 or newer.
+
 [International Components for Unicode](http://site.icu-project.org/)
 
 [Boost C++ libraries](http://www.boost.org/) (at least version 1.66)
