@@ -35,6 +35,7 @@
 !*build*.cpp
 Debug
 Release
+__pycache__
 
 # IDE Folders
 .idea
