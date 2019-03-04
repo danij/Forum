@@ -77,7 +77,7 @@
         "disableCommandsForAnonymousUsers": false,
         "disableThrottling": false,
         "responsePrefix": "while(1);",
-        "expectedOriginReferer": "https://host without trailing /"
+        "expectedOriginReferer": "https://dani.forum"
     },
 
     "logging": {
