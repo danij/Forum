@@ -725,16 +725,10 @@ struct EntityCollection::Impl
 };
 
 static UserPtr anonymousUser_;
-static IdType anonymousUserId_;
 
 UserPtr Forum::Entities::anonymousUser()
 {
     return anonymousUser_;
-}
-
-IdType Forum::Entities::anonymousUserId()
-{
-    return anonymousUserId_;
 }
 
 static void loadDefaultPrivilegeValues(ForumWidePrivilegeStore& store)
@@ -878,7 +872,6 @@ EntityCollection::EntityCollection(const StringView messagesFile)
     impl_->setEventListeners();
 
     anonymousUser_ = UserPtr(static_cast<UserPtr::IndexType>(impl_->managedEntities.users.add("<anonymous>")));
-    anonymousUserId_ = anonymousUser_->id();
 
     loadDefaultPrivilegeValues(*this);
 }

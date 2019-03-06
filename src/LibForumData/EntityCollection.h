@@ -131,5 +131,24 @@ namespace Forum::Entities
     typedef std::shared_ptr<EntityCollection> EntityCollectionRef;
 
     UserPtr anonymousUser();
-    IdType anonymousUserId();
+    
+    inline IdType anonymousUserId()
+    {
+        return Helpers::UuidString::empty;
+    }
+
+    inline bool isAnonymousUserId(IdTypeRef id)
+    {
+        return ! static_cast<bool>(id);
+    }
+
+    inline bool isAnonymousUser(const User& user)
+    {
+        return isAnonymousUserId(user.id());
+    }
+
+    inline bool isAnonymousUser(UserPtr user)
+    {
+        return isAnonymousUser(*user);
+    }
 }

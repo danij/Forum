@@ -310,7 +310,7 @@ AuthorizationStatus DefaultAuthorization::mergeDiscussionThreads(const User& cur
 AuthorizationStatus DefaultAuthorization::subscribeToDiscussionThread(const User& currentUser,
                                                                       const DiscussionThread& thread) const
 {
-    if (anonymousUserId() == currentUser.id()) return AuthorizationStatus::NOT_ALLOWED;
+    if (isAnonymousUser(currentUser)) return AuthorizationStatus::NOT_ALLOWED;
 
     if (isThrottled(UserActionThrottling::SUBSCRIBE, currentUser)) return AuthorizationStatus::THROTTLED;
 
@@ -321,7 +321,7 @@ AuthorizationStatus DefaultAuthorization::subscribeToDiscussionThread(const User
 AuthorizationStatus DefaultAuthorization::unsubscribeFromDiscussionThread(const User& currentUser,
                                                                           const DiscussionThread& thread) const
 {
-    if (anonymousUserId() == currentUser.id()) return AuthorizationStatus::NOT_ALLOWED;
+    if (isAnonymousUser(currentUser)) return AuthorizationStatus::NOT_ALLOWED;
 
     if (isThrottled(UserActionThrottling::SUBSCRIBE, currentUser)) return AuthorizationStatus::THROTTLED;
 
@@ -451,7 +451,7 @@ AuthorizationStatus DefaultAuthorization::upVoteDiscussionThreadMessage(const Us
                                                                         const DiscussionThreadMessage& message) const
 {
     if (currentUser.id() == message.createdBy().id()) return AuthorizationStatus::NOT_ALLOWED;
-    if (currentUser.id() == anonymousUserId()) return AuthorizationStatus::NOT_ALLOWED;
+    if (isAnonymousUser(currentUser)) return AuthorizationStatus::NOT_ALLOWED;
 
     if (isThrottled(UserActionThrottling::VOTE, currentUser)) return AuthorizationStatus::THROTTLED;
 
@@ -463,7 +463,7 @@ AuthorizationStatus DefaultAuthorization::downVoteDiscussionThreadMessage(const 
                                                                           const DiscussionThreadMessage& message) const
 {
     if (currentUser.id() == message.createdBy().id()) return AuthorizationStatus::NOT_ALLOWED;
-    if (currentUser.id() == anonymousUserId()) return AuthorizationStatus::NOT_ALLOWED;
+    if (isAnonymousUser(currentUser)) return AuthorizationStatus::NOT_ALLOWED;
 
     if (isThrottled(UserActionThrottling::VOTE, currentUser)) return AuthorizationStatus::THROTTLED;
 
@@ -475,7 +475,7 @@ AuthorizationStatus DefaultAuthorization::resetVoteDiscussionThreadMessage(const
                                                                            const DiscussionThreadMessage& message) const
 {
     if (currentUser.id() == message.createdBy().id()) return AuthorizationStatus::NOT_ALLOWED;
-    if (currentUser.id() == anonymousUserId()) return AuthorizationStatus::NOT_ALLOWED;
+    if (isAnonymousUser(currentUser)) return AuthorizationStatus::NOT_ALLOWED;
 
     if (isThrottled(UserActionThrottling::VOTE, currentUser)) return AuthorizationStatus::THROTTLED;
 

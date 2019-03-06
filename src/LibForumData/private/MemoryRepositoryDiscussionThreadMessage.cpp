@@ -300,7 +300,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
                                write.onSubscribeToDiscussionThread(observerContext, thread);
                            }
 
-                           if (anonymousUser() != currentUser)
+                           if ( ! isAnonymousUser(currentUser))
                            {
                                auto levelToGrant = collection.getForumWideDefaultPrivilegeLevel(
                                        ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD_MESSAGE);
@@ -399,7 +399,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
     thread.resetVisitorsSinceLastEdit();
     thread.latestVisibleChange() = message->created();
 
-    if (anonymousUser() != currentUser)
+    if ( ! isAnonymousUser(currentUser))
     {
         thread.subscribedUsers().insert(std::make_pair(currentUser->id(), currentUser));
     }
@@ -795,7 +795,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
-    if (Context::getCurrentUserId() == anonymousUserId())
+    if (isAnonymousUserId(Context::getCurrentUserId()))
     {
         return status = StatusCode::NOT_ALLOWED;
     }
@@ -917,7 +917,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
-    if (Context::getCurrentUserId() == anonymousUserId())
+    if (isAnonymousUserId(Context::getCurrentUserId()))
     {
         return status = StatusCode::NOT_ALLOWED;
     }
@@ -1248,7 +1248,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(Id
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
-    if (Context::getCurrentUserId() == anonymousUserId())
+    if (isAnonymousUserId(Context::getCurrentUserId()))
     {
         return status = StatusCode::NOT_ALLOWED;
     }

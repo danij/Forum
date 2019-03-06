@@ -125,7 +125,7 @@ StatusCode MemoryRepositoryUser::getCurrentUser(OutStream& output) const
                       
                           writer.newPropertyWithSafeName("authenticated") << ! Context::getCurrentUserAuth().empty();
                       
-                          if (currentUser.id() != anonymousUserId())
+                          if ( ! isAnonymousUser(currentUser))
                           {
                               const SerializationRestriction restriction(collection.grantedPrivileges(), collection,
                                                                          currentUser.id(), Context::getCurrentTime());
@@ -553,7 +553,7 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
                                                     
-                          if (currentUser.id() == anonymousUserId())
+                          if (isAnonymousUser(currentUser))
                           {
                               status = StatusCode::NOT_FOUND;
                               return;
@@ -639,7 +639,7 @@ StatusCode MemoryRepositoryUser::getUserQuotedHistory(OutStream& output) const
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
                                                     
-                          if (currentUser.id() == anonymousUserId())
+                          if (isAnonymousUser(currentUser))
                           {
                               status = StatusCode::NOT_FOUND;
                               return;
@@ -697,7 +697,7 @@ StatusCode MemoryRepositoryUser::getReceivedPrivateMessages(OutStream& output) c
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
                                                     
-                          if (currentUser.id() == anonymousUserId())
+                          if (isAnonymousUser(currentUser))
                           {
                               status = StatusCode::NOT_FOUND;
                               return;
@@ -735,7 +735,7 @@ StatusCode MemoryRepositoryUser::getSentPrivateMessages(OutStream& output) const
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
                                                     
-                          if (currentUser.id() == anonymousUserId())
+                          if (isAnonymousUser(currentUser))
                           {
                               status = StatusCode::NOT_FOUND;
                               return;
@@ -786,7 +786,7 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           if (currentUser->id() != anonymousUserId())
+                           if ( ! isAnonymousUser(currentUser))
                            {
                                status = AuthorizationStatus::NOT_ALLOWED;
                                return;

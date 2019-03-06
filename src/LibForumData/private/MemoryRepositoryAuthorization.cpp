@@ -166,7 +166,7 @@ struct AssignedPrivilegeWriter final
         writer_.startObject();
         writer_.newPropertyWithSafeName("id") << userId;
 
-        if (userId == anonymousUserId())
+        if (isAnonymousUserId(userId))
         {
             writer_.newPropertyWithSafeName("name") << anonymousUser()->name();
         }
@@ -625,7 +625,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
                            auto currentUser = performedBy.getAndUpdate(collection);
 
                            auto& messageIndexById = collection.threadMessages().byId();
-                           auto messageIt = messageIndexById.find(messageId);
+                           const auto messageIt = messageIndexById.find(messageId);
                            if (messageIt == messageIndexById.end())
                            {
                                status = StatusCode::NOT_FOUND;
@@ -634,10 +634,10 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
                            const DiscussionThreadMessage& message = **messageIt;
 
                            auto targetUser = anonymousUser();
-                           if (userId != anonymousUserId())
+                           if ( ! isAnonymousUserId(userId))
                            {
                                auto& userIndexById = collection.users().byId();
-                               auto userIt = userIndexById.find(userId);
+                               const auto userIt = userIndexById.find(userId);
                                if (userIt == userIndexById.end())
                                {
                                    status = StatusCode::NOT_FOUND;
@@ -678,7 +678,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         return StatusCode::NOT_FOUND;
     }
 
-    if (userId != anonymousUserId())
+    if ( ! isAnonymousUserId(userId))
     {
         auto& userIndexById = collection.users().byId();
         const auto userIt = userIndexById.find(userId);
@@ -923,10 +923,10 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
                            const DiscussionThread& thread = *threadPtr;
 
                            auto targetUser = anonymousUser();
-                           if (userId != anonymousUserId())
+                           if ( ! isAnonymousUserId(userId))
                            {
                                auto& userIndexById = collection.users().byId();
-                               auto userIt = userIndexById.find(userId);
+                               const auto userIt = userIndexById.find(userId);
                                if (userIt == userIndexById.end())
                                {
                                    status = StatusCode::NOT_FOUND;
@@ -964,7 +964,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         return StatusCode::NOT_FOUND;
     }
 
-    if (userId != anonymousUserId())
+    if ( ! isAnonymousUserId(userId))
     {
         auto& userIndexById = collection.users().byId();
         const auto userIt = userIndexById.find(userId);
@@ -1280,10 +1280,10 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
                            const DiscussionTag& tag = **tagIt;
 
                            auto targetUser = anonymousUser();
-                           if (userId != anonymousUserId())
+                           if ( ! isAnonymousUserId(userId))
                            {
                                auto& userIndexById = collection.users().byId();
-                               auto userIt = userIndexById.find(userId);
+                               const auto userIt = userIndexById.find(userId);
                                if (userIt == userIndexById.end())
                                {
                                    status = StatusCode::NOT_FOUND;
@@ -1316,17 +1316,17 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
     }
 
     auto& indexById = collection.tags().byId();
-    auto it = indexById.find(tagId);
+    const auto it = indexById.find(tagId);
     if (it == indexById.end())
     {
         FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
         return StatusCode::NOT_FOUND;
     }
 
-    if (userId != anonymousUserId())
+    if ( ! isAnonymousUserId(userId))
     {
         auto& userIndexById = collection.users().byId();
-        auto userIt = userIndexById.find(userId);
+        const auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
             FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
@@ -1513,10 +1513,10 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
                            const DiscussionCategory& category = **categoryIt;
 
                            auto targetUser = anonymousUser();
-                           if (userId != anonymousUserId())
+                           if ( ! isAnonymousUserId(userId))
                            {
                                auto& userIndexById = collection.users().byId();
-                               auto userIt = userIndexById.find(userId);
+                               const auto userIt = userIndexById.find(userId);
                                if (userIt == userIndexById.end())
                                {
                                    status = StatusCode::NOT_FOUND;
@@ -1556,10 +1556,10 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
         return StatusCode::NOT_FOUND;
     }
 
-    if (userId != anonymousUserId())
+    if ( ! isAnonymousUserId(userId))
     {
         auto& userIndexById = collection.users().byId();
-        auto userIt = userIndexById.find(userId);
+        const auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
             FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
@@ -1707,7 +1707,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForUser(IdTypeRef
     collection().read([&](const EntityCollection& collection)
                       {
                           const User* userPtr = anonymousUser();
-                          if (userId != anonymousUserId())
+                          if ( ! isAnonymousUserId(userId))
                           {
                               const auto& indexById = collection.users().byId();
                               auto it = indexById.find(userId);
@@ -2025,10 +2025,10 @@ StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
                            auto currentUser = performedBy.getAndUpdate(collection);
 
                            auto targetUser = anonymousUser();
-                           if (userId != anonymousUserId())
+                           if ( ! isAnonymousUserId(userId))
                            {
                                auto& userIndexById = collection.users().byId();
-                               auto userIt = userIndexById.find(userId);
+                               const auto userIt = userIndexById.find(userId);
                                if (userIt == userIndexById.end())
                                {
                                    status = StatusCode::NOT_FOUND;
@@ -2060,10 +2060,10 @@ StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    if (userId != anonymousUserId())
+    if ( ! isAnonymousUserId(userId))
     {
         auto& userIndexById = collection.users().byId();
-        auto userIt = userIndexById.find(userId);
+        const auto userIt = userIndexById.find(userId);
         if (userIt == userIndexById.end())
         {
             FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);

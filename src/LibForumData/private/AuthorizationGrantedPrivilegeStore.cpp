@@ -384,7 +384,7 @@ void GrantedPrivilegeStore::calculatePrivilege(const PrivilegeEntryCollection& c
     const IdTuple toSearch{ userId, entityId };
     auto range = collection.get<PrivilegeEntryCollectionByUserIdEntityId>().equal_range(toSearch);
 
-    const auto defaultPositiveValue = (userId == anonymousUserId())
+    const auto defaultPositiveValue = isAnonymousUserId(userId)
                                       ? static_cast<PrivilegeValueIntType>(0)
                                       : defaultPrivilegeValueForLoggedInUser_;
 

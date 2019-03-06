@@ -264,7 +264,7 @@ StatusCode MemoryRepositoryAttachment::canAddAttachment(OutStream& output) const
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
                        
-                           if (currentUser->id() == anonymousUserId())
+                           if (isAnonymousUser(currentUser))
                            {
                                status = AuthorizationStatus::NOT_ALLOWED;
                                return;
@@ -312,7 +312,7 @@ StatusCode MemoryRepositoryAttachment::addNewAttachment(StringView name, uint64_
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           if (currentUser->id() == anonymousUserId())
+                           if (isAnonymousUser(currentUser))
                            {
                                status = AuthorizationStatus::NOT_ALLOWED;
                                return;

@@ -90,7 +90,7 @@ static void writeDiscussionThreads(const ThreadsCollection& collection, Retrieve
     auto writeFilter = [&](const DiscussionThread& currentThread)
     {
         bool visitedThreadSinceLastChange = false;
-        if (currentUser.id() != anonymousUserId())
+        if ( ! isAnonymousUser(currentUser))
         {
             visitedThreadSinceLastChange = currentThread.hasVisitedSinceLastEdit(currentUser.id());
         }
@@ -192,7 +192,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
                           const auto& displayContext = Context::getDisplayContext();
                           uint32_t latestPageNumberToPersist{};
 
-                          if (currentUser.id() != anonymousUserId())
+                          if ( ! isAnonymousUser(currentUser))
                           {
                               if ( ! thread.hasVisitedSinceLastEdit(currentUser.id()))
                               {
@@ -584,7 +584,7 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
 
                            writeEvents().onAddNewDiscussionThread(createObserverContext(*currentUser), thread);
 
-                           if (anonymousUser() != currentUser)
+                           if ( ! isAnonymousUser(currentUser))
                            {
                                auto levelToGrant = collection.getForumWideDefaultPrivilegeLevel(
                                        ForumWideDefaultPrivilegeDuration::CREATE_DISCUSSION_THREAD);
@@ -969,7 +969,7 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(IdTypeR
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           if (currentUser == anonymousUser())
+                           if (isAnonymousUser(currentUser))
                            {
                                status = StatusCode::NOT_ALLOWED;
                                return;
@@ -1032,7 +1032,7 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(IdT
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           if (currentUser == anonymousUser())
+                           if (isAnonymousUser(currentUser))
                            {
                                status = StatusCode::NOT_ALLOWED;
                                return;
