@@ -25,9 +25,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <cstdlib>
 #include <future>
+#include <type_traits>
 
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/pool/object_pool.hpp>
 
 using namespace Forum::Authorization;
 using namespace Forum::Configuration;
@@ -59,6 +61,15 @@ static thread_local bool deleteAttachmentFromUser = true;
 
 struct EntityCollection::Impl
 {
+    boost::object_pool<User> userPool_{ 128 };
+    boost::object_pool<DiscussionThread> threadPool_{ 128 };
+    boost::object_pool<DiscussionThreadMessage> threadMessagePool_{ 1024 };
+    boost::object_pool<DiscussionTag> tagPool_{ 256 };
+    boost::object_pool<DiscussionCategory> categoryPool_{ 128 };
+    boost::object_pool<MessageComment> messageCommentPool_{ 128 };
+    boost::object_pool<PrivateMessage> privateMessagePool_{ 128 };
+    boost::object_pool<Attachment> attachmentPool_{ 128 };
+
     UserCollection users_;
     DiscussionThreadCollectionWithHashedId threads_;
     DiscussionThreadMessageCollection threadMessages_;
@@ -98,6 +109,44 @@ struct EntityCollection::Impl
             FORUM_LOG_ERROR << "Error mapping messages file: " << messagesFile << " (" << ex.what() << ')';
             std::abort();
         }
+    }
+
+    template<typename T, typename ...Args>
+    T* construct(Args&& ...constructorArgs)
+    {
+        void* ptr{};
+
+        if      constexpr (std::is_same_v<T, User>)                    ptr = userPool_.malloc();
+        else if constexpr (std::is_same_v<T, DiscussionThread>)        ptr = threadPool_.malloc();
+        else if constexpr (std::is_same_v<T, DiscussionThreadMessage>) ptr = threadMessagePool_.malloc();
+        else if constexpr (std::is_same_v<T, DiscussionTag>)           ptr = tagPool_.malloc();
+        else if constexpr (std::is_same_v<T, DiscussionCategory>)      ptr = categoryPool_.malloc();
+        else if constexpr (std::is_same_v<T, MessageComment>)          ptr = messageCommentPool_.malloc();
+        else if constexpr (std::is_same_v<T, PrivateMessage>)          ptr = privateMessagePool_.malloc();
+        else if constexpr (std::is_same_v<T, Attachment>)              ptr = attachmentPool_.malloc();
+        else static_assert(false, "Unknown pool for type");
+
+        if ( ! ptr)
+        {
+            FORUM_LOG_ERROR << "Could not allocate memory!";
+            std::abort();
+        }
+
+        return new(ptr) T(std::forward<Args>(constructorArgs)...);
+    }
+
+    template<typename T>
+    void release(T* const ptr)
+    {
+        if      constexpr (std::is_same_v<T, User>)                    userPool_.free(ptr);
+        else if constexpr (std::is_same_v<T, DiscussionThread>)        threadPool_.free(ptr);
+        else if constexpr (std::is_same_v<T, DiscussionThreadMessage>) threadMessagePool_.free(ptr);
+        else if constexpr (std::is_same_v<T, DiscussionTag>)           tagPool_.free(ptr);
+        else if constexpr (std::is_same_v<T, DiscussionCategory>)      categoryPool_.free(ptr);
+        else if constexpr (std::is_same_v<T, MessageComment>)          messageCommentPool_.free(ptr);
+        else if constexpr (std::is_same_v<T, PrivateMessage>)          privateMessagePool_.free(ptr);
+        else if constexpr (std::is_same_v<T, Attachment>)              attachmentPool_.free(ptr);
+        else static_assert(false, "Unknown pool for type");
     }
 
     void insertUser(UserPtr user)
@@ -190,7 +239,7 @@ struct EntityCollection::Impl
             }
         }
 
-        delete userPtr;
+        release(userPtr);
     }
 
     void insertDiscussionThread(DiscussionThreadPtr thread)
@@ -246,7 +295,7 @@ struct EntityCollection::Impl
                 deleteDiscussionThreadMessage(message);
             }
         }
-        delete threadPtr;
+        release(threadPtr);
     }
 
     void insertDiscussionThreadMessage(DiscussionThreadMessagePtr message)
@@ -307,7 +356,7 @@ struct EntityCollection::Impl
         DiscussionThread& parentThread = *(message.parentThread());
         if (parentThread.aboutToBeDeleted())
         {
-            delete messagePtr;
+            release(messagePtr);
             return;
         }
 
@@ -327,7 +376,7 @@ struct EntityCollection::Impl
             category->updateMessageCount(message.parentThread(), -1);
         }
 
-        delete messagePtr;
+        release(messagePtr);
     }
 
     void insertDiscussionTag(DiscussionTagPtr tag)
@@ -356,7 +405,7 @@ struct EntityCollection::Impl
             threadPtr->removeTag(tagPtr);
         });
 
-        delete tagPtr;
+        release(tagPtr);
     }
 
     void insertDiscussionCategory(DiscussionCategoryPtr category)
@@ -393,7 +442,7 @@ struct EntityCollection::Impl
             parent->removeChild(categoryPtr);
         }
 
-        delete categoryPtr;
+        release(categoryPtr);
     }
 
     void insertMessageComment(MessageCommentPtr comment)
@@ -414,7 +463,7 @@ struct EntityCollection::Impl
         User& user = comment.createdBy();
         user.messageComments().remove(commentPtr);
 
-        delete commentPtr;
+        release(commentPtr);
     }
 
     void insertPrivateMessage(const PrivateMessagePtr messagePtr)
@@ -442,7 +491,7 @@ struct EntityCollection::Impl
             User& destinationUser = message.destination();
             destinationUser.receivedPrivateMessages().remove(messagePtr);
         }
-        delete messagePtr;
+        release(messagePtr);
     }
 
     void insertAttachment(const AttachmentPtr attachmentPtr)
@@ -471,7 +520,7 @@ struct EntityCollection::Impl
             messagePtr->removeAttachment(attachmentPtr);
 
         }
-        delete attachmentPtr;
+        release(attachmentPtr);
     }
 
     void setEventListeners()
@@ -855,7 +904,7 @@ EntityCollection::EntityCollection(const StringView messagesFile)
 
     impl_->setEventListeners();
 
-    anonymousUser_ = UserPtr(new User("<anonymous>"));
+    anonymousUser_ = impl_->construct<User>("<anonymous>");
 
     loadDefaultPrivilegeValues(*this);
 }
@@ -882,17 +931,14 @@ StringView EntityCollection::getMessageContentPointer(size_t offset, size_t size
 
 UserPtr EntityCollection::createUser(IdType id, User::NameType&& name, Timestamp created, VisitDetails creationDetails)
 {
-    auto result = UserPtr(new User(id, std::move(name), created, creationDetails));
-    return result;
+    return impl_->construct<User>(id, std::move(name), created, creationDetails);
 }
 
 DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& createdBy, DiscussionThread::NameType&& name,
                                                              Timestamp created, VisitDetails creationDetails,
                                                              const bool approved)
 {
-    auto result = DiscussionThreadPtr(new DiscussionThread(
-            id, createdBy, std::move(name), created, creationDetails, *this, approved));
-    return result;
+    return impl_->construct<DiscussionThread>(id, createdBy, std::move(name), created, creationDetails, *this, approved);
 }
 
 DiscussionThreadMessagePtr EntityCollection::createDiscussionThreadMessage(IdType id, User& createdBy,
@@ -900,41 +946,38 @@ DiscussionThreadMessagePtr EntityCollection::createDiscussionThreadMessage(IdTyp
                                                                            const VisitDetails creationDetails,
                                                                            const bool approved)
 {
-    return DiscussionThreadMessagePtr(new DiscussionThreadMessage(id, createdBy, created, creationDetails, approved));
+    return impl_->construct<DiscussionThreadMessage>(id, createdBy, created, creationDetails, approved);
 }
 
 DiscussionTagPtr EntityCollection::createDiscussionTag(IdType id, DiscussionTag::NameType&& name, Timestamp created,
                                                        VisitDetails creationDetails)
 {
-    auto result = DiscussionTagPtr(new DiscussionTag(id, std::move(name), created, creationDetails, *this));
-    return result;
+    return impl_->construct<DiscussionTag>(id, std::move(name), created, creationDetails, *this);
 }
 
 DiscussionCategoryPtr EntityCollection::createDiscussionCategory(IdType id, DiscussionCategory::NameType&& name,
                                                                  Timestamp created, VisitDetails creationDetails)
 {
-    auto result = DiscussionCategoryPtr(new DiscussionCategory(id, std::move(name), created, creationDetails, *this));
-    return result;
+    return impl_->construct<DiscussionCategory>(id, std::move(name), created, creationDetails, *this);
 }
 
 MessageCommentPtr EntityCollection::createMessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy,
                                                          Timestamp created, VisitDetails creationDetails)
 {
-    return MessageCommentPtr(new MessageComment(id, message, createdBy, created, creationDetails));
+    return impl_->construct<MessageComment>(id, message, createdBy, created, creationDetails);
 }
 
 PrivateMessagePtr EntityCollection::createPrivateMessage(IdType id, User& source, User& destination, Timestamp created,
                                                          VisitDetails creationDetails, PrivateMessage::ContentType&& content)
 {
-    return PrivateMessagePtr(new PrivateMessage(id, source, destination, created, creationDetails, std::move(content)));
+    return impl_->construct<PrivateMessage>(id, source, destination, created, creationDetails, std::move(content));
 }
 
 AttachmentPtr EntityCollection::createAttachment(const IdType id, const Timestamp created, const VisitDetails creationDetails,
                                                  User& createdBy, Attachment::NameType&& name, const uint64_t size, 
                                                  const bool approved)
 {
-    auto result = AttachmentPtr(new Attachment(id, created, creationDetails, createdBy, std::move(name), size, approved));
-    return result;
+    return impl_->construct<Attachment>(id, created, creationDetails, createdBy, std::move(name), size, approved);
 }
 
 
