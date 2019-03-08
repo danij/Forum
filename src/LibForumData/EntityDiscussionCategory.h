@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityDiscussionThreadCollection.h"
 #include "EntityDiscussionTag.h"
 #include "EntityUser.h"
+#include "TypeHelpers.h"
 
 #include <string>
 
@@ -39,7 +40,6 @@ namespace Forum::Entities
     * when adding/removing threads and/or tags
     */
     class DiscussionCategory final : public Authorization::DiscussionCategoryPrivilegeStore,
-                                     public StoresEntityPointer<DiscussionCategory>,
                                      boost::noncopyable
     {
     public:
@@ -51,14 +51,14 @@ namespace Forum::Entities
         const auto& name()               const { return name_; }
 
          StringView description()        const { return description_; }
-               auto parent()             const { return parent_.toConst(); }
+               auto parent()             const { return Helpers::toConstPtr(parent_); }
 
                auto displayOrder()       const { return displayOrder_; }
                bool isRootCategory()     const { return ! parent_; }
 
                auto lastUpdated()        const { return lastUpdated_; }
         const auto& lastUpdatedDetails() const { return lastUpdatedDetails_; }
-               auto lastUpdatedBy()      const { return lastUpdatedBy_.toConst(); }
+               auto lastUpdatedBy()      const { return static_cast<const User*>(lastUpdatedBy_); }
 
         const auto& threads()            const { return threads_; }
                auto threadCount()        const { return threads_.count(); }
@@ -96,14 +96,14 @@ namespace Forum::Entities
 
         struct ChangeNotification final
         {
-            std::function<void(const DiscussionCategory&)> onPrepareUpdateName;
-            std::function<void(const DiscussionCategory&)> onUpdateName;
+            std::function<void(DiscussionCategory&)> onPrepareUpdateName;
+            std::function<void(DiscussionCategory&)> onUpdateName;
 
-            std::function<void(const DiscussionCategory&)> onPrepareUpdateMessageCount;
-            std::function<void(const DiscussionCategory&)> onUpdateMessageCount;
+            std::function<void(DiscussionCategory&)> onPrepareUpdateMessageCount;
+            std::function<void(DiscussionCategory&)> onUpdateMessageCount;
 
-            std::function<void(const DiscussionCategory&)> onPrepareUpdateDisplayOrder;
-            std::function<void(const DiscussionCategory&)> onUpdateDisplayOrder;
+            std::function<void(DiscussionCategory&)> onPrepareUpdateDisplayOrder;
+            std::function<void(DiscussionCategory&)> onUpdateDisplayOrder;
         };
 
         static auto& changeNotifications() { return changeNotifications_; }
@@ -131,7 +131,7 @@ namespace Forum::Entities
             changeNotifications_.onUpdateDisplayOrder(*this);
         }
 
-        void updateParent(const EntityPointer<DiscussionCategory> newParent)
+        void updateParent(DiscussionCategory* const newParent)
         {
             //displayOrderWithRootPriority depends on the parent
             changeNotifications_.onPrepareUpdateDisplayOrder(*this);
@@ -156,9 +156,9 @@ namespace Forum::Entities
         auto& tags()               { return tags_; }
         auto& children()           { return children_; }
 
-        bool addChild(EntityPointer<DiscussionCategory> category);
-        bool removeChild(EntityPointer<DiscussionCategory> category);
-        bool hasAncestor(EntityPointer<DiscussionCategory> ancestor);
+        bool addChild(DiscussionCategory* category);
+        bool removeChild(DiscussionCategory* category);
+        bool hasAncestor(DiscussionCategory* ancestor);
 
         bool insertDiscussionThread(DiscussionThreadPtr thread);
         bool deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages, bool onlyThisCategory);
@@ -187,22 +187,22 @@ namespace Forum::Entities
         std::string description_;
         int_fast16_t displayOrder_{0};
         int_fast32_t messageCount_{0};
-        EntityPointer<DiscussionCategory> parent_;
+        DiscussionCategory* parent_{};
 
         Timestamp lastUpdated_{0};
         VisitDetails lastUpdatedDetails_;
-        UserPtr lastUpdatedBy_;
+        UserPtr lastUpdatedBy_{};
 
         DiscussionThreadCollectionWithHashedIdAndPinOrder threads_;
         DiscussionThreadCollectionWithReferenceCountAndMessageCount totalThreads_;
 
         boost::container::flat_set<DiscussionTagPtr> tags_;
         //enable fast search of children, client can sort them on display order
-        boost::container::flat_set<EntityPointer<DiscussionCategory>> children_;
+        boost::container::flat_set<DiscussionCategory*> children_;
 
         Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
     };
 
-    typedef EntityPointer<DiscussionCategory> DiscussionCategoryPtr;
-    typedef EntityPointer<const DiscussionCategory> DiscussionCategoryConstPtr;
+    typedef DiscussionCategory* DiscussionCategoryPtr;
+    typedef const DiscussionCategory* DiscussionCategoryConstPtr;
 }

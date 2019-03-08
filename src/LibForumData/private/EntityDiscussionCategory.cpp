@@ -47,17 +47,17 @@ static void executeOnCategoryAndAllParents(DiscussionCategory& category, std::fu
     executeOnAllCategoryParents(category, std::move(fn));
 }
 
-bool DiscussionCategory::addChild(EntityPointer<DiscussionCategory> category)
+bool DiscussionCategory::addChild(DiscussionCategory* const category)
 {
     return std::get<1>(children_.insert(category));
 }
 
-bool DiscussionCategory::removeChild(EntityPointer<DiscussionCategory> category)
+bool DiscussionCategory::removeChild(DiscussionCategory* const category)
 {
     return children_.erase(category) > 0;
 }
 
-bool DiscussionCategory::hasAncestor(EntityPointer<DiscussionCategory> ancestor)
+bool DiscussionCategory::hasAncestor(DiscussionCategory* const ancestor)
 {
     auto currentParent = parent_;
     while (currentParent)
@@ -80,7 +80,7 @@ bool DiscussionCategory::insertDiscussionThread(DiscussionThreadPtr thread)
 
     //don't use updateMessageCount() as insertDiscussionThread will take care of that for totals
     messageCount_ += static_cast<decltype(messageCount_)>(thread->messageCount());
-    thread->addCategory(pointer());
+    thread->addCategory(this);
 
     changeNotifications_.onUpdateMessageCount(*this);
 
@@ -125,7 +125,7 @@ bool DiscussionCategory::insertDiscussionThreadsOfTag(DiscussionTagPtr tag)
     for (auto thread : threadsToInsert)
     {
         messageCount_ += static_cast<decltype(messageCount_)>(thread->messageCount());
-        thread->addCategory(pointer());
+        thread->addCategory(this);
     }
     changeNotifications_.onUpdateMessageCount(*this);
 
@@ -161,7 +161,7 @@ bool DiscussionCategory::deleteDiscussionThread(DiscussionThreadPtr thread, cons
     }
     if ( ! thread->aboutToBeDeleted())
     {
-        thread->removeCategory(pointer());
+        thread->removeCategory(this);
     }
     if (deleteMessages)
     {

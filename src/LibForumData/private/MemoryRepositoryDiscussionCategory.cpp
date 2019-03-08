@@ -215,13 +215,13 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
 
                            auto& indexById = collection.categories().byId();
                            auto parentIt = indexById.find(parentId);
-                           DiscussionCategoryPtr parent;
+                           DiscussionCategoryPtr parent{};
                            if (parentIt != indexById.end())
                            {
                                parent = *parentIt;
                            }
 
-                           if ( ! (status = authorization_->addNewDiscussionCategory(*currentUser, name, parent.ptr())))
+                           if ( ! (status = authorization_->addNewDiscussionCategory(*currentUser, name, parent)))
                            {
                                return;
                            }
@@ -464,7 +464,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(Id
                            DiscussionCategoryPtr categoryPtr = *it;
                            auto& category = **it;
                            auto newParentIt = indexById.find(newParentId);
-                           DiscussionCategoryPtr newParentPtr; //might be empty
+                           DiscussionCategoryPtr newParentPtr{}; //might be empty
 
                            if (newParentIt != indexById.end())
                            {
@@ -477,7 +477,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(Id
                                }
                            }
 
-                           if ( ! (status = authorization_->changeDiscussionCategoryParent(*currentUser, **it, newParentPtr.ptr())))
+                           if ( ! (status = authorization_->changeDiscussionCategoryParent(*currentUser, **it, newParentPtr)))
                            {
                                return;
                            }
@@ -500,13 +500,13 @@ static void updateCategoryParent(DiscussionCategory& category, DiscussionCategor
     if (oldParent)
     {
         oldParent->removeTotalsFromChild(category);
-        oldParent->children().erase(category.pointer());
+        oldParent->children().erase(&category);
     }
 
     if (newParentPtr)
     {
         newParentPtr->addTotalsFromChild(category);
-        newParentPtr->children().insert(category.pointer());
+        newParentPtr->children().insert(&category);
     }
 }
 
@@ -525,7 +525,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(En
     DiscussionCategory& category = *categoryPtr;
 
     const auto newParentIt = indexById.find(newParentId);
-    DiscussionCategoryPtr newParentPtr; //might be empty
+    DiscussionCategoryPtr newParentPtr{}; //might be empty
 
     if (newParentIt != indexById.end())
     {

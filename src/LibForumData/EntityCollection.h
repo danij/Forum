@@ -50,15 +50,6 @@ namespace Forum::Entities
         const Authorization::GrantedPrivilegeStore& grantedPrivileges() const;
               Authorization::GrantedPrivilegeStore& grantedPrivileges();
 
-        std::unique_ptr<User>*                    getUserPoolRoot();
-        std::unique_ptr<DiscussionThread>*        getDiscussionThreadPoolRoot();
-        std::unique_ptr<DiscussionThreadMessage>* getDiscussionThreadMessagePoolRoot();
-        std::unique_ptr<DiscussionTag>*           getDiscussionTagPoolRoot();
-        std::unique_ptr<DiscussionCategory>*      getDiscussionCategoryPoolRoot();
-        std::unique_ptr<MessageComment>*          getMessageCommentPoolRoot();
-        std::unique_ptr<PrivateMessage>*          getPrivateMessagePoolRoot();
-        std::unique_ptr<Attachment>*              getAttachmentPoolRoot();
-
         StringView getMessageContentPointer(size_t offset, size_t size);
 
         UserPtr                    createUser(IdType id, User::NameType&& name, Timestamp created,

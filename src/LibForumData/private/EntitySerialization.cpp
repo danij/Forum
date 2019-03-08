@@ -209,13 +209,16 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         writer << propertySafeName("nrOfDownVotes", downVotes.size());
     }
     auto voteStatus = 0;
-    if (serializationSettings.currentUser && (downVotes.find(serializationSettings.currentUser) != downVotes.end()))
     {
-        voteStatus = -1;
-    }
-    else if (serializationSettings.currentUser && (upVotes.find(serializationSettings.currentUser) != upVotes.end()))
-    {
-        voteStatus = 1;
+        auto currentUserTemp = const_cast<UserPtr>(serializationSettings.currentUser);
+        if (currentUserTemp && (downVotes.find(currentUserTemp) != downVotes.end()))
+        {
+            voteStatus = -1;
+        }
+        else if (currentUserTemp && (upVotes.find(currentUserTemp) != upVotes.end()))
+        {
+            voteStatus = 1;
+        }
     }
     writer << propertySafeName("voteStatus", voteStatus);
 

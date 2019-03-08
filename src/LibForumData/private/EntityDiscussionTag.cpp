@@ -100,13 +100,13 @@ bool DiscussionTag::deleteDiscussionThread(DiscussionThreadPtr thread, bool dele
     return true;
 }
 
-bool DiscussionTag::addCategory(EntityPointer<DiscussionCategory> category)
+bool DiscussionTag::addCategory(DiscussionCategory* const category)
 {
     assert(category);
     return std::get<1>(categories_.insert(std::move(category)));
 }
 
-bool DiscussionTag::removeCategory(EntityPointer<DiscussionCategory> category)
+bool DiscussionTag::removeCategory(DiscussionCategory* const category)
 {
     assert(category);
     return categories_.erase(category) > 0;

@@ -41,7 +41,6 @@ namespace Forum::Entities
     * Repositories are responsible for updating the relationships between this message and other entities
     */
     class DiscussionThread final : public Authorization::DiscussionThreadPrivilegeStore,
-                                   public StoresEntityPointer<DiscussionThread>,
                                    boost::noncopyable
     {
     public:
@@ -78,7 +77,7 @@ namespace Forum::Entities
 
         auto lastUpdatedBy() const
         {
-            return lastUpdated_ ? lastUpdated_->by.toConst() : EntityPointer<const User>{};
+            return lastUpdated_ ? static_cast<const User*>(lastUpdated_->by) : nullptr;
         }
 
                auto latestVisibleChange()       const { return latestVisibleChange_; }
@@ -114,20 +113,20 @@ namespace Forum::Entities
 
         struct ChangeNotification final
         {
-            std::function<void(const DiscussionThread&)> onPrepareUpdateName;
-            std::function<void(const DiscussionThread&)> onUpdateName;
+            std::function<void(DiscussionThread&)> onPrepareUpdateName;
+            std::function<void(DiscussionThread&)> onUpdateName;
 
-            std::function<void(const DiscussionThread&)> onPrepareUpdateLastUpdated;
-            std::function<void(const DiscussionThread&)> onUpdateLastUpdated;
+            std::function<void(DiscussionThread&)> onPrepareUpdateLastUpdated;
+            std::function<void(DiscussionThread&)> onUpdateLastUpdated;
 
-            std::function<void(const DiscussionThread&)> onPrepareUpdateLatestMessageCreated;
-            std::function<void(const DiscussionThread&)> onUpdateLatestMessageCreated;
+            std::function<void(DiscussionThread&)> onPrepareUpdateLatestMessageCreated;
+            std::function<void(DiscussionThread&)> onUpdateLatestMessageCreated;
 
-            std::function<void(const DiscussionThread&)> onPrepareUpdateMessageCount;
-            std::function<void(const DiscussionThread&)> onUpdateMessageCount;
+            std::function<void(DiscussionThread&)> onPrepareUpdateMessageCount;
+            std::function<void(DiscussionThread&)> onUpdateMessageCount;
 
-            std::function<void(const DiscussionThread&)> onPrepareUpdatePinDisplayOrder;
-            std::function<void(const DiscussionThread&)> onUpdatePinDisplayOrder;
+            std::function<void(DiscussionThread&)> onPrepareUpdatePinDisplayOrder;
+            std::function<void(DiscussionThread&)> onUpdatePinDisplayOrder;
         };
 
         static auto& changeNotifications() { return changeNotifications_; }
@@ -172,7 +171,7 @@ namespace Forum::Entities
             lastUpdated_->reason = std::move(reason);
         }
 
-        void updateLastUpdatedBy(const EntityPointer<User> by)
+        void updateLastUpdatedBy(User* const by)
         {
             if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedInfo());
             lastUpdated_->by = by;
@@ -218,11 +217,11 @@ namespace Forum::Entities
         bool hasVisitedSinceLastEdit(IdTypeRef userId) const;
         void resetVisitorsSinceLastEdit();
 
-        bool addTag(EntityPointer<DiscussionTag> tag);
-        bool removeTag(EntityPointer<DiscussionTag> tag);
+        bool addTag(DiscussionTag* tag);
+        bool removeTag(DiscussionTag* tag);
 
-        bool addCategory(EntityPointer<DiscussionCategory> category);
-        bool removeCategory(EntityPointer<DiscussionCategory> category);
+        bool addCategory(DiscussionCategory* category);
+        bool removeCategory(DiscussionCategory* category);
 
     private:
         void refreshLatestMessageCreated();
@@ -240,7 +239,7 @@ namespace Forum::Entities
 
         std::unique_ptr<LastUpdatedInfo> lastUpdated_;
 
-        //store the timestamp of the latest visibile change in order to be able to
+        //store the timestamp of the latest visible change in order to be able to
         //detect when to return a status that nothing has changed since a provided timestamp
         //Note: do not use as index in collection, the indexes would not always be updated
         Timestamp latestVisibleChange_{0};
@@ -256,13 +255,13 @@ namespace Forum::Entities
         
         boost::container::flat_set<boost::uuids::uuid> visitorsSinceLastEdit_;
 
-        boost::container::flat_set<EntityPointer<DiscussionTag>> tags_;
-        boost::container::flat_set<EntityPointer<DiscussionCategory>> categories_;
-        boost::container::flat_map<IdType, EntityPointer<User>> subscribedUsers_;
+        boost::container::flat_set<DiscussionTag*> tags_;
+        boost::container::flat_set<DiscussionCategory*> categories_;
+        boost::container::flat_map<IdType, User*> subscribedUsers_;
 
         Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
     };
 
-    typedef EntityPointer<DiscussionThread> DiscussionThreadPtr;
-    typedef EntityPointer<const DiscussionThread> DiscussionThreadConstPtr;
+    typedef DiscussionThread* DiscussionThreadPtr;
+    typedef const DiscussionThread* DiscussionThreadConstPtr;
 }

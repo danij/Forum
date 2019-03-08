@@ -150,7 +150,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreads(OutStream& out
                       {
                           auto& currentUser = performedBy.get(collection, *store_);
 
-                          TemporaryChanger<UserPtr> _(serializationSettings.currentUser, currentUser.pointer());
+                          TemporaryChanger<UserConstPtr> _(serializationSettings.currentUser, &currentUser);
 
                           writeDiscussionThreads(collection.threads(), by, output, collection.grantedPrivileges(), 
                                                  collection, currentUser);
@@ -221,7 +221,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessageParentThread, true);
                           BoolTemporaryChanger __(serializationSettings.hideVisitedThreadSinceLastChange, true);
                           BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
-                          TemporaryChanger<UserPtr> ____(serializationSettings.currentUser, currentUser.pointer());
+                          TemporaryChanger<UserConstPtr> ____(serializationSettings.currentUser, &currentUser);
 
                           status.disable();
 
@@ -286,7 +286,7 @@ StatusCode MemoryRepositoryDiscussionThread::getMultipleDiscussionThreadsById(St
                           status.disable();
 
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
-                          TemporaryChanger<UserPtr> __(serializationSettings.currentUser, currentUser.pointer());
+                          TemporaryChanger<UserConstPtr> __(serializationSettings.currentUser, &currentUser);
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
                                                                currentUser.id(), Context::getCurrentTime());
@@ -367,7 +367,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfUser(IdTypeRe
                           }
 
                           BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadCreatedBy, true);
-                          TemporaryChanger<UserPtr> __(serializationSettings.currentUser, currentUser.pointer());
+                          TemporaryChanger<UserConstPtr> __(serializationSettings.currentUser, &currentUser);
 
                           status.disable();
                           writeDiscussionThreads(user.threads(), by, output, collection.grantedPrivileges(), 
@@ -408,7 +408,7 @@ StatusCode MemoryRepositoryDiscussionThread::getSubscribedDiscussionThreadsOfUse
 
                           status.disable();
 
-                          TemporaryChanger<UserPtr> _(serializationSettings.currentUser, currentUser.pointer());
+                          TemporaryChanger<UserConstPtr> _(serializationSettings.currentUser, &currentUser);
 
                           writeDiscussionThreads(user.subscribedThreads(), by, output, collection.grantedPrivileges(),
                                                  collection, currentUser);
@@ -499,7 +499,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsWithTag(IdTypeR
 
                           status.disable();
 
-                          TemporaryChanger<UserPtr> _(serializationSettings.currentUser, currentUser.pointer());
+                          TemporaryChanger<UserConstPtr> _(serializationSettings.currentUser, &currentUser);
 
                           writeDiscussionThreads(tag.threads(), by, output, collection.grantedPrivileges(),
                                                  collection, currentUser);
@@ -539,7 +539,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadsOfCategory(IdTy
 
                          status.disable();
 
-                         TemporaryChanger<UserPtr> _(serializationSettings.currentUser, currentUser.pointer());
+                         TemporaryChanger<UserConstPtr> _(serializationSettings.currentUser, &currentUser);
 
                          writeDiscussionThreads(category.threads(), by, output, collection.grantedPrivileges(),
                                                 collection, currentUser);

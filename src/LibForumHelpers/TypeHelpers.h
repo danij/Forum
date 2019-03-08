@@ -52,6 +52,12 @@ typedef std::string_view StringView;
 namespace Forum::Helpers
 {
     template<typename T>
+    auto toConstPtr(T* value)
+    {
+        return static_cast<const T*>(value);
+    }
+
+    template<typename T>
     bool ownerEqual(const std::weak_ptr<T>& first, const std::weak_ptr<T>& second)
     {
         return ! first.owner_before(second) && ! second.owner_before(first);

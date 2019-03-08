@@ -32,8 +32,7 @@ namespace Forum::Entities
     class User;
     class DiscussionThreadMessage;
 
-    class Attachment final : public StoresEntityPointer<Attachment>,
-                             boost::noncopyable
+    class Attachment final : boost::noncopyable
     {
     public:
         const auto& id()                  const { return id_; }
@@ -60,11 +59,11 @@ namespace Forum::Entities
 
         struct ChangeNotification final
         {
-            std::function<void(const Attachment&)> onPrepareUpdateName;
-            std::function<void(const Attachment&)> onUpdateName;
+            std::function<void(Attachment&)> onPrepareUpdateName;
+            std::function<void(Attachment&)> onUpdateName;
 
-            std::function<void(const Attachment&)> onPrepareUpdateApproval;
-            std::function<void(const Attachment&)> onUpdateApproval;
+            std::function<void(Attachment&)> onPrepareUpdateApproval;
+            std::function<void(Attachment&)> onUpdateApproval;
         };
 
         static auto& changeNotifications() { return changeNotifications_; }
@@ -95,12 +94,12 @@ namespace Forum::Entities
 
         auto& nrOfGetRequests() const { return nrOfGetRequests_; }
 
-        bool addMessage(const EntityPointer<DiscussionThreadMessage> messagePtr)
+        bool addMessage(DiscussionThreadMessage* const messagePtr)
         {
             return messages_.insert(messagePtr).second;
         }
 
-        bool removeMessage(const EntityPointer<DiscussionThreadMessage> messagePtr)
+        bool removeMessage(DiscussionThreadMessage* const messagePtr)
         {
             return messages_.erase(messagePtr) > 0;
         }
@@ -118,9 +117,9 @@ namespace Forum::Entities
         bool approved_;
         mutable std::atomic<uint32_t> nrOfGetRequests_{ 0 };
 
-        boost::container::flat_set<EntityPointer<DiscussionThreadMessage>> messages_;
+        boost::container::flat_set<DiscussionThreadMessage*> messages_;
     };
 
-    typedef EntityPointer<Attachment> AttachmentPtr;
-    typedef EntityPointer<const Attachment> AttachmentConstPtr;
+    typedef Attachment* AttachmentPtr;
+    typedef const Attachment* AttachmentConstPtr;
 }

@@ -8,7 +8,6 @@ find_package(Boost REQUIRED COMPONENTS locale log regex system)
 find_package(ICU)
 
 set(SOURCE_FILES
-        private/EntityPointer.cpp
         private/EntityCollection.cpp
         private/EntityUser.cpp
         private/EntityUserCollection.cpp
@@ -48,8 +47,6 @@ set(HEADER_FILES
         Entities.h
         EntityCollection.h
         EntityCommonTypes.h
-        EntityPointer.h
-        VectorWithFreeQueue.h
         EntityUser.h
         EntityUserCollection.h
         EntityDiscussionThread.h

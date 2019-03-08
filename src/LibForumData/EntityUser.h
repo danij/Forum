@@ -42,8 +42,7 @@ namespace Forum::Entities
     * Stores a user that creates content
     * Repositories are responsible for updating the relationships between this message and other entities
     */
-    class User final : public StoresEntityPointer<User>,
-                       boost::noncopyable
+    class User final : boost::noncopyable
     {
     public:
         const auto& id()                const { return id_; }
@@ -138,20 +137,20 @@ namespace Forum::Entities
 
         struct ChangeNotification final
         {
-            std::function<void(const User&)> onPrepareUpdateAuth;
-            std::function<void(const User&)> onUpdateAuth;
+            std::function<void(User&)> onPrepareUpdateAuth;
+            std::function<void(User&)> onUpdateAuth;
 
-            std::function<void(const User&)> onPrepareUpdateName;
-            std::function<void(const User&)> onUpdateName;
+            std::function<void(User&)> onPrepareUpdateName;
+            std::function<void(User&)> onUpdateName;
 
-            std::function<void(const User&)> onPrepareUpdateLastSeen;
-            std::function<void(const User&)> onUpdateLastSeen;
+            std::function<void(User&)> onPrepareUpdateLastSeen;
+            std::function<void(User&)> onUpdateLastSeen;
 
-            std::function<void(const User&)> onPrepareUpdateThreadCount;
-            std::function<void(const User&)> onUpdateThreadCount;
+            std::function<void(User&)> onPrepareUpdateThreadCount;
+            std::function<void(User&)> onUpdateThreadCount;
 
-            std::function<void(const User&)> onPrepareUpdateMessageCount;
-            std::function<void(const User&)> onUpdateMessageCount;
+            std::function<void(User&)> onPrepareUpdateMessageCount;
+            std::function<void(User&)> onUpdateMessageCount;
         };
 
         static auto& changeNotifications() { return changeNotifications_; }
@@ -341,6 +340,6 @@ namespace Forum::Entities
         std::unique_ptr<AttachmentCollection> attachments_;
     };
 
-    typedef EntityPointer<User> UserPtr;
-    typedef EntityPointer<const User> UserConstPtr;
+    typedef User* UserPtr;
+    typedef const User* UserConstPtr;
 }

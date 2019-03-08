@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityMessageCommentCollection.h"
 #include "EntityAttachment.h"
 #include "StringHelpers.h"
+#include "TypeHelpers.h"
 
 #include <string>
 
@@ -48,7 +49,7 @@ namespace Forum::Entities
         typedef int_fast32_t VoteScoreType;
         //using flat maps/sets as they use less memory than tree/hash based maps/sets
         //number of votes/message will usually be small
-        typedef boost::container::flat_map<EntityPointer<User>, Timestamp> VoteCollection;
+        typedef boost::container::flat_map<User*, Timestamp> VoteCollection;
         //number of attachments will usually be small
         typedef boost::container::flat_set<AttachmentPtr> AttachmentCollection;
 
@@ -58,7 +59,7 @@ namespace Forum::Entities
         const auto& creationDetails()     const { return creationDetails_; }
 
         const auto& createdBy()           const { return createdBy_; }
-               auto parentThread()        const { return parentThread_.toConst(); }
+               auto parentThread()        const { return Helpers::toConstPtr(parentThread_); }
 
          StringView content()             const { return content_; }
 
@@ -95,11 +96,11 @@ namespace Forum::Entities
 
         auto lastUpdatedBy() const
         {
-            return lastUpdated_ ? lastUpdated_->by.toConst() : EntityPointer<const User>{};
+            return lastUpdated_ ? static_cast<const User*>(lastUpdated_->by) : nullptr;
         }
 
 
-        bool hasVoted(EntityPointer<User> user) const
+        bool hasVoted(User* const user) const
         {
             return (upVotes_ && (upVotes_->find(user) != upVotes_->end()))
                 || (downVotes_ && (downVotes_->find(user) != downVotes_->end()));
@@ -117,7 +118,7 @@ namespace Forum::Entities
             return Helpers::toConst(downVotes_ ? *downVotes_ : emptyVoteCollection);
         }
 
-        boost::optional<Timestamp> votedAt(const EntityPointer<User> user) const
+        boost::optional<Timestamp> votedAt(User* const user) const
         {
             if (upVotes_)
             {
@@ -227,7 +228,7 @@ namespace Forum::Entities
             lastUpdated_->reason = std::move(reason);
         }
 
-        void updateLastUpdatedBy(const EntityPointer<User> by)
+        void updateLastUpdatedBy(User* const by)
         {
             if ( ! lastUpdated_) lastUpdated_.reset(new LastUpdatedInfo());
             lastUpdated_->by = by;
@@ -237,13 +238,13 @@ namespace Forum::Entities
 
         auto& downVotes() { return downVotes_; }
 
-        void addUpVote(EntityPointer<User> user, const Timestamp& at)
+        void addUpVote(User* const user, const Timestamp& at)
         {
             if ( ! upVotes_) upVotes_.reset(new VoteCollection);
             upVotes_->insert(std::make_pair(user, at));
         }
 
-        void addDownVote(EntityPointer<User> user, const Timestamp& at)
+        void addDownVote(User* const user, const Timestamp& at)
         {
             if ( ! downVotes_) downVotes_.reset(new VoteCollection);
             downVotes_->insert(std::make_pair(user, at));
@@ -260,7 +261,7 @@ namespace Forum::Entities
          * Removes the vote of a user
          * @return TRUE if there was an up or down vote from the user
          */
-        RemoveVoteStatus removeVote(const EntityPointer<User> user)
+        RemoveVoteStatus removeVote(User* const user)
         {
             if (upVotes_ && (upVotes_->erase(user) > 0))
             {
@@ -279,7 +280,7 @@ namespace Forum::Entities
         VisitDetails creationDetails_;
 
         User& createdBy_;
-        EntityPointer<DiscussionThread> parentThread_;
+        DiscussionThread* parentThread_{};
         uint16_t solvedCommentsCount_ : 15;
         uint16_t approved_ : 1;
 
@@ -295,6 +296,6 @@ namespace Forum::Entities
         std::unique_ptr<AttachmentCollection> attachments_;
     };
 
-    typedef EntityPointer<DiscussionThreadMessage> DiscussionThreadMessagePtr;
-    typedef EntityPointer<const DiscussionThreadMessage> DiscussionThreadMessageConstPtr;
+    typedef DiscussionThreadMessage* DiscussionThreadMessagePtr;
+    typedef const DiscussionThreadMessage* DiscussionThreadMessageConstPtr;
 }

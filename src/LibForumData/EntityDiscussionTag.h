@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "AuthorizationPrivileges.h"
 #include "EntityCommonTypes.h"
 #include "EntityDiscussionThreadCollection.h"
+#include "TypeHelpers.h"
 
 #include <string>
 
@@ -39,7 +40,6 @@ namespace Forum::Entities
     * The tag manages the message count and also notifies any discussion categories when a thread is added or removed
     */
     class DiscussionTag final : public Authorization::DiscussionTagPrivilegeStore,
-                                public StoresEntityPointer<DiscussionTag>,
                                 boost::noncopyable
     {
     public:
@@ -55,7 +55,7 @@ namespace Forum::Entities
 
                auto lastUpdated()        const { return lastUpdated_; }
         const auto& lastUpdatedDetails() const { return lastUpdatedDetails_; }
-               auto lastUpdatedBy()      const { return lastUpdatedBy_.toConst(); }
+               auto lastUpdatedBy()      const { return Helpers::toConstPtr(lastUpdatedBy_); }
 
                auto threadCount()        const { return threads_.count(); }
 
@@ -81,14 +81,14 @@ namespace Forum::Entities
 
         struct ChangeNotification final
         {
-            std::function<void(const DiscussionTag&)> onPrepareUpdateName;
-            std::function<void(const DiscussionTag&)> onUpdateName;
+            std::function<void(DiscussionTag&)> onPrepareUpdateName;
+            std::function<void(DiscussionTag&)> onUpdateName;
 
-            std::function<void(const DiscussionTag&)> onPrepareUpdateThreadCount;
-            std::function<void(const DiscussionTag&)> onUpdateThreadCount;
+            std::function<void(DiscussionTag&)> onPrepareUpdateThreadCount;
+            std::function<void(DiscussionTag&)> onUpdateThreadCount;
 
-            std::function<void(const DiscussionTag&)> onPrepareUpdateMessageCount;
-            std::function<void(const DiscussionTag&)> onUpdateMessageCount;
+            std::function<void(DiscussionTag&)> onPrepareUpdateMessageCount;
+            std::function<void(DiscussionTag&)> onUpdateMessageCount;
         };
 
         static auto& changeNotifications() { return changeNotifications_; }
@@ -126,8 +126,8 @@ namespace Forum::Entities
         bool insertDiscussionThread(DiscussionThreadPtr thread);
         bool deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages);
 
-        bool addCategory(EntityPointer<DiscussionCategory> category);
-        bool removeCategory(EntityPointer<DiscussionCategory> category);
+        bool addCategory(DiscussionCategory* category);
+        bool removeCategory(DiscussionCategory* category);
 
     private:
         static ChangeNotification changeNotifications_;
@@ -143,14 +143,14 @@ namespace Forum::Entities
 
         Timestamp lastUpdated_{0};
         VisitDetails lastUpdatedDetails_;
-        EntityPointer<User> lastUpdatedBy_;
+        User* lastUpdatedBy_{};
 
         int_fast32_t messageCount_{0};
-        boost::container::flat_set<EntityPointer<DiscussionCategory>> categories_;
+        boost::container::flat_set<DiscussionCategory*> categories_;
 
         Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
     };
 
-    typedef EntityPointer<DiscussionTag> DiscussionTagPtr;
-    typedef EntityPointer<const DiscussionTag> DiscussionTagConstPtr;
+    typedef DiscussionTag* DiscussionTagPtr;
+    typedef const DiscussionTag* DiscussionTagConstPtr;
 }

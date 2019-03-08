@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "EntityPointer.h"
 #include "UuidString.h"
 #include "IpAddress.h"
 #include "SortedVector.h"
@@ -50,44 +49,46 @@ namespace Forum::Entities
         Helpers::IpAddress ip;
     };
 
+    class User;
+
     struct LastUpdatedInfo final
     {
         Timestamp at{0};
         VisitDetails details;
         std::string reason;
-        EntityPointer<User> by;
+        User* by{};
     };
 
 #define INDEX_CONST_MEM_FUN(Type, Getter) \
     const boost::multi_index::const_mem_fun<Type, typename std::result_of<decltype(&Type::Getter)(Type*)>::type, &Type::Getter>
 
 #define HASHED_COLLECTION(Type, Getter) \
-    boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+    boost::multi_index_container<Type*, boost::multi_index::indexed_by< \
         boost::multi_index::hashed_non_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define HASHED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define HASHED_UNIQUE_COLLECTION(Type, Getter) \
-    boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+    boost::multi_index_container<Type*, boost::multi_index::indexed_by< \
         boost::multi_index::hashed_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define HASHED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define ORDERED_COLLECTION(Type, Getter) \
-    boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+    boost::multi_index_container<Type*, boost::multi_index::indexed_by< \
         boost::multi_index::ordered_non_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define ORDERED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define ORDERED_UNIQUE_COLLECTION(Type, Getter) \
-    boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+    boost::multi_index_container<Type*, boost::multi_index::indexed_by< \
         boost::multi_index::ordered_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define ORDERED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define RANKED_COLLECTION(Type, Getter) \
-    boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+    boost::multi_index_container<Type*, boost::multi_index::indexed_by< \
         boost::multi_index::ranked_non_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define RANKED_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
 #define RANKED_UNIQUE_COLLECTION(Type, Getter) \
-    boost::multi_index_container<EntityPointer<Type>, boost::multi_index::indexed_by< \
+    boost::multi_index_container<Type*, boost::multi_index::indexed_by< \
         boost::multi_index::ranked_unique<INDEX_CONST_MEM_FUN(Type, Getter)>>>
 #define RANKED_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::nth_index<0>::type::iterator
 
@@ -104,13 +105,13 @@ namespace Forum::Entities
 #define GET_EXTRACTOR_FOR(T, Getter) BOOST_PP_CAT(PtrExtractor_, Getter)<T>
 
 #define SORTED_VECTOR_UNIQUE_COLLECTION(Type, Getter) \
-    SortedVectorUnique<EntityPointer<Type>, \
+    SortedVectorUnique<Type*, \
                        std::remove_reference<std::remove_const< std::result_of<decltype(&Type::Getter)(Type)>::type >::type>::type, \
                        GET_EXTRACTOR_FOR(Type, Getter), GET_COMPARER_FOR(Type, Getter)>
 #define SORTED_VECTOR_UNIQUE_COLLECTION_ITERATOR(Member) decltype(Member)::iterator
 
 #define SORTED_VECTOR_COLLECTION(Type, Getter) \
-    SortedVectorMultiValue<EntityPointer<Type>, \
+    SortedVectorMultiValue<Type*, \
                            std::remove_reference<std::remove_const< std::result_of<decltype(&Type::Getter)(Type)>::type >::type>::type, \
                            GET_EXTRACTOR_FOR(Type, Getter), GET_COMPARER_FOR(Type, Getter)>
 #define SORTED_VECTOR_COLLECTION_ITERATOR(Member) decltype(Member)::iterator
@@ -120,15 +121,15 @@ namespace Forum::Entities
     struct GET_COMPARER(Getter) \
     { \
         using result_type = typename std::remove_reference<typename std::remove_const<typename std::result_of<decltype(&T::Getter)(T)>::type>::type>::type; \
-        constexpr bool operator()(EntityPointer<T> first, EntityPointer<T> second) const \
+        constexpr bool operator()(T* first, T* second) const \
         { \
             return first->Getter() < second->Getter(); \
         } \
-        constexpr bool operator()(const result_type& first, EntityPointer<T> second) const \
+        constexpr bool operator()(const result_type& first, T* second) const \
         { \
             return first < second->Getter(); \
         } \
-        constexpr bool operator()(EntityPointer<T> first, const result_type& second) const \
+        constexpr bool operator()(T* first, const result_type& second) const \
         { \
             return first->Getter() < second; \
         } \
@@ -138,7 +139,7 @@ namespace Forum::Entities
     template<typename T> \
     struct GET_EXTRACTOR(Getter) \
     { \
-        constexpr auto operator()(EntityPointer<T> value) const \
+        constexpr auto operator()(T* value) const \
         { \
             return value->Getter(); \
         } \

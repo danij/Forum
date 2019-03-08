@@ -17,13 +17,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "EntityCollection.h"
-#include "VectorWithFreeQueue.h"
 
 #include "Configuration.h"
 #include "StateHelpers.h"
 #include "ContextProviders.h"
 #include "Logging.h"
 
+#include <cstdlib>
 #include <future>
 
 #include <boost/interprocess/file_mapping.hpp>
@@ -59,19 +59,6 @@ static thread_local bool deleteAttachmentFromUser = true;
 
 struct EntityCollection::Impl
 {
-    struct ManagedEntities
-    {
-        VectorWithFreeQueue<User> users;
-        VectorWithFreeQueue<DiscussionThread> threads;
-        VectorWithFreeQueue<DiscussionThreadMessage> threadMessages;
-        VectorWithFreeQueue<DiscussionTag> tags;
-        VectorWithFreeQueue<DiscussionCategory> categories;
-        VectorWithFreeQueue<MessageComment> messageComments;
-        VectorWithFreeQueue<PrivateMessage> privateMessages;
-        VectorWithFreeQueue<Attachment> attachments;
-
-    } managedEntities;
-
     UserCollection users_;
     DiscussionThreadCollectionWithHashedId threads_;
     DiscussionThreadMessageCollection threadMessages_;
@@ -203,7 +190,7 @@ struct EntityCollection::Impl
             }
         }
 
-        managedEntities.users.remove(userPtr.index());
+        delete userPtr;
     }
 
     void insertDiscussionThread(DiscussionThreadPtr thread)
@@ -259,7 +246,7 @@ struct EntityCollection::Impl
                 deleteDiscussionThreadMessage(message);
             }
         }
-        managedEntities.threads.remove(threadPtr.index());
+        delete threadPtr;
     }
 
     void insertDiscussionThreadMessage(DiscussionThreadMessagePtr message)
@@ -320,7 +307,7 @@ struct EntityCollection::Impl
         DiscussionThread& parentThread = *(message.parentThread());
         if (parentThread.aboutToBeDeleted())
         {
-            managedEntities.threadMessages.remove(messagePtr.index());
+            delete messagePtr;
             return;
         }
 
@@ -340,7 +327,7 @@ struct EntityCollection::Impl
             category->updateMessageCount(message.parentThread(), -1);
         }
 
-        managedEntities.threadMessages.remove(messagePtr.index());
+        delete messagePtr;
     }
 
     void insertDiscussionTag(DiscussionTagPtr tag)
@@ -369,7 +356,7 @@ struct EntityCollection::Impl
             threadPtr->removeTag(tagPtr);
         });
 
-        managedEntities.tags.remove(tagPtr.index());
+        delete tagPtr;
     }
 
     void insertDiscussionCategory(DiscussionCategoryPtr category)
@@ -406,7 +393,7 @@ struct EntityCollection::Impl
             parent->removeChild(categoryPtr);
         }
 
-        managedEntities.categories.remove(categoryPtr.index());
+        delete categoryPtr;
     }
 
     void insertMessageComment(MessageCommentPtr comment)
@@ -427,7 +414,7 @@ struct EntityCollection::Impl
         User& user = comment.createdBy();
         user.messageComments().remove(commentPtr);
 
-        managedEntities.messageComments.remove(commentPtr.index());
+        delete commentPtr;
     }
 
     void insertPrivateMessage(const PrivateMessagePtr messagePtr)
@@ -455,7 +442,7 @@ struct EntityCollection::Impl
             User& destinationUser = message.destination();
             destinationUser.receivedPrivateMessages().remove(messagePtr);
         }
-        managedEntities.privateMessages.remove(messagePtr.index());
+        delete messagePtr;
     }
 
     void insertAttachment(const AttachmentPtr attachmentPtr)
@@ -484,19 +471,17 @@ struct EntityCollection::Impl
             messagePtr->removeAttachment(attachmentPtr);
 
         }
-        managedEntities.attachments.remove(attachmentPtr.index());
+        delete attachmentPtr;
     }
 
     void setEventListeners()
     {
-        User::changeNotifications().onPrepareUpdateAuth         = [this](auto& user) { this->onPrepareUpdateUserAuth(user); };
         User::changeNotifications().onPrepareUpdateAuth         = [this](auto& user) { this->onPrepareUpdateUserAuth(user); };
         User::changeNotifications().onPrepareUpdateName         = [this](auto& user) { this->onPrepareUpdateUserName(user); };
         User::changeNotifications().onPrepareUpdateLastSeen     = [this](auto& user) { this->onPrepareUpdateUserLastSeen(user); };
         User::changeNotifications().onPrepareUpdateThreadCount  = [this](auto& user) { this->onPrepareUpdateUserThreadCount(user); };
         User::changeNotifications().onPrepareUpdateMessageCount = [this](auto& user) { this->onPrepareUpdateUserMessageCount(user); };
 
-        User::changeNotifications().onUpdateAuth         = [this](auto& user) { this->onUpdateUserAuth(user); };
         User::changeNotifications().onUpdateAuth         = [this](auto& user) { this->onUpdateUserAuth(user); };
         User::changeNotifications().onUpdateName         = [this](auto& user) { this->onUpdateUserName(user); };
         User::changeNotifications().onUpdateLastSeen     = [this](auto& user) { this->onUpdateUserLastSeen(user); };
@@ -538,30 +523,30 @@ struct EntityCollection::Impl
         Attachment::changeNotifications().onUpdateApproval = [this](auto& attachment) { this->onUpdateAttachmentApproval(attachment); };
     }
 
-    void onPrepareUpdateUserAuth        (const User& user) { users_.prepareUpdateAuth(user.pointer()); }
-    void onPrepareUpdateUserName        (const User& user) { users_.prepareUpdateName(user.pointer()); }
-    void onPrepareUpdateUserLastSeen    (const User& user) { if ( ! batchInsertInProgress_) users_.prepareUpdateLastSeen(user.pointer()); }
-    void onPrepareUpdateUserThreadCount (const User& user) { if ( ! batchInsertInProgress_) users_.prepareUpdateThreadCount(user.pointer()); }
-    void onPrepareUpdateUserMessageCount(const User& user) { if ( ! batchInsertInProgress_) users_.prepareUpdateMessageCount(user.pointer()); }
+    void onPrepareUpdateUserAuth        (User& user) { users_.prepareUpdateAuth(&user); }
+    void onPrepareUpdateUserName        (User& user) { users_.prepareUpdateName(&user); }
+    void onPrepareUpdateUserLastSeen    (User& user) { if ( ! batchInsertInProgress_) users_.prepareUpdateLastSeen(&user); }
+    void onPrepareUpdateUserThreadCount (User& user) { if ( ! batchInsertInProgress_) users_.prepareUpdateThreadCount(&user); }
+    void onPrepareUpdateUserMessageCount(User& user) { if ( ! batchInsertInProgress_) users_.prepareUpdateMessageCount(&user); }
 
-    void onUpdateUserAuth        (const User& user) { users_.updateAuth(user.pointer()); }
-    void onUpdateUserName        (const User& user) { users_.updateName(user.pointer()); }
-    void onUpdateUserLastSeen    (const User& user) { if ( ! batchInsertInProgress_) users_.updateLastSeen(user.pointer()); }
-    void onUpdateUserThreadCount (const User& user) { if ( ! batchInsertInProgress_) users_.updateThreadCount(user.pointer()); }
-    void onUpdateUserMessageCount(const User& user) { if ( ! batchInsertInProgress_) users_.updateMessageCount(user.pointer()); }
+    void onUpdateUserAuth        (User& user) { users_.updateAuth(&user); }
+    void onUpdateUserName        (User& user) { users_.updateName(&user); }
+    void onUpdateUserLastSeen    (User& user) { if ( ! batchInsertInProgress_) users_.updateLastSeen(&user); }
+    void onUpdateUserThreadCount (User& user) { if ( ! batchInsertInProgress_) users_.updateThreadCount(&user); }
+    void onUpdateUserMessageCount(User& user) { if ( ! batchInsertInProgress_) users_.updateMessageCount(&user); }
 
     void discussionThreadAction(const DiscussionThread& constThread,
                                 void (IDiscussionThreadCollection::*fn)(DiscussionThreadPtr))
     {
         auto& thread = const_cast<DiscussionThread&>(constThread);
-        const DiscussionThreadPtr threadPtr = thread.pointer();
+        const DiscussionThreadPtr threadPtr = &thread;
 
         (threads_.*fn)(threadPtr);
         (thread.createdBy().threads().*fn)(threadPtr);
 
         for (auto& pair : thread.subscribedUsers())
         {
-            UserPtr& user = pair.second;
+            UserPtr user = pair.second;
             assert(user);
             (user->subscribedThreads().*fn)(threadPtr);
         }
@@ -582,7 +567,7 @@ struct EntityCollection::Impl
     void attachmentAction(const Attachment& constAttachment, void (AttachmentCollection::*fn)(AttachmentPtr))
     {
         auto& attachment = const_cast<Attachment&>(constAttachment);
-        const AttachmentPtr attachmentPtr = attachment.pointer();
+        const AttachmentPtr attachmentPtr = &attachment;
 
         (attachments_.*fn)(attachmentPtr);
         (attachment.createdBy().attachments().*fn)(attachmentPtr);
@@ -600,21 +585,21 @@ struct EntityCollection::Impl
     void onUpdateDiscussionThreadMessageCount(const DiscussionThread& thread)         { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::updateMessageCount); }
     void onUpdateDiscussionThreadPinDisplayOrder(const DiscussionThread& thread)      { if ( ! batchInsertInProgress_) discussionThreadAction(thread, &IDiscussionThreadCollection::updatePinDisplayOrder); }
 
-    void onPrepareUpdateDiscussionTagName        (const DiscussionTag& tag) { tags_.prepareUpdateName(tag.pointer()); }
-    void onPrepareUpdateDiscussionTagThreadCount (const DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.prepareUpdateThreadCount(tag.pointer());}
-    void onPrepareUpdateDiscussionTagMessageCount(const DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.prepareUpdateMessageCount(tag.pointer()); }
+    void onPrepareUpdateDiscussionTagName        (DiscussionTag& tag) { tags_.prepareUpdateName(&tag); }
+    void onPrepareUpdateDiscussionTagThreadCount (DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.prepareUpdateThreadCount(&tag);}
+    void onPrepareUpdateDiscussionTagMessageCount(DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.prepareUpdateMessageCount(&tag); }
 
-    void onUpdateDiscussionTagName        (const DiscussionTag& tag) { tags_.updateName(tag.pointer()); }
-    void onUpdateDiscussionTagThreadCount (const DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.updateThreadCount(tag.pointer()); }
-    void onUpdateDiscussionTagMessageCount(const DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.updateMessageCount(tag.pointer()); }
+    void onUpdateDiscussionTagName        (DiscussionTag& tag) { tags_.updateName(&tag); }
+    void onUpdateDiscussionTagThreadCount (DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.updateThreadCount(&tag); }
+    void onUpdateDiscussionTagMessageCount(DiscussionTag& tag) { if ( ! batchInsertInProgress_) tags_.updateMessageCount(&tag); }
 
-    void onPrepareUpdateDiscussionCategoryName        (const DiscussionCategory& category) { categories_.prepareUpdateName(category.pointer()); }
-    void onPrepareUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.prepareUpdateMessageCount(category.pointer()); }
-    void onPrepareUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.prepareUpdateDisplayOrderRootPriority(category.pointer()); }
+    void onPrepareUpdateDiscussionCategoryName        (DiscussionCategory& category) { categories_.prepareUpdateName(&category); }
+    void onPrepareUpdateDiscussionCategoryMessageCount(DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.prepareUpdateMessageCount(&category); }
+    void onPrepareUpdateDiscussionCategoryDisplayOrder(DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.prepareUpdateDisplayOrderRootPriority(&category); }
 
-    void onUpdateDiscussionCategoryName        (const DiscussionCategory& category) { categories_.updateName(category.pointer()); }
-    void onUpdateDiscussionCategoryMessageCount(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.updateMessageCount(category.pointer()); }
-    void onUpdateDiscussionCategoryDisplayOrder(const DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.updateDisplayOrderRootPriority(category.pointer()); }
+    void onUpdateDiscussionCategoryName        (DiscussionCategory& category) { categories_.updateName(&category); }
+    void onUpdateDiscussionCategoryMessageCount(DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.updateMessageCount(&category); }
+    void onUpdateDiscussionCategoryDisplayOrder(DiscussionCategory& category) { if ( ! batchInsertInProgress_) categories_.updateDisplayOrderRootPriority(&category); }
 
     void onPrepareUpdateAttachmentName    (const Attachment& attachment) { if ( ! batchInsertInProgress_) attachmentAction(attachment, &AttachmentCollection::prepareUpdateName); }
     void onPrepareUpdateAttachmentApproval(const Attachment& attachment) { if ( ! batchInsertInProgress_) attachmentAction(attachment, &AttachmentCollection::prepareUpdateApproval); }
@@ -868,18 +853,15 @@ EntityCollection::EntityCollection(const StringView messagesFile)
 {
     impl_ = new Impl(messagesFile);
 
-    Private::setGlobalEntityCollection(this);
     impl_->setEventListeners();
 
-    anonymousUser_ = UserPtr(static_cast<UserPtr::IndexType>(impl_->managedEntities.users.add("<anonymous>")));
+    anonymousUser_ = UserPtr(new User("<anonymous>"));
 
     loadDefaultPrivilegeValues(*this);
 }
 
 EntityCollection::~EntityCollection()
 {
-    Private::setGlobalEntityCollection(nullptr);
-
     delete impl_;
 }
 
@@ -893,46 +875,6 @@ GrantedPrivilegeStore& EntityCollection::grantedPrivileges()
     return impl_->grantedPrivileges_;
 }
 
-std::unique_ptr<User>* EntityCollection::getUserPoolRoot()
-{
-    return impl_->managedEntities.users.data();
-}
-
-std::unique_ptr<DiscussionThread>* EntityCollection::getDiscussionThreadPoolRoot()
-{
-    return impl_->managedEntities.threads.data();
-}
-
-std::unique_ptr<DiscussionThreadMessage>* EntityCollection::getDiscussionThreadMessagePoolRoot()
-{
-    return impl_->managedEntities.threadMessages.data();
-}
-
-std::unique_ptr<DiscussionTag>* EntityCollection::getDiscussionTagPoolRoot()
-{
-    return impl_->managedEntities.tags.data();
-}
-
-std::unique_ptr<DiscussionCategory>* EntityCollection::getDiscussionCategoryPoolRoot()
-{
-    return impl_->managedEntities.categories.data();
-}
-
-std::unique_ptr<MessageComment>* EntityCollection::getMessageCommentPoolRoot()
-{
-    return impl_->managedEntities.messageComments.data();
-}
-
-std::unique_ptr<PrivateMessage>* EntityCollection::getPrivateMessagePoolRoot()
-{
-    return impl_->managedEntities.privateMessages.data();
-}
-
-std::unique_ptr<Attachment>* EntityCollection::getAttachmentPoolRoot()
-{
-    return impl_->managedEntities.attachments.data();
-}
-
 StringView EntityCollection::getMessageContentPointer(size_t offset, size_t size)
 {
     return impl_->getMessageContentPointer(offset, size);
@@ -940,9 +882,7 @@ StringView EntityCollection::getMessageContentPointer(size_t offset, size_t size
 
 UserPtr EntityCollection::createUser(IdType id, User::NameType&& name, Timestamp created, VisitDetails creationDetails)
 {
-    auto result = UserPtr(static_cast<UserPtr::IndexType>(
-        impl_->managedEntities.users.add(id, std::move(name), created, creationDetails)));
-    result->pointer_ = result;
+    auto result = UserPtr(new User(id, std::move(name), created, creationDetails));
     return result;
 }
 
@@ -950,9 +890,8 @@ DiscussionThreadPtr EntityCollection::createDiscussionThread(IdType id, User& cr
                                                              Timestamp created, VisitDetails creationDetails,
                                                              const bool approved)
 {
-    auto result = DiscussionThreadPtr(static_cast<DiscussionThreadPtr::IndexType>(impl_->managedEntities.threads.add(
-        id, createdBy, std::move(name), created, creationDetails, *this, approved)));
-    result->pointer_ = result;
+    auto result = DiscussionThreadPtr(new DiscussionThread(
+            id, createdBy, std::move(name), created, creationDetails, *this, approved));
     return result;
 }
 
@@ -961,49 +900,40 @@ DiscussionThreadMessagePtr EntityCollection::createDiscussionThreadMessage(IdTyp
                                                                            const VisitDetails creationDetails,
                                                                            const bool approved)
 {
-    return DiscussionThreadMessagePtr(static_cast<DiscussionThreadMessagePtr::IndexType>(
-        impl_->managedEntities.threadMessages.add(id, createdBy, created, creationDetails, approved)));
+    return DiscussionThreadMessagePtr(new DiscussionThreadMessage(id, createdBy, created, creationDetails, approved));
 }
 
 DiscussionTagPtr EntityCollection::createDiscussionTag(IdType id, DiscussionTag::NameType&& name, Timestamp created,
                                                        VisitDetails creationDetails)
 {
-    auto result = DiscussionTagPtr(static_cast<DiscussionTagPtr::IndexType>(impl_->managedEntities.tags.add(
-        id, std::move(name), created, creationDetails, *this)));
-    result->pointer_ = result;
+    auto result = DiscussionTagPtr(new DiscussionTag(id, std::move(name), created, creationDetails, *this));
     return result;
 }
 
 DiscussionCategoryPtr EntityCollection::createDiscussionCategory(IdType id, DiscussionCategory::NameType&& name,
                                                                  Timestamp created, VisitDetails creationDetails)
 {
-    auto result = DiscussionCategoryPtr(static_cast<DiscussionCategoryPtr::IndexType>(impl_->managedEntities.categories.add(
-        id, std::move(name), created, creationDetails, *this)));
-    result->pointer_ = result;
+    auto result = DiscussionCategoryPtr(new DiscussionCategory(id, std::move(name), created, creationDetails, *this));
     return result;
 }
 
 MessageCommentPtr EntityCollection::createMessageComment(IdType id, DiscussionThreadMessage& message, User& createdBy,
                                                          Timestamp created, VisitDetails creationDetails)
 {
-    return MessageCommentPtr(static_cast<MessageCommentPtr::IndexType>(impl_->managedEntities.messageComments.add(
-        id, message, createdBy, created, creationDetails)));
+    return MessageCommentPtr(new MessageComment(id, message, createdBy, created, creationDetails));
 }
 
 PrivateMessagePtr EntityCollection::createPrivateMessage(IdType id, User& source, User& destination, Timestamp created,
                                                          VisitDetails creationDetails, PrivateMessage::ContentType&& content)
 {
-    return PrivateMessagePtr(static_cast<PrivateMessagePtr::IndexType>(impl_->managedEntities.privateMessages.add(
-        id, source, destination, created, creationDetails, std::move(content))));
+    return PrivateMessagePtr(new PrivateMessage(id, source, destination, created, creationDetails, std::move(content)));
 }
 
 AttachmentPtr EntityCollection::createAttachment(const IdType id, const Timestamp created, const VisitDetails creationDetails,
                                                  User& createdBy, Attachment::NameType&& name, const uint64_t size, 
                                                  const bool approved)
 {
-    auto result = AttachmentPtr(static_cast<AttachmentPtr::IndexType>(impl_->managedEntities.attachments.add(
-        id, created, creationDetails, createdBy, std::move(name), size, approved)));
-    result->pointer_ = result;
+    auto result = AttachmentPtr(new Attachment(id, created, creationDetails, createdBy, std::move(name), size, approved));
     return result;
 }
 

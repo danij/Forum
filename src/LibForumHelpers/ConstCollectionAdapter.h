@@ -18,14 +18,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "EntityPointer.h"
-
 #include <cassert>
 #include <map>
+#include <memory>
+#include <type_traits>
 #include <unordered_map>
 
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/container/flat_map.hpp>
+
+#include "TypeHelpers.h"
 
 namespace Forum
 {
@@ -90,10 +92,10 @@ namespace Forum
 
         private:
 
-            static const T* getPointer(Entities::EntityPointer<T> ptr)
+            static const T* getPointer(T* ptr)
             {
                 assert(ptr); //collections should not contain empty pointers
-                return ptr.ptr();
+                return ptr;
             }
 
             const TCollection& collection_;
@@ -102,10 +104,11 @@ namespace Forum
         template<typename TCollection>
         auto toConst(const TCollection& collection)
         {
-            return ConstSharedPointerCollectionAdapter<typename std::remove_pointer<typename
-                TCollection::value_type::element_type>::type, TCollection>(collection);
+            return ConstSharedPointerCollectionAdapter<typename std::remove_pointer<
+                typename std::pointer_traits<typename TCollection::value_type>::element_type>::type, 
+                TCollection>(collection);
         }
-        
+
         template <typename TKey, typename TValue, typename TCollection>
         class ConstMapAdapter final
         {
@@ -149,7 +152,14 @@ namespace Forum
 
             static auto getConstPair(const std::pair<TKey, TValue>& pair)
             {
-                return std::make_pair(pair.first.toConst(), pair.second);
+                if constexpr(std::is_pointer<TKey>::value)
+                {
+                    return std::make_pair(toConstPtr(pair.first), pair.second);
+                }
+                else
+                {
+                    return std::make_pair(pair.first, pair.second);
+                }
             }
 
             const TCollection& collection_;

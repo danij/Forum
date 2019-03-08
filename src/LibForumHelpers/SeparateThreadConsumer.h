@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace Forum::Helpers
 {
-    template<typename Derived, typename T, uint16_t Capacity = 32768>
+    template<typename Derived, typename T, uint16_t Capacity = 5000>
     class SeparateThreadConsumer : boost::noncopyable
     {
     public:
@@ -92,7 +92,7 @@ namespace Forum::Helpers
 
         void consumeValues()
         {
-            T values[Capacity];
+            T values[static_cast<int>(Capacity) * 2];
             size_t nrOfValues = 0;
 
             queue_.consume_all([&values, &nrOfValues](T value)
@@ -111,7 +111,7 @@ namespace Forum::Helpers
         std::condition_variable blobInQueueCondition_;
         std::mutex conditionMutex_;
         std::chrono::milliseconds loopWaitMilliseconds_;
-        //other variabiles need to be initialized once the thread starts
+        //other variables need to be initialized once the thread starts
         std::thread writeThread_;        
     };
 

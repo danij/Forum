@@ -70,6 +70,6 @@ namespace Forum::Entities
         bool solved_ = false;
     };
 
-    typedef EntityPointer<MessageComment> MessageCommentPtr;
-    typedef EntityPointer<const MessageComment> MessageCommentConstPtr;
+    typedef MessageComment* MessageCommentPtr;
+    typedef const MessageComment* MessageCommentConstPtr;
 }

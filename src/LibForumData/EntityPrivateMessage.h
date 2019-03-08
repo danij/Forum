@@ -66,6 +66,6 @@ namespace Forum::Entities
         ContentType content_;
     };
 
-    typedef EntityPointer<PrivateMessage> PrivateMessagePtr;
-    typedef EntityPointer<const PrivateMessage> PrivateMessageConstPtr;
+    typedef PrivateMessage* PrivateMessagePtr;
+    typedef const PrivateMessage* PrivateMessageConstPtr;
 }
