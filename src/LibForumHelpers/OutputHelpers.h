@@ -84,9 +84,9 @@ namespace Forum::Helpers
     {
         auto totalCount = static_cast<int_fast32_t>(collection.size());
 
-        writer.newPropertyRaw(JSON_RAW_PROP("totalCount")) << totalCount;
-        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("pageSize")) << pageSize;
-        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("page")) << pageNumber;
+        JSON_WRITE_FIRST_PROP(writer, "totalCount", totalCount);
+        JSON_WRITE_PROP(writer, "pageSize", pageSize);
+        JSON_WRITE_PROP(writer, "page", pageNumber);
 
         writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
         writer.startArray();
@@ -247,7 +247,7 @@ namespace Forum::Helpers
             Json::JsonWriter writer(output_);
 
             writer.startObject();
-            writer.newPropertyRaw(JSON_RAW_PROP("status")) << statusCode_;
+            JSON_WRITE_FIRST_PROP(writer, "status", statusCode_);
             writer.endObject();
         }
 
@@ -299,7 +299,7 @@ namespace Forum::Helpers
             Json::JsonWriter writer(output_);
 
             writer.startObject();
-            writer.newPropertyRaw(JSON_RAW_PROP("status")) << statusCode_;
+            JSON_WRITE_FIRST_PROP(writer, "status", statusCode_);
 
             extra(writer);
 

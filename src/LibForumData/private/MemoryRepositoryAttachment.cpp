@@ -287,7 +287,7 @@ StatusCode MemoryRepositoryAttachment::canAddAttachment(OutStream& output) const
                        
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("availableBytes")) << availableBytes;
+                                               JSON_WRITE_PROP(writer, "availableBytes", availableBytes);
                                            });
                        });
     return status;
@@ -345,13 +345,13 @@ StatusCode MemoryRepositoryAttachment::addNewAttachment(StringView name, uint64_
 
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << attachment->id();
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << attachment->name().string();
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << attachment->created();
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("size")) << attachment->size();
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("approved")) << attachment->approved();
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("nrOfMessagesAttached")) << attachment->messages().size();
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("nrOfGetRequests")) << attachment->nrOfGetRequests();
+                                               JSON_WRITE_PROP(writer, "id", attachment->id());
+                                               JSON_WRITE_PROP(writer, "name", attachment->name().string());
+                                               JSON_WRITE_PROP(writer, "created", attachment->created());
+                                               JSON_WRITE_PROP(writer, "size", attachment->size());
+                                               JSON_WRITE_PROP(writer, "approved", attachment->approved());
+                                               JSON_WRITE_PROP(writer, "nrOfMessagesAttached", attachment->messages().size());
+                                               JSON_WRITE_PROP(writer, "nrOfGetRequests", attachment->nrOfGetRequests());
                                            });
                        });
     return status;

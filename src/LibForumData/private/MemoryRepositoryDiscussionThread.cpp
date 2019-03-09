@@ -331,8 +331,8 @@ StatusCode MemoryRepositoryDiscussionThread::searchDiscussionThreadsByName(Strin
 
                           status.writeNow([&](auto& writer)
                                           {
-                                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("index")) << boundIndex;
-                                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("pageSize")) << pageSize;
+                                              JSON_WRITE_PROP(writer, "index", boundIndex);
+                                              JSON_WRITE_PROP(writer, "pageSize", pageSize);
                                           });
                       });
     return status;
@@ -601,9 +601,9 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
                            }
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << thread.id();
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << thread.name().string();
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << thread.created();
+                                               JSON_WRITE_PROP(writer, "id", thread.id());
+                                               JSON_WRITE_PROP(writer, "name", thread.name().string());
+                                               JSON_WRITE_PROP(writer, "created", thread.created());
                                            });
                        });
     return status;

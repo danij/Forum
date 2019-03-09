@@ -64,8 +64,8 @@ void writePrivilegeValues(const Store& store, Enum maxValue, JsonWriter& writer,
         if (value)
         {
             writer.startObject();
-            writer.newPropertyRaw(JSON_RAW_PROP("name")) << strings[i];
-            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("value")) << *value;
+            JSON_WRITE_FIRST_PROP(writer, "name", strings[i]);
+            JSON_WRITE_PROP(writer, "value", *value);
             writer.endObject();
         }
     }
@@ -141,9 +141,9 @@ void MemoryRepositoryAuthorization::writeForumWideDefaultPrivilegeLevels(const F
         if (value)
         {
             writer.startObject();
-            writer.newPropertyRaw(JSON_RAW_PROP("name")) << ForumWideDefaultPrivilegeDurationStrings[i];
-            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("value")) << value->value;
-            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("duration")) << value->duration;
+            JSON_WRITE_FIRST_PROP(writer, "name", ForumWideDefaultPrivilegeDurationStrings[i]);
+            JSON_WRITE_PROP(writer, "value", value->value);
+            JSON_WRITE_PROP(writer, "duration", value->duration);
             writer.endObject();
         }
     }
@@ -234,8 +234,8 @@ static bool writeDiscussionThreadEntity(const EntityCollection& collection, cons
         const DiscussionThread& thread = *threadPtr;
         if (restriction.isAllowed(thread, DiscussionThreadPrivilege::VIEW))
         {
-            writer.newPropertyRaw(JSON_RAW_PROP("id")) << thread.id();
-            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << thread.name();
+            JSON_WRITE_FIRST_PROP(writer, "id", thread.id());
+            JSON_WRITE_PROP(writer, "name", thread.name());
             return true;
         }
     }
@@ -252,8 +252,8 @@ static bool writeDiscussionTagEntity(const EntityCollection& collection, const S
         const DiscussionTag& tag = **it;
         if (restriction.isAllowed(tag, DiscussionTagPrivilege::VIEW))
         {
-            writer.newPropertyRaw(JSON_RAW_PROP("id")) << tag.id();
-            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << tag.name();
+            JSON_WRITE_FIRST_PROP(writer, "id", tag.id());
+            JSON_WRITE_PROP(writer, "name", tag.name());
             return true;
         }
     }
@@ -270,8 +270,8 @@ static bool writeDiscussionCategoryEntity(const EntityCollection& collection, co
         const DiscussionCategory& category = **it;
         if (restriction.isAllowed(category, DiscussionCategoryPrivilege::VIEW))
         {
-            writer.newPropertyRaw(JSON_RAW_PROP("id")) << category.id();
-            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << category.name();
+            JSON_WRITE_FIRST_PROP(writer, "id", category.id());
+            JSON_WRITE_PROP(writer, "name", category.name());
             return true;
         }
     }

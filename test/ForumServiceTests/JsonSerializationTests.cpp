@@ -45,9 +45,9 @@ BOOST_AUTO_TEST_CASE( Json_serialization_works_for_integers )
 
     writer.startObject();
     writer.newPropertyWithSafeName("prop1") << -1234;
-    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("prop2")) << 0;
+    JSON_WRITE_PROP(writer, "prop2", 0);
     writer.newPropertyWithSafeName("prop3") << 2147483647;
-    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("prop4")) << static_cast<int8_t>(-128);
+    JSON_WRITE_PROP(writer, "prop4", static_cast<int8_t>(-128));
     writer.newPropertyWithSafeName("prop5") << static_cast<int32_t>(std::numeric_limits<int32_t>::min());
     writer.endObject();
 
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE( Json_serialization_escapes_well_known_patterns_in_strings 
     JsonWriter writer(buffer);
 
     writer.startObject();
-    writer.newPropertyRaw(JSON_RAW_PROP("prop")) << "a\"b\\/\bc\fde\n\r\tz";
+    JSON_WRITE_FIRST_PROP(writer, "prop", "a\"b\\/\bc\fde\n\r\tz");
     writer.endObject();
 
     auto str = buffer.view();
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( Json_serialization_escapes_strings_with_hex_digits )
     JsonWriter writer(buffer);
 
     writer.startObject();
-    writer.newPropertyRaw(JSON_RAW_PROP("prop")) << "a\x01\x02\x03 bc\x1f";
+    JSON_WRITE_FIRST_PROP(writer, "prop", "a\x01\x02\x03 bc\x1f");
     writer.endObject();
 
     auto str = buffer.view();
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE( Json_serialization_escapes_very_large_strings )
     std::string largeString(1000000, 'a');
 
     writer.startObject();
-    writer.newPropertyRaw(JSON_RAW_PROP("prop")) << ("\n" + largeString + "\n");
+    JSON_WRITE_FIRST_PROP(writer, "prop", ("\n" + largeString + "\n"));
     writer.endObject();
 
     auto str = buffer.view();

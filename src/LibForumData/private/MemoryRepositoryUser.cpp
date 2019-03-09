@@ -123,7 +123,7 @@ StatusCode MemoryRepositoryUser::getCurrentUser(OutStream& output) const
                       
                           writer.startObject();
                       
-                          writer.newPropertyRaw(JSON_RAW_PROP("authenticated")) << (! Context::getCurrentUserAuth().empty());
+                          JSON_WRITE_FIRST_PROP(writer, "authenticated", (! Context::getCurrentUserAuth().empty()));
                       
                           if ( ! isAnonymousUser(currentUser))
                           {
@@ -132,8 +132,8 @@ StatusCode MemoryRepositoryUser::getCurrentUser(OutStream& output) const
                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("user"));
                               serialize(writer, currentUser, restriction);
 
-                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("newReceivedVotesNr")) << currentUser.voteHistoryNotRead();
-                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("newReceivedQuotesNr")) << currentUser.quotesHistoryNotRead();
+                              JSON_WRITE_PROP(writer, "newReceivedVotesNr", currentUser.voteHistoryNotRead());
+                              JSON_WRITE_PROP(writer, "newReceivedQuotesNr", currentUser.quotesHistoryNotRead());
                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("newReceivedPrivateMessagesNr")) 
                                       << currentUser.privateMessagesNotRead();
                           }
@@ -495,8 +495,8 @@ StatusCode MemoryRepositoryUser::searchUsersByName(StringView name, OutStream& o
 
                           status.writeNow([&](auto& writer)
                                           {
-                                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("index")) << boundIndex;
-                                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("pageSize")) << getGlobalConfig()->user.maxUsersPerPage;
+                                              JSON_WRITE_PROP(writer, "index", boundIndex);
+                                              JSON_WRITE_PROP(writer, "pageSize", getGlobalConfig()->user.maxUsersPerPage);
                                           });
                       });
     return status;
@@ -586,7 +586,7 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
 
                               writer.startObject();
 
-                              writer.newPropertyRaw(JSON_RAW_PROP("at")) << entry.at;
+                              JSON_WRITE_FIRST_PROP(writer, "at", entry.at);
 
                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("score"));
 
@@ -823,9 +823,9 @@ StatusCode MemoryRepositoryUser::addNewUser(StringView name, StringView auth, Ou
 
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << user->id();
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << user->name().string();
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << user->created();
+                                               JSON_WRITE_PROP(writer, "id", user->id());
+                                               JSON_WRITE_PROP(writer, "name", user->name().string());
+                                               JSON_WRITE_PROP(writer, "created", user->created());
                                            });
                        });
     return status;

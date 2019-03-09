@@ -153,8 +153,8 @@ StatusCode MemoryRepositoryDiscussionTag::addNewDiscussionTag(StringView name, O
 
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << tag->id();
-                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << tag->name().string();
+                                               JSON_WRITE_PROP(writer, "id", tag->id());
+                                               JSON_WRITE_PROP(writer, "name", tag->name().string());
                                            });
                        });
     return status;
