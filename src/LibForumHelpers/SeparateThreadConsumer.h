@@ -21,27 +21,48 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <atomic>
 #include <cstdint>
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <string_view>
 #include <thread>
 #include <cstring>
 
-#include <boost/lockfree/queue.hpp>
 #include <boost/noncopyable.hpp>
 
 namespace Forum::Helpers
 {
-    template<typename Derived, typename T, uint16_t Capacity = 5000>
+    template<typename Derived, typename T>
     class SeparateThreadConsumer : boost::noncopyable
     {
     public:
-        explicit SeparateThreadConsumer(const std::chrono::milliseconds loopWaitMilliseconds)
-            : loopWaitMilliseconds_(loopWaitMilliseconds), writeThread_{ [this]() { this->threadLoop(); } }
-        {}
+        explicit SeparateThreadConsumer(const std::chrono::milliseconds loopWaitMilliseconds, uint32_t capacity = 131072)
+            : capacity_{ capacity }, buffer1_ { std::make_unique<T[]>(capacity) }, buffer2_{ std::make_unique<T[]>(capacity) },
+              loopWaitMilliseconds_(loopWaitMilliseconds), writeThread_{ [this]() { this->threadLoop(); } }
+        {
+            writeBuffer_ = buffer1_.get();
+            readBuffer_ = buffer2_.get();
+        }
 
         virtual ~SeparateThreadConsumer()
         {
             stopConsumer();
+        }
+
+        bool tryEnqueue(T value)
+        {
+            std::lock_guard<decltype(queueMutex_)> lock(queueMutex_);
+            if (bufferUsed_ >= capacity_)
+            {
+                return false;
+            }
+            writeBuffer_[bufferUsed_++] = value;
+            return true;
+        }
+
+        bool queueEmpty()
+        {
+            std::lock_guard<decltype(queueMutex_)> lock(queueMutex_);
+            return 0 == bufferUsed_;
         }
 
         /**
@@ -50,7 +71,7 @@ namespace Forum::Helpers
         void enqueue(T value)
         {
             uint32_t failNr = 0;
-            while ( ! queue_.bounded_push(value))
+            while ( ! tryEnqueue(value))
             {
                 static_cast<Derived*>(this)->onFail(failNr);
             }
@@ -75,10 +96,10 @@ namespace Forum::Helpers
                 std::unique_lock<decltype(conditionMutex_)> lock(conditionMutex_);
                 if (blobInQueueCondition_.wait_for(lock, loopWaitMilliseconds_, [this]()
                 {
-                    return ! queue_.empty() || stopWriteThread_;
+                    return ! queueEmpty() || stopWriteThread_;
                 }))
                 {
-                    consumeValues();                    
+                    consumeValues();
                 }
                 else
                 {
@@ -92,21 +113,27 @@ namespace Forum::Helpers
 
         void consumeValues()
         {
-            T values[static_cast<int>(Capacity) * 2];
             size_t nrOfValues = 0;
-
-            queue_.consume_all([&values, &nrOfValues](T value)
+            T* values{};
             {
-                values[nrOfValues++] = value;
-            });
-
+                std::lock_guard<decltype(queueMutex_)> lock(queueMutex_);
+                nrOfValues = bufferUsed_;
+                values = writeBuffer_;
+                std::swap(writeBuffer_, readBuffer_);
+                bufferUsed_ = 0;
+            }
             if (nrOfValues > 0)
             {
                 static_cast<Derived*>(this)->consumeValues(values, nrOfValues);
             }
         }
 
-        boost::lockfree::queue<T, boost::lockfree::capacity<Capacity>> queue_;
+        const size_t capacity_;
+        std::unique_ptr<T[]> buffer1_, buffer2_;
+        T *readBuffer_, *writeBuffer_;
+        size_t bufferUsed_{};
+        std::mutex queueMutex_;
+
         std::atomic_bool stopWriteThread_{ false };
         std::condition_variable blobInQueueCondition_;
         std::mutex conditionMutex_;
