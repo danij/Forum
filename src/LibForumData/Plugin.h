@@ -50,7 +50,7 @@ namespace Forum::Extensibility
 
     struct PluginInput
     {
-        Entities::EntityCollection* globalEntityCollection;
+        Entities::EntityCollection* entityCollection;
         Repository::ReadEvents* readEvents;
         Repository::WriteEvents* writeEvents;
         const boost::property_tree::ptree* configuration;

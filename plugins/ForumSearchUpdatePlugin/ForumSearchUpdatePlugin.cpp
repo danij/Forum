@@ -184,8 +184,6 @@ void ForumSearchUpdatePlugin::onDeleteDiscussionThreadMessage(const DiscussionTh
 
 void Forum::Extensibility::loadPlugin(PluginInput* input, PluginPtr* output)
 {
-    Private::setGlobalEntityCollection(input->globalEntityCollection);
-
     *output = std::make_shared<ForumSearchUpdatePlugin>(*input);
 }
 

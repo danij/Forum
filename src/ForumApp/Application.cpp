@@ -64,6 +64,7 @@ using namespace Forum::Authorization;
 using namespace Forum::Commands;
 using namespace Forum::Configuration;
 using namespace Forum::Context;
+using namespace Forum::Entities;
 using namespace Forum::Extensibility;
 using namespace Forum::Network;
 using namespace Forum::Persistence;
@@ -397,7 +398,7 @@ bool Application::initializeLogging()
     return true;
 }
 
-LoadedPlugin loadPlugin(const PluginEntry& entry, MemoryStore& memoryStore)
+static LoadedPlugin loadPlugin(const PluginEntry& entry, MemoryStore& memoryStore, EntityCollection& entityCollection)
 {
     FORUM_LOG_INFO << "\tLoading plugin from " << entry.libraryPath;
 
@@ -408,7 +409,7 @@ LoadedPlugin loadPlugin(const PluginEntry& entry, MemoryStore& memoryStore)
 
         PluginInput input
         {
-            &Entities::Private::getGlobalEntityCollection(),
+            &entityCollection,
             &memoryStore.readEvents,
             &memoryStore.writeEvents,
             &entry.configuration
@@ -443,7 +444,7 @@ bool Application::loadPlugins()
 
     for (const auto& entry : forumConfig->plugins)
     {
-        auto result = loadPlugin(entry, *memoryStore_);
+        auto result = loadPlugin(entry, *memoryStore_, *entityCollection_);
         if ( ! result.plugin) return false;
 
         plugins_.emplace_back(std::move(result));
