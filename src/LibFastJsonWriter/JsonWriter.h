@@ -93,6 +93,11 @@ namespace Json
     {
         static_assert((ToEscapeLength - 1) == std::numeric_limits<unsigned char>::max());
 
+        if ( ! isEscapeNeeded(value, length)) {
+            Detail::writeString(destination, value, length);
+            return;
+        }
+
         char twoCharEscapeBuffer[2+1] = { '\\', 0, 0 };
         char sixCharEscapeBuffer[6+1] = { '\\', 'u', '0', '0', 0, 0, 0 };
 
