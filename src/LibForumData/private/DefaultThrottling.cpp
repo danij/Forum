@@ -28,16 +28,13 @@ bool Forum::Authorization::DefaultThrottling::check(UserActionThrottling action,
 {
     assert(action < UserActionThrottling::COUNT);
 
-    decltype(entries_)::iterator it;
-    {
-        std::lock_guard<decltype(lock_)> lock(lock_);
-        IdOrIpAddress current(id, ip);
+    std::lock_guard<decltype(lock_)> lock(lock_);
+    IdOrIpAddress current(id, ip);
 
-        it = entries_.find(current);
-        if (it == entries_.end())
-        {
-            it = entries_.emplace(current, UserThrottlingChecks{}).first;
-        }
+    auto it = entries_.find(current);
+    if (it == entries_.end())
+    {
+        it = entries_.emplace(current, UserThrottlingChecks{}).first;
     }
     return it->second.values[static_cast<EnumIntType>(action)].isAllowed(at);
 }
