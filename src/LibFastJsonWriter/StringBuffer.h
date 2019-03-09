@@ -60,7 +60,7 @@ namespace Json
             {
                 resize();
             }
-            memmove(buffer_.get() + used_, value, Size);
+            std::copy(value, value + Size, buffer_.get() + used_);
             used_ += Size;
         }
 
@@ -70,7 +70,7 @@ namespace Json
             {
                 resize();
             }
-            memmove(buffer_.get() + used_, value, size);
+            std::copy(value, value + size, buffer_.get() + used_);
             used_ += size;
         }
 
