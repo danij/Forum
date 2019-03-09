@@ -105,7 +105,7 @@ namespace Forum::Entities
                                 const PrivilegeStringArray& privilegeStrings,
                                 const Authorization::SerializationRestriction& restriction)
     {
-        writer.newPropertyWithSafeName("privileges");
+        writer.newPropertyRaw(JSON_RAW_PROP("privileges"));
         writer.startArray();
         for (auto& value : privilegeArray)
         {

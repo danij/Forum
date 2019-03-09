@@ -25,6 +25,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "JsonReadyString.h"
 #include "StringBuffer.h"
 
+#define JSON_RAW_PROP(x) "\"" x "\":"
+
 namespace Json
 {
     namespace Detail
@@ -43,7 +45,7 @@ namespace Json
         void writeString(StringBuffer& stringBufferOutput, const char(&value)[Size])
         {
             //ignore null terminator
-            writeString(stringBufferOutput, value, Size - 1);
+            stringBufferOutput.writeFixed<Size - 1>(value);
         }
 
         template <>
@@ -276,6 +278,19 @@ namespace Json
         JsonWriterBase& newPropertyWithSafeName(std::string_view name)
         {
             return newPropertyWithSafeName(name.data(), name.size());
+        }
+
+        template<size_t Length>
+        JsonWriterBase& newPropertyRaw(const char(&name)[Length])
+        {
+            if (isCommaNeeded())
+            {
+                writeChar(',');
+            }
+            writeString<Length>(name);
+
+            peekState().propertyNameAdded = 1;
+            return *this;
         }
 
         JsonWriterBase& writeEscapedString(const char* value, size_t length = 0)

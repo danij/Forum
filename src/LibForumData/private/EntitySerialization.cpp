@@ -105,7 +105,7 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
 {
     //does not currently start a new object
     char buffer[IpAddress::MaxIPv6CharacterCount + 1];
-    writer.newPropertyWithSafeName("ip");
+    writer.newPropertyRaw(JSON_RAW_PROP("ip"));
 
     const auto addressLength = visitDetails.ip.toString(buffer, std::size(buffer));
 
@@ -153,13 +153,13 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
     }
 
     auto content = message.content();
-    writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
+    writer.newPropertyRaw(JSON_RAW_PROP("content")).writeEscapedString(content.data(), content.size());
 
     if (allowViewUser && ( ! serializationSettings.hideDiscussionThreadMessageCreatedBy))
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyWithSafeName("createdBy");
+        writer.newPropertyRaw(JSON_RAW_PROP("createdBy"));
         serialize(writer, message.createdBy(), restriction);
     }
     if ( ! serializationSettings.hideDiscussionThreadMessageParentThread)
@@ -170,13 +170,13 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
         BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyWithSafeName("parentThread");
+        writer.newPropertyRaw(JSON_RAW_PROP("parentThread"));
         serialize(writer, *parentThread, restriction);
     }
 
     if (message.lastUpdated())
     {
-        writer.newPropertyWithSafeName("lastUpdated");
+        writer.newPropertyRaw(JSON_RAW_PROP("lastUpdated"));
         writer.startObject();
 
         UserConstPtr by = message.lastUpdatedBy();
@@ -224,7 +224,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
 
     if (( ! message.attachments().empty()) && restriction.isAllowedToViewMessageAttachments(message))
     {
-        writer.newPropertyWithSafeName("attachments");
+        writer.newPropertyRaw(JSON_RAW_PROP("attachments"));
         writer.startArray();
 
         const auto allowViewAllAttachments = restriction.isAllowedToViewAnyAttachment();
@@ -269,7 +269,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const PrivateMessage& messag
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyWithSafeName("source");
+        writer.newPropertyRaw(JSON_RAW_PROP("source"));
         serialize(writer, message.source(), restriction);
     }
 
@@ -277,7 +277,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const PrivateMessage& messag
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyWithSafeName("destination");
+        writer.newPropertyRaw(JSON_RAW_PROP("destination"));
         serialize(writer, message.destination(), restriction);
     }
 
@@ -288,7 +288,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const PrivateMessage& messag
 static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage& latestMessage,
                                const SerializationRestriction& restriction)
 {
-    writer.newPropertyWithSafeName("latestMessage");
+    writer.newPropertyRaw(JSON_RAW_PROP("latestMessage"));
     
     if ( ! restriction.isAllowedToViewMessage(latestMessage))
     {
@@ -307,11 +307,11 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage
         << propertySafeName("threadName", parentThread->name());
 
     auto content = latestMessage.content();
-    writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
+    writer.newPropertyRaw(JSON_RAW_PROP("content")).writeEscapedString(content.data(), content.size());
 
     if (restriction.isAllowed(latestMessage, DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER))
     {
-        writer.newPropertyWithSafeName("createdBy");
+        writer.newPropertyRaw(JSON_RAW_PROP("createdBy"));
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
         serialize(writer, latestMessage.createdBy(), restriction);
     }
@@ -345,20 +345,20 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const MessageComment& commen
         << propertySafeName("solved", comment.solved());
 
     auto content = comment.content();
-    writer.newPropertyWithSafeName("content").writeEscapedString(content.data(), content.size());
+    writer.newPropertyRaw(JSON_RAW_PROP("content")).writeEscapedString(content.data(), content.size());
 
     writeVisitDetails(writer, comment.creationDetails());
 
     if ( ! serializationSettings.hideMessageCommentMessage)
     {
-        writer.newPropertyWithSafeName("message");
+        writer.newPropertyRaw(JSON_RAW_PROP("message"));
         serialize(writer, comment.parentMessage(), restriction);
     }
     if ( ! serializationSettings.hideMessageCommentUser)
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyWithSafeName("createdBy");
+        writer.newPropertyRaw(JSON_RAW_PROP("createdBy"));
         serialize(writer, comment.createdBy(), restriction);
     }
 
@@ -476,7 +476,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyWithSafeName("createdBy");
+        writer.newPropertyRaw(JSON_RAW_PROP("createdBy"));
         serialize(writer, thread.createdBy(), restriction);
     }
 
@@ -509,7 +509,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
         BoolTemporaryChanger __(serializationSettings.hideLatestMessage, true);
         BoolTemporaryChanger ___(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyWithSafeName("tags");
+        writer.newPropertyRaw(JSON_RAW_PROP("tags"));
         writer << arrayStart;
         for (auto tag : thread.tags())
         {
@@ -523,7 +523,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
         BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
         BoolTemporaryChanger ____(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyWithSafeName("categories");
+        writer.newPropertyRaw(JSON_RAW_PROP("categories"));
         writer << arrayStart;
         for (auto category : thread.categories())
         {
@@ -569,7 +569,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag,
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryParent, true);
         BoolTemporaryChanger ___(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyWithSafeName("categories");
+        writer.newPropertyRaw(JSON_RAW_PROP("categories"));
         writer << arrayStart;
         for (auto category : tag.categories())
         {
@@ -650,7 +650,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
         {
             if (serializationSettings.onlySendCategoryParentId)
             {
-                writer.newPropertyWithSafeName("parentId") << parent->id();
+                writer.newPropertyRaw(JSON_RAW_PROP("parentId")) << parent->id();
             }
             else
             {
@@ -658,7 +658,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
                 BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
 
                 depth += 1;
-                writer.newPropertyWithSafeName("parent");
+                writer.newPropertyRaw(JSON_RAW_PROP("parent"));
                 serialize(writer, *parent, restriction);
             }
         }
@@ -696,7 +696,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const Attachment& attachment
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyWithSafeName("createdBy");
+        writer.newPropertyRaw(JSON_RAW_PROP("createdBy"));
         serialize(writer, attachment.createdBy(), restriction);
     }
 

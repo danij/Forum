@@ -65,7 +65,7 @@ inline void writePinnedDiscussionThreads<DiscussionThreadCollectionWithHashedIdA
         (const DiscussionThreadCollectionWithHashedIdAndPinOrder& collection, Json::JsonWriter& writer,
          SerializationRestriction& restriction)
 {
-    writer.newPropertyWithSafeName("pinned_threads");
+    writer.newPropertyRaw(JSON_RAW_PROP("pinned_threads"));
     writer.startArray();
 
     auto it = collection.byPinDisplayOrder().rbegin();
@@ -449,7 +449,7 @@ StatusCode MemoryRepositoryDiscussionThread::getUsersSubscribedToDiscussionThrea
 
                           Json::JsonWriter writer(output);
                           writer.startObject();
-                          writer.newPropertyWithSafeName("users");
+                          writer.newPropertyRaw(JSON_RAW_PROP("users"));
 
                           writer.startArray();
                           for (auto pair : thread.subscribedUsers())

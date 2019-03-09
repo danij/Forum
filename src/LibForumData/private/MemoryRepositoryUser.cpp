@@ -123,18 +123,18 @@ StatusCode MemoryRepositoryUser::getCurrentUser(OutStream& output) const
                       
                           writer.startObject();
                       
-                          writer.newPropertyWithSafeName("authenticated") << ! Context::getCurrentUserAuth().empty();
+                          writer.newPropertyRaw(JSON_RAW_PROP("authenticated")) << ! Context::getCurrentUserAuth().empty();
                       
                           if ( ! isAnonymousUser(currentUser))
                           {
                               const SerializationRestriction restriction(collection.grantedPrivileges(), collection,
                                                                          currentUser.id(), Context::getCurrentTime());
-                              writer.newPropertyWithSafeName("user");
+                              writer.newPropertyRaw(JSON_RAW_PROP("user"));
                               serialize(writer, currentUser, restriction);
 
-                              writer.newPropertyWithSafeName("newReceivedVotesNr") << currentUser.voteHistoryNotRead();
-                              writer.newPropertyWithSafeName("newReceivedQuotesNr") << currentUser.quotesHistoryNotRead();
-                              writer.newPropertyWithSafeName("newReceivedPrivateMessagesNr") 
+                              writer.newPropertyRaw(JSON_RAW_PROP("newReceivedVotesNr")) << currentUser.voteHistoryNotRead();
+                              writer.newPropertyRaw(JSON_RAW_PROP("newReceivedQuotesNr")) << currentUser.quotesHistoryNotRead();
+                              writer.newPropertyRaw(JSON_RAW_PROP("newReceivedPrivateMessagesNr")) 
                                       << currentUser.privateMessagesNotRead();
                           }
                       
@@ -226,7 +226,7 @@ StatusCode MemoryRepositoryUser::getUsersOnline(OutStream& output) const
                           Json::JsonWriter writer(output);
 
                           writer.startObject();
-                          writer.newPropertyWithSafeName("online_users");
+                          writer.newPropertyRaw(JSON_RAW_PROP("online_users"));
 
                           writer.startArray();
 
@@ -437,7 +437,7 @@ StatusCode MemoryRepositoryUser::getMultipleUsersByName(StringView names, OutStr
                           
                           Json::JsonWriter writer(output);
                           writer.startObject();
-                          writer.newPropertyWithSafeName("user_ids");
+                          writer.newPropertyRaw(JSON_RAW_PROP("user_ids"));
                           writer.startArray();
 
                           for (auto it = usersFound.begin(); it != lastUserFound; ++it)
@@ -564,10 +564,10 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
 
                           Json::JsonWriter writer(output);
                           writer.startObject();
-                          writer.newPropertyWithSafeName("lastRetrievedAt")
+                          writer.newPropertyRaw(JSON_RAW_PROP("lastRetrievedAt"))
                                   << currentUser.voteHistoryLastRetrieved().exchange(static_cast<int64_t>(Context::getCurrentTime()));
 
-                          writer.newPropertyWithSafeName("receivedVotes");
+                          writer.newPropertyRaw(JSON_RAW_PROP("receivedVotes"));
                           writer.startArray();
 
                           const auto& messageIndex = collection.threadMessages().byId();
@@ -586,9 +586,9 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
 
                               writer.startObject();
 
-                              writer.newPropertyWithSafeName("at") << entry.at;
+                              writer.newPropertyRaw(JSON_RAW_PROP("at")) << entry.at;
 
-                              writer.newPropertyWithSafeName("score");
+                              writer.newPropertyRaw(JSON_RAW_PROP("score"));
 
                               switch (entry.type)
                               {
@@ -603,7 +603,7 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                                   break;
                               }
 
-                              writer.newPropertyWithSafeName("message");
+                              writer.newPropertyRaw(JSON_RAW_PROP("message"));
 
                               const auto messageIt = messageIndex.find(entry.discussionThreadMessageId);
                               if (messageIt != messageIndex.end())
@@ -651,7 +651,7 @@ StatusCode MemoryRepositoryUser::getUserQuotedHistory(OutStream& output) const
                           Json::JsonWriter writer(output);
                           writer.startObject();
 
-                          writer.newPropertyWithSafeName("messages");
+                          writer.newPropertyRaw(JSON_RAW_PROP("messages"));
                           writer.startArray();
 
                           const auto& messageIndex = collection.threadMessages().byId();
