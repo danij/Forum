@@ -614,7 +614,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         OutStream& output)
 {
     StatusWriter status(output);
-    if ( ! messageId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    if (isAnonymousUserId(userId) || ! messageId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
@@ -633,18 +633,14 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
                            }
                            const DiscussionThreadMessage& message = **messageIt;
 
-                           auto targetUser = anonymousUser();
-                           if ( ! isAnonymousUserId(userId))
+                           auto& userIndexById = collection.users().byId();
+                           const auto userIt = userIndexById.find(userId);
+                           if (userIt == userIndexById.end())
                            {
-                               auto& userIndexById = collection.users().byId();
-                               const auto userIt = userIndexById.find(userId);
-                               if (userIt == userIndexById.end())
-                               {
-                                   status = StatusCode::NOT_FOUND;
-                                   return;
-                               }
-                               targetUser = *userIt;
+                               status = StatusCode::NOT_FOUND;
+                               return;
                            }
+                           const auto targetUser = *userIt;
 
                            if ( ! (status = threadMessageAuthorization_->assignDiscussionThreadMessagePrivilege(
                                    *currentUser, message, *targetUser, value)))
@@ -665,7 +661,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         EntityCollection& collection, IdTypeRef messageId, IdTypeRef userId, PrivilegeValueIntType value,
         PrivilegeDurationIntType duration)
 {
-    if ( ! messageId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    if (isAnonymousUserId(userId) || ! messageId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
         return StatusCode::INVALID_PARAMETERS;
     }
@@ -678,15 +674,12 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadMessagePrivilege
         return StatusCode::NOT_FOUND;
     }
 
-    if ( ! isAnonymousUserId(userId))
+    auto& userIndexById = collection.users().byId();
+    const auto userIt = userIndexById.find(userId);
+    if (userIt == userIndexById.end())
     {
-        auto& userIndexById = collection.users().byId();
-        const auto userIt = userIndexById.find(userId);
-        if (userIt == userIndexById.end())
-        {
-            FORUM_LOG_ERROR << "Could not find user: " << userId.toStringDashed();
-            return StatusCode::NOT_FOUND;
-        }
+        FORUM_LOG_ERROR << "Could not find user: " << userId.toStringDashed();
+        return StatusCode::NOT_FOUND;
     }
 
     const auto now = Context::getCurrentTime();
@@ -904,7 +897,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         OutStream& output)
 {
     StatusWriter status(output);
-    if ( ! threadId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    if (isAnonymousUserId(userId) || ! threadId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
@@ -922,18 +915,14 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
                            }
                            const DiscussionThread& thread = *threadPtr;
 
-                           auto targetUser = anonymousUser();
-                           if ( ! isAnonymousUserId(userId))
+                           auto& userIndexById = collection.users().byId();
+                           const auto userIt = userIndexById.find(userId);
+                           if (userIt == userIndexById.end())
                            {
-                               auto& userIndexById = collection.users().byId();
-                               const auto userIt = userIndexById.find(userId);
-                               if (userIt == userIndexById.end())
-                               {
-                                   status = StatusCode::NOT_FOUND;
-                                   return;
-                               }
-                               targetUser = *userIt;
+                               status = StatusCode::NOT_FOUND;
+                               return;
                            }
+                           const auto targetUser = *userIt;
 
                            if ( ! (status = threadAuthorization_->assignDiscussionThreadPrivilege(
                                    *currentUser, thread, *targetUser, value)))
@@ -953,7 +942,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         EntityCollection& collection, IdTypeRef threadId, IdTypeRef userId, PrivilegeValueIntType value,
         PrivilegeDurationIntType duration)
 {
-    if ( ! threadId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    if (isAnonymousUserId(userId) || ! threadId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
         return StatusCode::INVALID_PARAMETERS;
     }
@@ -964,15 +953,12 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionThreadPrivilege(
         return StatusCode::NOT_FOUND;
     }
 
-    if ( ! isAnonymousUserId(userId))
+    auto& userIndexById = collection.users().byId();
+    const auto userIt = userIndexById.find(userId);
+    if (userIt == userIndexById.end())
     {
-        auto& userIndexById = collection.users().byId();
-        const auto userIt = userIndexById.find(userId);
-        if (userIt == userIndexById.end())
-        {
-            FORUM_LOG_ERROR << "Could not find user: " << userId.toStringDashed();
-            return StatusCode::NOT_FOUND;
-        }
+        FORUM_LOG_ERROR << "Could not find user: " << userId.toStringDashed();
+        return StatusCode::NOT_FOUND;
     }
 
     const auto now = Context::getCurrentTime();
@@ -1260,7 +1246,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
         OutStream& output)
 {
     StatusWriter status(output);
-    if ( ! tagId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    if (isAnonymousUserId(userId) || ! tagId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
@@ -1279,18 +1265,14 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
                            }
                            const DiscussionTag& tag = **tagIt;
 
-                           auto targetUser = anonymousUser();
-                           if ( ! isAnonymousUserId(userId))
+                           auto& userIndexById = collection.users().byId();
+                           const auto userIt = userIndexById.find(userId);
+                           if (userIt == userIndexById.end())
                            {
-                               auto& userIndexById = collection.users().byId();
-                               const auto userIt = userIndexById.find(userId);
-                               if (userIt == userIndexById.end())
-                               {
-                                   status = StatusCode::NOT_FOUND;
-                                   return;
-                               }
-                               targetUser = *userIt;
+                               status = StatusCode::NOT_FOUND;
+                               return;
                            }
+                           const auto targetUser = *userIt;
 
                            if ( ! (status = tagAuthorization_->assignDiscussionTagPrivilege(
                                    *currentUser, tag, *targetUser, value)))
@@ -1310,7 +1292,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
         EntityCollection& collection, IdTypeRef tagId, IdTypeRef userId, PrivilegeValueIntType value,
         PrivilegeDurationIntType duration)
 {
-    if ( ! tagId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    if (isAnonymousUserId(userId) || ! tagId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
         return StatusCode::INVALID_PARAMETERS;
     }
@@ -1323,15 +1305,12 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionTagPrivilege(
         return StatusCode::NOT_FOUND;
     }
 
-    if ( ! isAnonymousUserId(userId))
+    auto& userIndexById = collection.users().byId();
+    const auto userIt = userIndexById.find(userId);
+    if (userIt == userIndexById.end())
     {
-        auto& userIndexById = collection.users().byId();
-        const auto userIt = userIndexById.find(userId);
-        if (userIt == userIndexById.end())
-        {
-            FORUM_LOG_ERROR << "Could not find user: " << userId.toStringDashed();
-            return StatusCode::NOT_FOUND;
-        }
+        FORUM_LOG_ERROR << "Could not find user: " << userId.toStringDashed();
+        return StatusCode::NOT_FOUND;
     }
 
     auto now = Context::getCurrentTime();
@@ -1493,7 +1472,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
         OutStream& output)
 {
     StatusWriter status(output);
-    if ( ! categoryId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    if (isAnonymousUserId(userId) || ! categoryId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
@@ -1512,18 +1491,14 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
                            }
                            const DiscussionCategory& category = **categoryIt;
 
-                           auto targetUser = anonymousUser();
-                           if ( ! isAnonymousUserId(userId))
+                           auto& userIndexById = collection.users().byId();
+                           const auto userIt = userIndexById.find(userId);
+                           if (userIt == userIndexById.end())
                            {
-                               auto& userIndexById = collection.users().byId();
-                               const auto userIt = userIndexById.find(userId);
-                               if (userIt == userIndexById.end())
-                               {
-                                   status = StatusCode::NOT_FOUND;
-                                   return;
-                               }
-                               targetUser = *userIt;
+                               status = StatusCode::NOT_FOUND;
+                               return;
                            }
+                           const auto targetUser = *userIt;
 
                            if ( ! (status = categoryAuthorization_->assignDiscussionCategoryPrivilege(
                                    *currentUser, category, *targetUser, value)))
@@ -1543,7 +1518,7 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
         EntityCollection& collection, IdTypeRef categoryId, IdTypeRef userId, PrivilegeValueIntType value,
         PrivilegeDurationIntType duration)
 {
-    if ( ! categoryId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    if (isAnonymousUserId(userId) || ! categoryId || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
         return StatusCode::INVALID_PARAMETERS;
     }
@@ -1556,15 +1531,12 @@ StatusCode MemoryRepositoryAuthorization::assignDiscussionCategoryPrivilege(
         return StatusCode::NOT_FOUND;
     }
 
-    if ( ! isAnonymousUserId(userId))
+    auto& userIndexById = collection.users().byId();
+    const auto userIt = userIndexById.find(userId);
+    if (userIt == userIndexById.end())
     {
-        auto& userIndexById = collection.users().byId();
-        const auto userIt = userIndexById.find(userId);
-        if (userIt == userIndexById.end())
-        {
-            FORUM_LOG_ERROR << "Could not find user: " << userId.toStringDashed();
-            return StatusCode::NOT_FOUND;
-        }
+        FORUM_LOG_ERROR << "Could not find user: " << userId.toStringDashed();
+        return StatusCode::NOT_FOUND;
     }
 
     auto now = Context::getCurrentTime();
@@ -2014,7 +1986,7 @@ StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
         IdTypeRef userId, PrivilegeValueIntType value, PrivilegeDurationIntType duration, OutStream& output)
 {
     StatusWriter status(output);
-    if ( ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    if (isAnonymousUserId(userId) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
         return status = StatusCode::INVALID_PARAMETERS;
     }
@@ -2024,18 +1996,14 @@ StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
                        {
                            auto currentUser = performedBy.getAndUpdate(collection);
 
-                           auto targetUser = anonymousUser();
-                           if ( ! isAnonymousUserId(userId))
+                           auto& userIndexById = collection.users().byId();
+                           const auto userIt = userIndexById.find(userId);
+                           if (userIt == userIndexById.end())
                            {
-                               auto& userIndexById = collection.users().byId();
-                               const auto userIt = userIndexById.find(userId);
-                               if (userIt == userIndexById.end())
-                               {
-                                   status = StatusCode::NOT_FOUND;
-                                   return;
-                               }
-                               targetUser = *userIt;
+                               status = StatusCode::NOT_FOUND;
+                               return;
                            }
+                           const auto targetUser = *userIt;
 
                            if ( ! (status = forumWideAuthorization_->assignForumWidePrivilege(
                                    *currentUser, *targetUser, value)))
@@ -2055,20 +2023,17 @@ StatusCode MemoryRepositoryAuthorization::assignForumWidePrivilege(
         EntityCollection& collection, IdTypeRef userId, PrivilegeValueIntType value,
         PrivilegeDurationIntType duration)
 {
-    if ( ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
+    if (isAnonymousUserId(userId) || ! isValidPrivilegeValue(value) || ! isValidPrivilegeDuration(duration))
     {
         return StatusCode::INVALID_PARAMETERS;
     }
 
-    if ( ! isAnonymousUserId(userId))
+    auto& userIndexById = collection.users().byId();
+    const auto userIt = userIndexById.find(userId);
+    if (userIt == userIndexById.end())
     {
-        auto& userIndexById = collection.users().byId();
-        const auto userIt = userIndexById.find(userId);
-        if (userIt == userIndexById.end())
-        {
-            FORUM_LOG_ERROR << "Could not find user: " << userId.toStringDashed();
-            return StatusCode::NOT_FOUND;
-        }
+        FORUM_LOG_ERROR << "Could not find user: " << userId.toStringDashed();
+        return StatusCode::NOT_FOUND;
     }
 
     const auto now = Context::getCurrentTime();

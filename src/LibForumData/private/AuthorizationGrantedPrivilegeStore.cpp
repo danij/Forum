@@ -381,22 +381,24 @@ void GrantedPrivilegeStore::calculatePrivilege(const PrivilegeEntryCollection& c
                                                IdTypeRef entityId, Timestamp now, PrivilegeValueType& positiveValue,
                                                PrivilegeValueType& negativeValue) const
 {
-    const IdTuple toSearch{ userId, entityId };
-    auto range = collection.get<PrivilegeEntryCollectionByUserIdEntityId>().equal_range(toSearch);
-
     const auto defaultPositiveValue = isAnonymousUserId(userId)
                                       ? static_cast<PrivilegeValueIntType>(0)
                                       : defaultPrivilegeValueForLoggedInUser_;
 
     positiveValue = maximumPrivilegeValue(positiveValue, defaultPositiveValue);
 
+    if (isAnonymousUserId(userId))
+    {
+        return;
+    }
+
+    auto range = collection.get<PrivilegeEntryCollectionByUserIdEntityId>().equal_range(IdTuple{ userId, entityId });
     for (auto& entry : boost::make_iterator_range(range))
     {
         const auto expiresAt = entry.expiresAt();
         if ((expiresAt > 0) && (expiresAt < now)) continue;
 
         const auto value = entry.privilegeValue();
-
         if (value > 0)
         {
             positiveValue = maximumPrivilegeValue(positiveValue, value);
