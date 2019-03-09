@@ -87,10 +87,10 @@ struct IdType
 
     IdType(const Helpers::UuidString& uuid)
     {
-        uuid.toString(data.data());
+        uuid.toStringCompact(data.data());
     }
 
-    std::array<char, 36> data;
+    std::array<char, Helpers::UuidString::StringRepresentationSizeCompact> data;
     operator StringView() const
     {
         return StringView(data.data(), data.size());
