@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ContextProviders.h"
 #include "Logging.h"
 
+#include <cassert>
 #include <cstdlib>
 #include <future>
 #include <type_traits>
@@ -124,7 +125,7 @@ struct EntityCollection::Impl
         else if constexpr (std::is_same_v<T, MessageComment>)          ptr = messageCommentPool_.malloc();
         else if constexpr (std::is_same_v<T, PrivateMessage>)          ptr = privateMessagePool_.malloc();
         else if constexpr (std::is_same_v<T, Attachment>)              ptr = attachmentPool_.malloc();
-        else static_assert(false, "Unknown pool for type");
+        else assert(false); //"Unknown pool for type"
 
         if ( ! ptr)
         {
@@ -146,7 +147,7 @@ struct EntityCollection::Impl
         else if constexpr (std::is_same_v<T, MessageComment>)          messageCommentPool_.free(ptr);
         else if constexpr (std::is_same_v<T, PrivateMessage>)          privateMessagePool_.free(ptr);
         else if constexpr (std::is_same_v<T, Attachment>)              attachmentPool_.free(ptr);
-        else static_assert(false, "Unknown pool for type");
+        else assert(false); //"Unknown pool for type"
     }
 
     void insertUser(UserPtr user)
