@@ -248,7 +248,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagName(EntityCollecti
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -308,7 +308,7 @@ StatusCode MemoryRepositoryDiscussionTag::changeDiscussionTagUiBlob(EntityCollec
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -359,7 +359,7 @@ StatusCode MemoryRepositoryDiscussionTag::deleteDiscussionTag(EntityCollection& 
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -419,14 +419,14 @@ StatusCode MemoryRepositoryDiscussionTag::addDiscussionTagToThread(EntityCollect
     const auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << tagId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
     auto threadPtr = collection.threads().findById(threadId);
     if ( ! threadPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << threadId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -502,14 +502,14 @@ StatusCode MemoryRepositoryDiscussionTag::removeDiscussionTagFromThread(EntityCo
     const auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << tagId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
     auto threadPtr = collection.threads().findById(threadId);
     if ( ! threadPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << threadId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -585,7 +585,7 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& 
 {
     if (fromId == intoId)
     {
-        FORUM_LOG_ERROR << "Cannot merge discussion tag into itself: " << static_cast<std::string>(fromId);
+        FORUM_LOG_ERROR << "Cannot merge discussion tag into itself: " << fromId.toStringDashed();
         return StatusCode::NO_EFFECT;
     }
 
@@ -593,13 +593,13 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& 
     const auto itFrom = indexById.find(fromId);
     if (itFrom == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(fromId);
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << fromId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
     const auto itInto = indexById.find(intoId);
     if (itInto == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(intoId);
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << intoId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 

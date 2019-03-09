@@ -49,13 +49,8 @@ static const int uuidValuePositions[] =
     /*12*/ 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
 };
 
-static bool parseUuid(const char* data, const size_t size, boost::uuids::uuid& destination)
+static bool parseUuidDashed(const char* data, const size_t size, boost::uuids::uuid& destination)
 {
-    if (size != 36)
-    {
-        return false;
-    }
-
     static_assert(std::size(hexValues) >= sizeof(uint8_t), "hexValues does not contain enough values");
 
     for (int src = 0, dst = 0; dst < 16; src += 2, dst += 1)
@@ -63,8 +58,32 @@ static bool parseUuid(const char* data, const size_t size, boost::uuids::uuid& d
         destination.data[dst] = hexValues[static_cast<uint8_t>(data[uuidValuePositions[src]])] << 4
                               | hexValues[static_cast<uint8_t>(data[uuidValuePositions[src + 1]])];
     }
-
     return true;
+}
+
+static bool parseUuidCompact(const char* data, const size_t size, boost::uuids::uuid& destination)
+{
+    static_assert(std::size(hexValues) >= sizeof(uint8_t), "hexValues does not contain enough values");
+
+    for (int src = 0, dst = 0; dst < 16; src += 2, dst += 1)
+    {
+        destination.data[dst] = hexValues[static_cast<uint8_t>(data[src])] << 4
+                              | hexValues[static_cast<uint8_t>(data[src + 1])];
+    }
+    return true;
+}
+
+static bool parseUuid(const char* data, const size_t size, boost::uuids::uuid& destination)
+{
+    switch(size)
+    {
+        case UuidString::StringRepresentationSizeCompact:
+            return parseUuidCompact(data, size, destination);
+        case UuidString::StringRepresentationSizeDashed:
+            return parseUuidDashed(data, size, destination);
+        default:
+            return false;
+    }
 }
 
 UuidString::UuidString(const std::string& value) : UuidString(std::string_view(value))
@@ -84,14 +103,9 @@ UuidString::UuidString(const uint8_t* uuidArray) : value_{}
     std::copy(uuidArray, uuidArray + boost::uuids::uuid::static_size(), value_.data);
 }
 
-UuidString::operator std::string() const
-{
-    return to_string(value_);
-}
-
 static const char* hexCharsLowercase = "0123456789abcdef";
 
-void UuidString::toString(char* buffer) const
+void UuidString::toStringDashed(char* buffer) const
 {
     const auto data = value_.data;
 
@@ -107,6 +121,39 @@ void UuidString::toString(char* buffer) const
             buffer[destination++] = '-';
         }
     }
+}
+
+void UuidString::toStringCompact(char* buffer) const
+{
+    const auto data = value_.data;
+
+    for (size_t source = 0, destination = 0; source < boost::uuids::uuid::static_size(); ++source)
+    {
+        const auto value = data[source];
+
+        buffer[destination++] = hexCharsLowercase[(value / 16) & 0xF];
+        buffer[destination++] = hexCharsLowercase[(value % 16) & 0xF];
+    }
+}
+
+std::string UuidString::toStringDashed() const
+{
+    std::string result;
+    result.resize(StringRepresentationSizeDashed, ' ');
+
+    toStringDashed(result.data());
+
+    return result;
+}
+
+std::string UuidString::toStringCompact() const
+{
+    std::string result;
+    result.resize(StringRepresentationSizeCompact, ' ');
+
+    toStringCompact(result.data());
+
+    return result;
 }
 
 const UuidString UuidString::empty = {};

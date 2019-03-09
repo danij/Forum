@@ -354,7 +354,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryName(Enti
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion category: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -425,7 +425,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDescripti
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion category: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -517,7 +517,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(En
     auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion category: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -534,8 +534,8 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryParent(En
         if (newParentPtr->hasAncestor(categoryPtr))
         {
             FORUM_LOG_ERROR << "Circular reference not allowed when assigning new parent "
-                            << static_cast<std::string>(newParentId) << " to discussion category "
-                            << static_cast<std::string>(category.id());
+                            << newParentId.toStringDashed() << " to discussion category "
+                            << category.id().toStringDashed();
             return StatusCode::CIRCULAR_REFERENCE_NOT_ALLOWED;
         }
     }
@@ -607,7 +607,7 @@ StatusCode MemoryRepositoryDiscussionCategory::changeDiscussionCategoryDisplayOr
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion category: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -662,7 +662,7 @@ StatusCode MemoryRepositoryDiscussionCategory::deleteDiscussionCategory(EntityCo
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion category: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -737,7 +737,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
     const auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(tagId);
+        FORUM_LOG_ERROR << "Could not find discussion category: " << tagId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -745,7 +745,7 @@ StatusCode MemoryRepositoryDiscussionCategory::addDiscussionTagToCategory(Entity
     const auto categoryIt = categoryIndexById.find(categoryId);
     if (categoryIt == categoryIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(categoryId);
+        FORUM_LOG_ERROR << "Could not find discussion category: " << categoryId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -826,7 +826,7 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
     const auto tagIt = tagIndexById.find(tagId);
     if (tagIt == tagIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion tag: " << static_cast<std::string>(tagId);
+        FORUM_LOG_ERROR << "Could not find discussion tag: " << tagId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -834,7 +834,7 @@ StatusCode MemoryRepositoryDiscussionCategory::removeDiscussionTagFromCategory(E
     const auto categoryIt = categoryIndexById.find(categoryId);
     if (categoryIt == categoryIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion category: " << static_cast<std::string>(categoryId);
+        FORUM_LOG_ERROR << "Could not find discussion category: " << categoryId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 

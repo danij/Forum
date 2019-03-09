@@ -50,7 +50,8 @@ namespace Forum::Helpers
         /**
          * How many characters are needed to store the string representation (without null terminator)
          */
-        static constexpr size_t StringRepresentationSize = boost::uuids::uuid::static_size() * 2 + 4;
+        static constexpr size_t StringRepresentationSizeDashed = boost::uuids::uuid::static_size() * 2 + 4;
+        static constexpr size_t StringRepresentationSizeCompact = boost::uuids::uuid::static_size() * 2;
 
         const boost::uuids::uuid& value() const { return value_; }
 
@@ -91,13 +92,21 @@ namespace Forum::Helpers
             return value_ >= other.value_;
         }
 
-        explicit operator std::string() const;
+        /**
+         * Writes the string representation to a buffer
+         * The buffer must be at least StringRepresentationSizeDashed large
+         */
+        void toStringDashed(char* buffer) const;
 
         /**
          * Writes the string representation to a buffer
-         * The buffer must be at least StringRepresentationSize large
+         * The buffer must be at least StringRepresentationSizeCompact large
          */
-        void toString(char* buffer) const;
+        void toStringCompact(char* buffer) const;
+
+        std::string toStringDashed() const;
+
+        std::string toStringCompact() const;
 
         operator bool() const
         {
@@ -141,17 +150,26 @@ namespace Forum::Helpers
         {
             if (0 == OccursInUuids[static_cast<uint8_t>(*inputIt)])
             {
-                if ((inputIt - previousStart) == UuidString::StringRepresentationSize)
+                if ((inputIt - previousStart) == UuidString::StringRepresentationSizeDashed)
                 {
-                    *outputBegin = UuidString(std::string_view(previousStart, UuidString::StringRepresentationSize));
+                    *outputBegin = UuidString(std::string_view(previousStart, UuidString::StringRepresentationSizeDashed));
+                    if (++outputBegin == outputEnd) return outputBegin;
+                }
+                else if ((inputIt - previousStart) == UuidString::StringRepresentationSizeCompact)
+                {
+                    *outputBegin = UuidString(std::string_view(previousStart, UuidString::StringRepresentationSizeCompact));
                     if (++outputBegin == outputEnd) return outputBegin;
                 }
                 previousStart = inputIt + 1;
             }
         }
-        if ((inputIt - previousStart) == UuidString::StringRepresentationSize)
+        if ((inputIt - previousStart) == UuidString::StringRepresentationSizeDashed)
         {
-            *outputBegin++ = UuidString(std::string_view(previousStart, UuidString::StringRepresentationSize));
+            *outputBegin++ = UuidString(std::string_view(previousStart, UuidString::StringRepresentationSizeDashed));
+        }
+        else if ((inputIt - previousStart) == UuidString::StringRepresentationSizeCompact)
+        {
+            *outputBegin++ = UuidString(std::string_view(previousStart, UuidString::StringRepresentationSizeCompact));
         }
         return outputBegin;
     }
@@ -162,7 +180,7 @@ namespace Forum::Helpers
     template<typename It>
     void extractUuidReferences(std::string_view input, It output)
     {
-        constexpr size_t referenceSize = UuidString::StringRepresentationSize + 2u;
+        constexpr size_t referenceSize = UuidString::StringRepresentationSizeDashed + 2u;
         constexpr char wrapper = '@';
         constexpr size_t hexIndexes[] =
         {
@@ -176,7 +194,7 @@ namespace Forum::Helpers
         for (int i = 0, n = static_cast<int>(input.size()) - referenceSize; i <= n; ++i)
         {
             const bool possibleReferenceFound =
-                (wrapper == input[i]) && (wrapper == input[i + UuidString::StringRepresentationSize + 1])
+                (wrapper == input[i]) && (wrapper == input[i + UuidString::StringRepresentationSizeDashed + 1])
                 && ('-' == input[i + 9]) && ('-' == input[i + 14]) && ('-' == input[i + 19]) && ('-' == input[i + 24]);
             if (possibleReferenceFound)
             {
@@ -185,7 +203,7 @@ namespace Forum::Helpers
                     return 1 == OccursInUuids[static_cast<int>(input[i + index])];
                 }))
                 {
-                    *output++ = UuidString(std::string_view(input.data() + i + 1, UuidString::StringRepresentationSize));
+                    *output++ = UuidString(std::string_view(input.data() + i + 1, UuidString::StringRepresentationSizeDashed));
                 }
             }
         }

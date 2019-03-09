@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_users_by_id_invokes_observer )
     auto handler = createCommandHandler();
 
     auto disconnector = addHandler(handler->readEvents().onGetUserById,
-                                   [&](auto&, auto& user) { idToBeRetrieved = static_cast<std::string>(user.id()); });
+                                   [&](auto&, auto& user) { idToBeRetrieved = user.id().toStringCompact(); });
     (void)disconnector;
 
     const auto userId = createUserAndGetId(handler, "User");
@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_by_id_invokes_observer )
     auto disconnector = addHandler(handler->readEvents().onGetDiscussionThreadById,
                                    [&](auto&, auto& thread, uint32_t)
                                    {
-                                       idOfThread = static_cast<std::string>(thread.id());
+                                       idOfThread = thread.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_invokes_observer )
     auto handler = createCommandHandler();
 
     auto disconnector = addHandler(handler->writeEvents().onDeleteDiscussionThread,
-                                   [&](auto&, auto& thread) { deletedThreadId = static_cast<std::string>(thread.id()); });
+                                   [&](auto&, auto& thread) { deletedThreadId = thread.id().toStringCompact(); });
     (void)disconnector;
 
     const auto threadId = handlerToObj(handler, Forum::Commands::ADD_DISCUSSION_THREAD, { "Abc" }).get<std::string>("id");
@@ -320,8 +320,8 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_invokes_observer )
     auto disconnector = addHandler(handler->writeEvents().onMergeDiscussionThreads,
                                    [&](auto&, auto& fromThread, auto& toThread)
                                    {
-                                       observedFromThreadId = static_cast<std::string>(fromThread.id());
-                                       observedToThreadId = static_cast<std::string>(toThread.id());
+                                       observedFromThreadId = fromThread.id().toStringCompact();
+                                       observedToThreadId = toThread.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -342,8 +342,8 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_invokes_observer )
     auto disconnector = addHandler(handler->writeEvents().onMoveDiscussionThreadMessage,
                                    [&](auto&, auto& message, auto& intoThread)
                                    {
-                                       observedMessageId = static_cast<std::string>(message.id());
-                                       observedToThreadId = static_cast<std::string>(intoThread.id());
+                                       observedMessageId = message.id().toStringCompact();
+                                       observedToThreadId = intoThread.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -390,7 +390,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_message_invokes_observer )
     auto handler = createCommandHandler();
 
     auto disconnector = addHandler(handler->writeEvents().onDeleteDiscussionThreadMessage,
-                                   [&](auto&, auto& message) { deletedMessageId = static_cast<std::string>(message.id()); });
+                                   [&](auto&, auto& message) { deletedMessageId = message.id().toStringCompact(); });
     (void)disconnector;
 
     const auto threadId = createDiscussionThreadAndGetId(handler, "Abc");
@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_CASE( Observer_context_includes_user_that_performs_the_action )
     auto disconnector = addHandler(handler->readEvents().onGetEntitiesCount,
                                    [&](auto& context)
                                    {
-                                       userIdFromContext = static_cast<std::string>(context.performedBy.id());
+                                       userIdFromContext = context.performedBy.id().toStringCompact();
                                        userNameFromContext = toString(context.performedBy.name().string());
                                    });
     (void)disconnector;
@@ -432,14 +432,14 @@ BOOST_AUTO_TEST_CASE( Observer_context_performed_by_is_the_anonymous_user )
     auto disconnector = addHandler(handler->readEvents().onGetEntitiesCount,
                                    [&](auto& context)
                                    {
-                                       userIdFromContext = static_cast<std::string>(context.performedBy.id());
+                                       userIdFromContext = context.performedBy.id().toStringCompact();
                                        userNameFromContext = toString(context.performedBy.name().string());
                                    });
     (void)disconnector;
 
     handlerToObj(handler, Forum::Commands::COUNT_ENTITIES);
 
-    BOOST_REQUIRE_EQUAL(static_cast<std::string>(UuidString::empty), userIdFromContext);
+    BOOST_REQUIRE_EQUAL(UuidString::empty.toStringCompact(), userIdFromContext);
     BOOST_REQUIRE_EQUAL("<anonymous>", userNameFromContext);
 }
 
@@ -539,7 +539,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_tag_invokes_observer )
     auto disconnector = addHandler(handler->writeEvents().onDeleteDiscussionTag,
                                    [&](auto&, auto& tag)
                                    {
-                                       deletedTagId = static_cast<std::string>(tag.id());
+                                       deletedTagId = tag.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -557,8 +557,8 @@ BOOST_AUTO_TEST_CASE( Attaching_a_discussion_tag_to_a_thread_invokes_observer )
     auto disconnector = addHandler(handler->writeEvents().onAddDiscussionTagToThread,
                                    [&](auto&, auto& tag, auto& thread)
                                    {
-                                       observedTagId = static_cast<std::string>(tag.id());
-                                       observedThreadId = static_cast<std::string>(thread.id());
+                                       observedTagId = tag.id().toStringCompact();
+                                       observedThreadId = thread.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -579,8 +579,8 @@ BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_thread_invokes_observer 
     auto disconnector = addHandler(handler->writeEvents().onRemoveDiscussionTagFromThread,
                                    [&](auto&, auto& tag, auto& thread)
                                    {
-                                       observedTagId = static_cast<std::string>(tag.id());
-                                       observedThreadId = static_cast<std::string>(thread.id());
+                                       observedTagId = tag.id().toStringCompact();
+                                       observedThreadId = thread.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -604,7 +604,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_tags_invokes_obs
                                    [&](auto&, auto& tag)
                                    {
                                        observerCalledNTimes += 1;
-                                       observedTagId = static_cast<std::string>(tag.id());
+                                       observedTagId = tag.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -636,8 +636,8 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_tags_invokes_observer)
     auto disconnector = addHandler(handler->writeEvents().onMergeDiscussionTags,
                                    [&](auto&, auto& fromTag, auto& toTag)
                                    {
-                                       observedFromTagId = static_cast<std::string>(fromTag.id());
-                                       observedToTagId = static_cast<std::string>(toTag.id());
+                                       observedFromTagId = fromTag.id().toStringCompact();
+                                       observedToTagId = toTag.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -768,7 +768,7 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_category_parent_invokes_observer )
                                    {
                                        if (auto parent = category.parent())
                                        {
-                                           newParentId = static_cast<std::string>(parent->id());
+                                           newParentId = parent->id().toStringCompact();
                                        }
                                        categoryChange = change;
                                    });
@@ -791,7 +791,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_category_invokes_observer )
     auto disconnector = addHandler(handler->writeEvents().onDeleteDiscussionCategory,
                                    [&](auto&, auto& tag)
                                    {
-                                       deletedCategoryId = static_cast<std::string>(tag.id());
+                                       deletedCategoryId = tag.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -809,8 +809,8 @@ BOOST_AUTO_TEST_CASE( Attaching_a_discussion_tag_to_a_category_invokes_observer 
     auto disconnector = addHandler(handler->writeEvents().onAddDiscussionTagToCategory,
                                    [&](auto&, auto& tag, auto& category)
                                    {
-                                       observedTagId = static_cast<std::string>(tag.id());
-                                       observedCategoryId = static_cast<std::string>(category.id());
+                                       observedTagId = tag.id().toStringCompact();
+                                       observedCategoryId = category.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -831,8 +831,8 @@ BOOST_AUTO_TEST_CASE( Detaching_a_discussion_tag_from_a_category_invokes_observe
     auto disconnector = addHandler(handler->writeEvents().onRemoveDiscussionTagFromCategory,
                                    [&](auto&, auto& tag, auto& category)
                                    {
-                                       observedTagId = static_cast<std::string>(tag.id());
-                                       observedCategoryId = static_cast<std::string>(category.id());
+                                       observedTagId = tag.id().toStringCompact();
+                                       observedCategoryId = category.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -857,7 +857,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_attached_to_categories_invok
                                    [&](auto&, auto& category)
                                    {
                                        observerCalledNTimes += 1;
-                                       observedCategoryId = static_cast<std::string>(category.id());
+                                       observedCategoryId = category.id().toStringCompact();
                                    });
     (void)disconnector;
 
@@ -890,22 +890,22 @@ BOOST_AUTO_TEST_CASE( Voting_discussion_thread_messages_invokes_observers )
     auto disconnector = addHandler(handler->writeEvents().onDiscussionThreadMessageUpVote,
                                    [&](auto& context, auto& message)
                                    {
-                                      upVoteUser = static_cast<std::string>(context.performedBy.id());
-                                      votedMessages[0] = static_cast<std::string>(message.id());
+                                      upVoteUser = context.performedBy.id().toStringCompact();
+                                      votedMessages[0] = message.id().toStringCompact();
                                    });
     (void)disconnector;
     auto disconnector_ = addHandler(handler->writeEvents().onDiscussionThreadMessageDownVote,
                                     [&](auto& context, auto& message)
                                     {
-                                       downVoteUser = static_cast<std::string>(context.performedBy.id());
-                                       votedMessages[1] = static_cast<std::string>(message.id());
+                                       downVoteUser = context.performedBy.id().toStringCompact();
+                                       votedMessages[1] = message.id().toStringCompact();
                                     });
     (void)disconnector_;
     auto disconnector__ = addHandler(handler->writeEvents().onDiscussionThreadMessageResetVote,
                                      [&](auto& context, auto& message)
                                      {
-                                        resetVoteUser = static_cast<std::string>(context.performedBy.id());
-                                        votedMessages[2] = static_cast<std::string>(message.id());
+                                        resetVoteUser = context.performedBy.id().toStringCompact();
+                                        votedMessages[2] = message.id().toStringCompact();
                                      });
     (void)disconnector__;
 

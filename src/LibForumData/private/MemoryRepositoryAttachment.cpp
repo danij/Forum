@@ -420,7 +420,7 @@ StatusCode MemoryRepositoryAttachment::changeAttachmentName(EntityCollection& co
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find attachment: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find attachment: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -473,7 +473,7 @@ StatusCode MemoryRepositoryAttachment::changeAttachmentApproval(EntityCollection
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find attachment: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find attachment: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -528,7 +528,7 @@ StatusCode MemoryRepositoryAttachment::deleteAttachment(EntityCollection& collec
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find attachment: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find attachment: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -597,7 +597,7 @@ StatusWithResource<AttachmentPtr> MemoryRepositoryAttachment::addAttachmentToDis
     const auto attachmentIt = attachmentIndexById.find(attachmentId);
     if (attachmentIt == attachmentIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find attachment: " << static_cast<std::string>(attachmentId);
+        FORUM_LOG_ERROR << "Could not find attachment: " << attachmentId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -605,7 +605,7 @@ StatusWithResource<AttachmentPtr> MemoryRepositoryAttachment::addAttachmentToDis
     const auto messageIt = messageIndexById.find(messageId);
     if (messageIt == messageIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << messageId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -675,7 +675,7 @@ StatusCode MemoryRepositoryAttachment::removeAttachmentFromDiscussionThreadMessa
     const auto attachmentIt = attachmentIndexById.find(attachmentId);
     if (attachmentIt == attachmentIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find attachment: " << static_cast<std::string>(attachmentId);
+        FORUM_LOG_ERROR << "Could not find attachment: " << attachmentId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -683,7 +683,7 @@ StatusCode MemoryRepositoryAttachment::removeAttachmentFromDiscussionThreadMessa
     const auto messageIt = messageIndexById.find(messageId);
     if (messageIt == messageIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << messageId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 

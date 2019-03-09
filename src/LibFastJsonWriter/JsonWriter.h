@@ -392,6 +392,11 @@ namespace Json
             return writeEscapedString(value);
         }
 
+        JsonWriterBase& operator<<(const std::string& value)
+        {
+            return writeEscapedString(value);
+        }
+
         JsonWriterBase& operator<<(const std::string_view value)
         {
             return writeEscapedString(value);

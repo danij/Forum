@@ -674,7 +674,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadName(EntityCo
     auto threadPtr = collection.threads().findById(id);
     if ( ! threadPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -723,7 +723,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadPinDisplayOrd
     DiscussionThreadPtr threadPtr = collection.threads().findById(id);
     if ( ! threadPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -775,7 +775,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadApproval(Enti
     DiscussionThreadPtr threadPtr = collection.threads().findById(id);
     if ( ! threadPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -827,7 +827,7 @@ StatusCode MemoryRepositoryDiscussionThread::deleteDiscussionThread(EntityCollec
     auto threadPtr = collection.threads().findById(id);
     if ( ! threadPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -907,21 +907,21 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
 
     if (fromId == intoId)
     {
-        FORUM_LOG_ERROR << "Cannot merge discussion thread into self: " << static_cast<std::string>(fromId);
+        FORUM_LOG_ERROR << "Cannot merge discussion thread into self: " << fromId.toStringDashed();
         return StatusCode::NO_EFFECT;
     }
 
     auto threadFromPtr = collection.threads().findById(fromId);
     if ( ! threadFromPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(fromId);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << fromId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
     auto threadIntoPtr = collection.threads().findById(intoId);
     if ( ! threadIntoPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(intoId);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << intoId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -999,7 +999,7 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityC
     DiscussionThreadPtr threadPtr = collection.threads().findById(id);
     if ( ! threadPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -1007,8 +1007,8 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityC
 
     if ( ! std::get<1>(threadPtr->subscribedUsers().insert(std::make_pair(currentUser->id(), currentUser))))
     {
-        //FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
-        //                  << " is already subscribed to the discussion thread " << static_cast<std::string>(id);
+        //FORUM_LOG_WARNING << "The user " << currentUser->id().toStringDashed()
+        //                  << " is already subscribed to the discussion thread " << id.toStringDashed();
 
         return StatusCode::NO_EFFECT;
     }
@@ -1062,7 +1062,7 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(Ent
     DiscussionThreadPtr threadPtr = collection.threads().findById(id);
     if ( ! threadPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -1070,8 +1070,8 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(Ent
 
     if (0 == threadPtr->subscribedUsers().erase(currentUser->id()))
     {
-        //FORUM_LOG_WARNING << "The user " << static_cast<std::string>(currentUser->id())
-        //                  << " was not subscribed to the discussion thread " << static_cast<std::string>(id);
+        //FORUM_LOG_WARNING << "The user " << currentUser->id().toStringDashed()
+        //                  << " was not subscribed to the discussion thread " << id.toStringDashed();
 
         return StatusCode::NO_EFFECT;
     }

@@ -25,28 +25,28 @@ using namespace Forum::Helpers;
 BOOST_AUTO_TEST_CASE( UuidString_can_be_converted_to_and_from_strings )
 {
     const std::string uuidString("084904c2-22a1-4c79-8284-7c78dd065048");
+    const std::string uuidStringCompact("084904c222a14c7982847c78dd065048");
 
     UuidString uuid(uuidString);
 
-    auto convertedString = static_cast<std::string>(uuid);
-
-    BOOST_REQUIRE_EQUAL(uuidString, convertedString);
+    BOOST_REQUIRE_EQUAL(uuidString, uuid.toStringDashed());
+    BOOST_REQUIRE_EQUAL(uuidStringCompact, uuid.toStringCompact());
 }
 
 BOOST_AUTO_TEST_CASE( UuidString_can_be_converted_to_and_from_string_views )
 {
     const char* uuidString = "084904c2-22a1-4c79-8284-7c78dd065048";
+    const char* uuidStringCompact = "084904c222a14c7982847c78dd065048";
 
     UuidString uuid(std::string_view{ uuidString });
 
-    auto convertedString = static_cast<std::string>(uuid);
-
-    BOOST_REQUIRE_EQUAL(std::string(uuidString), convertedString);
+    BOOST_REQUIRE_EQUAL(std::string(uuidString), uuid.toStringDashed());
+    BOOST_REQUIRE_EQUAL(std::string(uuidStringCompact), uuid.toStringCompact());
 }
 
 BOOST_AUTO_TEST_CASE( Multiple_UuidStrings_can_be_parsed_from_a_string_view )
 {
-    const char* input = "  084904c2-22a1-4c79-8284-7c78dd065048, {084904c2-22A1-4C79-8284-7c78dd065048};E99A4894-D285-43D5-AA0C-E4DA00DAC2A0";
+    const char* input = "  084904c2-22a1-4c79-8284-7c78dd065048, {084904c222A14C7982847c78dd065048};E99A4894-D285-43D5-AA0C-E4DA00DAC2A0";
 
     std::vector<UuidString> output{ 3 };
     const auto lastInsertAt = parseMultipleUuidStrings(input, output.begin(), output.end());

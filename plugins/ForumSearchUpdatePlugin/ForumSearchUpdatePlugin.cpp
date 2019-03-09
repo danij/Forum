@@ -101,7 +101,7 @@ void ForumSearchUpdatePlugin::onAddNewDiscussionThread(const DiscussionThread& t
         writer
             << objStart
                 << propertySafeName("type", "new thread")
-                << propertySafeName("id", thread.id())
+                << propertySafeName("id", thread.id().toStringDashed())
                 << propertySafeName("name", thread.name())
             << objEnd;
     });
@@ -117,7 +117,7 @@ void ForumSearchUpdatePlugin::onChangeDiscussionThread(const DiscussionThread& t
         writer
             << objStart
                 << propertySafeName("type", "change thread name")
-                << propertySafeName("id", thread.id())
+                << propertySafeName("id", thread.id().toStringDashed())
                 << propertySafeName("name", thread.name())
             << objEnd;
     });
@@ -130,7 +130,7 @@ void ForumSearchUpdatePlugin::onDeleteDiscussionThread(const DiscussionThread& t
         writer
             << objStart
                 << propertySafeName("type", "delete thread")
-                << propertySafeName("id", thread.id())
+                << propertySafeName("id", thread.id().toStringDashed())
             << objEnd;
     });
 
@@ -148,7 +148,7 @@ void ForumSearchUpdatePlugin::onAddNewDiscussionThreadMessage(const DiscussionTh
         writer
             << objStart
                 << propertySafeName("type", "new thread message")
-                << propertySafeName("id", message.id())
+                << propertySafeName("id", message.id().toStringDashed())
                 << propertySafeName("content", message.content())
             << objEnd;
     });
@@ -164,7 +164,7 @@ void ForumSearchUpdatePlugin::onChangeDiscussionThreadMessage(const DiscussionTh
         writer
             << objStart
                 << propertySafeName("type", "change thread message content")
-                << propertySafeName("id", message.id())
+                << propertySafeName("id", message.id().toStringDashed())
                 << propertySafeName("content", message.content())
             << objEnd;
     });
@@ -177,7 +177,7 @@ void ForumSearchUpdatePlugin::onDeleteDiscussionThreadMessage(const DiscussionTh
         writer
             << objStart
                 << propertySafeName("type", "delete thread message")
-                << propertySafeName("id", message.id())
+                << propertySafeName("id", message.id().toStringDashed())
             << objEnd;
     });
 }

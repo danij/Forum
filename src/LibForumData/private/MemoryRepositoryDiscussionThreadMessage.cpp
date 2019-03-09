@@ -368,7 +368,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
     auto threadPtr = collection.threads().findById(threadId);
     if ( ! threadPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(threadId);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << threadId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -461,7 +461,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::deleteDiscussionMessage(Enti
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
     collection.deleteDiscussionThreadMessage(*it);
@@ -560,7 +560,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -633,7 +633,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::changeDiscussionThreadMessag
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -741,14 +741,14 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
     const auto messageIt = messagesIndexById.find(messageId);
     if (messageIt == messagesIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << messageId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
     auto threadIntoPtr = collection.threads().findById(intoThreadId);
     if ( ! threadIntoPtr)
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread: " << static_cast<std::string>(intoThreadId);
+        FORUM_LOG_ERROR << "Could not find discussion thread: " << intoThreadId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -761,7 +761,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::moveDiscussionThreadMessage(
     if (threadFromPtr == threadIntoPtr)
     {
         FORUM_LOG_WARNING << "Threa thread into which to move the discussion thread message is the same as the current one: "
-                          << static_cast<std::string>(intoThreadId);
+                          << intoThreadId.toStringDashed();
 
         return StatusCode::NO_EFFECT;
     }
@@ -859,7 +859,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
     DiscussionThreadMessagePtr messagePtr = *it;
@@ -870,8 +870,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     if (message.hasVoted(currentUser))
     {
         FORUM_LOG_WARNING << "User "
-                          << static_cast<std::string>(currentUser->id()) << " has already voted discussion thread message "
-                          << static_cast<std::string>(message.id());
+                          << currentUser->id().toStringDashed() << " has already voted discussion thread message "
+                          << message.id().toStringDashed();
         return StatusCode::NO_EFFECT;
     }
 
@@ -978,7 +978,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
     DiscussionThreadMessagePtr messagePtr = *it;
@@ -990,8 +990,8 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
     if (DiscussionThreadMessage::RemoveVoteStatus::Missing == removeVoteStatus)
     {
         FORUM_LOG_WARNING << "Could not find discussion vote of user "
-                          << static_cast<std::string>(currentUser->id()) << " for discussion thread message "
-                          << static_cast<std::string>(message.id());
+                          << currentUser->id().toStringDashed() << " for discussion thread message "
+                          << message.id().toStringDashed();
         return StatusCode::NO_EFFECT;
     }
 
@@ -1220,7 +1220,7 @@ StatusWithResource<MessageCommentPtr>
     const auto messageIt = messageIndex.find(messageId);
     if (messageIt == messageIndex.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(messageId);
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << messageId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -1286,7 +1286,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(En
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find discussion thread message: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find discussion thread message: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -1295,7 +1295,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::setMessageCommentToSolved(En
 
     if (comment.solved())
     {
-        FORUM_LOG_WARNING << "Comment " << static_cast<std::string>(comment.id()) << " is already solved";
+        FORUM_LOG_WARNING << "Comment " << comment.id().toStringDashed() << " is already solved";
         return StatusCode::NO_EFFECT;
     }
 
@@ -1312,7 +1312,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::quoteUserInMessage(EntityCol
     const auto it = indexById.find(userId);
     if (it == indexById.end())
     {
-        //FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(userId);
+        //FORUM_LOG_ERROR << "Could not find user: " << userId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 

@@ -46,9 +46,9 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const EntitiesCount& value)
 
 JsonWriter& Json::operator<<(JsonWriter& writer, const UuidString& id)
 {
-    char buffer[UuidString::StringRepresentationSize];
+    char buffer[UuidString::StringRepresentationSizeCompact];
 
-    id.toString(buffer);
+    id.toStringCompact(buffer);
 
     return writer.writeSafeString(buffer, std::size(buffer));
 }

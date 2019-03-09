@@ -216,7 +216,7 @@ TreeStatusTupleType Forum::Helpers::handlerToObjAndStatus(CommandHandlerRef& han
 
 TreeType Forum::Helpers::createUser(CommandHandlerRef& handler, const std::string& name)
 {
-    Context::setCurrentUserAuth(static_cast<std::string>(generateUniqueId()));
+    Context::setCurrentUserAuth(generateUniqueId().toStringDashed());
     return handlerToObj(handler, Command::ADD_USER, { name });
 }
 

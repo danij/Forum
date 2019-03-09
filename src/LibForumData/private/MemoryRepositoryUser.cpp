@@ -923,7 +923,7 @@ StatusCode MemoryRepositoryUser::changeUserName(EntityCollection& collection, Id
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find user: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -985,7 +985,7 @@ StatusCode MemoryRepositoryUser::changeUserInfo(EntityCollection& collection, Id
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find user: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -1040,7 +1040,7 @@ StatusCode MemoryRepositoryUser::changeUserTitle(EntityCollection& collection, I
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find user: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -1095,7 +1095,7 @@ StatusCode MemoryRepositoryUser::changeUserSignature(EntityCollection& collectio
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find user: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -1143,7 +1143,7 @@ StatusCode MemoryRepositoryUser::changeUserAttachmentQuota(EntityCollection& col
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find user: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -1198,7 +1198,7 @@ StatusCode MemoryRepositoryUser::changeUserLogo(EntityCollection& collection, Id
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find user: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -1244,7 +1244,7 @@ StatusCode MemoryRepositoryUser::deleteUserLogo(EntityCollection& collection, Id
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find user: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -1292,7 +1292,7 @@ StatusCode MemoryRepositoryUser::deleteUser(EntityCollection& collection, IdType
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find user: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
@@ -1357,7 +1357,7 @@ StatusWithResource<PrivateMessagePtr> MemoryRepositoryUser::sendPrivateMessage(E
     auto& messageIndexById = collection.privateMessages().byId();
     if (messageIndexById.find(messageId) != messageIndexById.end())
     {
-        FORUM_LOG_ERROR << "A private message with this id already exists: " << static_cast<std::string>(messageId);
+        FORUM_LOG_ERROR << "A private message with this id already exists: " << messageId.toStringDashed();
         return StatusCode::ALREADY_EXISTS;
     }
 
@@ -1365,7 +1365,7 @@ StatusWithResource<PrivateMessagePtr> MemoryRepositoryUser::sendPrivateMessage(E
     const auto it = userIndexById.find(destinationId);
     if (it == userIndexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find user: " << static_cast<std::string>(destinationId);
+        FORUM_LOG_ERROR << "Could not find user: " << destinationId.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
     UserPtr destinationUserPtr = *it;
@@ -1422,7 +1422,7 @@ StatusCode MemoryRepositoryUser::deletePrivateMessage(EntityCollection& collecti
     const auto it = indexById.find(id);
     if (it == indexById.end())
     {
-        FORUM_LOG_ERROR << "Could not find private message: " << static_cast<std::string>(id);
+        FORUM_LOG_ERROR << "Could not find private message: " << id.toStringDashed();
         return StatusCode::NOT_FOUND;
     }
 
