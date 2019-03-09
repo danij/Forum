@@ -62,14 +62,14 @@ static thread_local bool deleteAttachmentFromUser = true;
 
 struct EntityCollection::Impl
 {
-    boost::object_pool<User> userPool_{ 128 };
-    boost::object_pool<DiscussionThread> threadPool_{ 128 };
-    boost::object_pool<DiscussionThreadMessage> threadMessagePool_{ 1024 };
+    boost::object_pool<User> userPool_{ 16384 };
+    boost::object_pool<DiscussionThread> threadPool_{ 16384 };
+    boost::object_pool<DiscussionThreadMessage> threadMessagePool_{ 131072 };
     boost::object_pool<DiscussionTag> tagPool_{ 256 };
     boost::object_pool<DiscussionCategory> categoryPool_{ 128 };
-    boost::object_pool<MessageComment> messageCommentPool_{ 128 };
-    boost::object_pool<PrivateMessage> privateMessagePool_{ 128 };
-    boost::object_pool<Attachment> attachmentPool_{ 128 };
+    boost::object_pool<MessageComment> messageCommentPool_{ 16384 };
+    boost::object_pool<PrivateMessage> privateMessagePool_{ 16384 };
+    boost::object_pool<Attachment> attachmentPool_{ 16384 };
 
     UserCollection users_;
     DiscussionThreadCollectionWithHashedId threads_;
