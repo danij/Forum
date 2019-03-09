@@ -34,7 +34,6 @@ endif()
 
 add_definitions(-DBOOST_ASIO_ENABLE_OLD_SERVICES)
 
-add_subdirectory(src/LibFastJsonWriter)
 add_subdirectory(src/LibHttp)
 add_subdirectory(src/LibForumContext)
 add_subdirectory(src/LibForumServiceEndpoints)

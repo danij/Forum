@@ -25,7 +25,7 @@ include_directories(
         ../../src/LibForumPersistence
         ${Boost_INCLUDE_DIRS})
 
-add_executable(MemoryRepositoryBenchmarks ${SOURCE_FILES} ${HEADER_FILES} ${JSON_HEADER_FILES})
+add_executable(MemoryRepositoryBenchmarks ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(MemoryRepositoryBenchmarks
         ForumServiceEndpoints

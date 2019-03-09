@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "JsonCommon.h"
 #include "StringContainer.h"
 
 #include <cassert>
@@ -86,9 +87,7 @@ namespace Json
     protected:
         StringContainer<StackSize, SizeType> container_;
     };
-
-    bool isEscapeNeeded(const char* value, size_t length);
-
+    
     template<size_t StackSize>
     class JsonReadyString : public JsonReadyStringBase<StackSize, JsonReadyString<StackSize>>
     {

@@ -35,7 +35,6 @@ add_library(ForumHelpers SHARED
         ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(ForumHelpers
-        FastJsonWriter
         ${Boost_LIBRARIES}
         ${ICU_LIBRARIES}
         ${ICU_I18N_LIBRARIES})

@@ -98,7 +98,6 @@ add_library(ForumData SHARED
 
 target_link_libraries(
         ForumData
-        FastJsonWriter
         ForumContext
         ForumHelpers
         ${Boost_LIBRARIES}

@@ -31,5 +31,4 @@ add_library(ForumContext SHARED
         ${HEADER_FILES})
 
 target_link_libraries(ForumContext
-        FastJsonWriter
         ForumHelpers)
