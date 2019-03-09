@@ -175,8 +175,8 @@ namespace Forum::Authorization
         {
             PrivilegeEntry(Entities::IdTypeRef userId, Entities::IdTypeRef entityId, PrivilegeValueIntType value,
                            Entities::Timestamp grantedAt, Entities::Timestamp expiresAt)
-                : userAndEntity_({ userId, entityId }),
-                  privilegeValue_(value), grantedAt_(grantedAt), expiresAt_(expiresAt)
+                : userAndEntity_({ userId, entityId }), grantedAt_(grantedAt), expiresAt_(expiresAt), 
+                  privilegeValue_(value)
             {
             }
 
@@ -190,9 +190,9 @@ namespace Forum::Authorization
 
         private:
             IdTuple userAndEntity_;
-            PrivilegeValueIntType privilegeValue_;
             Entities::Timestamp grantedAt_;
             Entities::Timestamp expiresAt_;
+            PrivilegeValueIntType privilegeValue_;
         };
 
         struct PrivilegeEntryCollectionByUserIdEntityId {};
