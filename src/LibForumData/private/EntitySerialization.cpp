@@ -179,10 +179,14 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         UserConstPtr by = message.lastUpdatedBy();
         if (by && allowViewUser)
         {
-            JSON_WRITE_PROP(writer, "userId", by->id());
+            JSON_WRITE_FIRST_PROP(writer, "userId", by->id());
             JSON_WRITE_PROP(writer, "userName", by->name());
+            JSON_WRITE_PROP(writer, "at", message.lastUpdated());
         }
-        JSON_WRITE_PROP(writer, "at", message.lastUpdated());
+        else
+        {
+            JSON_WRITE_FIRST_PROP(writer, "at", message.lastUpdated());            
+        }
         JSON_WRITE_PROP(writer, "reason", message.lastUpdatedReason());
         if (allowViewIpAddress)
         {

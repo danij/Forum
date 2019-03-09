@@ -110,11 +110,6 @@ static void writeDiscussionThreads(const ThreadsCollection& collection, Retrieve
 
     writer.startObject();
 
-    if (0 == displayContext.pageNumber)
-    {
-        writePinnedDiscussionThreads(collection, writer, restriction);
-    }
-
     switch (by)
     {
     case RetrieveDiscussionThreadsBy::Name:
@@ -137,6 +132,11 @@ static void writeDiscussionThreads(const ThreadsCollection& collection, Retrieve
         writeEntitiesWithPagination(collection.byMessageCount(), displayContext.pageNumber, pageSize, ascending, "threads",
             writer, writeFilter, restriction);
         break;
+    }
+
+    if (0 == displayContext.pageNumber)
+    {
+        writePinnedDiscussionThreads(collection, writer, restriction);
     }
 
     writer.endObject();
