@@ -287,7 +287,7 @@ StatusCode MemoryRepositoryAttachment::canAddAttachment(OutStream& output) const
                        
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer << Json::propertySafeName("availableBytes", availableBytes);
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("availableBytes")) << availableBytes;
                                            });
                        });
     return status;
@@ -345,13 +345,13 @@ StatusCode MemoryRepositoryAttachment::addNewAttachment(StringView name, uint64_
 
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer << Json::propertySafeName("id", attachment->id());
-                                               writer << Json::propertySafeName("name", attachment->name().string());
-                                               writer << Json::propertySafeName("created", attachment->created());
-                                               writer << Json::propertySafeName("size", attachment->size());
-                                               writer << Json::propertySafeName("approved", attachment->approved());
-                                               writer << Json::propertySafeName("nrOfMessagesAttached", attachment->messages().size());
-                                               writer << Json::propertySafeName("nrOfGetRequests", attachment->nrOfGetRequests());
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << attachment->id();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << attachment->name().string();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << attachment->created();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("size")) << attachment->size();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("approved")) << attachment->approved();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("nrOfMessagesAttached")) << attachment->messages().size();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("nrOfGetRequests")) << attachment->nrOfGetRequests();
                                            });
                        });
     return status;

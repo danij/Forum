@@ -98,12 +98,11 @@ void ForumSearchUpdatePlugin::onAddNewDiscussionThread(const DiscussionThread& t
 {
     enqueueJson([&thread](JsonWriter& writer)
     {
-        writer
-            << objStart
-                << propertySafeName("type", "new thread")
-                << propertySafeName("id", thread.id().toStringDashed())
-                << propertySafeName("name", thread.name())
-            << objEnd;
+        writer.startObject();
+        writer.newPropertyRaw(JSON_RAW_PROP("type")) << "new thread";
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << thread.id().toStringDashed();
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << thread.name();
+        writer.endObject();
     });
 }
 
@@ -114,12 +113,11 @@ void ForumSearchUpdatePlugin::onChangeDiscussionThread(const DiscussionThread& t
 
     enqueueJson([&thread](JsonWriter& writer)
     {
-        writer
-            << objStart
-                << propertySafeName("type", "change thread name")
-                << propertySafeName("id", thread.id().toStringDashed())
-                << propertySafeName("name", thread.name())
-            << objEnd;
+        writer.startObject();
+        writer.newPropertyRaw(JSON_RAW_PROP("type")) << "change thread name";
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << thread.id().toStringDashed();
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << thread.name();
+        writer.endObject();
     });
 }
 
@@ -127,11 +125,10 @@ void ForumSearchUpdatePlugin::onDeleteDiscussionThread(const DiscussionThread& t
 {
     enqueueJson([&thread](JsonWriter& writer)
     {
-        writer
-            << objStart
-                << propertySafeName("type", "delete thread")
-                << propertySafeName("id", thread.id().toStringDashed())
-            << objEnd;
+        writer.startObject();
+        writer.newPropertyRaw(JSON_RAW_PROP("type")) << "delete thread";
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << thread.id().toStringDashed();
+        writer.endObject();
     });
 
     for (auto message : thread.messages().byId())
@@ -145,12 +142,11 @@ void ForumSearchUpdatePlugin::onAddNewDiscussionThreadMessage(const DiscussionTh
 {
     enqueueJson([&message](JsonWriter& writer)
     {
-        writer
-            << objStart
-                << propertySafeName("type", "new thread message")
-                << propertySafeName("id", message.id().toStringDashed())
-                << propertySafeName("content", message.content())
-            << objEnd;
+        writer.startObject();
+        writer.newPropertyRaw(JSON_RAW_PROP("type")) << "new thread message";
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << message.id().toStringDashed();
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("content")) << message.content();
+        writer.endObject();
     });
 }
 
@@ -161,12 +157,11 @@ void ForumSearchUpdatePlugin::onChangeDiscussionThreadMessage(const DiscussionTh
 
     enqueueJson([&message](JsonWriter& writer)
     {
-        writer
-            << objStart
-                << propertySafeName("type", "change thread message content")
-                << propertySafeName("id", message.id().toStringDashed())
-                << propertySafeName("content", message.content())
-            << objEnd;
+        writer.startObject();
+        writer.newPropertyRaw(JSON_RAW_PROP("type")) << "change thread message content";
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << message.id().toStringDashed();
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("content")) << message.content();
+        writer.endObject();
     });
 }
 
@@ -174,11 +169,10 @@ void ForumSearchUpdatePlugin::onDeleteDiscussionThreadMessage(const DiscussionTh
 {
     enqueueJson([&message](JsonWriter& writer)
     {
-        writer
-            << objStart
-                << propertySafeName("type", "delete thread message")
-                << propertySafeName("id", message.id().toStringDashed())
-            << objEnd;
+        writer.startObject();
+        writer.newPropertyRaw(JSON_RAW_PROP("type")) << "delete thread message";
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << message.id().toStringDashed();
+        writer.endObject();
     });
 }
 

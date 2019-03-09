@@ -26,6 +26,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "StringBuffer.h"
 
 #define JSON_RAW_PROP(x) "\"" x "\":"
+#define JSON_RAW_PROP_COMMA(x) ",\"" x "\":"
+
+#define JSON_WRITE_FIRST_PROP(writer, key, value) writer.newPropertyRaw(JSON_RAW_PROP(key)) << value
+#define JSON_WRITE_PROP(writer, key, value) writer.newPropertyRaw(JSON_RAW_PROP_COMMA(key)) << value
 
 namespace Json
 {
@@ -267,10 +271,6 @@ namespace Json
         template<size_t Length>
         JsonWriterBase& newPropertyRaw(const char(&name)[Length])
         {
-            if (isCommaNeeded())
-            {
-                writeChar(',');
-            }
             writeString<Length>(name);
 
             peekState().propertyNameAdded = 1;

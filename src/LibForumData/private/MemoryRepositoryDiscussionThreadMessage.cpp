@@ -229,10 +229,10 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessageRa
 
                           status.writeNow([&](auto& writer)
                                           {
-                                              writer << Json::propertySafeName("id", message.id());
-                                              writer << Json::propertySafeName("parentId", parentThread.id());
-                                              writer << Json::propertySafeName("rank", *rank);
-                                              writer << Json::propertySafeName("pageSize", pageSize);
+                                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << message.id();
+                                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("parentId")) << parentThread.id();
+                                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("rank")) << *rank;
+                                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("pageSize")) << pageSize;
                                           });
 
                           readEvents().onGetDiscussionThreadMessageRank(createObserverContext(currentUser), message);
@@ -330,9 +330,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addNewDiscussionMessageInThr
 
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer << Json::propertySafeName("id", message->id());
-                                               writer << Json::propertySafeName("parentId", thread.id());
-                                               writer << Json::propertySafeName("created", message->created());
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << message->id();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("parentId")) << thread.id();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << message->created();
                                            });
                        });
     return status;
@@ -1203,9 +1203,9 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::addCommentToDiscussionThread
 
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer << Json::propertySafeName("id", comment->id());
-                                               writer << Json::propertySafeName("messageId", (*messageIt)->id());
-                                               writer << Json::propertySafeName("created", comment->created());
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << comment->id();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("messageId")) << (*messageIt)->id();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << comment->created();
                                            });
                        });
     return status;

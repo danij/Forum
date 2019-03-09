@@ -65,7 +65,7 @@ void writePrivilegeValues(const Store& store, Enum maxValue, JsonWriter& writer,
         {
             writer.startObject();
             writer.newPropertyRaw(JSON_RAW_PROP("name")) << strings[i];
-            writer.newPropertyRaw(JSON_RAW_PROP("value")) << *value;
+            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("value")) << *value;
             writer.endObject();
         }
     }
@@ -76,7 +76,7 @@ void writePrivilegeValues(const Store& store, Enum maxValue, JsonWriter& writer,
 void MemoryRepositoryAuthorization::writeDiscussionThreadMessageRequiredPrivileges(
         const DiscussionThreadMessagePrivilegeStore& store, JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("discussionThreadMessagePrivileges"));
+    writer.newPropertyWithSafeName("discussionThreadMessagePrivileges");
     writePrivilegeValues(store, DiscussionThreadMessagePrivilege::COUNT, writer, DiscussionThreadMessagePrivilegeStrings,
                         [](const DiscussionThreadMessagePrivilegeStore& store, DiscussionThreadMessagePrivilege privilege)
                         {
@@ -87,7 +87,7 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadMessageRequiredPrivileg
 void MemoryRepositoryAuthorization::writeDiscussionThreadRequiredPrivileges(const DiscussionThreadPrivilegeStore& store,
                                                                             JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("discussionThreadPrivileges"));
+    writer.newPropertyWithSafeName("discussionThreadPrivileges");
     writePrivilegeValues(store, DiscussionThreadPrivilege::COUNT, writer, DiscussionThreadPrivilegeStrings,
                          [](const DiscussionThreadPrivilegeStore& store, DiscussionThreadPrivilege privilege)
                          {
@@ -98,7 +98,7 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadRequiredPrivileges(cons
 void MemoryRepositoryAuthorization::writeDiscussionTagRequiredPrivileges(const DiscussionTagPrivilegeStore& store,
                                                                          JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("discussionTagPrivileges"));
+    writer.newPropertyWithSafeName("discussionTagPrivileges");
     writePrivilegeValues(store, DiscussionTagPrivilege::COUNT, writer, DiscussionTagPrivilegeStrings,
                         [](const DiscussionTagPrivilegeStore& store, DiscussionTagPrivilege privilege)
                         {
@@ -109,7 +109,7 @@ void MemoryRepositoryAuthorization::writeDiscussionTagRequiredPrivileges(const D
 void MemoryRepositoryAuthorization::writeDiscussionCategoryRequiredPrivileges(const DiscussionCategoryPrivilegeStore& store,
                                                                               JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("discussionCategoryPrivileges"));
+    writer.newPropertyWithSafeName("discussionCategoryPrivileges");
     writePrivilegeValues(store, DiscussionCategoryPrivilege::COUNT, writer, DiscussionCategoryPrivilegeStrings,
                         [](const DiscussionCategoryPrivilegeStore& store, DiscussionCategoryPrivilege privilege)
                         {
@@ -120,7 +120,7 @@ void MemoryRepositoryAuthorization::writeDiscussionCategoryRequiredPrivileges(co
 void MemoryRepositoryAuthorization::writeForumWideRequiredPrivileges(const ForumWidePrivilegeStore& store,
                                                                      JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("forumWidePrivileges"));
+    writer.newPropertyWithSafeName("forumWidePrivileges");
     writePrivilegeValues(store, ForumWidePrivilege::COUNT, writer, ForumWidePrivilegeStrings,
                         [](const ForumWidePrivilegeStore& store, ForumWidePrivilege privilege)
                         {
@@ -131,7 +131,7 @@ void MemoryRepositoryAuthorization::writeForumWideRequiredPrivileges(const Forum
 void MemoryRepositoryAuthorization::writeForumWideDefaultPrivilegeLevels(const ForumWidePrivilegeStore& store,
                                                                          JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("forumWideDefaultLevels"));
+    writer.newPropertyWithSafeName("forumWideDefaultLevels");
     writer.startArray();
 
     for (EnumIntType i = 0; i < static_cast<EnumIntType>(ForumWideDefaultPrivilegeDuration::COUNT); ++i)
@@ -142,8 +142,8 @@ void MemoryRepositoryAuthorization::writeForumWideDefaultPrivilegeLevels(const F
         {
             writer.startObject();
             writer.newPropertyRaw(JSON_RAW_PROP("name")) << ForumWideDefaultPrivilegeDurationStrings[i];
-            writer.newPropertyRaw(JSON_RAW_PROP("value")) << value->value;
-            writer.newPropertyRaw(JSON_RAW_PROP("duration")) << value->duration;
+            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("value")) << value->value;
+            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("duration")) << value->duration;
             writer.endObject();
         }
     }
@@ -168,7 +168,7 @@ struct AssignedPrivilegeWriter final
 
         if (isAnonymousUserId(userId))
         {
-            writer_.newPropertyRaw(JSON_RAW_PROP("name")) << anonymousUser()->name();
+            writer_.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << anonymousUser()->name();
         }
         else
         {
@@ -176,13 +176,13 @@ struct AssignedPrivilegeWriter final
             const auto it = index.find(userId);
             if (it != index.end())
             {
-                writer_.newPropertyRaw(JSON_RAW_PROP("name")) << (**it).name();
+                writer_.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << (**it).name();
             }
         }
 
-        writer_.newPropertyRaw(JSON_RAW_PROP("value")) << privilegeValue;
-        writer_.newPropertyRaw(JSON_RAW_PROP("granted")) << grantedAt;
-        writer_.newPropertyRaw(JSON_RAW_PROP("expires")) << expiresAt;
+        writer_.newPropertyRaw(JSON_RAW_PROP_COMMA("value")) << privilegeValue;
+        writer_.newPropertyRaw(JSON_RAW_PROP_COMMA("granted")) << grantedAt;
+        writer_.newPropertyRaw(JSON_RAW_PROP_COMMA("expires")) << expiresAt;
         writer_.endObject();
     }
 private:
@@ -212,9 +212,9 @@ struct UserAssignedPrivilegeWriter final
         writer_.startObject();
         if (writeEntity_(collection_, restriction_, entityId, writer_))
         {
-            writer_.newPropertyRaw(JSON_RAW_PROP("value")) << privilegeValue;
-            writer_.newPropertyRaw(JSON_RAW_PROP("granted")) << grantedAt;
-            writer_.newPropertyRaw(JSON_RAW_PROP("expires")) << expiresAt;
+            writer_.newPropertyRaw(JSON_RAW_PROP_COMMA("value")) << privilegeValue;
+            writer_.newPropertyRaw(JSON_RAW_PROP_COMMA("granted")) << grantedAt;
+            writer_.newPropertyRaw(JSON_RAW_PROP_COMMA("expires")) << expiresAt;
         }
         writer_.endObject();
     }
@@ -235,7 +235,7 @@ static bool writeDiscussionThreadEntity(const EntityCollection& collection, cons
         if (restriction.isAllowed(thread, DiscussionThreadPrivilege::VIEW))
         {
             writer.newPropertyRaw(JSON_RAW_PROP("id")) << thread.id();
-            writer.newPropertyRaw(JSON_RAW_PROP("name")) << thread.name();
+            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << thread.name();
             return true;
         }
     }
@@ -253,7 +253,7 @@ static bool writeDiscussionTagEntity(const EntityCollection& collection, const S
         if (restriction.isAllowed(tag, DiscussionTagPrivilege::VIEW))
         {
             writer.newPropertyRaw(JSON_RAW_PROP("id")) << tag.id();
-            writer.newPropertyRaw(JSON_RAW_PROP("name")) << tag.name();
+            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << tag.name();
             return true;
         }
     }
@@ -271,7 +271,7 @@ static bool writeDiscussionCategoryEntity(const EntityCollection& collection, co
         if (restriction.isAllowed(category, DiscussionCategoryPrivilege::VIEW))
         {
             writer.newPropertyRaw(JSON_RAW_PROP("id")) << category.id();
-            writer.newPropertyRaw(JSON_RAW_PROP("name")) << category.name();
+            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << category.name();
             return true;
         }
     }
@@ -287,7 +287,7 @@ static bool writeForumWideEntity(const EntityCollection& /*collection*/, const S
 
 void writeAssignedPrivilegesExtra(JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("now")) << Context::getCurrentTime();
+    writer.newPropertyWithSafeName("now") << Context::getCurrentTime();
 }
 
 void MemoryRepositoryAuthorization::writeDiscussionThreadMessageAssignedPrivileges(const EntityCollection& collection, IdTypeRef id,
@@ -295,7 +295,7 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadMessageAssignedPrivileg
 {
     writeAssignedPrivilegesExtra(writer);
 
-    writer.newPropertyRaw(JSON_RAW_PROP("discussionThreadMessagePrivileges"));
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("discussionThreadMessagePrivileges"));
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionThreadMessagePrivileges(id,
@@ -309,7 +309,7 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadAssignedPrivileges(cons
 {
     writeAssignedPrivilegesExtra(writer);
 
-    writer.newPropertyRaw(JSON_RAW_PROP("discussionThreadPrivileges"));
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("discussionThreadPrivileges"));
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionThreadPrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -322,7 +322,7 @@ void MemoryRepositoryAuthorization::writeDiscussionTagAssignedPrivileges(const E
 {
     writeAssignedPrivilegesExtra(writer);
 
-    writer.newPropertyRaw(JSON_RAW_PROP("discussionTagPrivileges"));
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("discussionTagPrivileges"));
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionTagPrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -335,7 +335,7 @@ void MemoryRepositoryAuthorization::writeDiscussionCategoryAssignedPrivileges(co
 {
     writeAssignedPrivilegesExtra(writer);
 
-    writer.newPropertyRaw(JSON_RAW_PROP("discussionCategoryPrivileges"));
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("discussionCategoryPrivileges"));
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionCategoryPrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -348,7 +348,7 @@ void MemoryRepositoryAuthorization::writeForumWideAssignedPrivileges(const Entit
 {
     writeAssignedPrivilegesExtra(writer);
 
-    writer.newPropertyRaw(JSON_RAW_PROP("forumWidePrivileges"));
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("forumWidePrivileges"));
     writer.startArray();
 
     collection.grantedPrivileges().enumerateForumWidePrivileges(id, AssignedPrivilegeWriter(writer, collection));
@@ -360,7 +360,9 @@ void MemoryRepositoryAuthorization::writeDiscussionThreadUserAssignedPrivileges(
                                                                                 const SerializationRestriction& restriction,
                                                                                 IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("discussionThreadPrivileges"));
+    writeAssignedPrivilegesExtra(writer);
+    
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("discussionThreadPrivileges"));
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionThreadPrivilegesAssignedToUser(userId,
@@ -373,7 +375,9 @@ void MemoryRepositoryAuthorization::writeDiscussionTagUserAssignedPrivileges(con
                                                                              const SerializationRestriction& restriction,
                                                                              IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("discussionTagPrivileges"));
+    writeAssignedPrivilegesExtra(writer);
+    
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("discussionTagPrivileges"));
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionTagPrivilegesAssignedToUser(userId,
@@ -386,7 +390,9 @@ void MemoryRepositoryAuthorization::writeDiscussionCategoryUserAssignedPrivilege
                                                                                   const SerializationRestriction& restriction,
                                                                                   IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("discussionCategoryPrivileges"));
+    writeAssignedPrivilegesExtra(writer);
+
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("discussionCategoryPrivileges"));
     writer.startArray();
 
     collection.grantedPrivileges().enumerateDiscussionCategoryPrivilegesAssignedToUser(userId,
@@ -399,7 +405,9 @@ void MemoryRepositoryAuthorization::writeForumWideUserAssignedPrivileges(const E
                                                                          const SerializationRestriction& restriction,
                                                                          IdTypeRef userId, JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("forumWidePrivileges"));
+    writeAssignedPrivilegesExtra(writer);
+
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("forumWidePrivileges"));
     writer.startArray();
 
     collection.grantedPrivileges().enumerateForumWidePrivilegesAssignedToUser(userId,
@@ -411,35 +419,35 @@ void MemoryRepositoryAuthorization::writeForumWideUserAssignedPrivileges(const E
 static void writeAllowPrivilegeChange(const IDiscussionThreadMessageAuthorization& authorization, 
                                       const DiscussionThreadMessage& threadMessage, const User& currentUser, JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("allowAdjustPrivilege")) <<
+    writer.newPropertyWithSafeName("allowAdjustPrivilege") <<
         (AuthorizationStatus::OK == authorization.getAllowDiscussionThreadMessagePrivilegeChange(currentUser, threadMessage));
 }
 
 static void writeAllowPrivilegeChange(const IDiscussionThreadAuthorization& authorization, 
                                       const DiscussionThread& thread, const User& currentUser, JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("allowAdjustPrivilege")) <<
+    writer.newPropertyWithSafeName("allowAdjustPrivilege") <<
         (AuthorizationStatus::OK == authorization.getAllowDiscussionThreadPrivilegeChange(currentUser, thread));
 }
 
 static void writeAllowPrivilegeChange(const IDiscussionTagAuthorization& authorization, 
                                       const DiscussionTag& tag, const User& currentUser, JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("allowAdjustPrivilege")) <<
+    writer.newPropertyWithSafeName("allowAdjustPrivilege") <<
         (AuthorizationStatus::OK == authorization.getAllowDiscussionTagPrivilegeChange(currentUser, tag));
 }
 
 static void writeAllowPrivilegeChange(const IDiscussionCategoryAuthorization& authorization, 
                                       const DiscussionCategory& category, const User& currentUser, JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("allowAdjustPrivilege")) <<
+    writer.newPropertyWithSafeName("allowAdjustPrivilege") <<
         (AuthorizationStatus::OK == authorization.getAllowDiscussionCategoryPrivilegeChange(currentUser, category));
 }
 
 static void writeAllowPrivilegeChange(const IForumWideAuthorization& authorization, 
                                       const User& currentUser, JsonWriter& writer)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("allowAdjustPrivilege")) <<
+    writer.newPropertyWithSafeName("allowAdjustPrivilege") <<
         (AuthorizationStatus::OK == authorization.getAllowForumWidePrivilegeChange(currentUser));
 }
 

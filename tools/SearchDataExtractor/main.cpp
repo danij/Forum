@@ -498,12 +498,11 @@ void SearchDataExtractor::onAddNewDiscussionThread(const IdType& id, std::string
     {
         writeJson([&id, name](JsonWriter& writer)
         {
-            writer
-                << objStart
-                    << propertySafeName("type", "new thread")
-                    << propertySafeName("id", id)
-                    << propertySafeName("name", name)
-                << objEnd;
+            writer.startObject();
+            writer.newPropertyRaw(JSON_RAW_PROP("type")) << "new thread";
+            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << id;
+            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << name;
+            writer.endObject();
         });
     }
 }
@@ -512,12 +511,11 @@ void SearchDataExtractor::onChangeDiscussionThreadName(const IdType& id, std::st
 {
     writeJson([&id, newName](JsonWriter& writer)
     {
-        writer
-            << objStart
-                << propertySafeName("type", "change thread name")
-                << propertySafeName("id", id)
-                << propertySafeName("name", newName)
-            << objEnd;
+        writer.startObject();
+        writer.newPropertyRaw(JSON_RAW_PROP("type")) << "change thread name";
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << id;
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << newName;
+        writer.endObject();
     });
 }
 
@@ -528,11 +526,10 @@ void SearchDataExtractor::onDeleteDiscussionThread(const IdType& id)
 
     writeJson([&id](JsonWriter& writer)
     {
-        writer
-            << objStart
-                << propertySafeName("type", "delete thread")
-                << propertySafeName("id", id)
-            << objEnd;
+        writer.startObject();
+        writer.newPropertyRaw(JSON_RAW_PROP("type")) << "delete thread";
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << id;
+        writer.endObject();
     });
 
     for (const auto& messageId : findMessagesOfThread->second)
@@ -561,12 +558,11 @@ void SearchDataExtractor::onAddNewDiscussionThreadMessage(const IdType& id, cons
 
     writeJson([&id, content](JsonWriter& writer)
     {
-        writer
-            << objStart
-                << propertySafeName("type", "new thread message")
-                << propertySafeName("id", id)
-                << propertySafeName("content", content)
-            << objEnd;
+        writer.startObject();
+        writer.newPropertyRaw(JSON_RAW_PROP("type")) << "new thread message";
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << id;
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("content")) << content;
+        writer.endObject();
     });
 }
 
@@ -574,12 +570,11 @@ void SearchDataExtractor::onChangeDiscussionThreadMessageContent(const IdType& i
 {
     writeJson([&id, newContent](JsonWriter& writer)
     {
-        writer
-            << objStart
-            << propertySafeName("type", "change thread message content")
-            << propertySafeName("id", id)
-            << propertySafeName("content", newContent)
-            << objEnd;
+        writer.startObject();
+        writer.newPropertyRaw(JSON_RAW_PROP("type")) << "change thread message content";
+        writer.newPropertyRaw(JSON_RAW_PROP("id")) << id;
+        writer.newPropertyRaw(JSON_RAW_PROP("content")) << newContent;
+        writer.endObject();
     });
 }
 
@@ -589,11 +584,10 @@ void SearchDataExtractor::onDeleteDiscussionThreadMessage(const IdType& id)
     {
         writeJson([&id](JsonWriter& writer)
         {
-            writer
-                << objStart
-                << propertySafeName("type", "delete thread message")
-                << propertySafeName("id", id)
-                << objEnd;
+            writer.startObject();
+            writer.newPropertyRaw(JSON_RAW_PROP("type")) << "delete thread message";
+            writer.newPropertyRaw(JSON_RAW_PROP("id")) << id;
+            writer.endObject();
         });
     }
 }

@@ -65,7 +65,7 @@ inline void writePinnedDiscussionThreads<DiscussionThreadCollectionWithHashedIdA
         (const DiscussionThreadCollectionWithHashedIdAndPinOrder& collection, Json::JsonWriter& writer,
          SerializationRestriction& restriction)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("pinned_threads"));
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("pinned_threads"));
     writer.startArray();
 
     auto it = collection.byPinDisplayOrder().rbegin();
@@ -331,8 +331,8 @@ StatusCode MemoryRepositoryDiscussionThread::searchDiscussionThreadsByName(Strin
 
                           status.writeNow([&](auto& writer)
                                           {
-                                              writer << Json::propertySafeName("index", boundIndex);
-                                              writer << Json::propertySafeName("pageSize", pageSize);
+                                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("index")) << boundIndex;
+                                              writer.newPropertyRaw(JSON_RAW_PROP_COMMA("pageSize")) << pageSize;
                                           });
                       });
     return status;
@@ -601,9 +601,9 @@ StatusCode MemoryRepositoryDiscussionThread::addNewDiscussionThread(StringView n
                            }
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer << Json::propertySafeName("id", thread.id());
-                                               writer << Json::propertySafeName("name", thread.name().string());
-                                               writer << Json::propertySafeName("created", thread.created());
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << thread.id();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << thread.name().string();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << thread.created();
                                            });
                        });
     return status;

@@ -45,9 +45,9 @@ BOOST_AUTO_TEST_CASE( Json_serialization_works_for_integers )
 
     writer.startObject();
     writer.newPropertyWithSafeName("prop1") << -1234;
-    writer.newPropertyRaw(JSON_RAW_PROP("prop2")) << 0;
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("prop2")) << 0;
     writer.newPropertyWithSafeName("prop3") << 2147483647;
-    writer.newPropertyRaw(JSON_RAW_PROP("prop4")) << static_cast<int8_t>(-128);
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("prop4")) << static_cast<int8_t>(-128);
     writer.newPropertyWithSafeName("prop5") << static_cast<int32_t>(std::numeric_limits<int32_t>::min());
     writer.endObject();
 

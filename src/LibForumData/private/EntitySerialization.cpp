@@ -32,15 +32,14 @@ thread_local SerializationSettings Entities::serializationSettings = {};
 
 JsonWriter& Json::operator<<(JsonWriter& writer, const EntitiesCount& value)
 {
-    writer
-        << objStart
-            << propertySafeName("users", value.nrOfUsers)
-            << propertySafeName("discussionThreads", value.nrOfDiscussionThreads)
-            << propertySafeName("discussionMessages", value.nrOfDiscussionMessages)
-            << propertySafeName("discussionTags", value.nrOfDiscussionTags)
-            << propertySafeName("discussionCategories", value.nrOfDiscussionCategories)
-            << propertySafeName("visitors", value.nrOfVisitors)
-        << objEnd;
+    writer.startObject();
+    writer.newPropertyRaw(JSON_RAW_PROP("users")) << value.nrOfUsers;
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("discussionThreads")) << value.nrOfDiscussionThreads;
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("discussionMessages")) << value.nrOfDiscussionMessages;
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("discussionTags")) << value.nrOfDiscussionTags;
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("discussionCategories")) << value.nrOfDiscussionCategories;
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("visitors")) << value.nrOfVisitors;
+    writer.endObject();
     return writer;
 }
 
@@ -55,49 +54,48 @@ JsonWriter& Json::operator<<(JsonWriter& writer, const UuidString& id)
 
 JsonWriter& Entities::serialize(JsonWriter& writer, const User& user, const SerializationRestriction& restriction)
 {
-    writer
-        << objStart
-            << propertySafeName("id", user.id())
-            << propertySafeName("name", user.name());
+    writer.startObject();
+    writer.newPropertyRaw(JSON_RAW_PROP("id")) << user.id();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << user.name();
 
     const auto sameUser = Context::getCurrentUserId() == user.id();
 
     if (sameUser || restriction.isAllowed(ForumWidePrivilege::GET_USER_INFO))
     {
-        writer << propertySafeName("info", user.info());
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("info")) << user.info();
     }
 
     if (sameUser || restriction.isAllowed(ForumWidePrivilege::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER))
     {
-        writer << propertySafeName("subscribedThreadCount", user.subscribedThreads().count());
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("subscribedThreadCount")) << user.subscribedThreads().count();
     }
 
     if (sameUser || restriction.isAllowed(ForumWidePrivilege::GET_ATTACHMENTS_OF_USER))
     {
-        writer << propertySafeName("attachmentCount", user.attachments().count());
-        writer << propertySafeName("attachmentTotalSize", user.attachments().totalSize());
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("attachmentCount")) << user.attachments().count();
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("attachmentTotalSize")) << user.attachments().totalSize();
     }
 
     if (user.attachmentQuota() && (sameUser || restriction.isAllowed(ForumWidePrivilege::CHANGE_USER_ATTACHMENT_QUOTA)))
     {
-        writer << propertySafeName("attachmentQuota", *user.attachmentQuota());
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("attachmentQuota")) << *user.attachmentQuota();
     }
 
     if ((0 == user.lastSeen()) || user.showInOnlineUsers())
     {
-        writer << propertySafeName("lastSeen", user.lastSeen());
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("lastSeen")) << user.lastSeen();
     }
 
-    writer
-            << propertySafeName("title", user.title())
-            << propertySafeName("signature", user.signature())
-            << propertySafeName("hasLogo", user.hasLogo())
-            << propertySafeName("created", user.created())
-            << propertySafeName("threadCount", user.threads().count())
-            << propertySafeName("messageCount", user.threadMessages().byId().size())
-            << propertySafeName("receivedUpVotes", user.receivedUpVotes())
-            << propertySafeName("receivedDownVotes", user.receivedDownVotes())
-        << objEnd;
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("title")) << user.title();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("signature")) << user.signature();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("hasLogo")) << user.hasLogo();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << user.created();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("threadCount")) << user.threads().count();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("messageCount")) << user.threadMessages().byId().size();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("receivedUpVotes")) << user.receivedUpVotes();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("receivedDownVotes")) << user.receivedDownVotes();
+
+    writer.endObject();
     return writer;
 }
 
@@ -105,7 +103,7 @@ JsonWriter& writeVisitDetails(JsonWriter& writer, const VisitDetails& visitDetai
 {
     //does not currently start a new object
     char buffer[IpAddress::MaxIPv6CharacterCount + 1];
-    writer.newPropertyRaw(JSON_RAW_PROP("ip"));
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("ip"));
 
     const auto addressLength = visitDetails.ip.toString(buffer, std::size(buffer));
 
@@ -140,26 +138,25 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
             ? *serializationSettings.allowDisplayDiscussionThreadMessageComments
             : restriction.isAllowed(message, DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS);
 
-    writer
-        << objStart
-            << propertySafeName("id", message.id())
-            << propertySafeName("created", message.created())
-            << propertySafeName("approved", message.approved());
+    writer.startObject();
+    writer.newPropertyRaw(JSON_RAW_PROP("id")) << message.id();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << message.created();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("approved")) << message.approved();
 
     if (allowViewCommentCount)
     {
-        writer << propertySafeName("commentsCount", message.comments().count())
-               << propertySafeName("solvedCommentsCount", message.solvedCommentsCount());
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("commentsCount")) << message.comments().count();
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("solvedCommentsCount")) << message.solvedCommentsCount();
     }
 
     auto content = message.content();
-    writer.newPropertyRaw(JSON_RAW_PROP("content")).writeEscapedString(content.data(), content.size());
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("content")).writeEscapedString(content.data(), content.size());
 
     if (allowViewUser && ( ! serializationSettings.hideDiscussionThreadMessageCreatedBy))
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyRaw(JSON_RAW_PROP("createdBy"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("createdBy"));
         serialize(writer, message.createdBy(), restriction);
     }
     if ( ! serializationSettings.hideDiscussionThreadMessageParentThread)
@@ -170,23 +167,23 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
         BoolTemporaryChanger _(serializationSettings.hideDiscussionThreadMessages, true);
         BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyRaw(JSON_RAW_PROP("parentThread"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("parentThread"));
         serialize(writer, *parentThread, restriction);
     }
 
     if (message.lastUpdated())
     {
-        writer.newPropertyRaw(JSON_RAW_PROP("lastUpdated"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("lastUpdated"));
         writer.startObject();
 
         UserConstPtr by = message.lastUpdatedBy();
         if (by && allowViewUser)
         {
-            writer << propertySafeName("userId", by->id())
-                   << propertySafeName("userName", by->name());
+            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("userId")) << by->id();
+            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("userName")) << by->name();
         }
-        writer << propertySafeName("at", message.lastUpdated())
-               << propertySafeName("reason", message.lastUpdatedReason());
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("at")) << message.lastUpdated();
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("reason")) << message.lastUpdatedReason();
         if (allowViewIpAddress)
         {
             writeVisitDetails(writer, message.lastUpdatedDetails());
@@ -205,8 +202,8 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
 
     if (allowViewVotes)
     {
-        writer << propertySafeName("nrOfUpVotes", upVotes.size());
-        writer << propertySafeName("nrOfDownVotes", downVotes.size());
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("nrOfUpVotes")) << upVotes.size();
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("nrOfDownVotes")) << downVotes.size();
     }
     auto voteStatus = 0;
     {
@@ -220,11 +217,11 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
             voteStatus = 1;
         }
     }
-    writer << propertySafeName("voteStatus", voteStatus);
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("voteStatus")) << voteStatus;
 
     if (( ! message.attachments().empty()) && restriction.isAllowedToViewMessageAttachments(message))
     {
-        writer.newPropertyRaw(JSON_RAW_PROP("attachments"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("attachments"));
         writer.startArray();
 
         const auto allowViewAllAttachments = restriction.isAllowedToViewAnyAttachment();
@@ -254,11 +251,10 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThreadMessag
 JsonWriter& Entities::serialize(JsonWriter& writer, const PrivateMessage& message,
                                 const SerializationRestriction& restriction)
 {
-    writer
-        << objStart
-            << propertySafeName("id", message.id())
-            << propertySafeName("created", message.created())
-            << propertySafeName("content", message.content());
+    writer.startObject();
+    writer.newPropertyRaw(JSON_RAW_PROP("id")) << message.id();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << message.created();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("content")) << message.content();
 
     if (serializationSettings.allowDisplayPrivateMessageIpAddress)
     {
@@ -269,7 +265,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const PrivateMessage& messag
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyRaw(JSON_RAW_PROP("source"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("source"));
         serialize(writer, message.source(), restriction);
     }
 
@@ -277,7 +273,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const PrivateMessage& messag
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyRaw(JSON_RAW_PROP("destination"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("destination"));
         serialize(writer, message.destination(), restriction);
     }
 
@@ -288,7 +284,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const PrivateMessage& messag
 static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage& latestMessage,
                                const SerializationRestriction& restriction)
 {
-    writer.newPropertyRaw(JSON_RAW_PROP("latestMessage"));
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("latestMessage"));
     
     if ( ! restriction.isAllowedToViewMessage(latestMessage))
     {
@@ -299,19 +295,19 @@ static void writeLatestMessage(JsonWriter& writer, const DiscussionThreadMessage
     auto parentThread = latestMessage.parentThread();
     assert(parentThread);
     
-    writer << objStart
-        << propertySafeName("id", latestMessage.id())
-        << propertySafeName("created", latestMessage.created())
-        << propertySafeName("approved", latestMessage.approved())
-        << propertySafeName("threadId", parentThread->id())
-        << propertySafeName("threadName", parentThread->name());
+    writer.startObject();
+    writer.newPropertyRaw(JSON_RAW_PROP("id")) << latestMessage.id();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << latestMessage.created();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("approved")) << latestMessage.approved();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("threadId")) << parentThread->id();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("threadName")) << parentThread->name();
 
     auto content = latestMessage.content();
-    writer.newPropertyRaw(JSON_RAW_PROP("content")).writeEscapedString(content.data(), content.size());
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("content")).writeEscapedString(content.data(), content.size());
 
     if (restriction.isAllowed(latestMessage, DiscussionThreadMessagePrivilege::VIEW_CREATOR_USER))
     {
-        writer.newPropertyRaw(JSON_RAW_PROP("createdBy"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("createdBy"));
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
         serialize(writer, latestMessage.createdBy(), restriction);
     }
@@ -338,27 +334,26 @@ static void writeLatestMessage(JsonWriter& writer, const ThreadCollection& threa
 JsonWriter& Entities::serialize(JsonWriter& writer, const MessageComment& comment,
                                 const SerializationRestriction& restriction)
 {
-    writer
-        << objStart
-        << propertySafeName("id", comment.id())
-        << propertySafeName("created", comment.created())
-        << propertySafeName("solved", comment.solved());
+    writer.startObject();
+    writer.newPropertyRaw(JSON_RAW_PROP("id")) << comment.id();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << comment.created();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("solved")) << comment.solved();
 
     auto content = comment.content();
-    writer.newPropertyRaw(JSON_RAW_PROP("content")).writeEscapedString(content.data(), content.size());
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("content")).writeEscapedString(content.data(), content.size());
 
     writeVisitDetails(writer, comment.creationDetails());
 
     if ( ! serializationSettings.hideMessageCommentMessage)
     {
-        writer.newPropertyRaw(JSON_RAW_PROP("message"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("message"));
         serialize(writer, comment.parentMessage(), restriction);
     }
     if ( ! serializationSettings.hideMessageCommentUser)
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyRaw(JSON_RAW_PROP("createdBy"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("createdBy"));
         serialize(writer, comment.createdBy(), restriction);
     }
 
@@ -374,9 +369,9 @@ void writeDiscussionThreadMessages(const Collection& collection, const int_fast3
 {
     auto totalCount = static_cast<int_fast32_t>(collection.size());
 
-    writer << propertySafeName("totalCount", totalCount)
-           << propertySafeName("pageSize", pageSize)
-           << propertySafeName("page", pageNumber);
+    writer.newPropertyWithSafeName("totalCount") << totalCount;
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("pageSize")) << pageSize;
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("page")) << pageNumber;
 
     static thread_local std::vector<DiscussionThreadMessagePrivilegeCheck> privilegeChecks(100);
 
@@ -447,28 +442,27 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
 {
     if ( ! restriction.isAllowedToViewThread(thread)) return writer.null();
 
-    writer
-        << objStart
-            << propertySafeName("id", thread.id())
-            << propertySafeName("name", thread.name())
-            << propertySafeName("created", thread.created())
-            << propertySafeName("approved", thread.approved())
-            << propertySafeName("latestVisibleChangeAt", thread.latestVisibleChange())
-            << propertySafeName("pinned", thread.pinDisplayOrder() > 0)
-            << propertySafeName("pinDisplayOrder", thread.pinDisplayOrder())
-            << propertySafeName("subscribedUsersCount", thread.subscribedUsersCount());
+    writer.startObject();
+    writer.newPropertyRaw(JSON_RAW_PROP("id")) << thread.id();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << thread.name();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << thread.created();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("approved")) << thread.approved();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("latestVisibleChangeAt")) << thread.latestVisibleChange();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("pinned")) << (thread.pinDisplayOrder() > 0);
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("pinDisplayOrder")) << thread.pinDisplayOrder();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("subscribedUsersCount")) << thread.subscribedUsersCount();
 
     auto currentUser = serializationSettings.currentUser;
 
     if (currentUser)
     {
-        writer << propertySafeName("subscribedToThread",
-            thread.subscribedUsers().find(currentUser->id()) != thread.subscribedUsers().end());
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("subscribedToThread")) <<
+            (thread.subscribedUsers().find(currentUser->id()) != thread.subscribedUsers().end());
         
         const auto latestVisitedPage = currentUser->latestPageVisited(thread.id());
         if (latestVisitedPage > 0)
         {
-            writer << propertySafeName("latestVisitedPage", latestVisitedPage);
+            writer.newPropertyRaw(JSON_RAW_PROP_COMMA("latestVisitedPage")) << latestVisitedPage;
         }
     }
 
@@ -476,14 +470,14 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyRaw(JSON_RAW_PROP("createdBy"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("createdBy"));
         serialize(writer, thread.createdBy(), restriction);
     }
 
     const auto& messagesIndex = thread.messages().byCreated();
     const auto messageCount = messagesIndex.size();
 
-    writer << propertySafeName("messageCount", messageCount);
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("messageCount")) << messageCount;
 
     if (messageCount && ! serializationSettings.hideLatestMessage)
     {
@@ -501,7 +495,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
     }
     if ( ! serializationSettings.hideVisitedThreadSinceLastChange)
     {
-        writer << propertySafeName("visitedSinceLastChange", serializationSettings.visitedThreadSinceLastChange);
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("visitedSinceLastChange")) << serializationSettings.visitedThreadSinceLastChange;
     }
 
     {
@@ -509,7 +503,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
         BoolTemporaryChanger __(serializationSettings.hideLatestMessage, true);
         BoolTemporaryChanger ___(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyRaw(JSON_RAW_PROP("tags"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("tags"));
         writer << arrayStart;
         for (auto tag : thread.tags())
         {
@@ -523,7 +517,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
         BoolTemporaryChanger ___(serializationSettings.hideLatestMessage, true);
         BoolTemporaryChanger ____(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyRaw(JSON_RAW_PROP("categories"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("categories"));
         writer << arrayStart;
         for (auto category : thread.categories())
         {
@@ -531,9 +525,9 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
         }
         writer << arrayEnd;
     }
-    writer << propertySafeName("lastUpdated", thread.lastUpdated())
-           << propertySafeName("visited", thread.visited().load())
-           << propertySafeName("voteScore", thread.voteScore());
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("lastUpdated")) << thread.lastUpdated();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("visited")) << thread.visited().load();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("voteScore")) << thread.voteScore();
 
     if ( ! serializationSettings.hidePrivileges)
     {
@@ -550,12 +544,12 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag,
 {
     if ( ! restriction.isAllowed(tag)) return writer.null();
 
-    writer << objStart
-        << propertySafeName("id", tag.id())
-        << propertySafeName("name", tag.name())
-        << propertySafeName("created", tag.created())
-        << propertySafeName("threadCount", tag.threads().count())
-        << propertySafeName("messageCount", tag.messageCount());
+    writer.startObject();
+    writer.newPropertyRaw(JSON_RAW_PROP("id")) << tag.id();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << tag.name();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << tag.created();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("threadCount")) << tag.threads().count();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("messageCount")) << tag.messageCount();
 
     if ( ! serializationSettings.hideLatestMessage)
     {
@@ -569,7 +563,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionTag& tag,
         BoolTemporaryChanger __(serializationSettings.hideDiscussionCategoryParent, true);
         BoolTemporaryChanger ___(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyRaw(JSON_RAW_PROP("categories"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("categories"));
         writer << arrayStart;
         for (auto category : tag.categories())
         {
@@ -593,16 +587,16 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
 {
     if ( ! restriction.isAllowed(category)) return writer.null();
 
-    writer << objStart
-        << propertySafeName("id", category.id())
-        << propertySafeName("name", category.name())
-        << propertySafeName("description", category.description())
-        << propertySafeName("displayOrder", category.displayOrder())
-        << propertySafeName("created", category.created())
-        << propertySafeName("threadCount", category.threads().count())
-        << propertySafeName("messageCount", category.messageCount())
-        << propertySafeName("threadTotalCount", category.threadTotalCount())
-        << propertySafeName("messageTotalCount", category.messageTotalCount());
+    writer.startObject();
+    writer.newPropertyRaw(JSON_RAW_PROP("id")) << category.id();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << category.name();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("description")) << category.description();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("displayOrder")) << category.displayOrder();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << category.created();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("threadCount")) << category.threads().count();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("messageCount")) << category.messageCount();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("threadTotalCount")) << category.threadTotalCount();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("messageTotalCount")) << category.messageTotalCount();
 
     if ( ! serializationSettings.hideLatestMessage)
     {
@@ -650,7 +644,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
         {
             if (serializationSettings.onlySendCategoryParentId)
             {
-                writer.newPropertyRaw(JSON_RAW_PROP("parentId")) << parent->id();
+                writer.newPropertyRaw(JSON_RAW_PROP_COMMA("parentId")) << parent->id();
             }
             else
             {
@@ -658,7 +652,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
                 BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
 
                 depth += 1;
-                writer.newPropertyRaw(JSON_RAW_PROP("parent"));
+                writer.newPropertyRaw(JSON_RAW_PROP_COMMA("parent"));
                 serialize(writer, *parent, restriction);
             }
         }
@@ -678,14 +672,14 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionCategory& ca
 JsonWriter& Entities::serialize(JsonWriter& writer, const Attachment& attachment,
                                 const SerializationRestriction& restriction)
 {
-    writer << objStart
-        << propertySafeName("id", attachment.id())
-        << propertySafeName("created", attachment.created())
-        << propertySafeName("name", attachment.name())
-        << propertySafeName("size", attachment.size())
-        << propertySafeName("approved", attachment.approved())
-        << propertySafeName("nrOfMessagesAttached", attachment.messages().size())
-        << propertySafeName("nrOfGetRequests", attachment.nrOfGetRequests());
+    writer.startObject();
+    writer.newPropertyRaw(JSON_RAW_PROP("id")) << attachment.id();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("created")) << attachment.created();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << attachment.name();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("size")) << attachment.size();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("approved")) << attachment.approved();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("nrOfMessagesAttached")) << attachment.messages().size();
+    writer.newPropertyRaw(JSON_RAW_PROP_COMMA("nrOfGetRequests")) << attachment.nrOfGetRequests();
 
     if (serializationSettings.allowDisplayAttachmentIpAddress)
     {
@@ -696,11 +690,10 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const Attachment& attachment
     {
         BoolTemporaryChanger _(serializationSettings.hidePrivileges, true);
 
-        writer.newPropertyRaw(JSON_RAW_PROP("createdBy"));
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("createdBy"));
         serialize(writer, attachment.createdBy(), restriction);
     }
 
-    writer
-        << objEnd;
+    writer.endObject();
     return writer;
 }

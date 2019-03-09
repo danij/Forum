@@ -84,9 +84,9 @@ namespace Forum::Helpers
     {
         auto totalCount = static_cast<int_fast32_t>(collection.size());
 
-        writer << Json::propertySafeName("totalCount", totalCount)
-               << Json::propertySafeName("pageSize", pageSize)
-               << Json::propertySafeName("page", pageNumber);
+        writer.newPropertyRaw(JSON_RAW_PROP("totalCount")) << totalCount;
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("pageSize")) << pageSize;
+        writer.newPropertyRaw(JSON_RAW_PROP_COMMA("page")) << pageNumber;
 
         writer.newPropertyWithSafeName(propertyName, PropertyNameSize - 1);
         writer.startArray();
@@ -246,9 +246,9 @@ namespace Forum::Helpers
 
             Json::JsonWriter writer(output_);
 
-            writer << Json::objStart
-                   << Json::propertySafeName("status", statusCode_)
-                   << Json::objEnd;
+            writer.startObject();
+            writer.newPropertyRaw(JSON_RAW_PROP("status")) << statusCode_;
+            writer.endObject();
         }
 
         /**
@@ -298,12 +298,12 @@ namespace Forum::Helpers
         {
             Json::JsonWriter writer(output_);
 
-            writer << Json::objStart;
-            writer << Json::propertySafeName("status", statusCode_);
+            writer.startObject();
+            writer.newPropertyRaw(JSON_RAW_PROP("status")) << statusCode_;
 
             extra(writer);
 
-            writer << Json::objEnd;
+            writer.endObject();
 
             //prevent writing again on destructor call
             enabled_ = false;

@@ -242,9 +242,9 @@ StatusCode MemoryRepositoryDiscussionCategory::addNewDiscussionCategory(StringVi
 
                            status.writeNow([&](auto& writer)
                                            {
-                                               writer << Json::propertySafeName("id", category->id());
-                                               writer << Json::propertySafeName("name", category->name().string());
-                                               writer << Json::propertySafeName("parentId", setParentId);
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("id")) << category->id();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("name")) << category->name().string();
+                                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("parentId")) << setParentId;
                                            });
                        });
     return status;
