@@ -1012,15 +1012,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         Context::setCurrentUserId(currentUserId);
         Context::setCurrentUserIpAddress(readAndIncrementBuffer<IpAddress>(data, size));
 
-        const auto it = usersLastSeen_.find(currentUserId);
-        if (it != usersLastSeen_.end())
-        {
-            it->second = currentTimestamp_;
-        }
-        else
-        {
-            usersLastSeen_.insert(std::make_pair(currentUserId, currentTimestamp_));
-        }
+        usersLastSeen_[currentUserId] = currentTimestamp_;
 
         return true;
     }
