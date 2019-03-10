@@ -215,11 +215,6 @@ void DiscussionThreadCollectionWithHashedId::stopBatchInsert()
     onStopBatchInsert();
 }
 
-static DiscussionThreadPtr GetPtrFromPair(const std::pair<IdType, DiscussionThreadPtr>& pair)
-{
-    return pair.second;
-}
-
 void DiscussionThreadCollectionWithHashedId::onStopBatchInsert()
 {
     const auto valuesBegin = byId_.begin();
