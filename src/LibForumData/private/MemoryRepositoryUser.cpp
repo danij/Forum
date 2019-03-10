@@ -185,12 +185,14 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
                 pageSize, ascending, restriction);
             break;
         case RetrieveUsersBy::ThreadCount:
+            //collection is sorted in greater order
             writeEntitiesWithPagination(collection.users().byThreadCount(), "users", output, displayContext.pageNumber,
-                pageSize, ascending, restriction);
+                pageSize, ! ascending, restriction);
             break;
         case RetrieveUsersBy::MessageCount:
+            //collection is sorted in greater order
             writeEntitiesWithPagination(collection.users().byMessageCount(), "users", output, displayContext.pageNumber,
-                pageSize, ascending, restriction);
+                pageSize, ! ascending, restriction);
             break;
         }
 

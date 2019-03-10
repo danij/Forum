@@ -87,10 +87,10 @@ namespace Forum::Entities
         RANKED_COLLECTION(User, lastSeen) byLastSeen_;
         RANKED_COLLECTION_ITERATOR(byLastSeen_) byLastSeenUpdateIt_;
 
-        RANKED_COLLECTION(User, threadCount) byThreadCount_;
-        RANKED_COLLECTION_ITERATOR(byThreadCount_) byThreadCountUpdateIt_;
+        SORTED_VECTOR_COLLECTION_GREATER(User, threadCount) byThreadCount_;
+        SORTED_VECTOR_COLLECTION_ITERATOR(byThreadCount_) byThreadCountUpdateIt_;
 
-        RANKED_COLLECTION(User, messageCount) byMessageCount_;
-        RANKED_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
+        SORTED_VECTOR_COLLECTION_GREATER(User, messageCount) byMessageCount_;
+        SORTED_VECTOR_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
     };
 }

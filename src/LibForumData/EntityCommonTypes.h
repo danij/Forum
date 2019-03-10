@@ -101,6 +101,9 @@ namespace Forum::Entities
 #define GET_COMPARER(Getter) BOOST_PP_CAT(LessPtr_, Getter)
 #define GET_COMPARER_FOR(T, Getter) BOOST_PP_CAT(LessPtr_, Getter)<T>
 
+#define GET_COMPARER_GREATER(Getter) BOOST_PP_CAT(GreaterPtr_, Getter)
+#define GET_COMPARER_GREATER_FOR(T, Getter) BOOST_PP_CAT(GreaterPtr_, Getter)<T>
+
 #define GET_EXTRACTOR(Getter) BOOST_PP_CAT(PtrExtractor_, Getter)
 #define GET_EXTRACTOR_FOR(T, Getter) BOOST_PP_CAT(PtrExtractor_, Getter)<T>
 
@@ -114,6 +117,10 @@ namespace Forum::Entities
     SortedVectorMultiValue<Type*, \
                            std::remove_reference<std::remove_const< std::result_of<decltype(&Type::Getter)(Type)>::type >::type>::type, \
                            GET_EXTRACTOR_FOR(Type, Getter), GET_COMPARER_FOR(Type, Getter)>
+#define SORTED_VECTOR_COLLECTION_GREATER(Type, Getter) \
+    SortedVectorMultiValue<Type*, \
+                           std::remove_reference<std::remove_const< std::result_of<decltype(&Type::Getter)(Type)>::type >::type>::type, \
+                           GET_EXTRACTOR_FOR(Type, Getter), GET_COMPARER_GREATER_FOR(Type, Getter)>
 #define SORTED_VECTOR_COLLECTION_ITERATOR(Member) decltype(Member)::iterator
 
 #define DEFINE_PTR_COMPARER(Getter) \
@@ -132,6 +139,25 @@ namespace Forum::Entities
         constexpr bool operator()(T* first, const result_type& second) const \
         { \
             return first->Getter() < second; \
+        } \
+    };
+
+#define DEFINE_PTR_COMPARER_GREATER(Getter) \
+    template<typename T> \
+    struct GET_COMPARER_GREATER(Getter) \
+    { \
+        using result_type = typename std::remove_reference<typename std::remove_const<typename std::result_of<decltype(&T::Getter)(T)>::type>::type>::type; \
+        constexpr bool operator()(T* first, T* second) const \
+        { \
+            return first->Getter() > second->Getter(); \
+        } \
+        constexpr bool operator()(const result_type& first, T* second) const \
+        { \
+            return first > second->Getter(); \
+        } \
+        constexpr bool operator()(T* first, const result_type& second) const \
+        { \
+            return first->Getter() > second; \
         } \
     };
 
@@ -160,11 +186,14 @@ namespace Forum::Entities
     DEFINE_PTR_EXTRACTOR(latestMessageCreated)
     DEFINE_PTR_COMPARER(latestMessageCreated)
 
+    DEFINE_PTR_EXTRACTOR(threadCount)
+    DEFINE_PTR_COMPARER_GREATER(threadCount)
+
     DEFINE_PTR_EXTRACTOR(messageCount)
-    DEFINE_PTR_COMPARER(messageCount)
+    DEFINE_PTR_COMPARER_GREATER(messageCount)
 
     DEFINE_PTR_EXTRACTOR(pinDisplayOrder)
-    DEFINE_PTR_COMPARER(pinDisplayOrder)
+    DEFINE_PTR_COMPARER_GREATER(pinDisplayOrder)
 
     template<typename Collection, typename Entity, typename Value>
     void eraseFromNonUniqueCollection(Collection& collection, Entity toCompare, const Value& toSearch)
