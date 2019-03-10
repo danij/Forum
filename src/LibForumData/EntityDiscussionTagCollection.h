@@ -65,10 +65,10 @@ namespace Forum::Entities
         RANKED_UNIQUE_COLLECTION(DiscussionTag, name) byName_;
         RANKED_UNIQUE_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
 
-        RANKED_COLLECTION(DiscussionTag, threadCount) byThreadCount_;
-        RANKED_COLLECTION_ITERATOR(byThreadCount_) byThreadCountUpdateIt_;
+        SORTED_VECTOR_COLLECTION_GREATER(DiscussionTag, threadCount) byThreadCount_;
+        SORTED_VECTOR_COLLECTION_ITERATOR(byThreadCount_) byThreadCountUpdateIt_;
 
-        RANKED_COLLECTION(DiscussionTag, messageCount) byMessageCount_;
-        RANKED_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
+        SORTED_VECTOR_COLLECTION_GREATER(DiscussionTag, messageCount) byMessageCount_;
+        SORTED_VECTOR_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
     };
 }

@@ -71,13 +71,15 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
                 status.disable();
                 break;
             case RetrieveDiscussionTagsBy::ThreadCount:
-                writeArraySafeName(output, "tags", collection.tags().byThreadCount().begin(),
-                                   collection.tags().byThreadCount().end(), restriction);
+                //collection is sorted in greater order
+                writeArraySafeName(output, "tags", collection.tags().byThreadCount().rbegin(),
+                                   collection.tags().byThreadCount().rend(), restriction);
                 status.disable();
                 break;
             case RetrieveDiscussionTagsBy::MessageCount:
-                writeArraySafeName(output, "tags", collection.tags().byMessageCount().begin(),
-                                   collection.tags().byMessageCount().end(), restriction);
+                //collection is sorted in greater order
+                writeArraySafeName(output, "tags", collection.tags().byMessageCount().rbegin(),
+                                   collection.tags().byMessageCount().rend(), restriction);
                 status.disable();
                 break;
             }
@@ -92,13 +94,15 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
                 status.disable();
                 break;
             case RetrieveDiscussionTagsBy::ThreadCount:
-                writeArraySafeName(output, "tags", collection.tags().byThreadCount().rbegin(),
-                    collection.tags().byThreadCount().rend(), restriction);
+                //collection is sorted in greater order
+                writeArraySafeName(output, "tags", collection.tags().byThreadCount().begin(),
+                    collection.tags().byThreadCount().end(), restriction);
                 status.disable();
                 break;
             case RetrieveDiscussionTagsBy::MessageCount:
-                writeArraySafeName(output, "tags", collection.tags().byMessageCount().rbegin(),
-                                   collection.tags().byMessageCount().rend(), restriction);
+                //collection is sorted in greater order
+                writeArraySafeName(output, "tags", collection.tags().byMessageCount().begin(),
+                                   collection.tags().byMessageCount().end(), restriction);
                 status.disable();
                 break;
             }

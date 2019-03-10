@@ -66,8 +66,8 @@ namespace Forum::Entities
         RANKED_UNIQUE_COLLECTION(DiscussionCategory, name) byName_;
         RANKED_UNIQUE_COLLECTION_ITERATOR(byName_) byNameUpdateIt_;
 
-        RANKED_COLLECTION(DiscussionCategory, messageCount) byMessageCount_;
-        RANKED_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
+        SORTED_VECTOR_COLLECTION_GREATER(DiscussionCategory, messageCount) byMessageCount_;
+        SORTED_VECTOR_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
 
         ORDERED_COLLECTION(DiscussionCategory, displayOrderWithRootPriority) byDisplayOrderRootPriority_;
         ORDERED_COLLECTION_ITERATOR(byDisplayOrderRootPriority_) byDisplayOrderRootPriorityUpdateIt_;

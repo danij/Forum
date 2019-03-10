@@ -68,8 +68,8 @@ inline void writePinnedDiscussionThreads<DiscussionThreadCollectionWithHashedIdA
     writer.newPropertyRaw(JSON_RAW_PROP_COMMA("pinned_threads"));
     writer.startArray();
 
-    auto it = collection.byPinDisplayOrder().rbegin();
-    auto end = collection.byPinDisplayOrder().rend();
+    auto it = collection.byPinDisplayOrder().begin(); //collection is sorted in greater order
+    auto end = collection.byPinDisplayOrder().end();
 
     for (; (it != end) && ((*it)->pinDisplayOrder() > 0); ++it)
     {
@@ -129,7 +129,8 @@ static void writeDiscussionThreads(const ThreadsCollection& collection, Retrieve
             writer, writeFilter, restriction);
         break;
     case RetrieveDiscussionThreadsBy::MessageCount:
-        writeEntitiesWithPagination(collection.byMessageCount(), displayContext.pageNumber, pageSize, ascending, "threads",
+        //collection is sorted in greater order
+        writeEntitiesWithPagination(collection.byMessageCount(), displayContext.pageNumber, pageSize, ! ascending, "threads",
             writer, writeFilter, restriction);
         break;
     }

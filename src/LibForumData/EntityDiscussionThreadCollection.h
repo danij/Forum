@@ -149,7 +149,7 @@ namespace Forum::Entities
         RANKED_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
         RANKED_COLLECTION_ITERATOR(byLatestMessageCreated_) byLatestMessageCreatedUpdateIt_;
 
-        SORTED_VECTOR_COLLECTION(DiscussionThread, messageCount) byMessageCount_;
+        SORTED_VECTOR_COLLECTION_GREATER(DiscussionThread, messageCount) byMessageCount_;
         SORTED_VECTOR_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
 
         std::function<void()> onPrepareCountChange_;
@@ -171,7 +171,7 @@ namespace Forum::Entities
         auto byPinDisplayOrder() const { return Helpers::toConst(byPinDisplayOrder_); }
 
     private:
-        SORTED_VECTOR_COLLECTION(DiscussionThread, pinDisplayOrder) byPinDisplayOrder_;
+        SORTED_VECTOR_COLLECTION_GREATER(DiscussionThread, pinDisplayOrder) byPinDisplayOrder_;
         SORTED_VECTOR_COLLECTION_ITERATOR(byPinDisplayOrder_) byPinDisplayOrderUpdateIt_;
     };
 
@@ -277,7 +277,7 @@ namespace Forum::Entities
         SORTED_VECTOR_COLLECTION(DiscussionThread, latestMessageCreated) byLatestMessageCreated_;
         SORTED_VECTOR_COLLECTION_ITERATOR(byLatestMessageCreated_) byLatestMessageCreatedUpdateIt_;
 
-        SORTED_VECTOR_COLLECTION(DiscussionThread, messageCount) byMessageCount_;
+        SORTED_VECTOR_COLLECTION_GREATER(DiscussionThread, messageCount) byMessageCount_;
         SORTED_VECTOR_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
 
         std::function<void()> onPrepareCountChange_;

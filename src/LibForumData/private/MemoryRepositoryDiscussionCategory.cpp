@@ -75,8 +75,9 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
                 status.disable();
                 break;
             case RetrieveDiscussionCategoriesBy::MessageCount:
-                writeArraySafeName(output, "categories", collection.categories().byMessageCount().begin(),
-                                   collection.categories().byMessageCount().end(), restriction);
+                //collection is sorted in greater order
+                writeArraySafeName(output, "categories", collection.categories().byMessageCount().rbegin(),
+                                   collection.categories().byMessageCount().rend(), restriction);
                 status.disable();
                 break;
             }
@@ -91,8 +92,9 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
                 status.disable();
                 break;
             case RetrieveDiscussionCategoriesBy::MessageCount:
-                writeArraySafeName(output, "categories", collection.categories().byMessageCount().rbegin(),
-                                   collection.categories().byMessageCount().rend(), restriction);
+                //collection is sorted in greater order
+                writeArraySafeName(output, "categories", collection.categories().byMessageCount().begin(),
+                                   collection.categories().byMessageCount().end(), restriction);
                 status.disable();
                 break;
             }
