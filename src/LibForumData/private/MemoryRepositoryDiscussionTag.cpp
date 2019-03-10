@@ -619,8 +619,6 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& 
         assert(threadPtr);
         threadPtr->addTag(tagIntoRef);
 
-        updateThreadLastUpdated(*threadPtr, currentUser);
-
         tagInto.insertDiscussionThread(threadPtr);
     });
 
@@ -628,8 +626,6 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& 
     {
         assert(category);
         category->addTag(tagIntoRef);
-
-        updateLastUpdated(*category, currentUser);
     }
 
     updateLastUpdated(tagInto, currentUser);
