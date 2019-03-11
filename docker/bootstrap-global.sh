@@ -35,3 +35,4 @@ chmod +x /forum/repos/Forum.WebClient/docker/bootstrap.sh
 /bin/bash /forum/repos/Forum.WebClient/docker/bootstrap.sh "$HOSTNAME"
 
 cp /forum/repos/Forum/docker/start.sh /forum/start/start.sh
+chmod +x /forum/start/start.sh
