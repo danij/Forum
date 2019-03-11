@@ -16,13 +16,7 @@ exit_if_not_empty /forum/data
 exit_if_not_empty /forum/logs
 exit_if_not_empty /forum/start
 exit_if_not_empty /forum/temp
-
-mkdir /forum/config
-mkdir /forum/data
-mkdir /forum/logs
-mkdir /forum/start
-mkdir /forum/temp
-mkdir /forum/www
+exit_if_not_empty /forum/www
 
 chmod +x /forum/repos/Forum/docker/bootstrap.sh
 /bin/bash /forum/repos/Forum/docker/bootstrap.sh "$HOSTNAME"
