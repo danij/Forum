@@ -27,7 +27,7 @@ RUN apt-get install -y nodejs
 RUN npm install -g webpack webpack-cli
 
 RUN cd /forum/repos/ && git clone https://github.com/danij/Forum.Auth.git
-RUN cd /forum/repos/Forum.Auth/services curl https://danistorage.blob.core.windows.net/public/password.js
+RUN curl https://danistorage.blob.core.windows.net/public/password.js -o /forum/repos/Forum.Auth/services/password.js
 RUN cd /forum/repos/Forum.Auth/ && npm install
 
 RUN cd /forum/repos/ && git clone https://github.com/danij/Forum.Attachments.git
