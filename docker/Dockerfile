@@ -54,3 +54,5 @@ RUN rm /etc/nginx/modules-enabled/50-mod-mail.conf
 RUN rm /etc/nginx/modules-enabled/50-mod-stream.conf
 
 RUN cp /forum/repos/Forum.WebClient/docker/nginx.config /etc/nginx/sites-available/default
+
+CMD ["/bin/bash", "/forum/start/start.sh"]
