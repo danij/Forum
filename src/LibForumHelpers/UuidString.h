@@ -110,7 +110,14 @@ namespace Forum::Helpers
 
         operator bool() const
         {
-            return *this != empty;
+            static_assert(sizeof(value_.data) == 2 * sizeof(uint64_t));
+            static_assert(1 == sizeof(value_.data[0]));
+
+            uint64_t x, y;
+            memcpy(&x, value_.data, sizeof x);
+            memcpy(&y, value_.data + sizeof x, sizeof y);
+
+            return 0 != (x | y);
         }
 
         static const UuidString empty;
