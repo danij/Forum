@@ -41,6 +41,7 @@ RUN cd /forum/repos/Forum.WebClient/ && npm install
 RUN cd /forum/repos/Forum.WebClient/ && webpack --config webpack.production.js
 RUN rm /var/www/html/*
 RUN cp -a /forum/repos/Forum.WebClient/dist/. /var/www/html/
+RUN mv /var/www /var/www-old
 
 RUN rm /etc/nginx/modules-enabled/50-mod-http-auth-pam.conf
 RUN rm /etc/nginx/modules-enabled/50-mod-http-dav-ext.conf

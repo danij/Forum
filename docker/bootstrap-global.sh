@@ -22,6 +22,7 @@ mkdir /forum/data
 mkdir /forum/logs
 mkdir /forum/start
 mkdir /forum/temp
+mkdir /forum/www
 
 chmod +x /forum/repos/Forum/docker/bootstrap.sh
 /bin/bash /forum/repos/Forum/docker/bootstrap.sh "$HOSTNAME"
