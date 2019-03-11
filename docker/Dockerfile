@@ -41,3 +41,16 @@ RUN cd /forum/repos/Forum.WebClient/ && npm install
 RUN cd /forum/repos/Forum.WebClient/ && webpack --config webpack.production.js
 RUN rm /var/www/html/*
 RUN cp -a /forum/repos/Forum.WebClient/dist/. /var/www/html/
+
+RUN rm /etc/nginx/modules-enabled/50-mod-http-auth-pam.conf
+RUN rm /etc/nginx/modules-enabled/50-mod-http-dav-ext.conf
+RUN rm /etc/nginx/modules-enabled/50-mod-http-echo.conf
+RUN rm /etc/nginx/modules-enabled/50-mod-http-geoip.conf
+RUN rm /etc/nginx/modules-enabled/50-mod-http-image-filter.conf
+RUN rm /etc/nginx/modules-enabled/50-mod-http-subs-filter.conf
+RUN rm /etc/nginx/modules-enabled/50-mod-http-upstream-fair.conf
+RUN rm /etc/nginx/modules-enabled/50-mod-http-xslt-filter.conf
+RUN rm /etc/nginx/modules-enabled/50-mod-mail.conf
+RUN rm /etc/nginx/modules-enabled/50-mod-stream.conf
+
+RUN cp /forum/repos/Forum.WebClient/docker/nginx.config /etc/nginx/sites-available/default
