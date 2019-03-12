@@ -183,7 +183,7 @@
             "getDiscussionCategoriesFromRoot": 0,
             "getAllDiscussionTags": 0,
             "getAllDiscussionThreads": 0,
-            "getAllMessageComments": 0,
+            "getAllMessageComments": 5000,
             "getMessageCommentsOfUser": 30000,
             "addDiscussionCategory": 10000,
             "addDiscussionTag": 10000,
