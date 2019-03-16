@@ -80,3 +80,7 @@ from disk and replied to fill the repositories.
 ### Installing
 
 A more detailed installation guide is available at [Installation Guide](doc/Install.md).
+
+### Container
+
+The forum can also be run from [Docker](https://www.docker.com/) containers: [Running Fast Forum via Docker](docker/README.md)
