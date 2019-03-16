@@ -58,5 +58,8 @@ RUN cp /forum/repos/Forum.WebClient/docker/nginx.config /etc/nginx/sites-availab
 RUN sed -i 's# TLSv1 TLSv1.1##' /etc/nginx/nginx.conf
 RUN sed -i 's#gzip on;#gzip off;#' /etc/nginx/nginx.conf
 
+RUN rm -r /var/log/nginx
+RUN ln -s /forum/logs/nginx /var/log/nginx
+
 RUN chmod +x /forum/repos/Forum/docker/bootstrap-global.sh 
 CMD ["/bin/bash", "/forum/start/start.sh"]

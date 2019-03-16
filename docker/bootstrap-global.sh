@@ -13,7 +13,6 @@ function exit_if_not_empty {
 
 exit_if_not_empty /forum/config
 exit_if_not_empty /forum/data
-exit_if_not_empty /forum/logs
 exit_if_not_empty /forum/start
 exit_if_not_empty /forum/temp
 exit_if_not_empty /forum/www
