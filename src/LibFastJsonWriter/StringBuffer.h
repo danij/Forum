@@ -45,7 +45,7 @@ namespace Json
 
         void write(const char value)
         {
-            if (capacity_ < (used_ + sizeof(char)))
+            if (BOOST_UNLIKELY(capacity_ < (used_ + sizeof(char))))
             {
                 resize();
             }
@@ -56,7 +56,7 @@ namespace Json
         template<size_t Size>
         void writeFixed(const char* value)
         {
-            while (capacity_ < (used_ + Size))
+            while (BOOST_UNLIKELY(capacity_ < (used_ + Size)))
             {
                 resize();
             }
@@ -66,7 +66,7 @@ namespace Json
 
         void write(const char* value, const size_t size)
         {
-            while (capacity_ < (used_ + size))
+            while (BOOST_UNLIKELY(capacity_ < (used_ + size)))
             {
                 resize();
             }
