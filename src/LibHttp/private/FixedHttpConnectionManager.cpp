@@ -20,11 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Http;
 
-FixedHttpConnectionManager::FixedHttpConnectionManager(std::unique_ptr<HttpRouter>&& httpRouter,
-    const size_t connectionPoolSize, const size_t numberOfReadBuffers, const size_t numberOfWriteBuffers, 
-    const bool trustIpFromXForwardedFor) :
+FixedHttpConnectionManager::FixedHttpConnectionManager(boost::asio::io_context& context, 
+    std::unique_ptr<HttpRouter>&& httpRouter, const size_t connectionPoolSize, const size_t numberOfReadBuffers, 
+    const size_t numberOfWriteBuffers, const bool trustIpFromXForwardedFor) :
 
-    connectionPool_{ connectionPoolSize }, httpRouter_{ std::move(httpRouter) },
+    context_{ context }, connectionPool_{ connectionPoolSize }, httpRouter_{ std::move(httpRouter) },
     readBuffers_{ std::make_unique<HttpConnection::ReadBufferPoolType>(numberOfReadBuffers) },
     writeBuffers_{ std::make_unique<HttpConnection::WriteBufferPoolType>(numberOfWriteBuffers) },
     trustIpFromXForwardedFor_{ trustIpFromXForwardedFor }
@@ -43,7 +43,7 @@ IConnectionManager::ConnectionIdentifier FixedHttpConnectionManager::newConnecti
 
     if (headerBuffer)
     {
-        auto connection = connectionPool_.getObject(*manager, *httpRouter_, socket,
+        auto connection = connectionPool_.getObject(*manager, *httpRouter_, socket, context_,
             std::move(headerBuffer), *readBuffers_, *writeBuffers_, trustIpFromXForwardedFor_);
         if (nullptr != connection)
         {

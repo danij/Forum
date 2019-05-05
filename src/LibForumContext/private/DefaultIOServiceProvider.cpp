@@ -31,7 +31,7 @@ DefaultIOServiceProvider::DefaultIOServiceProvider(size_t nrOfThreads) : signalW
     threads_.reserve(nrOfThreads);
 }
 
-boost::asio::io_service& DefaultIOServiceProvider::getIOService()
+boost::asio::io_context& DefaultIOServiceProvider::getIOService()
 {
     return service_;
 }

@@ -28,7 +28,8 @@ namespace Http
     class StreamingConnection : boost::noncopyable
     {
     public:
-        StreamingConnection(IConnectionManager& connectionManager, boost::asio::ip::tcp::socket&& socket);
+        StreamingConnection(IConnectionManager& connectionManager, boost::asio::ip::tcp::socket&& socket, 
+                            boost::asio::io_context& context);
         virtual ~StreamingConnection() = default;
 
         void startReading();

@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "TypeHelpers.h"
 
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 
 namespace Forum::Network
 {
@@ -29,7 +29,7 @@ namespace Forum::Network
     public:
         DECLARE_INTERFACE_MANDATORY(IIOServiceProvider)
 
-        virtual boost::asio::io_service& getIOService() = 0;
+        virtual boost::asio::io_context& getIOService() = 0;
         virtual void start() = 0;
         virtual void waitForStop() = 0;
         virtual void stop() = 0;

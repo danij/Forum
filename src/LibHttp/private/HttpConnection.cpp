@@ -26,11 +26,11 @@ static void writeToBuffer(const char* data, const size_t size, void* state)
 }
 
 HttpConnection::HttpConnection(IConnectionManager& connectionManager, HttpRouter& router,
-    boost::asio::ip::tcp::socket& socket,
+    boost::asio::ip::tcp::socket& socket, boost::asio::io_context& context,
     ReadBufferType&& headerBuffer, ReadBufferPoolType& readBufferPool, WriteBufferPoolType& writeBufferPool,
     const bool trustIpFromXForwardedFor) :
 
-    StreamingConnection(connectionManager, std::move(socket)), router_{ router },
+    StreamingConnection(connectionManager, std::move(socket), context), router_{ router },
     headerBuffer_(std::move(headerBuffer)), 
     requestBodyBuffer_(readBufferPool), 
     responseBuffer_(writeBufferPool),

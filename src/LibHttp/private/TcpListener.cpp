@@ -60,7 +60,7 @@ void TcpListener::stopListening()
     if ( ! listening_) return;
     listening_ = false;
 
-    acceptor_.get_io_service().dispatch([this]
+    boost::asio::dispatch(acceptor_.get_executor(), [this]
     {
         boost::system::error_code ec;
         this->acceptor_.close(ec);

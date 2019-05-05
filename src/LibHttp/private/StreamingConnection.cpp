@@ -20,8 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Http;
 
-StreamingConnection::StreamingConnection(IConnectionManager& connectionManager, boost::asio::ip::tcp::socket&& socket)
-    : socket_{std::move(socket)}, strand_{socket_.get_io_context()}, connectionManager_(connectionManager)
+StreamingConnection::StreamingConnection(IConnectionManager& connectionManager, boost::asio::ip::tcp::socket&& socket, 
+                                         boost::asio::io_context& context)
+    : socket_{std::move(socket)}, strand_{context}, connectionManager_(connectionManager)
 {}
 
 void StreamingConnection::release()

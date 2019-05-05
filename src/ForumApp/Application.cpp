@@ -334,7 +334,8 @@ bool Application::initializeHttp()
         auto httpRouter = std::make_unique<HttpRouter>();
         endpointManager_->registerRoutes(*httpRouter);
 
-        auto httpConnectionManager = std::make_shared<FixedHttpConnectionManager>(std::move(httpRouter),
+        auto httpConnectionManager = std::make_shared<FixedHttpConnectionManager>(ioService, 
+            std::move(httpRouter),            
             forumConfig->service.connectionPoolSize,
             forumConfig->service.numberOfReadBuffers,
             forumConfig->service.numberOfWriteBuffers,
@@ -353,7 +354,8 @@ bool Application::initializeHttp()
         auto httpRouterAuth = std::make_unique<HttpRouter>();
         endpointManager_->registerAuthRoutes(*httpRouterAuth);
 
-        auto httpConnectionManagerAuth = std::make_shared<FixedHttpConnectionManager>(std::move(httpRouterAuth),
+        auto httpConnectionManagerAuth = std::make_shared<FixedHttpConnectionManager>(ioService, 
+            std::move(httpRouterAuth),            
             forumConfig->service.connectionPoolSize,
             forumConfig->service.numberOfReadBuffers,
             forumConfig->service.numberOfWriteBuffers,

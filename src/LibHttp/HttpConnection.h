@@ -39,7 +39,7 @@ namespace Http
         typedef ReadWriteBufferArray<Buffer::WriteBufferSize, Buffer::MaximumBuffersForResponse> ResponseBufferType;
         
         explicit HttpConnection(IConnectionManager& connectionManager, HttpRouter& router, 
-            boost::asio::ip::tcp::socket& socket,
+            boost::asio::ip::tcp::socket& socket, boost::asio::io_context& context,
             ReadBufferType&& headerBuffer, ReadBufferPoolType& readBufferPool, WriteBufferPoolType& writeBufferPool,
             bool trustIpFromXForwardedFor);
 

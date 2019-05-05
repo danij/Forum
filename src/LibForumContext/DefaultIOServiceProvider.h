@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "IOServiceProvider.h"
 
 #include <boost/asio/signal_set.hpp>
+#include <boost/noncopyable.hpp>
 
 #include <atomic>
 #include <cstdint>
@@ -34,14 +35,14 @@ namespace Forum::Network
     public:
         explicit DefaultIOServiceProvider(size_t nrOfThreads);
 
-        boost::asio::io_service& getIOService() override;
+        boost::asio::io_context& getIOService() override;
         void start() override;
         void waitForStop() override;
         void stop() override;
 
     private:
         std::atomic_bool stop_{ false };
-        boost::asio::io_service service_;
+        boost::asio::io_context service_;
 
         std::vector<std::thread> threads_;
         boost::asio::signal_set signalWaiter_;

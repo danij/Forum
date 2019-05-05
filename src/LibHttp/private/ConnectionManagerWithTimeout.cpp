@@ -66,7 +66,7 @@ void ConnectionManagerWithTimeout::disconnectConnection(const ConnectionIdentifi
 
 void ConnectionManagerWithTimeout::stop()
 {
-    timeoutTimer_.get_io_service().dispatch([&]
+    boost::asio::dispatch(timeoutTimer_.get_executor(), [&]
     {
         boost::system::error_code ec;
 

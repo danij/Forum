@@ -26,12 +26,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <atomic>
 #include <cstdint>
 
+#include <boost/asio/io_context.hpp>
+
 namespace Http
 {
     class FixedHttpConnectionManager : public IConnectionManager
     {
     public:
-        FixedHttpConnectionManager(std::unique_ptr<HttpRouter>&& httpRouter,
+        FixedHttpConnectionManager(boost::asio::io_context& context, std::unique_ptr<HttpRouter>&& httpRouter,
                                    size_t connectionPoolSize, size_t numberOfReadBuffers, size_t numberOfWriteBuffers,
                                    bool trustIpFromXForwardedFor);
 
@@ -41,6 +43,7 @@ namespace Http
 
 
     private:
+        boost::asio::io_context& context_;
         FixedSizeObjectPool<HttpConnection> connectionPool_;
 
         std::unique_ptr<HttpRouter> httpRouter_;
