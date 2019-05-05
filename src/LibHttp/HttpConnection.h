@@ -44,8 +44,8 @@ namespace Http
             bool trustIpFromXForwardedFor);
 
     protected:
-        bool onBytesRead(char* bytes, size_t bytesTransfered) override;
-        void onWritten(size_t bytesTransfered) override;
+        bool onBytesRead(char* bytes, size_t bytesTransferred) override;
+        void onWritten(size_t bytesTransferred) override;
 
     private:
         bool onReadBody(const char* buffer, size_t size);

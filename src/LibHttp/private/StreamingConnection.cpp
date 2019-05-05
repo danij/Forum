@@ -36,9 +36,9 @@ void StreamingConnection::startReading()
     {
         boost::asio::async_read(socket_, boost::asio::buffer(readBuffer_), boost::asio::transfer_at_least(1),
             strand_.wrap(
-                [this](const boost::system::error_code& ec, const size_t bytesTransfered)
+                [this](const boost::system::error_code& ec, const size_t bytesTransferred)
                 {
-                    this->onRead(ec, bytesTransfered);
+                    this->onRead(ec, bytesTransferred);
                 }));
     });
 }
@@ -48,7 +48,7 @@ void StreamingConnection::disconnect()
     closeSocket(socket_);
 }
 
-void StreamingConnection::onRead(const boost::system::error_code& ec, const size_t bytesTransfered)
+void StreamingConnection::onRead(const boost::system::error_code& ec, const size_t bytesTransferred)
 {
     if (ec == boost::asio::error::eof)
     {
@@ -63,19 +63,19 @@ void StreamingConnection::onRead(const boost::system::error_code& ec, const size
         release();
         return;
     }
-    if (0 == bytesTransfered)
+    if (0 == bytesTransferred)
     {
         release();
         return;
     }
 
-    if (onBytesRead(readBuffer_.data(), bytesTransfered))
+    if (onBytesRead(readBuffer_.data(), bytesTransferred))
     {
         startReading();
     }
 }
 
-void StreamingConnection::onWritten(const boost::system::error_code& ec, const size_t bytesTransfered)
+void StreamingConnection::onWritten(const boost::system::error_code& ec, const size_t bytesTransferred)
 {
     if (ec)
     {
@@ -84,7 +84,7 @@ void StreamingConnection::onWritten(const boost::system::error_code& ec, const s
         return;
     }
 
-    onWritten(bytesTransfered);
+    onWritten(bytesTransferred);
 }
 
 void Http::closeSocket(boost::asio::ip::tcp::socket& socket)

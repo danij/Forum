@@ -43,9 +43,9 @@ HttpConnection::HttpConnection(IConnectionManager& connectionManager, HttpRouter
             }, this)
 {}
 
-bool HttpConnection::onBytesRead(char* bytes, size_t bytesTransfered)
+bool HttpConnection::onBytesRead(char* bytes, size_t bytesTransferred)
 {
-    if (parser_.process(bytes, bytesTransfered) == Parser::ParseResult::INVALID_INPUT)
+    if (parser_.process(bytes, bytesTransferred) == Parser::ParseResult::INVALID_INPUT)
     {
         //invalid input
         writeStatusCode(parser_.errorCode());
@@ -63,7 +63,7 @@ bool HttpConnection::onBytesRead(char* bytes, size_t bytesTransfered)
     return false;
 }
 
-void HttpConnection::onWritten(size_t /*bytesTransfered*/)
+void HttpConnection::onWritten(size_t /*bytesTransferred*/)
 {
     if (keepConnectionAlive_)
     {

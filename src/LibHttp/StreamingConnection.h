@@ -37,8 +37,8 @@ namespace Http
 
     protected:
         void release();
-        virtual bool onBytesRead(char* bytes, size_t bytesTransfered) = 0;
-        virtual void onWritten(size_t bytesTransfered) = 0;
+        virtual bool onBytesRead(char* bytes, size_t bytesTransferred) = 0;
+        virtual void onWritten(size_t bytesTransferred) = 0;
 
         template<typename ConstBuffer>
         void write(const ConstBuffer& buffer)
@@ -46,9 +46,9 @@ namespace Http
             strand_.post([this, buffer]()
             {
                 boost::asio::async_write(socket_, buffer, boost::asio::transfer_all(), 
-                    strand_.wrap([this](const boost::system::error_code& ec, const size_t bytesTransfered)
+                    strand_.wrap([this](const boost::system::error_code& ec, const size_t bytesTransferred)
                     {
-                        this->onWritten(ec, bytesTransfered);
+                        this->onWritten(ec, bytesTransferred);
                     }));
             });
         }     
@@ -57,8 +57,8 @@ namespace Http
         std::array<char, 1024> readBuffer_{};
 
     private:
-        void onRead(const boost::system::error_code& ec, size_t bytesTransfered);
-        void onWritten(const boost::system::error_code& ec, size_t bytesTransfered);
+        void onRead(const boost::system::error_code& ec, size_t bytesTransferred);
+        void onWritten(const boost::system::error_code& ec, size_t bytesTransferred);
 
         boost::asio::io_service::strand strand_;
         IConnectionManager& connectionManager_;
