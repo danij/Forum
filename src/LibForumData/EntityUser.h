@@ -130,9 +130,8 @@ namespace Forum::Entities
         struct ReceivedVoteHistory final
         {
             IdType discussionThreadMessageId;
-            IdType voterId;
-            Timestamp at;
-            ReceivedVoteHistoryEntryType type;
+            Timestamp at : 62;
+            ReceivedVoteHistoryEntryType type : 2;
         };
 
         struct ChangeNotification final

@@ -901,7 +901,6 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::voteDiscussionThreadMessage(
     targetUser.voteHistory().push_back(
     {
         message.id(),
-        currentUser->id(),
         timestamp,
         up ? User::ReceivedVoteHistoryEntryType::UpVote : User::ReceivedVoteHistoryEntryType::DownVote
     });
@@ -1010,7 +1009,6 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::resetVoteDiscussionThreadMes
     targetUser.voteHistory().push_back(
     {
         message.id(),
-        currentUser->id(),
         Context::getCurrentTime(),
         User::ReceivedVoteHistoryEntryType::ResetVote
     });
