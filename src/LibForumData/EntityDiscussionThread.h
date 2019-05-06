@@ -257,7 +257,7 @@ namespace Forum::Entities
 
         boost::container::flat_set<DiscussionTag*> tags_;
         boost::container::flat_set<DiscussionCategory*> categories_;
-        boost::container::flat_map<IdType, User*> subscribedUsers_;
+        boost::container::flat_set<User*> subscribedUsers_;
 
         Authorization::ForumWidePrivilegeStore& forumWidePrivileges_;
     };

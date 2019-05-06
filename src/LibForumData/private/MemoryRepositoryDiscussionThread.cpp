@@ -453,11 +453,11 @@ StatusCode MemoryRepositoryDiscussionThread::getUsersSubscribedToDiscussionThrea
                           writer.newPropertyRaw(JSON_RAW_PROP("users"));
 
                           writer.startArray();
-                          for (auto pair : thread.subscribedUsers())
+                          for (UserConstPtr userPtr : thread.subscribedUsers())
                           {
-                              if (pair.second)
+                              if (userPtr)
                               {
-                                  serialize(writer, *pair.second, restriction);
+                                  serialize(writer, *userPtr, restriction);
                               }
                           }
                           writer.endArray();
@@ -942,12 +942,11 @@ StatusCode MemoryRepositoryDiscussionThread::mergeDiscussionThreads(EntityCollec
     updateMessageCounts(threadIntoPtr,   static_cast<int_fast32_t>(threadFrom.messageCount()));
 
     //update subscriptions
-    for (auto& pair : threadFrom.subscribedUsers())
+    for (UserPtr userPtr : threadFrom.subscribedUsers())
     {
-        UserPtr& user = pair.second;
-        assert(user);
-        user->subscribedThreads().add(threadIntoPtr);
-        threadInto.subscribedUsers().insert(std::make_pair(user->id(), user));
+        assert(userPtr);
+        userPtr->subscribedThreads().add(threadIntoPtr);
+        threadInto.subscribedUsers().insert(userPtr);
     }
 
     //this will also decrease the message count on the tags the thread was part of
@@ -1006,7 +1005,7 @@ StatusCode MemoryRepositoryDiscussionThread::subscribeToDiscussionThread(EntityC
 
     auto currentUser = getCurrentUser(collection);
 
-    if ( ! std::get<1>(threadPtr->subscribedUsers().insert(std::make_pair(currentUser->id(), currentUser))))
+    if ( ! std::get<1>(threadPtr->subscribedUsers().insert(currentUser)))
     {
         //FORUM_LOG_WARNING << "The user " << currentUser->id().toStringDashed()
         //                  << " is already subscribed to the discussion thread " << id.toStringDashed();
@@ -1069,7 +1068,7 @@ StatusCode MemoryRepositoryDiscussionThread::unsubscribeFromDiscussionThread(Ent
 
     auto currentUser = getCurrentUser(collection);
 
-    if (0 == threadPtr->subscribedUsers().erase(currentUser->id()))
+    if (0 == threadPtr->subscribedUsers().erase(currentUser))
     {
         //FORUM_LOG_WARNING << "The user " << currentUser->id().toStringDashed()
         //                  << " was not subscribed to the discussion thread " << id.toStringDashed();

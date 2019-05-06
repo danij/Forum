@@ -461,7 +461,7 @@ JsonWriter& Entities::serialize(JsonWriter& writer, const DiscussionThread& thre
     if (currentUser)
     {
         writer.newPropertyRaw(JSON_RAW_PROP_COMMA("subscribedToThread")) <<
-            (thread.subscribedUsers().find(currentUser->id()) != thread.subscribedUsers().end());
+            (thread.subscribedUsers().find(const_cast<UserPtr>(currentUser)) != thread.subscribedUsers().end());
         
         const auto latestVisitedPage = currentUser->latestPageVisited(thread.id());
         if (latestVisitedPage > 0)

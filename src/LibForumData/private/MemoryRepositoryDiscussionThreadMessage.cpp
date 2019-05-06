@@ -401,7 +401,7 @@ StatusWithResource<DiscussionThreadMessagePtr>
 
     if ( ! isAnonymousUser(currentUser))
     {
-        thread.subscribedUsers().insert(std::make_pair(currentUser->id(), currentUser));
+        thread.subscribedUsers().insert(currentUser);
     }
 
     for (DiscussionTagPtr tag : thread.tags())
