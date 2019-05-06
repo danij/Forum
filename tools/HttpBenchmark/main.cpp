@@ -106,8 +106,8 @@ private:
         httpRouter_ = std::make_unique<HttpRouter>();
         endpoints_->registerRoutes(*httpRouter_);
 
-        auto httpConnectionManager = std::make_shared<FixedHttpConnectionManager>(std::move(httpRouter_),
-            10, 10, 10, false);
+        auto httpConnectionManager = std::make_shared<FixedHttpConnectionManager>(ioService,
+                std::move(httpRouter_), 10, 10, 10, false);
 
         auto connectionManagerWithTimeout = std::make_shared<ConnectionManagerWithTimeout>(ioService,
             httpConnectionManager, 30);
