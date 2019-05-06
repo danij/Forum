@@ -259,7 +259,7 @@ struct EntityCollection::Impl
         }
         DiscussionThread& thread = *threadPtr;
 
-        thread.aboutToBeDeleted() = true;
+        thread.setAboutToBeDeleted(true);
 
         if (alsoDeleteThreadsFromUser)
         {

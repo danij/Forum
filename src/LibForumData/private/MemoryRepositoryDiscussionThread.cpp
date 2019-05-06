@@ -782,7 +782,7 @@ StatusCode MemoryRepositoryDiscussionThread::changeDiscussionThreadApproval(Enti
 
     const auto currentUser = getCurrentUser(collection);
 
-    threadPtr->approved() = newApproval;
+    threadPtr->setApproved(newApproval);
     updateThreadLastUpdated(*threadPtr, currentUser);
 
     return StatusCode::OK;

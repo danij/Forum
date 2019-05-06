@@ -57,8 +57,9 @@ namespace Forum::Entities
                auto messageCount()              const { return messages_.count(); }
 
                auto empty()                     const { return messages_.empty(); }
-               auto approved()                  const { return approved_; }
-               
+               bool approved()                  const { return 1 == approved_; }
+               bool aboutToBeDeleted()          const { return 1 == aboutToBeDeleted_; }
+
         auto lastUpdated() const
         {
             return lastUpdated_ ? lastUpdated_->at : Timestamp{ 0 };
@@ -139,7 +140,10 @@ namespace Forum::Entities
             messages_.onPrepareCountChange() = [this]() { changeNotifications_.onPrepareUpdateMessageCount(*this); };
             messages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
 
-            approved_ = approved;
+            approved_ = approved ? 1 : 0;
+            aboutToBeDeleted_ = 0;
+            latestMessageCreated_ = 0;
+            pinDisplayOrder_ = 0;
         }
 
         void updateName(NameType&& name)
@@ -186,14 +190,21 @@ namespace Forum::Entities
         */
         auto& visited()    const { return visited_; }
 
-        auto& approved()         { return approved_; }
         auto& createdBy()        { return createdBy_; }
         auto& messages()         { return messages_; }
         auto& tags()             { return tags_; }
         auto& categories()       { return categories_; }
 
         auto& subscribedUsers()  { return subscribedUsers_; }
-        bool& aboutToBeDeleted() { return aboutToBeDeleted_; }
+
+        void setApproved(bool value)
+        {
+            approved_ = value ? 1 : 0;
+        }
+        void setAboutToBeDeleted(bool value)
+        {
+            aboutToBeDeleted_ = value ? 1 : 0;
+        }
 
         void updatePinDisplayOrder(const uint16_t value)
         {
@@ -246,13 +257,13 @@ namespace Forum::Entities
 
         //store the timestamp of the latest message in the collection that was created
         //as it's expensive to retrieve it every time
-        Timestamp latestMessageCreated_{0};
+        Timestamp latestMessageCreated_ : 46;
+        uint16_t pinDisplayOrder_ : 16;
+        uint16_t aboutToBeDeleted_ : 1;
+        uint16_t approved_ : 1;
 
-        uint16_t pinDisplayOrder_{0};
         mutable std::atomic_int_fast64_t visited_{0};
-        bool aboutToBeDeleted_ = false;
-        bool approved_ = false;
-        
+
         boost::container::flat_set<boost::uuids::uuid> visitorsSinceLastEdit_;
 
         boost::container::flat_set<DiscussionTag*> tags_;
