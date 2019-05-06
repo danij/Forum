@@ -614,7 +614,7 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& 
 
     const auto currentUser = getCurrentUser(collection);
 
-    tagFrom.threads().iterateThreads([tagIntoRef, &tagInto, currentUser](DiscussionThreadPtr threadPtr)
+    tagFrom.threads().iterateThreads([tagIntoRef, &tagInto](DiscussionThreadPtr threadPtr)
     {
         assert(threadPtr);
         threadPtr->addTag(tagIntoRef);
