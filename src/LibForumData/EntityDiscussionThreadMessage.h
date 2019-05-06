@@ -276,13 +276,13 @@ namespace Forum::Entities
 
     private:
         IdType id_;
-        Timestamp created_{0};
+        Timestamp created_ : 48;
+        uint16_t solvedCommentsCount_ : 15;
+        uint16_t approved_ : 1;
         VisitDetails creationDetails_;
 
         User& createdBy_;
         DiscussionThread* parentThread_{};
-        uint16_t solvedCommentsCount_ : 15;
-        uint16_t approved_ : 1;
 
         Helpers::WholeChangeableString content_;
 
