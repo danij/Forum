@@ -413,6 +413,7 @@ void showEntitySizes()
     std::cout << "LastUpdatedInfo                        " << std::setw(5) << sizeof(Entities::LastUpdatedInfo) << '\n';
     std::cout << "WholeChangeableString                  " << std::setw(5) << sizeof(Helpers::WholeChangeableString) << '\n';
     std::cout << "Json::JsonReadyString<4>               " << std::setw(5) << sizeof(Json::JsonReadyString<4>) << '\n';
+    std::cout << "bool                                   " << std::setw(5) << sizeof(bool) << '\n';
     std::cout << "std::string                            " << std::setw(5) << sizeof(std::string) << '\n';
     std::cout << "VoteCollection                         " << std::setw(5) << sizeof(Entities::DiscussionThreadMessage::VoteCollection) << '\n';
     std::cout << "AttachmentCollection                   " << std::setw(5) << sizeof(Entities::DiscussionThreadMessage::AttachmentCollection) << '\n';
