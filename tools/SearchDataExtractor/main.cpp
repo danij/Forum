@@ -370,13 +370,27 @@ bool SearchDataExtractor::processBlob(const char* data, size_t size)
     else if (ADD_NEW_DISCUSSION_THREAD_MESSAGE == eventType)
     {
         CHECK_SIZE;
-        CHECK_VERSION_1;
+        if (1 == version)
+        {
+            const auto messageId = parseUuid(dataStart);
+            const auto threadId = parseUuid(dataStart + uuidSize);
+            const auto content = readStringViewWithPrefix(dataStart + uuidSize + uuidSize);
 
-        const auto messageId = parseUuid(dataStart);
-        const auto threadId = parseUuid(dataStart + uuidSize);
-        const auto content = readStringViewWithPrefix(dataStart + uuidSize + uuidSize);
+            onAddNewDiscussionThreadMessage(messageId, threadId, content);
+        }
+        else if (3 == version)
+        {
+            const auto messageId = parseUuid(dataStart);
+            const auto threadId = parseUuid(dataStart + uuidSize);
+            const auto content = readStringViewWithPrefix(dataStart + uuidSize + uuidSize + sizeof(uint32_t));
 
-        onAddNewDiscussionThreadMessage(messageId, threadId, content);
+            onAddNewDiscussionThreadMessage(messageId, threadId, content);
+        }
+        else
+        {
+            std::cerr << "Version " << version << " is not supported\n"; 
+            return false;
+        }
     }
     else if (CHANGE_DISCUSSION_THREAD_MESSAGE_CONTENT == eventType)
     {
