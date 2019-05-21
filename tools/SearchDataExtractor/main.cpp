@@ -586,8 +586,8 @@ void SearchDataExtractor::onChangeDiscussionThreadMessageContent(const IdType& i
     {
         writer.startObject();
         JSON_WRITE_FIRST_PROP(writer, "type", "change thread message content");
-        JSON_WRITE_FIRST_PROP(writer, "id", id);
-        JSON_WRITE_FIRST_PROP(writer, "content", newContent);
+        JSON_WRITE_PROP(writer, "id", id);
+        JSON_WRITE_PROP(writer, "content", newContent);
         writer.endObject();
     });
 }
@@ -600,7 +600,7 @@ void SearchDataExtractor::onDeleteDiscussionThreadMessage(const IdType& id)
         {
             writer.startObject();
             JSON_WRITE_FIRST_PROP(writer, "type", "delete thread message");
-            JSON_WRITE_FIRST_PROP(writer, "id", id);
+            JSON_WRITE_PROP(writer, "id", id);
             writer.endObject();
         });
     }
