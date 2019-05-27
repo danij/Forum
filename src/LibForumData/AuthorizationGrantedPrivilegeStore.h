@@ -195,6 +195,15 @@ namespace Forum::Authorization
             PrivilegeValueIntType privilegeValue_;
         };
 
+        struct IdTupleFastHasher
+        {
+            size_t operator()(const IdTuple& value) const
+            {
+                std::hash<Entities::IdType> hasher{};
+                return hasher(std::get<0>(value)) ^ hasher(std::get<1>(value));
+            }
+        };
+
         struct PrivilegeEntryCollectionByUserIdEntityId {};
         struct PrivilegeEntryCollectionByUserId {};
         struct PrivilegeEntryCollectionByEntityId {};
@@ -203,7 +212,7 @@ namespace Forum::Authorization
 
             boost::multi_index::hashed_non_unique<boost::multi_index::tag<PrivilegeEntryCollectionByUserIdEntityId>,
                     const boost::multi_index::const_mem_fun<PrivilegeEntry, const IdTuple&,
-                            &PrivilegeEntry::userAndEntity>>,
+                            &PrivilegeEntry::userAndEntity>, IdTupleFastHasher>,
 
             boost::multi_index::hashed_non_unique<boost::multi_index::tag<PrivilegeEntryCollectionByUserId>,
                     const boost::multi_index::const_mem_fun<PrivilegeEntry, Entities::IdTypeRef, &PrivilegeEntry::userId>>,
