@@ -574,7 +574,7 @@ namespace Forum::Authorization
         void setDiscussionThreadMessagePrivilege(DiscussionThreadMessagePrivilege privilege,
                                                  PrivilegeValueIntType value)
         {
-            if (privilege < DiscussionThreadMessagePrivilege::COUNT)
+            if (BOOST_LIKELY(privilege < DiscussionThreadMessagePrivilege::COUNT))
             {
                 if ( ! discussionThreadMessagePrivileges_)
                 {
@@ -588,7 +588,7 @@ namespace Forum::Authorization
         virtual PrivilegeValueType getDiscussionThreadMessagePrivilege(
                 DiscussionThreadMessagePrivilege privilege) const
         {
-            if ((privilege < DiscussionThreadMessagePrivilege::COUNT) && discussionThreadMessagePrivileges_)
+            if (BOOST_LIKELY(privilege < DiscussionThreadMessagePrivilege::COUNT) && discussionThreadMessagePrivileges_)
             {
                 return discussionThreadMessagePrivileges_[static_cast<EnumIntType>(privilege)];
             }
@@ -606,7 +606,7 @@ namespace Forum::Authorization
         void setDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege,
                                           PrivilegeValueIntType value)
         {
-            if (privilege < DiscussionThreadPrivilege::COUNT)
+            if (BOOST_LIKELY(privilege < DiscussionThreadPrivilege::COUNT))
             {
                 discussionThreadPrivileges_[static_cast<EnumIntType>(privilege)] = value;
             }
@@ -614,7 +614,7 @@ namespace Forum::Authorization
 
         virtual PrivilegeValueType getDiscussionThreadPrivilege(DiscussionThreadPrivilege privilege) const
         {
-            if (privilege < DiscussionThreadPrivilege::COUNT)
+            if (BOOST_LIKELY(privilege < DiscussionThreadPrivilege::COUNT))
             {
                 return discussionThreadPrivileges_[static_cast<EnumIntType>(privilege)];
             }
@@ -632,7 +632,7 @@ namespace Forum::Authorization
 
         void setDiscussionTagPrivilege(DiscussionTagPrivilege privilege, PrivilegeValueIntType value)
         {
-            if (privilege < DiscussionTagPrivilege::COUNT)
+            if (BOOST_LIKELY(privilege < DiscussionTagPrivilege::COUNT))
             {
                 discussionTagPrivileges_[static_cast<EnumIntType>(privilege)] = value;
             }
@@ -640,7 +640,7 @@ namespace Forum::Authorization
 
         virtual PrivilegeValueType getDiscussionTagPrivilege(DiscussionTagPrivilege privilege) const
         {
-            if (privilege < DiscussionTagPrivilege::COUNT)
+            if (BOOST_LIKELY(privilege < DiscussionTagPrivilege::COUNT))
             {
                 return discussionTagPrivileges_[static_cast<EnumIntType>(privilege)];
             }
@@ -658,7 +658,7 @@ namespace Forum::Authorization
 
         void setDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege, PrivilegeValueIntType value)
         {
-            if (privilege < DiscussionCategoryPrivilege::COUNT)
+            if (BOOST_LIKELY(privilege < DiscussionCategoryPrivilege::COUNT))
             {
                 discussionCategoryPrivileges_[static_cast<EnumIntType>(privilege)] = value;
             }
@@ -666,7 +666,7 @@ namespace Forum::Authorization
 
         virtual PrivilegeValueType getDiscussionCategoryPrivilege(DiscussionCategoryPrivilege privilege) const
         {
-            if (privilege < DiscussionCategoryPrivilege::COUNT)
+            if (BOOST_LIKELY(privilege < DiscussionCategoryPrivilege::COUNT))
             {
                 return discussionCategoryPrivileges_[static_cast<EnumIntType>(privilege)];
             }
@@ -684,7 +684,7 @@ namespace Forum::Authorization
 
         void setForumWidePrivilege(ForumWidePrivilege privilege, PrivilegeValueIntType value)
         {
-            if (privilege < ForumWidePrivilege::COUNT)
+            if (BOOST_LIKELY(privilege < ForumWidePrivilege::COUNT))
             {
                 forumWidePrivileges_[static_cast<EnumIntType>(privilege)] = value;
             }
@@ -692,7 +692,7 @@ namespace Forum::Authorization
 
         virtual PrivilegeValueType getForumWidePrivilege(ForumWidePrivilege privilege) const
         {
-            if (privilege < ForumWidePrivilege::COUNT)
+            if (BOOST_LIKELY(privilege < ForumWidePrivilege::COUNT))
             {
                 return forumWidePrivileges_[static_cast<EnumIntType>(privilege)];
             }
@@ -702,7 +702,7 @@ namespace Forum::Authorization
         void setForumWideDefaultPrivilegeLevel(ForumWideDefaultPrivilegeDuration privilege,
                                                PrivilegeDefaultLevel value)
         {
-            if (privilege < ForumWideDefaultPrivilegeDuration::COUNT)
+            if (BOOST_LIKELY(privilege < ForumWideDefaultPrivilegeDuration::COUNT))
             {
                 forumWideDefaultPrivilegeDuration_[static_cast<EnumIntType>(privilege)] = value;
             }
@@ -711,7 +711,7 @@ namespace Forum::Authorization
         virtual PrivilegeDefaultLevelType getForumWideDefaultPrivilegeLevel(
                 ForumWideDefaultPrivilegeDuration privilege) const
         {
-            if (privilege < ForumWideDefaultPrivilegeDuration::COUNT)
+            if (BOOST_LIKELY(privilege < ForumWideDefaultPrivilegeDuration::COUNT))
             {
                 return forumWideDefaultPrivilegeDuration_[static_cast<EnumIntType>(privilege)];
             }
