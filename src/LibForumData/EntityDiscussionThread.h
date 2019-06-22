@@ -142,7 +142,6 @@ namespace Forum::Entities
 
             approved_ = approved ? 1 : 0;
             aboutToBeDeleted_ = 0;
-            latestMessageCreated_ = 0;
             pinDisplayOrder_ = 0;
         }
 
@@ -257,8 +256,8 @@ namespace Forum::Entities
 
         //store the timestamp of the latest message in the collection that was created
         //as it's expensive to retrieve it every time
-        Timestamp latestMessageCreated_ : 46;
-        uint16_t pinDisplayOrder_ : 16;
+        Timestamp latestMessageCreated_{0};
+        uint16_t pinDisplayOrder_ : 14;
         uint16_t aboutToBeDeleted_ : 1;
         uint16_t approved_ : 1;
 
