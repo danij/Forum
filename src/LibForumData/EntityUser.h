@@ -316,7 +316,7 @@ namespace Forum::Entities
 
         static constexpr size_t MaxVotesInHistory = 64;
         boost::circular_buffer_space_optimized<ReceivedVoteHistory> voteHistory_{ MaxVotesInHistory };
-        mutable std::atomic<int64_t> voteHistoryLastRetrieved_{ 0 };
+        mutable std::atomic<Timestamp> voteHistoryLastRetrieved_{ 0 };
 
         int_fast32_t receivedUpVotes_{ 0 };
         int_fast32_t receivedDownVotes_{ 0 };

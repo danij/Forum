@@ -567,7 +567,7 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
                           Json::JsonWriter writer(output);
                           writer.startObject();
                           writer.newPropertyRaw(JSON_RAW_PROP("lastRetrievedAt"))
-                                  << currentUser.voteHistoryLastRetrieved().exchange(static_cast<int64_t>(Context::getCurrentTime()));
+                                  << currentUser.voteHistoryLastRetrieved().exchange(Context::getCurrentTime());
 
                           writer.newPropertyRaw(JSON_RAW_PROP_COMMA("receivedVotes"));
                           writer.startArray();
