@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_user_returns_the_id_name_and_created )
     assertStatusCodeEqual(StatusCode::OK, returnObject);
     BOOST_REQUIRE( ! isIdEmpty(returnObject.get<std::string>("id")));
     BOOST_REQUIRE_EQUAL("Foo", returnObject.get<std::string>("name"));
-    BOOST_REQUIRE_EQUAL(20000, returnObject.get<Timestamp>("created"));
+    BOOST_REQUIRE_EQUAL(20000u, returnObject.get<Timestamp>("created"));
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_user_with_only_whitespace_in_the_name_fails )
@@ -575,9 +575,9 @@ BOOST_AUTO_TEST_CASE( Users_without_activity_have_last_seen_empty )
                                .get_child("users"), "lastSeen", std::back_inserter(retrievedLastSeen), Timestamp());
 
     BOOST_REQUIRE_EQUAL(names.size(), retrievedLastSeen.size());
-    BOOST_REQUIRE_EQUAL(0, retrievedLastSeen[0]);
-    BOOST_REQUIRE_EQUAL(0, retrievedLastSeen[1]);
-    BOOST_REQUIRE_EQUAL(0, retrievedLastSeen[2]);
+    BOOST_REQUIRE_EQUAL(0u, retrievedLastSeen[0]);
+    BOOST_REQUIRE_EQUAL(0u, retrievedLastSeen[1]);
+    BOOST_REQUIRE_EQUAL(0u, retrievedLastSeen[2]);
 }
 
 BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
@@ -621,18 +621,18 @@ BOOST_AUTO_TEST_CASE( User_last_seen_is_correctly_updated )
                                .get_child("users"), "lastSeen", std::back_inserter(retrievedLastSeen), Timestamp());
     
     BOOST_REQUIRE_EQUAL(names.size(), retrievedLastSeen.size());
-    BOOST_REQUIRE_EQUAL(10000, retrievedLastSeen[0]);
-    BOOST_REQUIRE_EQUAL(20000, retrievedLastSeen[1]);
-    BOOST_REQUIRE_EQUAL(30000, retrievedLastSeen[2]);
+    BOOST_REQUIRE_EQUAL(10000u, retrievedLastSeen[0]);
+    BOOST_REQUIRE_EQUAL(20000u, retrievedLastSeen[1]);
+    BOOST_REQUIRE_EQUAL(30000u, retrievedLastSeen[2]);
 
     retrievedLastSeen.clear();
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN, SortOrder::Descending)
                                .get_child("users"), "lastSeen", std::back_inserter(retrievedLastSeen), Timestamp());
 
     BOOST_REQUIRE_EQUAL(names.size(), retrievedLastSeen.size());
-    BOOST_REQUIRE_EQUAL(30000, retrievedLastSeen[0]);
-    BOOST_REQUIRE_EQUAL(20000, retrievedLastSeen[1]);
-    BOOST_REQUIRE_EQUAL(10000, retrievedLastSeen[2]);
+    BOOST_REQUIRE_EQUAL(30000u, retrievedLastSeen[0]);
+    BOOST_REQUIRE_EQUAL(20000u, retrievedLastSeen[1]);
+    BOOST_REQUIRE_EQUAL(10000u, retrievedLastSeen[2]);
     
     std::vector<std::string> retrievedNames;
     fillPropertyFromCollection(handlerToObj(handler, Forum::Commands::GET_USERS_BY_LAST_SEEN, SortOrder::Descending)
@@ -723,18 +723,18 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(3u, user1ThreadsByName.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByName[0].id));
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByName[0].name);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByName[0].created);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByName[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByName[0].created);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByName[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByName[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByName[1].id));
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByName[1].name);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByName[1].created);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByName[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByName[1].created);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByName[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByName[1].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByName[2].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByName[2].name);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByName[2].created);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByName[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByName[2].created);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByName[2].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByName[2].visited);
 
     user1ThreadsByName = deserializeUserThreads(handlerToObj(handler,
@@ -744,18 +744,18 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(3u, user1ThreadsByName.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByName[0].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByName[0].name);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByName[0].created);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByName[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByName[0].created);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByName[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByName[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByName[1].id));
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByName[1].name);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByName[1].created);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByName[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByName[1].created);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByName[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByName[1].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByName[2].id));
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByName[2].name);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByName[2].created);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByName[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByName[2].created);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByName[2].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByName[2].visited);
 
     auto user1ThreadsByCreated = deserializeUserThreads(
@@ -765,18 +765,18 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(3u, user1ThreadsByCreated.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[0].id));
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByCreated[0].name);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByCreated[0].created);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByCreated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByCreated[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByCreated[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByCreated[1].name);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByCreated[1].created);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByCreated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByCreated[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByCreated[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[1].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[2].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByCreated[2].name);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByCreated[2].created);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByCreated[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByCreated[2].created);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByCreated[2].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[2].visited);
 
     user1ThreadsByCreated = deserializeUserThreads(
@@ -786,18 +786,18 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(3u, user1ThreadsByCreated.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[0].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByCreated[0].name);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByCreated[0].created);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByCreated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByCreated[0].created);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByCreated[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByCreated[1].name);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByCreated[1].created);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByCreated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByCreated[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByCreated[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[1].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByCreated[2].id));
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByCreated[2].name);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByCreated[2].created);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByCreated[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByCreated[2].created);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByCreated[2].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByCreated[2].visited);
 
     auto user1ThreadsByLastUpdated = deserializeUserThreads(
@@ -807,18 +807,18 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(3u, user1ThreadsByLastUpdated.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[0].id));
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByLastUpdated[0].name);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByLastUpdated[0].created);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByLastUpdated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByLastUpdated[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByLastUpdated[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByLastUpdated[1].name);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByLastUpdated[1].created);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByLastUpdated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByLastUpdated[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByLastUpdated[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[1].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[2].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByLastUpdated[2].name);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByLastUpdated[2].created);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByLastUpdated[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByLastUpdated[2].created);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByLastUpdated[2].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[2].visited);
 
     user1ThreadsByLastUpdated = deserializeUserThreads(
@@ -828,18 +828,18 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(3u, user1ThreadsByLastUpdated.size());
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[0].id));
     BOOST_REQUIRE_EQUAL("Ghi-User1", user1ThreadsByLastUpdated[0].name);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByLastUpdated[0].created);
-    BOOST_REQUIRE_EQUAL(3000, user1ThreadsByLastUpdated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByLastUpdated[0].created);
+    BOOST_REQUIRE_EQUAL(3000u, user1ThreadsByLastUpdated[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User1", user1ThreadsByLastUpdated[1].name);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByLastUpdated[1].created);
-    BOOST_REQUIRE_EQUAL(2000, user1ThreadsByLastUpdated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByLastUpdated[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, user1ThreadsByLastUpdated[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[1].visited);
     BOOST_REQUIRE( ! isIdEmpty(user1ThreadsByLastUpdated[2].id));
     BOOST_REQUIRE_EQUAL("Def-User1", user1ThreadsByLastUpdated[2].name);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByLastUpdated[2].created);
-    BOOST_REQUIRE_EQUAL(1000, user1ThreadsByLastUpdated[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByLastUpdated[2].created);
+    BOOST_REQUIRE_EQUAL(1000u, user1ThreadsByLastUpdated[2].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1ThreadsByLastUpdated[2].visited);
 
     auto user2ThreadsByName = deserializeUserThreads(handlerToObj(handler,
@@ -850,13 +850,13 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(2u, user2ThreadsByName.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByName[0].id));
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByName[0].name);
-    BOOST_REQUIRE_EQUAL(1000, user2ThreadsByName[0].created);
-    BOOST_REQUIRE_EQUAL(3000, user2ThreadsByName[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user2ThreadsByName[0].created);
+    BOOST_REQUIRE_EQUAL(3000u, user2ThreadsByName[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user2ThreadsByName[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByName[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByName[1].name);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByName[1].created);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByName[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByName[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByName[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user2ThreadsByName[1].visited);
 
     user2ThreadsByName = deserializeUserThreads(handlerToObj(handler,
@@ -867,13 +867,13 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(2u, user2ThreadsByName.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByName[0].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByName[0].name);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByName[0].created);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByName[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByName[0].created);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByName[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user2ThreadsByName[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByName[1].id));
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByName[1].name);
-    BOOST_REQUIRE_EQUAL(1000, user2ThreadsByName[1].created);
-    BOOST_REQUIRE_EQUAL(3000, user2ThreadsByName[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user2ThreadsByName[1].created);
+    BOOST_REQUIRE_EQUAL(3000u, user2ThreadsByName[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user2ThreadsByName[1].visited);
 
     auto user2ThreadsByCreated = deserializeUserThreads(
@@ -883,13 +883,13 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(2u, user2ThreadsByCreated.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByCreated[0].id));
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByCreated[0].name);
-    BOOST_REQUIRE_EQUAL(1000, user2ThreadsByCreated[0].created);
-    BOOST_REQUIRE_EQUAL(3000, user2ThreadsByCreated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user2ThreadsByCreated[0].created);
+    BOOST_REQUIRE_EQUAL(3000u, user2ThreadsByCreated[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user2ThreadsByCreated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByCreated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByCreated[1].name);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByCreated[1].created);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByCreated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByCreated[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByCreated[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user2ThreadsByCreated[1].visited);
 
     user2ThreadsByCreated = deserializeUserThreads(
@@ -899,13 +899,13 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(2u, user2ThreadsByCreated.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByCreated[0].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByCreated[0].name);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByCreated[0].created);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByCreated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByCreated[0].created);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByCreated[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user2ThreadsByCreated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByCreated[1].id));
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByCreated[1].name);
-    BOOST_REQUIRE_EQUAL(1000, user2ThreadsByCreated[1].created);
-    BOOST_REQUIRE_EQUAL(3000, user2ThreadsByCreated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user2ThreadsByCreated[1].created);
+    BOOST_REQUIRE_EQUAL(3000u, user2ThreadsByCreated[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user2ThreadsByCreated[1].visited);
 
     auto user2ThreadsByLastUpdated = deserializeUserThreads(
@@ -915,13 +915,13 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(2u, user2ThreadsByLastUpdated.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByLastUpdated[0].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByLastUpdated[0].name);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByLastUpdated[0].created);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByLastUpdated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByLastUpdated[0].created);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByLastUpdated[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user2ThreadsByLastUpdated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByLastUpdated[1].id));
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByLastUpdated[1].name);
-    BOOST_REQUIRE_EQUAL(1000, user2ThreadsByLastUpdated[1].created);
-    BOOST_REQUIRE_EQUAL(3000, user2ThreadsByLastUpdated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user2ThreadsByLastUpdated[1].created);
+    BOOST_REQUIRE_EQUAL(3000u, user2ThreadsByLastUpdated[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user2ThreadsByLastUpdated[1].visited);
 
     user2ThreadsByLastUpdated = deserializeUserThreads(
@@ -931,13 +931,13 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_created_user_can_be_retrieved_sorted_by
     BOOST_REQUIRE_EQUAL(2u, user2ThreadsByLastUpdated.size());
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByLastUpdated[0].id));
     BOOST_REQUIRE_EQUAL("AaDef-User2", user2ThreadsByLastUpdated[0].name);
-    BOOST_REQUIRE_EQUAL(1000, user2ThreadsByLastUpdated[0].created);
-    BOOST_REQUIRE_EQUAL(3000, user2ThreadsByLastUpdated[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user2ThreadsByLastUpdated[0].created);
+    BOOST_REQUIRE_EQUAL(3000u, user2ThreadsByLastUpdated[0].lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user2ThreadsByLastUpdated[0].visited);
     BOOST_REQUIRE( ! isIdEmpty(user2ThreadsByLastUpdated[1].id));
     BOOST_REQUIRE_EQUAL("Abc-User2", user2ThreadsByLastUpdated[1].name);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByLastUpdated[1].created);
-    BOOST_REQUIRE_EQUAL(2000, user2ThreadsByLastUpdated[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByLastUpdated[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, user2ThreadsByLastUpdated[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user2ThreadsByLastUpdated[1].visited);
 }
 
@@ -1192,24 +1192,24 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_messages_created_user_can_be_retrieved_s
     BOOST_REQUIRE_EQUAL(3u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1000-User1", user1Messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[0].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[0].parentThread.visited);
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[1].id));
     BOOST_REQUIRE_EQUAL("Msg-2-2500-User1", user1Messages[1].content);
-    BOOST_REQUIRE_EQUAL(2500, user1Messages[1].created);
+    BOOST_REQUIRE_EQUAL(2500u, user1Messages[1].created);
     BOOST_REQUIRE_EQUAL(thread2Id, user1Messages[1].parentThread.id);
-    BOOST_REQUIRE_EQUAL(2000, user1Messages[1].parentThread.created);
-    BOOST_REQUIRE_EQUAL(2000, user1Messages[1].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user1Messages[1].parentThread.created);
+    BOOST_REQUIRE_EQUAL(2000u, user1Messages[1].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1Messages[1].parentThread.visited);
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[2].id));
     BOOST_REQUIRE_EQUAL("Msg-1-3000-User1", user1Messages[2].content);
-    BOOST_REQUIRE_EQUAL(3000, user1Messages[2].created);
+    BOOST_REQUIRE_EQUAL(3000u, user1Messages[2].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[2].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[2].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[2].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[2].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[2].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[2].parentThread.visited);
 
     auto user2Messages = deserializeUserThreadMessages(
@@ -1219,17 +1219,17 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_messages_created_user_can_be_retrieved_s
     BOOST_REQUIRE_EQUAL(2u, user2Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user2Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1500-User2", user2Messages[0].content);
-    BOOST_REQUIRE_EQUAL(1500, user2Messages[0].created);
+    BOOST_REQUIRE_EQUAL(1500u, user2Messages[0].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user2Messages[0].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user2Messages[0].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user2Messages[0].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user2Messages[0].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user2Messages[0].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user2Messages[0].parentThread.visited);
     BOOST_REQUIRE( ! isIdEmpty(user2Messages[1].id));
     BOOST_REQUIRE_EQUAL("Msg-2-2000-User2", user2Messages[1].content);
-    BOOST_REQUIRE_EQUAL(2000, user2Messages[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, user2Messages[1].created);
     BOOST_REQUIRE_EQUAL(thread2Id, user2Messages[1].parentThread.id);
-    BOOST_REQUIRE_EQUAL(2000, user2Messages[1].parentThread.created);
-    BOOST_REQUIRE_EQUAL(2000, user2Messages[1].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user2Messages[1].parentThread.created);
+    BOOST_REQUIRE_EQUAL(2000u, user2Messages[1].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user2Messages[1].parentThread.visited);
 
     user1Messages = deserializeUserThreadMessages(
@@ -1239,24 +1239,24 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_messages_created_user_can_be_retrieved_s
     BOOST_REQUIRE_EQUAL(3u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-3000-User1", user1Messages[0].content);
-    BOOST_REQUIRE_EQUAL(3000, user1Messages[0].created);
+    BOOST_REQUIRE_EQUAL(3000u, user1Messages[0].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[0].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[0].parentThread.visited);
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[1].id));
     BOOST_REQUIRE_EQUAL("Msg-2-2500-User1", user1Messages[1].content);
-    BOOST_REQUIRE_EQUAL(2500, user1Messages[1].created);
+    BOOST_REQUIRE_EQUAL(2500u, user1Messages[1].created);
     BOOST_REQUIRE_EQUAL(thread2Id, user1Messages[1].parentThread.id);
-    BOOST_REQUIRE_EQUAL(2000, user1Messages[1].parentThread.created);
-    BOOST_REQUIRE_EQUAL(2000, user1Messages[1].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user1Messages[1].parentThread.created);
+    BOOST_REQUIRE_EQUAL(2000u, user1Messages[1].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1Messages[1].parentThread.visited);
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[2].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1000-User1", user1Messages[2].content);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[2].created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[2].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[2].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[2].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[2].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[2].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[2].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[2].parentThread.visited);
 
     user2Messages = deserializeUserThreadMessages(
@@ -1266,17 +1266,17 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_messages_created_user_can_be_retrieved_s
     BOOST_REQUIRE_EQUAL(2u, user2Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user2Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-2-2000-User2", user2Messages[0].content);
-    BOOST_REQUIRE_EQUAL(2000, user2Messages[0].created);
+    BOOST_REQUIRE_EQUAL(2000u, user2Messages[0].created);
     BOOST_REQUIRE_EQUAL(thread2Id, user2Messages[0].parentThread.id);
-    BOOST_REQUIRE_EQUAL(2000, user2Messages[0].parentThread.created);
-    BOOST_REQUIRE_EQUAL(2000, user2Messages[0].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user2Messages[0].parentThread.created);
+    BOOST_REQUIRE_EQUAL(2000u, user2Messages[0].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user2Messages[0].parentThread.visited);
     BOOST_REQUIRE( ! isIdEmpty(user2Messages[1].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1500-User2", user2Messages[1].content);
-    BOOST_REQUIRE_EQUAL(1500, user2Messages[1].created);
+    BOOST_REQUIRE_EQUAL(1500u, user2Messages[1].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user2Messages[1].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user2Messages[1].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user2Messages[1].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user2Messages[1].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user2Messages[1].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user2Messages[1].parentThread.visited);
 }
 
@@ -1365,24 +1365,24 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_thread_messages_are_no_longer_retrieved
     BOOST_REQUIRE_EQUAL(3u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1000-User1", user1Messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[0].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[0].parentThread.visited);
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[1].id));
     BOOST_REQUIRE_EQUAL("Msg-2-2500-User1", user1Messages[1].content);
-    BOOST_REQUIRE_EQUAL(2500, user1Messages[1].created);
+    BOOST_REQUIRE_EQUAL(2500u, user1Messages[1].created);
     BOOST_REQUIRE_EQUAL(thread2Id, user1Messages[1].parentThread.id);
-    BOOST_REQUIRE_EQUAL(2000, user1Messages[1].parentThread.created);
-    BOOST_REQUIRE_EQUAL(2000, user1Messages[1].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user1Messages[1].parentThread.created);
+    BOOST_REQUIRE_EQUAL(2000u, user1Messages[1].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1Messages[1].parentThread.visited);
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[2].id));
     BOOST_REQUIRE_EQUAL("Msg-1-3000-User1", user1Messages[2].content);
-    BOOST_REQUIRE_EQUAL(3000, user1Messages[2].created);
+    BOOST_REQUIRE_EQUAL(3000u, user1Messages[2].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[2].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[2].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[2].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[2].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[2].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[2].parentThread.visited);
 
     assertStatusCodeEqual(StatusCode::OK, handlerToObj(handler, Forum::Commands::DELETE_DISCUSSION_THREAD_MESSAGE,
@@ -1395,17 +1395,17 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_thread_messages_are_no_longer_retrieved
     BOOST_REQUIRE_EQUAL(2u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1000-User1", user1Messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[0].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[0].parentThread.visited);
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[1].id));
     BOOST_REQUIRE_EQUAL("Msg-1-3000-User1", user1Messages[1].content);
-    BOOST_REQUIRE_EQUAL(3000, user1Messages[1].created);
+    BOOST_REQUIRE_EQUAL(3000u, user1Messages[1].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[1].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[1].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[1].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[1].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[1].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[1].parentThread.visited);
 }
 
@@ -1456,24 +1456,24 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_hides_messages_when_requestin
     BOOST_REQUIRE_EQUAL(3u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-1-1000-User1", user1Messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[0].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[0].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[0].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[0].parentThread.visited);
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[1].id));
     BOOST_REQUIRE_EQUAL("Msg-2-2500-User1", user1Messages[1].content);
-    BOOST_REQUIRE_EQUAL(2500, user1Messages[1].created);
+    BOOST_REQUIRE_EQUAL(2500u, user1Messages[1].created);
     BOOST_REQUIRE_EQUAL(thread2Id, user1Messages[1].parentThread.id);
-    BOOST_REQUIRE_EQUAL(2000, user1Messages[1].parentThread.created);
-    BOOST_REQUIRE_EQUAL(2000, user1Messages[1].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user1Messages[1].parentThread.created);
+    BOOST_REQUIRE_EQUAL(2000u, user1Messages[1].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1Messages[1].parentThread.visited);
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[2].id));
     BOOST_REQUIRE_EQUAL("Msg-1-3000-User1", user1Messages[2].content);
-    BOOST_REQUIRE_EQUAL(3000, user1Messages[2].created);
+    BOOST_REQUIRE_EQUAL(3000u, user1Messages[2].created);
     BOOST_REQUIRE_EQUAL(thread1Id, user1Messages[2].parentThread.id);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[2].parentThread.created);
-    BOOST_REQUIRE_EQUAL(1000, user1Messages[2].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[2].parentThread.created);
+    BOOST_REQUIRE_EQUAL(1000u, user1Messages[2].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(1, user1Messages[2].parentThread.visited);
 
     BOOST_REQUIRE_EQUAL(2, handlerToObj(handler, Forum::Commands::COUNT_ENTITIES).get<int>("count.discussionThreads"));
@@ -1492,10 +1492,10 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_hides_messages_when_requestin
     BOOST_REQUIRE_EQUAL(1u, user1Messages.size());
     BOOST_REQUIRE( ! isIdEmpty(user1Messages[0].id));
     BOOST_REQUIRE_EQUAL("Msg-2-2500-User1", user1Messages[0].content);
-    BOOST_REQUIRE_EQUAL(2500, user1Messages[0].created);
+    BOOST_REQUIRE_EQUAL(2500u, user1Messages[0].created);
     BOOST_REQUIRE_EQUAL(thread2Id, user1Messages[0].parentThread.id);
-    BOOST_REQUIRE_EQUAL(2000, user1Messages[0].parentThread.created);
-    BOOST_REQUIRE_EQUAL(2000, user1Messages[0].parentThread.lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, user1Messages[0].parentThread.created);
+    BOOST_REQUIRE_EQUAL(2000u, user1Messages[0].parentThread.lastUpdated);
     BOOST_REQUIRE_EQUAL(0, user1Messages[0].parentThread.visited);
 }
 

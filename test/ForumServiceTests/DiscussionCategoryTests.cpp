@@ -950,7 +950,7 @@ BOOST_AUTO_TEST_CASE( Discussion_categories_include_latest_message_of_latest_thr
     BOOST_REQUIRE_EQUAL(parentCategoryId, category.id);
     BOOST_REQUIRE_EQUAL(1u, category.children.size());
     BOOST_REQUIRE(category.latestMessage);
-    BOOST_REQUIRE_EQUAL(2000, category.latestMessage->created);
+    BOOST_REQUIRE_EQUAL(2000u, category.latestMessage->created);
     BOOST_REQUIRE_EQUAL(user2Id, category.latestMessage->createdBy.id);
     BOOST_REQUIRE_EQUAL("User2", category.latestMessage->createdBy.name);
 }
@@ -1220,7 +1220,7 @@ BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_updates_latest_message_of_eac
     BOOST_REQUIRE_EQUAL(parentCategoryId, category.id);
     BOOST_REQUIRE_EQUAL(1u, category.children.size());
     BOOST_REQUIRE(category.latestMessage);
-    BOOST_REQUIRE_EQUAL(1000, category.latestMessage->created);
+    BOOST_REQUIRE_EQUAL(1000u, category.latestMessage->created);
     BOOST_REQUIRE_EQUAL(user1Id, category.latestMessage->createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", category.latestMessage->createdBy.name);
 }

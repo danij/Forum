@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_returns_the_id_name_and_creat
     assertStatusCodeEqual(StatusCode::OK, returnObject);
     BOOST_REQUIRE( ! isIdEmpty(returnObject.get<std::string>("id")));
     BOOST_REQUIRE_EQUAL("Foo", returnObject.get<std::string>("name"));
-    BOOST_REQUIRE_EQUAL(20000, returnObject.get<Timestamp>("created"));
+    BOOST_REQUIRE_EQUAL(20000u, returnObject.get<Timestamp>("created"));
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_thread_with_only_whitespace_in_the_name_fails )
@@ -388,9 +388,9 @@ BOOST_AUTO_TEST_CASE( Multiple_discussion_threads_can_be_share_the_same_name )
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
     BOOST_REQUIRE_EQUAL("abc", threads[1].name);
     BOOST_REQUIRE_EQUAL("Åbc", threads[2].name);
-    BOOST_REQUIRE_EQUAL(1000, threads[0].created);
-    BOOST_REQUIRE_EQUAL(2000, threads[1].created);
-    BOOST_REQUIRE_EQUAL(3000, threads[2].created);
+    BOOST_REQUIRE_EQUAL(1000u, threads[0].created);
+    BOOST_REQUIRE_EQUAL(2000u, threads[1].created);
+    BOOST_REQUIRE_EQUAL(3000u, threads[2].created);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_name )
@@ -447,9 +447,9 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_creation_dat
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
     BOOST_REQUIRE_EQUAL("Ghi", threads[1].name);
     BOOST_REQUIRE_EQUAL("Def", threads[2].name);
-    BOOST_REQUIRE_EQUAL(1000, threads[0].created);
-    BOOST_REQUIRE_EQUAL(2000, threads[1].created);
-    BOOST_REQUIRE_EQUAL(3000, threads[2].created);
+    BOOST_REQUIRE_EQUAL(1000u, threads[0].created);
+    BOOST_REQUIRE_EQUAL(2000u, threads[1].created);
+    BOOST_REQUIRE_EQUAL(3000u, threads[2].created);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_creation_date_descending )
@@ -475,9 +475,9 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_creation_dat
     BOOST_REQUIRE_EQUAL("Def", threads[0].name);
     BOOST_REQUIRE_EQUAL("Ghi", threads[1].name);
     BOOST_REQUIRE_EQUAL("Abc", threads[2].name);
-    BOOST_REQUIRE_EQUAL(3000, threads[0].created);
-    BOOST_REQUIRE_EQUAL(2000, threads[1].created);
-    BOOST_REQUIRE_EQUAL(1000, threads[2].created);
+    BOOST_REQUIRE_EQUAL(3000u, threads[0].created);
+    BOOST_REQUIRE_EQUAL(2000u, threads[1].created);
+    BOOST_REQUIRE_EQUAL(1000u, threads[2].created);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_last_updated_ascending_and_descending )
@@ -514,12 +514,12 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_last_updated
     BOOST_REQUIRE_EQUAL("Ghi", threads[0].name);
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
     BOOST_REQUIRE_EQUAL("Aabc", threads[2].name);
-    BOOST_REQUIRE_EQUAL(2000, threads[0].lastUpdated);
-    BOOST_REQUIRE_EQUAL(3000, threads[1].lastUpdated);
-    BOOST_REQUIRE_EQUAL(4000, threads[2].lastUpdated);
-    BOOST_REQUIRE_EQUAL(2000, threads[0].created);
-    BOOST_REQUIRE_EQUAL(3000, threads[1].created);
-    BOOST_REQUIRE_EQUAL(1000, threads[2].created);
+    BOOST_REQUIRE_EQUAL(2000u, threads[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(3000u, threads[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(4000u, threads[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, threads[0].created);
+    BOOST_REQUIRE_EQUAL(3000u, threads[1].created);
+    BOOST_REQUIRE_EQUAL(1000u, threads[2].created);
 
     threads = deserializeThreads(handlerToObj(handler,
                                               Forum::Commands::GET_DISCUSSION_THREADS_BY_LAST_UPDATED,
@@ -529,12 +529,12 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_can_be_retrieved_sorted_by_last_updated
     BOOST_REQUIRE_EQUAL("Aabc", threads[0].name);
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
     BOOST_REQUIRE_EQUAL("Ghi", threads[2].name);
-    BOOST_REQUIRE_EQUAL(4000, threads[0].lastUpdated);
-    BOOST_REQUIRE_EQUAL(3000, threads[1].lastUpdated);
-    BOOST_REQUIRE_EQUAL(2000, threads[2].lastUpdated);
-    BOOST_REQUIRE_EQUAL(1000, threads[0].created);
-    BOOST_REQUIRE_EQUAL(3000, threads[1].created);
-    BOOST_REQUIRE_EQUAL(2000, threads[2].created);
+    BOOST_REQUIRE_EQUAL(4000u, threads[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(3000u, threads[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, threads[2].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, threads[0].created);
+    BOOST_REQUIRE_EQUAL(3000u, threads[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, threads[2].created);
 }
 
 BOOST_AUTO_TEST_CASE( Deleting_a_discussion_thread_with_an_invalid_id_returns_invalid_parameters )
@@ -600,13 +600,13 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_creation_and_last_up
 
     BOOST_REQUIRE( ! isIdEmpty(threads[0].id));
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
-    BOOST_REQUIRE_EQUAL(1000, threads[0].created);
-    BOOST_REQUIRE_EQUAL(1000, threads[0].lastUpdated);
+    BOOST_REQUIRE_EQUAL(1000u, threads[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, threads[0].lastUpdated);
 
     BOOST_REQUIRE( ! isIdEmpty(threads[1].id));
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
-    BOOST_REQUIRE_EQUAL(2000, threads[1].created);
-    BOOST_REQUIRE_EQUAL(2000, threads[1].lastUpdated);
+    BOOST_REQUIRE_EQUAL(2000u, threads[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, threads[1].lastUpdated);
 }
 
 BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_returns_each_user_that_created_them )
@@ -822,7 +822,7 @@ BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_returns_the_id_parent_id_and
     assertStatusCodeEqual(StatusCode::OK, returnObject);
     BOOST_REQUIRE( ! isIdEmpty(returnObject.get<std::string>("id")));
     BOOST_REQUIRE_EQUAL(threadId, returnObject.get<std::string>("parentId"));
-    BOOST_REQUIRE_EQUAL(20000, returnObject.get<Timestamp>("created"));
+    BOOST_REQUIRE_EQUAL(20000u, returnObject.get<Timestamp>("created"));
 }
 
 BOOST_AUTO_TEST_CASE( Creating_a_discussion_message_without_specifying_the_discussion_thread_fails )
@@ -975,17 +975,17 @@ BOOST_AUTO_TEST_CASE( Retrieving_a_discussion_thread_also_returns_messages_order
 
     BOOST_REQUIRE( ! isIdEmpty(thread1.messages[0].id));
     BOOST_REQUIRE_EQUAL("aaaaaaaaaaa", thread1.messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, thread1.messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, thread1.messages[0].created);
     BOOST_REQUIRE_EQUAL(user1, thread1.messages[0].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread1.messages[0].createdBy.name);
     BOOST_REQUIRE( ! isIdEmpty(thread1.messages[1].id));
     BOOST_REQUIRE_EQUAL("bbbbbbbbbbb", thread1.messages[1].content);
-    BOOST_REQUIRE_EQUAL(2000, thread1.messages[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, thread1.messages[1].created);
     BOOST_REQUIRE_EQUAL(user2, thread1.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User2", thread1.messages[1].createdBy.name);
     BOOST_REQUIRE( ! isIdEmpty(thread1.messages[2].id));
     BOOST_REQUIRE_EQUAL("ccccccccccc", thread1.messages[2].content);
-    BOOST_REQUIRE_EQUAL(3000, thread1.messages[2].created);
+    BOOST_REQUIRE_EQUAL(3000u, thread1.messages[2].created);
     BOOST_REQUIRE_EQUAL(user1, thread1.messages[2].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread1.messages[2].createdBy.name);
 
@@ -998,12 +998,12 @@ BOOST_AUTO_TEST_CASE( Retrieving_a_discussion_thread_also_returns_messages_order
 
     BOOST_REQUIRE( ! isIdEmpty(thread2.messages[0].id));
     BOOST_REQUIRE_EQUAL("11111111111", thread2.messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, thread2.messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, thread2.messages[0].created);
     BOOST_REQUIRE_EQUAL(user1, thread2.messages[0].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread2.messages[0].createdBy.name);
     BOOST_REQUIRE( ! isIdEmpty(thread2.messages[1].id));
     BOOST_REQUIRE_EQUAL("22222222222", thread2.messages[1].content);
-    BOOST_REQUIRE_EQUAL(2000, thread2.messages[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, thread2.messages[1].created);
     BOOST_REQUIRE_EQUAL(user2, thread2.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User2", thread2.messages[1].createdBy.name);
 }
@@ -1149,15 +1149,15 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_succeeds )
 
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
     BOOST_REQUIRE_EQUAL("Message1 - Updated", thread.messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, thread.messages[0].created);
     BOOST_REQUIRE(thread.messages[0].lastUpdated);
-    BOOST_REQUIRE_EQUAL(3000, thread.messages[0].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL(3000u, thread.messages[0].lastUpdated->at);
     BOOST_REQUIRE_EQUAL(userId, thread.messages[0].createdBy.id);
     BOOST_REQUIRE_EQUAL("User", thread.messages[0].createdBy.name);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
     BOOST_REQUIRE_EQUAL("Message2", thread.messages[1].content);
-    BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, thread.messages[1].created);
     BOOST_REQUIRE( ! thread.messages[1].lastUpdated);
     BOOST_REQUIRE_EQUAL(userId, thread.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User", thread.messages[1].createdBy.name);
@@ -1206,9 +1206,9 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_stores_the_us
 
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
     BOOST_REQUIRE_EQUAL("Message1 - Updated", thread.messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, thread.messages[0].created);
     BOOST_REQUIRE(thread.messages[0].lastUpdated);
-    BOOST_REQUIRE_EQUAL(3000, thread.messages[0].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL(3000u, thread.messages[0].lastUpdated->at);
     BOOST_REQUIRE_EQUAL("", thread.messages[0].lastUpdated->userId);
     BOOST_REQUIRE_EQUAL("", thread.messages[0].lastUpdated->userName);
     BOOST_REQUIRE_EQUAL(user1Id, thread.messages[0].createdBy.id);
@@ -1216,9 +1216,9 @@ BOOST_AUTO_TEST_CASE( Changing_a_discussion_thread_message_content_stores_the_us
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
     BOOST_REQUIRE_EQUAL("Message2 - Updated", thread.messages[1].content);
-    BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, thread.messages[1].created);
     BOOST_REQUIRE(thread.messages[1].lastUpdated);
-    BOOST_REQUIRE_EQUAL(4000, thread.messages[1].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL(4000u, thread.messages[1].lastUpdated->at);
     BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].lastUpdated->userId);
     BOOST_REQUIRE_EQUAL("User2", thread.messages[1].lastUpdated->userName);
     BOOST_REQUIRE_EQUAL(user1Id, thread.messages[1].createdBy.id);
@@ -1273,10 +1273,10 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_message_store_the_ip_address_and_user_ag
 
     BOOST_REQUIRE_EQUAL(message1Id, thread.messages[0].id);
     BOOST_REQUIRE_EQUAL("Message1 - Updated", thread.messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, thread.messages[0].created);
     BOOST_REQUIRE_EQUAL("1.2.3.4", thread.messages[0].ip);
     BOOST_REQUIRE(thread.messages[0].lastUpdated);
-    BOOST_REQUIRE_EQUAL(3000, thread.messages[0].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL(3000u, thread.messages[0].lastUpdated->at);
     BOOST_REQUIRE_EQUAL("", thread.messages[0].lastUpdated->userId);
     BOOST_REQUIRE_EQUAL("", thread.messages[0].lastUpdated->userName);
     BOOST_REQUIRE_EQUAL("1.2.3.4", thread.messages[0].lastUpdated->ip);
@@ -1285,10 +1285,10 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_message_store_the_ip_address_and_user_ag
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
     BOOST_REQUIRE_EQUAL("Message2 - Updated", thread.messages[1].content);
-    BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, thread.messages[1].created);
     BOOST_REQUIRE_EQUAL("1.2.3.4", thread.messages[1].ip);
     BOOST_REQUIRE(thread.messages[1].lastUpdated);
-    BOOST_REQUIRE_EQUAL(4000, thread.messages[1].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL(4000u, thread.messages[1].lastUpdated->at);
     BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].lastUpdated->userId);
     BOOST_REQUIRE_EQUAL("User2", thread.messages[1].lastUpdated->userName);
     BOOST_REQUIRE_EQUAL("2.3.4.5", thread.messages[1].lastUpdated->ip);
@@ -1319,7 +1319,7 @@ BOOST_AUTO_TEST_CASE( Changing_discussion_thread_messages_records_change_reason 
 
     BOOST_REQUIRE_EQUAL(messageId, thread.messages[0].id);
     BOOST_REQUIRE(thread.messages[0].lastUpdated);
-    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL(1000u, thread.messages[0].lastUpdated->at);
     BOOST_REQUIRE_EQUAL("", thread.messages[0].lastUpdated->reason);
 
     {
@@ -1336,7 +1336,7 @@ BOOST_AUTO_TEST_CASE( Changing_discussion_thread_messages_records_change_reason 
 
     BOOST_REQUIRE_EQUAL(messageId, thread.messages[0].id);
     BOOST_REQUIRE(thread.messages[0].lastUpdated);
-    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].lastUpdated->at);
+    BOOST_REQUIRE_EQUAL(1000u, thread.messages[0].lastUpdated->at);
     BOOST_REQUIRE_EQUAL("Change Reason", thread.messages[0].lastUpdated->reason);
 }
 
@@ -1409,17 +1409,17 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_messages_no_longer_retrieved )
 
     BOOST_REQUIRE( ! isIdEmpty(thread1.messages[0].id));
     BOOST_REQUIRE_EQUAL("aaaaaaaaaaa", thread1.messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, thread1.messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, thread1.messages[0].created);
     BOOST_REQUIRE_EQUAL(user1, thread1.messages[0].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread1.messages[0].createdBy.name);
     BOOST_REQUIRE( ! isIdEmpty(thread1.messages[1].id));
     BOOST_REQUIRE_EQUAL("bbbbbbbbbbb", thread1.messages[1].content);
-    BOOST_REQUIRE_EQUAL(2000, thread1.messages[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, thread1.messages[1].created);
     BOOST_REQUIRE_EQUAL(user2, thread1.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User2", thread1.messages[1].createdBy.name);
     BOOST_REQUIRE( ! isIdEmpty(thread1.messages[2].id));
     BOOST_REQUIRE_EQUAL("ccccccccccc", thread1.messages[2].content);
-    BOOST_REQUIRE_EQUAL(3000, thread1.messages[2].created);
+    BOOST_REQUIRE_EQUAL(3000u, thread1.messages[2].created);
     BOOST_REQUIRE_EQUAL(user1, thread1.messages[2].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread1.messages[2].createdBy.name);
 
@@ -1432,12 +1432,12 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_messages_no_longer_retrieved )
 
     BOOST_REQUIRE( ! isIdEmpty(thread2.messages[0].id));
     BOOST_REQUIRE_EQUAL("11111111111", thread2.messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, thread2.messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, thread2.messages[0].created);
     BOOST_REQUIRE_EQUAL(user1, thread2.messages[0].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread2.messages[0].createdBy.name);
     BOOST_REQUIRE( ! isIdEmpty(thread2.messages[1].id));
     BOOST_REQUIRE_EQUAL("22222222222", thread2.messages[1].content);
-    BOOST_REQUIRE_EQUAL(2000, thread2.messages[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, thread2.messages[1].created);
     BOOST_REQUIRE_EQUAL(user2, thread2.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User2", thread2.messages[1].createdBy.name);
 
@@ -1457,12 +1457,12 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_messages_no_longer_retrieved )
 
     BOOST_REQUIRE( ! isIdEmpty(thread1.messages[0].id));
     BOOST_REQUIRE_EQUAL("bbbbbbbbbbb", thread1.messages[0].content);
-    BOOST_REQUIRE_EQUAL(2000, thread1.messages[0].created);
+    BOOST_REQUIRE_EQUAL(2000u, thread1.messages[0].created);
     BOOST_REQUIRE_EQUAL(user2, thread1.messages[0].createdBy.id);
     BOOST_REQUIRE_EQUAL("User2", thread1.messages[0].createdBy.name);
     BOOST_REQUIRE( ! isIdEmpty(thread1.messages[1].id));
     BOOST_REQUIRE_EQUAL("ccccccccccc", thread1.messages[1].content);
-    BOOST_REQUIRE_EQUAL(3000, thread1.messages[1].created);
+    BOOST_REQUIRE_EQUAL(3000u, thread1.messages[1].created);
     BOOST_REQUIRE_EQUAL(user1, thread1.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread1.messages[1].createdBy.name);
 
@@ -1475,7 +1475,7 @@ BOOST_AUTO_TEST_CASE( Deleted_discussion_messages_no_longer_retrieved )
 
     BOOST_REQUIRE( ! isIdEmpty(thread2.messages[0].id));
     BOOST_REQUIRE_EQUAL("11111111111", thread2.messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, thread2.messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, thread2.messages[0].created);
     BOOST_REQUIRE_EQUAL(user1, thread2.messages[0].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread2.messages[0].createdBy.name);
 }
@@ -1531,12 +1531,12 @@ BOOST_AUTO_TEST_CASE( Deleting_a_user_removes_all_messages_created_by_that_user 
 
     BOOST_REQUIRE(! isIdEmpty(thread.messages[0].id));
     BOOST_REQUIRE_EQUAL("aaaaaaaaaaa", thread.messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, thread.messages[0].created);
     BOOST_REQUIRE_EQUAL(user1, thread.messages[0].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread.messages[0].createdBy.name);
     BOOST_REQUIRE(! isIdEmpty(thread.messages[1].id));
     BOOST_REQUIRE_EQUAL("ccccccccccc", thread.messages[1].content);
-    BOOST_REQUIRE_EQUAL(3000, thread.messages[1].created);
+    BOOST_REQUIRE_EQUAL(3000u, thread.messages[1].created);
     BOOST_REQUIRE_EQUAL(user1, thread.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread.messages[1].createdBy.name);
 }
@@ -1584,22 +1584,22 @@ BOOST_AUTO_TEST_CASE( Discussion_threads_include_info_about_latest_message_only_
     BOOST_REQUIRE_EQUAL(2u, threads.size());
 
     BOOST_REQUIRE_EQUAL("Abc", threads[0].name);
-    BOOST_REQUIRE_EQUAL(1000, threads[0].created);
-    BOOST_REQUIRE_EQUAL(3000, threads[0].latestMessage.created);
+    BOOST_REQUIRE_EQUAL(1000u, threads[0].created);
+    BOOST_REQUIRE_EQUAL(3000u, threads[0].latestMessage.created);
     BOOST_REQUIRE_EQUAL(user1, threads[0].latestMessage.createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", threads[0].latestMessage.createdBy.name);
-    BOOST_REQUIRE_EQUAL(500, threads[0].latestMessage.createdBy.created);
-    BOOST_REQUIRE_EQUAL(3000, threads[0].latestMessage.createdBy.lastSeen);
+    BOOST_REQUIRE_EQUAL(500u, threads[0].latestMessage.createdBy.created);
+    BOOST_REQUIRE_EQUAL(3000u, threads[0].latestMessage.createdBy.lastSeen);
     BOOST_REQUIRE_EQUAL(2, threads[0].latestMessage.createdBy.threadCount);
     BOOST_REQUIRE_EQUAL(2, threads[0].latestMessage.createdBy.messageCount);
 
     BOOST_REQUIRE_EQUAL("Def", threads[1].name);
-    BOOST_REQUIRE_EQUAL(1000, threads[1].created);
-    BOOST_REQUIRE_EQUAL(2000, threads[1].latestMessage.created);
+    BOOST_REQUIRE_EQUAL(1000u, threads[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, threads[1].latestMessage.created);
     BOOST_REQUIRE_EQUAL(user2, threads[1].latestMessage.createdBy.id);
     BOOST_REQUIRE_EQUAL("User2", threads[1].latestMessage.createdBy.name);
-    BOOST_REQUIRE_EQUAL(500, threads[1].latestMessage.createdBy.created);
-    BOOST_REQUIRE_EQUAL(2000, threads[1].latestMessage.createdBy.lastSeen);
+    BOOST_REQUIRE_EQUAL(500u, threads[1].latestMessage.createdBy.created);
+    BOOST_REQUIRE_EQUAL(2000u, threads[1].latestMessage.createdBy.lastSeen);
     BOOST_REQUIRE_EQUAL(0, threads[1].latestMessage.createdBy.threadCount);
     BOOST_REQUIRE_EQUAL(1, threads[1].latestMessage.createdBy.messageCount);
 }
@@ -1871,17 +1871,17 @@ BOOST_AUTO_TEST_CASE( Merging_discussion_threads_works_ok )
     BOOST_REQUIRE_EQUAL("Message 1", thread.messages[0].content);
     BOOST_REQUIRE_EQUAL(user1Id, thread.messages[0].createdBy.id);
     BOOST_REQUIRE_EQUAL("User1", thread.messages[0].createdBy.name);
-    BOOST_REQUIRE_EQUAL(1000, thread.messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, thread.messages[0].created);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread.messages[1].id);
     BOOST_REQUIRE_EQUAL("Message 2", thread.messages[1].content);
     BOOST_REQUIRE_EQUAL(user2Id, thread.messages[1].createdBy.id);
     BOOST_REQUIRE_EQUAL("User2", thread.messages[1].createdBy.name);
-    BOOST_REQUIRE_EQUAL(2000, thread.messages[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, thread.messages[1].created);
 
     BOOST_REQUIRE_EQUAL(message3Id, thread.messages[2].id);
     BOOST_REQUIRE_EQUAL("Message 3", thread.messages[2].content);
-    BOOST_REQUIRE_EQUAL(3000, thread.messages[2].created);
+    BOOST_REQUIRE_EQUAL(3000u, thread.messages[2].created);
 }
 
 BOOST_AUTO_TEST_CASE( Moving_discussion_threads_messages_requires_a_valid_message_id_and_a_valid_thread_id )
@@ -1957,7 +1957,7 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_works_ok )
 
     BOOST_REQUIRE_EQUAL(message3Id, thread1.messages[0].id);
     BOOST_REQUIRE_EQUAL("Message 3", thread1.messages[0].content);
-    BOOST_REQUIRE_EQUAL(3000, thread1.messages[0].created);
+    BOOST_REQUIRE_EQUAL(3000u, thread1.messages[0].created);
 
     auto thread2 = deserializeThread(handlerToObj(handler,
                                                  Forum::Commands::GET_DISCUSSION_THREAD_BY_ID,
@@ -1970,11 +1970,11 @@ BOOST_AUTO_TEST_CASE( Moving_discussion_thread_messages_works_ok )
 
     BOOST_REQUIRE_EQUAL(message1Id, thread2.messages[0].id);
     BOOST_REQUIRE_EQUAL("Message 1", thread2.messages[0].content);
-    BOOST_REQUIRE_EQUAL(1000, thread2.messages[0].created);
+    BOOST_REQUIRE_EQUAL(1000u, thread2.messages[0].created);
 
     BOOST_REQUIRE_EQUAL(message2Id, thread2.messages[1].id);
     BOOST_REQUIRE_EQUAL("Message 2", thread2.messages[1].content);
-    BOOST_REQUIRE_EQUAL(2000, thread2.messages[1].created);
+    BOOST_REQUIRE_EQUAL(2000u, thread2.messages[1].created);
 }
 
 BOOST_AUTO_TEST_CASE( Retrieved_discussion_threads_have_visitedSinceLastChange_false_initially )
@@ -2503,7 +2503,7 @@ BOOST_AUTO_TEST_CASE( Retrieving_discussion_threads_can_check_for_latest_visible
                                     .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread.latestVisibleChangeAt);
     {
         DisplaySettings settings;
         settings.checkNotChangedSince = 100;
@@ -2539,7 +2539,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thre
                                     .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread.latestVisibleChangeAt);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_update )
@@ -2557,7 +2557,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thre
                                     .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread.latestVisibleChangeAt);
 
     {
         TimestampChanger __(2000);
@@ -2567,7 +2567,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thre
                                .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(2000u, thread.latestVisibleChangeAt);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_adding_messages_to_thread )
@@ -2585,7 +2585,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_addi
                                     .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread.latestVisibleChangeAt);
 
     {
         TimestampChanger __(2000);
@@ -2595,7 +2595,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_addi
                                .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(2000u, thread.latestVisibleChangeAt);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_editing_messages_from_thread )
@@ -2613,7 +2613,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_edit
                                     .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread.latestVisibleChangeAt);
 
     {
         TimestampChanger __(2000);
@@ -2623,7 +2623,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_edit
                                .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(2000u, thread.latestVisibleChangeAt);
 
     {
         TimestampChanger __(3000);
@@ -2633,7 +2633,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_edit
                                .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(3000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(3000u, thread.latestVisibleChangeAt);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_removing_messages_from_thread )
@@ -2651,7 +2651,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_remo
                                     .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread.latestVisibleChangeAt);
 
     {
         TimestampChanger __(2000);
@@ -2661,7 +2661,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_remo
                                .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(2000u, thread.latestVisibleChangeAt);
 
     {
         TimestampChanger __(3000);
@@ -2671,7 +2671,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_remo
                                .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(3000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(3000u, thread.latestVisibleChangeAt);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_moving_messages_from_thread )
@@ -2690,13 +2690,13 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_movi
                                      .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(thread1Id, thread1.id);
-    BOOST_REQUIRE_EQUAL(1000, thread1.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread1.latestVisibleChangeAt);
 
     auto thread2 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
                                      .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
-    BOOST_REQUIRE_EQUAL(1000, thread2.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread2.latestVisibleChangeAt);
 
     {
         TimestampChanger __(2000);
@@ -2706,13 +2706,13 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_movi
                                 .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(thread1Id, thread1.id);
-    BOOST_REQUIRE_EQUAL(2000, thread1.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(2000u, thread1.latestVisibleChangeAt);
 
     thread2 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
                                 .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
-    BOOST_REQUIRE_EQUAL(1000, thread2.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread2.latestVisibleChangeAt);
 
     {
         TimestampChanger __(3000);
@@ -2722,13 +2722,13 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_movi
                                 .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(thread1Id, thread1.id);
-    BOOST_REQUIRE_EQUAL(3000, thread1.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(3000u, thread1.latestVisibleChangeAt);
 
     thread2 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
                                 .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
-    BOOST_REQUIRE_EQUAL(3000, thread2.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(3000u, thread2.latestVisibleChangeAt);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_merging_threads )
@@ -2747,13 +2747,13 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_merg
                                      .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(thread1Id, thread1.id);
-    BOOST_REQUIRE_EQUAL(1000, thread1.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread1.latestVisibleChangeAt);
 
     auto thread2 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
                                      .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
-    BOOST_REQUIRE_EQUAL(1000, thread2.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread2.latestVisibleChangeAt);
 
     {
         TimestampChanger __(2000);
@@ -2763,13 +2763,13 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_merg
                                 .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(thread1Id, thread1.id);
-    BOOST_REQUIRE_EQUAL(2000, thread1.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(2000u, thread1.latestVisibleChangeAt);
 
     thread2 = deserializeThread(handlerToObj(handler, Forum::Commands::GET_DISCUSSION_THREAD_BY_ID, { thread2Id })
                                 .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
-    BOOST_REQUIRE_EQUAL(1000, thread2.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread2.latestVisibleChangeAt);
 
     {
         TimestampChanger __(3000);
@@ -2779,7 +2779,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_merg
                                 .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(thread2Id, thread2.id);
-    BOOST_REQUIRE_EQUAL(3000, thread2.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(3000u, thread2.latestVisibleChangeAt);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_tag_link_change )
@@ -2798,7 +2798,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thre
                                     .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread.latestVisibleChangeAt);
 
     {
         TimestampChanger __(2000);
@@ -2808,7 +2808,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thre
                                .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(2000u, thread.latestVisibleChangeAt);
 
     {
         TimestampChanger __(3000);
@@ -2818,7 +2818,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thre
                                .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(3000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(3000u, thread.latestVisibleChangeAt);
 }
 
 BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thread_category_link_change )
@@ -2840,7 +2840,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thre
                                     .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(1000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(1000u, thread.latestVisibleChangeAt);
 
     {
         TimestampChanger __(2000);
@@ -2850,7 +2850,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thre
                                .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(2000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(2000u, thread.latestVisibleChangeAt);
 
     {
         TimestampChanger __(3000);
@@ -2860,7 +2860,7 @@ BOOST_AUTO_TEST_CASE( Discussion_thread_latest_visible_change_is_updated_on_thre
                                .get_child("thread"));
 
     BOOST_REQUIRE_EQUAL(threadId, thread.id);
-    BOOST_REQUIRE_EQUAL(3000, thread.latestVisibleChangeAt);
+    BOOST_REQUIRE_EQUAL(3000u, thread.latestVisibleChangeAt);
 }
 
 
