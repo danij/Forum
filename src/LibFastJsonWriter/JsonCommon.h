@@ -51,10 +51,7 @@ namespace Json
         return std::any_of(value, value + length, [](const char c)
         {
             const auto u = static_cast<unsigned char>(c);
-            return (u < 0x20)
-                || ('"' == c)
-                || ('/' == c)
-                || ('\\' == c);
+            return ToEscape[u];
         });
     }
 }
