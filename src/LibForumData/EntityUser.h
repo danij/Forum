@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "EntityMessageCommentCollection.h"
 #include "EntityPrivateMessageCollection.h"
 #include "EntityAttachmentCollection.h"
+#include "CircularBuffer.h"
 #include "SpinLock.h"
 
 #include <atomic>
@@ -315,7 +316,7 @@ namespace Forum::Entities
         std::unique_ptr<MessageCommentCollectionLowMemory> messageComments_;
 
         static constexpr size_t MaxVotesInHistory = 64;
-        boost::circular_buffer_space_optimized<ReceivedVoteHistory> voteHistory_{ MaxVotesInHistory };
+        Helpers::CircularBuffer<ReceivedVoteHistory, MaxVotesInHistory> voteHistory_{};
         mutable std::atomic<Timestamp> voteHistoryLastRetrieved_{ 0 };
 
         int_fast32_t receivedUpVotes_{ 0 };
@@ -326,7 +327,7 @@ namespace Forum::Entities
         mutable std::atomic<uint16_t> privateMessagesNotRead_{ 0 };
 
         static constexpr size_t MaxQuotesInHistory = 64;
-        boost::circular_buffer_space_optimized<IdType> quoteHistory_{ MaxQuotesInHistory };
+        Helpers::CircularBuffer<IdType, MaxQuotesInHistory> quoteHistory_{};
 
         mutable std::atomic_bool showInOnlineUsers_{ false };
 
