@@ -39,7 +39,7 @@ namespace Forum::Entities
     /**
      * Representing a timestamp as the number of seconds since the UNIX EPOCH
      */
-    typedef uint32_t Timestamp;
+    typedef int64_t Timestamp;
 
     constexpr Timestamp TimestampMin = std::numeric_limits<Timestamp>::min();
     constexpr Timestamp TimestampMax = std::numeric_limits<Timestamp>::max();
