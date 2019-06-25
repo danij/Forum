@@ -315,7 +315,7 @@ namespace Forum::Entities
 
         std::unique_ptr<MessageCommentCollectionLowMemory> messageComments_;
 
-        static constexpr size_t MaxVotesInHistory = 64;
+        static constexpr size_t MaxVotesInHistory = 16;
         Helpers::CircularBuffer<ReceivedVoteHistory, MaxVotesInHistory> voteHistory_{};
         mutable std::atomic<Timestamp> voteHistoryLastRetrieved_{ 0 };
 
@@ -326,7 +326,7 @@ namespace Forum::Entities
         mutable std::atomic<uint16_t> quotesHistoryNotRead_{ 0 };
         mutable std::atomic<uint16_t> privateMessagesNotRead_{ 0 };
 
-        static constexpr size_t MaxQuotesInHistory = 64;
+        static constexpr size_t MaxQuotesInHistory = 16;
         Helpers::CircularBuffer<IdType, MaxQuotesInHistory> quoteHistory_{};
 
         mutable std::atomic_bool showInOnlineUsers_{ false };
