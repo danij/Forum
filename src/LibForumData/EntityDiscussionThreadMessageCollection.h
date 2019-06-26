@@ -18,10 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "CallbackWrapper.h"
 #include "ConstCollectionAdapter.h"
 #include "EntityDiscussionThreadMessage.h"
-
-#include <functional>
 
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
@@ -76,8 +75,8 @@ namespace Forum::Entities
 
         SORTED_VECTOR_COLLECTION(DiscussionThreadMessage, created) byCreated_;
 
-        std::function<void()> onPrepareCountChange_;
-        std::function<void()> onCountChange_;
+        Helpers::CallbackWrapper<> onPrepareCountChange_;
+        Helpers::CallbackWrapper<> onCountChange_;
     };
 
     class DiscussionThreadMessageCollectionLowMemory final : boost::noncopyable
@@ -125,7 +124,7 @@ namespace Forum::Entities
 
         SORTED_VECTOR_COLLECTION(DiscussionThreadMessage, created) byCreated_;
 
-        std::function<void()> onPrepareCountChange_;
-        std::function<void()> onCountChange_;
+        Helpers::CallbackWrapper<> onPrepareCountChange_;
+        Helpers::CallbackWrapper<> onCountChange_;
     };
 }

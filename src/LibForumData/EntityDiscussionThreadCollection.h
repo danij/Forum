@@ -18,12 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "CallbackWrapper.h"
 #include "ConstCollectionAdapter.h"
 #include "ContextProviders.h"
 #include "EntityDiscussionThread.h"
 #include "TypeHelpers.h"
 
-#include <functional>
 #include <unordered_map>
 
 #include <boost/noncopyable.hpp>
@@ -152,8 +152,8 @@ namespace Forum::Entities
         SORTED_VECTOR_COLLECTION_GREATER(DiscussionThread, messageCount) byMessageCount_;
         SORTED_VECTOR_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
 
-        std::function<void()> onPrepareCountChange_;
-        std::function<void()> onCountChange_;
+        Helpers::CallbackWrapper<> onPrepareCountChange_;
+        Helpers::CallbackWrapper<> onCountChange_;
     };
 
     class DiscussionThreadCollectionWithHashedIdAndPinOrder final : public DiscussionThreadCollectionWithHashedId
@@ -280,7 +280,7 @@ namespace Forum::Entities
         SORTED_VECTOR_COLLECTION_GREATER(DiscussionThread, messageCount) byMessageCount_;
         SORTED_VECTOR_COLLECTION_ITERATOR(byMessageCount_) byMessageCountUpdateIt_;
 
-        std::function<void()> onPrepareCountChange_;
-        std::function<void()> onCountChange_;
+        Helpers::CallbackWrapper<> onPrepareCountChange_;
+        Helpers::CallbackWrapper<> onCountChange_;
     };
 }

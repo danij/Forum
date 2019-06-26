@@ -69,7 +69,7 @@ namespace Json
     {
     public:
         explicit JsonReadyStringBase(std::string_view source);
-        virtual ~JsonReadyStringBase() = default;
+        ~JsonReadyStringBase() = default;
 
         JsonReadyStringBase(const JsonReadyStringBase&) = default;
         JsonReadyStringBase(JsonReadyStringBase&&) noexcept = default;
@@ -79,6 +79,7 @@ namespace Json
 
         bool operator==(const JsonReadyStringBase&) const noexcept;
 
+        bool empty() const noexcept;
         bool needsJsonEscape() const noexcept;
 
         std::string_view string() const noexcept;
@@ -88,7 +89,7 @@ namespace Json
         StringContainer<StackSize, SizeType> container_;
     };
     
-    template<size_t StackSize>
+    template<size_t StackSize = sizeof(char*)>
     class JsonReadyString : public JsonReadyStringBase<StackSize, JsonReadyString<StackSize>>
     {
     public:
@@ -139,6 +140,12 @@ namespace Json
     bool JsonReadyStringBase<StackSize, Derived, SizeType>::operator==(const JsonReadyStringBase& other) const noexcept
     {
         return container_ == other.container_;
+    }
+
+    template <size_t StackSize, typename Derived, typename SizeType>
+    bool JsonReadyStringBase<StackSize, Derived, SizeType>::empty() const noexcept
+    {
+        return string().empty();
     }
 
     template <size_t StackSize, typename Derived, typename SizeType>

@@ -14,6 +14,7 @@ set(SOURCE_FILES
         private/UuidString.cpp)
 
 set(HEADER_FILES
+        CallbackWrapper.h
         CircularBuffer.h
         ConstCollectionAdapter.h
         OutputHelpers.h

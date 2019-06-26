@@ -57,7 +57,7 @@ namespace Forum::Entities
         const auto& info()              const { return info_; }
         const auto& title()             const { return title_; }
         const auto& signature()         const { return signature_; }
-         StringView logo()              const { return logo_; }
+        const auto& logo()              const { return logo_; }
                bool hasLogo()           const { return ! logo_.empty(); }
 
                auto lastSeen()          const { return lastSeen_; }
@@ -115,9 +115,10 @@ namespace Forum::Entities
         };
 
         typedef Helpers::JsonReadyStringWithSortKey<64> NameType;
-        typedef Json::JsonReadyString<4> InfoType;
-        typedef Json::JsonReadyString<4> TitleType;
-        typedef Json::JsonReadyString<4> SignatureType;
+        typedef Json::JsonReadyString<> InfoType;
+        typedef Json::JsonReadyString<> TitleType;
+        typedef Json::JsonReadyString<> SignatureType;
+        typedef Json::JsonReadyString<> LogoType;
 
         typedef boost::container::flat_set<DiscussionThreadMessagePtr> VotedMessagesType;
 
@@ -157,16 +158,24 @@ namespace Forum::Entities
 
         User(const IdType id, NameType&& name, const Timestamp created, VisitDetails creationDetails)
             : id_(id), created_(created), creationDetails_(creationDetails),
-              name_(std::move(name)), info_({}), title_({}), signature_({})
+              name_(std::move(name)), info_({}), title_({}), signature_({}), logo_({})
         {
-            threads_.onPrepareCountChange()        = [this]() { changeNotifications_.onPrepareUpdateThreadCount(*this); };
-            threads_.onCountChange()               = [this]() { changeNotifications_.onUpdateThreadCount(*this); };
-
-            threadMessages_.onPrepareCountChange() = [this]() { changeNotifications_.onPrepareUpdateMessageCount(*this); };
-            threadMessages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
+            threads_.onPrepareCountChange()
+                = [](void* state) { changeNotifications_.onPrepareUpdateThreadCount(*reinterpret_cast<User*>(state)); };
+            threads_.onPrepareCountChange().state() = this;
+            threads_.onCountChange()
+                = [](void* state) { changeNotifications_.onUpdateThreadCount(*reinterpret_cast<User*>(state)); };
+            threads_.onCountChange().state() = this;
+                
+            threadMessages_.onPrepareCountChange()
+                = [](void* state) { changeNotifications_.onPrepareUpdateMessageCount(*reinterpret_cast<User*>(state)); };
+            threadMessages_.onPrepareCountChange().state() = this;
+            threadMessages_.onCountChange()
+                = [](void* state) { changeNotifications_.onUpdateMessageCount(*reinterpret_cast<User*>(state)); };
+            threadMessages_.onCountChange().state() = this;
         }
 
-        explicit User(const StringView name) : id_(IdType::empty), name_(name), info_({}), title_({}), signature_({})
+        explicit User(const StringView name) : id_(IdType::empty), name_(name), info_({}), title_({}), signature_({}), logo_({})
         {}
 
         auto& info()              { return info_; }
@@ -302,7 +311,7 @@ namespace Forum::Entities
         InfoType info_;
         TitleType title_;
         SignatureType signature_;
-        std::string logo_;
+        LogoType logo_;
 
         Timestamp lastSeen_{0};
         boost::optional<uint64_t> attachmentQuota_{};

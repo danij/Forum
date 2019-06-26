@@ -110,7 +110,7 @@ namespace Forum::Entities
             Approval
         };
 
-        typedef Helpers::JsonReadyStringWithSortKey<1> NameType;
+        typedef Helpers::JsonReadyStringWithSortKey<> NameType;
 
         struct ChangeNotification final
         {
@@ -137,8 +137,12 @@ namespace Forum::Entities
             : id_(id), created_(created), creationDetails_(creationDetails),
               createdBy_(createdBy), name_(std::move(name)), forumWidePrivileges_(forumWidePrivileges)
         {
-            messages_.onPrepareCountChange() = [this]() { changeNotifications_.onPrepareUpdateMessageCount(*this); };
-            messages_.onCountChange()        = [this]() { changeNotifications_.onUpdateMessageCount(*this); };
+            messages_.onPrepareCountChange()
+                = [](void* state) { changeNotifications_.onPrepareUpdateMessageCount(*reinterpret_cast<DiscussionThread*>(state)); };
+            messages_.onPrepareCountChange().state() = this;
+            messages_.onCountChange()
+                = [](void* state) { changeNotifications_.onUpdateMessageCount(*reinterpret_cast<DiscussionThread*>(state)); };
+            messages_.onCountChange().state() = this;
 
             approved_ = approved ? 1 : 0;
             aboutToBeDeleted_ = 0;

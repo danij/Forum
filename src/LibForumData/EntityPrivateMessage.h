@@ -45,7 +45,7 @@ namespace Forum::Entities
 
         const auto& content()             const { return content_; }
 
-        typedef Json::JsonReadyString<1> ContentType;
+        typedef Json::JsonReadyString<> ContentType;
 
         PrivateMessage(const IdType id, User& source, User& destination, const Timestamp created, 
                        const VisitDetails creationDetails, ContentType&& content)

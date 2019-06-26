@@ -23,7 +23,7 @@ using namespace Forum::Entities;
 
 bool DiscussionThreadMessageCollection::add(DiscussionThreadMessagePtr message)
 {
-    if (onPrepareCountChange_) onPrepareCountChange_();
+    onPrepareCountChange_();
 
     if ( ! std::get<1>(byId_.insert(message))) return false;
 
@@ -32,13 +32,13 @@ bool DiscussionThreadMessageCollection::add(DiscussionThreadMessagePtr message)
         byCreated_.insert(message);
     }
 
-    if (onCountChange_) onCountChange_();
+    onCountChange_();
     return true;
 }
 
 bool DiscussionThreadMessageCollection::add(DiscussionThreadMessageCollection& collection)
 {
-    if (onPrepareCountChange_) onPrepareCountChange_();
+    onPrepareCountChange_();
 
     auto result = false;
 
@@ -53,13 +53,13 @@ bool DiscussionThreadMessageCollection::add(DiscussionThreadMessageCollection& c
         result = true;
     }
 
-    if (onCountChange_) onCountChange_();
+    onCountChange_();
     return result;
 }
 
 bool DiscussionThreadMessageCollection::remove(DiscussionThreadMessagePtr message)
 {
-    if (onPrepareCountChange_) onPrepareCountChange_();
+    onPrepareCountChange_();
     {
         const auto itById = byId_.find(message->id());
         if (itById == byId_.end()) return false;
@@ -68,7 +68,7 @@ bool DiscussionThreadMessageCollection::remove(DiscussionThreadMessagePtr messag
     }
     eraseFromNonUniqueCollection(byCreated_, message, message->created());
 
-    if (onCountChange_) onCountChange_();
+    onCountChange_();
     return true;
 }
 
@@ -91,7 +91,7 @@ void DiscussionThreadMessageCollection::stopBatchInsert()
 ///
 bool DiscussionThreadMessageCollectionLowMemory::add(DiscussionThreadMessagePtr message)
 {
-    if (onPrepareCountChange_) onPrepareCountChange_();
+    onPrepareCountChange_();
 
     if ( ! std::get<1>(byId_.insert(message))) return false;
 
@@ -100,13 +100,13 @@ bool DiscussionThreadMessageCollectionLowMemory::add(DiscussionThreadMessagePtr 
         byCreated_.insert(message);
     }
 
-    if (onCountChange_) onCountChange_();
+    onCountChange_();
     return true;
 }
 
 bool DiscussionThreadMessageCollectionLowMemory::add(DiscussionThreadMessageCollectionLowMemory& collection)
 {
-    if (onPrepareCountChange_) onPrepareCountChange_();
+    onPrepareCountChange_();
 
     auto result = false;
 
@@ -121,13 +121,13 @@ bool DiscussionThreadMessageCollectionLowMemory::add(DiscussionThreadMessageColl
         result = true;
     }
 
-    if (onCountChange_) onCountChange_();
+    onCountChange_();
     return result;
 }
 
 bool DiscussionThreadMessageCollectionLowMemory::remove(DiscussionThreadMessagePtr message)
 {
-    if (onPrepareCountChange_) onPrepareCountChange_();
+    onPrepareCountChange_();
     {
         const auto itById = byId_.find(message->id());
         if (itById == byId_.end()) return false;
@@ -136,7 +136,7 @@ bool DiscussionThreadMessageCollectionLowMemory::remove(DiscussionThreadMessageP
     }
     eraseFromNonUniqueCollection(byCreated_, message, message->created());
 
-    if (onCountChange_) onCountChange_();
+    onCountChange_();
     return true;
 }
 

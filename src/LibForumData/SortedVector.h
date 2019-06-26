@@ -33,7 +33,7 @@ namespace Forum::Entities
             SortedVectorBase() = default;
             SortedVectorBase(const SortedVectorBase&) = default;
             SortedVectorBase(SortedVectorBase&&) = default;
-            virtual ~SortedVectorBase() = default;
+            ~SortedVectorBase() = default;
             SortedVectorBase& operator=(const SortedVectorBase&) = default;
             SortedVectorBase& operator=(SortedVectorBase&&) = default;
 
@@ -157,8 +157,9 @@ namespace Forum::Entities
             {
                 return vector_.erase(first, last);
             }
-
-            virtual iterator replace(iterator position, T value)
+            
+        protected:
+            iterator replaceInternal(iterator position, T value)
             {
                 auto first = vector_.begin();
                 auto last = first + (vector_.size() - 1);
@@ -189,15 +190,16 @@ namespace Forum::Entities
                 return it;
             }
 
-        protected:
             std::vector<T> vector_;
         };
     }
 
     template<typename T, typename Key, typename KeyExtractor, typename Compare>
-    class SortedVectorMultiValue : public Detail::SortedVectorBase<T, Key, KeyExtractor, Compare>
+    class SortedVectorMultiValue final : public Detail::SortedVectorBase<T, Key, KeyExtractor, Compare>
     {
     public:
+        using iterator = typename Detail::SortedVectorBase<T, Key, KeyExtractor, Compare>::iterator;
+
         auto insert(T value)
         {
             auto position = this->upper_bound(value);
@@ -214,10 +216,15 @@ namespace Forum::Entities
                     return Compare{}(first, second);
                 });
         }
+
+        iterator replace(iterator position, T value)
+        {
+            return Detail::SortedVectorBase<T, Key, KeyExtractor, Compare>::replaceInternal(position, value);
+        }
     };
 
     template<typename T, typename Key, typename KeyExtractor, typename Compare>
-    class SortedVectorUnique : public Detail::SortedVectorBase<T, Key, KeyExtractor, Compare>
+    class SortedVectorUnique final : public Detail::SortedVectorBase<T, Key, KeyExtractor, Compare>
     {
     public:
         using iterator = typename Detail::SortedVectorBase<T, Key, KeyExtractor, Compare>::iterator;
@@ -242,7 +249,7 @@ namespace Forum::Entities
             return (range.first == range.second) ? this->end() : range.first;
         }
 
-        iterator replace(iterator position, T value) override
+        iterator replace(iterator position, T value)
         {
             if (find(value) != this->end())
             {
@@ -250,7 +257,7 @@ namespace Forum::Entities
                 return this->erase(position);
             }
 
-            return Detail::SortedVectorBase<T, Key, KeyExtractor, Compare>::replace(position, std::move(value));
+            return Detail::SortedVectorBase<T, Key, KeyExtractor, Compare>::replaceInternal(position, std::move(value));
         }
     };
 }

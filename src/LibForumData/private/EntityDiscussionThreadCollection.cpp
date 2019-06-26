@@ -80,12 +80,12 @@ bool DiscussionThreadCollectionWithHashedId::add(DiscussionThreadPtr* threads, c
 
 void DiscussionThreadCollectionWithHashedId::prepareCountChange()
 {
-    if (onPrepareCountChange_) onPrepareCountChange_();
+    onPrepareCountChange_();
 }
 
 void DiscussionThreadCollectionWithHashedId::finishCountChange()
 {
-    if (onCountChange_) onCountChange_();
+    onCountChange_();
 }
 
 bool DiscussionThreadCollectionWithHashedId::remove(DiscussionThreadPtr thread)
@@ -452,12 +452,12 @@ bool DiscussionThreadCollectionLowMemory::contains(DiscussionThreadPtr thread) c
 
 void DiscussionThreadCollectionLowMemory::prepareCountChange()
 {
-    if (onPrepareCountChange_) onPrepareCountChange_();
+    onPrepareCountChange_();
 }
 
 void DiscussionThreadCollectionLowMemory::finishCountChange()
 {
-    if (onCountChange_) onCountChange_();
+    onCountChange_();
 }
 
 void DiscussionThreadCollectionLowMemory::stopBatchInsert()

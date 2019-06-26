@@ -537,7 +537,7 @@ StatusCode MemoryRepositoryUser::getUserLogo(IdTypeRef id, OutStream& output) co
 
                           status.disable();
 
-                          const auto& logo = user.logo();
+                          const auto& logo = user.logo().string();
                           output.write(logo.data(), logo.size());
 
                           readEvents().onGetUserLogo(createObserverContext(currentUser), user);
@@ -1205,7 +1205,7 @@ StatusCode MemoryRepositoryUser::changeUserLogo(EntityCollection& collection, Id
     }
 
     UserPtr user = *it;
-    user->logo() = toString(newLogo);
+    user->logo() = User::LogoType(newLogo);
 
     return StatusCode::OK;
 }
@@ -1251,7 +1251,7 @@ StatusCode MemoryRepositoryUser::deleteUserLogo(EntityCollection& collection, Id
     }
 
     UserPtr user = *it;
-    user->logo() = {};
+    user->logo() = User::LogoType({});
 
     return StatusCode::OK;
 }

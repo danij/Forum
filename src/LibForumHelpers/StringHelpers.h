@@ -298,7 +298,7 @@ namespace Forum::Helpers
     char* getCurrentSortKey();
     size_t getCurrentSortKeyLength();
 
-    template<size_t StackSize>
+    template<size_t StackSize = sizeof(char*)>
     class JsonReadyStringWithSortKey final
         : public Json::JsonReadyStringBase<StackSize, JsonReadyStringWithSortKey<StackSize>, Detail::SizeWithBoolAndSortKeySize>
     {
