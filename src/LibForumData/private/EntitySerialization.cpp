@@ -389,7 +389,7 @@ void writeDiscussionThreadMessages(const Collection& collection, const int_fast3
         {
             if (*it)
             {
-                privilegeChecks.emplace_back(DiscussionThreadMessagePrivilegeCheck(restriction.userId(), **it));
+                privilegeChecks.emplace_back(DiscussionThreadMessagePrivilegeCheck(restriction.user(), **it));
             }
         }
     }
@@ -407,7 +407,7 @@ void writeDiscussionThreadMessages(const Collection& collection, const int_fast3
                 --it;
                 if (*it)
                 {
-                    privilegeChecks.emplace_back(DiscussionThreadMessagePrivilegeCheck(restriction.userId(), **it));
+                    privilegeChecks.emplace_back(DiscussionThreadMessagePrivilegeCheck(restriction.user(), **it));
                 }
             }
         }

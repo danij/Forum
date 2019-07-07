@@ -82,7 +82,7 @@ StatusCode MemoryRepositoryAttachment::getAttachments(RetrieveAttachmentsBy by, 
         const auto pageSize = getGlobalConfig()->attachment.maxAttachmentsPerPage;
         const auto& displayContext = Context::getDisplayContext();
 
-        const SerializationRestriction restriction(collection.grantedPrivileges(), collection, currentUser.id(), 
+        const SerializationRestriction restriction(collection.grantedPrivileges(), collection, &currentUser, 
                                                    Context::getCurrentTime());
         BoolTemporaryChanger _(serializationSettings.allowDisplayAttachmentIpAddress,
                 restriction.isAllowed(ForumWidePrivilege::VIEW_ATTACHMENT_IP_ADDRESS));
@@ -145,7 +145,7 @@ StatusCode MemoryRepositoryAttachment::getAttachmentsOfUser(IdTypeRef id, Retrie
         const auto pageSize = getGlobalConfig()->attachment.maxAttachmentsPerPage;
         const auto& displayContext = Context::getDisplayContext();
 
-        const SerializationRestriction restriction(collection.grantedPrivileges(), collection, currentUser.id(), 
+        const SerializationRestriction restriction(collection.grantedPrivileges(), collection, &currentUser, 
                                                    Context::getCurrentTime());
         BoolTemporaryChanger _(serializationSettings.hideAttachmentCreatedBy, true);
         BoolTemporaryChanger __(serializationSettings.allowDisplayAttachmentIpAddress,
@@ -207,7 +207,7 @@ StatusCode MemoryRepositoryAttachment::canGetAttachment(IdTypeRef id, OutStream&
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                              currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "attachment", attachment, restriction);
 
@@ -243,7 +243,7 @@ StatusCode MemoryRepositoryAttachment::getAttachment(IdTypeRef id, OutStream& ou
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                  currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "attachment", attachment, restriction);
 
@@ -580,7 +580,7 @@ StatusCode MemoryRepositoryAttachment::addAttachmentToDiscussionThreadMessage(Id
                            status.disable();
 
                            const SerializationRestriction restriction(collection.grantedPrivileges(), collection, 
-                                   currentUser->id(), Context::getCurrentTime());
+                                                                      currentUser, Context::getCurrentTime());
 
                            writeSingleValueSafeName(output, "attachment", *statusWithResource.resource, restriction);
 

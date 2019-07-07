@@ -63,7 +63,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategories(OutStream
         BoolTemporaryChanger __(serializationSettings.onlySendCategoryParentId, true);
 
         SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                             currentUser.id(), Context::getCurrentTime());
+                                             &currentUser, Context::getCurrentTime());
 
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
         {
@@ -135,7 +135,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoriesFromRoot(O
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           writeArraySafeName(output, "categories", indexBegin, indexRootEnd, restriction);
 
@@ -175,7 +175,7 @@ StatusCode MemoryRepositoryDiscussionCategory::getDiscussionCategoryById(IdTypeR
                           BoolTemporaryChanger __(serializationSettings.keepDiscussionCategoryDetails, true);
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "category", **it, restriction);
 

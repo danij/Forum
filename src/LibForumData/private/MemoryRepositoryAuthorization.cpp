@@ -1573,7 +1573,7 @@ StatusCode MemoryRepositoryAuthorization::getForumWideCurrentUserPrivileges(OutS
                           auto& currentUser = performedBy.get(collection, *store_);
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           JsonWriter writer(output);
                           writer.startObject();
@@ -1713,7 +1713,7 @@ StatusCode MemoryRepositoryAuthorization::getAssignedPrivilegesForUser(IdTypeRef
                           writeAssignedPrivilegesExtra(writer);
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                              currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           writeForumWideUserAssignedPrivileges(collection, restriction, userId, writer);
                           writeDiscussionCategoryUserAssignedPrivileges(collection, restriction, userId, writer);

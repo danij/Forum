@@ -342,42 +342,42 @@ namespace Forum::Authorization
                                                      const Entities::User& targetUser,
                                                      PrivilegeValueIntType newValue) const override;
     private:
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThreadMessage& message,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, const Entities::DiscussionThreadMessage& message,
                                       DiscussionThreadMessagePrivilege privilege, PrivilegeValueType& with) const;
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThread& thread,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, const Entities::DiscussionThread& thread,
                                       DiscussionThreadMessagePrivilege privilege, PrivilegeValueType& with) const;
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, const Entities::DiscussionTag& tag,
                                       DiscussionThreadMessagePrivilege privilege, PrivilegeValueType& with) const;
 
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThread& thread,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, const Entities::DiscussionThread& thread,
                                       DiscussionThreadPrivilege privilege, PrivilegeValueType& with) const;
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, const Entities::DiscussionTag& tag,
                                       DiscussionThreadPrivilege privilege, PrivilegeValueType& with) const;
 
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThread& from,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, const Entities::DiscussionThread& from,
                                       const Entities::DiscussionThread& into, DiscussionThreadPrivilege privilege) const;
 
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, const Entities::DiscussionTag& tag,
                                       DiscussionTagPrivilege privilege, PrivilegeValueType& with) const;
 
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& from,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, const Entities::DiscussionTag& from,
                                       const Entities::DiscussionTag& into, DiscussionTagPrivilege privilege) const;
 
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionCategory& category,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, const Entities::DiscussionCategory& category,
                                       DiscussionCategoryPrivilege privilege, PrivilegeValueType& with) const;
         
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, DiscussionThreadMessagePrivilege privilege,
                                       PrivilegeValueType& with) const;
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionThreadPrivilege privilege,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, DiscussionThreadPrivilege privilege,
                                       PrivilegeValueType& with) const;
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionTagPrivilege privilege,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, DiscussionTagPrivilege privilege,
                                       PrivilegeValueType& with) const;
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, DiscussionCategoryPrivilege privilege,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, DiscussionCategoryPrivilege privilege,
                                       PrivilegeValueType& with) const;
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege,
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, ForumWidePrivilege privilege,
                                       PrivilegeValueType& with) const;
-        AuthorizationStatus isAllowed(Entities::IdTypeRef userId, ForumWidePrivilege privilege,
-                                      PrivilegeValueType& with, Entities::IdTypeRef targetUserId) const;
+        AuthorizationStatus isAllowed(Entities::UserConstPtr user, ForumWidePrivilege privilege,
+                                      PrivilegeValueType& with, Entities::UserConstPtr targetUser) const;
 
         bool checkMessageAllowViewApproval(const Entities::User& currentUser, 
                                            const Entities::DiscussionThreadMessage& message) const;

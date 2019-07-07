@@ -42,7 +42,7 @@ DefaultAuthorization::DefaultAuthorization(GrantedPrivilegeStore& grantedPrivile
 AuthorizationStatus DefaultAuthorization::getUsers(const User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_ALL_USERS, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_ALL_USERS, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getUserById(const User& currentUser, const User& user) const
@@ -60,7 +60,7 @@ AuthorizationStatus DefaultAuthorization::addNewUser(const User& currentUser, St
     if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::ADD_USER, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::ADD_USER, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeUserName(const User& currentUser, const User& user, StringView /*newName*/) const
@@ -70,9 +70,9 @@ AuthorizationStatus DefaultAuthorization::changeUserName(const User& currentUser
     PrivilegeValueType with;
     if (currentUser.id() == user.id())
     {
-        return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_OWN_USER_NAME, with);
+        return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_OWN_USER_NAME, with);
     }
-    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_NAME, with, user.id());
+    return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_ANY_USER_NAME, with, &user);
 }
 
 AuthorizationStatus DefaultAuthorization::changeUserInfo(const User& currentUser, const User& user, StringView /*newInfo*/) const
@@ -82,9 +82,9 @@ AuthorizationStatus DefaultAuthorization::changeUserInfo(const User& currentUser
     PrivilegeValueType with;
     if (currentUser.id() == user.id())
     {
-        return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_OWN_USER_INFO, with);
+        return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_OWN_USER_INFO, with);
     }
-    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_INFO, with, user.id());
+    return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_ANY_USER_INFO, with, &user);
 }
 
 AuthorizationStatus DefaultAuthorization::changeUserTitle(const User& currentUser, const User& user, StringView /*newTitle*/) const
@@ -94,9 +94,9 @@ AuthorizationStatus DefaultAuthorization::changeUserTitle(const User& currentUse
     PrivilegeValueType with;
     if (currentUser.id() == user.id())
     {
-        return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_OWN_USER_TITLE, with);
+        return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_OWN_USER_TITLE, with);
     }
-    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_TITLE, with, user.id());
+    return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_ANY_USER_TITLE, with, &user);
 }
 
 AuthorizationStatus DefaultAuthorization::changeUserSignature(const User& currentUser, const User& user,
@@ -107,9 +107,9 @@ AuthorizationStatus DefaultAuthorization::changeUserSignature(const User& curren
     PrivilegeValueType with;
     if (currentUser.id() == user.id())
     {
-        return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_OWN_USER_SIGNATURE, with);
+        return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_OWN_USER_SIGNATURE, with);
     }
-    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_SIGNATURE, with, user.id());
+    return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_ANY_USER_SIGNATURE, with, &user);
 }
 
 AuthorizationStatus DefaultAuthorization::changeUserAttachmentQuota(const User& currentUser, const User& user,
@@ -118,7 +118,7 @@ AuthorizationStatus DefaultAuthorization::changeUserAttachmentQuota(const User& 
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_USER_ATTACHMENT_QUOTA, with, user.id());
+    return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_USER_ATTACHMENT_QUOTA, with, &user);
 }
 
 AuthorizationStatus DefaultAuthorization::changeUserLogo(const User& currentUser, const User& user,
@@ -129,9 +129,9 @@ AuthorizationStatus DefaultAuthorization::changeUserLogo(const User& currentUser
     PrivilegeValueType with;
     if (currentUser.id() == user.id())
     {
-        return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_OWN_USER_LOGO, with);
+        return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_OWN_USER_LOGO, with);
     }
-    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_USER_LOGO, with, user.id());
+    return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_ANY_USER_LOGO, with, &user);
 }
 
 AuthorizationStatus DefaultAuthorization::deleteUserLogo(const User& currentUser, const User& user) const
@@ -141,9 +141,9 @@ AuthorizationStatus DefaultAuthorization::deleteUserLogo(const User& currentUser
     PrivilegeValueType with;
     if (currentUser.id() == user.id())
     {
-        return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_OWN_USER_LOGO, with);
+        return isAllowed(&currentUser, ForumWidePrivilege::DELETE_OWN_USER_LOGO, with);
     }
-    return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ANY_USER_LOGO, with, user.id());
+    return isAllowed(&currentUser, ForumWidePrivilege::DELETE_ANY_USER_LOGO, with, &user);
 }
 
 AuthorizationStatus DefaultAuthorization::deleteUser(const User& currentUser, const User& user) const
@@ -151,7 +151,7 @@ AuthorizationStatus DefaultAuthorization::deleteUser(const User& currentUser, co
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ANY_USER, with, user.id());
+    return isAllowed(&currentUser, ForumWidePrivilege::DELETE_ANY_USER, with, &user);
 }
 
 AuthorizationStatus DefaultAuthorization::sendPrivateMessage(const User& currentUser, 
@@ -163,7 +163,7 @@ AuthorizationStatus DefaultAuthorization::sendPrivateMessage(const User& current
     if (currentUser.id() == destinationUser.id()) return AuthorizationStatus::NOT_ALLOWED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::SEND_PRIVATE_MESSAGE, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::SEND_PRIVATE_MESSAGE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::deletePrivateMessage(const User& currentUser, 
@@ -178,33 +178,33 @@ AuthorizationStatus DefaultAuthorization::getDiscussionThreadRequiredPrivileges(
                                                                                 const DiscussionThread& thread) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::VIEW_REQUIRED_PRIVILEGES, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::VIEW_REQUIRED_PRIVILEGES, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadAssignedPrivileges(const User& currentUser,
                                                                                 const DiscussionThread& thread) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::VIEW_ASSIGNED_PRIVILEGES, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::VIEW_ASSIGNED_PRIVILEGES, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreads(const User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_ALL_DISCUSSION_THREADS, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_ALL_DISCUSSION_THREADS, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadById(const User& currentUser, const DiscussionThread& thread) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::VIEW, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::VIEW, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadSubscribedUsers(const User& currentUser,
                                                                              const DiscussionThread& thread) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::GET_SUBSCRIBED_USERS, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::GET_SUBSCRIBED_USERS, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadsOfUser(const User& currentUser, const User& user) const
@@ -214,7 +214,7 @@ AuthorizationStatus DefaultAuthorization::getDiscussionThreadsOfUser(const User&
         return AuthorizationStatus::OK;
     }
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_DISCUSSION_THREADS_OF_USER, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_DISCUSSION_THREADS_OF_USER, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getSubscribedDiscussionThreadsOfUser(const User& currentUser, const User& user) const
@@ -224,27 +224,27 @@ AuthorizationStatus DefaultAuthorization::getSubscribedDiscussionThreadsOfUser(c
         return AuthorizationStatus::OK;
     }
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_SUBSCRIBED_DISCUSSION_THREADS_OF_USER, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadsWithTag(const User& currentUser, const DiscussionTag& tag) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::GET_DISCUSSION_THREADS, with);
+    return isAllowed(&currentUser, tag, DiscussionTagPrivilege::GET_DISCUSSION_THREADS, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadsOfCategory(const User& currentUser,
                                                                          const DiscussionCategory& category) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::GET_DISCUSSION_THREADS, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::GET_DISCUSSION_THREADS, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getAllowDiscussionThreadPrivilegeChange(const User& currentUser,
                                                                                   const DiscussionThread& thread) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addNewDiscussionThread(const User& currentUser, StringView /*name*/) const
@@ -252,7 +252,7 @@ AuthorizationStatus DefaultAuthorization::addNewDiscussionThread(const User& cur
     if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::ADD_DISCUSSION_THREAD, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::ADD_DISCUSSION_THREAD, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionThreadName(const User& currentUser,
@@ -262,7 +262,7 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionThreadName(const User&
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::CHANGE_NAME, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::CHANGE_NAME, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionThreadPinDisplayOrder(const User& currentUser,
@@ -272,7 +272,7 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionThreadPinDisplayOrder(
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::CHANGE_PIN_DISPLAY_ORDER, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionThreadApproval(const User& currentUser,
@@ -282,13 +282,13 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionThreadApproval(const U
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::CHANGE_APPROVAL, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::CHANGE_APPROVAL, with);
 }
 
 AuthorizationStatus DefaultAuthorization::autoApproveDiscussionThread(const User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::AUTO_APPROVE_DISCUSSION_THREAD, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::AUTO_APPROVE_DISCUSSION_THREAD, with);
 }
 
 AuthorizationStatus DefaultAuthorization::deleteDiscussionThread(const User& currentUser, const DiscussionThread& thread) const
@@ -296,7 +296,7 @@ AuthorizationStatus DefaultAuthorization::deleteDiscussionThread(const User& cur
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::DELETE, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::DELETE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::mergeDiscussionThreads(const User& currentUser, const DiscussionThread& from,
@@ -304,7 +304,7 @@ AuthorizationStatus DefaultAuthorization::mergeDiscussionThreads(const User& cur
 {
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
-    return isAllowed(currentUser.id(), from, into, DiscussionThreadPrivilege::MERGE);
+    return isAllowed(&currentUser, from, into, DiscussionThreadPrivilege::MERGE);
 }
 
 AuthorizationStatus DefaultAuthorization::subscribeToDiscussionThread(const User& currentUser,
@@ -315,7 +315,7 @@ AuthorizationStatus DefaultAuthorization::subscribeToDiscussionThread(const User
     if (isThrottled(UserActionThrottling::SUBSCRIBE, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::SUBSCRIBE, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::SUBSCRIBE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::unsubscribeFromDiscussionThread(const User& currentUser,
@@ -326,68 +326,68 @@ AuthorizationStatus DefaultAuthorization::unsubscribeFromDiscussionThread(const 
     if (isThrottled(UserActionThrottling::SUBSCRIBE, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::UNSUBSCRIBE, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::UNSUBSCRIBE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessageRequiredPrivileges(const User& currentUser,
                                                                                        const DiscussionThreadMessage& message) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW_REQUIRED_PRIVILEGES, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::VIEW_REQUIRED_PRIVILEGES, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessageAssignedPrivileges(const User& currentUser,
                                                                                        const DiscussionThreadMessage& message) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW_ASSIGNED_PRIVILEGES, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::VIEW_ASSIGNED_PRIVILEGES, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessageById(const User& currentUser,
                                                                          const DiscussionThreadMessage& message) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::VIEW, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getAllowDiscussionThreadMessagePrivilegeChange(const User& currentUser, 
                                                                                          const DiscussionThreadMessage& message) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessagesOfUserByCreated(const User& currentUser,
                                                                                      const User& /*user*/) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_DISCUSSION_THREAD_MESSAGES_OF_USER, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_DISCUSSION_THREAD_MESSAGES_OF_USER, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionThreadMessageRank(const User& currentUser,
                                                                          const DiscussionThreadMessage& message) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::VIEW, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getMessageComments(const User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_ALL_MESSAGE_COMMENTS, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_ALL_MESSAGE_COMMENTS, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getMessageCommentsOfDiscussionThreadMessage(const User& currentUser,
                                                                                       const DiscussionThreadMessage& message) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getMessageCommentsOfUser(const User& currentUser, const User& /*user*/) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_MESSAGE_COMMENTS_OF_USER, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_MESSAGE_COMMENTS_OF_USER, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addNewDiscussionMessageInThread(const User& currentUser,
@@ -397,14 +397,14 @@ AuthorizationStatus DefaultAuthorization::addNewDiscussionMessageInThread(const 
     if ( ! thread.empty() && isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADD_MESSAGE, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::ADD_MESSAGE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::autoApproveDiscussionMessageInThread(const User& currentUser,
                                                                                const DiscussionThread& thread) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::AUTO_APPROVE_MESSAGE, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::AUTO_APPROVE_MESSAGE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::deleteDiscussionMessage(const User& currentUser,
@@ -413,7 +413,7 @@ AuthorizationStatus DefaultAuthorization::deleteDiscussionMessage(const User& cu
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::DELETE, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::DELETE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionThreadMessageContent(const User& currentUser,
@@ -424,7 +424,7 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionThreadMessageContent(c
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::CHANGE_CONTENT, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::CHANGE_CONTENT, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionThreadMessageApproval(const User& currentUser,
@@ -434,7 +434,7 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionThreadMessageApproval(
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::CHANGE_APPROVAL, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::CHANGE_APPROVAL, with);
 }
 
 AuthorizationStatus DefaultAuthorization::moveDiscussionThreadMessage(const User& currentUser,
@@ -444,7 +444,7 @@ AuthorizationStatus DefaultAuthorization::moveDiscussionThreadMessage(const User
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::MOVE, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::MOVE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::upVoteDiscussionThreadMessage(const User& currentUser,
@@ -456,7 +456,7 @@ AuthorizationStatus DefaultAuthorization::upVoteDiscussionThreadMessage(const Us
     if (isThrottled(UserActionThrottling::VOTE, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::UP_VOTE, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::UP_VOTE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::downVoteDiscussionThreadMessage(const User& currentUser,
@@ -468,7 +468,7 @@ AuthorizationStatus DefaultAuthorization::downVoteDiscussionThreadMessage(const 
     if (isThrottled(UserActionThrottling::VOTE, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::DOWN_VOTE, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::DOWN_VOTE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::resetVoteDiscussionThreadMessage(const User& currentUser,
@@ -480,7 +480,7 @@ AuthorizationStatus DefaultAuthorization::resetVoteDiscussionThreadMessage(const
     if (isThrottled(UserActionThrottling::VOTE, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::RESET_VOTE, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::RESET_VOTE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addCommentToDiscussionThreadMessage(const User& currentUser,
@@ -490,7 +490,7 @@ AuthorizationStatus DefaultAuthorization::addCommentToDiscussionThreadMessage(co
     if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::ADD_COMMENT, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::ADD_COMMENT, with);
 }
 
 AuthorizationStatus DefaultAuthorization::setMessageCommentToSolved(const User& currentUser,
@@ -499,7 +499,7 @@ AuthorizationStatus DefaultAuthorization::setMessageCommentToSolved(const User& 
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), comment.parentMessage(),
+    return isAllowed(&currentUser, comment.parentMessage(),
                      DiscussionThreadMessagePrivilege::SET_COMMENT_TO_SOLVED, with);
 }
 
@@ -507,34 +507,34 @@ AuthorizationStatus DefaultAuthorization::getDiscussionTagRequiredPrivileges(con
                                                                              const DiscussionTag& tag) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW_REQUIRED_PRIVILEGES, with);
+    return isAllowed(&currentUser, tag, DiscussionTagPrivilege::VIEW_REQUIRED_PRIVILEGES, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionTagAssignedPrivileges(const User& currentUser,
                                                                              const DiscussionTag& tag) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW_ASSIGNED_PRIVILEGES, with);
+    return isAllowed(&currentUser, tag, DiscussionTagPrivilege::VIEW_ASSIGNED_PRIVILEGES, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionTagById(const User& currentUser,
                                                                const DiscussionTag& tag) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW, with);
+    return isAllowed(&currentUser, tag, DiscussionTagPrivilege::VIEW, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionTags(const User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_ALL_DISCUSSION_TAGS, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_ALL_DISCUSSION_TAGS, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getAllowDiscussionTagPrivilegeChange(const User& currentUser,
                                                                                const DiscussionTag& tag) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
+    return isAllowed(&currentUser, tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addNewDiscussionTag(const User& currentUser, StringView /*name*/) const
@@ -542,7 +542,7 @@ AuthorizationStatus DefaultAuthorization::addNewDiscussionTag(const User& curren
     if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::ADD_DISCUSSION_TAG, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::ADD_DISCUSSION_TAG, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionTagName(const User& currentUser, const DiscussionTag& tag,
@@ -551,7 +551,7 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionTagName(const User& cu
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::CHANGE_NAME, with);
+    return isAllowed(&currentUser, tag, DiscussionTagPrivilege::CHANGE_NAME, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionTagUiBlob(const User& currentUser, const DiscussionTag& tag,
@@ -560,7 +560,7 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionTagUiBlob(const User& 
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::CHANGE_UIBLOB, with);
+    return isAllowed(&currentUser, tag, DiscussionTagPrivilege::CHANGE_UIBLOB, with);
 }
 
 AuthorizationStatus DefaultAuthorization::deleteDiscussionTag(const User& currentUser, const DiscussionTag& tag) const
@@ -568,7 +568,7 @@ AuthorizationStatus DefaultAuthorization::deleteDiscussionTag(const User& curren
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::DELETE, with);
+    return isAllowed(&currentUser, tag, DiscussionTagPrivilege::DELETE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addDiscussionTagToThread(const User& currentUser, const DiscussionTag& tag,
@@ -578,10 +578,10 @@ AuthorizationStatus DefaultAuthorization::addDiscussionTagToThread(const User& c
 
     PrivilegeValueType with;
 
-    const auto allowViewTag = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW, with);
+    const auto allowViewTag = isAllowed(&currentUser, tag, DiscussionTagPrivilege::VIEW, with);
     if (AuthorizationStatus::OK != allowViewTag) return allowViewTag;
 
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADD_TAG, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::ADD_TAG, with);
 }
 
 AuthorizationStatus DefaultAuthorization::removeDiscussionTagFromThread(const User& currentUser, 
@@ -592,10 +592,10 @@ AuthorizationStatus DefaultAuthorization::removeDiscussionTagFromThread(const Us
 
     PrivilegeValueType with;
 
-    const auto allowViewTag = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW, with);
+    const auto allowViewTag = isAllowed(&currentUser, tag, DiscussionTagPrivilege::VIEW, with);
     if (AuthorizationStatus::OK != allowViewTag) return allowViewTag;
 
-    return isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::REMOVE_TAG, with);
+    return isAllowed(&currentUser, thread, DiscussionThreadPrivilege::REMOVE_TAG, with);
 }
 
 AuthorizationStatus DefaultAuthorization::mergeDiscussionTags(const User& currentUser, const DiscussionTag& from,
@@ -603,47 +603,47 @@ AuthorizationStatus DefaultAuthorization::mergeDiscussionTags(const User& curren
 {
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
-    return isAllowed(currentUser.id(), from, into, DiscussionTagPrivilege::MERGE);
+    return isAllowed(&currentUser, from, into, DiscussionTagPrivilege::MERGE);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionCategoryRequiredPrivileges(const User& currentUser,
                                                                                   const DiscussionCategory& category) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::VIEW_REQUIRED_PRIVILEGES, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::VIEW_REQUIRED_PRIVILEGES, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionCategoryAssignedPrivileges(const User& currentUser,
                                                                                   const DiscussionCategory& category) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::VIEW_ASSIGNED_PRIVILEGES, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::VIEW_ASSIGNED_PRIVILEGES, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionCategoryById(const User& currentUser,
                                                                     const DiscussionCategory& category) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::VIEW, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::VIEW, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionCategories(const User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_ALL_DISCUSSION_CATEGORIES, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_ALL_DISCUSSION_CATEGORIES, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getDiscussionCategoriesFromRoot(const User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_DISCUSSION_CATEGORIES_FROM_ROOT, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_DISCUSSION_CATEGORIES_FROM_ROOT, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getAllowDiscussionCategoryPrivilegeChange(const User& currentUser,
                                                                                     const DiscussionCategory& category) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addNewDiscussionCategory(const User& currentUser, StringView /*name*/,
@@ -652,7 +652,7 @@ AuthorizationStatus DefaultAuthorization::addNewDiscussionCategory(const User& c
     if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::ADD_DISCUSSION_CATEGORY, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::ADD_DISCUSSION_CATEGORY, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionCategoryName(const User& currentUser,
@@ -662,7 +662,7 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionCategoryName(const Use
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::CHANGE_NAME, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::CHANGE_NAME, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionCategoryDescription(const User& currentUser,
@@ -672,7 +672,7 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionCategoryDescription(co
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::CHANGE_DESCRIPTION, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::CHANGE_DESCRIPTION, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionCategoryParent(const User& currentUser,
@@ -682,7 +682,7 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionCategoryParent(const U
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::CHANGE_PARENT, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::CHANGE_PARENT, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeDiscussionCategoryDisplayOrder(const User& currentUser,
@@ -692,7 +692,7 @@ AuthorizationStatus DefaultAuthorization::changeDiscussionCategoryDisplayOrder(c
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::CHANGE_DISPLAYORDER, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::CHANGE_DISPLAYORDER, with);
 }
 
 AuthorizationStatus DefaultAuthorization::deleteDiscussionCategory(const User& currentUser,
@@ -701,7 +701,7 @@ AuthorizationStatus DefaultAuthorization::deleteDiscussionCategory(const User& c
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::DELETE, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::DELETE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addDiscussionTagToCategory(const User& currentUser, const DiscussionTag& tag,
@@ -711,10 +711,10 @@ AuthorizationStatus DefaultAuthorization::addDiscussionTagToCategory(const User&
 
     PrivilegeValueType with;
     
-    const auto allowViewTag = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW, with);
+    const auto allowViewTag = isAllowed(&currentUser, tag, DiscussionTagPrivilege::VIEW, with);
     if (AuthorizationStatus::OK != allowViewTag) return allowViewTag;
 
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::ADD_TAG, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::ADD_TAG, with);
 }
 
 AuthorizationStatus DefaultAuthorization::removeDiscussionTagFromCategory(const User& currentUser,
@@ -725,17 +725,17 @@ AuthorizationStatus DefaultAuthorization::removeDiscussionTagFromCategory(const 
 
     PrivilegeValueType with;
 
-    const auto allowViewTag = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::VIEW, with);
+    const auto allowViewTag = isAllowed(&currentUser, tag, DiscussionTagPrivilege::VIEW, with);
     if (AuthorizationStatus::OK != allowViewTag) return allowViewTag;
 
 
-    return isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::REMOVE_TAG, with);
+    return isAllowed(&currentUser, category, DiscussionCategoryPrivilege::REMOVE_TAG, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getAttachments(const User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_ALL_ATTACHMENTS, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_ALL_ATTACHMENTS, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getAttachmentsOfUser(const User& currentUser, const User& user) const
@@ -746,7 +746,7 @@ AuthorizationStatus DefaultAuthorization::getAttachmentsOfUser(const User& curre
     }
     
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_ATTACHMENTS_OF_USER, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_ATTACHMENTS_OF_USER, with);
 }
 
 bool DefaultAuthorization::checkMessageAllowViewApproval(const User& currentUser,
@@ -758,13 +758,13 @@ bool DefaultAuthorization::checkMessageAllowViewApproval(const User& currentUser
     }
     PrivilegeValueType with;
     return (message.createdBy().id() == currentUser.id())
-        || (AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED, with));
+        || (AuthorizationStatus::OK == isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED, with));
 }
 
 bool DefaultAuthorization::isAllowedToViewMessage(const User& currentUser, const DiscussionThreadMessage& message) const
 {
     PrivilegeValueType with;
-    return (AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW, with))
+    return (AuthorizationStatus::OK == isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::VIEW, with))
         && checkMessageAllowViewApproval(currentUser, message)
         && isAllowedToViewThread(currentUser, *message.parentThread());
 }
@@ -777,13 +777,13 @@ bool DefaultAuthorization::checkThreadAllowViewApproval(const User& currentUser,
     }
     PrivilegeValueType with;
     return (thread.createdBy().id() == currentUser.id())
-        || (AuthorizationStatus::OK == isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::VIEW_UNAPPROVED, with));
+        || (AuthorizationStatus::OK == isAllowed(&currentUser, thread, DiscussionThreadPrivilege::VIEW_UNAPPROVED, with));
 }
 
 bool DefaultAuthorization::isAllowedToViewThread(const User& currentUser, const DiscussionThread& thread) const
 {
     PrivilegeValueType with;
-    return (AuthorizationStatus::OK == isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::VIEW, with))
+    return (AuthorizationStatus::OK == isAllowed(&currentUser, thread, DiscussionThreadPrivilege::VIEW, with))
         && checkThreadAllowViewApproval(currentUser, thread);
 }
 
@@ -796,11 +796,11 @@ AuthorizationStatus DefaultAuthorization::canGetAttachment(const User& currentUs
     }
     
     PrivilegeValueType with;
-    if (AuthorizationStatus::OK == isAllowed(currentUser.id(), ForumWidePrivilege::GET_ALL_ATTACHMENTS, with))
+    if (AuthorizationStatus::OK == isAllowed(&currentUser, ForumWidePrivilege::GET_ALL_ATTACHMENTS, with))
     {
         return AuthorizationStatus::OK;
     }
-    if (AuthorizationStatus::OK == isAllowed(currentUser.id(), ForumWidePrivilege::GET_ATTACHMENTS_OF_USER, with))
+    if (AuthorizationStatus::OK == isAllowed(&currentUser, ForumWidePrivilege::GET_ATTACHMENTS_OF_USER, with))
     {
         return AuthorizationStatus::OK;
     }
@@ -813,9 +813,9 @@ AuthorizationStatus DefaultAuthorization::canGetAttachment(const User& currentUs
         {
             return AuthorizationStatus::OK;
         }
-        if ((AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW_ATTACHMENT, with))
+        if ((AuthorizationStatus::OK == isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::VIEW_ATTACHMENT, with))
             && (attachment.approved()
-                || (AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED_ATTACHMENT, with)))
+                || (AuthorizationStatus::OK == isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::VIEW_UNAPPROVED_ATTACHMENT, with)))
             && isAllowedToViewMessage(currentUser, message))
         {
             return AuthorizationStatus::OK;
@@ -829,7 +829,7 @@ AuthorizationStatus DefaultAuthorization::canAddAttachment(const User& currentUs
     if (isThrottled(UserActionThrottling::NEW_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::CREATE_ATTACHMENT, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::CREATE_ATTACHMENT, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addNewAttachment(const User& currentUser,
@@ -841,7 +841,7 @@ AuthorizationStatus DefaultAuthorization::addNewAttachment(const User& currentUs
 AuthorizationStatus DefaultAuthorization::autoApproveAttachment(const User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::AUTO_APPROVE_ATTACHMENT, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::AUTO_APPROVE_ATTACHMENT, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeAttachmentName(const User& currentUser, const Attachment& attachment,
@@ -852,9 +852,9 @@ AuthorizationStatus DefaultAuthorization::changeAttachmentName(const User& curre
     PrivilegeValueType with;
     if (currentUser.id() == attachment.createdBy().id())
     {
-        return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_OWN_ATTACHMENT_NAME, with);
+        return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_OWN_ATTACHMENT_NAME, with);
     }
-    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_NAME, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_NAME, with);
 }
 
 AuthorizationStatus DefaultAuthorization::changeAttachmentApproval(const User& currentUser, const Attachment& attachment,
@@ -863,7 +863,7 @@ AuthorizationStatus DefaultAuthorization::changeAttachmentApproval(const User& c
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_APPROVAL, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::CHANGE_ANY_ATTACHMENT_APPROVAL, with);
 }
 
 AuthorizationStatus DefaultAuthorization::deleteAttachment(const User& currentUser, const Attachment& attachment) const
@@ -873,9 +873,9 @@ AuthorizationStatus DefaultAuthorization::deleteAttachment(const User& currentUs
     PrivilegeValueType with;
     if (currentUser.id() == attachment.createdBy().id())
     {
-        return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_OWN_ATTACHMENT, with);
+        return isAllowed(&currentUser, ForumWidePrivilege::DELETE_OWN_ATTACHMENT, with);
     }
-    return isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ANY_ATTACHMENT, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::DELETE_ANY_ATTACHMENT, with);
 }
 
 AuthorizationStatus DefaultAuthorization::addAttachmentToDiscussionThreadMessage(const User& currentUser,
@@ -888,7 +888,7 @@ AuthorizationStatus DefaultAuthorization::addAttachmentToDiscussionThreadMessage
     }
 
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::ADD_ATTACHMENT, with);
+    return isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::ADD_ATTACHMENT, with);
 }
 
 AuthorizationStatus DefaultAuthorization::removeAttachmentFromDiscussionThreadMessage(const User& currentUser,
@@ -898,10 +898,10 @@ AuthorizationStatus DefaultAuthorization::removeAttachmentFromDiscussionThreadMe
     if (isThrottled(UserActionThrottling::EDIT_CONTENT, currentUser)) return AuthorizationStatus::THROTTLED;
     
     PrivilegeValueType with;
-    return ((AuthorizationStatus::OK == isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::REMOVE_ATTACHMENT, with))
-        || (AuthorizationStatus::OK == isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_ANY_ATTACHMENT, with))
+    return ((AuthorizationStatus::OK == isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::REMOVE_ATTACHMENT, with))
+        || (AuthorizationStatus::OK == isAllowed(&currentUser, ForumWidePrivilege::DELETE_ANY_ATTACHMENT, with))
         || ((currentUser.id() == attachment.createdBy().id())
-            && (AuthorizationStatus::OK == isAllowed(currentUser.id(), ForumWidePrivilege::DELETE_OWN_ATTACHMENT, with))))
+            && (AuthorizationStatus::OK == isAllowed(&currentUser, ForumWidePrivilege::DELETE_OWN_ATTACHMENT, with))))
         ? AuthorizationStatus::OK
         : AuthorizationStatus::NOT_ALLOWED;
 }
@@ -909,138 +909,138 @@ AuthorizationStatus DefaultAuthorization::removeAttachmentFromDiscussionThreadMe
 AuthorizationStatus DefaultAuthorization::getEntitiesCount(const User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_ENTITIES_COUNT, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_ENTITIES_COUNT, with);
 }
 
 AuthorizationStatus DefaultAuthorization::getVersion(const User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::GET_VERSION, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::GET_VERSION, with);
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, const DiscussionThreadMessage& message,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, const DiscussionThreadMessage& message,
                                                     DiscussionThreadMessagePrivilege privilege, PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, message, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, message, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, const DiscussionThread& thread,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, const DiscussionThread& thread,
                                                     DiscussionThreadMessagePrivilege privilege, PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, thread, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, thread, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, const DiscussionTag& tag,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, const DiscussionTag& tag,
                                                     DiscussionThreadMessagePrivilege privilege, PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, tag, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, tag, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, const DiscussionThread& thread,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, const DiscussionThread& thread,
                                                     DiscussionThreadPrivilege privilege, PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, thread, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, thread, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, const DiscussionTag& tag,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, const DiscussionTag& tag,
                                                     DiscussionThreadPrivilege privilege, PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, tag, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, tag, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, const DiscussionThread& from,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, const DiscussionThread& from,
                                                     const DiscussionThread& into, DiscussionThreadPrivilege privilege) const
 {
-    return static_cast<bool>(grantedPrivilegeStore_.isAllowed(userId, from, privilege, Context::getCurrentTime()))
-            && static_cast<bool>(grantedPrivilegeStore_.isAllowed(userId, into, privilege, Context::getCurrentTime()))
+    return static_cast<bool>(grantedPrivilegeStore_.isAllowed(user, from, privilege, Context::getCurrentTime()))
+            && static_cast<bool>(grantedPrivilegeStore_.isAllowed(user, into, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, const DiscussionTag& tag,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, const DiscussionTag& tag,
                                                     DiscussionTagPrivilege privilege, PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, tag, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, tag, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, const DiscussionTag& from,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, const DiscussionTag& from,
                                                     const DiscussionTag& into, DiscussionTagPrivilege privilege) const
 {
-    return static_cast<bool>(grantedPrivilegeStore_.isAllowed(userId, from, privilege, Context::getCurrentTime()))
-            && static_cast<bool>(grantedPrivilegeStore_.isAllowed(userId, into, privilege, Context::getCurrentTime()))
+    return static_cast<bool>(grantedPrivilegeStore_.isAllowed(user, from, privilege, Context::getCurrentTime()))
+            && static_cast<bool>(grantedPrivilegeStore_.isAllowed(user, into, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, const DiscussionCategory& category,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, const DiscussionCategory& category,
                                                     DiscussionCategoryPrivilege privilege, PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, category, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, category, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionThreadMessagePrivilege privilege,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, DiscussionThreadMessagePrivilege privilege,
                                                     PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionThreadPrivilege privilege,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, DiscussionThreadPrivilege privilege,
                                                     PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionTagPrivilege privilege,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, DiscussionTagPrivilege privilege,
                                                     PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, DiscussionCategoryPrivilege privilege,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, DiscussionCategoryPrivilege privilege,
                                                     PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, ForumWidePrivilege privilege,
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, ForumWidePrivilege privilege,
                                                     PrivilegeValueType& with) const
 {
-    return (with = grantedPrivilegeStore_.isAllowed(userId, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
+    return (with = grantedPrivilegeStore_.isAllowed(user, forumWidePrivilegeStore_, privilege, Context::getCurrentTime()))
             ? AuthorizationStatus::OK
             : AuthorizationStatus::NOT_ALLOWED;
 }
 
-AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, ForumWidePrivilege privilege,
-                                                    PrivilegeValueType& with, IdTypeRef targetUserId) const
+AuthorizationStatus DefaultAuthorization::isAllowed(UserConstPtr user, ForumWidePrivilege privilege,
+                                                    PrivilegeValueType& with, UserConstPtr targetUser) const
 {
-    with = grantedPrivilegeStore_.isAllowed(userId, forumWidePrivilegeStore_, privilege, Context::getCurrentTime());
+    with = grantedPrivilegeStore_.isAllowed(user, forumWidePrivilegeStore_, privilege, Context::getCurrentTime());
     if ( ! with) return AuthorizationStatus::NOT_ALLOWED;
 
     PrivilegeValueType targetUserValuePositive, targetUserValueNegative;
-    grantedPrivilegeStore_.calculateForumWidePrivilege(targetUserId, Context::getCurrentTime(),
+    grantedPrivilegeStore_.calculateForumWidePrivilege(targetUser, Context::getCurrentTime(),
                                                        targetUserValuePositive, targetUserValueNegative);
 
     return *with > (targetUserValuePositive ? *targetUserValuePositive : 0)
@@ -1051,7 +1051,7 @@ AuthorizationStatus DefaultAuthorization::isAllowed(IdTypeRef userId, ForumWideP
 bool DefaultAuthorization::isThrottled(UserActionThrottling action, const User& currentUser) const
 {
     return ! disableThrottling_
-          && ! grantedPrivilegeStore_.isAllowed(currentUser.id(), forumWidePrivilegeStore_,
+          && ! grantedPrivilegeStore_.isAllowed(&currentUser, forumWidePrivilegeStore_,
                                                 ForumWidePrivilege::NO_THROTTLING, Context::getCurrentTime())
           && throttling_.check(action, Context::getCurrentTime(), currentUser.id(), Context::getCurrentUserIpAddress());
 }
@@ -1081,7 +1081,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1114,14 +1114,14 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadMessagePrivilege
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), message, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, message, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
     }
 
     PrivilegeValueType oldValuePositive, oldValueNegative;
-    grantedPrivilegeStore_.calculateDiscussionThreadMessagePrivilege(targetUser.id(), message,
+    grantedPrivilegeStore_.calculateDiscussionThreadMessagePrivilege(&targetUser, message,
                                                                      Context::getCurrentTime(),
                                                                      oldValuePositive, oldValueNegative);
     const auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
@@ -1138,7 +1138,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), thread, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, thread, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1155,7 +1155,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1173,14 +1173,14 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionThreadPrivilege(const 
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, thread, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
     }
 
     PrivilegeValueType oldValuePositive, oldValueNegative;
-    grantedPrivilegeStore_.calculateDiscussionThreadPrivilege(targetUser.id(), thread, Context::getCurrentTime(),
+    grantedPrivilegeStore_.calculateDiscussionThreadPrivilege(&targetUser, thread, Context::getCurrentTime(),
                                                               oldValuePositive, oldValueNegative);
     const auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
 
@@ -1197,7 +1197,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), tag, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, tag, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1214,7 +1214,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), tag, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, tag, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1231,7 +1231,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const Use
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1249,14 +1249,14 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionTagPrivilege(const Use
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, tag, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
     }
 
     PrivilegeValueType oldValuePositive, oldValueNegative;
-    grantedPrivilegeStore_.calculateDiscussionTagPrivilege(targetUser.id(), tag, Context::getCurrentTime(),
+    grantedPrivilegeStore_.calculateDiscussionTagPrivilege(&targetUser, tag, Context::getCurrentTime(),
                                                            oldValuePositive, oldValueNegative);
     const auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
 
@@ -1272,7 +1272,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(cons
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, category, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1288,7 +1288,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadMessagePrivilege
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, DiscussionThreadMessagePrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1304,7 +1304,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionThreadPrivilege(const 
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, DiscussionThreadPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1320,7 +1320,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionTagPrivilege(const Use
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, DiscussionTagPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1336,7 +1336,7 @@ AuthorizationStatus DefaultAuthorization::updateDiscussionCategoryPrivilege(cons
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1354,14 +1354,14 @@ AuthorizationStatus DefaultAuthorization::assignDiscussionCategoryPrivilege(cons
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), category, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, category, DiscussionCategoryPrivilege::ADJUST_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
     }
 
     PrivilegeValueType oldValuePositive, oldValueNegative;
-    grantedPrivilegeStore_.calculateDiscussionCategoryPrivilege(targetUser.id(), category,
+    grantedPrivilegeStore_.calculateDiscussionCategoryPrivilege(&targetUser, category,
                                                                 Context::getCurrentTime(),
                                                                 oldValuePositive, oldValueNegative);
     const auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
@@ -1377,7 +1377,7 @@ AuthorizationStatus DefaultAuthorization::updateForumWidePrivilege(const User& c
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
@@ -1392,21 +1392,21 @@ AuthorizationStatus DefaultAuthorization::updateForumWideDefaultPrivilegeLevel(
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
     return status;
 }
 
 AuthorizationStatus DefaultAuthorization::getForumWideRequiredPrivileges(const User& currentUser) const
 {
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), ForumWidePrivilege::VIEW_FORUM_WIDE_REQUIRED_PRIVILEGES, with);
+    const auto status = isAllowed(&currentUser, ForumWidePrivilege::VIEW_FORUM_WIDE_REQUIRED_PRIVILEGES, with);
     return status;
 }
 
 AuthorizationStatus DefaultAuthorization::getForumWideAssignedPrivileges(const User& currentUser) const
 {
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), ForumWidePrivilege::VIEW_FORUM_WIDE_ASSIGNED_PRIVILEGES, with);
+    const auto status = isAllowed(&currentUser, ForumWidePrivilege::VIEW_FORUM_WIDE_ASSIGNED_PRIVILEGES, with);
     return status;
 }
 
@@ -1416,14 +1416,14 @@ AuthorizationStatus DefaultAuthorization::getUserAssignedPrivileges(const User& 
     if (currentUser.id() == targetUser.id()) return AuthorizationStatus::OK;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), ForumWidePrivilege::VIEW_USER_ASSIGNED_PRIVILEGES, with);
+    const auto status = isAllowed(&currentUser, ForumWidePrivilege::VIEW_USER_ASSIGNED_PRIVILEGES, with);
     return status;
 }
 
 AuthorizationStatus DefaultAuthorization::getAllowForumWidePrivilegeChange(const Entities::User& currentUser) const
 {
     PrivilegeValueType with;
-    return isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
+    return isAllowed(&currentUser, ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
 }
 
 AuthorizationStatus DefaultAuthorization::assignForumWidePrivilege(const User& currentUser,
@@ -1435,14 +1435,14 @@ AuthorizationStatus DefaultAuthorization::assignForumWidePrivilege(const User& c
     if (isThrottled(UserActionThrottling::EDIT_PRIVILEGES, currentUser)) return AuthorizationStatus::THROTTLED;
 
     PrivilegeValueType with;
-    const auto status = isAllowed(currentUser.id(), ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
+    const auto status = isAllowed(&currentUser, ForumWidePrivilege::ADJUST_FORUM_WIDE_PRIVILEGE, with);
     if (status != AuthorizationStatus::OK)
     {
         return status;
     }
 
     PrivilegeValueType oldValuePositive, oldValueNegative;
-    grantedPrivilegeStore_.calculateForumWidePrivilege(targetUser.id(), Context::getCurrentTime(),
+    grantedPrivilegeStore_.calculateForumWidePrivilege(&targetUser, Context::getCurrentTime(),
                                                        oldValuePositive, oldValueNegative);
     const auto oldValue = computeOldValueForAssigningPrivileges(oldValuePositive, oldValueNegative);
 

@@ -29,6 +29,7 @@ using namespace Forum::Authorization;
 GrantedPrivilegeStore::GrantedPrivilegeStore()
 {
     defaultPrivilegeValueForLoggedInUser_ = Configuration::getGlobalConfig()->user.defaultPrivilegeValueForLoggedInUser;
+    messageCountMultiplierPrivilegeBonus_ = Configuration::getGlobalConfig()->user.messageCountMultiplierPrivilegeBonus;
 }
 
 void GrantedPrivilegeStore::grantDiscussionThreadMessagePrivilege(IdTypeRef userId, IdTypeRef entityId,
@@ -111,142 +112,142 @@ static PrivilegeValueType isAllowed(const PrivilegeValueType positive,
     return (effectivePrivilegeValue >= requiredPrivilegeValue) ? effectivePrivilegeValue : PrivilegeValueType{};
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionThreadMessage& message,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const DiscussionThreadMessage& message,
                                                     DiscussionThreadMessagePrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    calculateDiscussionThreadMessagePrivilege(userId, message, now, positive, negative);
+    calculateDiscussionThreadMessagePrivilege(user, message, now, positive, negative);
 
     DiscussionThreadConstPtr thread = message.parentThread();
     assert(thread);
-    calculateDiscussionThreadMessagePrivilege(userId, *thread, now, positive, negative);
+    calculateDiscussionThreadMessagePrivilege(user, *thread, now, positive, negative);
 
     return ::isAllowed(positive, negative, message.getDiscussionThreadMessagePrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionThread& thread,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const DiscussionThread& thread,
                                                     DiscussionThreadMessagePrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    calculateDiscussionThreadMessagePrivilege(userId, thread, now, positive, negative);
+    calculateDiscussionThreadMessagePrivilege(user, thread, now, positive, negative);
 
     return ::isAllowed(positive, negative, thread.getDiscussionThreadMessagePrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionTag& tag,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const DiscussionTag& tag,
                                                     DiscussionThreadMessagePrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
 
-    calculateDiscussionTagPrivilege(userId, tag, now, positive, negative);
-    calculateForumWidePrivilege(userId, now, positive, negative);
+    calculateDiscussionTagPrivilege(user, tag, now, positive, negative);
+    calculateForumWidePrivilege(user, now, positive, negative);
 
     return ::isAllowed(positive, negative, tag.getDiscussionThreadMessagePrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionThread& thread,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const DiscussionThread& thread,
                                                     DiscussionThreadPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    calculateDiscussionThreadPrivilege(userId, thread, now, positive, negative);
+    calculateDiscussionThreadPrivilege(user, thread, now, positive, negative);
 
     for (auto tag : thread.tags())
     {
         assert(tag);
-        calculateDiscussionTagPrivilege(userId, *tag, now, positive, negative);
+        calculateDiscussionTagPrivilege(user, *tag, now, positive, negative);
     }
 
-    calculateForumWidePrivilege(userId, now, positive, negative);
+    calculateForumWidePrivilege(user, now, positive, negative);
 
     return ::isAllowed(positive, negative, thread.getDiscussionThreadPrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionTag& tag,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const DiscussionTag& tag,
                                                     DiscussionThreadPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
 
-    calculateDiscussionTagPrivilege(userId, tag, now, positive, negative);
-    calculateForumWidePrivilege(userId, now, positive, negative);
+    calculateDiscussionTagPrivilege(user, tag, now, positive, negative);
+    calculateForumWidePrivilege(user, now, positive, negative);
 
     return ::isAllowed(positive, negative, tag.getDiscussionThreadPrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionTag& tag,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const DiscussionTag& tag,
                                                     DiscussionTagPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    calculateDiscussionTagPrivilege(userId, tag, now, positive, negative);
+    calculateDiscussionTagPrivilege(user, tag, now, positive, negative);
 
-    calculateForumWidePrivilege(userId, now, positive, negative);
+    calculateForumWidePrivilege(user, now, positive, negative);
 
     return ::isAllowed(positive, negative, tag.getDiscussionTagPrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const DiscussionCategory& category,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const DiscussionCategory& category,
                                                     DiscussionCategoryPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
-    calculateDiscussionCategoryPrivilege(userId, category, now, positive, negative);
+    calculateDiscussionCategoryPrivilege(user, category, now, positive, negative);
 
     auto parent = category.parent();
     while (parent)
     {
-        calculateDiscussionCategoryPrivilege(userId, *parent, now, positive, negative);
+        calculateDiscussionCategoryPrivilege(user, *parent, now, positive, negative);
         parent = parent->parent();
     }
 
-    calculateForumWidePrivilege(userId, now, positive, negative);
+    calculateForumWidePrivilege(user, now, positive, negative);
 
     return ::isAllowed(positive, negative, category.getDiscussionCategoryPrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                                     DiscussionThreadMessagePrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
 
-    calculateForumWidePrivilege(userId, now, positive, negative);
+    calculateForumWidePrivilege(user, now, positive, negative);
 
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionThreadMessagePrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                                     DiscussionThreadPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
 
-    calculateForumWidePrivilege(userId, now, positive, negative);
+    calculateForumWidePrivilege(user, now, positive, negative);
 
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionThreadPrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                                     DiscussionTagPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
 
-    calculateForumWidePrivilege(userId, now, positive, negative);
+    calculateForumWidePrivilege(user, now, positive, negative);
 
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionTagPrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                                     DiscussionCategoryPrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
 
-    calculateForumWidePrivilege(userId, now, positive, negative);
+    calculateForumWidePrivilege(user, now, positive, negative);
 
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getDiscussionCategoryPrivilege(privilege));
 }
 
-PrivilegeValueType GrantedPrivilegeStore::isAllowed(IdTypeRef userId, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
+PrivilegeValueType GrantedPrivilegeStore::isAllowed(UserConstPtr user, const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                                     ForumWidePrivilege privilege, Timestamp now) const
 {
     PrivilegeValueType positive, negative;
 
-    calculateForumWidePrivilege(userId, now, positive, negative);
+    calculateForumWidePrivilege(user, now, positive, negative);
 
     return ::isAllowed(positive, negative, forumWidePrivilegeStore.getForumWidePrivilege(privilege));
 }
@@ -277,7 +278,7 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
         { DiscussionThreadMessagePrivilege::GET_MESSAGE_COMMENTS },
     };
 
-    auto& userId = items[0].userId;
+    auto& user = items[0].user;
     auto& firstMessage = *items[0].message;
 
     PrivilegeValueType threadLevelPositive{};
@@ -287,7 +288,7 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
     assert(thread);
 
     //predetermine the privilege values granted and required at thread level as they are the same for all messages
-    calculateDiscussionThreadMessagePrivilege(userId, *thread, now, threadLevelPositive, threadLevelNegative);
+    calculateDiscussionThreadMessagePrivilege(user, *thread, now, threadLevelPositive, threadLevelNegative);
 
     for (auto& info : threadValues)
     {
@@ -304,7 +305,7 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
         threadValues[4].boolToUpdate = &item.allowedToViewComments;
 
         PrivilegeValueType messageLevelPositive, messageLevelNegative;
-        calculateDiscussionThreadMessagePrivilege(item.userId, *item.message, now,
+        calculateDiscussionThreadMessagePrivilege(item.user, *item.message, now,
                                                   messageLevelPositive, messageLevelNegative);
         const auto positive = maximumPrivilegeValue(messageLevelPositive, threadLevelPositive);
         const auto negative = minimumPrivilegeValue(messageLevelNegative, threadLevelNegative);
@@ -322,77 +323,77 @@ void GrantedPrivilegeStore::computeDiscussionThreadMessageVisibilityAllowed(Disc
     }
 }
 
-void GrantedPrivilegeStore::calculateDiscussionThreadMessagePrivilege(IdTypeRef userId,
+void GrantedPrivilegeStore::calculateDiscussionThreadMessagePrivilege(UserConstPtr user,
                                                                       const DiscussionThread& thread, Timestamp now,
                                                                       PrivilegeValueType& positiveValue,
                                                                       PrivilegeValueType& negativeValue) const
 {
-    calculateDiscussionThreadPrivilege(userId, thread, now, positiveValue, negativeValue);
+    calculateDiscussionThreadPrivilege(user, thread, now, positiveValue, negativeValue);
     for (auto tag : thread.tags())
     {
         assert(tag);
-        calculateDiscussionTagPrivilege(userId, *tag, now, positiveValue, negativeValue);
+        calculateDiscussionTagPrivilege(user, *tag, now, positiveValue, negativeValue);
     }
 
-    calculateForumWidePrivilege(userId, now, positiveValue, negativeValue);
+    calculateForumWidePrivilege(user, now, positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::calculateDiscussionThreadMessagePrivilege(IdTypeRef userId,
+void GrantedPrivilegeStore::calculateDiscussionThreadMessagePrivilege(UserConstPtr user,
                                                                       const DiscussionThreadMessage& message,
                                                                       Timestamp now,
                                                                       PrivilegeValueType& positiveValue,
                                                                       PrivilegeValueType& negativeValue) const
 {
-    calculatePrivilege(discussionThreadMessageSpecificPrivileges_, userId, message.id(), now,
+    calculatePrivilege(discussionThreadMessageSpecificPrivileges_, user, message.id(), now,
                        positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::calculateDiscussionThreadPrivilege(IdTypeRef userId, const DiscussionThread& thread,
+void GrantedPrivilegeStore::calculateDiscussionThreadPrivilege(UserConstPtr user, const DiscussionThread& thread,
                                                                Timestamp now,
                                                                PrivilegeValueType& positiveValue,
                                                                PrivilegeValueType& negativeValue) const
 {
-    calculatePrivilege(discussionThreadSpecificPrivileges_, userId, thread.id(), now, positiveValue, negativeValue);
+    calculatePrivilege(discussionThreadSpecificPrivileges_, user, thread.id(), now, positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::calculateDiscussionTagPrivilege(IdTypeRef userId, const DiscussionTag& tag, Timestamp now,
+void GrantedPrivilegeStore::calculateDiscussionTagPrivilege(UserConstPtr user, const DiscussionTag& tag, Timestamp now,
                                                             PrivilegeValueType& positiveValue,
                                                             PrivilegeValueType& negativeValue) const
 {
-    calculatePrivilege(discussionTagSpecificPrivileges_, userId, tag.id(), now, positiveValue, negativeValue);
+    calculatePrivilege(discussionTagSpecificPrivileges_, user, tag.id(), now, positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::calculateDiscussionCategoryPrivilege(IdTypeRef userId, const DiscussionCategory& category,
+void GrantedPrivilegeStore::calculateDiscussionCategoryPrivilege(UserConstPtr user, const DiscussionCategory& category,
                                                                  Timestamp now,
                                                                  PrivilegeValueType& positiveValue,
                                                                  PrivilegeValueType& negativeValue) const
 {
-    calculatePrivilege(discussionCategorySpecificPrivileges_, userId, category.id(), now, positiveValue, negativeValue);
+    calculatePrivilege(discussionCategorySpecificPrivileges_, user, category.id(), now, positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::calculateForumWidePrivilege(IdTypeRef userId, Timestamp now,
+void GrantedPrivilegeStore::calculateForumWidePrivilege(UserConstPtr user, Timestamp now,
                                                         PrivilegeValueType& positiveValue,
                                                         PrivilegeValueType& negativeValue) const
 {
-    calculatePrivilege(forumWideSpecificPrivileges_, userId, {}, now, positiveValue, negativeValue);
+    calculatePrivilege(forumWideSpecificPrivileges_, user, {}, now, positiveValue, negativeValue);
 }
 
-void GrantedPrivilegeStore::calculatePrivilege(const PrivilegeEntryCollection& collection, IdTypeRef userId,
+void GrantedPrivilegeStore::calculatePrivilege(const PrivilegeEntryCollection& collection, UserConstPtr user,
                                                IdTypeRef entityId, Timestamp now, PrivilegeValueType& positiveValue,
                                                PrivilegeValueType& negativeValue) const
 {
-    const auto defaultPositiveValue = isAnonymousUserId(userId)
-                                      ? static_cast<PrivilegeValueIntType>(0)
-                                      : defaultPrivilegeValueForLoggedInUser_;
-
-    positiveValue = maximumPrivilegeValue(positiveValue, defaultPositiveValue);
-
-    if (isAnonymousUserId(userId))
+    if (isAnonymousUser(user))
     {
+        positiveValue = maximumPrivilegeValue(positiveValue, 0);
         return;
     }
 
-    auto range = collection.get<PrivilegeEntryCollectionByUserIdEntityId>().equal_range(IdTuple{ userId, entityId });
+    const auto defaultPositiveValue = static_cast<PrivilegeValueIntType>(
+            defaultPrivilegeValueForLoggedInUser_ + messageCountMultiplierPrivilegeBonus_ * user->messageCount());
+
+    positiveValue = maximumPrivilegeValue(positiveValue, defaultPositiveValue);
+    
+    auto range = collection.get<PrivilegeEntryCollectionByUserIdEntityId>().equal_range(IdTuple{ user->id(), entityId });
     for (auto& entry : boost::make_iterator_range(range))
     {
         const auto expiresAt = entry.expiresAt();

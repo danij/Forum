@@ -59,7 +59,7 @@ StatusCode MemoryRepositoryDiscussionTag::getDiscussionTags(OutStream& output, R
         }
 
         SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                             currentUser.id(), Context::getCurrentTime());
+                                             &currentUser, Context::getCurrentTime());
 
         if (Context::getDisplayContext().sortOrder == Context::SortOrder::Ascending)
         {

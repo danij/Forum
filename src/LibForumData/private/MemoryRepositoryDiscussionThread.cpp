@@ -102,7 +102,7 @@ static void writeDiscussionThreads(const ThreadsCollection& collection, Retrieve
     auto& displayContext = Context::getDisplayContext();
 
     SerializationRestriction restriction(privilegeStore, forumWidePrivilegeStore, 
-                                         currentUser.id(), Context::getCurrentTime());
+                                         &currentUser, Context::getCurrentTime());
 
     auto ascending = displayContext.sortOrder == Context::SortOrder::Ascending;
 
@@ -227,7 +227,7 @@ StatusCode MemoryRepositoryDiscussionThread::getDiscussionThreadById(IdTypeRef i
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "thread", thread, restriction);
 
@@ -290,7 +290,7 @@ StatusCode MemoryRepositoryDiscussionThread::getMultipleDiscussionThreadsById(St
                           TemporaryChanger<UserConstPtr> __(serializationSettings.currentUser, &currentUser);
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           writeAllEntities(threadsFound.begin(), lastThreadFound, "threads", output, restriction);
                           
@@ -446,7 +446,7 @@ StatusCode MemoryRepositoryDiscussionThread::getUsersSubscribedToDiscussionThrea
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           Json::JsonWriter writer(output);
                           writer.startObject();

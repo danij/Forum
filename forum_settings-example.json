@@ -15,6 +15,7 @@
         "maxLogoWidth": 128,
         "maxLogoHeight": 128,
         "defaultPrivilegeValueForLoggedInUser": 1,
+        "messageCountMultiplierPrivilegeBonus": 0.0,
         "resetVoteExpiresInSeconds": 3600,
         "visitorOnlineForSeconds": 300 
     },

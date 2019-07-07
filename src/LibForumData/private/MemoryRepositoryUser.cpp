@@ -128,7 +128,7 @@ StatusCode MemoryRepositoryUser::getCurrentUser(OutStream& output) const
                           if ( ! isAnonymousUser(currentUser))
                           {
                               const SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                                         currentUser.id(), Context::getCurrentTime());
+                                                                         &currentUser, Context::getCurrentTime());
                               writer.newPropertyRaw(JSON_RAW_PROP_COMMA("user"));
                               serialize(writer, currentUser, restriction);
 
@@ -166,7 +166,7 @@ StatusCode MemoryRepositoryUser::getUsers(OutStream& output, RetrieveUsersBy by)
         auto& displayContext = Context::getDisplayContext();
 
         SerializationRestriction restriction(collection.grantedPrivileges(), collection, 
-                                             currentUser.id(), Context::getCurrentTime());
+                                             &currentUser, Context::getCurrentTime());
 
         auto ascending = displayContext.sortOrder == Context::SortOrder::Ascending;
 
@@ -219,7 +219,7 @@ StatusCode MemoryRepositoryUser::getUsersOnline(OutStream& output) const
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           auto onlineUsersIntervalSeconds = getGlobalConfig()->user.onlineUsersIntervalSeconds;
                           auto onlineUsersTimeLimit =
@@ -288,7 +288,7 @@ StatusCode MemoryRepositoryUser::getUserById(IdTypeRef id, OutStream& output) co
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "user", user, restriction);
 
@@ -334,7 +334,7 @@ StatusCode MemoryRepositoryUser::getUserByName(StringView name, OutStream& outpu
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           writeSingleValueSafeName(output, "user", user, restriction);
                       });
@@ -385,7 +385,7 @@ StatusCode MemoryRepositoryUser::getMultipleUsersById(StringView ids, OutStream&
                           status.disable();
                           
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           writeAllEntities(usersFound.begin(), lastUserFound, "users", output, restriction);
                           
@@ -493,7 +493,7 @@ StatusCode MemoryRepositoryUser::searchUsersByName(StringView name, OutStream& o
                           status = StatusCode::OK;
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           status.writeNow([&](auto& writer)
                                           {
@@ -574,7 +574,7 @@ StatusCode MemoryRepositoryUser::getUserVoteHistory(OutStream& output) const
 
                           const auto& messageIndex = collection.threadMessages().byId();
                           const SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                                     currentUser.id(), Context::getCurrentTime());
+                                                                     &currentUser, Context::getCurrentTime());
                           BoolTemporaryChanger _(serializationSettings.hideLatestMessage, true);
                           BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
                           BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadCreatedBy, true);
@@ -658,7 +658,7 @@ StatusCode MemoryRepositoryUser::getUserQuotedHistory(OutStream& output) const
 
                           const auto& messageIndex = collection.threadMessages().byId();
                           const SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                                     currentUser.id(), Context::getCurrentTime());
+                                                                     &currentUser, Context::getCurrentTime());
                           BoolTemporaryChanger _(serializationSettings.hideLatestMessage, true);
                           BoolTemporaryChanger __(serializationSettings.hidePrivileges, true);
                           BoolTemporaryChanger ___(serializationSettings.hideDiscussionThreadCreatedBy, true);
@@ -712,7 +712,7 @@ StatusCode MemoryRepositoryUser::getReceivedPrivateMessages(OutStream& output) c
                           const auto& displayContext = Context::getDisplayContext();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
                           BoolTemporaryChanger _(serializationSettings.hidePrivateMessageDestination, true);
                           BoolTemporaryChanger __(serializationSettings.allowDisplayPrivateMessageIpAddress, 
                                   restriction.isAllowed(ForumWidePrivilege::VIEW_PRIVATE_MESSAGE_IP_ADDRESS));
@@ -750,7 +750,7 @@ StatusCode MemoryRepositoryUser::getSentPrivateMessages(OutStream& output) const
                           const auto& displayContext = Context::getDisplayContext();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
                           BoolTemporaryChanger _(serializationSettings.hidePrivateMessageSource, true);
                           BoolTemporaryChanger __(serializationSettings.allowDisplayPrivateMessageIpAddress,
                                   restriction.isAllowed(ForumWidePrivilege::VIEW_PRIVATE_MESSAGE_IP_ADDRESS));

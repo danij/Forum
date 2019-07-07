@@ -52,6 +52,7 @@ namespace Forum::Configuration
         uint_fast32_t maxLogoWidth = 128;
         uint_fast32_t maxLogoHeight = 128;
         int16_t defaultPrivilegeValueForLoggedInUser = 1;
+        double messageCountMultiplierPrivilegeBonus = 0.0;
         uint_fast32_t resetVoteExpiresInSeconds = 3600;
         uint_fast32_t visitorOnlineForSeconds = 300;
     };

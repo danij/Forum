@@ -140,6 +140,11 @@ namespace Forum::Entities
 
     inline bool isAnonymousUser(UserPtr user)
     {
-        return isAnonymousUser(*user);
+        return (! user) || isAnonymousUser(*user);
+    }
+
+    inline bool isAnonymousUser(UserConstPtr user)
+    {
+        return (! user) || isAnonymousUser(*user);
     }
 }

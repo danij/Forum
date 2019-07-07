@@ -35,9 +35,9 @@ namespace Forum::Authorization
     {
         DiscussionThreadMessagePrivilegeCheck() = default;
 
-        DiscussionThreadMessagePrivilegeCheck(Entities::IdTypeRef userId,
+        DiscussionThreadMessagePrivilegeCheck(Entities::UserConstPtr user,
                                               const Entities::DiscussionThreadMessage& message)
-            : userId(userId), message(&message) {}
+            : user(user), message(&message) {}
         ~DiscussionThreadMessagePrivilegeCheck() = default;
         
 
@@ -47,7 +47,7 @@ namespace Forum::Authorization
         DiscussionThreadMessagePrivilegeCheck& operator=(const DiscussionThreadMessagePrivilegeCheck&) = default;
         DiscussionThreadMessagePrivilegeCheck& operator=(DiscussionThreadMessagePrivilegeCheck&&) = default;
 
-        Entities::IdType userId;
+        Entities::UserConstPtr user;
         const Entities::DiscussionThreadMessage* message = nullptr;
         bool allowedToShowMessage = false;
         bool allowedToShowUser = false;
@@ -83,37 +83,37 @@ namespace Forum::Authorization
 
         //isAllowed returns the privilege level with which access was granted or empty if not allowed
 
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThreadMessage& message,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user, const Entities::DiscussionThreadMessage& message,
                                      DiscussionThreadMessagePrivilege privilege, Entities::Timestamp now) const;
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThread& thread,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user, const Entities::DiscussionThread& thread,
                                      DiscussionThreadMessagePrivilege privilege, Entities::Timestamp now) const;
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user, const Entities::DiscussionTag& tag,
                                      DiscussionThreadMessagePrivilege privilege, Entities::Timestamp now) const;
 
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionThread& thread,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user, const Entities::DiscussionThread& thread,
                                      DiscussionThreadPrivilege privilege, Entities::Timestamp now) const;
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user, const Entities::DiscussionTag& tag,
                                      DiscussionThreadPrivilege privilege, Entities::Timestamp now) const;
 
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user, const Entities::DiscussionTag& tag,
                                      DiscussionTagPrivilege privilege, Entities::Timestamp now) const;
 
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId, const Entities::DiscussionCategory& category,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user, const Entities::DiscussionCategory& category,
                                      DiscussionCategoryPrivilege privilege, Entities::Timestamp now) const;
 
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user,
                                      const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                      DiscussionThreadMessagePrivilege privilege, Entities::Timestamp now) const;
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user,
                                      const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                      DiscussionThreadPrivilege privilege, Entities::Timestamp now) const;
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user,
                                      const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                      DiscussionTagPrivilege privilege, Entities::Timestamp now) const;
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user,
                                      const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                      DiscussionCategoryPrivilege privilege, Entities::Timestamp now) const;
-        PrivilegeValueType isAllowed(Entities::IdTypeRef userId,
+        PrivilegeValueType isAllowed(Entities::UserConstPtr user,
                                      const ForumWidePrivilegeStore& forumWidePrivilegeStore,
                                      ForumWidePrivilege privilege, Entities::Timestamp now) const;
 
@@ -140,29 +140,29 @@ namespace Forum::Authorization
         void enumerateForumWidePrivilegesAssignedToUser(Entities::IdTypeRef userId,
                                                         EnumerationCallback&& callback) const;
 
-        void calculateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId,
+        void calculateDiscussionThreadMessagePrivilege(Entities::UserConstPtr user,
                                                        const Entities::DiscussionThreadMessage& message,
                                                        Entities::Timestamp now, PrivilegeValueType& positiveValue,
                                                        PrivilegeValueType& negativeValue) const;
 
-        void calculateDiscussionThreadPrivilege(Entities::IdTypeRef userId, const Entities::DiscussionThread& thread,
+        void calculateDiscussionThreadPrivilege(Entities::UserConstPtr user, const Entities::DiscussionThread& thread,
                                                 Entities::Timestamp now, PrivilegeValueType& positiveValue,
                                                 PrivilegeValueType& negativeValue) const;
 
-        void calculateDiscussionTagPrivilege(Entities::IdTypeRef userId, const Entities::DiscussionTag& tag,
+        void calculateDiscussionTagPrivilege(Entities::UserConstPtr user, const Entities::DiscussionTag& tag,
                                              Entities::Timestamp now, PrivilegeValueType& positiveValue,
                                              PrivilegeValueType& negativeValue) const ;
 
-        void calculateDiscussionCategoryPrivilege(Entities::IdTypeRef userId,
+        void calculateDiscussionCategoryPrivilege(Entities::UserConstPtr user,
                                                   const Entities::DiscussionCategory& category,
                                                   Entities::Timestamp now, PrivilegeValueType& positiveValue,
                                                   PrivilegeValueType& negativeValue) const;
 
-        void calculateForumWidePrivilege(Entities::IdTypeRef userId, Entities::Timestamp now,
+        void calculateForumWidePrivilege(Entities::UserConstPtr user, Entities::Timestamp now,
                                          PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
     private:
 
-        void calculateDiscussionThreadMessagePrivilege(Entities::IdTypeRef userId,
+        void calculateDiscussionThreadMessagePrivilege(Entities::UserConstPtr user,
                                                        const Entities::DiscussionThread& thread,
                                                        Entities::Timestamp now,
                                                        PrivilegeValueType& positiveValue,
@@ -224,7 +224,7 @@ namespace Forum::Authorization
         typedef boost::multi_index_container<PrivilegeEntry, PrivilegeEntryCollectionIndices>
                 PrivilegeEntryCollection;
 
-        void calculatePrivilege(const PrivilegeEntryCollection& collection, Entities::IdTypeRef userId,
+        void calculatePrivilege(const PrivilegeEntryCollection& collection, Entities::UserConstPtr user,
                                 Entities::IdTypeRef entityId, Entities::Timestamp now,
                                 PrivilegeValueType& positiveValue, PrivilegeValueType& negativeValue) const;
 
@@ -234,50 +234,52 @@ namespace Forum::Authorization
         PrivilegeEntryCollection discussionCategorySpecificPrivileges_;
         PrivilegeEntryCollection forumWideSpecificPrivileges_;
         PrivilegeValueIntType defaultPrivilegeValueForLoggedInUser_;
+        double messageCountMultiplierPrivilegeBonus_;
     };
 
     struct SerializationRestriction final : private boost::noncopyable
     {
         SerializationRestriction(const GrantedPrivilegeStore& privilegeStore, 
                                  const ForumWidePrivilegeStore& forumWidePrivilegeStore,
-                                 Entities::IdTypeRef userId, Entities::Timestamp now)
+                                 Entities::UserConstPtr user, Entities::Timestamp now)
             : privilegeStore_(privilegeStore), forumWidePrivilegeStore_(forumWidePrivilegeStore), 
-              userId_(userId), now_(now)
+              user_(user), now_(now)
         {
         }
 
         const GrantedPrivilegeStore& privilegeStore() const { return privilegeStore_; }
-              Entities::IdTypeRef            userId() const { return userId_; }
+              Entities::UserConstPtr           user() const { return user_; }
+              Entities::IdType               userId() const { return user_ ? user_->id() : Entities::IdType{}; }
               Entities::Timestamp               now() const { return now_; }
 
         bool isAllowed(const Entities::DiscussionThreadMessage& message,
                        const DiscussionThreadMessagePrivilege privilege = DiscussionThreadMessagePrivilege::VIEW) const
         {
-            return static_cast<bool>(privilegeStore_.isAllowed(userId_, message, privilege, now_));
+            return static_cast<bool>(privilegeStore_.isAllowed(user_, message, privilege, now_));
         }
 
         bool isAllowed(const Entities::DiscussionThread& thread,
                        const DiscussionThreadPrivilege privilege = DiscussionThreadPrivilege::VIEW) const
         {
-            return static_cast<bool>(privilegeStore_.isAllowed(userId_, thread, privilege, now_));
+            return static_cast<bool>(privilegeStore_.isAllowed(user_, thread, privilege, now_));
         }
 
         bool isAllowed(const Entities::DiscussionTag& tag,
                        const DiscussionTagPrivilege privilege = DiscussionTagPrivilege::VIEW) const
         {
-            return static_cast<bool>(privilegeStore_.isAllowed(userId_, tag, privilege, now_));
+            return static_cast<bool>(privilegeStore_.isAllowed(user_, tag, privilege, now_));
         }
 
         bool isAllowed(const Entities::DiscussionCategory& category,
                        const DiscussionCategoryPrivilege privilege = DiscussionCategoryPrivilege::VIEW) const
         {
-            return static_cast<bool>(privilegeStore_.isAllowed(userId_, category, privilege, now_));
+            return static_cast<bool>(privilegeStore_.isAllowed(user_, category, privilege, now_));
         }
 
         bool isAllowed(const ForumWidePrivilegeStore& forumWidePrivilegeStore, 
                        const ForumWidePrivilege privilege = ForumWidePrivilege::ADD_USER) const
         {
-            return static_cast<bool>(privilegeStore_.isAllowed(userId_, forumWidePrivilegeStore, privilege, now_));
+            return static_cast<bool>(privilegeStore_.isAllowed(user_, forumWidePrivilegeStore, privilege, now_));
         }
 
         bool isAllowed(const ForumWidePrivilege privilege = ForumWidePrivilege::ADD_USER) const
@@ -341,7 +343,7 @@ namespace Forum::Authorization
     private:
         const GrantedPrivilegeStore& privilegeStore_;
         const ForumWidePrivilegeStore& forumWidePrivilegeStore_;
-        Entities::IdTypeRef userId_;
+        Entities::UserConstPtr user_;
         Entities::Timestamp now_;
     };
 }

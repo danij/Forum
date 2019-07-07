@@ -92,7 +92,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getMultipleDiscussionThreadM
                           status.disable();
 
                           SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                                               currentUser.id(), Context::getCurrentTime());
+                                                               &currentUser, Context::getCurrentTime());
 
                           TemporaryChanger<UserConstPtr> _(serializationSettings.currentUser, &currentUser);
 
@@ -146,7 +146,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getDiscussionThreadMessagesO
         status.disable();
         
         SerializationRestriction restriction(collection.grantedPrivileges(), collection, 
-                                             currentUser.id(), Context::getCurrentTime());
+                                             &currentUser, Context::getCurrentTime());
 
         writeEntitiesWithPagination(messages, "messages", output, displayContext.pageNumber, pageSize,
             displayContext.sortOrder == Context::SortOrder::Ascending, restriction);
@@ -178,7 +178,7 @@ StatusCode MemoryRepositoryDiscussionThreadMessage::getLatestDiscussionThreadMes
         status.disable();
 
         SerializationRestriction restriction(collection.grantedPrivileges(), collection,
-                                             currentUser.id(), Context::getCurrentTime());
+                                             &currentUser, Context::getCurrentTime());
 
         writeEntitiesWithPagination(messages, "messages", output, displayContext.pageNumber, pageSize, false, restriction);
 
@@ -1026,7 +1026,7 @@ static void writeMessageComments(const Collection& collection, OutStream& output
     auto& displayContext = Context::getDisplayContext();
 
     SerializationRestriction restriction(privilegeStore, forumWidePrivilegeStore, 
-                                         currentUser.id(), Context::getCurrentTime());
+                                         &currentUser, Context::getCurrentTime());
 
     writeEntitiesWithPagination(collection, "messageComments", output,
         displayContext.pageNumber, pageSize, displayContext.sortOrder == Context::SortOrder::Ascending, restriction);
@@ -1038,7 +1038,7 @@ static void writeAllMessageComments(const Collection& collection, OutStream& out
                                     const ForumWidePrivilegeStore& forumWidePrivilegeStore, const User& currentUser)
 {
     SerializationRestriction restriction(privilegeStore, forumWidePrivilegeStore, 
-                                         currentUser.id(), Context::getCurrentTime());
+                                         &currentUser, Context::getCurrentTime());
 
     writeAllEntities(collection, "messageComments", output, false, restriction);
 }
