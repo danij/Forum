@@ -235,6 +235,7 @@ namespace Forum::Authorization
         PrivilegeEntryCollection forumWideSpecificPrivileges_;
         PrivilegeValueIntType defaultPrivilegeValueForLoggedInUser_;
         double messageCountMultiplierPrivilegeBonus_;
+        PrivilegeValueIntType maxMessageCountPrivilegeBonus_;
     };
 
     struct SerializationRestriction final : private boost::noncopyable

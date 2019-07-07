@@ -75,6 +75,7 @@ void Forum::Configuration::loadGlobalConfigFromStream(std::istream& stream)
     LOAD_CONFIG_VALUE(user.maxLogoHeight);
     LOAD_CONFIG_VALUE(user.defaultPrivilegeValueForLoggedInUser);
     LOAD_CONFIG_VALUE(user.messageCountMultiplierPrivilegeBonus);
+    LOAD_CONFIG_VALUE(user.maxMessageCountPrivilegeBonus);
     LOAD_CONFIG_VALUE(user.resetVoteExpiresInSeconds);
     LOAD_CONFIG_VALUE(user.visitorOnlineForSeconds);
 

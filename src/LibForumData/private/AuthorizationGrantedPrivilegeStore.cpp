@@ -30,6 +30,7 @@ GrantedPrivilegeStore::GrantedPrivilegeStore()
 {
     defaultPrivilegeValueForLoggedInUser_ = Configuration::getGlobalConfig()->user.defaultPrivilegeValueForLoggedInUser;
     messageCountMultiplierPrivilegeBonus_ = Configuration::getGlobalConfig()->user.messageCountMultiplierPrivilegeBonus;
+    maxMessageCountPrivilegeBonus_ = Configuration::getGlobalConfig()->user.maxMessageCountPrivilegeBonus;
 }
 
 void GrantedPrivilegeStore::grantDiscussionThreadMessagePrivilege(IdTypeRef userId, IdTypeRef entityId,
@@ -388,8 +389,9 @@ void GrantedPrivilegeStore::calculatePrivilege(const PrivilegeEntryCollection& c
         return;
     }
 
-    const auto defaultPositiveValue = static_cast<PrivilegeValueIntType>(
-            defaultPrivilegeValueForLoggedInUser_ + messageCountMultiplierPrivilegeBonus_ * user->messageCount());
+    const auto defaultPositiveValue = defaultPrivilegeValueForLoggedInUser_ +
+            std::min(maxMessageCountPrivilegeBonus_, 
+                     static_cast<PrivilegeValueIntType>(messageCountMultiplierPrivilegeBonus_ * user->messageCount()));
 
     positiveValue = maximumPrivilegeValue(positiveValue, defaultPositiveValue);
     
