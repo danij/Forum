@@ -264,7 +264,7 @@ int MessageExtractor::updateLatestMessages(const char* data, size_t size)
     static constexpr auto eventHeaderSize = sizeof(EventType) + sizeof(EventVersionType) + sizeof(EventContextVersionType);
     static constexpr auto contextSize = sizeof(PersistentTimestampType) + uuidSize + IpAddress::dataSize();
 
-    if ((ADD_NEW_DISCUSSION_THREAD_MESSAGE == eventType) && (1 == version) && (1 == contextVersion))
+    if ((ADD_NEW_DISCUSSION_THREAD_MESSAGE == eventType) && ((1 == version) || (3 == version)) && (1 == contextVersion))
     {
         if (size < contextSize)
         {
@@ -294,9 +294,9 @@ int MessageExtractor::processBlob(const char* data, size_t size)
     const auto blobStart = data;
     auto blobSize = size;
 
-    auto eventType = readAndIncrementBuffer<EventType>(data, size);
-    auto version = readAndIncrementBuffer<EventVersionType>(data, size);
-    auto contextVersion = readAndIncrementBuffer<EventContextVersionType>(data, size);
+    const auto eventType = readAndIncrementBuffer<EventType>(data, size);
+    const auto version = readAndIncrementBuffer<EventVersionType>(data, size);
+    const auto contextVersion = readAndIncrementBuffer<EventContextVersionType>(data, size);
 
     auto blobToWrite = blobStart;
 
@@ -306,10 +306,10 @@ int MessageExtractor::processBlob(const char* data, size_t size)
     static constexpr auto contextSize = sizeof(PersistentTimestampType) + uuidSize + IpAddress::dataSize();
     static constexpr auto sameAsOldVersionSize = contextSize + uuidSize /*messageId*/ + uuidSize /*parentId*/;
     static constexpr auto newBlobSize = sizeof(EventType) + sizeof(EventVersionType) + sizeof(EventContextVersionType) +
-                                        sameAsOldVersionSize + sizeof(uint32_t) + sizeof(uint64_t);
+                                        sameAsOldVersionSize + 2 * sizeof(uint32_t) + sizeof(uint64_t);
     char blobBuffer[newBlobSize];
 
-    if ((ADD_NEW_DISCUSSION_THREAD_MESSAGE == eventType) && (1 == version) && (1 == contextVersion))
+    if ((ADD_NEW_DISCUSSION_THREAD_MESSAGE == eventType) && ((1 == version) || (3 == version)) && (1 == contextVersion))
     {
         if (size < contextSize)
         {
@@ -325,14 +325,20 @@ int MessageExtractor::processBlob(const char* data, size_t size)
         {
             char* blobData = blobBuffer;
 
-            version = 2;
+            decltype(version) newVersion = 4;
 
             writeValue(blobData, eventType); blobData += sizeof(eventType);
-            writeValue(blobData, version); blobData += sizeof(version);
+            writeValue(blobData, newVersion); blobData += sizeof(newVersion);
             writeValue(blobData, contextVersion); blobData += sizeof(contextVersion);
 
             memmove(blobData, data, sameAsOldVersionSize); blobData += sameAsOldVersionSize;
             data += sameAsOldVersionSize; size -= sameAsOldVersionSize;
+
+            uint32_t approved = 1;
+            if (3 == version)
+            {
+                approved = readAndIncrementBuffer<uint32_t>(data, size);
+            }
 
             auto messageSize = readAndIncrementBuffer<uint32_t>(data, size);
 
@@ -349,6 +355,7 @@ int MessageExtractor::processBlob(const char* data, size_t size)
                 return 2;
             }
 
+            writeValue(blobData, approved); blobData += sizeof(approved);
             writeValue(blobData, messageSize); blobData += sizeof(messageSize);
             writeValue(blobData, currentOffset_); blobData += sizeof(currentOffset_);
 
