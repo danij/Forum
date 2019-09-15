@@ -2,6 +2,8 @@
 
 The forum can also be run using [Docker](https://www.docker.com/) containers.
 
+Before starting, please clone/download the repository and navigate to the current (`docker`) folder.
+
 ## Step 0 – Building the Image
 
 An image definition has been prepared. It is rather fat, encapsulating all the application services and dependencies
@@ -47,7 +49,7 @@ This script will also preconfigure the forum to use a hostname of your choosing.
 After bootstrapping, the `insert_folder/forum/config` and `insert_folder/forum/start` folders on the host should contain
 the initial configuration and startup data. 
 
-A low of parameters can be adjusted, some of them mandatory before being able to successfully use the software.
+A lot of parameters can be adjusted, some of them mandatory before being able to successfully use the software.
 
 ### Step 3.1 – Server Certificate
 
