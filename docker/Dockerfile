@@ -1,6 +1,6 @@
-FROM ubuntu:18.10
+FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade && apt-get install -y \
     build-essential \
     gdb \
     cmake \
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     tmux \
     vim \
     libicu-dev \
-    libboost1.67-all-dev \
+    libboost1.71-all-dev \
     curl \
     postgresql \
     nginx-full
@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir /forum && mkdir /forum/repos
 
 RUN cd /forum/repos/ && git clone https://github.com/danij/Forum.git
-RUN cd /forum/repos/Forum/ && git checkout initial
+RUN cd /forum/repos/Forum/ && git checkout master
 RUN mkdir /forum/repos/Forum-RelWithDebInfo
 RUN cd /forum/repos/Forum-RelWithDebInfo/ && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo /forum/repos/Forum/ && make
 
