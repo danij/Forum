@@ -20,7 +20,7 @@ RUN mkdir /forum && mkdir /forum/repos
 RUN cd /forum/repos/ && git clone https://github.com/danij/Forum.git
 RUN cd /forum/repos/Forum/ && git checkout initial
 RUN mkdir /forum/repos/Forum-RelWithDebInfo
-RUN cd /forum/repos/Forum-RelWithDebInfo/ && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo /forum/repos/Forum/ && make -j 2
+RUN cd /forum/repos/Forum-RelWithDebInfo/ && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo /forum/repos/Forum/ && make
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install -y nodejs
