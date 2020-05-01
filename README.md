@@ -1,5 +1,8 @@
 # Fast Forum Backend 
 
+[![Build Status](https://travis-ci.org/danij/Forum.svg?branch=master)](https://travis-ci.org/danij/Forum) 
+[![Coverage Status](https://coveralls.io/repos/github/danij/Forum/badge.svg?branch=master)](https://coveralls.io/github/danij/Forum?branch=master)
+
 Cross-platform backend software for providing a discussion forum. 
 
 Demo: http://fastforumdemo.westeurope.cloudapp.azure.com/
