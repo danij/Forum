@@ -70,23 +70,16 @@ void UserCollection::stopBatchInsert()
 {
     if ( ! Context::isBatchInsertInProgress()) return;
 
+    const std::vector<UserPtr> byId(byId_.begin(), byId_.end());
+
     byLastSeen_.clear();
-    for (const UserPtr user : byId_)
-    {
-        byLastSeen_.insert(user);
-    }
+    byLastSeen_.insert(byId.begin(), byId.end());
 
     byThreadCount_.clear();
-    for (const UserPtr user : byId_)
-    {
-        byThreadCount_.insert(user);
-    }
+    byThreadCount_.insert(byId.begin(), byId.end());
 
     byMessageCount_.clear();
-    for (const UserPtr user : byId_)
-    {
-        byMessageCount_.insert(user);
-    }
+    byMessageCount_.insert(byId.begin(), byId.end());
 }
 
 void UserCollection::prepareUpdateAuth(UserPtr user)
