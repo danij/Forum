@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-su -c '/usr/lib/postgresql/10/bin/pg_ctl -D /forum/data/sqldb -l /forum/logs/sqldb/logfile start' postgres
+su -c '/usr/lib/postgresql/12/bin/pg_ctl -D /forum/data/sqldb -l /forum/logs/sqldb/logfile start' postgres
 service nginx start
 service cron start
 
