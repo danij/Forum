@@ -213,6 +213,24 @@ namespace Forum::Entities
             if ( ! attachments_) attachments_.reset(new AttachmentCollection);
             return *attachments_;
         }
+        void attachmentsStopBatchInsert()
+        {
+            if ( ! attachments_) return;
+            attachments_->stopBatchInsert();
+        }
+        template<typename Fn>
+        void attachmentsIterateById(Fn&& callback) const
+        {
+            if ( ! attachments_) return;
+            for (const auto attachmentPtr : attachments_->byId())
+            {
+                callback(attachmentPtr);
+            }
+        }
+        auto attachmentsTotalSize() const
+        {
+            return attachments_ ? attachments_->totalSize() : 0;
+        }
 
         auto& voteHistory()                    { return voteHistory_; }
         auto& voteHistoryLastRetrieved() const { return voteHistoryLastRetrieved_; }

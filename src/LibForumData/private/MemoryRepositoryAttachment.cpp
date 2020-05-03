@@ -279,7 +279,7 @@ StatusCode MemoryRepositoryAttachment::canAddAttachment(OutStream& output) const
                                ? *currentUser->attachmentQuota()
                                : static_cast<uint64_t>(config->attachment.defaultUserQuota);
 
-                           const auto totalSize = currentUser->attachments().totalSize();
+                           const auto totalSize = currentUser->attachmentsTotalSize();
 
                            const auto availableBytes = totalSize >= userQuota ? 0u : (userQuota - totalSize);
                        
@@ -327,7 +327,7 @@ StatusCode MemoryRepositoryAttachment::addNewAttachment(StringView name, uint64_
                                ? *currentUser->attachmentQuota()
                                : static_cast<uint64_t>(config->attachment.defaultUserQuota);
 
-                           if ((currentUser->attachments().totalSize() + size) > userQuota)
+                           if ((currentUser->attachmentsTotalSize() + size) > userQuota)
                            {
                                status = StatusCode::QUOTA_EXCEEDED;
                                return;

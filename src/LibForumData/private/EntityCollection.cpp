@@ -233,11 +233,11 @@ struct EntityCollection::Impl
             //no need to delete the attachment from the user's attachment collection
             //as we're deleting the whole user anyway
             BoolTemporaryChanger changer(deleteAttachmentFromUser, false);
-            for (const auto attachmentPtr : user.attachments().byId())
+            user.attachmentsIterateById([this](const auto attachmentPtr)
             {
                 assert(attachmentPtr);
                 deleteAttachment(attachmentPtr);
-            }
+            });
         }
 
         release(userPtr);
@@ -705,7 +705,7 @@ struct EntityCollection::Impl
             {
                 for (UserPtr user : this->users_.byId())
                 {
-                    user->attachments().stopBatchInsert();
+                    user->attachmentsStopBatchInsert();
                 }
             }),
 
