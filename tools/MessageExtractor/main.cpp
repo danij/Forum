@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <functional>
 #include <map>
 
+#include "IpAddress.h"
+
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -34,7 +36,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "PersistenceFormat.h"
 #include "TypeHelpers.h"
-#include "IpAddress.h"
 
 using namespace Forum::Persistence;
 using namespace Forum::Helpers;
