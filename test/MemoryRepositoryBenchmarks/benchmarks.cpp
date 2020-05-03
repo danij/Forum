@@ -110,7 +110,7 @@ struct BenchmarkContext
     std::vector<IdType> threadMessageIds;
     std::vector<IdType> tagIds;
     std::vector<IdType> categoryIds;
-    const int timestampIncrementMultiplier = 20;
+    const int timestampIncrementMultiplier = 2;
     std::shared_ptr<EventObserver> persistenceObserver;
     ObservableRepositoryRef observableRepository;
     DirectWriteRepositoryCollection writeRepositories;
