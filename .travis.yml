@@ -35,6 +35,7 @@ before_script:
     
 script:
     - test/ForumServiceTests/ForumServiceTests
+    - test/HttpTests/HttpTests
     - test/MemoryRepositoryBenchmarks/MemoryRepositoryBenchmarks
     
 after_success:
