@@ -42,7 +42,7 @@ This script will also preconfigure the forum to use a hostname of your choosing.
      -v insert_folder/forum/www:/var/www \
      -v insert_folder/forum/config:/forum/config \
      example/fastforum:v1RC4 \
-     /forum/repos/Forum/docker/bootstrap-global.sh forum.tld
+     /forum/repos/Forum/docker/bootstrap-global.sh INSERT_FORUM_DOMAIN_NAME
 
 ## Step 3 – Configuration
 
