@@ -1028,7 +1028,7 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         Context::setCurrentUserId(currentUserId);
         Context::setCurrentUserIpAddress(readAndIncrementBuffer<IpAddress>(data, size));
 
-        usersLastSeen_[currentUserId] = currentTimestamp_;
+        setUsersLastSeen(currentUserId, currentTimestamp_);
 
         return true;
     }
@@ -1269,14 +1269,23 @@ struct EventImporter::EventImporterImpl final : private boost::noncopyable
         }
     }
 
+    void setUsersLastSeen(UuidString id, Timestamp at)
+    {
+        if ((usersLastSeenLastAccessed_ != usersLastSeen_.end()) && (usersLastSeenLastAccessed_->first == id))
+        {
+            usersLastSeenLastAccessed_->second = at;
+        }
+        else
+        {
+            usersLastSeenLastAccessed_ = usersLastSeen_.insert_or_assign(id, at).first;
+        }
+    }
+
     void updateUsersLastSeen()
     {
         auto& users = entityCollection_.users().byId();
-        for (auto& pair : usersLastSeen_)
+        for (auto& [id, timestamp] : usersLastSeen_)
         {
-            auto& id = pair.first;
-            auto& timestamp = pair.second;
-
             auto it = users.find(id);
             if (it != users.end())
             {
@@ -1303,6 +1312,7 @@ private:
     std::unordered_map<UuidString, std::unordered_map<UuidString, uint32_t>> latestThreadVisitedPage_;
     std::unordered_map<UuidString, uint32_t> cachedNrOfAttachmentGets_;
     std::unordered_map<UuidString, Timestamp> usersLastSeen_;
+    std::unordered_map<UuidString, Timestamp>::iterator usersLastSeenLastAccessed_ = usersLastSeen_.end();
 };
 
 EventImporter::EventImporter(bool verifyChecksum, EntityCollection& entityCollection,
