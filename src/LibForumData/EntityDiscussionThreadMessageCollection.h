@@ -120,6 +120,8 @@ namespace Forum::Entities
         }
 
     private:
+        std::unique_ptr<std::unordered_map<IdType, DiscussionThreadMessagePtr>> byIdDuringBatchInsert_;
+
         SORTED_VECTOR_UNIQUE_COLLECTION(DiscussionThreadMessage, id) byId_;
 
         SORTED_VECTOR_COLLECTION(DiscussionThreadMessage, created) byCreated_;

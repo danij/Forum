@@ -239,6 +239,17 @@ namespace Forum::Entities
             return std::make_pair(this->vector_.insert(range.first, std::move(value)), true);
         }
 
+        template<typename It>
+        void insertAlreadyUnique(It begin, It end)
+        {
+            this->vector_.insert(this->vector_.end(), begin, end);
+            std::sort(this->vector_.begin(), this->vector_.end(),
+                [](auto&& first, auto&& second)
+                {
+                    return Compare{}(first, second);
+                });
+        }
+
         auto find(const T& value) const
         {
             return find(KeyExtractor{}(value));
