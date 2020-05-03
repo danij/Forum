@@ -614,13 +614,15 @@ StatusCode MemoryRepositoryDiscussionTag::mergeDiscussionTags(EntityCollection& 
 
     const auto currentUser = getCurrentUser(collection);
 
-    tagFrom.threads().iterateThreads([tagIntoRef, &tagInto](DiscussionThreadPtr threadPtr)
+    std::vector<DiscussionThreadPtr> fromThreads{ tagFrom.threads().count() };
+    std::vector<DiscussionThreadPtr>::size_type fromThreadsIndex = 0;
+    tagFrom.threads().iterateThreads([tagIntoRef, &fromThreads, &fromThreadsIndex](DiscussionThreadPtr threadPtr)
     {
         assert(threadPtr);
         threadPtr->addTag(tagIntoRef);
-
-        tagInto.insertDiscussionThread(threadPtr);
+        fromThreads[fromThreadsIndex++] = threadPtr;
     });
+    tagInto.insertDiscussionThreads(fromThreads.data(), fromThreads.size());
 
     for (DiscussionCategoryPtr category : tagFrom.categories())
     {

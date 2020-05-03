@@ -124,6 +124,7 @@ namespace Forum::Entities
         }
 
         bool insertDiscussionThread(DiscussionThreadPtr thread);
+        bool insertDiscussionThreads(DiscussionThreadPtr* threads, size_t count);
         bool deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages);
 
         bool addCategory(DiscussionCategory* category);

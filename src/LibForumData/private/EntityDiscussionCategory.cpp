@@ -70,24 +70,47 @@ bool DiscussionCategory::hasAncestor(DiscussionCategory* const ancestor)
 
 bool DiscussionCategory::insertDiscussionThread(DiscussionThreadPtr thread)
 {
+    return insertDiscussionThreads(&thread, 1);
+}
+
+bool DiscussionCategory::insertDiscussionThreads(DiscussionThreadPtr* threads, size_t count)
+{
     assert(thread);
+
+    DiscussionThreadPtr* threadsDst = threads;
+    for (size_t i = 0; i < count; ++i)
+    {
+        if ( ! threads_.contains(threads[i]))
+        {
+            *threadsDst++ = threads[i];
+        }
+    }
+    count = threadsDst - threads;
+    if (count < 1) return false;
+
     changeNotifications_.onPrepareUpdateMessageCount(*this);
 
-    if ( ! threads_.add(thread))
+    if ( ! threads_.add(threads, count))
     {
         return false;
     }
 
     //don't use updateMessageCount() as insertDiscussionThread will take care of that for totals
-    messageCount_ += static_cast<decltype(messageCount_)>(thread->messageCount());
-    thread->addCategory(this);
+    for (size_t i = 0; i < count; ++i)
+    {
+        messageCount_ += static_cast<decltype(messageCount_)>(threads[i]->messageCount());
+        threads[i]->addCategory(this);        
+    }
 
     changeNotifications_.onUpdateMessageCount(*this);
 
     executeOnCategoryAndAllParents(*this, [&](auto& category)
     {
         //this category and all parents will hold separate references to the new thread
-        category.totalThreads_.add(thread);
+        for (size_t i = 0; i < count; ++i)
+        {
+            category.totalThreads_.add(threads[i]);            
+        }
     });
 
     return true;

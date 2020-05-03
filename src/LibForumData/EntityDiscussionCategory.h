@@ -161,6 +161,7 @@ namespace Forum::Entities
         bool hasAncestor(DiscussionCategory* ancestor);
 
         bool insertDiscussionThread(DiscussionThreadPtr thread);
+        bool insertDiscussionThreads(DiscussionThreadPtr* threads, size_t count);
         bool deleteDiscussionThread(DiscussionThreadPtr thread, bool deleteMessages, bool onlyThisCategory);
         void deleteDiscussionThreadIfNoOtherTagsReferenceIt(DiscussionThreadPtr thread, bool deleteMessages);
 

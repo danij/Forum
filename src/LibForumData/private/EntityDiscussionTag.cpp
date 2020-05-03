@@ -49,20 +49,40 @@ PrivilegeValueType DiscussionTag::getDiscussionTagPrivilege(DiscussionTagPrivile
 
 bool DiscussionTag::insertDiscussionThread(DiscussionThreadPtr thread)
 {
-    assert(thread);
+    return insertDiscussionThreads(&thread, 1);
+}
+
+bool DiscussionTag::insertDiscussionThreads(DiscussionThreadPtr* threads, size_t count)
+{
+    assert(threads);
+
+    DiscussionThreadPtr* threadsDst = threads;
+    for (size_t i = 0; i < count; ++i)
+    {
+        if ( ! threads_.contains(threads[i]))
+        {
+            *threadsDst++ = threads[i];
+        }
+    }
+    count = threadsDst - threads;
+    if (count < 1) return false;
+
     changeNotifications_.onPrepareUpdateThreadCount(*this);
     changeNotifications_.onPrepareUpdateMessageCount(*this);
 
-    if ( ! threads_.add(thread))
+    if ( ! threads_.add(threads, count))
     {
         return false;
     }
-    messageCount_ += static_cast<decltype(messageCount_)>(thread->messageCount());
+    for (size_t i = 0; i < count; ++i)
+    {
+        messageCount_ += static_cast<decltype(messageCount_)>(threads[i]->messageCount());
+    }
 
     for (auto category : categories_)
     {
         assert(category);
-        category->insertDiscussionThread(thread);
+        category->insertDiscussionThreads(threads, count);
     }
 
     changeNotifications_.onUpdateThreadCount(*this);
