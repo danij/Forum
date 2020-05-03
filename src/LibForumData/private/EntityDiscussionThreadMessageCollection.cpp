@@ -93,17 +93,10 @@ bool DiscussionThreadMessageCollectionLowMemory::add(DiscussionThreadMessagePtr 
 {
     onPrepareCountChange_();
 
-    if (Context::isBatchInsertInProgress())
+    if ( ! std::get<1>(byId_.insert(message))) return false;
+
+    if ( ! Context::isBatchInsertInProgress())
     {
-        if ( ! byIdDuringBatchInsert_)
-        {
-            byIdDuringBatchInsert_ = std::make_unique<decltype(byIdDuringBatchInsert_)::element_type>();
-        }
-        if ( ! std::get<1>(byIdDuringBatchInsert_->insert({ message->id(), message }))) return false;
-    }
-    else
-    {
-        if ( ! std::get<1>(byId_.insert(message))) return false;
         byCreated_.insert(message);
     }
 
@@ -117,33 +110,15 @@ bool DiscussionThreadMessageCollectionLowMemory::add(DiscussionThreadMessageColl
 
     auto result = false;
 
-    if (Context::isBatchInsertInProgress())
+    for (const DiscussionThreadMessagePtr message : collection.byId())
     {
-        if ( ! byIdDuringBatchInsert_)
-        {
-            byIdDuringBatchInsert_ = std::make_unique<decltype(byIdDuringBatchInsert_)::element_type>();
-        }
-        auto countBefore = byIdDuringBatchInsert_->size();
+        if ( ! std::get<1>(byId_.insert(message))) continue;
 
-        if (collection.byIdDuringBatchInsert_)
+        if ( ! Context::isBatchInsertInProgress())
         {
-            for (auto& [key, value] : *collection.byIdDuringBatchInsert_)
-            {
-                (*byIdDuringBatchInsert_)[key] = value;
-            }
-        }
-
-        auto countAfter = byIdDuringBatchInsert_->size();
-        result = countAfter > countBefore;
-    }
-    else
-    {
-        for (const DiscussionThreadMessagePtr message : collection.byId())
-        {
-            if ( ! std::get<1>(byId_.insert(message))) continue;
             byCreated_.insert(message);
-            result = true;
         }
+        result = true;
     }
 
     onCountChange_();
@@ -153,14 +128,6 @@ bool DiscussionThreadMessageCollectionLowMemory::add(DiscussionThreadMessageColl
 bool DiscussionThreadMessageCollectionLowMemory::remove(DiscussionThreadMessagePtr message)
 {
     onPrepareCountChange_();
-    if (byIdDuringBatchInsert_)
-    {
-        const auto itById = byIdDuringBatchInsert_->find(message->id());
-        if (itById == byIdDuringBatchInsert_->end()) return false;
-
-        byIdDuringBatchInsert_->erase(itById);
-    }
-    else 
     {
         const auto itById = byId_.find(message->id());
         if (itById == byId_.end()) return false;
@@ -175,7 +142,6 @@ bool DiscussionThreadMessageCollectionLowMemory::remove(DiscussionThreadMessageP
 
 void DiscussionThreadMessageCollectionLowMemory::clear()
 {
-    byIdDuringBatchInsert_.reset();
     byId_.clear();
     byCreated_.clear();
 }
@@ -183,19 +149,6 @@ void DiscussionThreadMessageCollectionLowMemory::clear()
 void DiscussionThreadMessageCollectionLowMemory::stopBatchInsert()
 {
     if ( ! Context::isBatchInsertInProgress()) return;
-
-    byId_.clear();
-    if (byIdDuringBatchInsert_)
-    {
-        std::vector<DiscussionThreadMessagePtr> byId{ byIdDuringBatchInsert_->size() };
-        std::vector<DiscussionThreadMessagePtr>::size_type byIdIndex = 0;
-        for (auto& [key, value] : *byIdDuringBatchInsert_)
-        {
-            byId[byIdIndex++] = value;
-        }
-        byId_.insertAlreadyUnique(byId.begin(), byId.end());
-        byIdDuringBatchInsert_.reset();
-    }
 
     byCreated_.clear();
     byCreated_.insert(byId_.begin(), byId_.end());
